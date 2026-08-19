@@ -206,6 +206,39 @@ class EventFoldTest {
     }
 
     @Test
+    fun metadataChunksDoNotHideANonStreamedAssistantMessage() {
+        val events = listOf(
+            event("assistant/chunk", 10, buildJsonObject {
+                put("turn", 1); put("step", 1)
+                putJsonObject("chunk") {
+                    put("type", "usage")
+                    putJsonObject("usage") { put("inputTokens", 10); put("outputTokens", 2) }
+                }
+            }),
+            event("assistant/chunk", 11, buildJsonObject {
+                put("turn", 1); put("step", 1)
+                putJsonObject("chunk") {
+                    put("type", "finish")
+                    putJsonObject("reason") { put("kind", "completed") }
+                }
+            }),
+            event("assistant/message", 12, buildJsonObject {
+                put("turn", 1); put("step", 1)
+                putJsonObject("message") {
+                    put("id", "answer-1")
+                    putJsonArray("content") {
+                        add(buildJsonObject { put("type", "text"); put("text", "visible reply") })
+                    }
+                }
+            }),
+        )
+
+        val assistant = EventFold("s1").fold(events).nodes.single() as AssistantMessageNode
+        assertEquals(listOf("text"), assistant.blocks.map { it.kind })
+        assertEquals("visible reply", assistant.plainText)
+    }
+
+    @Test
     fun roundTripsThroughWireJson() {
         // The wire JSON parser (lenient) must accept the event envelope.
         val raw = """{"type":"turn/end","seq":4,"time":5,"data":{"turn":1,"reason":{"kind":"completed"}},"extra":"ignored"}"""

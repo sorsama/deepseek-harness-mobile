@@ -1,4 +1,7 @@
-@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
+@file:OptIn(
+    kotlinx.serialization.ExperimentalSerializationApi::class,
+    kotlinx.serialization.InternalSerializationApi::class,
+)
 
 package com.labteto.dshmobile.core.wire.dto
 
@@ -7,6 +10,7 @@ import com.labteto.dshmobile.core.wire.encodeToJsonElement
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
@@ -90,11 +94,11 @@ object ContentBlockSerializer : KSerializer<ContentBlock> {
 
     override fun serialize(encoder: Encoder, value: ContentBlock) {
         val json: JsonElement = when (value) {
-            is ContentBlock.Text -> encodeToJsonElement(ContentBlock.Text.serializer(), value).withType("text")
-            is ContentBlock.Reasoning -> encodeToJsonElement(ContentBlock.Reasoning.serializer(), value).withType("reasoning")
-            is ContentBlock.Image -> encodeToJsonElement(ContentBlock.Image.serializer(), value).withType("image")
-            is ContentBlock.ToolCall -> encodeToJsonElement(ContentBlock.ToolCall.serializer(), value).withType("tool-call")
-            is ContentBlock.ToolResult -> encodeToJsonElement(ContentBlock.ToolResult.serializer(), value).withType("tool-result")
+            is ContentBlock.Text -> encodeWithType(ContentBlock.Text.serializer(), value)
+            is ContentBlock.Reasoning -> encodeWithType(ContentBlock.Reasoning.serializer(), value)
+            is ContentBlock.Image -> encodeWithType(ContentBlock.Image.serializer(), value)
+            is ContentBlock.ToolCall -> encodeWithType(ContentBlock.ToolCall.serializer(), value)
+            is ContentBlock.ToolResult -> encodeWithType(ContentBlock.ToolResult.serializer(), value)
             is UnknownContentBlock -> value.raw
         }
         (encoder as JsonEncoder).encodeJsonElement(json)
@@ -182,13 +186,13 @@ object StreamChunkSerializer : KSerializer<StreamChunk> {
 
     override fun serialize(encoder: Encoder, value: StreamChunk) {
         val json: JsonElement = when (value) {
-            is StreamChunk.BlockStart -> encodeToJsonElement(StreamChunk.BlockStart.serializer(), value).withType("block-start")
-            is StreamChunk.TextDelta -> encodeToJsonElement(StreamChunk.TextDelta.serializer(), value).withType("text-delta")
-            is StreamChunk.ReasoningDelta -> encodeToJsonElement(StreamChunk.ReasoningDelta.serializer(), value).withType("reasoning-delta")
-            is StreamChunk.ToolCallDelta -> encodeToJsonElement(StreamChunk.ToolCallDelta.serializer(), value).withType("tool-call-delta")
-            is StreamChunk.BlockEnd -> encodeToJsonElement(StreamChunk.BlockEnd.serializer(), value).withType("block-end")
-            is StreamChunk.Usage -> encodeToJsonElement(StreamChunk.Usage.serializer(), value).withType("usage")
-            is StreamChunk.Finish -> encodeToJsonElement(StreamChunk.Finish.serializer(), value).withType("finish")
+            is StreamChunk.BlockStart -> encodeWithType(StreamChunk.BlockStart.serializer(), value)
+            is StreamChunk.TextDelta -> encodeWithType(StreamChunk.TextDelta.serializer(), value)
+            is StreamChunk.ReasoningDelta -> encodeWithType(StreamChunk.ReasoningDelta.serializer(), value)
+            is StreamChunk.ToolCallDelta -> encodeWithType(StreamChunk.ToolCallDelta.serializer(), value)
+            is StreamChunk.BlockEnd -> encodeWithType(StreamChunk.BlockEnd.serializer(), value)
+            is StreamChunk.Usage -> encodeWithType(StreamChunk.Usage.serializer(), value)
+            is StreamChunk.Finish -> encodeWithType(StreamChunk.Finish.serializer(), value)
             is UnknownStreamChunk -> value.raw
         }
         (encoder as JsonEncoder).encodeJsonElement(json)
@@ -214,9 +218,13 @@ object StreamChunkSerializer : KSerializer<StreamChunk> {
  * Re-add it whenever a typed wire value is converted back to JSON; the transcript fold consumes
  * that JSON and otherwise sees every known block/chunk as an empty `unknown` value.
  */
+private fun <T> encodeWithType(serializer: SerializationStrategy<T>, value: T): JsonElement =
+    encodeToJsonElement(serializer, value).withType(serializer.descriptor.serialName)
+
 private fun JsonElement.withType(type: String): JsonElement = JsonObject(
-    linkedMapOf<String, JsonElement>("type" to JsonPrimitive(type)).apply {
+    linkedMapOf<String, JsonElement>().apply {
         putAll(this@withType.jsonObject)
+        put("type", JsonPrimitive(type))
     },
 )
 

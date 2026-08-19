@@ -129,7 +129,7 @@ private class FoldState(private val sessionId: String) {
                 val turn = data.jsonObject["turn"]?.jsonPrimitive?.intOrNull ?: 0
                 val step = data.jsonObject["step"]?.jsonPrimitive?.intOrNull ?: 0
                 val chunk = data.jsonObject["chunk"]?.jsonObject ?: return
-                mergeChunk(turn, step, chunk, event.seq)
+                mergeChunk(turn, step, chunk)
             }
 
             "assistant/message" -> {
@@ -209,8 +209,12 @@ private class FoldState(private val sessionId: String) {
 
     private fun key(turn: Int, step: Int) = "$turn.$step"
 
-    private fun mergeChunk(turn: Int, step: Int, chunk: JsonObject, seq: Long) {
+    private fun mergeChunk(turn: Int, step: Int, chunk: JsonObject) {
         val type = chunk["type"]?.jsonPrimitive?.contentOrNull ?: return
+        // Usage, finish, and future metadata chunks do not address a content block. Creating an
+        // accumulator for them would leave a phantom `unknown` block that can hide the complete
+        // content carried by a following non-streamed assistant/message event.
+        if (type !in BLOCK_CHUNK_TYPES) return
         val index = chunk["index"]?.jsonPrimitive?.intOrNull ?: 0
         val open = openByKey.getOrPut(key(turn, step)) { OpenAssistant(turn, step) }
         while (open.blocks.size <= index) open.blocks.add(MutableChatBlockAccumulator())
@@ -231,6 +235,16 @@ private class FoldState(private val sessionId: String) {
             "block-end" -> acc.raw = chunk["block"]
             else -> Unit
         }
+    }
+
+    private companion object {
+        val BLOCK_CHUNK_TYPES = setOf(
+            "block-start",
+            "text-delta",
+            "reasoning-delta",
+            "tool-call-delta",
+            "block-end",
+        )
     }
 
     private fun commit(open: OpenAssistant): List<ChatBlock> = open.blocks.map { acc ->
