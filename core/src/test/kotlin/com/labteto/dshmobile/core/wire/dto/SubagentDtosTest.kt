@@ -50,4 +50,33 @@ class SubagentDtosTest {
         assertEquals(UnknownSubagentListEntry("future-kind", raw), decoded)
         assertEquals(raw, encodeToJsonElement(SubagentListEntrySerializer, decoded))
     }
+
+    @Test
+    fun `catalog round trip preserves every known entry subtype`() {
+        val catalog = SubagentCatalog(
+            entries = listOf(
+                SubagentListEntry.ChildOneShot(
+                    id = "one-shot",
+                    activity = "idle",
+                    hasChildren = false,
+                    label = "Research",
+                ),
+                SubagentListEntry.ChildContinuable(
+                    id = "continuable",
+                    activity = "running",
+                    hasChildren = true,
+                    label = "Builder",
+                ),
+                SubagentListEntry.Diagnostic(
+                    id = "diagnostic",
+                    reason = "Transcript unavailable",
+                ),
+            ),
+            parentAvailable = true,
+        )
+
+        val encoded = encodeToJsonElement(SubagentCatalog.serializer(), catalog)
+
+        assertEquals(catalog, decodeFromJsonElement(SubagentCatalog.serializer(), encoded))
+    }
 }
