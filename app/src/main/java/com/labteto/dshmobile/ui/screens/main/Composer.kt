@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -96,13 +97,16 @@ internal fun Composer(
     running: Boolean,
     enabled: Boolean,
     onOpenSheet: () -> Unit,
-    onSend: () -> Unit,
+    onSend: (String) -> Unit,
     onStop: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = DsTheme.colors
     val haptics = LocalHapticFeedback.current
     val canSend = enabled && (draft.isNotBlank() || attachments.isNotEmpty())
+    val currentDraft by rememberUpdatedState(draft)
+    val currentOnDraftChange by rememberUpdatedState(onDraftChange)
+    val currentOnSend by rememberUpdatedState(onSend)
 
     Surface(
         modifier = modifier
@@ -214,8 +218,10 @@ internal fun Composer(
                             tint = if (canSend) Color.White else colors.labelTertiary,
                             enabled = canSend,
                             onClick = {
+                                val text = currentDraft
+                                currentOnDraftChange("")
                                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onSend()
+                                currentOnSend(text)
                             },
                         )
                     }

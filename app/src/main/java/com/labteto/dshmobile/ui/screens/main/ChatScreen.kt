@@ -168,15 +168,13 @@ fun ChatScreen(
         }
     }
 
-    fun send() {
-        val text = draft
+    fun send(text: String) {
         val pending = attachments.toList()
         if (text.isBlank() && pending.isEmpty()) return
         // A slash line that names a registered command is not a message: `session.prompt` would
         // hand it to the model verbatim, so it has to be recognised here and written through the
         // command gateway. A miss falls through to the prompt path — that is how skills work.
         val submission = adjudicate(text, commands, pending.isNotEmpty())
-        draft = ""
         attachments.clear()
         if (submission is Submission.Command) {
             scope.launch { report(store.runCommand(submission.line)) }
