@@ -1,7 +1,13 @@
 package com.labteto.dshmobile.core.session
 
 import com.labteto.dshmobile.core.wire.WireJson
+import com.labteto.dshmobile.core.wire.decodeFromString
+import com.labteto.dshmobile.core.wire.encodeToJsonElement
+import com.labteto.dshmobile.core.wire.dto.SessionEvent
+import com.labteto.dshmobile.core.wire.dto.SessionEventSerializer
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
@@ -163,6 +169,40 @@ class EventFoldTest {
         )
         val user = EventFold("s1").fold(events).nodes.single() as UserMessageNode
         assertTrue(user.blocks.isEmpty())
+    }
+
+    /**
+     * The Android data layer decodes a typed event and then re-encodes its `data` for the fold.
+     * Concrete content-block serializers do not add their sealed-class discriminator themselves;
+     * losing it here turns both blocks into empty `unknown` rows and makes a completed reply vanish.
+     */
+    @Test
+    fun typedAssistantMessageKeepsBlockTypesWhenConvertedForTheFold() {
+        val raw = """{"type":"assistant/message","seq":349,"time":1,"data":{"turn":5,"step":1,"message":{"role":"assistant","content":[{"type":"reasoning","text":"thinking"},{"type":"text","text":"visible reply"}],"source":{"kind":"model","provider":"qwen-local","model":"qwen3.8-27b"},"id":"answer-1"},"usage":{"inputTokens":10,"outputTokens":2}}}"""
+        val typed = decodeFromString<SessionEvent>(raw)
+        val json = encodeToJsonElement(SessionEventSerializer, typed).jsonObject
+        val envelope = SessionEventEnvelope(
+            type = typed.type,
+            seq = typed.seq.toLong(),
+            time = typed.time,
+            data = json.getValue("data"),
+        )
+
+        val assistant = EventFold("s1").fold(listOf(envelope)).nodes.single() as AssistantMessageNode
+        assertEquals(listOf("reasoning", "text"), assistant.blocks.map { it.kind })
+        assertEquals("visible reply", assistant.plainText)
+    }
+
+    @Test
+    fun typedStreamChunkKeepsItsChunkAndCompletedBlockTypes() {
+        val raw = """{"type":"assistant/chunk","seq":12,"time":1,"data":{"turn":1,"step":1,"chunk":{"type":"block-end","index":0,"block":{"type":"text","text":"streamed reply"}}}}"""
+        val typed = decodeFromString<SessionEvent>(raw)
+        val json = encodeToJsonElement(SessionEventSerializer, typed).jsonObject
+        val data = json.getValue("data").jsonObject
+        val chunk = data.getValue("chunk").jsonObject
+
+        assertEquals("block-end", chunk.getValue("type").jsonPrimitive.content)
+        assertEquals("text", chunk.getValue("block").jsonObject.getValue("type").jsonPrimitive.content)
     }
 
     @Test

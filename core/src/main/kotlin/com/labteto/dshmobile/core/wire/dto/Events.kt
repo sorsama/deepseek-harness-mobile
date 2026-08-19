@@ -20,6 +20,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
@@ -89,11 +90,11 @@ object ContentBlockSerializer : KSerializer<ContentBlock> {
 
     override fun serialize(encoder: Encoder, value: ContentBlock) {
         val json: JsonElement = when (value) {
-            is ContentBlock.Text -> encodeToJsonElement(ContentBlock.Text.serializer(), value)
-            is ContentBlock.Reasoning -> encodeToJsonElement(ContentBlock.Reasoning.serializer(), value)
-            is ContentBlock.Image -> encodeToJsonElement(ContentBlock.Image.serializer(), value)
-            is ContentBlock.ToolCall -> encodeToJsonElement(ContentBlock.ToolCall.serializer(), value)
-            is ContentBlock.ToolResult -> encodeToJsonElement(ContentBlock.ToolResult.serializer(), value)
+            is ContentBlock.Text -> encodeToJsonElement(ContentBlock.Text.serializer(), value).withType("text")
+            is ContentBlock.Reasoning -> encodeToJsonElement(ContentBlock.Reasoning.serializer(), value).withType("reasoning")
+            is ContentBlock.Image -> encodeToJsonElement(ContentBlock.Image.serializer(), value).withType("image")
+            is ContentBlock.ToolCall -> encodeToJsonElement(ContentBlock.ToolCall.serializer(), value).withType("tool-call")
+            is ContentBlock.ToolResult -> encodeToJsonElement(ContentBlock.ToolResult.serializer(), value).withType("tool-result")
             is UnknownContentBlock -> value.raw
         }
         (encoder as JsonEncoder).encodeJsonElement(json)
@@ -181,13 +182,13 @@ object StreamChunkSerializer : KSerializer<StreamChunk> {
 
     override fun serialize(encoder: Encoder, value: StreamChunk) {
         val json: JsonElement = when (value) {
-            is StreamChunk.BlockStart -> encodeToJsonElement(StreamChunk.BlockStart.serializer(), value)
-            is StreamChunk.TextDelta -> encodeToJsonElement(StreamChunk.TextDelta.serializer(), value)
-            is StreamChunk.ReasoningDelta -> encodeToJsonElement(StreamChunk.ReasoningDelta.serializer(), value)
-            is StreamChunk.ToolCallDelta -> encodeToJsonElement(StreamChunk.ToolCallDelta.serializer(), value)
-            is StreamChunk.BlockEnd -> encodeToJsonElement(StreamChunk.BlockEnd.serializer(), value)
-            is StreamChunk.Usage -> encodeToJsonElement(StreamChunk.Usage.serializer(), value)
-            is StreamChunk.Finish -> encodeToJsonElement(StreamChunk.Finish.serializer(), value)
+            is StreamChunk.BlockStart -> encodeToJsonElement(StreamChunk.BlockStart.serializer(), value).withType("block-start")
+            is StreamChunk.TextDelta -> encodeToJsonElement(StreamChunk.TextDelta.serializer(), value).withType("text-delta")
+            is StreamChunk.ReasoningDelta -> encodeToJsonElement(StreamChunk.ReasoningDelta.serializer(), value).withType("reasoning-delta")
+            is StreamChunk.ToolCallDelta -> encodeToJsonElement(StreamChunk.ToolCallDelta.serializer(), value).withType("tool-call-delta")
+            is StreamChunk.BlockEnd -> encodeToJsonElement(StreamChunk.BlockEnd.serializer(), value).withType("block-end")
+            is StreamChunk.Usage -> encodeToJsonElement(StreamChunk.Usage.serializer(), value).withType("usage")
+            is StreamChunk.Finish -> encodeToJsonElement(StreamChunk.Finish.serializer(), value).withType("finish")
             is UnknownStreamChunk -> value.raw
         }
         (encoder as JsonEncoder).encodeJsonElement(json)
@@ -207,6 +208,17 @@ object StreamChunkSerializer : KSerializer<StreamChunk> {
         }
     }
 }
+
+/**
+ * The concrete serializers above do not emit the sealed class discriminator on their own.
+ * Re-add it whenever a typed wire value is converted back to JSON; the transcript fold consumes
+ * that JSON and otherwise sees every known block/chunk as an empty `unknown` value.
+ */
+private fun JsonElement.withType(type: String): JsonElement = JsonObject(
+    linkedMapOf<String, JsonElement>("type" to JsonPrimitive(type)).apply {
+        putAll(this@withType.jsonObject)
+    },
+)
 
 /** Serializable provider or transport failure facts; policy decides whether they are retryable. */
 @Serializable
@@ -1259,5 +1271,3 @@ object SessionEventSerializer : KSerializer<SessionEvent> {
         }
     }
 }
-
-
