@@ -255,6 +255,17 @@
     <string name="err_command_unknown">คำสั่งไม่รู้จัก: %1$s</string>
     <string name="err_command_failed">คำสั่งล้มเหลว: %1$s</string>
     <string name="err_attachment_failed">ไม่สามารถแนบรูปภาพนั้นได้</string>
+    <string name="err_image_unsupported_type">รองรับเฉพาะรูปภาพ PNG, JPG, WebP และ GIF</string>
+    <string name="err_image_too_large">รูปภาพแต่ละรูปต้องมีขนาดเล็กกว่า %1$s</string>
+    <string name="err_image_pixels">รูปภาพนี้มีความละเอียดสูงเกินไป โปรดบีบอัดแล้วลองใหม่</string>
+    <string name="err_image_dimension">ด้านของรูปภาพต้องไม่เกิน %1$dpx โปรดย่อขนาดแล้วลองใหม่</string>
+    <string name="err_image_too_many">หนึ่งข้อความแนบรูปภาพได้สูงสุด %1$d รูป</string>
+    <string name="err_image_batch_too_large">รูปภาพเหล่านี้รวมกันเกิน %1$s โปรดลบออกบางรูปแล้วลองใหม่</string>
+    <string name="err_image_model_unsupported">โมเดลนี้ไม่รับรูปภาพ โปรดเปลี่ยนไปใช้โมเดลที่รับได้</string>
+    <string name="err_image_subagent_unsupported">เซสชันซับเอเจนต์ไม่รับรูปภาพ</string>
+    <string name="err_image_send_failed">ส่งรูปภาพไม่สำเร็จ (%1$s) โปรดแนบใหม่แล้วลองอีกครั้ง</string>
+    <string name="err_command_no_images">/%1$s ไม่รับไฟล์รูปภาพแนบ โปรดลบออกก่อน</string>
+    <string name="err_command_images_host">/%1$s แนบรูปภาพได้เฉพาะบน harness 0.1.0-rc.8 ขึ้นไป โปรดลบออกก่อน</string>
     <string name="err_permission_denied">การดำเนินการนี้ใช้ได้เฉพาะบนคอมพิวเตอร์ของ Harness เท่านั้น</string>
     <string name="err_timeout">Harness ไม่ตอบกลับทันเวลา</string>
     <string name="err_generic">ข้อผิดพลาด: %1$s</string>

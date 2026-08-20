@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Agent-preset DTOs, ported from `packages/host/apiproxy/src/api/agent-presets.schema.ts` and
- * `packages/host/apiproxy/src/api/agent-presets.ts` (v0.1.0-rc.7).
+ * `packages/host/apiproxy/src/api/agent-presets.ts` (v0.1.0-rc.8).
  */
 
 /** Trust tier of an agent preset. */

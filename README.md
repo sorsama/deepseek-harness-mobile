@@ -11,6 +11,7 @@
 </p>
 
 <p align="center">
+  <a href="https://dshm.zyphite.com"><img alt="Website" src="https://img.shields.io/badge/website-dshm.zyphite.com-4176E6?style=flat-square"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/sorsama/deepseek-harness-mobile?style=flat-square"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/sorsama/deepseek-harness-mobile/ci.yml?branch=main&style=flat-square"></a>
   <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square">
@@ -20,6 +21,9 @@
 DSH Mobile is an **unofficial companion app** for the
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (MIT), mirroring its web GUI
 feature-for-feature in the harness's own visual language. Android only, Kotlin + Jetpack Compose.
+
+**[dshm.zyphite.com](https://dshm.zyphite.com)** is the project site — what the app is, what it
+looks like, and how to get it running, on one page.
 
 The [**wiki**](https://github.com/sorsama/deepseek-harness-mobile/wiki) is the user-facing guide:
 [getting started](https://github.com/sorsama/deepseek-harness-mobile/wiki/Getting-Started),
@@ -71,7 +75,7 @@ a [feature tour](https://github.com/sorsama/deepseek-harness-mobile/wiki/Feature
 
 - Android 8.0+ (minSdk 26).
 - A running [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
-  (tested against `0.1.0-rc.7`).
+  (tested against `0.1.0-rc.8`).
 
 ## Quick start
 

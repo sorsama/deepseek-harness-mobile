@@ -2,6 +2,9 @@
 # forms do not fit still need somewhere to go, and Discussions are not enabled.
 blank_issues_enabled: true
 contact_links:
+  - name: Project website
+    url: https://dshm.zyphite.com
+    about: What the app is, what it looks like and how to get it running, on one page.
   - name: Cannot connect to the harness
     url: https://github.com/sorsama/deepseek-harness-mobile/wiki/Troubleshooting
     about: Every failure the app names, with its cause and its fix. Almost always the computer's firewall, a harness still bound to loopback, or a different subnet.

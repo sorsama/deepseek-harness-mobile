@@ -21,15 +21,16 @@ class SlashAdjudicationTest {
             description = "Switch the permission preset",
             input = CommandInputDescriptor(hint = "<preset>"),
         ),
+        // `/goal` and `/plan` are the two commands harness 0.1.0-rc.8 taught to take images.
         CommandDescriptor(
             name = "goal",
             description = "Set a goal",
-            input = CommandInputDescriptor(hint = "<text>"),
+            input = CommandInputDescriptor(hint = "<text>", images = true),
         ),
     )
 
-    private fun decide(draft: String, attachments: Boolean = false) =
-        adjudicate(draft, catalog, attachments)
+    private fun decide(draft: String, attachments: Int = 0, hostAcceptsImages: Boolean = true) =
+        adjudicate(draft, catalog, attachments, hostAcceptsImages)
 
     @Test
     fun `ordinary text is a prompt`() {
@@ -86,12 +87,57 @@ class SlashAdjudicationTest {
 
     @Test
     fun `an empty catalog makes every line a prompt`() {
-        assertEquals(Submission.Prompt("/compact"), adjudicate("/compact", emptyList(), false))
+        assertEquals(Submission.Prompt("/compact"), adjudicate("/compact", emptyList(), 0, true))
     }
 
     @Test
-    fun `attachments force the prompt path`() {
-        // A command line takes no images, and the prompt API is the only thing that carries them.
-        assertEquals(Submission.Prompt("/compact"), decide("/compact", attachments = true))
+    fun `a command that declares images takes them`() {
+        assertEquals(Submission.Command("/goal ship it"), decide("/goal ship it", attachments = 1))
+    }
+
+    @Test
+    fun `a command that declares no images refuses them rather than becoming a prompt`() {
+        // This used to send the literal text "/compact" to the model alongside the picture, with
+        // nothing on screen to say the command had been quietly demoted.
+        assertEquals(
+            Submission.Refused("compact", RefusalReason.COMMAND_TAKES_NO_IMAGES),
+            decide("/compact", attachments = 1),
+        )
+        assertEquals(
+            Submission.Refused("permission", RefusalReason.COMMAND_TAKES_NO_IMAGES),
+            decide("/permission read-only", attachments = 1),
+        )
+    }
+
+    @Test
+    fun `a harness that cannot carry images says so rather than dropping them`() {
+        assertEquals(
+            Submission.Refused("goal", RefusalReason.HOST_TOO_OLD),
+            decide("/goal ship it", attachments = 1, hostAcceptsImages = false),
+        )
+        // Without images the same command is unremarkable on either release.
+        assertEquals(
+            Submission.Command("/goal ship it"),
+            decide("/goal ship it", hostAcceptsImages = false),
+        )
+    }
+
+    @Test
+    fun `the catalog is consulted before the images are`() {
+        // An unregistered name is a skill, and a skill is invoked by sending it as a prompt — so
+        // it keeps its images and goes to the model, exactly as it does without them.
+        assertEquals(Submission.Prompt("/my-skill do it"), decide("/my-skill do it", attachments = 1))
+        // And a command that never claimed the line does not get to refuse it either.
+        assertEquals(
+            Submission.Prompt("/compact and summarise"),
+            decide("/compact and summarise", attachments = 1),
+        )
+    }
+
+    @Test
+    fun `sub-command grammar is left to the host`() {
+        // `/plan off` with images is refused by the handler, not the composer — mirroring the rule
+        // here would mean maintaining a copy of every command's grammar.
+        assertEquals(Submission.Command("/goal clear"), decide("/goal clear", attachments = 1))
     }
 }

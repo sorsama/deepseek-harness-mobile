@@ -6,7 +6,7 @@ import kotlinx.serialization.json.JsonElement
 
 /**
  * Sessions-domain DTOs, ported from `packages/host/apiproxy/src/api/sessions.schema.ts` and
- * `packages/host/apiproxy/src/api/sessions.ts` (v0.1.0-rc.7). Includes the request/response
+ * `packages/host/apiproxy/src/api/sessions.ts` (v0.1.0-rc.8). Includes the request/response
  * values of every `session.*` method (list/search/create/rename/fork/history/models/selectModel/
  * prompt/attachment/updateQueue/cancel) plus the shared model-catalog and attachment shapes.
  */

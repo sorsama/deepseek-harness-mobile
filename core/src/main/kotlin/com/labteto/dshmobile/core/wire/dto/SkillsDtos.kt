@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Skills-domain DTOs, ported from `packages/host/apiproxy/src/api/skills.schema.ts` and
- * `packages/host/apiproxy/src/api/skills.ts` (v0.1.0-rc.7). Listing is the domain's only RPC:
+ * `packages/host/apiproxy/src/api/skills.ts` (v0.1.0-rc.8). Listing is the domain's only RPC:
  * invocation itself is a plain `session.prompt` whose leading `/name` token the host recognizes.
  */
 

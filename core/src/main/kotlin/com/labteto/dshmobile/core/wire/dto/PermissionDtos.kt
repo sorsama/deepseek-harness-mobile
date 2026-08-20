@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Permission-preset DTOs, ported from
- * `packages/interaction/permission-presets/src/types.ts` (v0.1.0-rc.7).
+ * `packages/interaction/permission-presets/src/types.ts` (v0.1.0-rc.8).
  *
  * The read side is the `permissions` session projection — no RPC. The write side is the
  * `/permission <value>` slash command. An absent projection key means no permission service is

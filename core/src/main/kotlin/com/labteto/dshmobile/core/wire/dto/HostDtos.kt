@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Host-domain DTOs, ported from `packages/host/apiproxy/src/api/host.schema.ts` (v0.1.0-rc.7).
+ * Host-domain DTOs, ported from `packages/host/apiproxy/src/api/host.schema.ts` (v0.1.0-rc.8).
  * Wire keys are camelCase exactly as the harness emits them.
  */
 
@@ -21,6 +21,13 @@ data class HostDescription(
     @SerialName("model") val model: String? = null,
     /** Count of currently attached sessions (those with a live agent). */
     @SerialName("attachedSessions") val attachedSessions: Int,
+    /**
+     * The host account's home directory. Required from harness 0.1.0-rc.8 and absent before it,
+     * which makes its presence the client's rc.8 signal — see [com.labteto.dshmobile.core.DshCore]
+     * and `docs/COMPATIBILITY.md`. Nullable so an rc.7 host still decodes, and so the handshake,
+     * which runs `host.describe` before anything else, cannot fail on a missing key.
+     */
+    @SerialName("home") val home: String? = null,
     /** Whether this deployment can hand a path to a user-visible native desktop. */
     @SerialName("canOpenPath") val canOpenPath: Boolean,
 )

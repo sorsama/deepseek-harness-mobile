@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Goals-domain DTOs, ported from `packages/host/apiproxy/src/api/goals.schema.ts` and
- * `packages/goal/goal/src/types.ts` (v0.1.0-rc.7). Mutations only: the read side is the
+ * `packages/goal/goal/src/types.ts` (v0.1.0-rc.8). Mutations only: the read side is the
  * 'goal' session projection; every non-clear mutation acknowledges with the new CAS ref.
  */
 

@@ -255,6 +255,17 @@
     <string name="err_command_unknown">अज्ञात कमांड: %1$s</string>
     <string name="err_command_failed">कमांड विफल: %1$s</string>
     <string name="err_attachment_failed">वह छवि संलग्न नहीं की जा सकी।</string>
+    <string name="err_image_unsupported_type">केवल PNG, JPG, WebP और GIF छवियाँ समर्थित हैं।</string>
+    <string name="err_image_too_large">हर छवि %1$s से छोटी होनी चाहिए।</string>
+    <string name="err_image_pixels">इस छवि का रिज़ॉल्यूशन बहुत अधिक है। इसे संपीड़ित करके फिर आज़माएँ।</string>
+    <string name="err_image_dimension">छवि की भुजाएँ अधिकतम %1$dpx हो सकती हैं। इसे छोटा करके फिर आज़माएँ।</string>
+    <string name="err_image_too_many">एक संदेश में अधिकतम %1$d छवियाँ भेजी जा सकती हैं।</string>
+    <string name="err_image_batch_too_large">ये छवियाँ कुल मिलाकर %1$s से अधिक हैं। कुछ हटाकर फिर आज़माएँ।</string>
+    <string name="err_image_model_unsupported">यह मॉडल छवियाँ स्वीकार नहीं करता। ऐसा मॉडल चुनें जो करता हो।</string>
+    <string name="err_image_subagent_unsupported">सबएजेंट सत्र छवियाँ स्वीकार नहीं करते।</string>
+    <string name="err_image_send_failed">छवि भेजी नहीं जा सकी (%1$s)। इसे दोबारा जोड़कर फिर आज़माएँ।</string>
+    <string name="err_command_no_images">/%1$s छवि अनुलग्नक स्वीकार नहीं करता। पहले उन्हें हटाएँ।</string>
+    <string name="err_command_images_host">/%1$s केवल harness 0.1.0-rc.8 या उससे नए पर छवियाँ ले जा सकता है। पहले उन्हें हटाएँ।</string>
     <string name="err_permission_denied">यह कार्रवाई केवल Harness कंप्यूटर पर ही उपलब्ध है।</string>
     <string name="err_timeout">Harness ने समय पर उत्तर नहीं दिया।</string>
     <string name="err_generic">त्रुटि: %1$s</string>

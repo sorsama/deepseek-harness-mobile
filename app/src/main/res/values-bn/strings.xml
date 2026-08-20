@@ -255,6 +255,17 @@
     <string name="err_command_unknown">অজানা কমান্ড: %1$s</string>
     <string name="err_command_failed">কমান্ড ব্যর্থ হয়েছে: %1$s</string>
     <string name="err_attachment_failed">ছবিটি সংযুক্ত করা যায়নি।</string>
+    <string name="err_image_unsupported_type">কেবল PNG, JPG, WebP ও GIF ছবি সমর্থিত।</string>
+    <string name="err_image_too_large">প্রতিটি ছবি %1$s-এর কম হতে হবে।</string>
+    <string name="err_image_pixels">এই ছবির রেজোলিউশন খুব বেশি। সংকুচিত করে আবার চেষ্টা করুন।</string>
+    <string name="err_image_dimension">ছবির বাহু সর্বাধিক %1$dpx হতে পারে। ছোট করে আবার চেষ্টা করুন।</string>
+    <string name="err_image_too_many">একটি বার্তায় সর্বাধিক %1$dটি ছবি দেওয়া যায়।</string>
+    <string name="err_image_batch_too_large">এই ছবিগুলি মিলে %1$s ছাড়িয়ে গেছে। কয়েকটি সরিয়ে আবার চেষ্টা করুন।</string>
+    <string name="err_image_model_unsupported">এই মডেল ছবি নেয় না। এমন একটি মডেল বেছে নিন যেটি নেয়।</string>
+    <string name="err_image_subagent_unsupported">সাবএজেন্ট সেশন ছবি নেয় না।</string>
+    <string name="err_image_send_failed">ছবি পাঠানো যায়নি (%1$s)। আবার যুক্ত করে চেষ্টা করুন।</string>
+    <string name="err_command_no_images">/%1$s ছবি সংযুক্তি নেয় না। আগে সেগুলি সরান।</string>
+    <string name="err_command_images_host">/%1$s কেবল harness 0.1.0-rc.8 বা তার নতুন সংস্করণে ছবি বহন করতে পারে। আগে সেগুলি সরান।</string>
     <string name="err_permission_denied">এই কাজটি শুধুমাত্র Harness কম্পিউটারেই উপলব্ধ।</string>
     <string name="err_timeout">Harness সময়মতো উত্তর দেয়নি।</string>
     <string name="err_generic">ত্রুটি: %1$s</string>

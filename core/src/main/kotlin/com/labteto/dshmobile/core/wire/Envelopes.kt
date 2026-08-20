@@ -26,7 +26,7 @@ import kotlinx.serialization.json.put
 
 /**
  * The four wire full-form RPC message envelopes plus the result/error vocabulary, ported from
- * `packages/host/apiproxy/src/api/rpc.ts` and `rpc.schema.ts` (v0.1.0-rc.7).
+ * `packages/host/apiproxy/src/api/rpc.ts` and `rpc.schema.ts` (v0.1.0-rc.8).
  *
  * Wire forms:
  * - [ClientRequest]  — POST /api/<method> body (`type: "client-request"`).

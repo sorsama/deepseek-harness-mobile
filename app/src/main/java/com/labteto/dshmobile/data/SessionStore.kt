@@ -22,6 +22,9 @@ import com.labteto.dshmobile.core.wire.dto.AskUserQuestionIntent
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionItem
 import com.labteto.dshmobile.core.wire.dto.CUSTOM_PRESET
 import com.labteto.dshmobile.core.wire.dto.CommandDescriptor
+import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
+import com.labteto.dshmobile.core.wire.dto.ImageRejection
+import com.labteto.dshmobile.core.wire.dto.imageRejectionOf
 import com.labteto.dshmobile.core.wire.dto.ContentBlock
 import com.labteto.dshmobile.core.wire.dto.ContextBreakdownView
 import com.labteto.dshmobile.core.wire.dto.ContextPressureView
@@ -144,6 +147,22 @@ sealed interface CommandOutcome {
 
     /** The command ran and reported a usage or state failure. */
     data class Failed(val message: String) : CommandOutcome
+}
+
+/** What the harness did with a prompt. */
+sealed interface PromptOutcome {
+    /** Accepted; the turn is the transcript's business now. */
+    data object Ok : PromptOutcome
+
+    /**
+     * The host refused the images. Carried as its own case because it is a composer problem, not
+     * a connection problem: raising the persistent connection banner for an image that is 200px
+     * too wide tells the user their harness is broken when only their picture is.
+     */
+    data class Rejected(val rejection: ImageRejection, val reason: String?) : PromptOutcome
+
+    /** Anything else; the connection banner already carries [message]. */
+    data class Failed(val message: String) : PromptOutcome
 }
 
 /** What the harness did with an answer to a question request, or with a dismissal of one. */
@@ -1092,23 +1111,28 @@ class SessionStore @Inject constructor(
     suspend fun prompt(text: String, mode: String) =
         promptContent(mode, listOf(PromptContentPart.Text(text)))
 
-    /** Prompt with an attached raster image (bytes submitted base64, as the browser wire does). */
-    suspend fun promptWithImage(
+    /**
+     * Prompt with attached raster images (bytes submitted base64, as the browser wire does).
+     *
+     * All of them ride *one* call. `session.prompt` takes a list of content parts and the host
+     * admits that list as a single batch, which is where its per-message image count and
+     * aggregate-size limits live — sending one image per call, as this client used to, split one
+     * message into several and meant those two limits could never fire at all.
+     */
+    suspend fun promptWithImages(
         text: String,
         mode: String,
-        mediaType: String,
-        base64Data: String,
-        name: String? = null,
-    ) {
+        images: List<EncodedImageAttachment>,
+    ): PromptOutcome {
         val parts = mutableListOf<PromptContentPart>()
         if (text.isNotBlank()) parts.add(PromptContentPart.Text(text))
-        parts.add(PromptContentPart.Image(mediaType, base64Data, name))
-        promptContent(mode, parts)
+        images.mapTo(parts) { PromptContentPart.Image(it.mediaType, it.data, it.name) }
+        return promptContent(mode, parts)
     }
 
-    private suspend fun promptContent(mode: String, content: List<PromptContentPart>) {
-        val sid = currentSessionId.value ?: return
-        val api = apiOrNull() ?: return
+    private suspend fun promptContent(mode: String, content: List<PromptContentPart>): PromptOutcome {
+        val sid = currentSessionId.value ?: return PromptOutcome.Failed("no open session")
+        val api = apiOrNull() ?: return PromptOutcome.Failed("not connected")
         val safeMode = if (mode == "steer") "steer" else "queue"
         val zone = TimeZone.getDefault().id
         val request = SessionPromptRequest(
@@ -1117,9 +1141,18 @@ class SessionStore @Inject constructor(
             content = content,
             clientTimeZone = zone,
         )
-        when (val r = api.sessionPrompt(request)) {
-            is RpcResult.Ok -> Unit
-            is RpcResult.Err -> setConnectionError(r.error.message)
+        return when (val r = api.sessionPrompt(request)) {
+            is RpcResult.Ok -> PromptOutcome.Ok
+            is RpcResult.Err -> if (r.error.code == "attachment-error") {
+                // The host declined the pictures, not the connection. Report it where the pictures
+                // are so the composer can keep them and say which bound they crossed.
+                val reason = (r.error.details as? JsonObject)
+                    ?.get("reason")?.jsonPrimitive?.contentOrNull
+                PromptOutcome.Rejected(imageRejectionOf(reason.orEmpty()), reason)
+            } else {
+                setConnectionError(r.error.message)
+                PromptOutcome.Failed(r.error.message)
+            }
         }
     }
 
@@ -1433,7 +1466,7 @@ class SessionStore @Inject constructor(
     }
 
     /**
-     * Run one complete slash-command line.
+     * Run one complete slash-command line, optionally carrying the composer's images.
      *
      * The typert remote is the *only* command write path: `session.prompt` does not inspect its
      * content, so a leading-slash prompt reaches the model as ordinary user text (this store used
@@ -1443,11 +1476,19 @@ class SessionStore @Inject constructor(
      * The remote answers `undefined` when the line parses to no registered command, and the wire
      * codec folds an absent `value` slot into an empty object — so the discriminator is the
      * presence of `commandId`, not the emptiness of the value.
+     *
+     * [images] must be empty unless the command's descriptor declares it takes them and the host
+     * carries them at all — see `DshApiClient.acceptsCommandImages`. A host that admits them but
+     * whose handler will not use them (`/plan off`, `/goal pause`) answers with an ordinary error
+     * result, which is the harness's own division of labour and not worth mirroring here.
      */
-    suspend fun runCommand(line: String): CommandOutcome {
+    suspend fun runCommand(
+        line: String,
+        images: List<EncodedImageAttachment> = emptyList(),
+    ): CommandOutcome {
         val sid = currentSessionId.value ?: return CommandOutcome.Failed("no open session")
         val api = apiOrNull() ?: return CommandOutcome.Failed("not connected")
-        return when (val r = api.commandsExecute(sid, line)) {
+        return when (val r = api.commandsExecute(sid, line, images)) {
             is RpcResult.Ok -> {
                 val execution = r.value as? JsonObject
                 val commandId = execution?.get("commandId")
@@ -1464,6 +1505,9 @@ class SessionStore @Inject constructor(
                 }
             }
             is RpcResult.Err -> when (r.error.code) {
+                // The images were refused, by the host or by the client's own guard. A composer
+                // problem, so it must not raise the connection banner.
+                "attachment-error" -> CommandOutcome.Failed(r.error.message)
                 // No command gateway in this build (404) or the trust fence refused it (403).
                 // Neither is a connection fault, so the menu retires rather than the session.
                 "capability-unavailable", "forbidden" -> {
@@ -1630,6 +1674,14 @@ class SessionStore @Inject constructor(
         is SubagentListEntry.Diagnostic -> entry.id
         is UnknownSubagentListEntry -> null
     }
+
+    /**
+     * Whether this connection's harness carries images on a slash command (harness 0.1.0-rc.8).
+     *
+     * Read at submit time rather than observed: the value is latched during the handshake, long
+     * before any command can be dispatched, and it never changes within a connection.
+     */
+    val commandImagesSupported: Boolean get() = connectionManager.connectedApi?.acceptsCommandImages == true
 
     private fun apiOrNull(): DshApiClient? {
         val api = connectionManager.connectedApi

@@ -5,6 +5,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.InputStream
@@ -57,6 +59,14 @@ class ConnectionLoopHandshakeTest {
     }
 
     private fun describeOk() = RpcHttpResponse(
+        200,
+        """{"type":"server-response","rpcId":"r","result":{"ok":true,"value":""" +
+            """{"version":"0.1.0-rc.8","cwd":"/tmp","attachedSessions":0,"home":"/home/demo",""" +
+            """"canOpenPath":false}}}""",
+    )
+
+    /** A pre-0.1.0-rc.8 host: the same value with the field that release made required removed. */
+    private fun describeRc7() = RpcHttpResponse(
         200,
         """{"type":"server-response","rpcId":"r","result":{"ok":true,"value":""" +
             """{"version":"0.1.0-rc.7","cwd":"/tmp","attachedSessions":0,"canOpenPath":false}}}""",
@@ -156,7 +166,39 @@ class ConnectionLoopHandshakeTest {
         loop.stop()
 
         assertEquals(listOf(HandshakeStep.OPENING_STREAMS, HandshakeStep.DESCRIBING), recorder.steps.take(2))
-        assertEquals("0.1.0-rc.7", recorder.connected.first().version)
+        assertEquals("0.1.0-rc.8", recorder.connected.first().version)
+        assertEquals("/home/demo", recorder.connected.first().home)
         assertTrue(recorder.failures.isEmpty())
+    }
+
+    @Test
+    fun `a host predating the home field still connects`() = runBlocking {
+        // `home` became required in 0.1.0-rc.8. Declaring it non-null on this side would have
+        // turned every older harness into "not a harness" at the one step that decides whether
+        // the app connects at all, so its absence has to stay a fact rather than a failure.
+        val recorder = Recorder()
+        val loop = loop(recorder, open = { it.onOpen() }, describe = ::describeRc7)
+        loop.start()
+        assertTrue(await { recorder.connected.isNotEmpty() })
+        loop.stop()
+
+        assertEquals("0.1.0-rc.7", recorder.connected.first().version)
+        assertNull(recorder.connected.first().home)
+        assertTrue(recorder.failures.isEmpty())
+    }
+
+    @Test
+    fun `the describe answer decides which command shape this connection sends`() = runBlocking {
+        // The one place the client has to choose what to *send* rather than what to ignore:
+        // `commands/execute` gained a required `images` argument in 0.1.0-rc.8 and the gateway
+        // refuses an args object that does not match its descriptor in either direction.
+        val rc8 = DshApiClient(StubTransport(::describeOk)) { _, sink -> FakeWs(sink) { } }
+        assertFalse("undecided until the host answers", rc8.acceptsCommandImages)
+        assertTrue(rc8.hostDescribe() is RpcResult.Ok)
+        assertTrue(rc8.acceptsCommandImages)
+
+        val rc7 = DshApiClient(StubTransport(::describeRc7)) { _, sink -> FakeWs(sink) { } }
+        assertTrue(rc7.hostDescribe() is RpcResult.Ok)
+        assertFalse(rc7.acceptsCommandImages)
     }
 }

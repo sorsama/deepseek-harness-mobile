@@ -25,7 +25,7 @@ import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Downlink stream frame unions, ported exactly from `packages/host/apiproxy/src/api/events.ts`
- * (v0.1.0-rc.7). A frame is the payload slot of a downstream ServerRequest; dispatch on `type`.
+ * (v0.1.0-rc.8). A frame is the payload slot of a downstream ServerRequest; dispatch on `type`.
  * Unknown frame kinds fall back to [UnknownMuxFrame] / [UnknownHostFrame] preserving the raw JSON.
  */
 

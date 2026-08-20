@@ -19,8 +19,10 @@ import kotlinx.serialization.json.longOrNull
  *  - assistant streaming: `assistant/chunk` deltas merge per block index;
  *    `block-end` carries the assembled block; `assistant/message` is the
  *    commit point (and authoritative when no chunks were seen).
- *  - `turn/end` with reason kind `interrupted`/`aborted` marks the open
- *    assistant node of that turn.
+ *  - interruption: harness 0.1.0-rc.8 marks a cancelled turn's finalized prefix
+ *    on the `assistant/message` itself, and that wins; a `turn/end` whose reason
+ *    kind is `interrupted`/`aborted`/`error` marks the turn's assistant node
+ *    otherwise, which is all an rc.7 host gives.
  *  - unknown event types become [OtherNode] (merge-extensible contract).
  *
  * The fold is pure: same events → same snapshot.
@@ -138,6 +140,11 @@ private class FoldState(private val sessionId: String) {
                 val message = data.jsonObject["message"]?.jsonObject
                 val messageId = message?.get("id")?.jsonPrimitive?.contentOrNull
                 val usage = data.jsonObject["usage"]
+                // Harness 0.1.0-rc.8 finalises a cancelled turn's delivered prefix as an ordinary
+                // `assistant/message` carrying this marker, which is authoritative. Before rc.8
+                // the host appended nothing at all and the prefix was simply lost, so the absence
+                // of the key is not "not interrupted" — see markInterrupted.
+                val interrupted = data.jsonObject["interrupted"]?.jsonPrimitive?.booleanOrNull ?: false
                 val key = key(turn, step)
                 val open = openByKey[key]
                 val blocks = when {
@@ -146,7 +153,9 @@ private class FoldState(private val sessionId: String) {
                 }
                 openByKey.remove(key)
                 if (nodes.none { it is AssistantMessageNode && it.seq == event.seq }) {
-                    nodes.add(AssistantMessageNode(event.seq, messageId, turn, step, blocks, usage))
+                    nodes.add(
+                        AssistantMessageNode(event.seq, messageId, turn, step, blocks, usage, interrupted),
+                    )
                 }
             }
 
@@ -307,7 +316,17 @@ private class FoldState(private val sessionId: String) {
         }
     }
 
+    /**
+     * Mark the turn's assistant answer as cut short, inferred from how the turn ended.
+     *
+     * This is the pre-rc.8 source of the fact and stays the only one an rc.7 host offers. When
+     * rc.8 marked the message itself, that marker is authoritative and this adds nothing, so it
+     * stands aside rather than re-marking. It does not — and from a pure fold cannot — fix the
+     * case where a turn is cancelled between steps: no message exists for the cancelled step, so
+     * the search lands on the previous, complete one. That was equally true before rc.8.
+     */
     private fun markInterrupted(turn: Int) {
+        if (nodes.any { it is AssistantMessageNode && it.turn == turn && it.interrupted }) return
         val index = nodes.indexOfLast { it is AssistantMessageNode && it.turn == turn }
         if (index >= 0) {
             val node = nodes[index] as AssistantMessageNode

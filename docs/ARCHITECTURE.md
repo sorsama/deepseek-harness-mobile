@@ -80,4 +80,4 @@ tools/capture/  Node recorder of real harness traffic → conformance fixtures
 - Settings/credentials/host-native methods are loopback-only by harness
   design; over LAN the app surfaces them read-only (see
   `docs/COMPATIBILITY.md`).
-- Protocol baseline: harness `0.1.0-rc.7` (`core.DshCore.PROTOCOL_BASELINE`).
+- Protocol baseline: harness `0.1.0-rc.8` (`core.DshCore.PROTOCOL_BASELINE`).

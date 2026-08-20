@@ -255,6 +255,17 @@
     <string name="err_command_unknown">Comando desconocido: %1$s</string>
     <string name="err_command_failed">El comando falló: %1$s</string>
     <string name="err_attachment_failed">No se pudo adjuntar esa imagen.</string>
+    <string name="err_image_unsupported_type">Solo se admiten imágenes PNG, JPG, WebP y GIF.</string>
+    <string name="err_image_too_large">Cada imagen debe pesar menos de %1$s.</string>
+    <string name="err_image_pixels">Esa imagen tiene una resolución demasiado alta. Comprímela e inténtalo de nuevo.</string>
+    <string name="err_image_dimension">Los lados de la imagen no pueden superar los %1$dpx. Redúcela e inténtalo de nuevo.</string>
+    <string name="err_image_too_many">Un mensaje puede incluir como máximo %1$d imágenes.</string>
+    <string name="err_image_batch_too_large">Estas imágenes suman más de %1$s. Quita algunas e inténtalo de nuevo.</string>
+    <string name="err_image_model_unsupported">Este modelo no acepta imágenes. Cambia a uno que sí las acepte.</string>
+    <string name="err_image_subagent_unsupported">Las sesiones de subagente no aceptan imágenes.</string>
+    <string name="err_image_send_failed">No se pudo enviar la imagen (%1$s). Vuelve a adjuntarla e inténtalo de nuevo.</string>
+    <string name="err_command_no_images">/%1$s no acepta imágenes adjuntas. Quítalas primero.</string>
+    <string name="err_command_images_host">/%1$s solo puede llevar imágenes en harness 0.1.0-rc.8 o posterior. Quítalas primero.</string>
     <string name="err_permission_denied">Esta acción solo está disponible en el propio ordenador del Harness.</string>
     <string name="err_timeout">El Harness no respondió a tiempo.</string>
     <string name="err_generic">Error: %1$s</string>

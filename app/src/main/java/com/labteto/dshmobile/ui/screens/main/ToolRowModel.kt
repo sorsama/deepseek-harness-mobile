@@ -3,6 +3,8 @@ package com.labteto.dshmobile.ui.screens.main
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 /**
@@ -54,7 +56,9 @@ private val TOOL_VARIANTS: Map<String, ToolRowVariant> = mapOf(
 private val SUMMARY_KEYS: Map<ToolRowVariant, List<String>> = mapOf(
     ToolRowVariant.Bash to listOf("description", "command"),
     ToolRowVariant.Read to listOf("path", "file_path", "url"),
-    ToolRowVariant.Search to listOf("query", "pattern", "url"),
+    // `queries` first: harness 0.1.0-rc.8 turned `web_search` into a 1-4 query array, and an
+    // rc.7 host still sends the singular `query` that grep and glob use anyway.
+    ToolRowVariant.Search to listOf("queries", "query", "pattern", "url"),
     ToolRowVariant.Write to listOf("path", "file_path"),
     ToolRowVariant.Edit to listOf("path", "file_path"),
     ToolRowVariant.Code to listOf("description"),
@@ -110,7 +114,7 @@ internal fun toolRowModel(
     val arguments = parseArguments(argumentsJson)
     val derived = SUMMARY_KEYS[variant]
         .orEmpty()
-        .firstNotNullOfOrNull { key -> arguments?.get(key).asString()?.takeIf { it.isNotBlank() } }
+        .firstNotNullOfOrNull { key -> arguments?.get(key).asSummary()?.takeIf { it.isNotBlank() } }
     val relative = derived?.let { relativizeToCwd(it, cwd) }
     // An unclassified tool with no presenter title would otherwise render as a bare "Tool call"
     // with nothing identifying it, so its raw name carries the summary instead.
@@ -148,6 +152,18 @@ private fun filePathOf(variant: ToolRowVariant, arguments: JsonObject?): String?
     ToolRowVariant.Read, ToolRowVariant.Write, ToolRowVariant.Edit ->
         listOf("path", "file_path").firstNotNullOfOrNull { arguments?.get(it).asString() }
     else -> null
+}
+
+/**
+ * The identifying argument as one line. A plain string is itself; an array of strings is joined
+ * the way the harness's own presenter joins `web_search`'s queries, so a multi-query search reads
+ * as one row rather than losing its subject entirely.
+ */
+private fun JsonElement?.asSummary(): String? = when (this) {
+    is JsonArray -> mapNotNull { it.asString()?.takeIf(String::isNotBlank) }
+        .takeIf { it.isNotEmpty() }
+        ?.joinToString(", ")
+    else -> asString()
 }
 
 /** Tool arguments arrive as a raw JSON string; a malformed one simply yields no summary. */

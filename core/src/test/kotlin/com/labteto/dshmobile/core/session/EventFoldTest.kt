@@ -85,6 +85,64 @@ class EventFoldTest {
     }
 
     @Test
+    fun interruptedMarkerOnTheMessageIsHonoured() {
+        // Harness 0.1.0-rc.8 finalises a cancelled turn's delivered prefix as a real message and
+        // marks it, so the text survives and the badge is right before the turn has even ended.
+        val events = listOf(
+            event("turn/start", 0, buildJsonObject { put("turn", 2) }),
+            event("assistant/message", 1, buildJsonObject {
+                put("turn", 2); put("step", 1); put("interrupted", true)
+                putJsonObject("message") {
+                    put("id", "a2")
+                    putJsonArray("content") {
+                        add(buildJsonObject { put("type", "text"); put("text", "as far as I got") })
+                    }
+                }
+            }),
+        )
+        val snapshot = EventFold("s1").fold(events)
+        val assistant = snapshot.nodes.first { it is AssistantMessageNode } as AssistantMessageNode
+        assertTrue(assistant.interrupted)
+        assertEquals("as far as I got", assistant.plainText)
+    }
+
+    @Test
+    fun theMarkedMessageIsNotRemarkedByTheTurnEnding() {
+        // Both sources agree here; the point is that the fallback stands aside rather than
+        // walking the turn again and possibly landing on a different, complete message.
+        val events = listOf(
+            event("turn/start", 0, buildJsonObject { put("turn", 3) }),
+            event("assistant/message", 1, buildJsonObject {
+                put("turn", 3); put("step", 1)
+                putJsonObject("message") {
+                    put("id", "done")
+                    putJsonArray("content") {
+                        add(buildJsonObject { put("type", "text"); put("text", "first step") })
+                    }
+                }
+            }),
+            event("assistant/message", 2, buildJsonObject {
+                put("turn", 3); put("step", 2); put("interrupted", true)
+                putJsonObject("message") {
+                    put("id", "cut")
+                    putJsonArray("content") {
+                        add(buildJsonObject { put("type", "text"); put("text", "second step, cut") })
+                    }
+                }
+            }),
+            event("turn/end", 3, buildJsonObject {
+                put("turn", 3)
+                putJsonObject("reason") { put("kind", "interrupted") }
+            }),
+        )
+        val snapshot = EventFold("s1").fold(events)
+        val assistants = snapshot.nodes.filterIsInstance<AssistantMessageNode>()
+        assertEquals(2, assistants.size)
+        assertFalse(assistants.first().interrupted)
+        assertTrue(assistants.last().interrupted)
+    }
+
+    @Test
     fun unknownEventBecomesOtherNode() {
         val events = listOf(
             event("mystery/event", 0, buildJsonObject { put("x", 1) }),

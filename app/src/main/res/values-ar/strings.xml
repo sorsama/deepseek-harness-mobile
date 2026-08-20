@@ -255,6 +255,17 @@
     <string name="err_command_unknown">أمر غير معروف: %1$s</string>
     <string name="err_command_failed">فشل الأمر: %1$s</string>
     <string name="err_attachment_failed">تعذر إرفاق هذه الصورة.</string>
+    <string name="err_image_unsupported_type">لا تُدعم سوى صور PNG وJPG وWebP وGIF.</string>
+    <string name="err_image_too_large">يجب أن يكون حجم كل صورة أقل من %1$s.</string>
+    <string name="err_image_pixels">دقة هذه الصورة عالية جدًا. اضغطها ثم أعد المحاولة.</string>
+    <string name="err_image_dimension">يجب ألا يتجاوز طول ضلع الصورة %1$dpx. صغّرها ثم أعد المحاولة.</string>
+    <string name="err_image_too_many">يمكن أن تتضمن الرسالة %1$d صور كحد أقصى.</string>
+    <string name="err_image_batch_too_large">يتجاوز مجموع هذه الصور %1$s. أزل بعضها ثم أعد المحاولة.</string>
+    <string name="err_image_model_unsupported">هذا النموذج لا يقبل الصور. بدّل إلى نموذج يقبلها.</string>
+    <string name="err_image_subagent_unsupported">جلسات الوكيل الفرعي لا تقبل الصور.</string>
+    <string name="err_image_send_failed">تعذّر إرسال الصورة (%1$s). أعد إرفاقها ثم حاول مجددًا.</string>
+    <string name="err_command_no_images">/%1$s لا يقبل الصور المرفقة. أزلها أولًا.</string>
+    <string name="err_command_images_host">/%1$s لا يمكنه حمل الصور إلا على harness 0.1.0-rc.8 أو أحدث. أزلها أولًا.</string>
     <string name="err_permission_denied">هذا الإجراء متاح فقط على جهاز كمبيوتر Harness نفسه.</string>
     <string name="err_timeout">لم يجب Harness في الوقت المحدد.</string>
     <string name="err_generic">خطأ: %1$s</string>

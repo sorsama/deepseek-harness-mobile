@@ -57,6 +57,7 @@ import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.dto.ContextBreakdownView
 import com.labteto.dshmobile.core.wire.dto.ContextPressureView
 import com.labteto.dshmobile.core.wire.dto.FULL_ACCESS_PRESET
+import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
 import com.labteto.dshmobile.core.wire.dto.PermissionSelect
 import com.labteto.dshmobile.core.wire.dto.displayPermissionPreset
 import com.labteto.dshmobile.ui.components.ContextMeter
@@ -67,13 +68,25 @@ import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 
-/** A picked image waiting to be sent, held with its decoded preview. */
+/**
+ * A picked image waiting to be sent, held with its decoded preview.
+ *
+ * [bytes], [width] and [height] are the encoded size and intrinsic dimensions the picker already
+ * had to learn to admit the image; keeping them means the *next* pick can be measured against the
+ * message's running totals without decoding everything already attached a second time.
+ */
 internal data class PendingAttachment(
     val mediaType: String,
     val base64: String,
     val preview: ImageBitmap?,
+    val bytes: Int,
+    val width: Int,
+    val height: Int,
     val name: String? = null,
-)
+) {
+    /** The wire form `session.prompt` and `commands/execute` both carry. */
+    fun encoded(): EncodedImageAttachment = EncodedImageAttachment(mediaType, base64, name)
+}
 
 /**
  * The message composer, laid out like the harness's own: the `+` and the permission chip on the

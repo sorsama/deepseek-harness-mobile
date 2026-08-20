@@ -3,10 +3,13 @@ package com.labteto.dshmobile.core.wire
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import kotlinx.coroutines.test.runTest
+import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -56,7 +59,11 @@ class DshApiClientRemoteTest {
     fun `commands list posts a client-request envelope with agentId in args`() = runTest {
         val transport = RecordingTransport { _, body ->
             val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
-            ok(rpcId, """[{"name":"permission","description":"Switch","input":{"hint":"<preset>"}}]""")
+            ok(
+                rpcId,
+                """[{"name":"permission","description":"Switch","input":{"hint":"<preset>"}},""" +
+                    """{"name":"goal","description":"Set","input":{"hint":"<objective>","images":true}}]""",
+            )
         }
         val result = client(transport).commandsList("session-1")
 
@@ -73,24 +80,100 @@ class DshApiClientRemoteTest {
         assertEquals("session-1", args["agentId"]!!.jsonPrimitive.content)
 
         val commands = (result as RpcResult.Ok).value
-        assertEquals(1, commands.size)
+        assertEquals(2, commands.size)
         assertEquals("permission", commands.first().name)
         assertEquals("<preset>", commands.first().input?.hint)
+        // `input.images` arrived in 0.1.0-rc.8 and is only ever sent as true, so a descriptor
+        // without the key is a command that takes none — which is every command before rc.8.
+        assertFalse(commands.first().acceptsImages)
+        assertTrue(commands.last().acceptsImages)
+    }
+
+    /**
+     * A `host.describe` answer, which is also what decides this connection's `commands/execute`
+     * argument shape. Pass `home = null` for a harness older than 0.1.0-rc.8.
+     */
+    private fun describeBody(rpcId: String, home: String?) = ok(
+        rpcId,
+        """{"version":"v","cwd":"/w","attachedSessions":0,""" +
+            (if (home == null) "" else """"home":"$home",""") +
+            """"canOpenPath":true}""",
+    )
+
+    /** A client that has already described the host, so its command shape is decided. */
+    private suspend fun describedClient(transport: RecordingTransport): DshApiClient {
+        val api = client(transport)
+        assertTrue(api.hostDescribe() is RpcResult.Ok)
+        return api
     }
 
     @Test
-    fun `commands execute sends agentId and line`() = runTest {
-        val transport = RecordingTransport { _, body ->
+    fun `a pre-rc8 host is sent the two-argument command shape it declares`() = runTest {
+        val transport = RecordingTransport { path, body ->
             val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
-            ok(rpcId, "{}")
+            if (path.endsWith("host.describe")) describeBody(rpcId, null) else ok(rpcId, "{}")
         }
-        client(transport).commandsExecute("session-2", "/permission workspace-write")
+        describedClient(transport).commandsExecute("session-2", "/permission workspace-write")
 
         val args = Json.parseToJsonElement(transport.lastBody!!)
             .jsonObject["payload"]!!.jsonObject["args"]!!.jsonObject
+        // `images` is not merely unnecessary here — the gateway refuses an argument its descriptor
+        // does not declare, so sending it would fail every slash command against this harness.
         assertEquals(setOf("agentId", "line"), args.keys)
         assertEquals("session-2", args["agentId"]!!.jsonPrimitive.content)
         assertEquals("/permission workspace-write", args["line"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun `an rc8 host is sent images even when there are none`() = runTest {
+        val transport = RecordingTransport { path, body ->
+            val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
+            if (path.endsWith("host.describe")) describeBody(rpcId, "/home/demo") else ok(rpcId, "{}")
+        }
+        describedClient(transport).commandsExecute("session-2", "/compact")
+
+        val args = Json.parseToJsonElement(transport.lastBody!!)
+            .jsonObject["payload"]!!.jsonObject["args"]!!.jsonObject
+        // Required from 0.1.0-rc.8: omitting it is refused exactly as an unexpected key would be.
+        assertEquals(setOf("agentId", "line", "images"), args.keys)
+        assertEquals(0, args["images"]!!.jsonArray.size)
+    }
+
+    @Test
+    fun `an rc8 host carries the composer's images on the command`() = runTest {
+        val transport = RecordingTransport { path, body ->
+            val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
+            if (path.endsWith("host.describe")) describeBody(rpcId, "/home/demo") else ok(rpcId, "{}")
+        }
+        describedClient(transport).commandsExecute(
+            "session-2",
+            "/goal ship it",
+            listOf(EncodedImageAttachment("image/png", "AAAA")),
+        )
+
+        val args = Json.parseToJsonElement(transport.lastBody!!)
+            .jsonObject["payload"]!!.jsonObject["args"]!!.jsonObject
+        val image = args["images"]!!.jsonArray.single().jsonObject
+        assertEquals("image/png", image["mediaType"]!!.jsonPrimitive.content)
+        assertEquals("AAAA", image["data"]!!.jsonPrimitive.content)
+        // explicitNulls = false: an absent display name is an absent key, not a null one.
+        assertEquals(setOf("mediaType", "data"), image.keys)
+    }
+
+    @Test
+    fun `images sent to a host that cannot carry them are refused, not dropped`() = runTest {
+        val transport = RecordingTransport { path, body ->
+            val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
+            if (path.endsWith("host.describe")) describeBody(rpcId, null) else ok(rpcId, "{}")
+        }
+        val result = describedClient(transport).commandsExecute(
+            "session-2",
+            "/goal ship it",
+            listOf(EncodedImageAttachment("image/png", "AAAA")),
+        )
+
+        // Running the command without the pictures the user attached to it would look like success.
+        assertEquals("capability-unavailable", (result as RpcResult.Err).error.code)
     }
 
     @Test

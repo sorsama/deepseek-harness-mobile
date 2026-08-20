@@ -44,6 +44,8 @@ DSH_URL=http://192.168.1.20:3080 DSH_SECONDS=10 node tools/capture/capture.mjs
    result, saves `capture-output/session.list.json`.
 3. If sessions exist, `POST /api/session.history` for the **first** session with
    `maxMessages: 200` — prints the result, saves `capture-output/session.history.json`.
+   Then `POST /api/commands/list` for the same session, saved as
+   `capture-output/commands.list.json`.
 4. Opens `ws://…/api/events.mux` and `ws://…/api/events.host` and logs every pushed
    frame as one NDJSON line for `DSH_SECONDS` seconds.
 
@@ -58,7 +60,8 @@ All files live under `capture-output/` (root of the repo; already in `.gitignore
 | ----------------------- | ------------------------------------------------------------------------------------------------- |
 | `host.describe.json`    | `{"request": <client-request envelope>, "response": <server-response envelope>}`                  |
 | `session.list.json`     | Same wrapper for the session list call.                                                           |
-| `session.history.json`  | Same wrapper for the first session's history (only written when sessions exist).                  |
+| `session.history.json`  | Same wrapper for the first session's history (only written when sessions exist). Its `projections` tail block is where `imageLimits` shows up. |
+| `commands.list.json`    | Same wrapper for the session's command catalog — the only live view of which commands declare `input.images`. |
 | `events.mux.ndjson`     | One line per pushed mux frame: `{"request": null, "response": <server-request frame>}`            |
 | `events.host.ndjson`    | One line per pushed host frame: `{"request": null, "response": <server-request frame>}`           |
 

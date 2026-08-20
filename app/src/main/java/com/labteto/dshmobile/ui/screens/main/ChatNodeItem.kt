@@ -210,7 +210,10 @@ internal val STRUCTURAL_EVENT_TYPES = setOf(
 private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContext) {
     val colors = DsTheme.colors
     val isLast = context.nodes.lastOrNull()?.seq == node.seq
-    val streaming = context.running && isLast
+    // A message the harness marked as a cancelled turn's prefix arrives before that turn's end,
+    // so `running` is still true for a frame. Without this the last thing the user sees after
+    // tapping stop is the answer apparently still being written.
+    val streaming = context.running && isLast && !node.interrupted
     val reasoningExpanded = remember(node.seq) { mutableStateMapOf<Int, Boolean>() }
     var actionsVisible by remember(node.seq) { mutableStateOf(false) }
 

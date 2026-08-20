@@ -250,6 +250,9 @@ class ConnectionLoop(
             )
         }
 
+        // Describing is the last handshake step, and DshApiClient.hostDescribe latches this
+        // connection's command-image capability from the answer — so by the time anyone can
+        // reach a command through this client, its `commands/execute` shape is already decided.
         safeSink { sinks.onHandshakeStep(HandshakeStep.DESCRIBING) }
         return when (val describe = api.hostDescribe()) {
             is RpcResult.Ok -> Opened.Ok(

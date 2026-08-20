@@ -8,6 +8,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.AfterClass
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.BeforeClass
 import org.junit.Test
@@ -58,10 +59,62 @@ class MockHarnessTest {
         val result = body["result"]!!.jsonObject
         assertTrue(result["ok"]!!.jsonPrimitive.boolean)
         val value = result["value"]!!.jsonObject
-        assertEquals("0.1.0-rc.7", value["version"]!!.jsonPrimitive.content)
+        assertEquals("0.1.0-rc.8", value["version"]!!.jsonPrimitive.content)
         assertEquals("C:\\demo", value["cwd"]!!.jsonPrimitive.content)
         assertEquals(0, value["attachedSessions"]!!.jsonPrimitive.int)
+        // Required from 0.1.0-rc.8, and the field the client reads to decide which
+        // `commands/execute` shape this host accepts.
+        assertEquals("C:\\Users\\demo", value["home"]!!.jsonPrimitive.content)
         assertTrue(value["canOpenPath"]!!.jsonPrimitive.boolean)
+    }
+
+    @Test
+    fun aRemoteHeldToItsDescriptorRefusesTheWrongArgumentShape() {
+        // The gateway refuses an args object that does not match its descriptor, for a missing key
+        // as readily as an unexpected one. That is the whole reason `commands/execute` cannot be
+        // written once for every harness release, so the mock has to say no the same way.
+        harness.remote("commands", "execute", setOf("agentId", "line", "images")) {
+            Json.parseToJsonElement("""{"commandId":"c1"}""")
+        }
+
+        val accepted = post(
+            "/api/commands/execute",
+            envelope("commands/execute", """{"args":{"agentId":"s1","line":"/compact","images":[]}}"""),
+        )
+        val acceptedResult = Json.parseToJsonElement(accepted.body()).jsonObject["result"]!!.jsonObject
+        assertTrue(acceptedResult["ok"]!!.jsonPrimitive.boolean)
+
+        val refused = post(
+            "/api/commands/execute",
+            envelope("commands/execute", """{"args":{"agentId":"s1","line":"/compact"}}"""),
+        )
+        val refusedResult = Json.parseToJsonElement(refused.body()).jsonObject["result"]!!.jsonObject
+        assertFalse(refusedResult["ok"]!!.jsonPrimitive.boolean)
+        val error = refusedResult["error"]!!.jsonObject
+        assertEquals("internal", error["code"]!!.jsonPrimitive.content)
+        assertTrue(error["message"]!!.jsonPrimitive.content.contains("missing"))
+
+        val unexpected = post(
+            "/api/commands/execute",
+            envelope(
+                "commands/execute",
+                """{"args":{"agentId":"s1","line":"/compact","images":[],"mode":"queue"}}""",
+            ),
+        )
+        val unexpectedResult = Json.parseToJsonElement(unexpected.body()).jsonObject["result"]!!.jsonObject
+        assertFalse(unexpectedResult["ok"]!!.jsonPrimitive.boolean)
+        assertTrue(
+            unexpectedResult["error"]!!.jsonObject["message"]!!.jsonPrimitive.content
+                .contains("unexpected"),
+        )
+    }
+
+    @Test
+    fun theImageLimitsProjectionCarriesThePerSideBound() {
+        val limits = harness.imageLimitsValue()
+        // 0.1.0-rc.8 added the per-side cap and lowered the per-image byte cap to 3.5MB.
+        assertEquals(2_000, limits["maxImageDimension"]!!.jsonPrimitive.int)
+        assertEquals(3_670_016, limits["maxImageBytes"]!!.jsonPrimitive.int)
     }
 
     @Test

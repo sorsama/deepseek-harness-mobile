@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * LLM-domain DTOs, ported from `packages/host/apiproxy/src/api/llm.schema.ts` and
- * `packages/host/apiproxy/src/api/llm.ts` (v0.1.0-rc.7). The model catalog shapes
+ * `packages/host/apiproxy/src/api/llm.ts` (v0.1.0-rc.8). The model catalog shapes
  * (ModelProviderGroup / ModelCatalogFailure) live in SessionsDtos.
  */
 

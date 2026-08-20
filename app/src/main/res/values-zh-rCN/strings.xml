@@ -255,6 +255,17 @@
     <string name="err_command_unknown">未知命令：%1$s</string>
     <string name="err_command_failed">命令失败：%1$s</string>
     <string name="err_attachment_failed">无法附加该图片。</string>
+    <string name="err_image_unsupported_type">仅支持 PNG、JPG、WebP、GIF 格式的图片。</string>
+    <string name="err_image_too_large">单张图片不能超过 %1$s。</string>
+    <string name="err_image_pixels">该图片分辨率过大，请压缩后重试。</string>
+    <string name="err_image_dimension">图片宽高不能超过 %1$dpx，请缩小后重试。</string>
+    <string name="err_image_too_many">一条消息最多添加 %1$d 张图片。</string>
+    <string name="err_image_batch_too_large">图片总大小超过 %1$s，请移除部分图片。</string>
+    <string name="err_image_model_unsupported">当前模型不支持图片，请切换支持图片的模型。</string>
+    <string name="err_image_subagent_unsupported">子智能体会话暂不支持图片。</string>
+    <string name="err_image_send_failed">图片发送失败（%1$s），请重新添加后再试。</string>
+    <string name="err_command_no_images">/%1$s 不接受图片附件，请先移除图片。</string>
+    <string name="err_command_images_host">/%1$s 只能在 harness 0.1.0-rc.8 及更新版本上携带图片，请先移除图片。</string>
     <string name="err_permission_denied">此操作仅在 Harness 所在电脑上可用。</string>
     <string name="err_timeout">Harness 未及时响应。</string>
     <string name="err_generic">错误：%1$s</string>

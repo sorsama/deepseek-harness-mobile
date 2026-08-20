@@ -3,6 +3,83 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [0.5.0] - 2026-08-20
+
+The baseline moves to harness **0.1.0-rc.8**, and this one is a migration rather
+than a re-verification. The previous move, rc.5 → rc.7, touched nothing on the
+wire at all; this one changes a call's arguments, adds a required field to two
+shapes, and gives slash commands something they never had — the ability to carry
+a picture.
+
+### Fixed
+
+- **Every slash command was about to stop working.** rc.8 gave
+  `commands/execute` a third argument, `images`, and the harness's gateway
+  matches an args object against the method it is calling *exactly* — it refuses
+  a missing key as readily as an unexpected one. This client sent two arguments,
+  so against an rc.8 harness `/compact`, `/plan`, the permission picker and the
+  feedback buttons would each have failed, and — because an unrecognised error
+  code is treated as a broken link — each failure would also have raised the red
+  connection banner over a session that was perfectly healthy. The client now
+  sends the shape the host in front of it actually declares. It works out which
+  by looking for `host.describe.home`, a field rc.8 made required and rc.7 never
+  sent, rather than by comparing version strings: the app has never been willing
+  to branch on a version string, and a fork or a downstream build deserves to be
+  judged on what it sends. Both releases keep working.
+- **A stopped answer used to vanish.** Tapping stop mid-reply discarded every
+  word the model had already written: nothing was ever committed for a cancelled
+  step, so the transcript closed over the gap as if the turn had never spoken.
+  rc.8 finalises that prefix as a real message and marks it, and the client now
+  reads the mark. It also stops the last complete message of a multi-step turn
+  from being labelled interrupted when it was the *next* step that got cut.
+- **Attaching several images made several messages.** The prompt call takes a
+  list of content parts and the harness admits that list as one batch — this
+  client was sending one call per picture, so four images became four separate
+  user messages, and the host's own per-message limits on image count and total
+  size could never fire at all. One message is now one call.
+- `web_search` rows in the transcript went blank. rc.8 replaced the tool's single
+  `query` with a `queries` array of up to four, and a row reading only the old key
+  found nothing left to show; it now reads either, and lists them.
+
+### Added
+
+- **`/goal` and `/plan` take image attachments.** Type the command with pictures
+  attached and they ride along — into the goal's objective, or into the message
+  that opens plan mode.
+- **A command that cannot take your pictures now says so.** Before, attaching an
+  image to `/compact` silently demoted the whole line to a prompt: the literal
+  text `/compact` went to the model, the command never ran, and nothing on screen
+  explained why. It is refused instead, with the draft and the images both left
+  where they were so the refusal is something you can act on.
+- **Images are checked against every bound the host publishes, before upload.**
+  The count, the total size, the file size, the resolution and — new in rc.8 —
+  the 2000px per-side limit. Three of those five were being received and ignored,
+  and the per-side one did not exist. A refused picture now names the limit it
+  crossed rather than reading "Could not attach that image", and so does a
+  refusal that still comes back from the harness: the same sentences serve both,
+  so it does not matter to you which side said no.
+- The picker also catches a file whose contents contradict its extension — a JPEG
+  named `.png` — which the harness would have rejected after the round trip.
+
+### Changed
+
+- Protocol baseline moves to harness **0.1.0-rc.8**. What moved on the wire:
+  `host.describe` gained a required `home`; the `imageLimits` projection gained a
+  required `maxImageDimension`; `commands/execute` gained a required `images`
+  argument; command descriptors gained an optional `input.images`;
+  `assistant/message` gained an optional `interrupted`; `web_search` swapped
+  `query` for `queries`. Four `team/*` event types were added for an experimental
+  feature no shipped harness composes, and they pass through as unknown events
+  the way anything unfamiliar does.
+- The shipped per-image limit is **3.5MB**, down from 5MB, following the harness's
+  own default. It applies only when a harness publishes no limits of its own; one
+  that does is still obeyed. On an older harness that publishes none, a 4MB image
+  it would have accepted is now turned away — the reverse mistake costs a round
+  trip and a failed turn, so this is the direction to be wrong in.
+- The mock harness answers a mismatched argument object the way the real gateway
+  does, instead of accepting whatever arrives. That is what would have caught the
+  `commands/execute` break from this side, and now it does.
+
 ## [0.4.0] - 2026-08-18
 
 Two threads run through this release. The first is the question the agent asks

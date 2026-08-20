@@ -36,6 +36,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswer
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswerItem
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionOption
+import com.labteto.dshmobile.core.wire.dto.ImageLimitsView
+import com.labteto.dshmobile.data.CommandOutcome
+import com.labteto.dshmobile.data.PromptOutcome
 import com.labteto.dshmobile.data.QuestionOutcome
 import com.labteto.dshmobile.data.SessionStore
 import com.labteto.dshmobile.ui.components.ApprovalPanel
@@ -115,14 +118,11 @@ fun ChatScreen(
     val commandFailed = stringResource(R.string.err_command_failed)
     val unknownCommand = stringResource(R.string.err_command_unknown)
 
-    fun report(outcome: com.labteto.dshmobile.data.CommandOutcome) {
+    fun report(outcome: CommandOutcome) {
         when (outcome) {
-            is com.labteto.dshmobile.data.CommandOutcome.Ok ->
-                outcome.text?.takeIf { it.isNotBlank() }?.let { toast.second(it) }
-            is com.labteto.dshmobile.data.CommandOutcome.Unknown ->
-                toast.second(unknownCommand.format(outcome.line))
-            is com.labteto.dshmobile.data.CommandOutcome.Failed ->
-                toast.second(commandFailed.format(outcome.message))
+            is CommandOutcome.Ok -> outcome.text?.takeIf { it.isNotBlank() }?.let { toast.second(it) }
+            is CommandOutcome.Unknown -> toast.second(unknownCommand.format(outcome.line))
+            is CommandOutcome.Failed -> toast.second(commandFailed.format(outcome.message))
         }
     }
 
@@ -148,21 +148,39 @@ fun ChatScreen(
             val resolver = context.contentResolver
             val mediaType = resolver.getType(uri)
             val bytes = runCatching { resolver.openInputStream(uri)?.use { it.readBytes() } }.getOrNull()
-            val limits = imageLimits
-            // The host publishes its own attachment bounds; checking them here means a rejection
-            // surfaces before the round trip rather than as a failed turn.
-            if (bytes == null || bytes.isEmpty() || mediaType == null ||
-                (limits != null && !limits.accepts(mediaType, bytes.size)) ||
-                (limits == null && bytes.size > 5_242_880)
-            ) {
+            if (bytes == null || bytes.isEmpty() || mediaType == null) {
+                // Nothing came back from the provider at all — a read failure, not a refusal.
                 toast.second(context.getString(R.string.err_attachment_failed))
+                return@launch
+            }
+            // The host publishes its own attachment bounds, and its defaults stand in until the
+            // projection arrives. Checking them here means a refusal lands while the picture is
+            // still in hand, and names the same limit the host would have named.
+            val limits = imageLimits ?: ImageLimitsView()
+            val pick = decodePick(bytes)
+            val rejection = limits.admitBatch(
+                pendingCount = attachments.size,
+                pendingBytes = attachments.sumOf { it.bytes.toLong() },
+                addedBytes = bytes.size,
+            ) ?: limits.admitImage(
+                declaredMediaType = mediaType,
+                detectedMediaType = pick.detectedMediaType,
+                bytes = bytes.size,
+                width = pick.width,
+                height = pick.height,
+            )
+            if (rejection != null) {
+                toast.second(imageRejectionText(context, rejection, limits))
                 return@launch
             }
             attachments.add(
                 PendingAttachment(
                     mediaType = mediaType,
                     base64 = Base64.encodeToString(bytes, Base64.NO_WRAP),
-                    preview = decodePreview(bytes),
+                    preview = pick.preview,
+                    bytes = bytes.size,
+                    width = pick.width,
+                    height = pick.height,
                 ),
             )
         }
@@ -174,26 +192,57 @@ fun ChatScreen(
         // A slash line that names a registered command is not a message: `session.prompt` would
         // hand it to the model verbatim, so it has to be recognised here and written through the
         // command gateway. A miss falls through to the prompt path — that is how skills work.
-        val submission = adjudicate(text, commands, pending.isNotEmpty())
-        attachments.clear()
-        if (submission is Submission.Command) {
-            scope.launch { report(store.runCommand(submission.line)) }
-            return
-        }
-        scope.launch {
-            if (pending.isEmpty()) {
-                store.prompt(text, mode)
-            } else {
-                // The prompt API takes one image per call; the text rides the first so the message
-                // stays a single turn rather than fragmenting across attachments.
-                pending.forEachIndexed { index, attachment ->
-                    store.promptWithImage(
-                        text = if (index == 0) text else "",
-                        mode = mode,
-                        mediaType = attachment.mediaType,
-                        base64Data = attachment.base64,
-                        name = attachment.name,
-                    )
+        when (val submission = adjudicate(text, commands, pending.size, store.commandImagesSupported)) {
+            is Submission.Refused -> {
+                // Nothing is sent and nothing is dropped. The composer clears the draft on its way
+                // here, so put it back, and leave the images alone — a refusal the user cannot act
+                // on without re-picking every attachment is not much of a refusal.
+                draft = text
+                val message = when (submission.reason) {
+                    RefusalReason.COMMAND_TAKES_NO_IMAGES -> R.string.err_command_no_images
+                    RefusalReason.HOST_TOO_OLD -> R.string.err_command_images_host
+                }
+                toast.second(context.getString(message, submission.command))
+            }
+
+            is Submission.Command -> {
+                attachments.clear()
+                val images = pending.map { it.encoded() }
+                scope.launch {
+                    val outcome = store.runCommand(submission.line, images)
+                    // An image-carrying command consumes its images only on success, as the
+                    // harness client does: an error result is something to correct, and correcting
+                    // it should not start with picking every picture again. A plain command that
+                    // fails keeps today's behaviour, because its whole submission was the line.
+                    // The restore only lands in a composer nobody has touched meanwhile — the call
+                    // is in flight while the user can still type and pick.
+                    if (images.isNotEmpty() && outcome is CommandOutcome.Failed) {
+                        if (draft.isBlank()) draft = text
+                        if (attachments.isEmpty()) attachments.addAll(pending)
+                    }
+                    report(outcome)
+                }
+            }
+
+            is Submission.Prompt -> {
+                attachments.clear()
+                scope.launch {
+                    // One call, whatever the count. The host admits a prompt's images as a single
+                    // batch, and that batch is the only thing its per-message count and total-size
+                    // bounds are measured against — sending one image per call made a single
+                    // message into several and put both limits permanently out of reach.
+                    val outcome = if (pending.isEmpty()) {
+                        store.prompt(text, mode)
+                    } else {
+                        store.promptWithImages(text, mode, pending.map { it.encoded() })
+                    }
+                    if (outcome is PromptOutcome.Rejected) {
+                        if (draft.isBlank()) draft = text
+                        if (attachments.isEmpty()) attachments.addAll(pending)
+                        toast.second(
+                            imageRejectionText(context, outcome.rejection, imageLimits, outcome.reason),
+                        )
+                    }
                 }
             }
         }
@@ -386,7 +435,17 @@ fun ChatScreen(
             canAttach = currentSessionId != null,
             onModeChange = { mode = it },
             onAttach = { imagePicker.launch("image/*") },
-            onRunCommand = { line -> scope.launch { report(store.runCommand(line)) } },
+            // The sheet only auto-runs commands that take no input at all, and a command that
+            // takes no input takes no images either — so a pending attachment refuses here for
+            // the same reason it refuses at the composer, rather than being silently dropped.
+            onRunCommand = { line ->
+                val name = line.removePrefix("/").substringBefore(' ')
+                if (attachments.isEmpty()) {
+                    scope.launch { report(store.runCommand(line)) }
+                } else {
+                    toast.second(context.getString(R.string.err_command_no_images, name))
+                }
+            },
             onPrefillDraft = { prefix -> draft = prefix },
             onDismiss = { sheet = null },
         )
@@ -414,19 +473,42 @@ private enum class ChatSheet { Commands, Models, Presets, Subagents }
 
 
 /**
- * A thumbnail for the composer strip, decoded straight off the picked bytes.
+ * What a bounds pass over the picked bytes tells us: the image's intrinsic size, the media type
+ * its bytes actually are, and a thumbnail for the composer strip.
  *
- * This one *does* need a bounds pass: the picker hands over raw bytes with no intrinsic size
- * attached, unlike an attachment reference that already carries its dimensions.
+ * A [width] of zero means the bytes did not parse as an image at all.
  */
-private fun decodePreview(bytes: ByteArray): ImageBitmap? = runCatching {
+private data class DecodedPick(
+    val width: Int,
+    val height: Int,
+    val detectedMediaType: String?,
+    val preview: ImageBitmap?,
+)
+
+/**
+ * Measure and thumbnail a picked image in one pass.
+ *
+ * The bounds pass was always here for the thumbnail's sample size; it also answers the two
+ * questions the host's admission asks — how large is this, and is it really the type its provider
+ * claims — so the picker can refuse an image before spending a round trip on it rather than after.
+ */
+private fun decodePick(bytes: ByteArray): DecodedPick {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-    val options = BitmapFactory.Options().apply {
-        inSampleSize = sampleSizeFor(bounds.outWidth, PREVIEW_WIDTH_PX)
+    runCatching { BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds) }
+    val width = bounds.outWidth.coerceAtLeast(0)
+    val height = bounds.outHeight.coerceAtLeast(0)
+    val preview = if (width <= 0) {
+        null
+    } else {
+        runCatching {
+            val options = BitmapFactory.Options().apply {
+                inSampleSize = sampleSizeFor(width, PREVIEW_WIDTH_PX)
+            }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)?.asImageBitmap()
+        }.getOrNull()
     }
-    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)?.asImageBitmap()
-}.getOrNull()
+    return DecodedPick(width, height, bounds.outMimeType, preview)
+}
 
 /** The composer thumbnail is 56dp; decoding much past that is wasted memory. */
 private const val PREVIEW_WIDTH_PX = 224

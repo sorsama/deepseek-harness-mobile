@@ -9,6 +9,7 @@
  *   host.describe.json    {"request": <client-request>, "response": <server-response>}
  *   session.list.json     same wrapper
  *   session.history.json  same wrapper (only when session.list returned sessions)
+ *   commands.list.json    same wrapper for the session's command catalog
  *   events.mux.ndjson     one {"request": null, "response": <server-request frame>} per line
  *   events.host.ndjson    same wrapper for the host channel
  *
@@ -141,6 +142,12 @@ async function main() {
       const history = await postJson('session.history', { sessionId, maxMessages: 200 });
       console.log(`session.history -> HTTP ${history.status} ${JSON.stringify(history.response)}`);
       await writeCaptured('session.history.json', history.request, history.response);
+
+      // 3b. The command catalog. It is the only way to see `input.images` against a live host,
+      // and it is a typert Remote rather than an ordinary method, so the args object is nested.
+      const commands = await postJson('commands/list', { args: { agentId: sessionId } });
+      console.log(`commands/list -> HTTP ${commands.status} ${JSON.stringify(commands.response)}`);
+      await writeCaptured('commands.list.json', commands.request, commands.response);
     }
   } else {
     console.log('session.list: no sessions, skipping session.history');

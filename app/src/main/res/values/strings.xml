@@ -326,6 +326,17 @@
     <string name="err_command_unknown">Unknown command: %1$s</string>
     <string name="err_command_failed">Command failed: %1$s</string>
     <string name="err_attachment_failed">Could not attach that image.</string>
+    <string name="err_image_unsupported_type">Only PNG, JPG, WebP and GIF images are supported.</string>
+    <string name="err_image_too_large">Each image must be smaller than %1$s.</string>
+    <string name="err_image_pixels">That image\'s resolution is too high. Compress it and try again.</string>
+    <string name="err_image_dimension">Image sides must be at most %1$dpx. Downscale it and try again.</string>
+    <string name="err_image_too_many">A message can include up to %1$d images.</string>
+    <string name="err_image_batch_too_large">These images exceed %1$s in total. Remove some and try again.</string>
+    <string name="err_image_model_unsupported">This model does not take images. Switch to one that does.</string>
+    <string name="err_image_subagent_unsupported">Subagent sessions do not take images.</string>
+    <string name="err_image_send_failed">Sending the image failed (%1$s). Re-add it and try again.</string>
+    <string name="err_command_no_images">/%1$s does not take image attachments. Remove them first.</string>
+    <string name="err_command_images_host">/%1$s can carry images only on harness 0.1.0-rc.8 or newer. Remove them first.</string>
     <string name="err_permission_denied">This action is only available on the harness computer itself.</string>
     <string name="err_timeout">The harness did not answer in time.</string>
     <string name="err_generic">Error: %1$s</string>

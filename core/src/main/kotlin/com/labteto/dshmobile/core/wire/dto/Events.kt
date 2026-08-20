@@ -505,6 +505,13 @@ data class AssistantMessageData(
     @SerialName("message") val message: MessageData,
     /** Present when the adapter reported token accounting. */
     @SerialName("usage") val usage: TokenUsage? = null,
+    /**
+     * True when this message is the prefix a cancelled turn had already delivered, finalized so
+     * the partial answer survives (harness 0.1.0-rc.8; undispatched tool calls are absent). An
+     * rc.7 host sends no such key and appends no message at all, which is why the fold keeps a
+     * fallback that infers interruption from the turn's own ending.
+     */
+    @SerialName("interrupted") val interrupted: Boolean? = null,
 )
 
 /** `tool/call` payload — the model requested one tool invocation. */

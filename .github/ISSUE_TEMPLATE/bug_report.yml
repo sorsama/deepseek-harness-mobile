@@ -32,7 +32,7 @@ body:
     attributes:
       label: Harness version
       description: Shown on the connect screen and in Settings → Harness (`host.describe`).
-      placeholder: e.g. 0.1.0-rc.5
+      placeholder: e.g. 0.1.0-rc.8
     validations:
       required: true
   - type: input

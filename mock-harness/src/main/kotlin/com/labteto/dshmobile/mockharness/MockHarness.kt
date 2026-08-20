@@ -29,6 +29,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.add
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
@@ -159,9 +160,58 @@ class MockHarness(
     /**
      * Overrides the built-in `host.describe` handler: [transform] receives the default
      * describe value and returns the value that will be served.
+     *
+     * Use it to serve a pre-0.1.0-rc.8 host by dropping the key that release added:
+     * `describe { JsonObject(it - "home") }`.
      */
     fun describe(transform: (JsonObject) -> JsonObject) {
         describeTransform = transform
+    }
+
+    /**
+     * Registers a typert remote under `namespace/method`, held to the gateway's own argument rule.
+     *
+     * The real gateway matches an args object against the remote's declared parameters and refuses
+     * it for a missing key as readily as for an unexpected one — which is why a client cannot write
+     * one `commands/execute` payload for every harness release. A mock that accepted whatever
+     * arrived would be exactly blind to the mistake worth catching, so this one answers the
+     * gateway's own error instead.
+     *
+     * @param expectedArgs the descriptor's complete argument key set.
+     * @param handler maps the validated args object to the remote's return value.
+     */
+    fun remote(
+        namespace: String,
+        method: String,
+        expectedArgs: Set<String>,
+        handler: (JsonObject) -> JsonElement,
+    ) {
+        val endpoint = "$namespace/$method"
+        okHandlers.remove(endpoint)
+        asyncHandlers.remove(endpoint)
+        failHandlers.remove(endpoint)
+        okHandlers[endpoint] = { payload ->
+            val args = (payload as? JsonObject)?.get("args") as? JsonObject
+                ?: throw IllegalArgumentException("args must be a plain object")
+            val missing = expectedArgs.filterNot { it in args.keys }
+            val unexpected = args.keys.filterNot { it in expectedArgs }
+            if (missing.isEmpty() && unexpected.isEmpty()) {
+                handler(args)
+            } else {
+                throw ArgumentsInvalid(argumentsInvalidMessage(missing, unexpected))
+            }
+        }
+    }
+
+    /** The gateway's `arguments-invalid` refusal, thrown out of a [remote] handler. */
+    class ArgumentsInvalid(override val message: String) : RuntimeException(message)
+
+    private fun argumentsInvalidMessage(missing: List<String>, unexpected: List<String>): String {
+        val clauses = buildList {
+            if (missing.isNotEmpty()) add("missing " + missing.joinToString(", ") { "\"$it\"" })
+            if (unexpected.isNotEmpty()) add("unexpected " + unexpected.joinToString(", ") { "\"$it\"" })
+        }
+        return "args fields do not match the descriptor: " + clauses.joinToString("; ")
     }
 
     /**
@@ -253,8 +303,14 @@ class MockHarness(
         when {
             asyncHandlers.containsKey(method) ->
                 respondJson(okEnvelope(rpcId, asyncHandlers[method]!!(payload)))
-            okHandlers.containsKey(method) ->
+            okHandlers.containsKey(method) -> try {
                 respondJson(okEnvelope(rpcId, okHandlers[method]!!(payload)))
+            } catch (invalid: ArgumentsInvalid) {
+                // The gateway reports a refused args object as an ordinary thrown failure, which
+                // the RPC layer renders with code `internal` — a shape mismatch does not get its
+                // own error code, which is exactly why the client must not send one to find out.
+                respondJson(errorEnvelope(rpcId, "internal", invalid.message))
+            }
             failHandlers.containsKey(method) -> {
                 val error = failHandlers[method]!!(payload)
                 respondJson(errorEnvelope(rpcId, error.code, error.message, error.details))
@@ -313,13 +369,50 @@ class MockHarness(
 
     private fun describeValue(): JsonObject {
         val base = buildJsonObject {
-            put("version", "0.1.0-rc.7")
+            put("version", "0.1.0-rc.8")
             put("cwd", "C:\\demo")
             put("attachedSessions", 0)
+            put("home", "C:\\Users\\demo")
             put("canOpenPath", true)
         }
         return describeTransform?.invoke(base) ?: base
     }
+
+    /**
+     * The host's own attachment bounds, as the `imageLimits` session projection carries them.
+     *
+     * Values are the shipped harness defaults at 0.1.0-rc.8, including the 3.5MB per-image cap
+     * that release lowered from 5MB and the per-side `maxImageDimension` it added.
+     */
+    fun imageLimitsValue(): JsonObject = buildJsonObject {
+        put("maxImageBytes", 3_670_016)
+        put("maxImagesPerMessage", 20)
+        put("maxMessageImageBytes", 104_857_600)
+        put("maxImagePixels", 40_000_000)
+        put("maxImageDimension", 2_000)
+        putJsonArray("mediaTypes") {
+            add("image/png")
+            add("image/jpeg")
+            add("image/webp")
+            add("image/gif")
+        }
+    }
+
+    /** Broadcast one `session/projection` frame, the way the host publishes a projection value. */
+    suspend fun pushProjection(
+        sessionId: String,
+        key: String,
+        value: JsonElement,
+        seq: Int = 0,
+    ): String = pushMux(
+        buildJsonObject {
+            put("type", "session/projection")
+            put("sessionId", sessionId)
+            put("key", key)
+            put("value", value)
+            put("seq", seq)
+        },
+    )
 
     /**
      * A small but representative plugin inventory.

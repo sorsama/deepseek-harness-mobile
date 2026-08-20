@@ -255,6 +255,17 @@
     <string name="err_command_unknown">نامعلوم کمانڈ: %1$s</string>
     <string name="err_command_failed">کمانڈ ناکام: %1$s</string>
     <string name="err_attachment_failed">وہ تصویر منسلک نہیں ہو سکی۔</string>
+    <string name="err_image_unsupported_type">صرف PNG، JPG، WebP اور GIF تصاویر معاون ہیں۔</string>
+    <string name="err_image_too_large">ہر تصویر %1$s سے چھوٹی ہونی چاہیے۔</string>
+    <string name="err_image_pixels">اس تصویر کی ریزولوشن بہت زیادہ ہے۔ اسے دبا کر دوبارہ کوشش کریں۔</string>
+    <string name="err_image_dimension">تصویر کے اطراف زیادہ سے زیادہ %1$dpx ہو سکتے ہیں۔ اسے چھوٹا کر کے دوبارہ کوشش کریں۔</string>
+    <string name="err_image_too_many">ایک پیغام میں زیادہ سے زیادہ %1$d تصاویر شامل کی جا سکتی ہیں۔</string>
+    <string name="err_image_batch_too_large">یہ تصاویر مل کر %1$s سے زیادہ ہیں۔ کچھ ہٹا کر دوبارہ کوشش کریں۔</string>
+    <string name="err_image_model_unsupported">یہ ماڈل تصاویر قبول نہیں کرتا۔ ایسا ماڈل منتخب کریں جو کرتا ہو۔</string>
+    <string name="err_image_subagent_unsupported">سب ایجنٹ سیشنز تصاویر قبول نہیں کرتے۔</string>
+    <string name="err_image_send_failed">تصویر بھیجی نہیں جا سکی (%1$s)۔ دوبارہ منسلک کر کے کوشش کریں۔</string>
+    <string name="err_command_no_images">/%1$s تصویری منسلکات قبول نہیں کرتا۔ پہلے انہیں ہٹا دیں۔</string>
+    <string name="err_command_images_host">/%1$s صرف harness 0.1.0-rc.8 یا اس سے نئے پر تصاویر لے جا سکتا ہے۔ پہلے انہیں ہٹا دیں۔</string>
     <string name="err_permission_denied">یہ کارروائی صرف Harness کے کمپیوٹر پر ہی دستیاب ہے۔</string>
     <string name="err_timeout">Harness نے بروقت جواب نہیں دیا۔</string>
     <string name="err_generic">خرابی: %1$s</string>

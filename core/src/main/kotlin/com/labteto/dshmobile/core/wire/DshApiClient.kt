@@ -19,6 +19,7 @@ import com.labteto.dshmobile.core.wire.dto.CredentialsSetValue
 import com.labteto.dshmobile.core.wire.dto.CredentialsUnsetRequest
 import com.labteto.dshmobile.core.wire.dto.CredentialsUnsetValue
 import com.labteto.dshmobile.core.wire.dto.DirectoryListing
+import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
 import com.labteto.dshmobile.core.wire.dto.GoalClearRequest
 import com.labteto.dshmobile.core.wire.dto.GoalClearValue
 import com.labteto.dshmobile.core.wire.dto.GoalCompleteRequest
@@ -105,6 +106,7 @@ import java.io.InputStream
 import java.net.URLEncoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -118,7 +120,7 @@ private fun encodeQueryComponent(value: String): String =
     URLEncoder.encode(value, "UTF-8").replace("+", "%20")
 
 /**
- * Typed client for the harness unary + downlink wire protocol (v0.1.0-rc.7). Every unary method
+ * Typed client for the harness unary + downlink wire protocol (v0.1.0-rc.8). Every unary method
  * maps to one `POST /api/<method>` (see [rpcMapPath] for the path table) and returns [RpcResult]:
  * business failures arrive as HTTP 200 + `ok: false` and come back as [RpcResult.Err]; carrier
  * failures (non-2xx, transport, or decode) are folded into `RpcResult.Err` with code `internal`.
@@ -127,6 +129,18 @@ class DshApiClient(
     private val transport: RpcTransport,
     private val wsFactory: (path: String, sink: WsDownlinkSink) -> WsDownlink,
 ) {
+
+    /**
+     * Whether this host's `commands/execute` takes an `images` argument (harness 0.1.0-rc.8).
+     *
+     * Set once per connection generation by the handshake — see [ConnectionLoop] — from the
+     * *shape* of `host.describe` rather than its `version`, because a version string is the one
+     * thing this client has never been willing to branch on (`docs/COMPATIBILITY.md`). It is
+     * volatile because the handshake and the callers run on different threads.
+     */
+    @Volatile
+    var acceptsCommandImages: Boolean = false
+        private set
 
     // ------------------------------------------------------------------ unary machinery
 
@@ -195,8 +209,16 @@ class DshApiClient(
 
     // ------------------------------------------------------------------ host
 
-    /** host.describe — one-shot host snapshot. */
-    suspend fun hostDescribe(): RpcResult<HostDescription> = callEmpty("host.describe")
+    /**
+     * host.describe — one-shot host snapshot, and the point where [acceptsCommandImages] is
+     * latched. Every path that reaches this client's commands describes first (the handshake's
+     * last step, `ConnectionLoop.openGeneration`), so latching here rather than at one call site
+     * means no caller can dispatch a command against an undecided shape.
+     */
+    suspend fun hostDescribe(): RpcResult<HostDescription> =
+        callEmpty<HostDescription>("host.describe").also { result ->
+            if (result is RpcResult.Ok) acceptsCommandImages = result.value.home != null
+        }
 
     /** host.pickDirectory — open the OS directory picker; `path` is null when the user cancelled. */
     suspend fun hostPickDirectory(): RpcResult<HostPickDirectoryValue> = callEmpty("host.pickDirectory")
@@ -487,16 +509,44 @@ class DshApiClient(
      *
      * [sessionPrompt] executes a leading-slash line the same way, so a caller that cannot reach the
      * gateway still has a working write path.
+     *
+     * The `images` argument arrived in harness 0.1.0-rc.8 and is *required* there. The gateway
+     * matches an args object against the remote's declared parameters and refuses both a missing
+     * and an unexpected key, so this is the one call in the client whose shape cannot be written
+     * once for every host: it follows [acceptsCommandImages], which the handshake sets from the
+     * shape of `host.describe` rather than from any version string.
+     *
+     * @param images base64-encoded composer images, in submission order; must be empty when
+     *   [acceptsCommandImages] is false, because an rc.7 host has nowhere to put them.
      */
-    suspend fun commandsExecute(sessionId: String, line: String): RpcResult<JsonElement> =
-        remote(
+    suspend fun commandsExecute(
+        sessionId: String,
+        line: String,
+        images: List<EncodedImageAttachment> = emptyList(),
+    ): RpcResult<JsonElement> {
+        // Refuse rather than drop. Adjudication should have stopped this already, but every other
+        // caller of this method reaches it directly, and silently sending a command without the
+        // images the user attached to it is the one outcome nobody could diagnose from the screen.
+        if (images.isNotEmpty() && !acceptsCommandImages) {
+            return RpcResult.Err(
+                RpcError(
+                    code = "capability-unavailable",
+                    message = "this harness does not carry image attachments on a command",
+                ),
+            )
+        }
+        return remote(
             "commands",
             "execute",
             buildJsonObject {
                 put("agentId", JsonPrimitive(sessionId))
                 put("line", JsonPrimitive(line))
+                if (acceptsCommandImages) {
+                    put("images", encodeToJsonElement(ListSerializer(EncodedImageAttachment.serializer()), images))
+                }
             },
         )
+    }
 
     /**
      * pluginInventory/list — the host's composed-plugin inventory (read-only).

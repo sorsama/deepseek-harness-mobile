@@ -66,10 +66,74 @@ class ProjectionDtosTest {
     @Test
     fun `image limits default to the shipped harness bounds when absent`() {
         val limits = decodeFromString<ImageLimitsView>("{}")
-        assertEquals(5_242_880L, limits.maxImageBytes)
-        assertTrue(limits.accepts("image/png", 1_000))
-        assertTrue(!limits.accepts("image/tiff", 1_000))
-        assertTrue(!limits.accepts("image/png", 6_000_000))
+        // 0.1.0-rc.8 lowered the per-image cap from 5MB and added the per-side one.
+        assertEquals(3_670_016L, limits.maxImageBytes)
+        assertEquals(2_000, limits.maxImageDimension)
+        assertNull(limits.admitImage("image/png", "image/png", 1_000, 100, 100))
+    }
+
+    @Test
+    fun `an image is refused for the reason the host would have given`() {
+        val limits = decodeFromString<ImageLimitsView>("{}")
+        assertEquals(
+            ImageRejection.UNSUPPORTED_TYPE,
+            limits.admitImage("image/tiff", "image/tiff", 1_000, 100, 100),
+        )
+        assertEquals(
+            ImageRejection.TOO_LARGE,
+            limits.admitImage("image/png", "image/png", 4_000_000, 100, 100),
+        )
+        assertEquals(
+            ImageRejection.DIMENSION_TOO_LARGE,
+            limits.admitImage("image/png", "image/png", 1_000, 2_400, 100),
+        )
+        // Bytes that did not decode read as a format problem, which is the host's answer too.
+        assertEquals(
+            ImageRejection.UNSUPPORTED_TYPE,
+            limits.admitImage("image/png", null, 1_000, 0, 0),
+        )
+        // A file whose bytes contradict the type its provider declared.
+        assertEquals(
+            ImageRejection.UNSUPPORTED_TYPE,
+            limits.admitImage("image/png", "image/jpeg", 1_000, 100, 100),
+        )
+    }
+
+    @Test
+    fun `an oversized image reports resolution before per-side, as the host checks it`() {
+        // detectImage tests maxPixels first, so an image that breaks both bounds has to be
+        // reported as a resolution problem here as well or the two sides disagree.
+        val limits = decodeFromString<ImageLimitsView>("""{"maxImagePixels":10000}""")
+        assertEquals(
+            ImageRejection.TOO_MANY_PIXELS,
+            limits.admitImage("image/png", "image/png", 1_000, 9_000, 9_000),
+        )
+    }
+
+    @Test
+    fun `the message's own bounds are checked before any single image`() {
+        val limits = decodeFromString<ImageLimitsView>("""{"maxImagesPerMessage":2}""")
+        assertNull(limits.admitBatch(pendingCount = 1, pendingBytes = 10, addedBytes = 10))
+        assertEquals(
+            ImageRejection.TOO_MANY,
+            limits.admitBatch(pendingCount = 2, pendingBytes = 10, addedBytes = 10),
+        )
+        val byBytes = decodeFromString<ImageLimitsView>("""{"maxMessageImageBytes":100}""")
+        assertEquals(
+            ImageRejection.BATCH_TOO_LARGE,
+            byBytes.admitBatch(pendingCount = 1, pendingBytes = 60, addedBytes = 50),
+        )
+    }
+
+    @Test
+    fun `a host refusal maps onto the same vocabulary as the pre-check`() {
+        assertEquals(ImageRejection.DIMENSION_TOO_LARGE, imageRejectionOf("IMAGE_DIMENSION_TOO_LARGE"))
+        assertEquals(ImageRejection.TOO_MANY, imageRejectionOf("TOO_MANY_IMAGES"))
+        assertEquals(ImageRejection.BATCH_TOO_LARGE, imageRejectionOf("IMAGES_TOO_LARGE"))
+        assertEquals(ImageRejection.UNSUPPORTED_TYPE, imageRejectionOf("UNSUPPORTED_IMAGE_TYPE"))
+        assertEquals(ImageRejection.MODEL_UNSUPPORTED, imageRejectionOf("MODEL_DOES_NOT_SUPPORT_IMAGES"))
+        // A reason this build has never heard of stays reportable rather than becoming a crash.
+        assertEquals(ImageRejection.UNKNOWN, imageRejectionOf("SOMETHING_THE_HARNESS_ADDED_LATER"))
     }
 
     @Test

@@ -11,7 +11,7 @@ Conventions live in CONTRIBUTING.md; the deeper documents are in docs/.
 
 <!--
 Say what you actually ran, not what should work. For example:
-- Real harness 0.1.0-rc.7 over adb reverse, Pixel 6a / Android 14
+- Real harness 0.1.0-rc.8 over adb reverse, Pixel 6a / Android 14
 - Real harness over Wi-Fi LAN mode
 - mock-harness only
 - Unit tests only
