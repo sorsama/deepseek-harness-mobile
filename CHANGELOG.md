@@ -5,14 +5,26 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [0.5.0] - 2026-08-20
 
-The baseline moves to harness **0.1.0-rc.8**, and this one is a migration rather
-than a re-verification. The previous move, rc.5 → rc.7, touched nothing on the
-wire at all; this one changes a call's arguments, adds a required field to two
-shapes, and gives slash commands something they never had — the ability to carry
-a picture.
+Two threads. The first is a fault that made finished replies render as nothing
+at all, found and fixed by [@lokesh-vadlamudi](https://github.com/lokesh-vadlamudi).
+The second is the baseline, which moves to harness **0.1.0-rc.8** — and this one
+is a migration rather than a re-verification. The previous move, rc.5 → rc.7,
+touched nothing on the wire at all; this one changes a call's arguments, adds a
+required field to two shapes, and gives slash commands something they never had
+— the ability to carry a picture.
 
 ### Fixed
 
+- **A completed assistant reply could render blank.** The concrete content-block
+  and stream-chunk serializers did not emit their sealed-class discriminator, so
+  re-encoding a decoded event dropped `type` and the fold read every known block
+  as an empty `unknown`. The harness had stored the reply correctly and it
+  arrived intact; the transcript simply could not see it. The discriminator is
+  now derived from the serializer descriptor, where it cannot drift from
+  `@SerialName`. (#1, thanks @lokesh-vadlamudi)
+- The same fault on subagent entry kinds. (#2, thanks @lokesh-vadlamudi)
+- Send taps that did not always register, and a gap under the keyboard.
+  (#3, thanks @lokesh-vadlamudi)
 - **Every slash command was about to stop working.** rc.8 gave
   `commands/execute` a third argument, `images`, and the harness's gateway
   matches an args object against the method it is calling *exactly* — it refuses
