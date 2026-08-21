@@ -24,6 +24,7 @@ import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsDialog
 import com.labteto.dshmobile.ui.screens.connect.ConnectScreen
 import com.labteto.dshmobile.ui.screens.main.MainScreen
+import com.labteto.dshmobile.ui.screens.pair.PairScreen
 import com.labteto.dshmobile.ui.screens.settings.SettingsScreen
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -47,16 +48,26 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
 
     DshTheme(preference = themePreference) {
         var showSettings by rememberSaveable { mutableStateOf(false) }
-        if (showSettings) {
-            SettingsScreen(onClose = { showSettings = false })
-        } else {
-            val showMain = connection.phase == ConnectionPhase.CONNECTED ||
-                (connection.phase == ConnectionPhase.RECONNECTING && connection.hasConnected)
-            if (showMain) {
-                MainScreen(onOpenSettings = { showSettings = true })
-            } else {
-                ConnectScreen(onOpenSettings = { showSettings = true })
-            }
+        // Pairing is a detour off the connect screen rather than a mode of it: it owns the camera,
+        // it can succeed against an address the connect screen never listed, and it ends by
+        // connecting — at which point the routing below carries on as if the relay had always been
+        // remembered. `pairUrl` is saveable because the scan launches another activity, and coming
+        // back to an empty address field would lose the one thing the user had already supplied.
+        var showPair by rememberSaveable { mutableStateOf(false) }
+        var pairUrl by rememberSaveable { mutableStateOf<String?>(null) }
+        val showMain = connection.phase == ConnectionPhase.CONNECTED ||
+            (connection.phase == ConnectionPhase.RECONNECTING && connection.hasConnected)
+        when {
+            showSettings -> SettingsScreen(onClose = { showSettings = false })
+            showPair -> PairScreen(onClose = { showPair = false }, prefillUrl = pairUrl)
+            showMain -> MainScreen(onOpenSettings = { showSettings = true })
+            else -> ConnectScreen(
+                onOpenSettings = { showSettings = true },
+                onPair = { url ->
+                    pairUrl = url
+                    showPair = true
+                },
+            )
         }
 
         // Offered over whatever is on screen, and only once per release: dismissing records the

@@ -83,8 +83,9 @@ fun EmptyHero(
 }
 
 /** 64dp accentTertiary disc with the DeepSeek Mobile logo mark. */
+/** The product mark on a tinted disc. Shared so a screen can use it without the whole hero. */
 @Composable
-private fun WhaleMark(modifier: Modifier = Modifier) {
+internal fun WhaleMark(modifier: Modifier = Modifier) {
     val colors = DsTheme.colors
     Box(modifier.clip(CircleShape).background(colors.accentTertiary), contentAlignment = Alignment.Center) {
         // The launcher vector keeps the mark inside the adaptive-icon safe zone

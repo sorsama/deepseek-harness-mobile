@@ -12,10 +12,9 @@ import com.labteto.dshmobile.core.wire.GenerationFailure
 import com.labteto.dshmobile.core.wire.HandshakeStep
 import com.labteto.dshmobile.core.wire.LoopSinks
 import com.labteto.dshmobile.ui.screens.connect.ConnectFailure
-import com.labteto.dshmobile.core.wire.OkHttpRpcTransport
 import com.labteto.dshmobile.core.wire.ServerRequest
-import com.labteto.dshmobile.core.wire.WsDownlink
-import com.labteto.dshmobile.core.wire.WsDownlinkSink
+import com.labteto.dshmobile.core.wire.TransportFailure
+import com.labteto.dshmobile.core.wire.TransportFailures
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +23,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -60,7 +58,7 @@ data class ConnectionUiState(
 @Singleton
 class ConnectionManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val okHttpClient: OkHttpClient,
+    private val clientFactory: HarnessClientFactory,
     private val hostsStore: HostsStore,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -124,22 +122,13 @@ class ConnectionManager @Inject constructor(
         }
 
         override fun onGenerationFailed(attempt: Int, failure: GenerationFailure) {
+            val host = activeHost
             _state.value = _state.value.copy(
-                failure = ConnectFailure.from(failure),
+                failure = ConnectFailure.from(failure, relay = host?.isRelay == true),
                 attempts = attempt,
             )
+            if (host != null && isTerminalForRelay(host, failure)) stopRetrying()
         }
-    }
-
-    /** Build a client for manual probing/prompting without the full loop. */
-    fun probeClient(host: String, port: Int, useTls: Boolean = false): DshApiClient {
-        // One base for the POSTs and both streams: OkHttp takes an http(s) URL for a WebSocket
-        // and upgrades it itself, so an https base is all it takes to make the streams wss.
-        val base = harnessBaseUrl(host, port, useTls)
-        return DshApiClient(
-            transport = OkHttpRpcTransport(base, okHttpClient),
-            wsFactory = { path, sink -> WsDownlink("$base$path", okHttpClient, sink) },
-        )
     }
 
     val connectedApi: DshApiClient? get() = api
@@ -161,7 +150,7 @@ class ConnectionManager @Inject constructor(
             host = config,
             stage = ConnectStage.OpeningStreams,
         )
-        val client = probeClient(config.host, config.port, config.useTls)
+        val client = clientFactory.clientFor(config)
         api = client
         val loop = ConnectionLoop(client, sinks, LoopConfig())
         this.loop = loop
@@ -181,8 +170,53 @@ class ConnectionManager @Inject constructor(
     fun reconnectIfNeeded() {
         val host = activeHost ?: return
         loop?.stop()
-        val client = api ?: probeClient(host.host, host.port, host.useTls).also { api = it }
-        loop = ConnectionLoop(client, sinks, LoopConfig()).also { it.start() }
+        scope.launch {
+            // Rebuilding through the factory rather than reusing `api` blindly: a relay token can be
+            // rotated or dropped while the app is backgrounded, and the credential is baked into the
+            // client at construction. This is the path [KeepAliveWorker] takes, which is exactly
+            // when that is most likely to have happened.
+            val client = clientFactory.clientFor(host).also { api = it }
+            loop = ConnectionLoop(client, sinks, LoopConfig()).also { it.start() }
+        }
+    }
+
+    /**
+     * Whether this failure means retrying is pointless against [host].
+     *
+     * The relay answers 403 for a missing, expired or revoked credential, and none of those come
+     * back on their own — the client integration contract says so outright: "prompt to pair again,
+     * do not retry with backoff". A changed certificate is the same kind of fact. The loop's default
+     * is to retry forever, which against a relay that revoked this device is a request every few
+     * seconds until the app is killed.
+     */
+    private fun isTerminalForRelay(host: HostConfig, failure: GenerationFailure): Boolean {
+        if (!host.isRelay) return false
+        val kind = when (failure) {
+            is GenerationFailure.StreamFailed -> failure.kind
+            is GenerationFailure.DescribeFailed -> TransportFailures.of(failure.error)
+            is GenerationFailure.StreamsTimedOut -> null
+        }
+        return kind == TransportFailure.TRUST_FENCE || kind == TransportFailure.CERTIFICATE_PIN
+    }
+
+    /**
+     * Stop the loop but keep the failure on screen.
+     *
+     * Not [disconnect]: that resets the whole state object, which would wipe the very explanation
+     * the user needs in order to know that pairing again is the fix.
+     */
+    private fun stopRetrying() {
+        loop?.stop()
+        loop = null
+        _state.value = _state.value.copy(
+            phase = ConnectionPhase.DISCONNECTED,
+            // Back to Idle, not left on whatever handshake step the last generation died at. The
+            // connect screen derives "still connecting" from the stage, so a stage frozen mid-
+            // handshake leaves the Connect button disabled with a spinner that will never finish —
+            // which is precisely the failure this screen already learned once.
+            stage = ConnectStage.Idle,
+            attempts = 0,
+        )
     }
 
     private fun maybeStartService() {

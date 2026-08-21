@@ -17,6 +17,26 @@ sealed interface ProbeOutcome {
     /** HTTP 403 — the harness is there and its `Host` trust fence refused this address. */
     data object TrustFence : ProbeOutcome
 
+    /**
+     * HTTP 403 from a relay: this device has no credential it will accept any more.
+     *
+     * The same status as [TrustFence], and the relay answers it for a missing, expired and revoked
+     * token alike (never 401 — deliberately, so a client that already reads 403 as "reached it, it
+     * refused me" keeps a usable hint). What separates the two here is local knowledge: the app
+     * knows whether it ever paired with this address.
+     */
+    data object PairingRequired : ProbeOutcome
+
+    /**
+     * The relay's public key is not the one pinned when this device paired.
+     *
+     * Worth its own outcome because the honest reading is ambiguous and the user is the only one who
+     * can resolve it: the relay regenerates its certificate — with a new key — whenever the set of
+     * addresses it covers changes, so a harness laptop that moved networks produces exactly this,
+     * and so would somebody else answering on that address.
+     */
+    data object CertificateChanged : ProbeOutcome
+
     /** The host answered the network but nothing listens on the port. */
     data object Refused : ProbeOutcome
 

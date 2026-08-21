@@ -5,7 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -18,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
@@ -41,6 +44,11 @@ data class DsSegment(val key: String, val label: String)
  * @param role how assistive tech should announce a segment — [Role.Tab] for a view switch,
  *   [Role.RadioButton] for a setting. The tint is the only visual carrier of the selection, so it
  *   has to reach the accessibility tree some other way.
+ * @param stretch divide the track equally between the segments instead of letting each hug its
+ *   label. Off by default, because most of these sit inline — in a top bar, beside a caption in a
+ *   sheet — where a control the width of its content is the right shape. Turn it on when the track
+ *   is given a width of its own: a full-width pill whose segments hug the left of it reads as a
+ *   half-drawn control, not a compact one.
  */
 @Composable
 fun DsSegmented(
@@ -50,6 +58,7 @@ fun DsSegmented(
     modifier: Modifier = Modifier,
     role: Role = Role.RadioButton,
     enabled: Boolean = true,
+    stretch: Boolean = false,
 ) {
     val colors = DsTheme.colors
     Row(
@@ -71,7 +80,11 @@ fun DsSegmented(
                 enabled = enabled,
                 role = role,
                 onClick = { onSelect(segment.key) },
-                modifier = Modifier.weight(1f, fill = false),
+                // A stretched track is a primary control rather than an inline one, so its segments
+                // get a button's height. 24dp is a comfortable inline chip and an uncomfortably
+                // small thing to hit when it is the first decision on a screen.
+                minHeight = if (stretch) 36.dp else 24.dp,
+                modifier = Modifier.weight(1f, fill = stretch),
             )
         }
     }
@@ -84,6 +97,7 @@ private fun DsSegment(
     enabled: Boolean,
     role: Role,
     onClick: () -> Unit,
+    minHeight: Dp,
     modifier: Modifier = Modifier,
 ) {
     val colors = DsTheme.colors
@@ -95,7 +109,7 @@ private fun DsSegment(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .heightIn(min = 24.dp)
+            .heightIn(min = minHeight)
             .clip(DsShapes.pillFull)
             .background(colors.accentTertiary.copy(alpha = emphasis))
             .selectable(selected = selected, enabled = enabled, role = role, onClick = onClick)
@@ -119,7 +133,7 @@ private fun DsSegment(
 @Composable
 private fun DsSegmentedPreview() {
     DshTheme {
-        Box(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             DsSegmented(
                 segments = listOf(
                     DsSegment("off", "Off"),
@@ -129,6 +143,17 @@ private fun DsSegmentedPreview() {
                 ),
                 selectedKey = "high",
                 onSelect = {},
+            )
+            // The two shapes side by side: inline hugs its labels, stretched divides the track.
+            DsSegmented(
+                segments = listOf(
+                    DsSegment("lan", "Local network"),
+                    DsSegment("relay", "Relay"),
+                ),
+                selectedKey = "relay",
+                onSelect = {},
+                stretch = true,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
