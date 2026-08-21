@@ -3,6 +3,7 @@ package com.labteto.dshmobile.mockharness
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.install
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
@@ -10,12 +11,15 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.request.ApplicationRequest
 import io.ktor.server.request.host
+import io.ktor.server.request.path
+import io.ktor.server.request.queryString
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.header
 import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.webSocket
@@ -57,7 +61,17 @@ import java.util.concurrent.ConcurrentHashMap
 class MockHarness(
     private val trustedHosts: List<String> = emptyList(),
     private val port: Int = 0,
+    private val relay: RelayMode? = null,
+    private val relayRedirectTo: String? = null,
 ) {
+    /** Consumed once the pairing code is claimed, so a replayed code is refused as the relay does. */
+    @Volatile
+    private var pairingClaimed: Boolean = false
+
+    /** Set by a test to make the next claim answer 429 instead of enrolling. */
+    @Volatile
+    var pairingRateLimited: Boolean = false
+
     private val okHandlers = ConcurrentHashMap<String, (JsonElement) -> JsonElement>()
     private val failHandlers = ConcurrentHashMap<String, (JsonElement) -> RpcErrorData>()
     private val asyncHandlers = ConcurrentHashMap<String, suspend (JsonElement) -> JsonElement>()
@@ -88,7 +102,63 @@ class MockHarness(
     suspend fun start(): Int {
         val newServer = embeddedServer(Netty, port = port, host = "127.0.0.1") {
             install(WebSockets)
+            // The relay's credential check, in the one place that also covers a WebSocket upgrade.
+            // Intercepting before routing is what makes an unauthenticated upgrade fail at the
+            // handshake with a plain 403 rather than opening and then closing — which is the
+            // difference the client actually has to handle, since a rejected upgrade carries its
+            // status and nothing else.
+            if (relay != null) {
+                intercept(ApplicationCallPipeline.Plugins) {
+                    val inbound = context
+                    val path = inbound.request.path()
+                    val authorized = inbound.request.headers["Authorization"] == "Bearer ${relay.token}"
+                    if (!path.startsWith("/relay/") && !authorized) {
+                        inbound.respondText(
+                            """{"error":"forbidden","message":"pair this device with the relay first"}""",
+                            ContentType.Application.Json,
+                            HttpStatusCode.Forbidden,
+                        )
+                        finish()
+                    }
+                }
+            }
             routing {
+                // The harness's own port since relay 0.1.1: nothing else claims `/relay`, so the
+                // plugin registers a prefix route that redirects to its listener rather than
+                // letting the single-page application's catch-all answer.
+                if (relayRedirectTo != null) {
+                    // A harness in front of a relay, not a relay: it owns none of these paths and
+                    // says so by pointing at the listener that does. Registering the relay's own
+                    // routes as well would out-specific this tailcard and answer for it.
+                    get("/relay/{...}") {
+                        call.redirectToRelay(relayRedirectTo)
+                    }
+                    post("/relay/{...}") {
+                        call.redirectToRelay(relayRedirectTo)
+                    }
+                } else {
+                    get("/relay/health") {
+                        if (relay?.refuseHost == true) {
+                            call.refuseFence()
+                            return@get
+                        }
+                        if (relay == null) {
+                            call.respondText("not found", status = HttpStatusCode.NotFound)
+                        } else {
+                            call.respondText(
+                                """{"service":"dsh-relay","ok":true}""",
+                                ContentType.Application.Json,
+                            )
+                        }
+                    }
+                    post("/relay/pair") {
+                        if (relay?.refuseHost == true) {
+                            call.refuseFence()
+                            return@post
+                        }
+                        call.handleRelayPair()
+                    }
+                }
                 get("/api/session.export") {
                     call.handleSessionExport()
                 }
@@ -278,6 +348,76 @@ class MockHarness(
         }
         response.header("Content-Disposition", "attachment; filename=\"dsh-session-$sessionId.zip\"")
         respondBytes(sessionExportBytes, ContentType.Application.Zip)
+    }
+
+    /**
+     * Answer as the relay's DNS-rebinding fence does: plain text, before any route is reached.
+     *
+     * Plain text is the whole distinction a client has to work from. The relay uses the same 403
+     * for a code it will not accept, but that one carries `{"error":"pairing-failed"}` — so a body
+     * that is not that JSON is the fence, and the fix is on the relay's configuration rather than
+     * on the pairing page.
+     */
+    private suspend fun ApplicationCall.refuseFence() {
+        respondText("forbidden", status = HttpStatusCode.Forbidden)
+    }
+
+    /** Answer as the harness's `/relay` prefix route does: 302 to the relay, path and query kept. */
+    private suspend fun ApplicationCall.redirectToRelay(target: String) {
+        val query = request.queryString().takeIf { it.isNotEmpty() }?.let { "?$it" } ?: ""
+        response.header("Location", "$target${request.path()}$query")
+        respondText("", status = HttpStatusCode.Found)
+    }
+
+    /**
+     * The relay's claim endpoint.
+     *
+     * Answers JSON only when the caller asked for it — the real relay serves an HTML page
+     * otherwise, and a client that forgets the content type finds that out by getting markup where
+     * it expected a token. Reproducing that here is the point: it is the easiest thing to get wrong
+     * and the hardest to notice.
+     */
+    private suspend fun ApplicationCall.handleRelayPair() {
+        val mode = relay
+        if (mode == null) {
+            respondText("not found", status = HttpStatusCode.NotFound)
+            return
+        }
+        val wantsJson = (request.headers["Content-Type"] ?: "").contains("application/json") ||
+            ((request.headers["Accept"] ?: "").contains("application/json") &&
+                !(request.headers["Accept"] ?: "").contains("text/html"))
+        if (!wantsJson) {
+            respondText("<html><body>pair</body></html>", ContentType.Text.Html)
+            return
+        }
+        if (pairingRateLimited) {
+            response.header("Retry-After", mode.retryAfterSeconds.toString())
+            respondText(
+                """{"error":"rate-limited"}""",
+                ContentType.Application.Json,
+                HttpStatusCode.TooManyRequests,
+            )
+            return
+        }
+        val body = runCatching { receiveText() }.getOrDefault("")
+        val fields = runCatching { Json.parseToJsonElement(body) }.getOrNull() as? JsonObject
+        val code = (fields?.get("code") as? JsonPrimitive)?.contentOrNull
+        if (code != mode.pairingCode || pairingClaimed) {
+            respondText(
+                """{"error":"pairing-failed","message":"That code is not valid."}""",
+                ContentType.Application.Json,
+                HttpStatusCode.Forbidden,
+            )
+            return
+        }
+        pairingClaimed = true
+        val answer = buildJsonObject {
+            put("deviceId", mode.deviceId)
+            put("token", mode.token)
+            put("expiresAt", mode.tokenExpiresAt)
+            if (mode.fingerprint != null) put("fingerprint", mode.fingerprint)
+        }
+        respondText(answer.toString(), ContentType.Application.Json)
     }
 
     private suspend fun ApplicationCall.handleApi(pathMethodOverride: String? = null) {
@@ -537,3 +677,40 @@ private fun errorEnvelope(
         },
     )
 }.toString()
+
+/**
+ * Turns the mock into a `dsh-relay` stand-in.
+ *
+ * The relay is a second listener in front of the harness, not a different protocol: everything under
+ * `/api` is forwarded unchanged once the credential checks out. So this is deliberately thin — a
+ * bearer requirement, the claim endpoint, and the liveness probe — and every existing test of the
+ * wire protocol keeps applying behind it.
+ */
+/**
+ * Where the harness's own port sends `/relay` traffic.
+ *
+ * Pass a relay origin to [MockHarness] as `relayRedirectTo` to model the prefix route the plugin
+ * registers on `ctx.webServer` — the thing that makes the harness address a usable way in, and the
+ * thing a client must resolve rather than let its HTTP layer chase.
+ */
+data class RelayMode(
+    /** The single-use code the operator would read off the relay's pairing page. */
+    val pairingCode: String = "48213977",
+    /** The bearer token a successful claim mints. */
+    val token: String = "relay-test-token",
+    val deviceId: String = "9f2c41ab30d7e155",
+    /** Repeated in the claim answer, as a TLS relay does; null stands in for `tls: off`. */
+    val fingerprint: String? = null,
+    val tokenExpiresAt: Long = 1_900_000_000_000,
+    /** What a rate-limited claim reports in `Retry-After`. */
+    val retryAfterSeconds: Long = 30,
+    /**
+     * Refuse every `/relay` request the way the fence does.
+     *
+     * Stands in for an address the relay does not know itself by — an emulator's host alias, a
+     * name it was never told. Its fence runs before every route, so even the unauthenticated
+     * liveness probe gets this, and a client that reads it as "nothing there" reports a working
+     * relay as a missing one.
+     */
+    val refuseHost: Boolean = false,
+)
