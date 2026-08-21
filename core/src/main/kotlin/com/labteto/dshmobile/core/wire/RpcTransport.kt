@@ -68,10 +68,16 @@ private val JSON_MEDIA_TYPE: MediaType = "application/json; charset=utf-8".toMed
  * from the base URL, and times out at [connectTimeoutMs]/[readTimeoutMs] (30s by default). Non-2xx
  * responses throw [RpcTransportException] (403 mentions the harness trust fence).
  *
+ * [baseUrl] may be `http://` or `https://`; the `Host` header omits the port when it is the
+ * scheme's default, which is what a relay behind a name on :443 needs.
+ *
  * The timeouts are constructor parameters rather than something a caller pre-applies to [client]:
  * this class rebuilds the client it is handed, so a builder-applied deadline was silently replaced
  * by the 30s default. That is why a discovery probe advertising a 700ms budget could block for
- * thirty seconds.
+ * thirty seconds. [authorization] is a parameter for the same reason: an interceptor a caller
+ * applied to [client] would survive the rebuild, but the two mechanisms would then disagree about
+ * where request shaping lives, and the header has to be visible at the call site because a request
+ * that silently loses it fails as a 403 that reads like a trust fence.
  */
 class OkHttpRpcTransport(
     baseUrl: String,
@@ -79,6 +85,7 @@ class OkHttpRpcTransport(
     connectTimeoutMs: Long = 30_000,
     readTimeoutMs: Long = 30_000,
     writeTimeoutMs: Long = 30_000,
+    private val authorization: String? = null,
 ) : RpcTransport {
 
     private val base: HttpUrl = baseUrl.toHttpUrl()
@@ -104,6 +111,7 @@ class OkHttpRpcTransport(
                 .url(target)
                 .header("Host", hostHeader)
                 .header("Content-Type", "application/json")
+                .authorized(authorization)
                 .post(body.toRequestBody(JSON_MEDIA_TYPE))
                 .build()
             val call = httpClient.newCall(request)
@@ -149,6 +157,7 @@ class OkHttpRpcTransport(
         val request = Request.Builder()
             .url(target)
             .header("Host", hostHeader)
+            .authorized(authorization)
             .get()
             .build()
         val response = try {
@@ -176,6 +185,17 @@ class OkHttpRpcTransport(
             .build()
     }
 }
+
+/**
+ * Set `Authorization` when there is a credential, and leave the request untouched when there is not.
+ *
+ * File-level so the unary path, the download path and the WebSocket upgrade all attach the header
+ * the same way. `dsh-relay` verifies the token on the upgrade as well as on `/api`, and an upgrade
+ * sent without it is refused at the handshake — which the connection loop can only report as a
+ * stream that would not open.
+ */
+internal fun Request.Builder.authorized(authorization: String?): Request.Builder =
+    if (authorization == null) this else header("Authorization", authorization)
 
 /**
  * Carrier-layer failure text; 403 names the trust fence because that is the usual cause.
@@ -208,11 +228,17 @@ interface WsDownlinkSink {
  * A downlink-only WebSocket to `/api/events.mux` or `/api/events.host`. The client never sends
  * application data — sending any would make the server close the socket with code 1008 — so this
  * class only performs the handshake and reads frames.
+ *
+ * [authorization] rides on the upgrade itself. That is the whole credential for this socket: there
+ * is no later request to carry one, and `dsh-relay` refuses an unauthenticated upgrade at the
+ * handshake. Both downlinks must open inside the loop's 3000ms budget, so a missing header here
+ * costs the entire connection generation rather than one call.
  */
 open class WsDownlink(
     private val url: String,
     private val client: OkHttpClient,
     private val sink: WsDownlinkSink,
+    private val authorization: String? = null,
 ) {
     @Volatile
     private var webSocket: WebSocket? = null
@@ -264,7 +290,7 @@ open class WsDownlink(
     open fun start() {
         if (started) return
         started = true
-        val request = Request.Builder().url(url).build()
+        val request = Request.Builder().url(url).authorized(authorization).build()
         webSocket = client.newWebSocket(request, listener)
     }
 

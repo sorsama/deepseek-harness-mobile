@@ -51,6 +51,17 @@ enum class TransportFailure {
      */
     TLS,
 
+    /**
+     * TLS refused for one specific reason: the relay's public key is not the one this device
+     * pinned when it paired.
+     *
+     * A narrower case of [TLS], and worth separating because the instruction differs. A generic
+     * handshake failure is usually the wrong scheme or an untrusted certificate authority; this one
+     * means the key changed, which happens benignly when a relay regenerates its certificate after
+     * its address set changes — and looks identical to something else answering at that address.
+     */
+    CERTIFICATE_PIN,
+
     /** Anything else. */
     OTHER,
 }
@@ -73,6 +84,9 @@ object TransportFailures {
     /** Key under which the originating HTTP status is written, when there was one. */
     const val STATUS_KEY: String = "httpStatus"
 
+    /** How far [hasPinMismatch] follows a cause chain before giving up. */
+    private const val MAX_CAUSE_DEPTH = 8
+
     /** Classify a carrier exception: HTTP status first, then the underlying I/O cause. */
     fun classify(e: RpcTransportException): TransportFailure = when (e.status) {
         403 -> TransportFailure.TRUST_FENCE
@@ -82,9 +96,33 @@ object TransportFailures {
         else -> TransportFailure.NOT_A_HARNESS
     }
 
-    /** Classify a raw throwable — used for WebSocket failures and the socket pre-flight. */
-    fun classify(t: Throwable?): TransportFailure = when (t) {
-        null -> TransportFailure.OTHER
+    /**
+     * Classify a raw throwable — used for WebSocket failures and the socket pre-flight.
+     *
+     * The pin check runs first and walks the cause chain: OkHttp wraps whatever the trust manager
+     * threw in an `SSLHandshakeException`, so the marker is never the throwable handed in here.
+     */
+    fun classify(t: Throwable?): TransportFailure = when {
+        t == null -> TransportFailure.OTHER
+        hasPinMismatch(t) -> TransportFailure.CERTIFICATE_PIN
+        else -> classifyIo(t)
+    }
+
+    /** Whether [t] or anything it wraps is a [PinMismatchException]. */
+    private fun hasPinMismatch(t: Throwable): Boolean {
+        // Bounded rather than "walk until null": a self-referential cause chain is rare but it is a
+        // hang, and nothing legitimate nests this deep.
+        var cause: Throwable? = t
+        var depth = 0
+        while (cause != null && depth < MAX_CAUSE_DEPTH) {
+            if (cause is PinMismatchException) return true
+            cause = cause.cause
+            depth++
+        }
+        return false
+    }
+
+    private fun classifyIo(t: Throwable): TransportFailure = when (t) {
         is RpcTransportException -> classify(t)
         is SocketTimeoutException -> TransportFailure.TIMEOUT
         is UnknownHostException -> TransportFailure.DNS
