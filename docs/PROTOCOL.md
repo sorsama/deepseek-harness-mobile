@@ -266,7 +266,7 @@ method that credential may not reach.
 |---|---|---|
 | 403 | no usable credential | Stops the loop and says "pair again". No backoff — there is nothing to wait for. |
 | 404 | path not proxied, or the harness lacks the capability | Existing `capability-unavailable` handling |
-| 429 | rate limited or locked out | Backs off for `Retry-After`, defaulting to 60s when the header is absent |
+| 429 | rate limited or locked out | Backs off for `Retry-After`, defaulting to 60s when the header is absent — older relays omitted it on the lockout paths |
 | 502 | the harness behind the relay is not answering | Existing reconnect handling |
 
 403 is ambiguous with the harness's own `Host` fence, and no header on a rejected

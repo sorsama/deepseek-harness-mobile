@@ -48,8 +48,10 @@ object RelayPairing {
     /**
      * Fallback back-off when a 429 arrives without `Retry-After`.
      *
-     * The relay's rate limiter sets that header but its pairing lockout does not, so a client that
-     * trusted it to be present would busy-retry against a locked-out address.
+     * Current relays set the header on every 429, but older ones did not on the pairing and
+     * sign-in lockout paths, and a client that trusted it to be present would busy-retry against a
+     * locked-out address. Defaulting costs nothing and removes the dependency on which relay
+     * answered.
      */
     const val DEFAULT_RETRY_AFTER_SECONDS: Long = 60
 
