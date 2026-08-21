@@ -101,4 +101,70 @@ class ConnectDiagnosisTest {
             ConnectFailure.from(GenerationFailure.DescribeFailed(business)),
         )
     }
+
+    /**
+     * A relay answers 403 for a missing, expired or revoked token, and never 401 — so the status is
+     * identical to the harness's own `Host` fence. The only thing that separates them is whether
+     * this device ever paired with the address, which is knowledge the app has and the wire does
+     * not.
+     */
+    @Test
+    fun `a 403 from a paired relay means pair again, not add a trusted host`() {
+        assertEquals(
+            ConnectFailure.PairingRequired,
+            ConnectFailure.from(ProbeOutcome.TrustFence, relay = true),
+        )
+        assertEquals(
+            ConnectFailure.PairingRequired,
+            ConnectFailure.from(
+                GenerationFailure.StreamFailed(TransportFailure.TRUST_FENCE, "403"),
+                relay = true,
+            ),
+        )
+        val fenced = RpcError(
+            code = "forbidden",
+            message = "forbidden",
+            details = TransportFailures.details(TransportFailure.TRUST_FENCE, 403),
+        )
+        assertEquals(
+            ConnectFailure.PairingRequired,
+            ConnectFailure.from(GenerationFailure.DescribeFailed(fenced), relay = true),
+        )
+    }
+
+    /** Same status, no relay: the diagnosis that has always been right stays right. */
+    @Test
+    fun `a 403 from a plain harness is still the trust fence`() {
+        assertEquals(ConnectFailure.TrustFence, ConnectFailure.from(ProbeOutcome.TrustFence))
+        assertEquals(
+            ConnectFailure.TrustFence,
+            ConnectFailure.from(GenerationFailure.StreamFailed(TransportFailure.TRUST_FENCE, "403")),
+        )
+    }
+
+    /** The probe can decide this itself when it already knows the address is a relay. */
+    @Test
+    fun `relay-specific probe outcomes map straight through`() {
+        assertEquals(ConnectFailure.PairingRequired, ConnectFailure.from(ProbeOutcome.PairingRequired))
+        assertEquals(
+            ConnectFailure.CertificateChanged,
+            ConnectFailure.from(ProbeOutcome.CertificateChanged),
+        )
+    }
+
+    /** A changed key is never a transport failure to retry into; it needs the user to look at it. */
+    @Test
+    fun `a pin mismatch is reported as a changed certificate either way`() {
+        assertEquals(
+            ConnectFailure.CertificateChanged,
+            ConnectFailure.from(GenerationFailure.StreamFailed(TransportFailure.CERTIFICATE_PIN, null)),
+        )
+        assertEquals(
+            ConnectFailure.CertificateChanged,
+            ConnectFailure.from(
+                GenerationFailure.StreamFailed(TransportFailure.CERTIFICATE_PIN, null),
+                relay = true,
+            ),
+        )
+    }
 }
