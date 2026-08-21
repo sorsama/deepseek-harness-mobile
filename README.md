@@ -81,12 +81,29 @@ a [feature tour](https://github.com/sorsama/deepseek-harness-mobile/wiki/Feature
 
 1. Install the latest APK from
    [Releases](https://github.com/sorsama/deepseek-harness-mobile/releases/latest).
-2. On your computer, make the harness reachable from your phone:
-   - **USB / emulator:** `dsh web`, then `adb reverse tcp:3080 tcp:3080` — in the app connect to
-     `127.0.0.1:3080`.
-   - **Wi-Fi:** apply the one-file LAN patch described in
-     [`harness/README.md`](harness/README.md), restart `dsh web`, then tap **Scan network**
-     in the app.
+2. Open the app and choose how to connect. The two are not variations of one
+   setting — pick the one that matches what you set up on the computer.
+
+   **Relay** — encrypted, authenticated, and works from outside your Wi-Fi.
+   Install [`dsh-relay`](https://github.com/sorsama/deepseek-harness-relay) into
+   the harness web profile:
+
+   ```sh
+   dsh plugin --profile web add dsh-relay
+   dsh web
+   ```
+
+   Open the printed URL **on that computer**, set a password, then open
+   `/relay/pair`. In the app: **Relay → Pair a relay**, scan the QR. Once every
+   client you use has paired, turn off the relay's `compat.addressGrants` —
+   nothing here needs it.
+
+   **Local network** — no setup on the phone, no authentication at all. Apply
+   the one-file LAN patch in [`harness/README.md`](harness/README.md), restart
+   `dsh web`, then tap **Scan network**. Only on networks you trust.
+
+   **USB / emulator** — `dsh web`, then `adb reverse tcp:3080 tcp:3080`, and
+   connect to `127.0.0.1:3080` in local-network mode. No patch needed.
 3. Pick a session, chat, and get notified when the harness is done.
 
 If a connect attempt fails, the app names the cause; the wiki's
@@ -97,8 +114,10 @@ keyed on that exact sentence.
 
 - See [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) for the harness version matrix and
   loopback-only surfaces.
-- **Read [docs/SECURITY.md](docs/SECURITY.md) first** — the harness has no authentication; only
-  use LAN mode on trusted networks. The app says so on the connect screen for the same reason.
+- **Read [docs/SECURITY.md](docs/SECURITY.md) first.** The bare harness has no authentication, so
+  local-network mode is for trusted networks only — the app says so on the connect screen for the
+  same reason. Relay mode adds a real credential and a pinned certificate, but authenticating still
+  grants the same power as a shell on that computer, because the agent runs commands there.
 
 ## Building
 

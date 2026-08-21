@@ -8,11 +8,41 @@ checked against.
 
 | DSH Mobile | Harness version | Status |
 |---|---|---|
-| 0.7.0 | 0.1.1-rc.2 | Supported baseline |
+| 0.8.0 | 0.1.1-rc.2 | Supported baseline |
+| 0.7.0 | 0.1.1-rc.2 | |
 | 0.6.0 | 0.1.1-rc.2 | |
 | 0.5.0 | 0.1.0-rc.8 | Previous baseline |
 | 0.4.0 | 0.1.0-rc.7 | |
 | 0.1.0 – 0.3.1 | 0.1.0-rc.5 | |
+
+## Relay
+
+Reaching a harness through [`dsh-relay`](https://github.com/sorsama/deepseek-harness-relay)
+is a separate contract with its own version, because the relay is a plugin
+mounted beside the harness rather than part of it.
+
+| DSH Mobile | dsh-relay | Notes |
+|---|---|---|
+| 0.8.0 | 0.1.1 | Pairing payload `v: 1`; mDNS TXT `v: 1` |
+
+Relay 0.1.1 registers `/relay` on the harness's **own** web server and redirects
+it to its listener. That makes the harness address — the one this app has shown
+people for five releases — a usable thing to type on the pairing screen, and the
+app resolves that redirect itself rather than letting the HTTP layer follow it:
+the target names a different scheme and port, which decides both the key to pin
+and what gets remembered, and a 302 would rewrite the claim's POST into a GET.
+It is reachable only where the harness's own port is, which with a relay running
+means loopback — `adb reverse`, or a harness on the phone itself.
+
+Both versions are checked, unlike the harness baseline. A pairing payload is a
+credential exchange, so a `kind` other than `dsh-relay-pair` or a `v` above the
+one this build understands is refused outright rather than degraded — see
+`docs/PROTOCOL.md`. Everything *behind* the relay is the harness protocol
+unchanged, so the version policy below applies to it exactly as before.
+
+Relay 0.1.0 keeps `compat.addressGrants` on by default, as a bridge for clients
+that cannot present a credential. DSH Mobile 0.8.0 can, so that bridge should be
+turned off — see `docs/SECURITY.md`.
 
 The baseline is one constant — `DshCore.PROTOCOL_BASELINE` in
 `core/src/main/kotlin/com/labteto/dshmobile/core/DshCore.kt` — and the app shows
@@ -88,3 +118,13 @@ or hidden:
 - `settings.*`, `credentials.*`, `llm.discoverModels`
 - `host.pickDirectory`, `host.openPath`
 - agent-preset authoring (`agentPreset.read/copy/openDocument/remove`)
+
+Behind a relay this depends on how the operator configured it. `dsh-relay` keeps
+its own copy of that list — the `Host` rewrite would otherwise lift the harness's
+pin — and `privilegedMethods` decides who reaches it: `allow-authenticated` (the
+default) serves them to a paired device, `loopback-only` keeps them on the host
+machine, and an address-granted client never reaches them regardless.
+
+Nothing in the app branches on this. These surfaces already degrade on 403 and
+404 rather than on a stored flag, so a paired device simply starts getting
+answers where it previously got refusals.

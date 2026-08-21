@@ -15,7 +15,7 @@ plugins {
  * upgrade at all. The code is derived from the name so it rises with semver on its own; the
  * fallback is what a local `assembleRelease` builds.
  */
-val dshVersionName: String = System.getenv("DSH_VERSION_NAME")?.takeIf { it.isNotBlank() } ?: "0.7.0"
+val dshVersionName: String = System.getenv("DSH_VERSION_NAME")?.takeIf { it.isNotBlank() } ?: "0.8.0"
 
 val dshVersionCode: Int = dshVersionName
     .substringBefore('-')

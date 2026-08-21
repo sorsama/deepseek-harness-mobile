@@ -1,30 +1,101 @@
 # Security
 
 DSH Mobile is a remote control for the **DeepSeek Harness**. Understand the
-trust model before using it.
+trust model before using it — and note that the app now offers two, which is why
+the connect screen makes you pick one rather than choosing for you.
 
-## The harness has no authentication
+## The thing to understand first
 
-The harness web server (`dsh web`) serves plain HTTP with a *trust fence*,
-not authentication:
+The harness is a coding agent. It runs shell commands, reads and writes files,
+and can install software on the computer it runs on. **Anything that can reach
+it can do all of that.** There is no lesser tier of access. Both modes below
+grant the same power; they differ only in what has to be true before someone
+gets it.
 
-- Every `/api` request is accepted only when its `Host` header is loopback or
-  a configured trusted authority (LAN IP literals are auto-derived when the
-  server binds `0.0.0.0`).
-- There are no tokens, cookies, or TLS. Any device on the same network can
-  send requests with a trusted `Host` and drive the agent — including
-  running commands on the host computer. (TLS can be added from outside by
-  fronting the harness with a reverse proxy; see below.)
+## Local network mode
+
+The harness web server (`dsh web`) serves plain HTTP with a *trust fence*, not
+authentication:
+
+- Every `/api` request is accepted only when its `Host` header is loopback or a
+  configured trusted authority (LAN IP literals are auto-derived when the server
+  binds `0.0.0.0`).
+- There are no tokens, cookies, or TLS. Any device on the same network can send
+  requests with a trusted `Host` and drive the agent — including running
+  commands on the host computer. TLS can be added from outside by fronting the
+  harness with a reverse proxy — see **HTTPS through a reverse proxy** below —
+  but that encrypts the link without authenticating anyone; only a relay does
+  both.
 
 **Consequences:**
 
-- Only bind the harness to `0.0.0.0` on networks you fully trust (home
-  network, your own lab). Never on public or guest Wi-Fi.
-- DSH Mobile shows a warning banner whenever you connect to a non-loopback
-  host.
-- Sensitive surfaces (settings, credentials, agent-preset authoring, host
-  file pickers) remain loopback-only by harness design and are shown
-  read-only over the network.
+- Only bind the harness to `0.0.0.0` on networks you fully trust (home network,
+  your own lab). Never on public or guest Wi-Fi.
+- DSH Mobile states this on the connect screen whenever local-network mode is
+  selected.
+- Sensitive surfaces (settings, credentials, agent-preset authoring, host file
+  pickers) remain loopback-only by harness design and are shown read-only over
+  the network.
+
+## Relay mode
+
+[`dsh-relay`](https://github.com/sorsama/deepseek-harness-relay) is a harness
+plugin that mounts a second listener beside the harness rather than inside it.
+The harness keeps its loopback bind; the relay terminates TLS, authenticates,
+and forwards. A relay that fails to start therefore leaves the harness
+**unreachable** from the network — never open to it.
+
+What that gets you, and what it does not:
+
+- **A real credential.** The app holds a bearer token issued once, at pairing,
+  and sends it on every `/api` call and both WebSocket upgrades. The relay stores
+  only a keyed hash of it.
+- **Real transport security.** Traffic is encrypted, and the app pins the
+  relay's public key by SHA-256 of its DER SubjectPublicKeyInfo. Pinning
+  *replaces* CA validation rather than following it, so a self-signed relay is
+  verified rather than merely accepted.
+- **Revocation you control.** Each device is individually revocable from the
+  relay's own device list, and "sign out everywhere" invalidates every token at
+  once. Either one surfaces in the app as "pair again" on the next request.
+- **It does not reduce what an authenticated client can do.** Signing in grants
+  the same power as a shell on that machine. The question the relay answers is
+  "is the remote user you", not "how much can the remote user do".
+
+### How the key is established
+
+Two pairing routes, and they do not prove the same thing. The app says which one
+happened rather than reporting "paired" twice:
+
+- **Scanning the QR** carries the relay's key in the payload, so the very first
+  byte the app sends is verified against it.
+- **Typing the code** carries no key — the relay only reveals one in its answer
+  to the claim — so the certificate is trusted on first contact. An attacker able
+  to answer at that address during pairing would end up holding the enrolment.
+
+Prefer the QR. The typed route exists because it is the one that works when the
+camera does not.
+
+### When the key changes
+
+The relay regenerates its certificate — with a **new key** — whenever the set of
+addresses it covers changes. A harness laptop that moves between networks
+therefore rotates its pin, and paired devices stop connecting until they pair
+again. That is indistinguishable from something else answering at the address,
+so the app reports it as a changed key and refuses to proceed on its own.
+
+### What is not defended
+
+- **A weak relay password.** Ten characters is the enforced floor, not a
+  recommendation.
+- **A relay running `tls: off`, or its plain-HTTP compatibility listener.** The
+  token and everything you send travel in the clear. The app says so on the
+  pairing screen and on the endpoint's card.
+- **Source-address grants.** The relay's `compat.addressGrants` accepts requests
+  from an address a paired device was last seen on, as a bridge for clients that
+  cannot hold a token. A source address is not authentication: it is shared
+  behind NAT, reassigned by DHCP, rotated by IPv6 privacy extensions, and
+  spoofable on the same Wi-Fi. **This app no longer needs it** — set
+  `compat.addressGrants: false` once every client you use has paired.
 
 ## HTTPS through a reverse proxy
 
@@ -52,26 +123,36 @@ Certificate verification is standard Android, with one addition:
 
 ## What DSH Mobile stores
 
-- Remembered host addresses (host, port, display name, and whether to use
-  HTTPS) and app preferences, in app-private storage only.
-- No session content is persisted to disk in v1 (chat history lives in
-  memory and is re-fetched on connect).
-- The app allows cleartext HTTP by necessity (the harness serves plain
-  HTTP); see `app/src/main/res/xml/network_security_config.xml`.
+- Remembered endpoints (host, port, whether to use HTTPS, display name, and —
+  for a relay — its device id and certificate pin) plus app preferences, in
+  app-private storage only.
+- **Relay bearer tokens, encrypted.** The key is generated in the Android
+  Keystore and never leaves it; only ciphertext reaches DataStore. Forgetting a
+  host drops its token in the same act, and Settings → clear data drops all of
+  them. Revoking the relay's own record of the device happens on the relay.
+- No session content is persisted to disk (chat history lives in memory and is
+  re-fetched on connect).
+- Cleartext HTTP remains permitted app-wide, alongside user-installed CAs
+  (`app/src/main/res/xml/network_security_config.xml`). Cleartext cannot be
+  narrowed: a bare harness serves plain HTTP on a LAN address not known at build
+  time. The app answers this by naming the transport wherever an endpoint
+  appears rather than by pretending every connection is encrypted. A pinned
+  relay bypasses that trust store entirely — the pin *is* the trust decision.
 
 ## What DSH Mobile connects to
 
-Every connection is to a LAN endpoint you entered or picked from a scan, with
-one exception:
+Every connection is to an endpoint you entered, scanned, or picked from a scan,
+with one exception:
 
-- **The update check.** On start the app asks
-  `api.github.com` for this repository's latest release, over HTTPS, so it can
-  tell you when a newer APK exists. It sends no identifying information beyond
-  what any HTTPS request carries, and it is the only request that leaves your
-  network. Turn it off in **Settings → About → Check for updates**; nothing else
-  in the app contacts anything but the harness.
-- **Scanning** probes only your own device's IPv4 /24, and only with a TCP
-  connect followed by the harness's own `host.describe`.
+- **The update check.** On start the app asks `api.github.com` for this
+  repository's latest release, over HTTPS, so it can tell you when a newer APK
+  exists. It sends no identifying information beyond what any HTTPS request
+  carries, and it is the only request that leaves your network. Turn it off in
+  **Settings → About → Check for updates**.
+- **Scanning** probes only your own device's IPv4 /24 — with a TCP connect
+  followed by `host.describe` in local-network mode, or by `/relay/health` in
+  relay mode. Relay mode browses mDNS `_dsh._tcp` first and only sweeps if that
+  finds nothing.
 
 ## Reporting a vulnerability
 
@@ -80,14 +161,7 @@ the repository's Security tab or by email to **sor@zyphite.com**. Do not open a
 public issue for a vulnerability. Include what an attacker can do, the steps to
 reproduce it, the app and harness versions, and how the app was connected.
 
-The harness having no authentication is the documented model above, not a
-vulnerability report worth sending. A way around the trust fence is.
-
-## Roadmap
-
-Upstream harness improvements that would materially harden this setup are
-tracked as issues in this repository:
-
-1. An authentication layer (pairing token) on the web server.
-2. An explicit `--lan` flag (currently the CLI blocks `--host 0.0.0.0`).
-3. mDNS advertisement for zero-touch, authenticated discovery.
+The facts documented above — that the bare harness has no authentication, that
+authenticating to a relay grants shell-equivalent access, and that typed pairing
+is trust-on-first-use — are the model, not vulnerability reports. A way around
+the trust fence, the bearer check, or the certificate pin is.

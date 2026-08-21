@@ -186,4 +186,95 @@ the current generation.
 ## Trust fence
 
 `Host` header must be loopback or a trusted authority; the app sends no
-`Origin`. HTTP 403 = fence rejection (see `docs/COMPATIBILITY.md`).
+`Origin`. HTTP 403 = fence rejection (see `docs/COMPATIBILITY.md`). It is not an
+authentication layer, and the harness says so itself — see **Relay** below for
+the layer that is.
+
+## Relay
+
+`dsh-relay` is a harness plugin, not a different protocol. It terminates TLS,
+authenticates, and forwards to the same loopback harness — so the envelopes, the
+method set, both downlinks and the 3-second handshake budget are unchanged.
+Three things differ on the wire.
+
+**1. Every request carries a credential.**
+
+```
+Authorization: Bearer <token>
+```
+
+On `POST /api/*`, on `GET /api/session.export`, and on **both WebSocket
+upgrades**. The upgrade is the one that bites: it has no later request to carry
+a credential, a relay refuses it at the handshake, and the loop can only report
+that as a stream that would not open.
+
+**2. The base URL may be `https://`.**
+
+When the pairing payload carries a `fingerprint`, the app pins it: SHA-256 over
+the leaf certificate's DER SubjectPublicKeyInfo, base64 — byte-for-byte what the
+relay publishes. Pinning replaces CA validation rather than following it
+(`core/wire/RelayTls.kt`), because the relay's default posture is a self-signed
+certificate the platform store would reject before a pin was ever consulted.
+
+The relay mints a **new key** whenever the addresses its certificate covers
+change, so a harness machine that moves networks rotates the pin. The app
+reports that as a changed certificate, never as a transport failure, and never
+falls back to CA validation.
+
+**3. Pairing, once.**
+
+Two calls outside `/api`, neither of which is forwarded upstream:
+
+| Call | Auth | Answer |
+|---|---|---|
+| `GET /relay/health` | none | `{"service":"dsh-relay","ok":true}` |
+| `POST /relay/pair` | none | `{deviceId, token, expiresAt, fingerprint?}`, or 403 `{"error":"pairing-failed"}` |
+
+The claim body is `{"code","name"}` and **must** be sent with
+`Content-Type: application/json`; without it the relay answers with an HTML page
+rather than a token. It must go to the payload's `url` — the plain-HTTP
+compatibility listener serves no relay route but `/relay/health`.
+
+Neither call follows redirects. Relay 0.1.1 registers `/relay` on the harness's
+own web server and redirects it to the relay's listener, so `/relay/health` is
+also how the app resolves *where* a relay is: a 3xx naming the same path is the
+harness pointing at it. Reading that answer rather than chasing it is what keeps
+the recorded origin right — the target carries a different scheme and port, and
+a 302 rewrites a POST into a GET, which would deliver the claim as a page view.
+
+The QR payload is a single UTF-8 JSON object. `v` and `kind` are always present;
+`plainUrl` and `fingerprint` are not. The app refuses any `kind` other than
+`dsh-relay-pair` and any `v` above 1 — the one place it is strict rather than
+lenient, because acting on a payload hands over a credential.
+
+```json
+{"v":1,"kind":"dsh-relay-pair","url":"https://192.168.1.5:3443",
+ "plainUrl":"http://192.168.1.5:3444","fingerprint":"<base64 SPKI>",
+ "code":"48213977","expiresAt":1755500000000}
+```
+
+### Status codes behind a relay
+
+A relay answers **403, never 401**, for every unauthorized case — missing,
+expired, revoked, an untrusted `Host`, a cross-site marker, or a privileged
+method that credential may not reach.
+
+| Code | Meaning | What the app does |
+|---|---|---|
+| 403 | no usable credential | Stops the loop and says "pair again". No backoff — there is nothing to wait for. |
+| 404 | path not proxied, or the harness lacks the capability | Existing `capability-unavailable` handling |
+| 429 | rate limited or locked out | Backs off for `Retry-After`, defaulting to 60s when the header is absent |
+| 502 | the harness behind the relay is not answering | Existing reconnect handling |
+
+403 is ambiguous with the harness's own `Host` fence, and no header on a rejected
+upgrade disambiguates it. The app decides from what it already knows: an address
+it holds a device token for reads 403 as "pair again", any other address reads it
+as the trust fence.
+
+### Discovery
+
+The relay advertises `_dsh._tcp` over mDNS with TXT records `v=1`,
+`relay=dsh-relay`, `tls=self-signed|files|off`, `plain=<port>` and
+`pin=<base64 SPKI>`. The service port is the primary listener's. Nothing depends
+on it: relay mode browses first and falls back to knocking 3443 and 3444 across
+the phone's own /24.

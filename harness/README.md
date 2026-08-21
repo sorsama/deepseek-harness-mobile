@@ -1,10 +1,27 @@
 # LAN mode for the DeepSeek Harness (companion setup for DSH Mobile)
 
+> **Consider the relay instead.** This page rebinds the harness to every
+> interface with **no authentication of any kind** — anyone on the same Wi-Fi can
+> drive the agent, which means running commands on your computer. That was the
+> only option when DSH Mobile could not hold a credential. It can now:
+> [`dsh-relay`](https://github.com/sorsama/deepseek-harness-relay) leaves the
+> harness on loopback and puts an authenticated TLS listener in front of it.
+>
+> ```sh
+> dsh plugin --profile web add dsh-relay
+> dsh web
+> ```
+>
+> Then pair the phone from **Relay → Pair a relay**. The relay refuses to start
+> at all if it finds the harness already bound to `0.0.0.0`, so remove the patch
+> below before installing it. Everything from here down is the unauthenticated
+> path, kept for setups that cannot run the plugin.
+
 The DeepSeek Harness web server binds to `127.0.0.1` by default, and the
 `dsh web --host 0.0.0.0` flag is intentionally blocked for safety (the
-harness has no authentication layer yet). To use DSH Mobile over Wi-Fi you
-enable LAN serving through the harness **user patch layer** — the supported
-configuration seam.
+harness has no authentication layer yet). To use DSH Mobile over Wi-Fi without
+the relay you enable LAN serving through the harness **user patch layer** — the
+supported configuration seam.
 
 ## Steps
 
@@ -46,8 +63,9 @@ configuration seam.
    dsh web --trusted-host myhost.local
    ```
 
-4. In DSH Mobile: Settings → Connect, tap **Scan network**, or enter
-   `192.168.1.20` / `3080` manually.
+4. In DSH Mobile, make sure **Local network** is selected on the connect
+   screen, then tap **Scan network** or enter `192.168.1.20` / `3080` manually.
+   Relay mode will not find a harness patched this way — it looks for relays.
 
 ## HTTPS via your own reverse proxy
 
@@ -156,7 +174,8 @@ ipconfig getifaddr en0        # macOS (Wi-Fi)
 ## Notes
 
 - **Security**: there is no authentication. Anyone on your LAN can reach the
-  harness while it binds `0.0.0.0`. Only use LAN mode on networks you trust.
+  harness while it binds `0.0.0.0`. Only use LAN mode on networks you trust, and
+  prefer the relay described at the top of this page.
   See [../docs/SECURITY.md](../docs/SECURITY.md).
 - **Privileged features**: settings, credentials, host directory pickers and
   agent-preset authoring stay loopback-only by design; the app shows them

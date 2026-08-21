@@ -3,6 +3,131 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [0.8.0] - 2026-08-22
+
+The app can hold a credential.
+
+Until now the only way to reach a harness from a phone was to rebind it to every
+interface with no authentication at all — the LAN patch in `harness/README.md`,
+which anyone on the same Wi-Fi could use to run commands on your computer. That
+was not a gap in this app so much as the absence of a layer: the harness's own
+`/api` fence says outright that it "is not an auth layer", and its CLI refuses
+`--host 0.0.0.0` because doing so "would expose remote code execution to the
+network".
+
+[`dsh-relay`](https://github.com/sorsama/deepseek-harness-relay) is that layer,
+mounted beside the harness rather than inside it, and this release is the client
+half of it. The relay's own notes were blunt that the previous bridge —
+accepting requests from whatever address a paired phone was last seen on — is
+not authentication, and that it existed only because the alternative available
+to a 0.5.0 client was worse. It is no longer needed: set
+`compat.addressGrants: false` once every client you use has paired.
+
+### Added
+
+- **You choose how to connect.** The connect screen opens on a two-way choice —
+  **Local network** or **Relay** — and nothing crosses between them, auto-connect
+  included. They are not two routes to the same place: one talks to a harness
+  that authenticates nobody, the other presents a token to a relay that pins its
+  own key, and a single screen covering both would have to be wrong about one of
+  them. Existing installs open on Local network, exactly where they were.
+- **Pairing, by QR or by code.** Open `/relay/pair` on the computer running the
+  harness and scan what it shows; or type the eight-digit code and the address
+  yourself when the camera is not an option. The two do not establish the same
+  thing, and the screen says which one happened: the QR carries the relay's
+  public key, so the first byte the app sends is already verified, while a typed
+  address has no key to check against until the relay answers. Scanning uses
+  ZXing, so it needs no Google Play Services, and the camera permission is
+  requested at the moment you tap Scan.
+- **Encrypted, pinned transport.** `https://` works for `/api` and for both
+  event streams, and when the relay is self-signed the app pins its public key —
+  SHA-256 over the certificate's DER SubjectPublicKeyInfo, the value the relay
+  publishes. The pin *replaces* certificate-authority validation rather than
+  running after it, which is the only arrangement that actually verifies a
+  self-signed relay: OkHttp's own pinner is consulted after the platform trust
+  store has already rejected the chain.
+- **Relays announce themselves.** Relay mode browses mDNS `_dsh._tcp` and reads
+  the port, TLS posture and key pin straight out of the advertisement, which
+  removes the subnet sweep entirely. Nothing depends on it — multicast is
+  filtered on plenty of networks and the relay's `mdns` flag can be off — so a
+  quiet browse falls back to knocking the two ports a relay uses, which costs a
+  fraction of the harness sweep.
+- **A relay can be reached from outside your Wi-Fi.** The "not on this phone's
+  network" guard is skipped for an endpoint holding a relay token, so a
+  forwarded port or a VPN address works. Every other address keeps the guard and
+  its specific explanation, which is still the fastest correct answer on a LAN.
+
+### Changed
+
+- **The connect screen was rebuilt around one rule: at most one paragraph before
+  something you can act on.** Relay mode opened with six lines of explanation
+  across two blocks, then three empty sections each saying a version of "you
+  have no relay", and only then the button that is the entire point of the
+  screen. There is now a single notice under the mode chooser — tinted as a
+  warning for local network, which is the mode that carries one — and the
+  pairing call to action is a card that *is* the empty state rather than a
+  fourth block below it. Once a relay is paired it steps back to a ghost button.
+  The chat's empty-state hero, complete with a "Preview" pill that means nothing
+  here, is replaced by a compact masthead that leaves the chooser above the fold
+  on a normal phone.
+- **403 from a relay reads as "pair again".** A relay answers 403 — never 401 —
+  for a missing, expired or revoked token alike, which is the same status the
+  harness's `Host` fence uses and carries nothing a rejected WebSocket upgrade
+  could disambiguate. The app decides from what it already knows: an address it
+  holds a token for gets "pair again", any other address gets the trust-fence
+  advice it always got. The reconnect loop also **stops** on that outcome
+  instead of backing off forever — there is nothing to wait for, and the fix is
+  on the relay's pairing page.
+- **A changed relay key is reported, never worked around.** The relay mints a
+  new key whenever the addresses its certificate covers change, so a harness
+  laptop that moves networks rotates its pin and looks exactly like something
+  else answering at that address. The app says the key changed and stops; it
+  never falls back to CA validation.
+- **Bearer tokens are stored encrypted.** The key is generated in the Android
+  Keystore and never leaves it; only ciphertext reaches app storage. Forgetting a
+  host drops its token in the same act, and Settings → clear data drops all of
+  them. A blob that will not decrypt — after a device restore, say — is dropped
+  rather than raised, because that is the same terminal state as a revoked token
+  and reporting it as an error would offer a choice nobody has.
+- **The harness's own address works on the pairing screen.** `dsh-relay` 0.1.1
+  redirects `/relay` on the harness's web server to the relay's listener, which
+  makes the address this app has shown people for five releases a usable thing
+  to type. The app resolves that redirect itself rather than letting OkHttp
+  follow it: the target names a different scheme and port, which decides both
+  the key to pin and what gets remembered, and a 302 rewrites the claim's POST
+  into a GET — delivering it as a page view that answers with markup instead of
+  a token. Discovery reads the same answer, so a relay found through a redirect
+  is recorded where it actually listens.
+- **A relay that refuses the address is reported, not hidden.** The relay's
+  DNS-rebinding fence runs before every route, so an address it does not know
+  itself by — an emulator's host alias, a name it was never told — answers 403
+  to the unauthenticated liveness probe as readily as to anything else. Reading
+  that as "nothing there" is why a scan could come back empty while the harness
+  log said `refused GET /relay/health: untrusted-host`. Such a relay now appears
+  on the discovery list with the address to add to its `publicHostnames`, the
+  same way a trust-fenced harness already did — it is the most recoverable thing
+  a scan can turn up, and the one the phone cannot fix on its own. Pairing tells
+  the two 403s apart by their body: the relay answers `pairing-failed` for a
+  code it will not take, and its fence answers plain text before any route.
+- **The relay scan knocks loopback first.** A relay reached through
+  `adb reverse`, or running on the phone itself, answers at `127.0.0.1` — the
+  one address a relay always trusts, so it pairs with no configuration at all.
+- **The client is checked against the real relay, not only against a mock.** Every
+  other relay test here runs against a stand-in written from reading the plugin,
+  which is exactly what cannot catch a misreading — it would be baked into the
+  client and the mock alike and every assertion would still pass.
+  `RelayConformanceTest` boots the actual `dsh-relay` in front of the mock
+  harness and drives the real pairing, bearer and pinning paths through it. It
+  skips unless the plugin's sources are on the machine, so CI is unaffected; set
+  `DSH_RELAY_SRC` to point it at a checkout.
+- `docs/SECURITY.md` now documents both trust models rather than one, including
+  the honest limits: typed pairing is trust-on-first-use, a relay serving
+  plaintext sends the token in the clear, and authenticating to a relay grants
+  the same power as a shell on that computer. `docs/PROTOCOL.md` gains the relay
+  contract; `harness/README.md` now leads with the relay and keeps the
+  unauthenticated patch below it.
+
+
 ## [0.7.0] - 2026-08-21
 
 ### Fixed
