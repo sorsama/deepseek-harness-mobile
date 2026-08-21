@@ -21,7 +21,7 @@ Reaching a harness through [`dsh-relay`](https://github.com/sorsama/deepseek-har
 is a separate contract with its own version, because the relay is a plugin
 mounted beside the harness rather than part of it.
 
-| DSH Mobile | dsh-relay | Notes |
+| DSH Mobile | [dsh-relay](https://github.com/sorsama/deepseek-harness-relay) | Notes |
 |---|---|---|
 | 0.8.0 | 0.1.1 | Pairing payload `v: 1`; mDNS TXT `v: 1` |
 

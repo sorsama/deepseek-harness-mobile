@@ -22,6 +22,12 @@ DSH Mobile is an **unofficial companion app** for the
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (MIT), mirroring its web GUI
 feature-for-feature in the harness's own visual language. Android only, Kotlin + Jetpack Compose.
 
+Its companion on the other end is
+[**dsh-relay**](https://github.com/sorsama/deepseek-harness-relay) — a harness plugin that adds the
+authentication layer the harness says it lacks, so this app can reach a harness with a real
+credential and a pinned key instead of an open port. See
+[Relay](https://github.com/sorsama/deepseek-harness-mobile/wiki/Relay).
+
 **[dshm.zyphite.com](https://dshm.zyphite.com)** is the project site — what the app is, what it
 looks like, and how to get it running, on one page.
 
@@ -147,6 +153,7 @@ layout, and the release workflow.
 | `mock-harness/` | Ktor mock of the harness `/api` server for tests |
 | `tools/capture/` | Records real harness traffic into conformance fixtures |
 | `harness/` | Companion patch + guide for LAN mode |
+| — | The relay itself lives in [sorsama/deepseek-harness-relay](https://github.com/sorsama/deepseek-harness-relay) |
 | `docs/` | [Architecture](docs/ARCHITECTURE.md), [protocol notes](docs/PROTOCOL.md), [compatibility](docs/COMPATIBILITY.md), [security](docs/SECURITY.md) |
 
 ## License
