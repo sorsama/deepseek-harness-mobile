@@ -208,9 +208,12 @@ upgrades**. The upgrade is the one that bites: it has no later request to carry
 a credential, a relay refuses it at the handshake, and the loop can only report
 that as a stream that would not open.
 
-**2. The base URL may be `https://`.**
+**2. TLS is pinned, not merely verified.**
 
-When the pairing payload carries a `fingerprint`, the app pins it: SHA-256 over
+`https://` itself is nothing new — the app has spoken it since 0.7.0, for a
+harness behind a reverse proxy, where an ordinary CA decides. A relay is the
+other way round. When the pairing payload carries a `fingerprint`, the app pins
+it: SHA-256 over
 the leaf certificate's DER SubjectPublicKeyInfo, base64 — byte-for-byte what the
 relay publishes. Pinning replaces CA validation rather than following it
 (`core/wire/RelayTls.kt`), because the relay's default posture is a self-signed

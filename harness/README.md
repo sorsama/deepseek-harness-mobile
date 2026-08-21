@@ -2,10 +2,12 @@
 
 > **Consider the relay instead.** This page rebinds the harness to every
 > interface with **no authentication of any kind** — anyone on the same Wi-Fi can
-> drive the agent, which means running commands on your computer. That was the
-> only option when DSH Mobile could not hold a credential. It can now:
+> drive the agent, which means running commands on your computer.
 > [`dsh-relay`](https://github.com/sorsama/deepseek-harness-relay) leaves the
-> harness on loopback and puts an authenticated TLS listener in front of it.
+> harness on loopback and puts an authenticated TLS listener in front of it,
+> which is the only arrangement here that asks who you are. (Your own reverse
+> proxy, below, encrypts the link but authenticates nobody: whoever reaches the
+> proxy reaches the agent.)
 >
 > ```sh
 > dsh plugin --profile web add dsh-relay

@@ -187,7 +187,7 @@ class PairViewModel @Inject constructor(
         viewModelScope.launch {
             // Ask the address where the relay is before deciding how to talk to it. Since relay
             // 0.1.1 the harness's own port redirects `/relay` to the relay's listener, so the
-            // address people already know — the one this app has shown them for five releases —
+            // address people already know — the one this app has asked them for since day one —
             // is a usable way in. The redirect has to be resolved here rather than followed by the
             // HTTP client: it names a different scheme and port, which decides both the pin to
             // present and what gets remembered, and a 302 would rewrite the claim's POST to a GET.

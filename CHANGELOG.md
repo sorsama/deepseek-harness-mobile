@@ -91,7 +91,8 @@ to a 0.5.0 client was worse. It is no longer needed: set
   and reporting it as an error would offer a choice nobody has.
 - **The harness's own address works on the pairing screen.** `dsh-relay` 0.1.1
   redirects `/relay` on the harness's web server to the relay's listener, which
-  makes the address this app has shown people for five releases a usable thing
+  makes the address this app has asked people for since its first release a
+  usable thing
   to type. The app resolves that redirect itself rather than letting OkHttp
   follow it: the target names a different scheme and port, which decides both
   the key to pin and what gets remembered, and a 302 rewrites the claim's POST

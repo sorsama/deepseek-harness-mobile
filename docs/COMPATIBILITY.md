@@ -26,11 +26,12 @@ mounted beside the harness rather than part of it.
 | 0.8.0 | 0.1.1 | Pairing payload `v: 1`; mDNS TXT `v: 1` |
 
 Relay 0.1.1 registers `/relay` on the harness's **own** web server and redirects
-it to its listener. That makes the harness address — the one this app has shown
-people for five releases — a usable thing to type on the pairing screen, and the
-app resolves that redirect itself rather than letting the HTTP layer follow it:
-the target names a different scheme and port, which decides both the key to pin
-and what gets remembered, and a 302 would rewrite the claim's POST into a GET.
+it to its listener. That makes the harness address — the one this app has asked
+people for since its first release — a usable thing to type on the pairing
+screen, and the app resolves that redirect itself rather than letting the HTTP
+layer follow it: the target names a different scheme and port, which decides
+both the key to pin and what gets remembered, and a 302 would rewrite the
+claim's POST into a GET.
 It is reachable only where the harness's own port is, which with a relay running
 means loopback — `adb reverse`, or a harness on the phone itself.
 

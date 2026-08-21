@@ -116,6 +116,9 @@ Certificate verification is standard Android, with one addition:
   certificate anyway" flow, no hostname-check bypass, and no pinning UI: an
   untrusted certificate fails the connection with a message naming the CA
   install as the fix.
+- Relay mode is the exception, and it goes the other way. There the app pins a
+  key it was handed at pairing and ignores the CA set entirely — stricter than
+  this path, not looser, and never something the user is asked to approve.
 - The trust fence still applies through a proxy. The app sends the authority
   it was given as the `Host` header, so the harness must be started with
   `--trusted-host <that name>` (a proxy that preserves `Host`, as Caddy does

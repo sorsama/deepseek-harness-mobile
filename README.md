@@ -102,6 +102,11 @@ a [feature tour](https://github.com/sorsama/deepseek-harness-mobile/wiki/Feature
    the one-file LAN patch in [`harness/README.md`](harness/README.md), restart
    `dsh web`, then tap **Scan network**. Only on networks you trust.
 
+   **Behind your own HTTPS reverse proxy** — paste the `https://` address into
+   local-network mode. The proxy can forward to loopback, so the harness needs
+   no patch; but it encrypts the link without authenticating anyone. See
+   [`harness/README.md`](harness/README.md).
+
    **USB / emulator** — `dsh web`, then `adb reverse tcp:3080 tcp:3080`, and
    connect to `127.0.0.1:3080` in local-network mode. No patch needed.
 3. Pick a session, chat, and get notified when the harness is done.
