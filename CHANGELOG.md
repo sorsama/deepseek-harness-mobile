@@ -3,6 +3,42 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [Unreleased]
+
+### Fixed
+
+- **A harness behind an HTTPS reverse proxy could not be connected to at all**
+  (#6). Two faults compounded, one per way of typing the address. The host
+  field took its text as a bare hostname, so a pasted `https://agent.home` went
+  to DNS scheme and all — and failed with advice about running ipconfig. And
+  every URL the app built began `http://`, so even the plain hostname with port
+  443 sent cleartext to a TLS socket and was told it had found something that
+  "is not a DeepSeek Harness". The host field now reads what people actually
+  paste — scheme, port, a trailing path, IPv6 brackets — and an `https://`
+  scheme (or port 443 with no scheme) makes the whole connection TLS: every
+  `/api` call, both event streams, and session-log downloads. The choice is
+  remembered per host, so reconnects and auto-connect keep speaking it.
+- A failed TLS handshake now has its own diagnosis instead of landing in the
+  generic bucket, naming the two things it can mean: a certificate this phone
+  does not trust (install the local CA), or `https://` aimed at a plain-HTTP
+  port (drop the scheme). `SSLException` *is* an `IOException`, so before this
+  it fell through to the message sniffer and matched nothing.
+- The name-does-not-resolve message suggested only ipconfig on Windows, which
+  read as a wrong guess to anyone whose computer runs Linux or macOS (#6). It
+  now names all three.
+
+### Added
+
+- User-installed CA certificates are trusted for HTTPS connections
+  (`<certificates src="user" />`). A LAN proxy is almost always signed by a
+  local CA — Caddy's internal CA, mkcert — which only ever works if the
+  phone's owner deliberately installed it; without this entry every such setup
+  failed closed with a handshake error the app could name but not fix.
+  Verification is not otherwise relaxed: no accept-anyway flow, no hostname
+  bypass. `docs/SECURITY.md` describes the model, and `harness/README.md`
+  gained the Caddy walkthrough and a troubleshooting entry for the new
+  failure message.
+
 ## [0.6.0] - 2026-08-21
 
 The baseline moves to harness **0.1.1-rc.2**, and this one is a re-verification

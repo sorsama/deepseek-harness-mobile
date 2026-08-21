@@ -56,8 +56,9 @@
     <string name="connect_fail_timeout">%1$s पर कोई जवाब नहीं मिला। आमतौर पर कंप्यूटर का फ़ायरवॉल पोर्ट %2$d पर आने वाले कनेक्शन रोकता है — उसे अनुमति देकर फिर कोशिश करें। कुछ राउटर वाई-फाई डिवाइस को तार वाले डिवाइस तक पहुँचने से भी रोकते हैं।</string>
     <string name="connect_fail_refused">%1$s ने कनेक्शन अस्वीकार कर दिया। LAN मोड चालू किए बिना harness केवल कंप्यूटर पर ही सुनता है — उसे चालू करके harness पुनः आरंभ करें। पोर्ट बदला हो तो उसे भी मिलाएँ।</string>
     <string name="connect_fail_fence_title">harness ने यह पता अस्वीकार कर दिया</string>
-    <string name="connect_fail_dns">इस नेटवर्क पर “%1$s” नाम से कोई डिवाइस जवाब नहीं देता। इसके बजाय कंप्यूटर का IP पता लगाएँ — विंडोज़ पर ipconfig चलाएँ।</string>
+    <string name="connect_fail_dns">इस नेटवर्क पर “%1$s” नाम से कोई डिवाइस जवाब नहीं देता। इसके बजाय कंप्यूटर का IP पता इस्तेमाल करें — Windows पर ipconfig, Linux पर ip addr, macOS पर ifconfig से पता चलता है।</string>
     <string name="connect_fail_not_harness">%1$s पर किसी ने जवाब दिया, पर वह DeepSeek Harness नहीं है। harness ने शुरू होते समय जो पोर्ट दिखाया था, उसे जाँचें।</string>
+    <string name="connect_fail_tls">%1$s ने जवाब दिया, पर सुरक्षित (HTTPS) कनेक्शन नहीं बन सका। अगर आपका प्रॉक्सी किसी लोकल सर्टिफिकेट अथॉरिटी का उपयोग करता है, तो उसका CA सर्टिफिकेट इस फ़ोन पर इंस्टॉल करें — और अगर वह पता असल में HTTPS पर नहीं चलता, तो https:// हटाकर कनेक्ट करें।</string>
     <string name="connect_fail_streams">%1$s ने जवाब दिया, पर इसकी इवेंट स्ट्रीम नहीं खुली। इस फ़ोन पर VPN या प्राइवेट DNS प्रॉक्सी WebSocket कनेक्शन रोक सकता है — उसे बंद करके फिर कोशिश करें।</string>
     <string name="connect_fail_other">%1$s से कनेक्ट नहीं हो सका। %2$s</string>
     <string name="connect_version_mismatch">Harness संस्करण %1$s इस ऐप (जो %2$s के लिए बनाया गया है) के साथ असंगत हो सकता है।</string>

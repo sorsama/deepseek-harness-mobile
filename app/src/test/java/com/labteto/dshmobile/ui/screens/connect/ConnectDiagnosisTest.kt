@@ -22,6 +22,7 @@ class ConnectDiagnosisTest {
         assertEquals(ConnectFailure.Timeout, ConnectFailure.from(ProbeOutcome.Timeout))
         assertEquals(ConnectFailure.DnsFailure, ConnectFailure.from(ProbeOutcome.DnsFailure))
         assertEquals(ConnectFailure.NotAHarness, ConnectFailure.from(ProbeOutcome.NotAHarness))
+        assertEquals(ConnectFailure.TlsFailure, ConnectFailure.from(ProbeOutcome.TlsFailure))
     }
 
     /** No route is a different-network problem; "nothing answered" is the honest reading. */
@@ -59,6 +60,10 @@ class ConnectDiagnosisTest {
         assertEquals(
             ConnectFailure.Timeout,
             ConnectFailure.from(GenerationFailure.StreamFailed(TransportFailure.TIMEOUT, null)),
+        )
+        assertEquals(
+            ConnectFailure.TlsFailure,
+            ConnectFailure.from(GenerationFailure.StreamFailed(TransportFailure.TLS, "handshake failed")),
         )
     }
 

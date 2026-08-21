@@ -56,8 +56,9 @@
     <string name="connect_fail_timeout">ไม่มีการตอบกลับจาก %1$s โดยทั่วไปไฟร์วอลล์ของคอมพิวเตอร์กำลังบล็อกการเชื่อมต่อขาเข้าที่พอร์ต %2$d — อนุญาตแล้วลองใหม่ เราเตอร์บางรุ่นก็กั้นอุปกรณ์ Wi-Fi ไม่ให้เข้าถึงอุปกรณ์แบบมีสาย</string>
     <string name="connect_fail_refused">%1$s ปฏิเสธการเชื่อมต่อ harness จะรับฟังเฉพาะบนคอมพิวเตอร์เอง จนกว่าจะเปิดโหมด LAN — เปิดแล้วรีสตาร์ท harness หากเปลี่ยนพอร์ต ให้ตรวจว่าตรงกัน</string>
     <string name="connect_fail_fence_title">harness ปฏิเสธที่อยู่นี้</string>
-    <string name="connect_fail_dns">ไม่มีอุปกรณ์ใดในเครือข่ายนี้ตอบสนองชื่อ “%1$s” ให้ใช้ที่อยู่ IP ของคอมพิวเตอร์แทน — รัน ipconfig บน Windows เพื่อดู</string>
+    <string name="connect_fail_dns">ไม่มีอุปกรณ์ใดในเครือข่ายนี้ตอบสนองชื่อ “%1$s” ให้ใช้ที่อยู่ IP ของคอมพิวเตอร์แทน — ดูได้ด้วย ipconfig บน Windows, ip addr บน Linux หรือ ifconfig บน macOS</string>
     <string name="connect_fail_not_harness">มีบางอย่างตอบกลับที่ %1$s แต่ไม่ใช่ DeepSeek Harness ให้ตรวจพอร์ตที่ harness แสดงตอนเริ่มทำงาน</string>
+    <string name="connect_fail_tls">%1$s ตอบกลับ แต่การเชื่อมต่อแบบปลอดภัย (HTTPS) ล้มเหลว หากพร็อกซีของคุณใช้หน่วยงานออกใบรับรองภายใน ให้ติดตั้งใบรับรอง CA นั้นบนโทรศัพท์เครื่องนี้ — และหากที่อยู่นั้นไม่ได้ให้บริการ HTTPS จริง ให้เชื่อมต่อโดยไม่ใส่ https://</string>
     <string name="connect_fail_streams">%1$s ตอบกลับ แต่สตรีมเหตุการณ์เปิดไม่ได้ VPN หรือพร็อกซี DNS ส่วนตัวบนโทรศัพท์อาจบล็อก WebSocket — ปิดแล้วลองใหม่</string>
     <string name="connect_fail_other">เชื่อมต่อ %1$s ไม่สำเร็จ %2$s</string>
     <string name="connect_version_mismatch">Harness เวอร์ชัน %1$s อาจเข้ากันไม่ได้กับแอปนี้ (สร้างสำหรับ %2$s)</string>

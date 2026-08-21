@@ -32,6 +32,12 @@ sealed interface ProbeOutcome {
     /** Something is listening, but it does not speak the harness protocol. */
     data object NotAHarness : ProbeOutcome
 
+    /**
+     * The socket opened but the TLS handshake failed — a certificate this phone does not trust,
+     * or `https://` aimed at a plain-HTTP server.
+     */
+    data object TlsFailure : ProbeOutcome
+
     /** Anything else; [detail] is the carrier's own words, for the fallback message. */
     data class Other(val detail: String) : ProbeOutcome
 }

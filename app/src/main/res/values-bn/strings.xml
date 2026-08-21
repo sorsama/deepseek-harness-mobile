@@ -56,8 +56,9 @@
     <string name="connect_fail_timeout">%1$s-এ কিছুই সাড়া দেয়নি। সাধারণত কম্পিউটারের ফায়ারওয়াল %2$d পোর্টে ইনকামিং সংযোগ আটকাচ্ছে — অনুমতি দিয়ে আবার চেষ্টা করুন। কিছু রাউটার ওয়াই-ফাই ডিভাইসকে তারযুক্ত ডিভাইসে পৌঁছাতে দেয় না।</string>
     <string name="connect_fail_refused">%1$s সংযোগ প্রত্যাখ্যান করেছে। LAN মোড চালু না করলে harness কেবল কম্পিউটারেই শোনে — চালু করে harness রিস্টার্ট করুন। পোর্ট বদলালে সেটিও মিলিয়ে দেখুন।</string>
     <string name="connect_fail_fence_title">harness এই ঠিকানা প্রত্যাখ্যান করেছে</string>
-    <string name="connect_fail_dns">এই নেটওয়ার্কে “%1$s” নামে কোনো ডিভাইস সাড়া দেয় না। বরং কম্পিউটারের IP ঠিকানা ব্যবহার করুন — উইন্ডোজে ipconfig চালান।</string>
+    <string name="connect_fail_dns">এই নেটওয়ার্কে “%1$s” নামে কোনো ডিভাইস সাড়া দেয় না। বরং কম্পিউটারের IP ঠিকানা ব্যবহার করুন — Windows-এ ipconfig, Linux-এ ip addr, macOS-এ ifconfig দিয়ে জানা যায়।</string>
     <string name="connect_fail_not_harness">%1$s-এ কিছু সাড়া দিয়েছে, কিন্তু সেটি DeepSeek Harness নয়। harness চালু হওয়ার সময় দেখানো পোর্টটি দেখুন।</string>
+    <string name="connect_fail_tls">%1$s সাড়া দিয়েছে, কিন্তু নিরাপদ (HTTPS) সংযোগ ব্যর্থ হয়েছে। আপনার প্রক্সি লোকাল সার্টিফিকেট অথরিটি ব্যবহার করলে তার CA সার্টিফিকেট এই ফোনে ইনস্টল করুন — আর ঠিকানাটি আসলে HTTPS না দিলে https:// ছাড়া সংযোগ করুন।</string>
     <string name="connect_fail_streams">%1$s সাড়া দিয়েছে, কিন্তু ইভেন্ট স্ট্রিম খোলেনি। এই ফোনে VPN বা প্রাইভেট DNS প্রক্সি WebSocket সংযোগ আটকাতে পারে — বন্ধ করে আবার চেষ্টা করুন।</string>
     <string name="connect_fail_other">%1$s-এ সংযোগ করা যায়নি। %2$s</string>
     <string name="connect_version_mismatch">Harness সংস্করণ %1$s এই অ্যাপের (যা %2$s-এর জন্য তৈরি) সাথে অসামঞ্জস্যপূর্ণ হতে পারে।</string>

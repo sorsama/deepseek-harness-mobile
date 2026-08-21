@@ -3,11 +3,20 @@
      required to reach it. Cleartext traffic only ever goes to a LAN host the
      user entered or picked from a scan; the one request that leaves the network
      is the GitHub release check, which is HTTPS and can be switched off.
+
+     User-installed CAs are trusted alongside the system set: the only way a
+     harness is ever reached over HTTPS is through a reverse proxy the user
+     put in front of it themselves, and such a proxy is almost always signed
+     by a local CA (Caddy's internal CA, mkcert, a homelab CA) that only the
+     phone's owner can have installed — a deliberate act Android itself warns
+     about. Without this entry every such setup fails closed with a handshake
+     error the app can name but not fix.
      See docs/SECURITY.md for the trust model. -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
+            <certificates src="user" />
         </trust-anchors>
     </base-config>
 </network-security-config>

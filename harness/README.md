@@ -49,6 +49,39 @@ configuration seam.
 4. In DSH Mobile: Settings → Connect, tap **Scan network**, or enter
    `192.168.1.20` / `3080` manually.
 
+## HTTPS via your own reverse proxy
+
+The harness never serves TLS itself, but the app can connect through a
+reverse proxy that does — Caddy, nginx, Traefik — for setups like
+`https://agent.home` on a homelab. What has to be true:
+
+1. **The proxy terminates TLS and forwards to the harness** (loopback or the
+   LAN bind above). With Caddy that is the whole Caddyfile:
+
+   ```
+   agent.home {
+       reverse_proxy 127.0.0.1:3080
+   }
+   ```
+
+2. **The harness trusts the proxy's hostname.** The app (like a browser)
+   sends `Host: agent.home`, and Caddy forwards it unchanged, so:
+
+   ```sh
+   dsh web --trusted-host agent.home
+   ```
+
+3. **The phone trusts the certificate.** A LAN proxy is usually signed by a
+   local CA (Caddy's internal CA, mkcert); install that CA certificate on the
+   phone (Android: Settings → Security → Install a certificate → CA
+   certificate). A certificate the phone does not trust fails the connect
+   with the HTTPS message below.
+
+4. In the app, enter `https://agent.home` in the host field — or just the
+   hostname with port 443, which the app reads as HTTPS. A port typed inside
+   the host field (`https://agent.home:8443`) wins over the port field, so
+   pasting the proxy's URL as-is works.
+
 ## Troubleshooting
 
 The app names the failure it hit; find that heading below. Everything here is run on the
@@ -95,6 +128,17 @@ The address you typed is outside the phone's own /24, so nothing on the phone ca
 **Scan network** cannot find it either, since the sweep only walks the phone's own subnet. Different
 bands of one SSID (2.4 GHz vs 5 GHz) are normally the same subnet and are fine; a *guest* SSID
 usually is not. Compare `ipconfig` on the computer with the address the app reports.
+
+### "The secure (HTTPS) connection failed"
+
+The socket opened but the TLS handshake did not survive it. Two causes, in order of likelihood:
+
+- **The phone does not trust the certificate.** Install the CA that signed the proxy's
+  certificate on the phone (step 3 above). Caddy's internal root lives at
+  `~/.local/share/caddy/pki/authorities/local/root.crt` on the proxy host.
+- **The address does not actually serve HTTPS.** `https://` typed at a plain-HTTP harness port
+  gets an answer TLS cannot read. Connect without `https://` — the harness's own port speaks
+  plain HTTP, always.
 
 ### "Its event stream would not open"
 

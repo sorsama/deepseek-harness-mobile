@@ -18,13 +18,23 @@ data class HostConfig(
     val host: String,
     val port: Int,
     val isLoopback: Boolean = false,
+    /**
+     * Speak TLS to this endpoint. The harness itself never serves HTTPS — this is for a reverse
+     * proxy someone put in front of it (Caddy at `https://agent.home`, say), which is the only
+     * way it is ever reached over TLS.
+     */
+    val useTls: Boolean = false,
     val lastConnectedAt: Long = 0L,
     val lastVersion: String? = null,
     val lastCwd: String? = null,
     val lastSessions: Int? = null,
 ) {
+    /** Bare `host:port` — the identity key and display form, deliberately scheme-free. */
     val authority: String get() = "$host:$port"
-    val baseUrl: String get() = "http://$authority"
+    val baseUrl: String get() = harnessBaseUrl(host, port, useTls)
+
+    /** What a card prints: the authority, scheme-qualified only when it is not the plain default. */
+    val displayAddress: String get() = if (useTls) "https://$authority" else authority
 }
 
 /**

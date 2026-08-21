@@ -132,10 +132,15 @@ class ConnectionManager @Inject constructor(
     }
 
     /** Build a client for manual probing/prompting without the full loop. */
-    fun probeClient(host: String, port: Int): DshApiClient = DshApiClient(
-        transport = OkHttpRpcTransport("http://$host:$port", okHttpClient),
-        wsFactory = { path, sink -> WsDownlink("http://$host:$port$path", okHttpClient, sink) },
-    )
+    fun probeClient(host: String, port: Int, useTls: Boolean = false): DshApiClient {
+        // One base for the POSTs and both streams: OkHttp takes an http(s) URL for a WebSocket
+        // and upgrades it itself, so an https base is all it takes to make the streams wss.
+        val base = harnessBaseUrl(host, port, useTls)
+        return DshApiClient(
+            transport = OkHttpRpcTransport(base, okHttpClient),
+            wsFactory = { path, sink -> WsDownlink("$base$path", okHttpClient, sink) },
+        )
+    }
 
     val connectedApi: DshApiClient? get() = api
 
@@ -156,7 +161,7 @@ class ConnectionManager @Inject constructor(
             host = config,
             stage = ConnectStage.OpeningStreams,
         )
-        val client = probeClient(config.host, config.port)
+        val client = probeClient(config.host, config.port, config.useTls)
         api = client
         val loop = ConnectionLoop(client, sinks, LoopConfig())
         this.loop = loop
@@ -176,7 +181,7 @@ class ConnectionManager @Inject constructor(
     fun reconnectIfNeeded() {
         val host = activeHost ?: return
         loop?.stop()
-        val client = api ?: probeClient(host.host, host.port).also { api = it }
+        val client = api ?: probeClient(host.host, host.port, host.useTls).also { api = it }
         loop = ConnectionLoop(client, sinks, LoopConfig()).also { it.start() }
     }
 

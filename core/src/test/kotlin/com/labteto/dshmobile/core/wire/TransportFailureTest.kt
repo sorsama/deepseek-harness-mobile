@@ -10,6 +10,8 @@ import java.net.NoRouteToHostException
 import java.net.PortUnreachableException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import javax.net.ssl.SSLException
+import javax.net.ssl.SSLHandshakeException
 
 class TransportFailureTest {
 
@@ -37,6 +39,23 @@ class TransportFailureTest {
         assertEquals(TransportFailure.UNREACHABLE, TransportFailures.classify(PortUnreachableException()))
         assertEquals(TransportFailure.REFUSED, TransportFailures.classify(ConnectException()))
         assertEquals(TransportFailure.OTHER, TransportFailures.classify(null as Throwable?))
+    }
+
+    /**
+     * SSLException is an IOException, so ordering matters: reaching the message sniffer would
+     * read "Unrecognized SSL message" as OTHER and blame nothing in particular, when the actual
+     * diagnosis — a certificate this device does not trust, or https:// at a plain-HTTP server —
+     * has its own advice.
+     */
+    @Test
+    fun `tls failures classify as their own kind`() {
+        assertEquals(TransportFailure.TLS, TransportFailures.classify(SSLHandshakeException("no trust anchor")))
+        assertEquals(
+            TransportFailure.TLS,
+            TransportFailures.classify(SSLException("Unrecognized SSL message, plaintext connection?")),
+        )
+        val wrapped = RpcTransportException(0, "transport failure", SSLHandshakeException("no trust anchor"))
+        assertEquals(TransportFailure.TLS, TransportFailures.classify(wrapped))
     }
 
     /**

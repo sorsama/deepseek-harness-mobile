@@ -98,7 +98,9 @@ class DiscoveryEngine @Inject constructor(
         host: String,
         port: Int,
         timeouts: ProbeTimeouts = ProbeTimeouts.Sweep,
-    ): HostDescription? = (probeOutcome(host, port, timeouts) as? ProbeOutcome.Reachable)?.description
+        useTls: Boolean = false,
+    ): HostDescription? =
+        (probeOutcome(host, port, timeouts, useTls = useTls) as? ProbeOutcome.Reachable)?.description
 
     /**
      * Probe one authority and keep the reason it failed.
@@ -115,6 +117,7 @@ class DiscoveryEngine @Inject constructor(
         port: Int,
         timeouts: ProbeTimeouts = ProbeTimeouts.Sweep,
         preflight: Boolean = false,
+        useTls: Boolean = false,
     ): ProbeOutcome = withContext(Dispatchers.IO) {
         if (preflight) {
             preflight(host, port, timeouts.connectMs)?.let { return@withContext it }
@@ -124,7 +127,7 @@ class DiscoveryEngine @Inject constructor(
             // handed, so anything applied to the builder here would be silently replaced by the 30s
             // default — which is why this probe used to be able to block for thirty seconds.
             transport = OkHttpRpcTransport(
-                baseUrl = "http://$host:$port",
+                baseUrl = harnessBaseUrl(host, port, useTls),
                 client = okHttpClient,
                 connectTimeoutMs = timeouts.connectMs,
                 readTimeoutMs = timeouts.readMs,
@@ -140,6 +143,7 @@ class DiscoveryEngine @Inject constructor(
                 TransportFailure.DNS -> ProbeOutcome.DnsFailure
                 TransportFailure.UNREACHABLE -> ProbeOutcome.Unreachable
                 TransportFailure.NOT_FOUND, TransportFailure.NOT_A_HARNESS -> ProbeOutcome.NotAHarness
+                TransportFailure.TLS -> ProbeOutcome.TlsFailure
                 TransportFailure.OTHER, null -> ProbeOutcome.Other(result.error.message)
             }
         }

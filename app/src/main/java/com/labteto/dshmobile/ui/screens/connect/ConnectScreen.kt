@@ -290,7 +290,7 @@ private fun RecentHarnessCard(
             )
         }
         Text(
-            listOfNotNull(host.authority, cwd?.let { basename(it) }).joinToString(" · "),
+            listOfNotNull(host.displayAddress, cwd?.let { basename(it) }).joinToString(" · "),
             style = DsType.caption11,
             color = colors.labelTertiary,
             maxLines = 1,
@@ -462,6 +462,7 @@ private fun ConnectFailureBlock(
         ConnectFailure.TrustFence -> stringResource(R.string.connect_failed_fence)
         ConnectFailure.DnsFailure -> stringResource(R.string.connect_fail_dns, authority)
         ConnectFailure.NotAHarness -> stringResource(R.string.connect_fail_not_harness, authority)
+        ConnectFailure.TlsFailure -> stringResource(R.string.connect_fail_tls, authority)
         ConnectFailure.StreamsBlocked -> stringResource(R.string.connect_fail_streams, authority)
         is ConnectFailure.Other -> stringResource(R.string.connect_fail_other, authority, failure.detail)
     }

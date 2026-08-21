@@ -105,6 +105,7 @@ class HostsStore @Inject constructor(
         host: String,
         port: Int,
         isLoopback: Boolean,
+        useTls: Boolean = false,
         description: HostDescription? = null,
     ): HostConfig {
         val existing = hosts.first().firstOrNull { it.host == host && it.port == port }
@@ -114,6 +115,7 @@ class HostsStore @Inject constructor(
             host = host,
             port = port,
             isLoopback = isLoopback,
+            useTls = useTls,
             lastConnectedAt = System.currentTimeMillis(),
             lastVersion = description?.version ?: existing?.lastVersion,
             lastCwd = description?.cwd ?: existing?.lastCwd,

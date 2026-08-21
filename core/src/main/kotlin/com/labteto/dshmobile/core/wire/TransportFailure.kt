@@ -12,6 +12,7 @@ import java.net.NoRouteToHostException
 import java.net.PortUnreachableException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import javax.net.ssl.SSLException
 
 /**
  * Why a carrier-level call did not produce an answer.
@@ -43,6 +44,12 @@ enum class TransportFailure {
 
     /** Something answered, but it does not speak the harness protocol. */
     NOT_A_HARNESS,
+
+    /**
+     * The TCP connection opened but the TLS handshake did not survive it: a certificate this
+     * device does not trust, or `https://` aimed at a server speaking plain HTTP.
+     */
+    TLS,
 
     /** Anything else. */
     OTHER,
@@ -83,6 +90,9 @@ object TransportFailures {
         is UnknownHostException -> TransportFailure.DNS
         is NoRouteToHostException, is PortUnreachableException -> TransportFailure.UNREACHABLE
         is ConnectException -> TransportFailure.REFUSED
+        // Before the IOException arm: SSLException is an IOException, and its message would
+        // otherwise be sniffed for words it does not contain.
+        is SSLException -> TransportFailure.TLS
         is IOException -> classifyByMessage(t)
         else -> TransportFailure.OTHER
     }

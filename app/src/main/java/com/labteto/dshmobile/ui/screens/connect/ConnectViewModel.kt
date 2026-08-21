@@ -11,6 +11,7 @@ import com.labteto.dshmobile.connection.HostConfig
 import com.labteto.dshmobile.connection.HostsStore
 import com.labteto.dshmobile.connection.ProbeOutcome
 import com.labteto.dshmobile.connection.ProbeTimeouts
+import com.labteto.dshmobile.connection.parseHostInput
 import com.labteto.dshmobile.core.wire.dto.HostDescription
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CompletableDeferred
@@ -174,7 +175,7 @@ class ConnectViewModel @Inject constructor(
                 async {
                     val description = runCatching {
                         // A remembered host is named, not swept — worth waiting for.
-                        discoveryEngine.probe(host.host, host.port, ProbeTimeouts.Manual)
+                        discoveryEngine.probe(host.host, host.port, ProbeTimeouts.Manual, host.useTls)
                     }.getOrNull()
                     _state.update { current ->
                         current.copy(
@@ -204,7 +205,7 @@ class ConnectViewModel @Inject constructor(
         if (settings.autoConnectLast) {
             val last = hostsStore.hosts.first().firstOrNull()
             if (last != null) {
-                val desc = discoveryEngine.probe(last.host, last.port, ProbeTimeouts.Manual)
+                val desc = discoveryEngine.probe(last.host, last.port, ProbeTimeouts.Manual, last.useTls)
                 if (desc != null) {
                     connectTo(last)
                     return
@@ -304,14 +305,20 @@ class ConnectViewModel @Inject constructor(
     }
 
     fun connectManual(host: String, port: String) {
-        val trimmed = host.trim()
-        val portInt = port.trim().toIntOrNull()
-        if (trimmed.isBlank() || portInt == null || portInt !in 1..65535) {
+        // The field takes what people actually have — a pasted URL as readily as a bare address.
+        // A port named inside it was typed as part of this address, so it outranks the port field,
+        // which may still hold the default from a different harness.
+        val input = parseHostInput(host)
+        val portInt = input?.port ?: port.trim().toIntOrNull()
+        if (input == null || portInt == null || portInt !in 1..65535) {
             fail(ConnectFailure.InvalidInput, attempted = null)
             return
         }
-        val authority = "$trimmed:$portInt"
-        val isLoopback = trimmed == LOOPBACK || trimmed == "localhost"
+        // An explicit scheme decides; otherwise port 443 means a TLS reverse proxy — the harness
+        // itself never serves there, and plaintext to a TLS port yields an answer no one can read.
+        val useTls = input.useTls ?: (portInt == 443)
+        val authority = "${input.host}:$portInt"
+        val isLoopback = input.host == LOOPBACK || input.host == "localhost"
 
         localStage = ConnectStage.Validating
         _state.update { it.copy(stage = ConnectStage.Validating, failure = null, attempted = authority) }
@@ -320,17 +327,18 @@ class ConnectViewModel @Inject constructor(
             // Cheap and decisive: the sweep only ever looks at this phone's own /24, so an address
             // outside it can never be reached from here and can never be found by scanning either.
             // Saying so now beats a four-second timeout that blames the firewall.
-            if (!isLoopback && !discoveryEngine.isOnLocalSubnet(trimmed)) {
+            if (!isLoopback && !discoveryEngine.isOnLocalSubnet(input.host)) {
                 fail(ConnectFailure.DifferentSubnet(discoveryEngine.localSubnetLabel()), authority)
                 return@launch
             }
             localStage = ConnectStage.Reaching
             _state.update { it.copy(stage = ConnectStage.Reaching) }
             val outcome = discoveryEngine.probeOutcome(
-                host = trimmed,
+                host = input.host,
                 port = portInt,
                 timeouts = ProbeTimeouts.Manual,
                 preflight = true,
+                useTls = useTls,
             )
             if (outcome !is ProbeOutcome.Reachable) {
                 fail(ConnectFailure.from(outcome), authority)
@@ -338,10 +346,11 @@ class ConnectViewModel @Inject constructor(
             }
             hostsStore.addKnownPort(portInt)
             val config = hostsStore.rememberHost(
-                name = hostLabel(trimmed),
-                host = trimmed,
+                name = hostLabel(input.host),
+                host = input.host,
                 port = portInt,
                 isLoopback = isLoopback,
+                useTls = useTls,
                 description = outcome.description,
             )
             connectTo(config)

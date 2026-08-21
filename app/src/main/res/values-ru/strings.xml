@@ -56,8 +56,9 @@
     <string name="connect_fail_timeout">На %1$s ничего не ответило. Обычно брандмауэр компьютера блокирует входящие подключения на порт %2$d — разрешите их и повторите. Некоторые роутеры также не дают Wi-Fi-устройствам доступ к проводным.</string>
     <string name="connect_fail_refused">%1$s отклонил подключение. Без режима LAN harness слушает только на самом компьютере — включите его и перезапустите harness. Если вы меняли порт, проверьте его.</string>
     <string name="connect_fail_fence_title">harness отклонил этот адрес</string>
-    <string name="connect_fail_dns">Ни одно устройство в этой сети не отвечает на “%1$s”. Используйте IP-адрес компьютера — выполните ipconfig в Windows.</string>
+    <string name="connect_fail_dns">Ни одно устройство в этой сети не отвечает на “%1$s”. Используйте IP-адрес компьютера — его покажет ipconfig в Windows, ip addr в Linux или ifconfig в macOS.</string>
     <string name="connect_fail_not_harness">На %1$s что-то ответило, но это не DeepSeek Harness. Проверьте порт, который harness вывел при запуске.</string>
+    <string name="connect_fail_tls">%1$s ответил, но защищённое (HTTPS) соединение не удалось. Если ваш прокси использует локальный центр сертификации, установите его CA-сертификат на этот телефон — а если адрес на самом деле не работает по HTTPS, подключайтесь без https://.</string>
     <string name="connect_fail_streams">%1$s ответил, но поток событий не открылся. VPN или прокси частного DNS на этом телефоне может блокировать WebSocket — отключите и повторите.</string>
     <string name="connect_fail_other">Не удалось подключиться к %1$s. %2$s</string>
     <string name="connect_version_mismatch">Версия Harness %1$s может быть несовместима с этим приложением (создано для %2$s).</string>

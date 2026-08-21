@@ -35,6 +35,9 @@ sealed interface ConnectFailure {
     /** Something is listening, but it is not a harness. */
     data object NotAHarness : ConnectFailure
 
+    /** The TLS handshake failed — an untrusted certificate, or `https://` to a plain-HTTP server. */
+    data object TlsFailure : ConnectFailure
+
     /** The API answered but the event streams would not open. */
     data object StreamsBlocked : ConnectFailure
 
@@ -54,6 +57,7 @@ sealed interface ConnectFailure {
             // first, and when it does not, "nothing answered" is the honest reading.
             ProbeOutcome.Unreachable -> Timeout
             ProbeOutcome.NotAHarness -> NotAHarness
+            ProbeOutcome.TlsFailure -> TlsFailure
             is ProbeOutcome.Other -> Other(outcome.detail)
         }
 
@@ -75,6 +79,7 @@ sealed interface ConnectFailure {
             TransportFailure.TIMEOUT, TransportFailure.UNREACHABLE -> Timeout
             TransportFailure.DNS -> DnsFailure
             TransportFailure.NOT_FOUND, TransportFailure.NOT_A_HARNESS -> NotAHarness
+            TransportFailure.TLS -> TlsFailure
             TransportFailure.OTHER -> message?.takeIf { it.isNotBlank() }?.let { Other(it) } ?: fallback
             null -> fallback
         }

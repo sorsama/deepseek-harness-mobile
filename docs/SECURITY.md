@@ -13,7 +13,8 @@ not authentication:
   server binds `0.0.0.0`).
 - There are no tokens, cookies, or TLS. Any device on the same network can
   send requests with a trusted `Host` and drive the agent — including
-  running commands on the host computer.
+  running commands on the host computer. (TLS can be added from outside by
+  fronting the harness with a reverse proxy; see below.)
 
 **Consequences:**
 
@@ -25,10 +26,34 @@ not authentication:
   file pickers) remain loopback-only by harness design and are shown
   read-only over the network.
 
+## HTTPS through a reverse proxy
+
+The harness itself never serves TLS, but the app can reach one behind a
+reverse proxy that does (Caddy at `https://agent.home`, say). Typing
+`https://…` into the connect screen — or a bare address with port 443 —
+makes the whole connection TLS: every `/api` call, both event streams, and
+session-log downloads.
+
+Certificate verification is standard Android, with one addition:
+
+- The app trusts the system CA set **plus CAs the user has installed** on the
+  phone (`<certificates src="user" />`). A LAN proxy is almost always signed
+  by a local CA — Caddy's internal CA, mkcert, a homelab CA — which only
+  works if the phone's owner has deliberately installed that CA, an act
+  Android itself warns about and marks. The app adds no CAs of its own.
+- Verification is never relaxed beyond that. There is no "accept this
+  certificate anyway" flow, no hostname-check bypass, and no pinning UI: an
+  untrusted certificate fails the connection with a message naming the CA
+  install as the fix.
+- The trust fence still applies through a proxy. The app sends the authority
+  it was given as the `Host` header, so the harness must be started with
+  `--trusted-host <that name>` (a proxy that preserves `Host`, as Caddy does
+  by default, changes nothing about this).
+
 ## What DSH Mobile stores
 
-- Remembered host addresses (host, port, display name) and app preferences,
-  in app-private storage only.
+- Remembered host addresses (host, port, display name, and whether to use
+  HTTPS) and app preferences, in app-private storage only.
 - No session content is persisted to disk in v1 (chat history lives in
   memory and is re-fetched on connect).
 - The app allows cleartext HTTP by necessity (the harness serves plain

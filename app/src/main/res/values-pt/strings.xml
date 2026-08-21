@@ -56,8 +56,9 @@
     <string name="connect_fail_timeout">Nada respondeu em %1$s. Normalmente o firewall do computador bloqueia conexões de entrada na porta %2$d — permita e tente novamente. Alguns roteadores também impedem que dispositivos Wi-Fi alcancem os cabeados.</string>
     <string name="connect_fail_refused">%1$s recusou a conexão. O harness só escuta no próprio computador enquanto o modo LAN não estiver ativado — ative-o e reinicie o harness. Se você mudou a porta, confira se ela confere.</string>
     <string name="connect_fail_fence_title">O harness recusou este endereço</string>
-    <string name="connect_fail_dns">Nenhum dispositivo desta rede responde a “%1$s”. Use o endereço IP do computador — execute ipconfig no Windows para descobri-lo.</string>
+    <string name="connect_fail_dns">Nenhum dispositivo desta rede responde a “%1$s”. Use o endereço IP do computador — descubra-o com ipconfig no Windows, ip addr no Linux ou ifconfig no macOS.</string>
     <string name="connect_fail_not_harness">Algo respondeu em %1$s, mas não é um DeepSeek Harness. Confira a porta que o harness mostrou ao iniciar.</string>
+    <string name="connect_fail_tls">%1$s respondeu, mas a conexão segura (HTTPS) falhou. Se o seu proxy usa uma autoridade certificadora local, instale o certificado CA dela neste telefone — e se o endereço na verdade não serve HTTPS, conecte sem https://.</string>
     <string name="connect_fail_streams">%1$s respondeu, mas o fluxo de eventos não abriu. Uma VPN ou proxy de DNS privado neste telefone pode bloquear conexões WebSocket — desligue e tente novamente.</string>
     <string name="connect_fail_other">Não foi possível conectar a %1$s. %2$s</string>
     <string name="connect_version_mismatch">A versão %1$s do Harness pode ser incompatível com este aplicativo (desenvolvido para %2$s).</string>

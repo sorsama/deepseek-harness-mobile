@@ -56,8 +56,9 @@
     <string name="connect_fail_timeout">%1$s 没有任何响应。通常是电脑的防火墙拦截了端口 %2$d 的入站连接 — 允许后重试。部分路由器也会阻止 Wi-Fi 设备访问有线设备。</string>
     <string name="connect_fail_refused">%1$s 拒绝了连接。未启用 LAN 模式时，harness 只在电脑本机监听 — 请启用并重启 harness。如果改过端口，请确认是否一致。</string>
     <string name="connect_fail_fence_title">harness 拒绝了该地址</string>
-    <string name="connect_fail_dns">该网络上没有设备响应“%1$s”。请改用电脑的 IP 地址 — 在 Windows 上运行 ipconfig 可以查到。</string>
+    <string name="connect_fail_dns">该网络上没有设备响应“%1$s”。请改用电脑的 IP 地址 — 在 Windows 上用 ipconfig、Linux 上用 ip addr、macOS 上用 ifconfig 查看。</string>
     <string name="connect_fail_not_harness">%1$s 有响应，但它不是 DeepSeek Harness。请核对 harness 启动时打印的端口。</string>
+    <string name="connect_fail_tls">%1$s 有响应，但安全（HTTPS）连接失败。若你的反向代理使用本地证书颁发机构，请在本手机上安装其 CA 证书；若该地址实际上并不提供 HTTPS，请去掉 https:// 再连接。</string>
     <string name="connect_fail_streams">%1$s 有响应，但事件流无法打开。本机的 VPN 或私有 DNS 代理可能会拦截 WebSocket 连接 — 关闭后重试。</string>
     <string name="connect_fail_other">无法连接到 %1$s。%2$s</string>
     <string name="connect_version_mismatch">Harness %1$s 版本可能与本应用（为 %2$s 构建）不兼容。</string>

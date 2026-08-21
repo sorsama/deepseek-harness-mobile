@@ -56,8 +56,9 @@
     <string name="connect_fail_timeout">%1$s سے کوئی جواب نہیں آیا۔ عام طور پر کمپیوٹر کا فائیر وال پورٹ %2$d پر آنے والے کنکشن روکتا ہے — اسے اجازت دیکر دوبارہ کوشش کریں۔ کچھ راوٹر وائی فائی آلات کو تار والے آلات تک پہنچنے سے بھی روکتے ہیں۔</string>
     <string name="connect_fail_refused">%1$s نے کنکشن مسترد کر دیا۔ LAN موڈ فعال کیے بغیر harness صرف کمپیوٹر پر ہی سنتا ہے — اسے فعال کرکے harness دوبارہ چلائیں۔ اگر پورٹ بدلا ہے تو اسے بھی جانچیں۔</string>
     <string name="connect_fail_fence_title">harness نے یہ پتہ مسترد کر دیا</string>
-    <string name="connect_fail_dns">اس نیٹ ورک پر کوئی آلہ “%1$s” کا جواب نہیں دیتا۔ اس کے بجائے کمپیوٹر کا IP پتہ استعمال کریں — ونڈوز پر ipconfig چلائیں۔</string>
+    <string name="connect_fail_dns">اس نیٹ ورک پر کوئی آلہ “%1$s” کا جواب نہیں دیتا۔ اس کے بجائے کمپیوٹر کا IP پتہ استعمال کریں — ونڈوز پر ipconfig، لینکس پر ip addr، اور macOS پر ifconfig سے معلوم ہوتا ہے۔</string>
     <string name="connect_fail_not_harness">%1$s پر کسی چیز نے جواب دیا، مگر وہ DeepSeek Harness نہیں۔ وہ پورٹ دیکھیں جو harness نے شروع ہوتے وقت دکھایا تھا۔</string>
+    <string name="connect_fail_tls">%1$s نے جواب دیا، مگر محفوظ (HTTPS) کنکشن قائم نہ ہو سکا۔ اگر آپ کا پراکسی مقامی سرٹیفکیٹ اتھارٹی استعمال کرتا ہے تو اس کا CA سرٹیفکیٹ اس فون پر انسٹال کریں — اور اگر وہ پتہ درحقیقت HTTPS پیش نہیں کرتا تو https:// کے بغیر جڑیں۔</string>
     <string name="connect_fail_streams">%1$s نے جواب دیا، مگر اس کی ایونٹ اسٹریم نہیں کھلی۔ اس فون پر VPN یا پرائیویٹ DNS پراکسی WebSocket کو روک سکتا ہے — اسے بند کرکے دوبارہ کوشش کریں۔</string>
     <string name="connect_fail_other">%1$s سے جڑنا ممکن نہیں ہوا۔ %2$s</string>
     <string name="connect_version_mismatch">Harness ورژن %1$s اس ایپ (جو %2$s کے لیے بنائی گئی ہے) کے ساتھ مطابقت نہیں رکھتا۔</string>

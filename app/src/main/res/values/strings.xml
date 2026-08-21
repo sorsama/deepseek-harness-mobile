@@ -65,8 +65,9 @@
     <string name="connect_fail_timeout">Nothing answered at %1$s. Usually the computer\'s firewall is blocking incoming connections on port %2$d — allow it and try again. Some routers also stop Wi-Fi devices from reaching wired ones.</string>
     <string name="connect_fail_refused">%1$s refused the connection. The harness only listens on the computer itself unless LAN mode is enabled — enable it and restart the harness. If you changed the port, check it matches.</string>
     <string name="connect_fail_fence_title">The harness rejected this address</string>
-    <string name="connect_fail_dns">No device on this network answers to “%1$s”. Use the computer\'s IP address instead — run ipconfig on Windows to find it.</string>
+    <string name="connect_fail_dns">No device on this network answers to “%1$s”. Use the computer\'s IP address instead — find it with ipconfig on Windows, ip addr on Linux, or ifconfig on macOS.</string>
     <string name="connect_fail_not_harness">Something answered at %1$s, but it is not a DeepSeek Harness. Check the port the harness printed when it started.</string>
+    <string name="connect_fail_tls">%1$s answered, but the secure (HTTPS) connection failed. If your proxy uses a local certificate authority, install its CA certificate on this phone — and if the address does not actually serve HTTPS, connect without https://.</string>
     <string name="connect_fail_streams">%1$s answered, but its event stream would not open. A VPN or private-DNS proxy on this phone can block WebSocket connections — turn it off and try again.</string>
     <string name="connect_fail_other">Could not connect to %1$s. %2$s</string>
     <string name="connect_version_mismatch">Harness version %1$s may be incompatible with this app (built for %2$s).</string>
