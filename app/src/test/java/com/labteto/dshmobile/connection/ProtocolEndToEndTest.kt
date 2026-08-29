@@ -20,7 +20,13 @@ import com.labteto.dshmobile.core.wire.dto.RemoteEventOutcome
 import com.labteto.dshmobile.core.wire.dto.SessionAddress
 import com.labteto.dshmobile.core.wire.dto.SessionFollowFrame
 import com.labteto.dshmobile.core.wire.dto.SessionFollowFrameSerializer
+import com.labteto.dshmobile.core.wire.dto.SessionPromptRequest
+import com.labteto.dshmobile.core.wire.dto.SessionPromptValue
+import com.labteto.dshmobile.core.wire.dto.SubagentPromptRequest
+import com.labteto.dshmobile.core.wire.dto.ContentBlock
+import com.labteto.dshmobile.core.wire.dto.PromptContentPart
 import com.labteto.dshmobile.core.wire.decodeFromJsonElement
+import com.labteto.dshmobile.core.wire.newPromptRequestId
 import com.labteto.dshmobile.mockharness.MockHarness
 import com.labteto.dshmobile.core.session.ChunkRows
 import kotlinx.coroutines.delay
@@ -162,6 +168,81 @@ class ProtocolEndToEndTest {
             is RpcResult.Ok -> assertEquals("s1", result.value.items.single().sessionId)
             is RpcResult.Err -> error("session/list failed: ${result.error.code} ${result.error.message}")
         }
+    }
+
+    @Test
+    fun `a prompt reaches the host and carries the identity it requires`() = runBlocking {
+        // The one call every other test in this repo left alone. Connecting, listing, reading
+        // history and choosing a model all worked against a real 0.1.2 harness while sending a
+        // message could not, because no test and no mock endpoint ever sent one — so the client's
+        // request object was missing a field the host declares required and nothing said so.
+        val result = client().sessionPrompt(
+            SessionPromptRequest(
+                requestId = newPromptRequestId(),
+                sessionId = "s1",
+                mode = "queue",
+                content = listOf(PromptContentPart.Text("hello")),
+                clientTimeZone = "Asia/Bangkok",
+            ),
+        )
+        when (result) {
+            is RpcResult.Ok -> assertTrue(result.value.accepted)
+            is RpcResult.Err -> error("session/prompt failed: ${result.error.code} ${result.error.message}")
+        }
+        val received = harness.sessionPrompts.single()
+        assertTrue(received["requestId"]!!.jsonPrimitive.content.isNotBlank())
+        assertEquals("s1", received["sessionId"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun `a child prompt reaches the host and carries one too`() = runBlocking {
+        val result = client().subagentPrompt(
+            SubagentPromptRequest(
+                requestId = newPromptRequestId(),
+                parentSessionId = "s1",
+                childSessionId = "c1",
+                content = listOf(ContentBlock.Text("carry on")),
+                clientTimeZone = "Asia/Bangkok",
+            ),
+        )
+        when (result) {
+            is RpcResult.Ok -> assertTrue(result.value.messageId.isNotBlank())
+            is RpcResult.Err -> error("subagents/prompt failed: ${result.error.code} ${result.error.message}")
+        }
+        assertTrue(harness.subagentPrompts.single()["requestId"]!!.jsonPrimitive.content.isNotBlank())
+    }
+
+    @Test
+    fun `a prompt without the required identity is refused the way the host refuses it`() = runBlocking {
+        // The regression itself, from the client's side: the host decodes `request` against a
+        // strict codec, so a missing required field fails at the boundary and the text never
+        // reaches an agent. Sent as a raw args object because the typed request can no longer
+        // express the broken shape — which is the point of making the field non-optional.
+        val result = client().call(
+            "session/prompt",
+            buildJsonObject {
+                putJsonObject("request") {
+                    put("sessionId", "s1")
+                    put("mode", "queue")
+                    putJsonArray("content") {
+                        addJsonObject {
+                            put("type", "text")
+                            put("text", "hello")
+                        }
+                    }
+                }
+            },
+            SessionPromptValue.serializer(),
+        )
+        val error = (result as RpcResult.Err).error
+        // A shape mismatch gets no error code of its own, which is exactly why a client cannot
+        // probe for one and must send the declared shape.
+        assertEquals("internal", error.code)
+        assertEquals(
+            "typert gateway: session/prompt: wire field \"request\" failed boundary validation",
+            error.message,
+        )
+        assertTrue(harness.sessionPrompts.isEmpty())
     }
 
     @Test

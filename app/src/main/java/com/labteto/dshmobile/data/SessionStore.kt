@@ -84,6 +84,7 @@ import com.labteto.dshmobile.core.wire.dto.WorkspaceValue
 import com.labteto.dshmobile.core.wire.dto.WorkspaceView
 import com.labteto.dshmobile.core.wire.dto.imageRejectionOf
 import com.labteto.dshmobile.core.wire.encodeToJsonElement
+import com.labteto.dshmobile.core.wire.newPromptRequestId
 import java.io.OutputStream
 import java.time.Instant
 import java.util.TimeZone
@@ -1405,6 +1406,7 @@ class SessionStore @Inject constructor(
         val safeMode = if (mode == "steer") "steer" else "queue"
         val zone = TimeZone.getDefault().id
         val request = SessionPromptRequest(
+            requestId = newPromptRequestId(),
             sessionId = sid,
             mode = safeMode,
             content = content,
@@ -1646,6 +1648,7 @@ class SessionStore @Inject constructor(
         val api = apiOrNull() ?: return
         val zone = TimeZone.getDefault().id
         val request = SubagentPromptRequest(
+            requestId = newPromptRequestId(),
             parentSessionId = sid,
             childSessionId = childSessionId,
             mode = "continuable",

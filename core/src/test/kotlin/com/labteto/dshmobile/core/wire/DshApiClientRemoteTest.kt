@@ -3,7 +3,11 @@ package com.labteto.dshmobile.core.wire
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import kotlinx.coroutines.test.runTest
+import com.labteto.dshmobile.core.wire.dto.ContentBlock
 import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
+import com.labteto.dshmobile.core.wire.dto.PromptContentPart
+import com.labteto.dshmobile.core.wire.dto.SessionPromptRequest
+import com.labteto.dshmobile.core.wire.dto.SubagentPromptRequest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -159,6 +163,70 @@ class DshApiClientRemoteTest {
 
         val commands = (result as RpcResult.Ok).value
         assertEquals(listOf("plan", "compact"), commands.map { it.name })
+    }
+
+    @Test
+    fun `a prompt carries the host's required requestId`() = runTest {
+        // Harness 0.1.2 made `requestId` a required field of the prompt request and validates the
+        // whole `request` object against a strict codec, so a client that omits it cannot send a
+        // message at all: the gateway answers `wire field "request" failed boundary validation`
+        // before any agent sees the text. Nothing in this repo sent one until this test existed.
+        val transport = RecordingTransport { _, body ->
+            val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
+            ok(rpcId, """{"accepted":true}""")
+        }
+        val result = client(transport).sessionPrompt(
+            SessionPromptRequest(
+                requestId = "11111111-2222-3333-4444-555555555555",
+                sessionId = "session-7",
+                mode = "queue",
+                content = listOf(PromptContentPart.Text("hello")),
+                clientTimeZone = "Asia/Bangkok",
+            ),
+        )
+
+        assertEquals("/api/session/prompt", transport.lastPath)
+        val request = Json.parseToJsonElement(transport.lastBody!!)
+            .jsonObject["payload"]!!.jsonObject["args"]!!.jsonObject["request"]!!.jsonObject
+        assertEquals(
+            setOf("requestId", "sessionId", "mode", "content", "clientTimeZone"),
+            request.keys,
+        )
+        assertEquals("11111111-2222-3333-4444-555555555555", request["requestId"]!!.jsonPrimitive.content)
+        assertTrue((result as RpcResult.Ok).value.accepted)
+    }
+
+    @Test
+    fun `a subagent prompt carries one too`() = runTest {
+        val transport = RecordingTransport { _, body ->
+            val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
+            ok(rpcId, """{"messageId":"m1"}""")
+        }
+        client(transport).subagentPrompt(
+            SubagentPromptRequest(
+                requestId = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                parentSessionId = "parent-1",
+                childSessionId = "child-1",
+                content = listOf(ContentBlock.Text("carry on")),
+                clientTimeZone = "Asia/Bangkok",
+            ),
+        )
+
+        val request = Json.parseToJsonElement(transport.lastBody!!)
+            .jsonObject["payload"]!!.jsonObject["args"]!!.jsonObject["request"]!!.jsonObject
+        assertEquals("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", request["requestId"]!!.jsonPrimitive.content)
+        // The child prompt shares the session prompt's identity vocabulary, so the discriminator
+        // the host declares required rides along beside it rather than being assumed.
+        assertEquals("continuable", request["mode"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun `each message is minted its own identity`() {
+        // Per message, not per call: two prompts must never claim to be the same message, or the
+        // host would persist one identity on two of them.
+        val ids = List(64) { newPromptRequestId() }
+        assertEquals(64, ids.toSet().size)
+        assertTrue(ids.all { it.isNotBlank() })
     }
 
     @Test

@@ -26,6 +26,15 @@ val WireJson: Json = Json {
 /** Mint a fresh correlation id for a client-request (the initiator mints; responses echo). */
 fun newRpcId(): String = UUID.randomUUID().toString()
 
+/**
+ * Mint a fresh identity for one human prompt (`requestId` on a session or subagent prompt).
+ *
+ * Not the same thing as [newRpcId], which names one HTTP call. This names the *message*: the host
+ * persists it on the message the prompt is accepted as, so a retry of the same message must carry
+ * the id it already had, and two different messages must never share one.
+ */
+fun newPromptRequestId(): String = UUID.randomUUID().toString()
+
 /** Encode a client-request envelope (POST /api/<method> body). */
 fun encodeEnvelope(request: ClientRequest): String =
     WireJson.encodeToString(ClientRequest.serializer(), request)

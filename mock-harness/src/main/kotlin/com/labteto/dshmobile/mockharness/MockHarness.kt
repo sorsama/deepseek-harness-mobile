@@ -43,6 +43,7 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * A scriptable stand-in for the DeepSeek Harness HTTP/WebSocket protocol.
@@ -101,6 +102,17 @@ class MockHarness(
     @Volatile
     var sessionExportBytes: ByteArray = ByteArray(0)
 
+    /**
+     * Every `request` object this harness accepted for `session/prompt`, in arrival order.
+     *
+     * Kept so a test can assert on what the client actually put on the wire — the identity it
+     * minted above all — rather than only on the call having succeeded.
+     */
+    val sessionPrompts: MutableList<JsonObject> = CopyOnWriteArrayList()
+
+    /** Every `request` object this harness accepted for `subagents/prompt`, in arrival order. */
+    val subagentPrompts: MutableList<JsonObject> = CopyOnWriteArrayList()
+
     private val normalizedTrustedHosts: Set<String> =
         trustedHosts.mapTo(mutableSetOf()) { normalizeHost(it) }
 
@@ -111,6 +123,28 @@ class MockHarness(
         // the Session Controller that serves it.
         on("session/canOpenWorkspacePath") { JsonPrimitive(true) }
         on("pluginInventory/list") { pluginInventoryValue() }
+        // Registered here rather than left to each test, because the point of holding these two to
+        // the host's required fields is to catch a client that stopped sending one — and a check
+        // only the tests that remember to ask for it get is a check that was not there when it
+        // mattered. A test that wants a different answer re-registers the endpoint as usual.
+        requestRemote(
+            "session",
+            "prompt",
+            required = setOf("requestId", "sessionId", "mode", "content"),
+            optional = setOf("clientTimeZone"),
+        ) { request ->
+            sessionPrompts.add(request)
+            buildJsonObject { put("accepted", true) }
+        }
+        requestRemote(
+            "subagents",
+            "prompt",
+            required = setOf("requestId", "parentSessionId", "childSessionId", "mode", "content"),
+            optional = setOf("clientTimeZone"),
+        ) { request ->
+            subagentPrompts.add(request)
+            buildJsonObject { put("messageId", UUID.randomUUID().toString()) }
+        }
     }
 
     /**
@@ -281,20 +315,78 @@ class MockHarness(
             if (missing.isEmpty() && unexpected.isEmpty()) {
                 handler(args)
             } else {
-                throw ArgumentsInvalid(argumentsInvalidMessage(missing, unexpected))
+                throw ArgumentsInvalid(argumentsInvalidMessage(endpoint, missing, unexpected))
             }
+        }
+    }
+
+    /**
+     * Registers a remote whose sole argument is `request`, held to the gateway's *boundary* rule.
+     *
+     * [remote] matches the args keys, which is one layer too shallow for an endpoint that takes a
+     * single request object: every such call passes `args` key matching and is then decoded
+     * against a strict codec, so a field missing from inside `request` is refused separately and
+     * with a different message. A mock that checked only the outer key set would happily accept a
+     * prompt the real host rejects, which is the exact gap that let a prompt without `requestId`
+     * ship green.
+     *
+     * Only [required] absences are refused. The codec is a zod object, which drops a key it does
+     * not declare rather than failing on it, so an unexpected field is not an error here the way
+     * an unexpected *arg* is.
+     *
+     * @param required every field the host declares without `?`.
+     * @param optional every field it declares with one; listed for the reader, not enforced.
+     * @param handler maps the validated request object to the remote's return value.
+     */
+    fun requestRemote(
+        namespace: String,
+        method: String,
+        required: Set<String>,
+        optional: Set<String> = emptySet(),
+        handler: (JsonObject) -> JsonElement,
+    ) {
+        val endpoint = "$namespace/$method"
+        require(optional.none { it in required }) {
+            "$endpoint: a field cannot be both required and optional"
+        }
+        remote(namespace, method, setOf("request")) { args ->
+            val request = args["request"] as? JsonObject
+                ?: throw BoundaryInvalid(boundaryInvalidMessage(endpoint, "request"))
+            // The refusal names the field that failed and nothing inside it: the gateway keeps
+            // boundary values out of its own message, so a mock that listed the missing keys
+            // would be handing the client a hint the real host withholds.
+            if (required.any { it !in request.keys }) {
+                throw BoundaryInvalid(boundaryInvalidMessage(endpoint, "request"))
+            }
+            handler(request)
         }
     }
 
     /** The gateway's `arguments-invalid` refusal, thrown out of a [remote] handler. */
     class ArgumentsInvalid(override val message: String) : RuntimeException(message)
 
-    private fun argumentsInvalidMessage(missing: List<String>, unexpected: List<String>): String {
+    /**
+     * The gateway's `input-invalid` refusal, thrown out of a [requestRemote] handler.
+     *
+     * Reaches the client as code `internal` like every other gateway failure: a shape mismatch
+     * gets no code of its own, which is precisely why a client must not send one to find out.
+     */
+    class BoundaryInvalid(override val message: String) : RuntimeException(message)
+
+    private fun boundaryInvalidMessage(endpoint: String, field: String): String =
+        "typert gateway: $endpoint: wire field \"$field\" failed boundary validation"
+
+    private fun argumentsInvalidMessage(
+        endpoint: String,
+        missing: List<String>,
+        unexpected: List<String>,
+    ): String {
         val clauses = buildList {
             if (missing.isNotEmpty()) add("missing " + missing.joinToString(", ") { "\"$it\"" })
             if (unexpected.isNotEmpty()) add("unexpected " + unexpected.joinToString(", ") { "\"$it\"" })
         }
-        return "args fields do not match the descriptor: " + clauses.joinToString("; ")
+        return "typert gateway: $endpoint: args fields do not match the descriptor: " +
+            clauses.joinToString("; ")
     }
 
     /**
@@ -535,6 +627,8 @@ class MockHarness(
                 // The gateway reports a refused args object as an ordinary thrown failure, which
                 // the RPC layer renders with code `internal` — a shape mismatch does not get its
                 // own error code, which is exactly why the client must not send one to find out.
+                respondJson(errorEnvelope(rpcId, "internal", invalid.message))
+            } catch (invalid: BoundaryInvalid) {
                 respondJson(errorEnvelope(rpcId, "internal", invalid.message))
             }
             failHandlers.containsKey(method) -> {

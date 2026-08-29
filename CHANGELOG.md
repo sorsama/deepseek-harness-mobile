@@ -3,6 +3,37 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [0.9.3] - 2026-08-29
+
+### Fixed
+
+- **Sending a message always failed against a harness 0.1.2.** Connecting,
+  listing sessions, reading history and choosing a model all worked, so the app
+  looked healthy right up to the moment you sent anything — at which point the
+  gateway answered `wire field "request" failed boundary validation` and the
+  text never reached an agent. 0.1.2 made `requestId` a required field of both
+  `session/prompt` and `subagents/prompt`: an identity the sender mints, one per
+  human message, which the host persists on the message the prompt is accepted
+  as. This client sent no such field on either call. Both requests carry one
+  now, minted per message.
+
+  It is validated *inside* the request object rather than beside the other
+  arguments, which is why nothing else on the surface was affected and why the
+  refusal named a field rather than a missing argument.
+
+  Reported by @snailium, who traced it to both DTOs and confirmed against a
+  live 0.1.2-alpha.1 that the same call succeeds with an id and fails without
+  one.
+
+### Changed
+
+- **The mock harness now holds a request object to the host's required
+  fields.** It matched the outer argument keys and stopped there, one layer
+  above where this bug lived, and implemented neither prompt endpoint at all —
+  so no test in the repo had ever sent a message. Both endpoints are registered
+  now, refusing a missing required field the way the real gateway does, and the
+  suite sends real prompts through the real client against them.
+
 ## [0.9.2] - 2026-08-28
 
 Verified on an Android emulator against a live relay, which is how the first

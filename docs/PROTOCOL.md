@@ -38,6 +38,16 @@ chose:
   `session/list`'s sole argument is genuinely named `_request` — the host method
   ignores it, but the wire name is the parameter identifier verbatim.
 
+Key matching is only the first of two checks. An endpoint whose sole argument is
+`request` then decodes that object against a strict codec, which refuses a
+missing required field *after* the args themselves passed — and says so
+differently: `wire field "request" failed boundary validation`, under code
+`internal`, since a shape mismatch gets no code of its own. Both prompt
+endpoints turn on a field this client did not always send: `session/prompt` and
+`subagents/prompt` require a `requestId`, minted by the sender, one fresh id per
+human message, which the host persists on the message the prompt is accepted as.
+Omit it and every send fails while every other call still works.
+
 The namespaces this app uses: `session`, `workspace`, `directoryPicker`,
 `settings`, `credentials`, `llm`, `skills`, `subagents`, `agentPresets`, `goals`,
 `commands`, `fileReferences`, `pluginInventory`.

@@ -8,9 +8,10 @@ checked against.
 
 | DSH Mobile | Harness version | Status |
 |---|---|---|
-| 0.9.2 | 0.1.2-alpha.1 | Supported baseline |
-| 0.9.1 | 0.1.2-alpha.1 | |
-| 0.9.0 | 0.1.2-alpha.1 | |
+| 0.9.3 | 0.1.2-alpha.1 | Supported baseline |
+| 0.9.2 | 0.1.2-alpha.1 | Cannot send messages |
+| 0.9.1 | 0.1.2-alpha.1 | Cannot send messages |
+| 0.9.0 | 0.1.2-alpha.1 | Cannot send messages |
 | 0.8.0 | 0.1.1-rc.2 | Previous baseline |
 | 0.7.0 | 0.1.1-rc.2 | |
 | 0.6.0 | 0.1.1-rc.2 | |
@@ -92,6 +93,11 @@ a summary rather than an exhaustive list; `docs/PROTOCOL.md` carries the shapes.
   (`session.list` → `session/list`). Several calls that took a request object now
   take flat named arguments, because the gateway matches an args object against
   the host method's *parameter names*.
+- **Prompts carry an identity.** `session/prompt` and `subagents/prompt` gained a
+  required `requestId`, minted by the sender, one per human message; the host
+  persists it on the message the prompt is accepted as. It is checked inside the
+  request object rather than beside the other args, so leaving it out refuses
+  every send while the rest of the surface goes on working.
 - **One socket.** `/api/events.mux` and `/api/events.host` were replaced by
   `/api/remote.mux`, which multiplexes independently cancellable logical streams
   and, unlike its predecessors, is written to as well as read.

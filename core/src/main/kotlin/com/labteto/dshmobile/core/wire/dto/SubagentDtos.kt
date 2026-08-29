@@ -177,6 +177,13 @@ data class SubagentHistoryValue(
 /** Request payload of `subagent.prompt` (continuable children only). */
 @Serializable
 data class SubagentPromptRequest(
+    /**
+     * Identity of this one human message, minted by the sender before the call. Host-required.
+     *
+     * Carries the same `session-request-id` brand an ordinary session prompt does, so a child
+     * message and a session message share one identity vocabulary.
+     */
+    @SerialName("requestId") val requestId: String,
     @SerialName("parentSessionId") val parentSessionId: String,
     @SerialName("childSessionId") val childSessionId: String,
     @SerialName("mode") val mode: String = "continuable",

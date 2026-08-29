@@ -250,6 +250,14 @@ data class SessionSelectModelRequest(
 /** Request payload of `session.prompt`. */
 @Serializable
 data class SessionPromptRequest(
+    /**
+     * Identity of this one human message, minted by the sender before the call. Host-required.
+     *
+     * The host persists it on the exact message the prompt is accepted as, which is what lets a
+     * sender match its own optimistic echo to the message that came back. It is per *message*,
+     * not per call: a resend of the same message keeps its id, and a new message never reuses one.
+     */
+    @SerialName("requestId") val requestId: String,
     @SerialName("sessionId") val sessionId: String,
     /** mode maps 1:1 — queue→send, steer→steer. */
     @SerialName("mode") val mode: String,
