@@ -252,15 +252,130 @@ class EventFoldTest {
     }
 
     @Test
-    fun typedStreamChunkKeepsItsChunkAndCompletedBlockTypes() {
-        val raw = """{"type":"assistant/chunk","seq":12,"time":1,"data":{"turn":1,"step":1,"chunk":{"type":"block-end","index":0,"block":{"type":"text","text":"streamed reply"}}}}"""
+    fun typedAttemptSettlementKeepsItsCompactStream() {
+        // Session format v2: a model attempt that produced no surface message settles as its own
+        // event carrying the exact compact stream. The typed round-trip must keep that stream
+        // intact, because the reconnect baseline is expanded from the very same encoding.
+        val raw = """{"type":"assistant/attempt","seq":12,"time":1,"data":{"turn":1,"step":1,"stream":[{"type":"text-chunks","time0":1,"index":0,"dt":[],"texts":["partial"]}]}}"""
         val typed = decodeFromString<SessionEvent>(raw)
+        assertTrue(typed is SessionEvent.AssistantAttempt)
         val json = encodeToJsonElement(SessionEventSerializer, typed).jsonObject
-        val data = json.getValue("data").jsonObject
-        val chunk = data.getValue("chunk").jsonObject
+        val stream = json.getValue("data").jsonObject.getValue("stream")
+        assertTrue(stream.toString().contains("text-chunks"))
+        assertEquals("partial", AssistantStream.expand(stream).single().chunk.getValue("text").jsonPrimitive.content)
+    }
 
-        assertEquals("block-end", chunk.getValue("type").jsonPrimitive.content)
-        assertEquals("text", chunk.getValue("block").jsonObject.getValue("type").jsonPrimitive.content)
+    @Test
+    fun transientChunksRenderAsOneProvisionalStreamingMessage() {
+        // Harness 0.1.3 never logs deltas. The live attempt's chunks arrive beside the durable
+        // window and have to show as the reply being written, after everything durable, without
+        // moving the cursor or reading as a gap.
+        val durable = listOf(
+            event("turn/start", 0, buildJsonObject { put("turn", 1) }),
+            event("user/message", 1, buildJsonObject {
+                put("id", "m1")
+                putJsonArray("content") { add(buildJsonObject { put("type", "text"); put("text", "hi") }) }
+            }),
+        )
+        val transient = listOf(
+            event("assistant/chunk", 0, buildJsonObject {
+                put("turn", 1); put("step", 1)
+                putJsonObject("chunk") { put("type", "reasoning-delta"); put("index", 0); put("text", "think") }
+            }),
+            event("assistant/chunk", 1, buildJsonObject {
+                put("turn", 1); put("step", 1)
+                putJsonObject("chunk") { put("type", "text-delta"); put("index", 1); put("text", "Hel") }
+            }),
+            event("assistant/chunk", 2, buildJsonObject {
+                put("turn", 1); put("step", 1)
+                putJsonObject("chunk") { put("type", "text-delta"); put("index", 1); put("text", "lo") }
+            }),
+        )
+        val snapshot = EventFold("s1").fold(durable, transient)
+        assertEquals(1L, snapshot.lastSeq)
+        assertFalse(snapshot.gap)
+        assertTrue(snapshot.running)
+        val provisional = snapshot.nodes.last() as AssistantMessageNode
+        assertTrue(provisional.streaming)
+        assertTrue(provisional.seq > 1L)
+        assertEquals(listOf("reasoning", "text"), provisional.blocks.map { it.kind })
+        assertEquals("Hello", provisional.plainText)
+    }
+
+    @Test
+    fun theSettlementReplacesTheProvisionalMessageRatherThanJoiningIt() {
+        val durable = listOf(
+            event("turn/start", 0, buildJsonObject { put("turn", 1) }),
+            event("assistant/message", 1, buildJsonObject {
+                put("turn", 1); put("step", 1)
+                putJsonObject("message") {
+                    put("id", "a1")
+                    putJsonArray("content") { add(buildJsonObject { put("type", "text"); put("text", "Hello") }) }
+                }
+                putJsonArray("stream") {
+                    add(buildJsonObject {
+                        put("type", "text-chunks"); put("time0", 1); put("index", 0)
+                        putJsonArray("dt") { }
+                        putJsonArray("texts") { add(kotlinx.serialization.json.JsonPrimitive("Hello")) }
+                    })
+                }
+            }),
+        )
+        // The store retires the live attempt when its settlement lands, so the fold sees no
+        // transient rows for this step; the assembled message is the one node.
+        val snapshot = EventFold("s1").fold(durable)
+        val assistants = snapshot.nodes.filterIsInstance<AssistantMessageNode>()
+        assertEquals(1, assistants.size)
+        assertFalse(assistants.single().streaming)
+        assertEquals("Hello", assistants.single().plainText)
+    }
+
+    @Test
+    fun anAttemptWithoutAMessageFoldsToNothingAndClosesItsStep() {
+        val durable = listOf(
+            event("turn/start", 0, buildJsonObject { put("turn", 1) }),
+            event("assistant/chunk", 1, buildJsonObject {
+                put("turn", 1); put("step", 1)
+                putJsonObject("chunk") { put("type", "text-delta"); put("index", 0); put("text", "half") }
+            }),
+            event("assistant/attempt", 2, buildJsonObject {
+                put("turn", 1); put("step", 1)
+                putJsonArray("stream") { }
+            }),
+        )
+        val snapshot = EventFold("s1").fold(durable)
+        // No chat node for the attempt, and no provisional node left behind for the step it closed.
+        assertTrue(snapshot.nodes.none { it is AssistantMessageNode })
+        assertTrue(snapshot.nodes.none { it is OtherNode })
+        assertEquals(2L, snapshot.lastSeq)
+    }
+
+    @Test
+    fun aFileBlockKeepsItsNameForThePreview() {
+        val events = listOf(
+            event("user/message", 1, buildJsonObject {
+                put("id", "m1")
+                putJsonArray("content") {
+                    add(buildJsonObject { put("type", "text"); put("text", "see attached") })
+                    add(buildJsonObject {
+                        put("type", "file")
+                        putJsonObject("attachment") { put("attachmentId", "sha256:abc"); put("name", "notes.txt"); put("bytes", 42) }
+                    })
+                }
+            }),
+        )
+        val user = EventFold("s1").fold(events).nodes.single() as UserMessageNode
+        assertEquals(listOf("text", "file"), user.blocks.map { it.kind })
+        assertEquals("notes.txt", user.blocks[1].text)
+        assertEquals("see attached", user.previewText)
+    }
+
+    @Test
+    fun incrementalDoesNotReplayAProvisionalNodeAsDurable() {
+        val streaming = AssistantMessageNode(seq = 9, messageId = null, turn = 1, step = 1, blocks = emptyList(), streaming = true)
+        val fold = EventFold.Incremental(ConversationSnapshot("s1", nodes = listOf(streaming), lastSeq = 2), "s1")
+        val next = fold.apply(event("turn/start", 3, buildJsonObject { put("turn", 7) }))!!
+        assertTrue(next.nodes.none { it is AssistantMessageNode })
     }
 
     @Test

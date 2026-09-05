@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Slash-command DTOs, ported from `packages/interaction/commands/src/types.ts` (v0.1.1-rc.2).
+ * Slash-command DTOs, ported from `packages/interaction/commands/src/types.ts` (v0.1.3-alpha.1).
  *
  * The catalog is read through the typert remote `commands/list`; it is per-session and
  * deployment-dependent (a preset switch changes which commands an agent resolves), so it is
@@ -16,12 +16,13 @@ import kotlinx.serialization.Serializable
 data class CommandInputDescriptor(
     @SerialName("hint") val hint: String = "",
     /**
-     * Whether composer image attachments may accompany an invocation (harness 0.1.0-rc.8; an
-     * rc.7 host sends no such key and the default stands). False means the executor refuses an
-     * invocation carrying images, so a capable composer refuses the submission before dispatch
-     * rather than quietly sending the line to the model instead.
+     * Whether composer attachments — images and, since harness 0.1.3, files — may accompany an
+     * invocation. Through 0.1.2 the key was `images`; 0.1.3 renamed it when files joined, and a
+     * 0.1.3 host sends no `images` key at all. False means the executor refuses an invocation
+     * carrying any, so a capable composer refuses the submission before dispatch rather than
+     * quietly sending the line to the model instead.
      */
-    @SerialName("images") val images: Boolean = false,
+    @SerialName("attachments") val attachments: Boolean = false,
 )
 
 /**
@@ -40,8 +41,8 @@ data class CommandDescriptor(
     /** The draft prefix an argument-taking invocation prefills. */
     val draftPrefix: String get() = "/$name "
 
-    /** Whether this command accepts composer images (harness 0.1.0-rc.8; `/goal` and `/plan`). */
-    val acceptsImages: Boolean get() = input?.images == true
+    /** Whether this command accepts composer attachments (`/goal` and `/plan`). */
+    val acceptsAttachments: Boolean get() = input?.attachments == true
 }
 
 /**
@@ -49,8 +50,8 @@ data class CommandDescriptor(
  * (`packages/attachment/attachment/src/types.ts`).
  *
  * Deliberately not [PromptContentPart.Image]: that shape carries a `type` discriminator the
- * command gateway's boundary codec does not declare, and the gateway validates its arguments
- * against the declared shape rather than ignoring what it did not ask for.
+ * prompt codec declares, and this one is the discriminator-less form. Since 0.1.3 a command
+ * carries attachments as [CommandSubmitAttachment], which *does* carry one — see [asSubmit].
  */
 @Serializable
 data class EncodedImageAttachment(
@@ -59,4 +60,32 @@ data class EncodedImageAttachment(
     @SerialName("data") val data: String,
     /** Optional display name; never interpreted as a path. */
     @SerialName("name") val name: String? = null,
-)
+) {
+    /** The same image in the shape `commands/execute` takes. */
+    fun asSubmit(): CommandSubmitAttachment = CommandSubmitAttachment.Image(mediaType, data, name)
+}
+
+/**
+ * One attachment submitted with a slash command — `CommandSubmitAttachment` upstream.
+ *
+ * Images travel as bytes, exactly as a prompt carries them. A file travels as the receipt a
+ * preceding upload on the same session returned (see `DshApiClient.uploadFileBinary`); the
+ * executor resolves it back to the stored file, and refuses a receipt it did not mint for this
+ * session.
+ */
+@Serializable
+sealed class CommandSubmitAttachment {
+    @Serializable
+    @SerialName("image")
+    data class Image(
+        @SerialName("mediaType") val mediaType: String,
+        @SerialName("data") val data: String,
+        @SerialName("name") val name: String? = null,
+    ) : CommandSubmitAttachment()
+
+    @Serializable
+    @SerialName("file")
+    data class File(
+        @SerialName("receiptId") val receiptId: String,
+    ) : CommandSubmitAttachment()
+}

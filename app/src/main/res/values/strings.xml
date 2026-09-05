@@ -345,8 +345,8 @@
     <string name="err_image_model_unsupported">This model does not take images. Switch to one that does.</string>
     <string name="err_image_subagent_unsupported">Subagent sessions do not take images.</string>
     <string name="err_image_send_failed">Sending the image failed (%1$s). Re-add it and try again.</string>
-    <string name="err_command_no_images">/%1$s does not take image attachments. Remove them first.</string>
-    <string name="err_command_images_host">/%1$s can carry images only on harness 0.1.0-rc.8 or newer. Remove them first.</string>
+    <string name="err_command_no_images">/%1$s does not take attachments. Remove them first.</string>
+    <string name="err_command_images_host">/%1$s cannot carry attachments on this harness. Remove them first.</string>
     <string name="err_permission_denied">This action is only available on the harness computer itself.</string>
     <string name="err_timeout">The harness did not answer in time.</string>
     <string name="err_generic">Error: %1$s</string>
@@ -437,4 +437,13 @@
     <string name="connect_relay_refused">Refuses this address</string>
     <string name="connect_relay_refused_hint">A relay is running here, but it only answers to addresses it already knows. Add %1$s to publicHostnames in the relay\'s cordis.patch.yml on that computer, then restart it.</string>
     <string name="pair_fail_host_refused">%1$s is a relay, but it refuses requests addressed this way — the code was never read. Add that address to publicHostnames in the relay\'s cordis.patch.yml and restart, or reach the relay by an address it already knows.</string>
+    <string name="chat_composer_attach_file">Attach file</string>
+    <string name="chat_composer_remove_file">Remove file</string>
+    <string name="chat_attachment_uploading">Uploading…</string>
+    <string name="chat_attachment_upload_failed">Upload failed. Tap to retry.</string>
+    <string name="chat_attachment_still_uploading">Wait for the upload to finish before sending.</string>
+    <string name="err_file_read_failed">Could not read that file.</string>
+    <string name="err_file_not_staged">The harness no longer holds that file. Attach it again.</string>
+    <string name="err_file_subagent_unsupported">Subagent sessions do not take files.</string>
+    <string name="err_file_send_failed">Sending the file failed (%1$s). Attach it again.</string>
 </resources>

@@ -73,10 +73,10 @@ All files live under `capture-output/` (root of the repo; already in `.gitignore
 | ------------------------- | ----------------------------------------------------------------------------------------------- |
 | `session.list.json`       | `{"request": <client-request envelope>, "response": <server-response envelope>}`                |
 | `model.catalog.json`      | Same wrapper for the host-generation model catalog.                                             |
-| `session.page.json`       | Same wrapper for the first session's history page. Look here for **packed** `chunks` records.   |
+| `session.page.json`       | Same wrapper for the first session's history page. Since harness 0.1.3 every record is a plain event; an `assistant/message` carries its compact `stream`, and a step that produced no message settles as `assistant/attempt`. |
 | `commands.list.json`      | Same wrapper for the session's command catalog — the only live view of which commands declare `input.images`. |
 | `events.ndjson`           | One line per `$events` item. The first is the `ready` frame carrying the host facts.            |
-| `session.follow.ndjson`   | One line per follow item; the first is the complete opening snapshot, and its `projections` block is where `imageLimits` shows up. |
+| `session.follow.ndjson`   | One line per follow item; the first is the complete opening snapshot, and its `projections` block is where `imageLimits` shows up. The stream is opened with `assistantStream: true`, so the snapshot also carries an `assistantStream` baseline and, while a turn runs, `assistant-stream` items (`start` / `chunk` / `end`) interleave with the durable events. Run the capture while the agent is answering to see them. |
 | `session.control.ndjson`  | One line per control item; the first is the complete baseline.                                  |
 | `workspace.follow.ndjson` | One line per workspace item; the first is the complete baseline.                                |
 

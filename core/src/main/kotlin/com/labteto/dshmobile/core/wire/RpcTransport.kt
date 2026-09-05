@@ -16,10 +16,12 @@ import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import okio.BufferedSink
 
 /**
  * One HTTP carrier exchange: the status code and raw body of a POST /api request.
@@ -57,6 +59,24 @@ interface RpcTransport {
         path: String,
         consume: (contentType: String?, contentDisposition: String?, body: InputStream) -> T,
     ): T
+
+    /**
+     * POST raw bytes to [path] — the harness's one non-envelope *write* channel, the streaming
+     * file-upload route harness 0.1.3 added (`/api/session/uploadFileBinary`).
+     *
+     * [body] is read once on an IO thread and must be positioned at the first byte to send;
+     * [contentLength] is declared up front so the host can refuse an oversized upload before
+     * reading it. [onProgress] is called with the running byte count as the body is written.
+     * Returns the carrier response (the route answers 200 with a bare `{ok, value|error}`
+     * result), or throws [RpcTransportException] on a non-2xx status or transport failure.
+     */
+    suspend fun upload(
+        path: String,
+        contentType: String,
+        contentLength: Long,
+        body: InputStream,
+        onProgress: ((sent: Long) -> Unit)? = null,
+    ): RpcHttpResponse
 }
 
 /** JSON media type used for every /api POST. */
@@ -142,11 +162,15 @@ class OkHttpRpcTransport(
         }
 
     /**
-     * Downloads reuse the unary client's connection pool but relax the read timeout: a session log
-     * ZIP is streamed and compressed on the fly, so 30s is a false deadline on a long session.
+     * Downloads and uploads reuse the unary client's connection pool but relax the timeouts: a
+     * session log ZIP is streamed and compressed on the fly, and a file upload is bounded by the
+     * link rather than the host, so 30s is a false deadline on either.
      */
     private val downloadClient: OkHttpClient by lazy {
-        httpClient.newBuilder().readTimeout(10, TimeUnit.MINUTES).build()
+        httpClient.newBuilder()
+            .readTimeout(10, TimeUnit.MINUTES)
+            .writeTimeout(10, TimeUnit.MINUTES)
+            .build()
     }
 
     override suspend fun <T> download(
@@ -176,6 +200,50 @@ class OkHttpRpcTransport(
                 resp.header("Content-Disposition"),
                 body.byteStream(),
             )
+        }
+    }
+
+    override suspend fun upload(
+        path: String,
+        contentType: String,
+        contentLength: Long,
+        body: InputStream,
+        onProgress: ((sent: Long) -> Unit)?,
+    ): RpcHttpResponse = withContext(Dispatchers.IO) {
+        val target = base.resolve(path)
+            ?: throw RpcTransportException(0, "cannot resolve $path against $base")
+        val requestBody = object : RequestBody() {
+            override fun contentType(): MediaType? = contentType.toMediaType()
+            override fun contentLength(): Long = contentLength
+            override fun isOneShot(): Boolean = true
+            override fun writeTo(sink: BufferedSink) {
+                val buffer = ByteArray(64 * 1024)
+                var sent = 0L
+                while (true) {
+                    val read = body.read(buffer)
+                    if (read < 0) break
+                    sink.write(buffer, 0, read)
+                    sent += read
+                    onProgress?.invoke(sent)
+                }
+            }
+        }
+        val request = Request.Builder()
+            .url(target)
+            .header("Host", hostHeader)
+            .authorized(authorization)
+            .cookied(cookie)
+            .post(requestBody)
+            .build()
+        val response = try {
+            downloadClient.newCall(request).execute()
+        } catch (e: IOException) {
+            throw RpcTransportException(0, "transport failure: ${e.message}", e)
+        }
+        response.use { resp ->
+            val responseBody = resp.body?.string().orEmpty()
+            if (!resp.isSuccessful) throw RpcTransportException(resp.code, carrierMessage(resp.code))
+            RpcHttpResponse(resp.code, responseBody)
         }
     }
 

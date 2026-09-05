@@ -76,7 +76,7 @@ et une [FAQ](https://github.com/sorsama/deepseek-harness-mobile/wiki/FAQ).
   droit vers la gauche pour le panneau de détails de la session.
 - **Expérience de discussion complète** — tours diffusés en continu avec raisonnement dépliable,
   markdown, cartes d'outil terminal/diff/lecture/recherche/web, dock de file d'attente (modifier /
-  retirer / réorienter), pagination de l'historique, pièces jointes images.
+  retirer / réorienter), pagination de l'historique, pièces jointes images et fichiers.
 - **Commandes slash et compétences** — la zone de saisie confronte une ligne commençant par `/` au
   catalogue de commandes propre à la session et l'exécute via la passerelle de commandes du
   harness ; ce que le catalogue ne revendique pas part comme un prompt, et c'est ainsi que les
@@ -98,9 +98,12 @@ et une [FAQ](https://github.com/sorsama/deepseek-harness-mobile/wiki/FAQ).
 
 - Android 8.0 ou plus (minSdk 26).
 - Un [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) en cours d'exécution
-  (testé avec `0.1.2-alpha.1`). **0.9.0 ne parle pas le protocole 0.1.1** — cette
-  version a remplacé le protocole au lieu de l’étendre, donc l’app et le harness
-  doivent évoluer ensemble. Voir [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
+  (testé avec `0.1.3-alpha.1`). **0.10.0 requiert le harness 0.1.3** — cette
+  version a cessé de journaliser les fragments d’une réponse pour les envoyer dans un
+  flux en direct que l’app doit demander, donc l’app et le harness doivent évoluer
+  ensemble : une app plus ancienne ne voit jamais une réponse s’écrire sur 0.1.3, et
+  cette app ne peut pas exécuter de commandes slash sur 0.1.2.
+  Voir [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 
 ## Démarrage rapide
 

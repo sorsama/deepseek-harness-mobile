@@ -9,7 +9,6 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.longOrNull
 
 /**
  * Folds raw [SessionEventEnvelope]s into a [ConversationSnapshot].
@@ -18,7 +17,13 @@ import kotlinx.serialization.json.longOrNull
  *
  *  - assistant streaming: `assistant/chunk` deltas merge per block index;
  *    `block-end` carries the assembled block; `assistant/message` is the
- *    commit point (and authoritative when no chunks were seen).
+ *    commit point (and authoritative when no chunks were seen). Since harness
+ *    0.1.3 those deltas are not durable events at all — they are the transient
+ *    rows of the open attempt (`AssistantLiveState`), handed to [fold] beside the
+ *    durable window and rendered as one provisional, `streaming` message until
+ *    the settlement lands.
+ *  - `assistant/attempt` is a model attempt that committed no surface message
+ *    (failed, retried, cancelled before any text); it is log-only here.
  *  - interruption: harness 0.1.0-rc.8 marks a cancelled turn's finalized prefix
  *    on the `assistant/message` itself, and that wins; a `turn/end` whose reason
  *    kind is `interrupted`/`aborted`/`error` marks the turn's assistant node
@@ -29,9 +34,16 @@ import kotlinx.serialization.json.longOrNull
  */
 class EventFold(private val sessionId: String) {
 
-    fun fold(events: List<SessionEventEnvelope>): ConversationSnapshot {
+    /**
+     * Fold the durable [events] and then the [transient] chunks of the attempt being written.
+     *
+     * Transient rows come last regardless of their own `seq`, which is only a position within
+     * the attempt: they never advance the snapshot's cursor and never count as a gap.
+     */
+    fun fold(events: List<SessionEventEnvelope>, transient: List<SessionEventEnvelope> = emptyList()): ConversationSnapshot {
         val state = FoldState(sessionId)
         events.forEach { state.apply(it) }
+        transient.forEach { state.applyTransient(it) }
         return state.snapshot()
     }
 
@@ -44,9 +56,10 @@ class EventFold(private val sessionId: String) {
         private var folded: Long = initial.lastSeq.coerceAtLeast(-1)
 
         init {
-            // Seed the fold from the snapshot's nodes (rebuild buffers from scratch).
+            // Seed the fold from the snapshot's nodes (rebuild buffers from scratch). A provisional
+            // streaming node is not durable and would otherwise be re-added as though it were.
             state.blank = initial.blank
-            state.nodes.addAll(initial.nodes)
+            state.nodes.addAll(initial.nodes.filterNot { it is AssistantMessageNode && it.streaming })
             state.running = initial.running
             state.hasMore = initial.hasMore
         }
@@ -90,13 +103,52 @@ private class FoldState(private val sessionId: String) {
 
     fun snapshot(): ConversationSnapshot = ConversationSnapshot(
         sessionId = sessionId,
-        nodes = nodes.toList(),
+        nodes = nodes + provisionalNodes(),
         running = running,
         blank = blank,
         hasMore = hasMore,
         lastSeq = lastSeq,
         gap = gap,
     )
+
+    /**
+     * One provisional message per open attempt with something to show, after every durable node.
+     *
+     * Sequence numbers are minted past the durable cursor so the transcript keeps its order and
+     * a renderer can tell the node is the newest thing on screen. They are not stable across
+     * folds and nothing may key on them.
+     */
+    private fun provisionalNodes(): List<ChatNode> {
+        var next = lastSeq + 1
+        return openByKey.values.mapNotNull { open ->
+            val blocks = commit(open).filter { it.hasContent() }
+            if (blocks.isEmpty()) return@mapNotNull null
+            AssistantMessageNode(
+                seq = next++,
+                messageId = null,
+                turn = open.turn,
+                step = open.step,
+                blocks = blocks,
+                streaming = true,
+            )
+        }
+    }
+
+    private fun ChatBlock.hasContent(): Boolean = when (kind) {
+        "text", "reasoning" -> !text.isNullOrEmpty()
+        "tool-call" -> !argumentsJson.isNullOrEmpty() || !toolName.isNullOrEmpty()
+        else -> raw != null
+    }
+
+    /** Apply one transient chunk of the attempt being written. Never moves the cursor. */
+    fun applyTransient(event: SessionEventEnvelope) {
+        if (event.type != "assistant/chunk") return
+        val data = event.data as? JsonObject ?: return
+        val turn = data["turn"]?.jsonPrimitive?.intOrNull ?: 0
+        val step = data["step"]?.jsonPrimitive?.intOrNull ?: 0
+        val chunk = data["chunk"] as? JsonObject ?: return
+        mergeChunk(turn, step, chunk)
+    }
 
     fun apply(event: SessionEventEnvelope) {
         if (event.seq > lastSeq + 1 && lastSeq >= 0 && !gap) gap = true
@@ -127,6 +179,8 @@ private class FoldState(private val sessionId: String) {
                 nodes.add(UserMessageNode(event.seq, messageId, parseBlocks(data.jsonObject["content"]), sourceKind))
             }
 
+            // Durable through harness 0.1.2; a live-only transient row since 0.1.3. Either way it
+            // is merged into the open attempt for its (turn, step) and shown as provisional text.
             "assistant/chunk" -> {
                 val turn = data.jsonObject["turn"]?.jsonPrimitive?.intOrNull ?: 0
                 val step = data.jsonObject["step"]?.jsonPrimitive?.intOrNull ?: 0
@@ -147,9 +201,14 @@ private class FoldState(private val sessionId: String) {
                 val interrupted = data.jsonObject["interrupted"]?.jsonPrimitive?.booleanOrNull ?: false
                 val key = key(turn, step)
                 val open = openByKey[key]
+                // The settlement's assembled message is the model-visible truth. Chunks seen for
+                // the same step only stand in when the message carries no content of its own,
+                // which is how a 0.1.2 host reported a stream that ended without a message.
+                val fromMessage = parseBlocks(message?.get("content"))
                 val blocks = when {
+                    fromMessage.isNotEmpty() -> fromMessage
                     open != null && open.blocks.isNotEmpty() -> commit(open)
-                    else -> parseBlocks(message?.get("content"))
+                    else -> fromMessage
                 }
                 openByKey.remove(key)
                 if (nodes.none { it is AssistantMessageNode && it.seq == event.seq }) {
@@ -157,6 +216,16 @@ private class FoldState(private val sessionId: String) {
                         AssistantMessageNode(event.seq, messageId, turn, step, blocks, usage, interrupted),
                     )
                 }
+            }
+
+            // A model attempt that committed no surface message: a retried provider failure, an
+            // attempt cancelled before any text, a stream error. The embedded stream is replay
+            // data, not something a transcript shows; but it does close the open attempt for that
+            // step, so any provisional rows for it are retired here.
+            "assistant/attempt" -> {
+                val turn = data.jsonObject["turn"]?.jsonPrimitive?.intOrNull ?: 0
+                val step = data.jsonObject["step"]?.jsonPrimitive?.intOrNull ?: 0
+                openByKey.remove(key(turn, step))
             }
 
             "tool/call" -> {
@@ -230,7 +299,10 @@ private class FoldState(private val sessionId: String) {
         val acc = open.blocks[index]
         when (type) {
             "block-start" -> acc.kind = chunk["blockType"]?.jsonPrimitive?.contentOrNull ?: "unknown"
-            "text-delta" -> acc.text.append(chunk["text"]?.jsonPrimitive?.contentOrNull ?: "")
+            "text-delta" -> {
+                if (acc.kind == "unknown") acc.kind = "text"
+                acc.text.append(chunk["text"]?.jsonPrimitive?.contentOrNull ?: "")
+            }
             "reasoning-delta" -> {
                 acc.kind = "reasoning"
                 acc.text.append(chunk["text"]?.jsonPrimitive?.contentOrNull ?: "")
@@ -238,7 +310,7 @@ private class FoldState(private val sessionId: String) {
             "tool-call-delta" -> {
                 acc.kind = "tool-call"
                 acc.toolCallId = chunk["id"]?.jsonPrimitive?.contentOrNull
-                acc.toolName = chunk["name"]?.jsonPrimitive?.contentOrNull
+                chunk["name"]?.jsonPrimitive?.contentOrNull?.let { acc.toolName = it }
                 acc.arguments.append(chunk["argumentsDelta"]?.jsonPrimitive?.contentOrNull ?: "")
             }
             "block-end" -> acc.raw = chunk["block"]
@@ -311,6 +383,14 @@ private class FoldState(private val sessionId: String) {
                     raw = element,
                 )
                 "image" -> ChatBlock("image", raw = element)
+                // Harness 0.1.3: a verbatim stored file. `text` carries the display name so a
+                // preview that reads text blocks first still says something; the size and the
+                // attachment id stay on `raw` for the chip that renders it.
+                "file" -> ChatBlock(
+                    kind = "file",
+                    text = (obj["attachment"] as? JsonObject)?.get("name")?.jsonPrimitive?.contentOrNull,
+                    raw = element,
+                )
                 else -> ChatBlock("unknown", raw = element)
             }
         }

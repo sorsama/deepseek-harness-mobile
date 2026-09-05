@@ -274,8 +274,8 @@
     <string name="err_image_model_unsupported">এই মডেল ছবি নেয় না। এমন একটি মডেল বেছে নিন যেটি নেয়।</string>
     <string name="err_image_subagent_unsupported">সাবএজেন্ট সেশন ছবি নেয় না।</string>
     <string name="err_image_send_failed">ছবি পাঠানো যায়নি (%1$s)। আবার যুক্ত করে চেষ্টা করুন।</string>
-    <string name="err_command_no_images">/%1$s ছবি সংযুক্তি নেয় না। আগে সেগুলি সরান।</string>
-    <string name="err_command_images_host">/%1$s কেবল harness 0.1.0-rc.8 বা তার নতুন সংস্করণে ছবি বহন করতে পারে। আগে সেগুলি সরান।</string>
+    <string name="err_command_no_images">/%1$s সংযুক্তি নেয় না। আগে সেগুলি সরান।</string>
+    <string name="err_command_images_host">/%1$s এই harness-এ সংযুক্তি বহন করতে পারে না। আগে সেগুলি সরান।</string>
     <string name="err_permission_denied">এই কাজটি শুধুমাত্র Harness কম্পিউটারেই উপলব্ধ।</string>
     <string name="err_timeout">Harness সময়মতো উত্তর দেয়নি।</string>
     <string name="err_generic">ত্রুটি: %1$s</string>
@@ -435,4 +435,13 @@
     <string name="connect_relay_refused">এই ঠিকানা ফিরিয়ে দেয়</string>
     <string name="connect_relay_refused_hint">এখানে একটি রিলে চলছে ঠিকই, কিন্তু সেটি কেবল তার চেনা ঠিকানাগুলিতেই সাড়া দেয়। ওই কম্পিউটারে রিলের cordis.patch.yml-এ publicHostnames-এ %1$s যোগ করে সেটি আবার চালু করুন।</string>
     <string name="pair_fail_host_refused">%1$s রিলেই, কিন্তু এই ঠিকানায় পাঠানো অনুরোধ সেটি ফিরিয়ে দেয় — কোডটি পড়াই হয়নি। ওই ঠিকানাটি রিলের cordis.patch.yml-এ publicHostnames-এ যোগ করে আবার চালু করুন, অথবা রিলের চেনা কোনো ঠিকানা দিয়ে পৌঁছান।</string>
+    <string name="chat_composer_attach_file">ফাইল সংযুক্ত করুন</string>
+    <string name="chat_composer_remove_file">ফাইল সরান</string>
+    <string name="chat_attachment_uploading">আপলোড হচ্ছে…</string>
+    <string name="chat_attachment_upload_failed">আপলোড ব্যর্থ হয়েছে। আবার চেষ্টা করতে ট্যাপ করুন।</string>
+    <string name="chat_attachment_still_uploading">পাঠানোর আগে আপলোড শেষ হওয়া পর্যন্ত অপেক্ষা করুন।</string>
+    <string name="err_file_read_failed">ফাইলটি পড়া যায়নি।</string>
+    <string name="err_file_not_staged">harness আর ফাইলটি রাখেনি। আবার সংযুক্ত করুন।</string>
+    <string name="err_file_subagent_unsupported">সাবএজেন্ট সেশন ফাইল গ্রহণ করে না।</string>
+    <string name="err_file_send_failed">ফাইল পাঠানো ব্যর্থ হয়েছে (%1$s)। আবার সংযুক্ত করুন।</string>
 </resources>

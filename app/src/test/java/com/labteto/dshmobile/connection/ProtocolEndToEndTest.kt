@@ -23,12 +23,16 @@ import com.labteto.dshmobile.core.wire.dto.SessionFollowFrameSerializer
 import com.labteto.dshmobile.core.wire.dto.SessionPromptRequest
 import com.labteto.dshmobile.core.wire.dto.SessionPromptValue
 import com.labteto.dshmobile.core.wire.dto.SubagentPromptRequest
-import com.labteto.dshmobile.core.wire.dto.ContentBlock
 import com.labteto.dshmobile.core.wire.dto.PromptContentPart
+import com.labteto.dshmobile.core.wire.dto.SessionAssistantStreamFrame
 import com.labteto.dshmobile.core.wire.decodeFromJsonElement
 import com.labteto.dshmobile.core.wire.newPromptRequestId
 import com.labteto.dshmobile.mockharness.MockHarness
-import com.labteto.dshmobile.core.session.ChunkRows
+import com.labteto.dshmobile.core.session.AssistantLiveState
+import com.labteto.dshmobile.core.session.AssistantMessageNode
+import com.labteto.dshmobile.core.session.EventFold
+import com.labteto.dshmobile.data.wireEventToEnvelope
+import java.io.ByteArrayInputStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -38,6 +42,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
@@ -102,30 +107,66 @@ class ProtocolEndToEndTest {
         }
     }
 
-    /** One complete follow snapshot whose sole record is a packed two-member text run. */
+    /**
+     * One complete v2 follow snapshot: a plain event record, a v2 header, and the opted-in
+     * assistant baseline describing an attempt caught mid-stream with one chunk already sent.
+     */
     private fun snapshotFrame() = buildJsonObject {
         put("type", "snapshot")
-        put("cursor", 11)
+        put("cursor", 10)
         put("hasMore", false)
-        putJsonObject("header") { }
-        putJsonObject("projections") { }
+        putJsonObject("header") {
+            put("version", 2)
+            put("id", "s1")
+            put("createdAt", 1L)
+            put("isSeeded", false)
+        }
+        putJsonObject("projections") {
+            put("asOfSeq", 10)
+            putJsonObject("values") { }
+        }
         putJsonArray("records") {
             addJsonObject {
-                put("type", "chunks")
+                put("type", "event")
                 putJsonObject("event") {
-                    put("type", "chunkrow/text-chunks")
+                    put("type", "turn/start")
                     put("seq", 10)
                     put("time", 1_000L)
-                    putJsonObject("data") {
-                        put("turn", 1)
-                        put("step", 0)
+                    putJsonObject("data") { put("turn", 1) }
+                }
+            }
+        }
+        putJsonObject("assistantStream") {
+            put("revision", 2)
+            putJsonObject("activeAttempt") {
+                put("attemptId", "s1:1")
+                put("startedAfterSeq", 10)
+                put("turn", 1)
+                put("step", 1)
+                put("nextIndex", 1)
+                putJsonArray("stream") {
+                    addJsonObject {
+                        put("type", "text-chunks")
+                        put("time0", 1_001L)
                         put("index", 0)
-                        // One gap for two members: member k lands at time + sum of the first k.
-                        putJsonArray("dt") { add(5) }
-                        putJsonArray("texts") { add("Hel"); add("lo") }
+                        putJsonArray("dt") { }
+                        putJsonArray("texts") { add("Hel") }
                     }
                 }
             }
+        }
+    }
+
+    private fun chunkFrame(index: Int, text: String, revision: Int) = buildJsonObject {
+        put("type", "chunk")
+        put("attemptId", "s1:1")
+        put("revision", revision)
+        put("index", index)
+        put("time", 1_000L + index)
+        putJsonObject("chunk") {
+            put("type", "text-delta")
+            put("index", 0)
+            put("text", text)
         }
     }
 
@@ -201,7 +242,7 @@ class ProtocolEndToEndTest {
                 requestId = newPromptRequestId(),
                 parentSessionId = "s1",
                 childSessionId = "c1",
-                content = listOf(ContentBlock.Text("carry on")),
+                content = listOf(PromptContentPart.Text("carry on")),
                 clientTimeZone = "Asia/Bangkok",
             ),
         )
@@ -235,9 +276,10 @@ class ProtocolEndToEndTest {
             SessionPromptValue.serializer(),
         )
         val error = (result as RpcResult.Err).error
-        // A shape mismatch gets no error code of its own, which is exactly why a client cannot
-        // probe for one and must send the declared shape.
-        assertEquals("internal", error.code)
+        // Since 0.1.3 the shape mismatch has its own namespaced code; the message still names
+        // only the field, which is exactly why a client cannot probe for what was wrong inside it
+        // and must send the declared shape.
+        assertEquals("gateway/input-invalid", error.code)
         assertEquals(
             "typert gateway: session/prompt: wire field \"request\" failed boundary validation",
             error.message,
@@ -246,9 +288,11 @@ class ProtocolEndToEndTest {
     }
 
     @Test
-    fun `a follow snapshot carrying a packed run expands into its member events`() = runBlocking {
-        // The one shape 0.1.2 introduced that no earlier client ever saw. Driving it through the
-        // real mux proves the record union decodes and the expander agrees with it.
+    fun `a follow generation streams a reply from its baseline through the live frames`() = runBlocking {
+        // The shape 0.1.3 introduced that no earlier client ever saw: no durable deltas, a
+        // baseline that describes an attempt caught mid-stream, then dense assistant frames.
+        // Driving it through the real mux proves the frame union decodes and the live state
+        // folds it into the provisional message the transcript shows.
         val loop = ConnectionLoop({ mux() }, Recorder(), LoopConfig(delay = { }))
         val muxHandle = mux()
         muxHandle.start()
@@ -259,6 +303,7 @@ class ProtocolEndToEndTest {
                 buildJsonObject {
                     putJsonObject("request") {
                         put("address", buildJsonObject { put("kind", "session"); put("sessionId", "s1") })
+                        put("assistantStream", true)
                     }
                 },
             )
@@ -277,23 +322,104 @@ class ProtocolEndToEndTest {
             val frame = decodeFromJsonElement(SessionFollowFrameSerializer, item)
             assertTrue("was $frame", frame is SessionFollowFrame.Snapshot)
             val snapshot = frame as SessionFollowFrame.Snapshot
-            assertEquals(11, snapshot.cursor)
+            assertEquals(10, snapshot.cursor)
+            val durable = snapshot.records.map { wireEventToEnvelope(it.event) }
+            assertEquals(listOf("turn/start"), durable.map { it.type })
 
-            val events = ChunkRows.expandAll(snapshot.records)
-            assertEquals(2, events.size)
-            // Sequence numbers count up from the row's own, and the timestamp accumulates the gap.
-            assertEquals(listOf(10, 11), events.map { it.seq })
-            assertEquals(listOf(1_000L, 1_005L), events.map { it.time })
-            assertEquals(
-                listOf("Hel", "lo"),
-                events.map { it.data.jsonObject["chunk"]!!.jsonObject["text"]!!.jsonPrimitive.content },
+            val live = AssistantLiveState()
+            live.seed(snapshot.assistantStream)
+            assertEquals("s1:1", live.attemptId)
+
+            // Then the live tail: one more chunk, and the terminal marker naming the settlement.
+            harness.pushAssistantStream(chunkFrame(index = 1, text = "lo", revision = 3))
+            harness.pushAssistantStream(
+                buildJsonObject {
+                    put("type", "end")
+                    put("attemptId", "s1:1")
+                    put("revision", 4)
+                    put("index", 2)
+                    putJsonObject("outcome") {
+                        put("kind", "committed")
+                        put("eventType", "assistant/message")
+                        put("seq", 11)
+                    }
+                },
             )
-            // One record covered both members; a continuity check has to use the span, not the seq.
-            assertEquals(10..11, ChunkRows.sequenceSpan(snapshot.records.single()))
+            val frames = mutableListOf<SessionFollowFrame>()
+            while (frames.size < 2) {
+                val next = withTimeoutOrNull(10_000) { stream.receive() } ?: error("live frame did not arrive")
+                val decoded = decodeFromJsonElement(SessionFollowFrameSerializer, next)
+                // A duplicate opening snapshot from the pusher may still be in flight; skip it.
+                if (decoded is SessionFollowFrame.Snapshot) continue
+                frames.add(decoded)
+            }
+            val chunk = (frames[0] as SessionFollowFrame.AssistantStream).frame as SessionAssistantStreamFrame.Chunk
+            assertEquals(1, chunk.index)
+            live.accept(chunk)
+            // Baseline prefix plus the live chunk read as one streaming message, after the
+            // durable window and without moving its cursor.
+            val provisional = EventFold("s1").fold(durable, live.transientEnvelopes())
+            assertEquals(10L, provisional.lastSeq)
+            val streaming = provisional.nodes.last() as AssistantMessageNode
+            assertTrue(streaming.streaming)
+            assertEquals("Hello", streaming.plainText)
+
+            val end = (frames[1] as SessionFollowFrame.AssistantStream).frame as SessionAssistantStreamFrame.End
+            assertEquals(AssistantLiveState.Change.SETTLED, live.accept(end))
+            assertTrue(live.transientEnvelopes().isEmpty())
         } finally {
             muxHandle.close()
             loop.stop()
         }
+    }
+
+    @Test
+    fun `a file is staged through the raw-byte route and cited by receipt`() = runBlocking {
+        // The one non-envelope write channel, over the real transport: octets up, a bare result
+        // back, and the receipt is what the prompt carries — never the bytes.
+        val uploaded = client().uploadFileBinary(
+            sessionId = "s1",
+            name = "notes.txt",
+            contentLength = 5,
+            body = ByteArrayInputStream("hello".toByteArray()),
+        )
+        val receipt = (uploaded as? RpcResult.Ok)?.value ?: error("upload failed: $uploaded")
+        assertEquals("notes.txt", receipt.file.name)
+        assertEquals(5L, receipt.file.bytes)
+        assertEquals("hello", harness.fileUploads.single().bytes.decodeToString())
+
+        val sent = client().sessionPrompt(
+            SessionPromptRequest(
+                requestId = newPromptRequestId(),
+                sessionId = "s1",
+                mode = "queue",
+                content = listOf(PromptContentPart.Text("see attached"), PromptContentPart.File(receipt.receiptId)),
+            ),
+        )
+        assertTrue("prompt failed: $sent", sent is RpcResult.Ok)
+        val part = harness.sessionPrompts.single()["content"]!!.jsonArray[1].jsonObject
+        assertEquals("file", part["type"]!!.jsonPrimitive.content)
+        assertEquals(receipt.receiptId, part["receiptId"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun `a route nobody claims falls back to the Remote form`() = runBlocking {
+        // A relay that does not proxy the raw-byte route answers 404. The client reads that as a
+        // missing capability rather than a broken link, and the encoded Remote still stages the
+        // file — which is the whole reason it exists beside the route.
+        harness.refuseBinaryUploads = true
+        val streamed = client().uploadFileBinary("s1", "a.bin", 3, ByteArrayInputStream("abc".toByteArray()))
+        assertEquals("capability-unavailable", (streamed as RpcResult.Err).error.code)
+
+        val encoded = client().fileUploadEncoded(
+            "s1",
+            com.labteto.dshmobile.core.wire.dto.EncodedFileUploadRequest(
+                data = java.util.Base64.getEncoder().encodeToString("abc".toByteArray()),
+                name = "a.bin",
+            ),
+        )
+        assertEquals("a.bin", (encoded as RpcResult.Ok).value.file.name)
+        assertEquals("abc", harness.fileUploads.single().bytes.decodeToString())
     }
 
     @Test

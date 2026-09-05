@@ -274,8 +274,8 @@
     <string name="err_image_model_unsupported">Эта модель не принимает изображения. Переключитесь на ту, которая принимает.</string>
     <string name="err_image_subagent_unsupported">Сессии субагента не принимают изображения.</string>
     <string name="err_image_send_failed">Не удалось отправить изображение (%1$s). Прикрепите его заново и попробуйте снова.</string>
-    <string name="err_command_no_images">/%1$s не принимает вложенные изображения. Сначала удалите их.</string>
-    <string name="err_command_images_host">/%1$s может передавать изображения только на harness 0.1.0-rc.8 или новее. Сначала удалите их.</string>
+    <string name="err_command_no_images">/%1$s не принимает вложения. Сначала уберите их.</string>
+    <string name="err_command_images_host">/%1$s не может передавать вложения на этом harness. Сначала уберите их.</string>
     <string name="err_permission_denied">Это действие доступно только на самом компьютере с Harness.</string>
     <string name="err_timeout">Harness не ответил вовремя.</string>
     <string name="err_generic">Ошибка: %1$s</string>
@@ -435,4 +435,13 @@
     <string name="connect_relay_refused">Отклоняет этот адрес</string>
     <string name="connect_relay_refused_hint">Здесь работает реле, но оно отвечает только по адресам, которые уже знает. Добавьте %1$s в publicHostnames в файле cordis.patch.yml реле на том компьютере и перезапустите его.</string>
     <string name="pair_fail_host_refused">%1$s — это реле, но оно отклоняет запросы по такому адресу: код даже не был прочитан. Добавьте этот адрес в publicHostnames в cordis.patch.yml реле и перезапустите, либо обратитесь к реле по адресу, который оно уже знает.</string>
+    <string name="chat_composer_attach_file">Прикрепить файл</string>
+    <string name="chat_composer_remove_file">Убрать файл</string>
+    <string name="chat_attachment_uploading">Загрузка…</string>
+    <string name="chat_attachment_upload_failed">Загрузка не удалась. Нажмите, чтобы повторить.</string>
+    <string name="chat_attachment_still_uploading">Дождитесь окончания загрузки перед отправкой.</string>
+    <string name="err_file_read_failed">Не удалось прочитать этот файл.</string>
+    <string name="err_file_not_staged">Harness больше не хранит этот файл. Прикрепите его снова.</string>
+    <string name="err_file_subagent_unsupported">Сеансы субагента не принимают файлы.</string>
+    <string name="err_file_send_failed">Не удалось отправить файл (%1$s). Прикрепите его снова.</string>
 </resources>

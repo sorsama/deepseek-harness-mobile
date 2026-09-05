@@ -71,7 +71,7 @@ a [feature tour](https://github.com/sorsama/deepseek-harness-mobile/wiki/Feature
   chat list, swipe left to close it, swipe left from the right edge for the session details panel.
 - **Full chat experience** — streamed turns with reasoning disclosure, markdown,
   terminal/diff/read/search/web tool cards, queue dock (edit / remove / steer), history paging,
-  image attachments.
+  image and file attachments.
 - **Slash commands and skills** — the composer adjudicates a `/` line against the session's own
   command catalog and runs it through the harness's command gateway; anything the catalog does not
   claim is sent as a prompt, which is how skills are invoked.
@@ -90,9 +90,11 @@ a [feature tour](https://github.com/sorsama/deepseek-harness-mobile/wiki/Feature
 
 - Android 8.0+ (minSdk 26).
 - A running [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
-  (tested against `0.1.2-alpha.1`). **0.9.0 does not speak the 0.1.1 protocol** —
-  that release replaced the wire rather than extending it, so the app and the
-  harness have to move together. See
+  (tested against `0.1.3-alpha.1`). **0.10.0 needs harness 0.1.3** — that
+  release stopped logging a reply's deltas and moved them to a live stream
+  the app has to ask for, so the app and the harness have to move together:
+  an older app never sees an answer being written on 0.1.3, and this app
+  cannot run slash commands on 0.1.2. See
   [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 
 ## Quick start
@@ -140,7 +142,7 @@ keyed on that exact sentence.
 ## Compatibility & security
 
 - See [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) for the harness version matrix and what
-  0.1.2 changed.
+  0.1.3 and 0.1.2 changed.
 - **Read [docs/SECURITY.md](docs/SECURITY.md) first.** From harness 0.1.2 the harness authenticates
   its whole API, and a signed-in device reaches all of it — there is no longer a reduced tier for
   a caller that is not on the machine itself. Signing in grants the same power as a shell on that

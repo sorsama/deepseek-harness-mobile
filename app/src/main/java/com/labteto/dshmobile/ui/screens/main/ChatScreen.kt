@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.ui.screens.main
 
 import android.graphics.BitmapFactory
+import android.provider.OpenableColumns
 import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,6 +37,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswer
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswerItem
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionOption
+import com.labteto.dshmobile.core.wire.RpcResult
+import com.labteto.dshmobile.core.wire.dto.CommandSubmitAttachment
 import com.labteto.dshmobile.core.wire.dto.ImageLimitsView
 import com.labteto.dshmobile.data.CommandOutcome
 import com.labteto.dshmobile.data.PromptOutcome
@@ -53,6 +56,7 @@ import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsTheme
 import androidx.compose.ui.res.stringResource
 import com.labteto.dshmobile.R
+import java.util.UUID
 import kotlinx.coroutines.launch
 
 /**
@@ -154,12 +158,14 @@ fun ChatScreen(
             }
             // The host publishes its own attachment bounds, and its defaults stand in until the
             // projection arrives. Checking them here means a refusal lands while the picture is
-            // still in hand, and names the same limit the host would have named.
+            // still in hand, and names the same limit the host would have named. Files are not
+            // counted: the image bounds are the image bounds, and a file is admitted on upload.
             val limits = imageLimits ?: ImageLimitsView()
+            val images = attachments.filterIsInstance<PendingAttachment.Image>()
             val pick = decodePick(bytes)
             val rejection = limits.admitBatch(
-                pendingCount = attachments.size,
-                pendingBytes = attachments.sumOf { it.bytes.toLong() },
+                pendingCount = images.size,
+                pendingBytes = images.sumOf { it.bytes.toLong() },
                 addedBytes = bytes.size,
             ) ?: limits.admitImage(
                 declaredMediaType = mediaType,
@@ -173,7 +179,7 @@ fun ChatScreen(
                 return@launch
             }
             attachments.add(
-                PendingAttachment(
+                PendingAttachment.Image(
                     mediaType = mediaType,
                     base64 = Base64.encodeToString(bytes, Base64.NO_WRAP),
                     preview = pick.preview,
@@ -185,20 +191,84 @@ fun ChatScreen(
         }
     }
 
+    /** Replace one pending file by identity; a chip that was removed meanwhile is left removed. */
+    fun updateFile(id: String, transform: (PendingAttachment.File) -> PendingAttachment.File) {
+        val index = attachments.indexOfFirst { it is PendingAttachment.File && it.id == id }
+        if (index >= 0) attachments[index] = transform(attachments[index] as PendingAttachment.File)
+    }
+
+    /**
+     * Stream one picked file to the host and settle its chip.
+     *
+     * The upload starts the moment the file is picked, as the web client's does, so by the time
+     * the message is sent the receipt is usually already there; the chip shows progress until it
+     * is, and the send affordance waits for it.
+     */
+    fun startUpload(file: PendingAttachment.File) {
+        updateFile(file.id) { it.copy(state = FileUploadState.Uploading(0)) }
+        scope.launch {
+            val result = store.uploadFile(
+                name = file.name,
+                size = file.size,
+                open = { runCatching { context.contentResolver.openInputStream(file.uri) }.getOrNull() },
+                onProgress = { sent -> updateFile(file.id) { it.copy(state = FileUploadState.Uploading(sent)) } },
+            )
+            updateFile(file.id) {
+                when (result) {
+                    is RpcResult.Ok -> it.copy(state = FileUploadState.Ready(result.value.receiptId, result.value.file))
+                    is RpcResult.Err -> it.copy(state = FileUploadState.Failed(result.error.message))
+                }
+            }
+        }
+    }
+
+    val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val (name, size) = describeDocument(context.contentResolver, uri)
+        if (name == null) {
+            toast.second(context.getString(R.string.err_file_read_failed))
+            return@rememberLauncherForActivityResult
+        }
+        val file = PendingAttachment.File(
+            id = UUID.randomUUID().toString(),
+            uri = uri,
+            name = name,
+            size = size,
+            state = FileUploadState.Uploading(0),
+        )
+        attachments.add(file)
+        startUpload(file)
+    }
+
     fun send(text: String) {
         val pending = attachments.toList()
         if (text.isBlank() && pending.isEmpty()) return
-        // A slash line that names a registered command is not a message: `session.prompt` would
+        val images = pending.filterIsInstance<PendingAttachment.Image>()
+        val files = pending.filterIsInstance<PendingAttachment.File>()
+        // A file without a receipt cannot be cited. The send affordance already waits for the
+        // chips, but a keyboard send lands here too.
+        if (files.any { it.state !is FileUploadState.Ready }) {
+            draft = text
+            toast.second(
+                context.getString(
+                    if (files.any { it.state is FileUploadState.Failed }) R.string.chat_attachment_upload_failed
+                    else R.string.chat_attachment_still_uploading,
+                ),
+            )
+            return
+        }
+        val receipts = files.mapNotNull { it.receiptId }
+        // A slash line that names a registered command is not a message: `session/prompt` would
         // hand it to the model verbatim, so it has to be recognised here and written through the
         // command gateway. A miss falls through to the prompt path — that is how skills work.
-        when (val submission = adjudicate(text, commands, pending.size, store.commandImagesSupported)) {
+        when (val submission = adjudicate(text, commands, pending.size, store.commandAttachmentsSupported)) {
             is Submission.Refused -> {
                 // Nothing is sent and nothing is dropped. The composer clears the draft on its way
-                // here, so put it back, and leave the images alone — a refusal the user cannot act
-                // on without re-picking every attachment is not much of a refusal.
+                // here, so put it back, and leave the attachments alone — a refusal the user cannot
+                // act on without re-picking every one is not much of a refusal.
                 draft = text
                 val message = when (submission.reason) {
-                    RefusalReason.COMMAND_TAKES_NO_IMAGES -> R.string.err_command_no_images
+                    RefusalReason.COMMAND_TAKES_NO_ATTACHMENTS -> R.string.err_command_no_images
                     RefusalReason.HOST_TOO_OLD -> R.string.err_command_images_host
                 }
                 toast.second(context.getString(message, submission.command))
@@ -206,16 +276,17 @@ fun ChatScreen(
 
             is Submission.Command -> {
                 attachments.clear()
-                val images = pending.map { it.encoded() }
+                val submitted = images.map { it.encoded().asSubmit() } +
+                    receipts.map { CommandSubmitAttachment.File(it) }
                 scope.launch {
-                    val outcome = store.runCommand(submission.line, images)
-                    // An image-carrying command consumes its images only on success, as the
-                    // harness client does: an error result is something to correct, and correcting
-                    // it should not start with picking every picture again. A plain command that
-                    // fails keeps today's behaviour, because its whole submission was the line.
-                    // The restore only lands in a composer nobody has touched meanwhile — the call
-                    // is in flight while the user can still type and pick.
-                    if (images.isNotEmpty() && outcome is CommandOutcome.Failed) {
+                    val outcome = store.runCommand(submission.line, submitted)
+                    // An attachment-carrying command consumes its attachments only on success, as
+                    // the harness client does: an error result is something to correct, and
+                    // correcting it should not start with picking every file again. A plain
+                    // command that fails keeps today's behaviour, because its whole submission was
+                    // the line. The restore only lands in a composer nobody has touched meanwhile —
+                    // the call is in flight while the user can still type and pick.
+                    if (submitted.isNotEmpty() && outcome is CommandOutcome.Failed) {
                         if (draft.isBlank()) draft = text
                         if (attachments.isEmpty()) attachments.addAll(pending)
                     }
@@ -229,11 +300,13 @@ fun ChatScreen(
                     // One call, whatever the count. The host admits a prompt's images as a single
                     // batch, and that batch is the only thing its per-message count and total-size
                     // bounds are measured against — sending one image per call made a single
-                    // message into several and put both limits permanently out of reach.
+                    // message into several and put both limits permanently out of reach. Files
+                    // ride the same call as receipts; a receipt the host refuses stays staged,
+                    // so restoring the chips is enough to try again.
                     val outcome = if (pending.isEmpty()) {
                         store.prompt(text, mode)
                     } else {
-                        store.promptWithImages(text, mode, pending.map { it.encoded() })
+                        store.promptWithAttachments(text, mode, images.map { it.encoded() }, receipts)
                     }
                     if (outcome is PromptOutcome.Rejected) {
                         if (draft.isBlank()) draft = text
@@ -406,6 +479,9 @@ fun ChatScreen(
                 onDraftChange = { draft = it },
                 attachments = attachments,
                 onRemoveAttachment = { index -> attachments.removeAt(index) },
+                onRetryAttachment = { index ->
+                    (attachments.getOrNull(index) as? PendingAttachment.File)?.let { startUpload(it) }
+                },
                 permissions = permissions,
                 pendingPermission = pendingPermission,
                 onPermissionPick = { value -> scope.launch { report(store.setPermissionPreset(value)) } },
@@ -433,9 +509,10 @@ fun ChatScreen(
             canAttach = currentSessionId != null,
             onModeChange = { mode = it },
             onAttach = { imagePicker.launch("image/*") },
+            onAttachFile = { filePicker.launch(arrayOf("*/*")) },
             // The sheet only auto-runs commands that take no input at all, and a command that
-            // takes no input takes no images either — so a pending attachment refuses here for
-            // the same reason it refuses at the composer, rather than being silently dropped.
+            // takes no input takes no attachments either — so a pending attachment refuses here
+            // for the same reason it refuses at the composer, rather than being silently dropped.
             onRunCommand = { line ->
                 val name = line.removePrefix("/").substringBefore(' ')
                 if (attachments.isEmpty()) {
@@ -468,6 +545,29 @@ fun ChatScreen(
 
 /** Which sheet, if any, is open over the chat surface. */
 private enum class ChatSheet { Commands, Models, Presets, Subagents }
+
+/**
+ * A picked document's display name and size, as its provider reports them.
+ *
+ * The name falls back to the last path segment when the provider offers none, and the size to
+ * `-1` — the upload route accepts a chunked body, so an unknown length costs only the progress
+ * ring. A null name means the provider answered nothing at all, which is a read failure.
+ */
+private fun describeDocument(resolver: android.content.ContentResolver, uri: android.net.Uri): Pair<String?, Long> {
+    var name: String? = null
+    var size = -1L
+    runCatching {
+        resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE), null, null, null)
+            ?.use { cursor ->
+                if (!cursor.moveToFirst()) return@use
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                if (nameIndex >= 0 && !cursor.isNull(nameIndex)) name = cursor.getString(nameIndex)
+                if (sizeIndex >= 0 && !cursor.isNull(sizeIndex)) size = cursor.getLong(sizeIndex)
+            }
+    }
+    return (name ?: uri.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() }) to size
+}
 
 
 /**

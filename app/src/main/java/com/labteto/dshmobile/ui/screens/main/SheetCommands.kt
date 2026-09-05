@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -58,6 +59,7 @@ internal fun CommandSheet(
     canAttach: Boolean,
     onModeChange: (String) -> Unit,
     onAttach: () -> Unit,
+    onAttachFile: () -> Unit,
     onRunCommand: (String) -> Unit,
     onPrefillDraft: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -85,6 +87,26 @@ internal fun CommandSheet(
             onClick = {
                 onDismiss()
                 onAttach()
+            },
+        )
+        // Harness 0.1.3 takes any file, not only pictures. The bytes go up as soon as one is
+        // picked and the message cites the receipt, so the row stays enabled exactly when the
+        // image one is: both need an open session to upload against.
+        SheetRow(
+            leading = {
+                Icon(
+                    Icons.Filled.AttachFile,
+                    contentDescription = null,
+                    tint = colors.labelSecondary,
+                    modifier = Modifier.size(20.dp),
+                )
+            },
+            title = stringResource(R.string.chat_composer_attach_file),
+            subtitle = null,
+            enabled = canAttach,
+            onClick = {
+                onDismiss()
+                onAttachFile()
             },
         )
 

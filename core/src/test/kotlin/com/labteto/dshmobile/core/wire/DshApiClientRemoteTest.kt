@@ -3,7 +3,8 @@ package com.labteto.dshmobile.core.wire
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import kotlinx.coroutines.test.runTest
-import com.labteto.dshmobile.core.wire.dto.ContentBlock
+import com.labteto.dshmobile.core.wire.dto.CommandSubmitAttachment
+import com.labteto.dshmobile.core.wire.dto.EncodedFileUploadRequest
 import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
 import com.labteto.dshmobile.core.wire.dto.PromptContentPart
 import com.labteto.dshmobile.core.wire.dto.SessionPromptRequest
@@ -33,6 +34,11 @@ class DshApiClientRemoteTest {
         var lastBody: String? = null
         var lastDownloadPath: String? = null
         var downloadBytes: ByteArray = ByteArray(0)
+        var lastUploadPath: String? = null
+        var lastUploadContentType: String? = null
+        var lastUploadLength: Long = -1
+        var lastUploadBytes: ByteArray = ByteArray(0)
+        var uploadResponder: (() -> RpcHttpResponse)? = null
 
         override suspend fun post(path: String, body: String): RpcHttpResponse {
             lastPath = path
@@ -46,6 +52,21 @@ class DshApiClientRemoteTest {
         ): T {
             lastDownloadPath = path
             return consume("application/zip", "attachment; filename=\"x.zip\"", ByteArrayInputStream(downloadBytes))
+        }
+
+        override suspend fun upload(
+            path: String,
+            contentType: String,
+            contentLength: Long,
+            body: InputStream,
+            onProgress: ((Long) -> Unit)?,
+        ): RpcHttpResponse {
+            lastUploadPath = path
+            lastUploadContentType = contentType
+            lastUploadLength = contentLength
+            lastUploadBytes = body.readBytes()
+            onProgress?.invoke(lastUploadBytes.size.toLong())
+            return uploadResponder?.invoke() ?: error("no upload responder")
         }
     }
 
@@ -63,7 +84,7 @@ class DshApiClientRemoteTest {
             ok(
                 rpcId,
                 """[{"name":"permission","description":"Switch","input":{"hint":"<preset>"}},""" +
-                    """{"name":"goal","description":"Set","input":{"hint":"<objective>","images":true}}]""",
+                    """{"name":"goal","description":"Set","input":{"hint":"<objective>","attachments":true}}]""",
             )
         }
         val result = client(transport).commandsList("session-1")
@@ -84,19 +105,30 @@ class DshApiClientRemoteTest {
         assertEquals(2, commands.size)
         assertEquals("permission", commands.first().name)
         assertEquals("<preset>", commands.first().input?.hint)
-        // `input.images` arrived in 0.1.0-rc.8 and is only ever sent as true, so a descriptor
-        // without the key is a command that takes none — which is every command before rc.8.
-        assertFalse(commands.first().acceptsImages)
-        assertTrue(commands.last().acceptsImages)
+        // `input.attachments` is only ever sent as true, so a descriptor without the key is a
+        // command that takes none — which is every command but `/goal` and `/plan`.
+        assertFalse(commands.first().acceptsAttachments)
+        assertTrue(commands.last().acceptsAttachments)
+    }
+
+    @Test
+    fun `a 0-1-2 catalog's images flag is not read as attachments`() = runTest {
+        // The key was renamed upstream; a host still sending the old one declares nothing this
+        // client understands, and the composer must refuse rather than send attachments a
+        // 0.1.3 executor would not be told about.
+        val transport = RecordingTransport { _, body ->
+            val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
+            ok(rpcId, """[{"name":"goal","description":"Set","input":{"hint":"<objective>","images":true}}]""")
+        }
+        val commands = (client(transport).commandsList("session-1") as RpcResult.Ok).value
+        assertFalse(commands.single().acceptsAttachments)
     }
 
     @Test
     fun `a command is always sent the three-argument shape`() = runTest {
-        // Through 0.1.1 this client chose between a two- and a three-argument shape from the
-        // presence of `host.describe.home`, because rc.7 declared no `images` parameter and the
-        // gateway refuses a missing key as readily as an unexpected one. `host.describe` is gone
-        // and every 0.1.2 host declares the parameter, so there is nothing left to choose — and
-        // no version-shaped branch left in this client at all.
+        // The third argument is named after the host method's own parameter, because the gateway
+        // matches args by parameter name and refuses a missing key as readily as an unexpected
+        // one. 0.1.3 renamed it from `images` to `submittedAttachments` when files joined.
         val transport = RecordingTransport { _, body ->
             val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
             ok(rpcId, "{}")
@@ -106,12 +138,12 @@ class DshApiClientRemoteTest {
         assertEquals("/api/commands/execute", transport.lastPath)
         val args = Json.parseToJsonElement(transport.lastBody!!)
             .jsonObject["payload"]!!.jsonObject["args"]!!.jsonObject
-        assertEquals(setOf("agentId", "line", "images"), args.keys)
-        assertEquals(0, args["images"]!!.jsonArray.size)
+        assertEquals(setOf("agentId", "line", "submittedAttachments"), args.keys)
+        assertEquals(0, args["submittedAttachments"]!!.jsonArray.size)
     }
 
     @Test
-    fun `a command carries the composer's images`() = runTest {
+    fun `a command carries the composer's images and files with their discriminators`() = runTest {
         val transport = RecordingTransport { _, body ->
             val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
             ok(rpcId, "{}")
@@ -119,16 +151,24 @@ class DshApiClientRemoteTest {
         client(transport).commandsExecute(
             "session-2",
             "/goal ship it",
-            listOf(EncodedImageAttachment("image/png", "AAAA")),
+            listOf(
+                EncodedImageAttachment("image/png", "AAAA").asSubmit(),
+                CommandSubmitAttachment.File(receiptId = "receipt-9"),
+            ),
         )
 
         val args = Json.parseToJsonElement(transport.lastBody!!)
             .jsonObject["payload"]!!.jsonObject["args"]!!.jsonObject
-        val image = args["images"]!!.jsonArray.single().jsonObject
+        val attachments = args["submittedAttachments"]!!.jsonArray
+        val image = attachments[0].jsonObject
+        assertEquals("image", image["type"]!!.jsonPrimitive.content)
         assertEquals("image/png", image["mediaType"]!!.jsonPrimitive.content)
         assertEquals("AAAA", image["data"]!!.jsonPrimitive.content)
         // explicitNulls = false: an absent display name is an absent key, not a null one.
-        assertEquals(setOf("mediaType", "data"), image.keys)
+        assertEquals(setOf("type", "mediaType", "data"), image.keys)
+        val file = attachments[1].jsonObject
+        assertEquals("file", file["type"]!!.jsonPrimitive.content)
+        assertEquals("receipt-9", file["receiptId"]!!.jsonPrimitive.content)
     }
 
     @Test
@@ -180,7 +220,7 @@ class DshApiClientRemoteTest {
                 requestId = "11111111-2222-3333-4444-555555555555",
                 sessionId = "session-7",
                 mode = "queue",
-                content = listOf(PromptContentPart.Text("hello")),
+                content = listOf(PromptContentPart.Text("hello"), PromptContentPart.File("receipt-1")),
                 clientTimeZone = "Asia/Bangkok",
             ),
         )
@@ -193,6 +233,7 @@ class DshApiClientRemoteTest {
             request.keys,
         )
         assertEquals("11111111-2222-3333-4444-555555555555", request["requestId"]!!.jsonPrimitive.content)
+        assertEquals("file", request["content"]!!.jsonArray[1].jsonObject["type"]!!.jsonPrimitive.content)
         assertTrue((result as RpcResult.Ok).value.accepted)
     }
 
@@ -207,7 +248,7 @@ class DshApiClientRemoteTest {
                 requestId = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
                 parentSessionId = "parent-1",
                 childSessionId = "child-1",
-                content = listOf(ContentBlock.Text("carry on")),
+                content = listOf(PromptContentPart.Text("carry on")),
                 clientTimeZone = "Asia/Bangkok",
             ),
         )
@@ -218,6 +259,8 @@ class DshApiClientRemoteTest {
         // The child prompt shares the session prompt's identity vocabulary, so the discriminator
         // the host declares required rides along beside it rather than being assumed.
         assertEquals("continuable", request["mode"]!!.jsonPrimitive.content)
+        // And the same prompt-part vocabulary: a text part carries its `type`.
+        assertEquals("text", request["content"]!!.jsonArray.single().jsonObject["type"]!!.jsonPrimitive.content)
     }
 
     @Test
@@ -244,5 +287,76 @@ class DshApiClientRemoteTest {
         )
         assertEquals("PK-zip-bytes", (result as RpcResult.Ok).value)
         assertNull(transport.lastPath)
+    }
+
+    @Test
+    fun `a binary upload streams octets to the upload route and reads a bare result`() = runTest {
+        // Harness 0.1.3's one non-envelope write: the route answers 200 with `{ok, value}` and
+        // no server-response wrapper, and the bytes go up verbatim rather than base64 in JSON.
+        val transport = RecordingTransport { _, _ -> error("upload must not POST an envelope") }
+        transport.uploadResponder = {
+            RpcHttpResponse(
+                200,
+                """{"ok":true,"value":{"receiptId":"r-1","file":{"attachmentId":"sha256:abc","name":"notes.txt","bytes":5}}}""",
+            )
+        }
+        var progressed = 0L
+        val result = client(transport).uploadFileBinary(
+            sessionId = "session-8",
+            name = "my notes.txt",
+            contentLength = 5,
+            body = ByteArrayInputStream("hello".toByteArray()),
+            onProgress = { progressed = it },
+        )
+
+        assertEquals("/api/session/uploadFileBinary?sessionId=session-8&name=my%20notes.txt", transport.lastUploadPath)
+        assertEquals("application/octet-stream", transport.lastUploadContentType)
+        assertEquals(5L, transport.lastUploadLength)
+        assertEquals("hello", transport.lastUploadBytes.decodeToString())
+        assertEquals(5L, progressed)
+        assertEquals("r-1", (result as RpcResult.Ok).value.receiptId)
+        assertEquals("notes.txt", result.value.file.name)
+        assertNull(transport.lastPath)
+    }
+
+    @Test
+    fun `an upload the host refuses comes back as its business error`() = runTest {
+        val transport = RecordingTransport { _, _ -> error("not used") }
+        transport.uploadResponder = {
+            RpcHttpResponse(
+                200,
+                """{"ok":false,"error":{"code":"session/attachment-invalid","message":"too big","details":{"reason":"FILE_TOO_LARGE"}}}""",
+            )
+        }
+        val result = client(transport).uploadFileBinary("session-8", null, 1, ByteArrayInputStream(ByteArray(1)))
+        assertEquals("session/attachment-invalid", (result as RpcResult.Err).error.code)
+        assertEquals("/api/session/uploadFileBinary?sessionId=session-8", transport.lastUploadPath)
+    }
+
+    @Test
+    fun `an upload route nobody claims is a missing capability, not a broken link`() = runTest {
+        // A relay that does not proxy the raw-byte route, or a deployment that composes no
+        // file-upload service, answers 404 — the caller's cue to fall back to the Remote form.
+        val transport = RecordingTransport { _, _ -> error("not used") }
+        transport.uploadResponder = { throw RpcTransportException(404, "carrier returned HTTP 404") }
+        val result = client(transport).uploadFileBinary("session-8", null, 1, ByteArrayInputStream(ByteArray(1)))
+        assertEquals("capability-unavailable", (result as RpcResult.Err).error.code)
+    }
+
+    @Test
+    fun `the encoded upload is a Remote call addressed to the session`() = runTest {
+        val transport = RecordingTransport { _, body ->
+            val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
+            ok(rpcId, """{"receiptId":"r-2","file":{"attachmentId":"sha256:def","name":"a.bin","bytes":3}}""")
+        }
+        val result = client(transport).fileUploadEncoded("session-9", EncodedFileUploadRequest("AAAA", "a.bin"))
+
+        assertEquals("/api/fileUploads/upload", transport.lastPath)
+        val args = Json.parseToJsonElement(transport.lastBody!!)
+            .jsonObject["payload"]!!.jsonObject["args"]!!.jsonObject
+        assertEquals(setOf("agentId", "request"), args.keys)
+        assertEquals("session-9", args["agentId"]!!.jsonPrimitive.content)
+        assertEquals(setOf("data", "name"), args["request"]!!.jsonObject.keys)
+        assertEquals("r-2", (result as RpcResult.Ok).value.receiptId)
     }
 }

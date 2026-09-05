@@ -3,9 +3,11 @@ package com.labteto.dshmobile.core.wire
 import com.labteto.dshmobile.core.wire.dto.AgentPresetDocument
 import com.labteto.dshmobile.core.wire.dto.AgentPresetListValue
 import com.labteto.dshmobile.core.wire.dto.CommandDescriptor
+import com.labteto.dshmobile.core.wire.dto.CommandSubmitAttachment
 import com.labteto.dshmobile.core.wire.dto.CredentialInfo
 import com.labteto.dshmobile.core.wire.dto.DirectoryListing
-import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
+import com.labteto.dshmobile.core.wire.dto.EncodedFileUploadRequest
+import com.labteto.dshmobile.core.wire.dto.FileUploadValue
 import com.labteto.dshmobile.core.wire.dto.GoalRef
 import com.labteto.dshmobile.core.wire.dto.GoalView
 import com.labteto.dshmobile.core.wire.dto.HostCreateDirectoryValue
@@ -86,8 +88,11 @@ import kotlinx.serialization.serializer
 private fun encodeQueryComponent(value: String): String =
     URLEncoder.encode(value, "UTF-8").replace("+", "%20")
 
+/** The streaming file-upload route (`packages/client/file-upload/src/protocol.ts`). */
+const val FILE_UPLOAD_PATH: String = "/api/session/uploadFileBinary"
+
 /**
- * Typed client for the harness unary wire protocol (v0.1.2-alpha.1).
+ * Typed client for the harness unary wire protocol (v0.1.3-alpha.1).
  *
  * Every call is one `POST /api/<namespace>/<method>` carrying the unchanged RPC envelope with a
  * `{"args": {…}}` payload, and returns [RpcResult]: business failures arrive as HTTP 200 +
@@ -310,7 +315,10 @@ class DshApiClient(
     suspend fun sessionFork(request: SessionForkRequest): RpcResult<SessionForkValue> =
         callRequest("session/fork", request)
 
-    /** `session/prompt` — sends text and temporary image bytes to an ordinary session agent. */
+    /**
+     * `session/prompt` — sends text, temporary image bytes and staged file receipts to an
+     * ordinary session agent.
+     */
     suspend fun sessionPrompt(request: SessionPromptRequest): RpcResult<SessionPromptValue> =
         callRequest("session/prompt", request)
 
@@ -636,27 +644,101 @@ class DshApiClient(
     /**
      * `commands/execute` — runs one complete slash-command line against the session's agent.
      *
-     * [sessionPrompt] executes a leading-slash line the same way, so a caller that cannot reach
-     * the gateway still has a working write path.
+     * [sessionPrompt] does not execute a leading-slash line — it hands it to the model as text —
+     * so this is the only command write path; the composer adjudicates first.
      *
-     * `images` is sent unconditionally. Through 0.1.1 this client decided whether to send the key
-     * from the shape of `host.describe`, because rc.7 had no slot for it and the gateway refuses
-     * both a missing and an unexpected key. `host.describe` is gone and every 0.1.2 host declares
-     * the parameter, so the branch — the only version-shaped one this client ever had — is gone
-     * with it.
+     * The third argument is named after the host method's own parameter, `submittedAttachments`,
+     * because the gateway matches args by parameter name. Through 0.1.2 it was `images` and took
+     * bare image objects; 0.1.3 renamed it when files joined, and every member now carries a
+     * `type`. It is sent unconditionally, empty or not, because the gateway refuses a missing key
+     * as readily as an unexpected one.
      */
     suspend fun commandsExecute(
         sessionId: String,
         line: String,
-        images: List<EncodedImageAttachment> = emptyList(),
+        attachments: List<CommandSubmitAttachment> = emptyList(),
     ): RpcResult<JsonElement> = call(
         "commands/execute",
         args {
             put("agentId", JsonPrimitive(sessionId))
             put("line", JsonPrimitive(line))
-            put("images", encodeToJsonElement(ListSerializer(EncodedImageAttachment.serializer()), images))
+            put(
+                "submittedAttachments",
+                encodeToJsonElement(ListSerializer(CommandSubmitAttachment.serializer()), attachments),
+            )
         },
     )
+
+    // ------------------------------------------------------------------ file uploads
+
+    /**
+     * `fileUploads/upload` — stage one file for a session from canonical base64 bytes.
+     *
+     * The Remote form of the upload, which the web client uses only as a fallback for exact
+     * bytes; the streaming route ([uploadFileBinary]) is the ordinary path. It exists here for
+     * the same reason: a deployment or relay that does not forward the raw-byte route still has
+     * an envelope path to the same receipt. Bounded by the RPC body cap (300 MiB after base64),
+     * and by what a phone will hold in memory, so callers keep it to small files.
+     */
+    suspend fun fileUploadEncoded(
+        sessionId: String,
+        request: EncodedFileUploadRequest,
+    ): RpcResult<FileUploadValue> = call(
+        "fileUploads/upload",
+        args {
+            put("agentId", JsonPrimitive(sessionId))
+            put("request", encodeToJsonElement(EncodedFileUploadRequest.serializer(), request))
+        },
+    )
+
+    /**
+     * `POST /api/session/uploadFileBinary` — stage one file for a session by streaming its bytes.
+     *
+     * Harness 0.1.3's one non-envelope write route: an `application/octet-stream` body with the
+     * session id and optional display name in the query, answered with HTTP 200 and a bare
+     * `{ok, value|error}` result rather than a response envelope. The host writes the bytes
+     * verbatim and answers with a receipt that a later `session/prompt` or `commands/execute`
+     * cites by [FileUploadValue.receiptId]; the bytes themselves never ride a prompt.
+     *
+     * A carrier 404 means no route claimed the path — a deployment that composes no file-upload
+     * service, or a relay that does not proxy it — and surfaces as `capability-unavailable` so a
+     * caller can fall back to [fileUploadEncoded].
+     */
+    suspend fun uploadFileBinary(
+        sessionId: String,
+        name: String?,
+        contentLength: Long,
+        body: InputStream,
+        onProgress: ((sent: Long) -> Unit)? = null,
+    ): RpcResult<FileUploadValue> {
+        val query = "sessionId=${encodeQueryComponent(sessionId)}" +
+            if (name != null) "&name=${encodeQueryComponent(name)}" else ""
+        return try {
+            val response = transport.upload(
+                "$FILE_UPLOAD_PATH?$query",
+                "application/octet-stream",
+                contentLength,
+                body,
+                onProgress,
+            )
+            when (val result = decodeFromJsonElement(RpcResultJsonSerializer, WireJson.parseToJsonElement(response.body))) {
+                is RpcResult.Ok -> try {
+                    RpcResult.Ok(decodeFromJsonElement(FileUploadValue.serializer(), result.value))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    RpcResult.Err(notAHarness("upload value decode failed: ${e.message}"))
+                }
+                is RpcResult.Err -> result
+            }
+        } catch (e: RpcTransportException) {
+            RpcResult.Err(transportError(e))
+        } catch (e: SerializationException) {
+            RpcResult.Err(notAHarness("upload result decode failed: ${e.message}"))
+        } catch (e: IllegalArgumentException) {
+            RpcResult.Err(notAHarness(e.message ?: "invalid upload result"))
+        }
+    }
 
     /**
      * `pluginInventory/list` — the host's composed-plugin inventory (read-only).

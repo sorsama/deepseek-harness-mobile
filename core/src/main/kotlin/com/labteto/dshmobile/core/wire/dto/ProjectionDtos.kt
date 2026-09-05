@@ -82,7 +82,7 @@ data class ContextBreakdownView(
  *
  * The cases are the harness's own admission vocabulary (`packages/attachment/attachment/src/
  * error.ts`), so one string table serves both the pre-check performed here and a rejection that
- * still arrives from the host as an `attachment-error` — see [imageRejectionOf].
+ * still arrives from the host as a `session/attachment-invalid` — see [imageRejectionOf].
  */
 enum class ImageRejection {
     /** Not one of the host's accepted media types, or bytes that do not decode as the declared one. */
@@ -109,12 +109,21 @@ enum class ImageRejection {
     /** A subagent transcript, which the harness does not accept images into. */
     SUBAGENT_UNSUPPORTED,
 
+    /**
+     * A file receipt the host did not mint for this session, or one already spent (harness
+     * 0.1.3). The upload has to be repeated; there is nothing to correct in the bytes.
+     */
+    FILE_NOT_STAGED,
+
+    /** A subagent transcript, which the harness does not accept files into (harness 0.1.3). */
+    SUBAGENT_FILE_UNSUPPORTED,
+
     /** A refusal this client has no copy for; the raw reason is shown instead. */
     UNKNOWN,
 }
 
 /**
- * Map an `attachment-error` `details.reason` onto the same vocabulary the pre-check uses.
+ * Map a `session/attachment-invalid` `details.reason` onto the same vocabulary the pre-check uses.
  * An unrecognised code is [ImageRejection.UNKNOWN] rather than a failure: the reason string is
  * host-owned and may grow, and the caller falls back to showing it verbatim.
  */
@@ -128,6 +137,8 @@ fun imageRejectionOf(reason: String): ImageRejection = when (reason) {
         ImageRejection.UNSUPPORTED_TYPE
     "MODEL_DOES_NOT_SUPPORT_IMAGES" -> ImageRejection.MODEL_UNSUPPORTED
     "SUBAGENT_IMAGE_UNSUPPORTED" -> ImageRejection.SUBAGENT_UNSUPPORTED
+    "FILE_NOT_STAGED", "ATTACHMENT_NOT_FOUND" -> ImageRejection.FILE_NOT_STAGED
+    "SUBAGENT_FILE_UNSUPPORTED" -> ImageRejection.SUBAGENT_FILE_UNSUPPORTED
     else -> ImageRejection.UNKNOWN
 }
 

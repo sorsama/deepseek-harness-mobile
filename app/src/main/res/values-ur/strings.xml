@@ -274,8 +274,8 @@
     <string name="err_image_model_unsupported">یہ ماڈل تصاویر قبول نہیں کرتا۔ ایسا ماڈل منتخب کریں جو کرتا ہو۔</string>
     <string name="err_image_subagent_unsupported">سب ایجنٹ سیشنز تصاویر قبول نہیں کرتے۔</string>
     <string name="err_image_send_failed">تصویر بھیجی نہیں جا سکی (%1$s)۔ دوبارہ منسلک کر کے کوشش کریں۔</string>
-    <string name="err_command_no_images">/%1$s تصویری منسلکات قبول نہیں کرتا۔ پہلے انہیں ہٹا دیں۔</string>
-    <string name="err_command_images_host">/%1$s صرف harness 0.1.0-rc.8 یا اس سے نئے پر تصاویر لے جا سکتا ہے۔ پہلے انہیں ہٹا دیں۔</string>
+    <string name="err_command_no_images">/%1$s منسلکات قبول نہیں کرتا۔ پہلے انہیں ہٹائیں۔</string>
+    <string name="err_command_images_host">/%1$s اس harness پر منسلکات نہیں لے جا سکتا۔ پہلے انہیں ہٹائیں۔</string>
     <string name="err_permission_denied">یہ کارروائی صرف Harness کے کمپیوٹر پر ہی دستیاب ہے۔</string>
     <string name="err_timeout">Harness نے بروقت جواب نہیں دیا۔</string>
     <string name="err_generic">خرابی: %1$s</string>
@@ -435,4 +435,13 @@
     <string name="connect_relay_refused">یہ پتہ مسترد کرتا ہے</string>
     <string name="connect_relay_refused_hint">یہاں ریلے چل تو رہا ہے، مگر وہ صرف اُن پتوں کا جواب دیتا ہے جنہیں وہ پہلے سے جانتا ہے۔ اُس کمپیوٹر پر ریلے کی cordis.patch.yml میں publicHostnames میں ‎%1$s‎ شامل کریں، پھر اسے دوبارہ چلائیں۔</string>
     <string name="pair_fail_host_refused">‎%1$s‎ ریلے ہی ہے، مگر اس پتے سے آنے والی درخواستیں وہ مسترد کرتا ہے — کوڈ پڑھا ہی نہیں گیا۔ اُس پتے کو ریلے کی cordis.patch.yml میں publicHostnames میں شامل کر کے دوبارہ چلائیں، یا ریلے تک ایسے پتے سے پہنچیں جسے وہ پہلے سے جانتا ہے۔</string>
+    <string name="chat_composer_attach_file">فائل منسلک کریں</string>
+    <string name="chat_composer_remove_file">فائل ہٹائیں</string>
+    <string name="chat_attachment_uploading">اپ لوڈ ہو رہا ہے…</string>
+    <string name="chat_attachment_upload_failed">اپ لوڈ ناکام رہا۔ دوبارہ کوشش کے لیے تھپتھپائیں۔</string>
+    <string name="chat_attachment_still_uploading">بھیجنے سے پہلے اپ لوڈ مکمل ہونے کا انتظار کریں۔</string>
+    <string name="err_file_read_failed">وہ فائل پڑھی نہیں جا سکی۔</string>
+    <string name="err_file_not_staged">harness کے پاس اب وہ فائل نہیں ہے۔ اسے دوبارہ منسلک کریں۔</string>
+    <string name="err_file_subagent_unsupported">ذیلی ایجنٹ سیشن فائلیں قبول نہیں کرتے۔</string>
+    <string name="err_file_send_failed">فائل بھیجنا ناکام رہا (%1$s)۔ اسے دوبارہ منسلک کریں۔</string>
 </resources>

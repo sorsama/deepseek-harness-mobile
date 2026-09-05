@@ -258,7 +258,10 @@ async function main() {
   if (address !== null) {
     streams.push({
       endpoint: 'session/follow',
-      args: { request: { address, maxMessages: 60 } },
+      // `assistantStream: true` is what the app sends: since harness 0.1.3 the durable log
+      // carries no deltas, and the live `assistant-stream` frames are the only way to see a
+      // reply being written. The opening snapshot then carries an `assistantStream` baseline.
+      args: { request: { address, maxMessages: 60, assistantStream: true } },
       file: 'session.follow.ndjson',
     });
   }

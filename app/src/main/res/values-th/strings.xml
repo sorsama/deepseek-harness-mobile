@@ -274,8 +274,8 @@
     <string name="err_image_model_unsupported">โมเดลนี้ไม่รับรูปภาพ โปรดเปลี่ยนไปใช้โมเดลที่รับได้</string>
     <string name="err_image_subagent_unsupported">เซสชันซับเอเจนต์ไม่รับรูปภาพ</string>
     <string name="err_image_send_failed">ส่งรูปภาพไม่สำเร็จ (%1$s) โปรดแนบใหม่แล้วลองอีกครั้ง</string>
-    <string name="err_command_no_images">/%1$s ไม่รับไฟล์รูปภาพแนบ โปรดลบออกก่อน</string>
-    <string name="err_command_images_host">/%1$s แนบรูปภาพได้เฉพาะบน harness 0.1.0-rc.8 ขึ้นไป โปรดลบออกก่อน</string>
+    <string name="err_command_no_images">/%1$s ไม่รับไฟล์แนบ โปรดนำออกก่อน</string>
+    <string name="err_command_images_host">/%1$s แนบไฟล์บน harness นี้ไม่ได้ โปรดนำออกก่อน</string>
     <string name="err_permission_denied">การดำเนินการนี้ใช้ได้เฉพาะบนคอมพิวเตอร์ของ Harness เท่านั้น</string>
     <string name="err_timeout">Harness ไม่ตอบกลับทันเวลา</string>
     <string name="err_generic">ข้อผิดพลาด: %1$s</string>
@@ -435,4 +435,13 @@
     <string name="connect_relay_refused">ปฏิเสธที่อยู่นี้</string>
     <string name="connect_relay_refused_hint">มีรีเลย์ทำงานอยู่ที่นี่ แต่มันตอบเฉพาะที่อยู่ที่มันรู้จักอยู่แล้ว เพิ่ม %1$s ลงใน publicHostnames ในไฟล์ cordis.patch.yml ของรีเลย์บนคอมพิวเตอร์เครื่องนั้น แล้วเริ่มรีเลย์ใหม่</string>
     <string name="pair_fail_host_refused">%1$s เป็นรีเลย์จริง แต่มันปฏิเสธคำขอที่ส่งมาด้วยที่อยู่นี้ — รหัสยังไม่ถูกอ่านเลย เพิ่มที่อยู่นั้นลงใน publicHostnames ในไฟล์ cordis.patch.yml ของรีเลย์แล้วเริ่มใหม่ หรือเข้าถึงรีเลย์ด้วยที่อยู่ที่มันรู้จักอยู่แล้ว</string>
+    <string name="chat_composer_attach_file">แนบไฟล์</string>
+    <string name="chat_composer_remove_file">นำไฟล์ออก</string>
+    <string name="chat_attachment_uploading">กำลังอัปโหลด…</string>
+    <string name="chat_attachment_upload_failed">อัปโหลดไม่สำเร็จ แตะเพื่อลองใหม่</string>
+    <string name="chat_attachment_still_uploading">รอให้อัปโหลดเสร็จก่อนส่ง</string>
+    <string name="err_file_read_failed">อ่านไฟล์นั้นไม่ได้</string>
+    <string name="err_file_not_staged">harness ไม่ได้เก็บไฟล์นั้นไว้แล้ว โปรดแนบใหม่</string>
+    <string name="err_file_subagent_unsupported">เซสชันซับเอเจนต์ไม่รับไฟล์</string>
+    <string name="err_file_send_failed">ส่งไฟล์ไม่สำเร็จ (%1$s) โปรดแนบใหม่</string>
 </resources>

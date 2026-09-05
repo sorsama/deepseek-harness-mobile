@@ -14,21 +14,30 @@ import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Session journal wire types, ported from `packages/api/session-controller/src/types.ts`
- * (v0.1.2-alpha.1).
+ * (v0.1.3-alpha.1).
  *
- * These replace `session.history`. Harness 0.1.2 splits reading a transcript into a live
- * `session/follow` stream and a `session/page` unary read, and the two are not independent: a
- * page must be pinned to the follow generation's opening cursor. See [SessionPageRequest].
+ * Harness 0.1.2 split reading a transcript into a live `session/follow` stream and a
+ * `session/page` unary read, and the two are not independent: a page must be pinned to the follow
+ * generation's opening cursor. See [SessionPageRequest].
+ *
+ * Harness 0.1.3 changed what those two carry. Session format v2 keeps one durable settlement per
+ * model attempt instead of one event per token, so the packed `chunks` history record that 0.1.2
+ * introduced is gone along with the `assistant/chunk` events it packed. Live deltas are no longer
+ * durable at all: a follower that wants them opts in with [SessionFollowRequest.assistantStream]
+ * and receives them as [SessionFollowFrame.AssistantStream] frames, which are process-local
+ * presentation and never replayed from the log.
  */
 
 /**
@@ -97,28 +106,33 @@ data class SessionWireEvent(
     @SerialName("seq") val seq: Int,
     @SerialName("time") val time: Long,
     @SerialName("data") val data: JsonElement = JsonObject(emptyMap()),
-    /** Present when this event merges earlier ones; carries their sequence numbers. */
+    /**
+     * Marks an event a reader may skip when it does not recognise `type`. Absent means required.
+     * This client renders unknown events as passthrough rows either way, so the marker is carried
+     * rather than acted on.
+     */
+    @SerialName("ignorable") val ignorable: Boolean? = null,
+    /** Present when this event cites earlier ones as sources; carries their sequence numbers. */
     @SerialName("sourceEventSeqs") val sourceEventSeqs: List<Int>? = null,
-    /** Surface-mutation intent for events that revise an earlier rendered block. */
+    /** Surface-mutation intent: `"append"` or `{op: "replace", start, end}`. */
     @SerialName("surfaceOp") val surfaceOp: JsonElement? = null,
 )
 
 /**
- * One history record: either a raw event or a packed run of consecutive assistant deltas.
+ * One history record.
  *
- * The packed variant is new in 0.1.2 and is the reason history pages are readable at all on a
- * long transcript — upstream measured one 416,756-event tail as 696 records. It is lossless: a
- * run carries the original fragment and timestamp-gap arrays rather than a summary.
- *
- * A run is *not* a durable event. It exists only in history transport; live follow frames stay
- * scalar, so the same content arrives one way on reconnect and another way while streaming.
+ * Since harness 0.1.3 there is exactly one record class: an ordinary event. The packed `chunks`
+ * run of 0.1.2 is gone because format v2 has nothing left to pack — the per-token deltas it
+ * compressed are no longer durable events; each model attempt is one settlement event that embeds
+ * its own compact stream. The sealed shape is kept so a future record class still decodes as an
+ * event rather than dropping and opening a sequence gap.
  */
 @Serializable(with = SessionHistoryRecordSerializer::class)
 sealed class SessionHistoryRecord {
-    /** The wire discriminant: `event` or `chunks`. */
+    /** The wire discriminant; `event` is the only value a 0.1.3 host sends. */
     abstract val type: String
 
-    /** The inner event-shaped value; aligned `type`/`seq`/`time`/`data` in both variants. */
+    /** The inner event. */
     abstract val event: SessionWireEvent
 
     /** One ordinary logical event. */
@@ -127,21 +141,9 @@ sealed class SessionHistoryRecord {
         @SerialName("type") override val type: String = "event",
         @SerialName("event") override val event: SessionWireEvent,
     ) : SessionHistoryRecord()
-
-    /**
-     * One lossless run of consecutive same-block assistant delta events.
-     *
-     * The inner `event.type` is `chunkrow/text-chunks`, `chunkrow/reasoning-chunks`, or
-     * `chunkrow/tool-call-chunks`; `seq` and `time` identify the run's *first* member.
-     */
-    @Serializable
-    data class Chunks(
-        @SerialName("type") override val type: String = "chunks",
-        @SerialName("event") override val event: SessionWireEvent,
-    ) : SessionHistoryRecord()
 }
 
-/** Custom `type`-dispatching serializer for [SessionHistoryRecord]. */
+/** Custom serializer for [SessionHistoryRecord]; every record class reads as an event. */
 object SessionHistoryRecordSerializer : KSerializer<SessionHistoryRecord> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("SessionHistoryRecord") {
         element("type", buildSerialDescriptor("kotlin.String", PrimitiveKind.STRING))
@@ -151,22 +153,17 @@ object SessionHistoryRecordSerializer : KSerializer<SessionHistoryRecord> {
         val json = when (value) {
             is SessionHistoryRecord.Event ->
                 encodeToJsonElement(SessionHistoryRecord.Event.serializer(), value)
-            is SessionHistoryRecord.Chunks ->
-                encodeToJsonElement(SessionHistoryRecord.Chunks.serializer(), value)
         }
         (encoder as JsonEncoder).encodeJsonElement(json)
     }
 
     override fun deserialize(decoder: Decoder): SessionHistoryRecord {
         val json = (decoder as JsonDecoder).decodeJsonElement().jsonObject
-        return when (val type = json["type"]?.jsonPrimitive?.contentOrNull ?: "") {
-            "chunks" -> decodeFromJsonElement(SessionHistoryRecord.Chunks.serializer(), json)
-            // An unrecognised record class is read as an ordinary event rather than dropped: the
-            // outer discriminator only selects how to expand the inner value, and the inner value
-            // is shaped the same either way. Dropping it would open a sequence gap and send the
-            // journal into a repair it cannot resolve.
-            else -> decodeFromJsonElement(SessionHistoryRecord.Event.serializer(), json)
-        }
+        // An unrecognised record class is read as an ordinary event rather than dropped: the
+        // outer discriminator only names the class, and the inner value is shaped the same either
+        // way. Dropping it would open a sequence gap and send the journal into a repair it cannot
+        // resolve.
+        return decodeFromJsonElement(SessionHistoryRecord.Event.serializer(), json)
     }
 }
 
@@ -184,7 +181,7 @@ data class SessionPageRequest(
     @SerialName("throughSeq") val throughSeq: Int,
     /** Absent for the tail page, which must end exactly at [throughSeq]. */
     @SerialName("beforeSeq") val beforeSeq: Int? = null,
-    /** Caps user/assistant message count without dropping chunks, tools or state between them. */
+    /** Caps user/assistant message count without dropping tools or state between them. */
     @SerialName("maxMessages") val maxMessages: Int? = null,
 )
 
@@ -195,19 +192,216 @@ data class SessionPage(
     @SerialName("hasMore") val hasMore: Boolean = false,
 )
 
-/** Named arguments of the `session/follow` stream. */
+/**
+ * Named arguments of the `session/follow` stream.
+ *
+ * [assistantStream] opts this follower into the process-local assistant frames — the only way
+ * to see a reply while it is being written. It is declared as `true | undefined` upstream, so a
+ * follower that does not want them omits the key rather than sending `false`; WireJson drops the
+ * null.
+ */
 @Serializable
 data class SessionFollowRequest(
     @SerialName("address") val address: SessionAddress,
     @SerialName("maxMessages") val maxMessages: Int? = null,
+    @SerialName("assistantStream") val assistantStream: Boolean? = null,
 )
+
+// ============================================================================================
+// Assistant stream (harness 0.1.3)
+// ============================================================================================
+
+/**
+ * One active model attempt as a reconnect opening snapshot describes it.
+ *
+ * [stream] is the compact record list the attempt had accumulated at the opening revision —
+ * the same encoding an `assistant/message` settlement embeds — and [nextIndex] is the dense
+ * position the next live [SessionAssistantStreamFrame.Chunk] will carry. A follower expands the
+ * stream (`core/session/AssistantStream.kt`) to rebuild the partial reply it missed.
+ */
+@Serializable
+data class SessionAssistantStreamAttempt(
+    @SerialName("attemptId") val attemptId: String,
+    /** Last durable session seq observed when this attempt started; `-1` before any event. */
+    @SerialName("startedAfterSeq") val startedAfterSeq: Int,
+    @SerialName("turn") val turn: Int,
+    @SerialName("step") val step: Int,
+    @SerialName("nextIndex") val nextIndex: Int,
+    @SerialName("stream") val stream: JsonArray = JsonArray(emptyList()),
+)
+
+/** Complete process-local assistant state at one follow opening. */
+@Serializable
+data class SessionAssistantStreamBaseline(
+    @SerialName("revision") val revision: Int = 0,
+    @SerialName("activeAttempt") val activeAttempt: SessionAssistantStreamAttempt? = null,
+)
+
+/**
+ * How one attempt ended, as the terminal [SessionAssistantStreamFrame.End] reports it.
+ *
+ * [Committed] names the durable settlement the attempt became — an `assistant/message` when it
+ * produced a surface message, an `assistant/attempt` when it did not — and its seq, which is the
+ * client's cue that the transient rows are now redundant. [Abandoned] means no durable event will
+ * follow at all.
+ */
+@Serializable(with = AssistantStreamOutcomeSerializer::class)
+sealed class AssistantStreamOutcome {
+    /** The wire discriminant. */
+    abstract val kind: String
+
+    @Serializable
+    data class Committed(
+        @SerialName("kind") override val kind: String = "committed",
+        /** 'assistant/message' | 'assistant/attempt'. */
+        @SerialName("eventType") val eventType: String,
+        @SerialName("seq") val seq: Int,
+    ) : AssistantStreamOutcome()
+
+    @Serializable
+    data class Abandoned(
+        @SerialName("kind") override val kind: String = "abandoned",
+    ) : AssistantStreamOutcome()
+
+    /** An outcome of an unknown `kind`, preserved verbatim. */
+    data class Unknown(
+        override val kind: String,
+        val raw: JsonElement,
+    ) : AssistantStreamOutcome()
+}
+
+/** Custom `kind`-dispatching serializer for [AssistantStreamOutcome]. */
+object AssistantStreamOutcomeSerializer : KSerializer<AssistantStreamOutcome> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("AssistantStreamOutcome") {
+        element("kind", buildSerialDescriptor("kotlin.String", PrimitiveKind.STRING))
+    }
+
+    override fun serialize(encoder: Encoder, value: AssistantStreamOutcome) {
+        val json: JsonElement = when (value) {
+            is AssistantStreamOutcome.Committed ->
+                encodeToJsonElement(AssistantStreamOutcome.Committed.serializer(), value)
+            is AssistantStreamOutcome.Abandoned ->
+                encodeToJsonElement(AssistantStreamOutcome.Abandoned.serializer(), value)
+            is AssistantStreamOutcome.Unknown -> value.raw
+        }
+        (encoder as JsonEncoder).encodeJsonElement(json)
+    }
+
+    override fun deserialize(decoder: Decoder): AssistantStreamOutcome {
+        val json = (decoder as JsonDecoder).decodeJsonElement().jsonObject
+        return when (val kind = json["kind"]?.jsonPrimitive?.contentOrNull ?: "") {
+            "committed" -> decodeFromJsonElement(AssistantStreamOutcome.Committed.serializer(), json)
+            "abandoned" -> decodeFromJsonElement(AssistantStreamOutcome.Abandoned.serializer(), json)
+            else -> AssistantStreamOutcome.Unknown(kind, json)
+        }
+    }
+}
+
+/**
+ * One process-local assistant frame, delivered on `session/follow` to a follower that opted in.
+ *
+ * Frames are dense: every one carries the host's monotonically increasing [revision], a chunk
+ * carries its position in the attempt, and the terminal frame carries the count it closes. A
+ * follower that sees a hole cannot know what it missed and drops the attempt's transient rows;
+ * the durable settlement arrives on the ordinary event path regardless, so nothing is lost —
+ * only the live preview of it.
+ */
+@Serializable(with = SessionAssistantStreamFrameSerializer::class)
+sealed class SessionAssistantStreamFrame {
+    /** The wire discriminant. */
+    abstract val type: String
+
+    /** Identity of the attempt, unique within one agent lifecycle. */
+    abstract val attemptId: String
+
+    /** Host-side frame counter; `1` opens a fresh agent lifecycle. */
+    abstract val revision: Int
+
+    /** A model attempt began. */
+    @Serializable
+    data class Start(
+        @SerialName("type") override val type: String = "start",
+        @SerialName("attemptId") override val attemptId: String,
+        @SerialName("revision") override val revision: Int,
+        /** Last durable seq when the attempt started; a settlement at or below it is not this attempt's. */
+        @SerialName("startedAfterSeq") val startedAfterSeq: Int,
+        @SerialName("turn") val turn: Int,
+        @SerialName("step") val step: Int,
+    ) : SessionAssistantStreamFrame()
+
+    /** One raw model chunk, in the same shape `assistant/chunk` used to carry. */
+    @Serializable
+    data class Chunk(
+        @SerialName("type") override val type: String = "chunk",
+        @SerialName("attemptId") override val attemptId: String,
+        @SerialName("revision") override val revision: Int,
+        /** Dense position within the attempt, from 0. */
+        @SerialName("index") val index: Int,
+        @SerialName("time") val time: Long,
+        @SerialName("chunk") val chunk: JsonElement,
+    ) : SessionAssistantStreamFrame()
+
+    /** The attempt ended. [index] is the number of chunk frames this marker closes. */
+    @Serializable
+    data class End(
+        @SerialName("type") override val type: String = "end",
+        @SerialName("attemptId") override val attemptId: String,
+        @SerialName("revision") override val revision: Int,
+        @SerialName("index") val index: Int,
+        @SerialName("outcome") val outcome: AssistantStreamOutcome,
+    ) : SessionAssistantStreamFrame()
+
+    /** A frame of an unknown `type`, preserved verbatim. */
+    data class Unknown(
+        override val type: String,
+        override val attemptId: String,
+        override val revision: Int,
+        val raw: JsonElement,
+    ) : SessionAssistantStreamFrame()
+}
+
+/** Custom `type`-dispatching serializer for [SessionAssistantStreamFrame]. */
+object SessionAssistantStreamFrameSerializer : KSerializer<SessionAssistantStreamFrame> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("SessionAssistantStreamFrame") {
+        element("type", buildSerialDescriptor("kotlin.String", PrimitiveKind.STRING))
+    }
+
+    override fun serialize(encoder: Encoder, value: SessionAssistantStreamFrame) {
+        val json: JsonElement = when (value) {
+            is SessionAssistantStreamFrame.Start ->
+                encodeToJsonElement(SessionAssistantStreamFrame.Start.serializer(), value)
+            is SessionAssistantStreamFrame.Chunk ->
+                encodeToJsonElement(SessionAssistantStreamFrame.Chunk.serializer(), value)
+            is SessionAssistantStreamFrame.End ->
+                encodeToJsonElement(SessionAssistantStreamFrame.End.serializer(), value)
+            is SessionAssistantStreamFrame.Unknown -> value.raw
+        }
+        (encoder as JsonEncoder).encodeJsonElement(json)
+    }
+
+    override fun deserialize(decoder: Decoder): SessionAssistantStreamFrame {
+        val json = (decoder as JsonDecoder).decodeJsonElement().jsonObject
+        return when (val type = json["type"]?.jsonPrimitive?.contentOrNull ?: "") {
+            "start" -> decodeFromJsonElement(SessionAssistantStreamFrame.Start.serializer(), json)
+            "chunk" -> decodeFromJsonElement(SessionAssistantStreamFrame.Chunk.serializer(), json)
+            "end" -> decodeFromJsonElement(SessionAssistantStreamFrame.End.serializer(), json)
+            else -> SessionAssistantStreamFrame.Unknown(
+                type = type,
+                attemptId = json["attemptId"]?.jsonPrimitive?.contentOrNull ?: "",
+                revision = json["revision"]?.jsonPrimitive?.contentOrNull?.toIntOrNull() ?: 0,
+                raw = json,
+            )
+        }
+    }
+}
 
 /**
  * One frame of the `session/follow` stream.
  *
  * Every generation opens with exactly one [Snapshot] — including after a reconnect, which sends
  * a complete replacement rather than a delta. There is no `afterSeq`: the protocol has no way to
- * resume mid-stream, and the client repairs by paging instead.
+ * resume mid-stream, and the client repairs by paging instead. A follower that opted in also
+ * receives [AssistantStream] frames, interleaved with durable [Entry] frames in arrival order.
  */
 @Serializable(with = SessionFollowFrameSerializer::class)
 sealed class SessionFollowFrame {
@@ -215,6 +409,7 @@ sealed class SessionFollowFrame {
     @Serializable
     data class Snapshot(
         @SerialName("type") val type: String = "snapshot",
+        /** The host's `SessionWireHeader`; read leniently, since nothing here depends on it. */
         @SerialName("header") val header: JsonElement = JsonObject(emptyMap()),
         /** The log cut this generation opened at; pass it as `throughSeq` when paging. */
         @SerialName("cursor") val cursor: Int,
@@ -222,19 +417,28 @@ sealed class SessionFollowFrame {
         @SerialName("hasMore") val hasMore: Boolean = false,
         /** Projection baseline no later than [cursor]; merge by watermark against live updates. */
         @SerialName("projections") val projections: JsonObject = JsonObject(emptyMap()),
+        /**
+         * Present exactly when the follower opted in. The host promises it on every opted-in
+         * snapshot, so its absence there means the host predates the feature.
+         */
+        @SerialName("assistantStream") val assistantStream: SessionAssistantStreamBaseline? = null,
     ) : SessionFollowFrame()
 
-    /** One live event appended after the opening cursor. Always scalar — never packed. */
+    /** One durable event appended after the opening cursor. */
     data class Entry(val record: SessionHistoryRecord) : SessionFollowFrame()
+
+    /** One process-local assistant frame; never a durable event. */
+    data class AssistantStream(val frame: SessionAssistantStreamFrame) : SessionFollowFrame()
 }
 
 /**
  * Custom serializer for [SessionFollowFrame].
  *
- * The union is not uniformly tagged: the opening frame carries `type: "snapshot"`, and every
- * later item is a bare history record whose own `type` is `event` or `chunks`. Discriminating on
- * `snapshot` specifically — rather than assuming a closed tag set — is what keeps a future
- * record class from being mistaken for an opening frame.
+ * The union is not uniformly tagged: the opening frame carries `type: "snapshot"`, an assistant
+ * frame carries `type: "assistant-stream"` around its own `frame`, and every other item is a
+ * bare history record whose own `type` names the record class. Discriminating on the two named
+ * kinds specifically — rather than assuming a closed tag set — is what keeps a future record
+ * class from being mistaken for an opening frame.
  */
 object SessionFollowFrameSerializer : KSerializer<SessionFollowFrame> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("SessionFollowFrame") {
@@ -242,21 +446,32 @@ object SessionFollowFrameSerializer : KSerializer<SessionFollowFrame> {
     }
 
     override fun serialize(encoder: Encoder, value: SessionFollowFrame) {
-        val json = when (value) {
+        val json: JsonElement = when (value) {
             is SessionFollowFrame.Snapshot ->
                 encodeToJsonElement(SessionFollowFrame.Snapshot.serializer(), value)
             is SessionFollowFrame.Entry ->
                 encodeToJsonElement(SessionHistoryRecordSerializer, value.record)
+            is SessionFollowFrame.AssistantStream -> JsonObject(
+                mapOf(
+                    "type" to JsonPrimitive("assistant-stream"),
+                    "frame" to encodeToJsonElement(SessionAssistantStreamFrameSerializer, value.frame),
+                ),
+            )
         }
         (encoder as JsonEncoder).encodeJsonElement(json)
     }
 
     override fun deserialize(decoder: Decoder): SessionFollowFrame {
         val json = (decoder as JsonDecoder).decodeJsonElement().jsonObject
-        return if (json["type"]?.jsonPrimitive?.contentOrNull == "snapshot") {
-            decodeFromJsonElement(SessionFollowFrame.Snapshot.serializer(), json)
-        } else {
-            SessionFollowFrame.Entry(decodeFromJsonElement(SessionHistoryRecordSerializer, json))
+        return when (json["type"]?.jsonPrimitive?.contentOrNull) {
+            "snapshot" -> decodeFromJsonElement(SessionFollowFrame.Snapshot.serializer(), json)
+            "assistant-stream" -> SessionFollowFrame.AssistantStream(
+                decodeFromJsonElement(
+                    SessionAssistantStreamFrameSerializer,
+                    json["frame"] ?: throw IllegalArgumentException("assistant-stream frame carried no frame"),
+                ),
+            )
+            else -> SessionFollowFrame.Entry(decodeFromJsonElement(SessionHistoryRecordSerializer, json))
         }
     }
 }

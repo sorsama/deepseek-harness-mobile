@@ -127,6 +127,20 @@ Certificate verification is standard Android, with one addition:
   `--trusted-host <that name>` (a proxy that preserves `Host`, as Caddy does
   by default, changes nothing about this).
 
+## File attachments
+
+Since harness 0.1.3 the app can attach any file to a message. The bytes are
+streamed to the harness the moment the file is picked — over whichever
+connection is in use, with the same credential and the same encryption, or
+lack of it, as everything else — and the harness writes them **verbatim** into
+its attachment store on the computer it runs on, where the agent's file tools
+can read them. A file you attach is therefore a file you have copied onto that
+computer, into a directory the agent reads. In local-network mode that copy
+travels in the clear.
+
+The app keeps no copy: it reads the picked document once, at upload time, and
+holds only the receipt the harness answered with until the message is sent.
+
 ## What DSH Mobile stores
 
 - Remembered endpoints (host, port, whether to use HTTPS, display name, and —

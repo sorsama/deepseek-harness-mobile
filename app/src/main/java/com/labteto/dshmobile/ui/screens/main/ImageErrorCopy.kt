@@ -11,8 +11,9 @@ import java.util.Locale
  *
  * The port of the harness's own `attachmentErrorText` (`packages/client/ui-conversation/src/
  * client/image-labels.ts`). One table serves both sides of the refusal — the check this client
- * runs before uploading and the `attachment-error` a host still answers with — so a rejection
- * reads the same either way, and a limit the client has not learned about yet still names itself.
+ * runs before uploading and the `session/attachment-invalid` a host still answers with — so a
+ * rejection reads the same either way, and a limit the client has not learned about yet still
+ * names itself.
  */
 
 /**
@@ -58,6 +59,10 @@ internal fun imageRejectionText(
     ImageRejection.DIMENSION_TOO_LARGE -> limits
         ?.let { context.getString(R.string.err_image_dimension, it.maxImageDimension) }
         ?: sendFailed(context, rawReason)
+    // Files (harness 0.1.3). A spent or foreign receipt means the upload has to happen again;
+    // there is nothing in the bytes to correct, so the copy says to re-attach rather than resize.
+    ImageRejection.FILE_NOT_STAGED -> context.getString(R.string.err_file_not_staged)
+    ImageRejection.SUBAGENT_FILE_UNSUPPORTED -> context.getString(R.string.err_file_subagent_unsupported)
     ImageRejection.UNKNOWN -> sendFailed(context, rawReason)
 }
 

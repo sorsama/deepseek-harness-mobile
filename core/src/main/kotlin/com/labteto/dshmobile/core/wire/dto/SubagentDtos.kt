@@ -25,8 +25,8 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
- * Subagents-domain DTOs, ported from `packages/host/apiproxy/src/api/subagents.schema.ts` and
- * `packages/host/apiproxy/src/api/subagents.ts` (v0.1.1-rc.2).
+ * Subagents-domain DTOs, ported from `packages/subagent/subagent/src/control-types.ts` and
+ * `packages/subagent/subagent/src/types.ts` (v0.1.3-alpha.1).
  */
 
 /**
@@ -156,25 +156,7 @@ data class SubagentListRequest(
     @SerialName("parentSessionId") val parentSessionId: String,
 )
 
-/** Request payload of `subagent.history`. */
-@Serializable
-data class SubagentHistoryRequest(
-    @SerialName("parentSessionId") val parentSessionId: String,
-    @SerialName("childSessionId") val childSessionId: String,
-    @SerialName("mode") val mode: String,
-    @SerialName("beforeSeq") val beforeSeq: Int? = null,
-    @SerialName("maxMessages") val maxMessages: Int? = null,
-)
-
-/** Value of `subagent.history`. */
-@Serializable
-data class SubagentHistoryValue(
-    @SerialName("events") val events: List<HistoryEntry> = emptyList(),
-    @SerialName("hasMore") val hasMore: Boolean,
-    @SerialName("projections") val projections: SessionProjectionsBlock? = null,
-)
-
-/** Request payload of `subagent.prompt` (continuable children only). */
+/** Request payload of `subagents/prompt` (continuable children only). */
 @Serializable
 data class SubagentPromptRequest(
     /**
@@ -187,7 +169,12 @@ data class SubagentPromptRequest(
     @SerialName("parentSessionId") val parentSessionId: String,
     @SerialName("childSessionId") val childSessionId: String,
     @SerialName("mode") val mode: String = "continuable",
-    @SerialName("content") val content: List<ContentBlock> = emptyList(),
+    /**
+     * Browser prompt parts, the same vocabulary `session/prompt` takes. Since harness 0.1.2-alpha.3
+     * the host admits image parts before delivery; file parts are refused for a child
+     * (`SUBAGENT_FILE_UNSUPPORTED`).
+     */
+    @SerialName("content") val content: List<PromptContentPart> = emptyList(),
     /** Optional browser zone sampled for this exact human prompt. */
     @SerialName("clientTimeZone") val clientTimeZone: String? = null,
 )

@@ -274,8 +274,8 @@
     <string name="err_image_model_unsupported">هذا النموذج لا يقبل الصور. بدّل إلى نموذج يقبلها.</string>
     <string name="err_image_subagent_unsupported">جلسات الوكيل الفرعي لا تقبل الصور.</string>
     <string name="err_image_send_failed">تعذّر إرسال الصورة (%1$s). أعد إرفاقها ثم حاول مجددًا.</string>
-    <string name="err_command_no_images">/%1$s لا يقبل الصور المرفقة. أزلها أولًا.</string>
-    <string name="err_command_images_host">/%1$s لا يمكنه حمل الصور إلا على harness 0.1.0-rc.8 أو أحدث. أزلها أولًا.</string>
+    <string name="err_command_no_images">/%1$s لا يقبل المرفقات. أزلها أولًا.</string>
+    <string name="err_command_images_host">/%1$s لا يمكنه حمل المرفقات على harness هذا. أزلها أولًا.</string>
     <string name="err_permission_denied">هذا الإجراء متاح فقط على جهاز كمبيوتر Harness نفسه.</string>
     <string name="err_timeout">لم يجب Harness في الوقت المحدد.</string>
     <string name="err_generic">خطأ: %1$s</string>
@@ -435,4 +435,13 @@
     <string name="connect_relay_refused">يرفض هذا العنوان</string>
     <string name="connect_relay_refused_hint">هناك مُرحِّل يعمل هنا، لكنه لا يستجيب إلا للعناوين التي يعرفها بالفعل. أضف %1$s إلى publicHostnames في ملف cordis.patch.yml الخاص بالمُرحِّل على ذلك الكمبيوتر ثم أعد تشغيله.</string>
     <string name="pair_fail_host_refused">‏%1$s مُرحِّل بالفعل، لكنه يرفض الطلبات الموجَّهة بهذا العنوان — ولم يُقرأ الرمز أصلًا. أضف هذا العنوان إلى publicHostnames في ملف cordis.patch.yml الخاص بالمُرحِّل وأعد التشغيل، أو صِل إليه بعنوان يعرفه.</string>
+    <string name="chat_composer_attach_file">إرفاق ملف</string>
+    <string name="chat_composer_remove_file">إزالة الملف</string>
+    <string name="chat_attachment_uploading">جارٍ الرفع…</string>
+    <string name="chat_attachment_upload_failed">فشل الرفع. انقر لإعادة المحاولة.</string>
+    <string name="chat_attachment_still_uploading">انتظر اكتمال الرفع قبل الإرسال.</string>
+    <string name="err_file_read_failed">تعذّر قراءة هذا الملف.</string>
+    <string name="err_file_not_staged">لم يعد harness يحتفظ بهذا الملف. أرفقه مجددًا.</string>
+    <string name="err_file_subagent_unsupported">جلسات الوكيل الفرعي لا تقبل الملفات.</string>
+    <string name="err_file_send_failed">فشل إرسال الملف (%1$s). أرفقه مجددًا.</string>
 </resources>

@@ -21,16 +21,16 @@ class SlashAdjudicationTest {
             description = "Switch the permission preset",
             input = CommandInputDescriptor(hint = "<preset>"),
         ),
-        // `/goal` and `/plan` are the two commands harness 0.1.0-rc.8 taught to take images.
+        // `/goal` and `/plan` are the two commands harness 0.1.0-rc.8 taught to take attachments.
         CommandDescriptor(
             name = "goal",
             description = "Set a goal",
-            input = CommandInputDescriptor(hint = "<text>", images = true),
+            input = CommandInputDescriptor(hint = "<text>", attachments = true),
         ),
     )
 
-    private fun decide(draft: String, attachments: Int = 0, hostAcceptsImages: Boolean = true) =
-        adjudicate(draft, catalog, attachments, hostAcceptsImages)
+    private fun decide(draft: String, attachments: Int = 0, hostAcceptsAttachments: Boolean = true) =
+        adjudicate(draft, catalog, attachments, hostAcceptsAttachments)
 
     @Test
     fun `ordinary text is a prompt`() {
@@ -100,11 +100,11 @@ class SlashAdjudicationTest {
         // This used to send the literal text "/compact" to the model alongside the picture, with
         // nothing on screen to say the command had been quietly demoted.
         assertEquals(
-            Submission.Refused("compact", RefusalReason.COMMAND_TAKES_NO_IMAGES),
+            Submission.Refused("compact", RefusalReason.COMMAND_TAKES_NO_ATTACHMENTS),
             decide("/compact", attachments = 1),
         )
         assertEquals(
-            Submission.Refused("permission", RefusalReason.COMMAND_TAKES_NO_IMAGES),
+            Submission.Refused("permission", RefusalReason.COMMAND_TAKES_NO_ATTACHMENTS),
             decide("/permission read-only", attachments = 1),
         )
     }
@@ -113,12 +113,12 @@ class SlashAdjudicationTest {
     fun `a harness that cannot carry images says so rather than dropping them`() {
         assertEquals(
             Submission.Refused("goal", RefusalReason.HOST_TOO_OLD),
-            decide("/goal ship it", attachments = 1, hostAcceptsImages = false),
+            decide("/goal ship it", attachments = 1, hostAcceptsAttachments = false),
         )
         // Without images the same command is unremarkable on either release.
         assertEquals(
             Submission.Command("/goal ship it"),
-            decide("/goal ship it", hostAcceptsImages = false),
+            decide("/goal ship it", hostAcceptsAttachments = false),
         )
     }
 

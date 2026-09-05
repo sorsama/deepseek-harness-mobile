@@ -4,6 +4,7 @@ import com.labteto.dshmobile.core.session.ChatBlock
 import com.labteto.dshmobile.core.session.ChatNode
 import com.labteto.dshmobile.core.session.TurnStartNode
 import com.labteto.dshmobile.core.wire.decodeFromJsonElement
+import com.labteto.dshmobile.core.wire.dto.FileAttachmentRef
 import com.labteto.dshmobile.core.wire.dto.GoalSnapshot
 import com.labteto.dshmobile.core.wire.dto.ImageAttachmentRef
 import kotlinx.serialization.json.JsonArray
@@ -66,6 +67,25 @@ internal fun parseImageRef(block: ChatBlock): ImageAttachmentRef? {
     val raw = block.raw as? JsonObject ?: return null
     val attachment = raw["attachment"] ?: raw
     return runCatching { decodeFromJsonElement(ImageAttachmentRef.serializer(), attachment) }.getOrNull()
+}
+
+/** The durable file reference behind a `file` block (harness 0.1.3), or null when malformed. */
+internal fun parseFileRef(block: ChatBlock): FileAttachmentRef? {
+    val raw = block.raw as? JsonObject ?: return null
+    val attachment = raw["attachment"] ?: raw
+    return runCatching { decodeFromJsonElement(FileAttachmentRef.serializer(), attachment) }.getOrNull()
+}
+
+/**
+ * A file size for a chip: bytes below a kilobyte, then KB, then MB with one decimal.
+ *
+ * `imageSizeText` prints megabytes only, because it names a limit the harness itself wrote in
+ * megabytes; a 3 KB text file would read as `0.0MB` there, which is a size in name only.
+ */
+internal fun fileSizeText(bytes: Long): String = when {
+    bytes < 1024 -> "${bytes}B"
+    bytes < 1024 * 1024 -> "${bytes / 1024}KB"
+    else -> String.format(java.util.Locale.US, "%.1fMB", bytes.toDouble() / (1024 * 1024))
 }
 
 // ---------------------------------------------------------------------------

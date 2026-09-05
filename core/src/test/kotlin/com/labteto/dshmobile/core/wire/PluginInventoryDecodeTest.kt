@@ -24,6 +24,14 @@ class PluginInventoryDecodeTest {
 
         override suspend fun <T> download(path: String, consume: (String?, String?, InputStream) -> T): T =
             error("not used")
+
+        override suspend fun upload(
+            path: String,
+            contentType: String,
+            contentLength: Long,
+            body: InputStream,
+            onProgress: ((Long) -> Unit)?,
+        ): RpcHttpResponse = error("not used")
     }
 
     private fun clientReturning(value: String) = DshApiClient(

@@ -3,6 +3,8 @@ package com.labteto.dshmobile.ui.screens.main
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,7 @@ import androidx.compose.material.icons.automirrored.outlined.CallSplit
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -64,6 +68,7 @@ import com.labteto.dshmobile.ui.components.ThinkingRow
 import com.labteto.dshmobile.ui.components.ToolCard
 import com.labteto.dshmobile.ui.components.UserBubble
 import com.labteto.dshmobile.ui.theme.DsAnimations
+import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.serialization.json.JsonArray
@@ -102,6 +107,15 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
                         intrinsicHeight = ref.height,
                         contentDescription = ref.name,
                     )
+                }
+            }
+            // A file is a chip, not a preview: the host stores it verbatim and the model reads it
+            // through its file tools, so there is nothing to render but what it is called.
+            node.blocks.filter { it.kind == "file" }.forEach { block ->
+                parseFileRef(block)?.let { ref ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        FileChip(name = ref.name, bytes = ref.bytes)
+                    }
                 }
             }
             val text = node.displayText()
@@ -200,7 +214,47 @@ internal val STRUCTURAL_EVENT_TYPES = setOf(
     "session/title-llm-request",
     "agent/inbox/spliced",
     "assistant/chunk",
+    // A model attempt that settled without a message (harness 0.1.3): replay data, not content.
+    "assistant/attempt",
 )
+
+/**
+ * One stored file in a message: its display name and exact size, nothing more.
+ *
+ * There is no preview and no download — the harness keeps the bytes for the agent's file tools,
+ * and the reference the log carries is a content digest rather than a path or a URL. The chip
+ * says what was sent, which is all a transcript needs.
+ */
+@Composable
+internal fun FileChip(name: String, bytes: Long, modifier: Modifier = Modifier) {
+    val colors = DsTheme.colors
+    Row(
+        modifier = modifier
+            .clip(DsShapes.block)
+            .background(colors.bgModulePlatform)
+            .border(1.dp, colors.borderL3, DsShapes.block)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            Icons.Outlined.Description,
+            contentDescription = null,
+            tint = colors.labelSecondary,
+            modifier = Modifier.size(18.dp),
+        )
+        Column {
+            Text(
+                name,
+                style = DsType.small13,
+                color = colors.labelPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(fileSizeText(bytes), style = DsType.caption11, color = colors.labelTertiary)
+        }
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Assistant messages
@@ -250,6 +304,7 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
                         contentDescription = ref.name,
                     )
                 }
+                "file" -> parseFileRef(block)?.let { ref -> FileChip(name = ref.name, bytes = ref.bytes) }
                 else -> block.text?.let {
                     Text(it, style = DsType.caption11, color = colors.labelTertiary)
                 }

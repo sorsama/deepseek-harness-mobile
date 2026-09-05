@@ -274,8 +274,8 @@
     <string name="err_image_model_unsupported">Ce modèle n\'accepte pas les images. Passez à un modèle qui les accepte.</string>
     <string name="err_image_subagent_unsupported">Les sessions de sous-agent n\'acceptent pas les images.</string>
     <string name="err_image_send_failed">L\'envoi de l\'image a échoué (%1$s). Rajoutez-la et réessayez.</string>
-    <string name="err_command_no_images">/%1$s n\'accepte pas les images jointes. Retirez-les d\'abord.</string>
-    <string name="err_command_images_host">/%1$s ne peut porter des images que sur harness 0.1.0-rc.8 ou plus récent. Retirez-les d\'abord.</string>
+    <string name="err_command_no_images">/%1$s n\'accepte pas les pièces jointes. Retirez-les d\'abord.</string>
+    <string name="err_command_images_host">/%1$s ne peut pas porter de pièces jointes sur ce harness. Retirez-les d\'abord.</string>
     <string name="err_permission_denied">Cette action n’est disponible que sur l’ordinateur du Harness lui-même.</string>
     <string name="err_timeout">Le Harness n’a pas répondu à temps.</string>
     <string name="err_generic">Erreur : %1$s</string>
@@ -435,4 +435,13 @@
     <string name="connect_relay_refused">Refuse cette adresse</string>
     <string name="connect_relay_refused_hint">Un relais tourne ici, mais il ne répond qu\'aux adresses qu\'il connaît déjà. Ajoutez %1$s à publicHostnames dans le cordis.patch.yml du relais sur cet ordinateur, puis redémarrez-le.</string>
     <string name="pair_fail_host_refused">%1$s est bien un relais, mais il refuse les requêtes adressées ainsi — le code n\'a jamais été lu. Ajoutez cette adresse à publicHostnames dans le cordis.patch.yml du relais et redémarrez, ou joignez le relais par une adresse qu\'il connaît déjà.</string>
+    <string name="chat_composer_attach_file">Joindre un fichier</string>
+    <string name="chat_composer_remove_file">Retirer le fichier</string>
+    <string name="chat_attachment_uploading">Envoi en cours…</string>
+    <string name="chat_attachment_upload_failed">L\'envoi a échoué. Touchez pour réessayer.</string>
+    <string name="chat_attachment_still_uploading">Attendez la fin de l\'envoi avant d\'envoyer le message.</string>
+    <string name="err_file_read_failed">Impossible de lire ce fichier.</string>
+    <string name="err_file_not_staged">Le harness ne conserve plus ce fichier. Joignez-le à nouveau.</string>
+    <string name="err_file_subagent_unsupported">Les sessions de sous-agent n\'acceptent pas les fichiers.</string>
+    <string name="err_file_send_failed">L\'envoi du fichier a échoué (%1$s). Joignez-le à nouveau.</string>
 </resources>

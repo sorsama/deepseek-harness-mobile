@@ -13,6 +13,7 @@ import io.ktor.server.request.ApplicationRequest
 import io.ktor.server.request.host
 import io.ktor.server.request.path
 import io.ktor.server.request.queryString
+import io.ktor.server.request.receive
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.header
 import io.ktor.server.response.respondBytes
@@ -41,6 +42,8 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
+import java.security.MessageDigest
+import java.util.Base64
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -48,16 +51,20 @@ import java.util.concurrent.CopyOnWriteArrayList
 /**
  * A scriptable stand-in for the DeepSeek Harness HTTP/WebSocket protocol.
  *
- * Speaks harness **0.1.2-alpha.1**:
+ * Speaks harness **0.1.3-alpha.1**:
  *  - unary calls: `POST /api/<namespace>/<method>` with a `client-request` envelope, answered
  *    with a `server-response` envelope carrying `{"ok": true, "value": ...}` or
- *    `{"ok": false, "error": {"code", "message", "details"}}`;
+ *    `{"ok": false, "error": {"code", "message", "details"}}`, where gateway refusals carry
+ *    their 0.1.3 namespaced codes (`gateway/arguments-invalid`, `gateway/input-invalid`, …);
  *  - one bidirectional WebSocket at `/api/remote.mux`, carrying logical streams the client
  *    opens by name. The `$events` stream answers its `open` with a `ready` frame; everything
- *    else a test pushes rides whichever stream it names;
+ *    else a test pushes rides whichever stream it names, including the `assistant-stream`
+ *    frames a `session/follow` follower opted into ([pushAssistantStream]);
  *  - answers to pending waterfalls: `POST /api/$events/result` with `{clientId, eventId,
  *    outcome}`. An answer to a question this mock pushed is judged by [judgeQuestionResponse],
- *    the host's own acceptance law; anything else is acknowledged.
+ *    the host's own acceptance law; anything else is acknowledged;
+ *  - file uploads: the raw-byte route `POST /api/session/uploadFileBinary` and the
+ *    `fileUploads/upload` Remote, both minting receipts a prompt can cite.
  *
  * `/api/events.mux`, `/api/events.host`, `/api/respond` and `host.describe` are all gone, as
  * they are upstream.
@@ -113,6 +120,17 @@ class MockHarness(
     /** Every `request` object this harness accepted for `subagents/prompt`, in arrival order. */
     val subagentPrompts: MutableList<JsonObject> = CopyOnWriteArrayList()
 
+    /** Every file staged through either upload path, in arrival order. */
+    val fileUploads: MutableList<FileUploadRecord> = CopyOnWriteArrayList()
+
+    /**
+     * Answer the raw-byte upload route with 404, as a deployment that composes no file-upload
+     * service or a relay that does not proxy the route would. The Remote form stays registered,
+     * which is exactly the situation the client's fallback exists for.
+     */
+    @Volatile
+    var refuseBinaryUploads: Boolean = false
+
     private val normalizedTrustedHosts: Set<String> =
         trustedHosts.mapTo(mutableSetOf()) { normalizeHost(it) }
 
@@ -145,6 +163,86 @@ class MockHarness(
             subagentPrompts.add(request)
             buildJsonObject { put("messageId", UUID.randomUUID().toString()) }
         }
+        // The Remote form of a file upload (harness 0.1.3): agent-scoped, so `agentId` beside a
+        // request object whose only required field is the canonical base64. The raw-byte route
+        // below is the ordinary path; this one is what a client falls back to when nothing
+        // claims that route.
+        remote("fileUploads", "upload", setOf("agentId", "request")) { args ->
+            val request = args["request"] as? JsonObject
+                ?: throw BoundaryInvalid(boundaryInvalidMessage("fileUploads/upload", "request"))
+            val data = (request["data"] as? JsonPrimitive)?.contentOrNull
+                ?: throw BoundaryInvalid(boundaryInvalidMessage("fileUploads/upload", "request"))
+            val bytes = runCatching { Base64.getDecoder().decode(data) }.getOrElse {
+                throw BoundaryInvalid(boundaryInvalidMessage("fileUploads/upload", "request"))
+            }
+            stageFile(
+                sessionId = (args["agentId"] as? JsonPrimitive)?.contentOrNull.orEmpty(),
+                name = (request["name"] as? JsonPrimitive)?.contentOrNull,
+                bytes = bytes,
+            )
+        }
+    }
+
+    /**
+     * Stage one file the way the host's `fileUploads` service does: store the bytes verbatim,
+     * name them by digest, and mint a receipt only this session may cite.
+     */
+    private fun stageFile(sessionId: String, name: String?, bytes: ByteArray): JsonObject {
+        val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+            .joinToString("") { "%02x".format(it) }
+        val leaf = name?.substringAfterLast('/')?.substringAfterLast('\\')?.takeIf { it.isNotBlank() } ?: "upload"
+        val record = FileUploadRecord(
+            sessionId = sessionId,
+            receiptId = "receipt-${fileUploads.size + 1}",
+            name = leaf,
+            bytes = bytes,
+        )
+        fileUploads.add(record)
+        return buildJsonObject {
+            put("receiptId", record.receiptId)
+            put(
+                "file",
+                buildJsonObject {
+                    put("attachmentId", "sha256:$digest")
+                    put("name", leaf)
+                    put("bytes", bytes.size)
+                },
+            )
+        }
+    }
+
+    /**
+     * The raw-byte upload route (`POST /api/session/uploadFileBinary`), as the host's
+     * `handleFileUploadHttp` answers it: carrier misuse gets a plain status, and everything past
+     * that is a bare `{ok, value|error}` result under HTTP 200 — not a `server-response` envelope.
+     */
+    private suspend fun ApplicationCall.handleFileUpload() {
+        if (!isTrustedHost(request.hostHeader())) {
+            respondText("Forbidden", status = HttpStatusCode.Forbidden)
+            return
+        }
+        if (refuseBinaryUploads) {
+            respondText("not found", status = HttpStatusCode.NotFound)
+            return
+        }
+        val mediaType = (request.headers["Content-Type"] ?: "").substringBefore(';').trim().lowercase()
+        if (mediaType != "application/octet-stream") {
+            respondText("content type must be application/octet-stream", status = HttpStatusCode.UnsupportedMediaType)
+            return
+        }
+        val sessionId = request.queryParameters["sessionId"]
+        if (sessionId.isNullOrEmpty()) {
+            respondText("sessionId is required", status = HttpStatusCode.BadRequest)
+            return
+        }
+        val bytes = receive<ByteArray>()
+        val value = stageFile(sessionId, request.queryParameters["name"], bytes)
+        respondJson(
+            buildJsonObject {
+                put("ok", true)
+                put("value", value)
+            }.toString(),
+        )
     }
 
     /**
@@ -212,6 +310,11 @@ class MockHarness(
                 }
                 get("/api/session.export") {
                     call.handleSessionExport()
+                }
+                // A literal path wins over the `{namespace}/{method}` pattern below, exactly as
+                // the host's fetch registry answers this route before the RPC dispatcher does.
+                post(FILE_UPLOAD_PATH) {
+                    call.handleFileUpload()
                 }
                 // Kept for the Gateway's own single-segment endpoints; every business call
                 // takes the two-segment form below.
@@ -362,14 +465,15 @@ class MockHarness(
         }
     }
 
-    /** The gateway's `arguments-invalid` refusal, thrown out of a [remote] handler. */
+    /** The gateway's `gateway/arguments-invalid` refusal, thrown out of a [remote] handler. */
     class ArgumentsInvalid(override val message: String) : RuntimeException(message)
 
     /**
-     * The gateway's `input-invalid` refusal, thrown out of a [requestRemote] handler.
+     * The gateway's `gateway/input-invalid` refusal, thrown out of a [requestRemote] handler.
      *
-     * Reaches the client as code `internal` like every other gateway failure: a shape mismatch
-     * gets no code of its own, which is precisely why a client must not send one to find out.
+     * Through 0.1.2 every gateway failure reached the client as code `internal`; 0.1.3 gave each
+     * its own namespaced code. The message still names only the field, never what was wrong
+     * inside it, which is precisely why a client must not send a bad shape to find out.
      */
     class BoundaryInvalid(override val message: String) : RuntimeException(message)
 
@@ -387,6 +491,23 @@ class MockHarness(
         }
         return "typert gateway: $endpoint: args fields do not match the descriptor: " +
             clauses.joinToString("; ")
+    }
+
+    /**
+     * Push one process-local assistant frame onto every open `session/follow` stream.
+     *
+     * [frame] is the inner frame — `start`, `chunk` or `end` — and is wrapped the way the host
+     * wraps it, under `type: "assistant-stream"`, so a test asserts on the same shape the client
+     * decodes from a real harness.
+     */
+    suspend fun pushAssistantStream(frame: JsonObject) {
+        pushStream(
+            SESSION_FOLLOW_ENDPOINT,
+            buildJsonObject {
+                put("type", "assistant-stream")
+                put("frame", frame)
+            },
+        )
     }
 
     /**
@@ -605,7 +726,7 @@ class MockHarness(
         val rpcId = (envelope?.get("rpcId") as? JsonPrimitive)?.contentOrNull
         val type = (envelope?.get("type") as? JsonPrimitive)?.contentOrNull
         if (rpcId == null || type != "client-request") {
-            respondJson(errorEnvelope(rpcId.orEmpty(), "internal", "invalid client-request envelope"))
+            respondJson(errorEnvelope(rpcId.orEmpty(), "gateway/bad-request", "invalid client-request message"))
             return
         }
         val method = (envelope?.get("method") as? JsonPrimitive)?.contentOrNull ?: pathMethod
@@ -624,18 +745,17 @@ class MockHarness(
             okHandlers.containsKey(method) -> try {
                 respondJson(okEnvelope(rpcId, okHandlers[method]!!(payload)))
             } catch (invalid: ArgumentsInvalid) {
-                // The gateway reports a refused args object as an ordinary thrown failure, which
-                // the RPC layer renders with code `internal` — a shape mismatch does not get its
-                // own error code, which is exactly why the client must not send one to find out.
-                respondJson(errorEnvelope(rpcId, "internal", invalid.message))
+                // Since 0.1.3 every gateway refusal carries its own namespaced code; the
+                // messages are unchanged, and still name the field rather than the fault.
+                respondJson(errorEnvelope(rpcId, "gateway/arguments-invalid", invalid.message))
             } catch (invalid: BoundaryInvalid) {
-                respondJson(errorEnvelope(rpcId, "internal", invalid.message))
+                respondJson(errorEnvelope(rpcId, "gateway/input-invalid", invalid.message))
             }
             failHandlers.containsKey(method) -> {
                 val error = failHandlers[method]!!(payload)
                 respondJson(errorEnvelope(rpcId, error.code, error.message, error.details))
             }
-            else -> respondJson(errorEnvelope(rpcId, "internal", "unregistered $method"))
+            else -> respondJson(errorEnvelope(rpcId, "gateway/internal", "unregistered $method"))
         }
     }
 
@@ -925,4 +1045,15 @@ data class RelayMode(
      * relay as a missing one.
      */
     val refuseHost: Boolean = false,
+)
+
+/** The raw-byte file-upload route harness 0.1.3 registers beside the RPC dispatcher. */
+internal const val FILE_UPLOAD_PATH = "/api/session/uploadFileBinary"
+
+/** One file staged by either upload path, kept so a test can assert on what arrived. */
+data class FileUploadRecord(
+    val sessionId: String,
+    val receiptId: String,
+    val name: String,
+    val bytes: ByteArray,
 )

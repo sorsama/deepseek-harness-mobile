@@ -274,8 +274,8 @@
     <string name="err_image_model_unsupported">Este modelo não aceita imagens. Troque para um que aceite.</string>
     <string name="err_image_subagent_unsupported">Sessões de subagente não aceitam imagens.</string>
     <string name="err_image_send_failed">Não foi possível enviar a imagem (%1$s). Anexe-a novamente e tente de novo.</string>
-    <string name="err_command_no_images">/%1$s não aceita imagens anexadas. Remova-as primeiro.</string>
-    <string name="err_command_images_host">/%1$s só pode levar imagens no harness 0.1.0-rc.8 ou mais recente. Remova-as primeiro.</string>
+    <string name="err_command_no_images">/%1$s não aceita anexos. Remova-os primeiro.</string>
+    <string name="err_command_images_host">/%1$s não pode levar anexos neste harness. Remova-os primeiro.</string>
     <string name="err_permission_denied">Esta ação está disponível apenas no próprio computador do Harness.</string>
     <string name="err_timeout">O Harness não respondeu a tempo.</string>
     <string name="err_generic">Erro: %1$s</string>
@@ -435,4 +435,13 @@
     <string name="connect_relay_refused">Recusa este endereço</string>
     <string name="connect_relay_refused_hint">Há um relay em execução aqui, mas ele só responde a endereços que já conhece. Adicione %1$s a publicHostnames no cordis.patch.yml do relay naquele computador e reinicie-o.</string>
     <string name="pair_fail_host_refused">%1$s é um relay, mas recusa requisições endereçadas assim — o código nunca chegou a ser lido. Adicione esse endereço a publicHostnames no cordis.patch.yml do relay e reinicie, ou alcance o relay por um endereço que ele já conheça.</string>
+    <string name="chat_composer_attach_file">Anexar arquivo</string>
+    <string name="chat_composer_remove_file">Remover arquivo</string>
+    <string name="chat_attachment_uploading">Enviando…</string>
+    <string name="chat_attachment_upload_failed">O envio falhou. Toque para tentar de novo.</string>
+    <string name="chat_attachment_still_uploading">Aguarde o envio terminar antes de enviar a mensagem.</string>
+    <string name="err_file_read_failed">Não foi possível ler esse arquivo.</string>
+    <string name="err_file_not_staged">O harness não guarda mais esse arquivo. Anexe-o de novo.</string>
+    <string name="err_file_subagent_unsupported">Sessões de subagente não aceitam arquivos.</string>
+    <string name="err_file_send_failed">O envio do arquivo falhou (%1$s). Anexe-o de novo.</string>
 </resources>

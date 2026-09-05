@@ -17,7 +17,7 @@ data class SessionEventEnvelope(
 
 /** One content block of an assistant/user message (chat renderer shape). */
 data class ChatBlock(
-    val kind: String, // text | reasoning | image | tool-call | tool-result | unknown
+    val kind: String, // text | reasoning | image | file | tool-call | tool-result | unknown
     val text: String? = null,
     val toolCallId: String? = null,
     val toolName: String? = null,
@@ -52,6 +52,11 @@ data class AssistantMessageNode(
     val blocks: List<ChatBlock>,
     val usage: JsonElement? = null,
     val interrupted: Boolean = false,
+    /**
+     * A provisional message assembled from the attempt being written, not a durable event.
+     * Its `seq` is minted past the durable cursor and is not stable across folds.
+     */
+    val streaming: Boolean = false,
 ) : ChatNode {
     val plainText: String
         get() = blocks.filter { it.kind == "text" }.joinToString("") { it.text.orEmpty() }

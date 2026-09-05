@@ -5,10 +5,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 /**
- * Sessions-domain DTOs, ported from `packages/host/apiproxy/src/api/sessions.schema.ts` and
- * `packages/host/apiproxy/src/api/sessions.ts` (v0.1.1-rc.2). Includes the request/response
- * values of every `session.*` method (list/search/create/rename/fork/history/models/selectModel/
- * prompt/attachment/updateQueue/cancel) plus the shared model-catalog and attachment shapes.
+ * Sessions-domain DTOs, ported from `packages/api/session-controller/src/types.ts`,
+ * `packages/attachment/attachment/src/types.ts` and `packages/client/file-upload/src/types.ts`
+ * (v0.1.3-alpha.1). Includes the request/response values of the `session` namespace methods
+ * (list/search/create/rename/fork/selectModel/prompt/attachment/updateQueue/cancel), the
+ * model-catalog shapes, and the image and file attachment shapes.
  */
 
 /** One Session list entry. */
@@ -40,19 +41,6 @@ data class SessionProjectionsBlock(
     @SerialName("asOfSeq") val asOfSeq: Int,
     /** Whole current value per registered projection key. */
     @SerialName("values") val values: Map<String, JsonElement> = emptyMap(),
-)
-
-/**
- * One history page entry.
- *
- * Superseded by [SessionHistoryRecord], which is what `session/page` and `session/follow`
- * actually answer. Retained only for the shapes that still name it; the `view` field it used to
- * carry is gone entirely — harness 0.1.2 sends no host-computed render intent, and tool cards
- * are derived in the app from the raw call and result instead.
- */
-@Serializable
-data class HistoryEntry(
-    @SerialName("event") val event: SessionEvent,
 )
 
 /**
@@ -140,7 +128,14 @@ data class SessionModelsValue(
     @SerialName("failures") val failures: List<ModelCatalogFailure> = emptyList(),
 )
 
-/** Browser-submitted prompt content; the host promotes image bytes to durable references. */
+/**
+ * Browser-submitted prompt content; the host promotes image bytes to durable references.
+ *
+ * A [File] part carries the opaque receipt a preceding upload on the same session returned
+ * (harness 0.1.3; see `DshApiClient.uploadFileBinary`). The bytes never ride the prompt: the
+ * host resolves the receipt back to the stored file and refuses one it did not mint for this
+ * session, so a wire caller can never cite an attachment it did not upload.
+ */
 @Serializable
 sealed class PromptContentPart {
     @Serializable
@@ -157,6 +152,12 @@ sealed class PromptContentPart {
         /** Raw image bytes (base64) as submitted by the browser. */
         @SerialName("data") val data: String,
         @SerialName("name") val name: String? = null,
+    ) : PromptContentPart()
+
+    @Serializable
+    @SerialName("file")
+    data class File(
+        @SerialName("receiptId") val receiptId: String,
     ) : PromptContentPart()
 }
 
@@ -222,14 +223,6 @@ data class SessionRenameRequest(
 data class SessionForkRequest(
     @SerialName("sessionId") val sessionId: String,
     @SerialName("atSeq") val atSeq: Int? = null,
-)
-
-/** Request payload of `session.history` (beforeSeq/maxMessages page backwards from the tail). */
-@Serializable
-data class SessionHistoryRequest(
-    @SerialName("sessionId") val sessionId: String,
-    @SerialName("beforeSeq") val beforeSeq: Int? = null,
-    @SerialName("maxMessages") val maxMessages: Int? = null,
 )
 
 /** Request payload of `session.models`. */
@@ -299,6 +292,42 @@ data class ImageAttachmentRef(
     @SerialName("originalDimensions") val originalDimensions: ImageDimensions? = null,
 )
 
+/**
+ * Durable, serializable reference to one verbatim stored file (harness 0.1.3).
+ *
+ * Files are stored byte-for-byte with no normalization, unlike images; [attachmentId] is the
+ * sha256 digest of exactly those bytes and [name] the sanitized display filename, which is also
+ * the stored object's leaf name.
+ */
+@Serializable
+data class FileAttachmentRef(
+    /** Opaque content-addressed storage identifier; never a filesystem path or bearer URL. */
+    @SerialName("attachmentId") val attachmentId: String,
+    @SerialName("name") val name: String,
+    /** Exact byte length. */
+    @SerialName("bytes") val bytes: Long,
+)
+
+/**
+ * Durable receipt for one staged file upload — the value of both upload routes.
+ *
+ * [receiptId] is a per-upload authority accepted only inside the session it was minted for, and
+ * only until the prompt that cites it is observed; a receipt is spent by one message.
+ */
+@Serializable
+data class FileUploadValue(
+    @SerialName("receiptId") val receiptId: String,
+    @SerialName("file") val file: FileAttachmentRef,
+)
+
+/** The `fileUploads/upload` Remote's request: canonical base64 of the exact file bytes. */
+@Serializable
+data class EncodedFileUploadRequest(
+    @SerialName("data") val data: String,
+    /** Optional display name; the host sanitizes it into the stored leaf name. */
+    @SerialName("name") val name: String? = null,
+)
+
 /** Request payload of `session.attachment`. */
 @Serializable
 data class SessionAttachmentRequest(
@@ -353,14 +382,6 @@ data class SessionRenameValue(
 @Serializable
 data class SessionForkValue(
     @SerialName("sessionId") val sessionId: String,
-)
-
-/** Value of `session.history`. */
-@Serializable
-data class SessionHistoryValue(
-    @SerialName("events") val events: List<HistoryEntry> = emptyList(),
-    @SerialName("hasMore") val hasMore: Boolean,
-    @SerialName("projections") val projections: SessionProjectionsBlock? = null,
 )
 
 /** Value of `session.selectModel`. */

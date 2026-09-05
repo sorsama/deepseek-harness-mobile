@@ -74,7 +74,7 @@ y las [preguntas frecuentes](https://github.com/sorsama/deepseek-harness-mobile/
   borde derecho hacia la izquierda para el panel de detalles de la sesión.
 - **Experiencia de chat completa** — turnos en streaming con el razonamiento desplegable, markdown,
   tarjetas de herramienta de terminal/diff/lectura/búsqueda/web, panel de cola (editar / quitar /
-  redirigir), paginación del historial, imágenes adjuntas.
+  redirigir), paginación del historial, imágenes y archivos adjuntos.
 - **Comandos de barra y habilidades** — el compositor coteja una línea que empieza por `/` con el
   catálogo de comandos de la propia sesión y la ejecuta a través de la pasarela de comandos del
   harness; lo que el catálogo no reclama se envía como prompt, que es la forma de invocar las
@@ -96,9 +96,11 @@ y las [preguntas frecuentes](https://github.com/sorsama/deepseek-harness-mobile/
 
 - Android 8.0 o superior (minSdk 26).
 - Un [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) en ejecución
-  (probado con `0.1.2-alpha.1`). **0.9.0 no habla el protocolo 0.1.1** — esa versión
-  sustituyó el protocolo en lugar de ampliarlo, así que la app y el harness deben
-  actualizarse a la vez. Consulta [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
+  (probado con `0.1.3-alpha.1`). **0.10.0 necesita el harness 0.1.3** — esa versión
+  dejó de registrar los fragmentos de una respuesta y los movió a un flujo en vivo que la
+  app tiene que pedir, así que la app y el harness deben actualizarse a la vez: una app
+  anterior nunca ve una respuesta escribiéndose en 0.1.3, y esta app no puede ejecutar
+  comandos de barra en 0.1.2. Consulta [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 
 ## Inicio rápido
 

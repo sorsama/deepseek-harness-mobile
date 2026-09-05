@@ -59,6 +59,17 @@ sealed class ContentBlock {
         @SerialName("attachment") val attachment: ImageAttachmentRef,
     ) : ContentBlock()
 
+    /**
+     * A durable verbatim file reference, valid in user content (harness 0.1.3). Files never
+     * reach a provider natively — request assembly projects each to handle text — so the
+     * durable log keeps the structured reference for presentation only.
+     */
+    @Serializable
+    @SerialName("file")
+    data class File(
+        @SerialName("attachment") val attachment: FileAttachmentRef,
+    ) : ContentBlock()
+
     /** A tool invocation requested by the model. */
     @Serializable
     @SerialName("tool-call")
@@ -97,6 +108,7 @@ object ContentBlockSerializer : KSerializer<ContentBlock> {
             is ContentBlock.Text -> encodeWithType(ContentBlock.Text.serializer(), value)
             is ContentBlock.Reasoning -> encodeWithType(ContentBlock.Reasoning.serializer(), value)
             is ContentBlock.Image -> encodeWithType(ContentBlock.Image.serializer(), value)
+            is ContentBlock.File -> encodeWithType(ContentBlock.File.serializer(), value)
             is ContentBlock.ToolCall -> encodeWithType(ContentBlock.ToolCall.serializer(), value)
             is ContentBlock.ToolResult -> encodeWithType(ContentBlock.ToolResult.serializer(), value)
             is UnknownContentBlock -> value.raw
@@ -110,6 +122,7 @@ object ContentBlockSerializer : KSerializer<ContentBlock> {
             "text" -> decodeFromJsonElement(ContentBlock.Text.serializer(), json)
             "reasoning" -> decodeFromJsonElement(ContentBlock.Reasoning.serializer(), json)
             "image" -> decodeFromJsonElement(ContentBlock.Image.serializer(), json)
+            "file" -> decodeFromJsonElement(ContentBlock.File.serializer(), json)
             "tool-call" -> decodeFromJsonElement(ContentBlock.ToolCall.serializer(), json)
             "tool-result" -> decodeFromJsonElement(ContentBlock.ToolResult.serializer(), json)
             else -> UnknownContentBlock(type, json)
@@ -489,12 +502,17 @@ data class StepEndData(
     @SerialName("step") val step: Int,
 )
 
-/** `assistant/chunk` payload — raw stream chunk with token-level replay fidelity. */
+/**
+ * `assistant/attempt` payload — one model attempt that committed no surface message (harness
+ * 0.1.3, session format v2). A failed, retried or cancelled attempt reaches settlement here
+ * rather than fabricating model-visible history; [stream] is its exact compact raw stream.
+ */
 @Serializable
-data class AssistantChunkData(
+data class AssistantAttemptData(
     @SerialName("turn") val turn: Int,
     @SerialName("step") val step: Int,
-    @SerialName("chunk") val chunk: StreamChunk,
+    /** Compact `AssistantStreamRecord[]`; see `core/session/AssistantStream.kt`. */
+    @SerialName("stream") val stream: JsonElement = kotlinx.serialization.json.JsonArray(emptyList()),
 )
 
 /** `assistant/message` payload — assembled assistant message plus optional token accounting. */
@@ -503,6 +521,12 @@ data class AssistantMessageData(
     @SerialName("turn") val turn: Int,
     @SerialName("step") val step: Int,
     @SerialName("message") val message: MessageData,
+    /**
+     * Exact timed model stream, compacted without joining delta boundaries (harness 0.1.3).
+     * Format v2 embeds it here instead of logging one `assistant/chunk` per token; the assembled
+     * [message] is what a transcript reads, and the stream is replay data.
+     */
+    @SerialName("stream") val stream: JsonElement? = null,
     /** Present when the adapter reported token accounting. */
     @SerialName("usage") val usage: TokenUsage? = null,
     /**
@@ -565,9 +589,15 @@ data class RequestContextData(
     @SerialName("contextWindow") val contextWindow: Int? = null,
 )
 
-/** `session/end-seed` payload — an empty marker; position and `time` carry the meaning. */
+/**
+ * `session/end-seed` payload. Empty through 0.1.2; since 0.1.3 a fork child's marker at its
+ * exact inherited-prefix cut carries `inherited: true`, and untagged markers keep the ordinary
+ * restore and replay boundaries.
+ */
 @Serializable
-class SessionEndSeedData
+data class SessionEndSeedData(
+    @SerialName("inherited") val inherited: Boolean? = null,
+)
 
 /** `goal/change` payload — complete post-mutation state or clear tombstone. */
 @Serializable
@@ -811,7 +841,11 @@ data class ApprovalPolicyData(
 /**
  * One immutable entry in the session log. The envelope fields (`type`, `seq`, `time`) are
  * strict; `data` is typed per event kind. Unknown event types fall back to
- * [SessionEvent.Unknown] carrying the raw payload.
+ * [UnknownSessionEvent] carrying the raw payload.
+ *
+ * Harness 0.1.3 (session format v2) removed `assistant/chunk` from the durable vocabulary and
+ * added `assistant/attempt`; a model's deltas now ride the live assistant stream only
+ * (`SessionHistoryDtos.kt`) and settle into one event per attempt.
  */
 @Serializable(with = SessionEventSerializer::class)
 sealed class SessionEvent {
@@ -897,12 +931,12 @@ sealed class SessionEvent {
     ) : SessionEvent()
 
     @Serializable
-    @SerialName("assistant/chunk")
-    data class AssistantChunk(
-        @SerialName("type") override val type: String = "assistant/chunk",
+    @SerialName("assistant/attempt")
+    data class AssistantAttempt(
+        @SerialName("type") override val type: String = "assistant/attempt",
         @SerialName("seq") override val seq: Int,
         @SerialName("time") override val time: Long,
-        @SerialName("data") val data: AssistantChunkData,
+        @SerialName("data") val data: AssistantAttemptData,
         @SerialName("sourceEventSeqs") override val sourceEventSeqs: List<Int>? = null,
         @SerialName("surfaceOp") override val surfaceOp: JsonElement? = null,
         @SerialName("ignorable") override val ignorable: Boolean? = null,
@@ -1213,7 +1247,7 @@ object SessionEventSerializer : KSerializer<SessionEvent> {
             is SessionEvent.StepStart -> encodeToJsonElement(SessionEvent.StepStart.serializer(), value)
             is SessionEvent.StepEnd -> encodeToJsonElement(SessionEvent.StepEnd.serializer(), value)
             is SessionEvent.UserMessage -> encodeToJsonElement(SessionEvent.UserMessage.serializer(), value)
-            is SessionEvent.AssistantChunk -> encodeToJsonElement(SessionEvent.AssistantChunk.serializer(), value)
+            is SessionEvent.AssistantAttempt -> encodeToJsonElement(SessionEvent.AssistantAttempt.serializer(), value)
             is SessionEvent.AssistantMessage -> encodeToJsonElement(SessionEvent.AssistantMessage.serializer(), value)
             is SessionEvent.ToolCall -> encodeToJsonElement(SessionEvent.ToolCall.serializer(), value)
             is SessionEvent.ToolResult -> encodeToJsonElement(SessionEvent.ToolResult.serializer(), value)
@@ -1258,7 +1292,7 @@ object SessionEventSerializer : KSerializer<SessionEvent> {
             "step/start" -> decodeFromJsonElement(SessionEvent.StepStart.serializer(), json)
             "step/end" -> decodeFromJsonElement(SessionEvent.StepEnd.serializer(), json)
             "user/message" -> decodeFromJsonElement(SessionEvent.UserMessage.serializer(), json)
-            "assistant/chunk" -> decodeFromJsonElement(SessionEvent.AssistantChunk.serializer(), json)
+            "assistant/attempt" -> decodeFromJsonElement(SessionEvent.AssistantAttempt.serializer(), json)
             "assistant/message" -> decodeFromJsonElement(SessionEvent.AssistantMessage.serializer(), json)
             "tool/call" -> decodeFromJsonElement(SessionEvent.ToolCall.serializer(), json)
             "tool/result" -> decodeFromJsonElement(SessionEvent.ToolResult.serializer(), json)

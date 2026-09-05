@@ -274,8 +274,8 @@
     <string name="err_image_model_unsupported">यह मॉडल छवियाँ स्वीकार नहीं करता। ऐसा मॉडल चुनें जो करता हो।</string>
     <string name="err_image_subagent_unsupported">सबएजेंट सत्र छवियाँ स्वीकार नहीं करते।</string>
     <string name="err_image_send_failed">छवि भेजी नहीं जा सकी (%1$s)। इसे दोबारा जोड़कर फिर आज़माएँ।</string>
-    <string name="err_command_no_images">/%1$s छवि अनुलग्नक स्वीकार नहीं करता। पहले उन्हें हटाएँ।</string>
-    <string name="err_command_images_host">/%1$s केवल harness 0.1.0-rc.8 या उससे नए पर छवियाँ ले जा सकता है। पहले उन्हें हटाएँ।</string>
+    <string name="err_command_no_images">/%1$s अनुलग्नक स्वीकार नहीं करता। पहले उन्हें हटाएँ।</string>
+    <string name="err_command_images_host">/%1$s इस harness पर अनुलग्नक नहीं ले जा सकता। पहले उन्हें हटाएँ।</string>
     <string name="err_permission_denied">यह कार्रवाई केवल Harness कंप्यूटर पर ही उपलब्ध है।</string>
     <string name="err_timeout">Harness ने समय पर उत्तर नहीं दिया।</string>
     <string name="err_generic">त्रुटि: %1$s</string>
@@ -435,4 +435,13 @@
     <string name="connect_relay_refused">यह पता अस्वीकार करता है</string>
     <string name="connect_relay_refused_hint">यहाँ रिले चल तो रहा है, पर वह सिर्फ़ उन पतों का जवाब देता है जिन्हें वह पहले से जानता है। उस कंप्यूटर पर रिले की cordis.patch.yml में publicHostnames में %1$s जोड़ें, फिर उसे दोबारा चालू करें।</string>
     <string name="pair_fail_host_refused">%1$s रिले ही है, पर इस पते से आई माँगें वह अस्वीकार करता है — कोड पढ़ा ही नहीं गया। उस पते को रिले की cordis.patch.yml में publicHostnames में जोड़कर दोबारा चालू करें, या रिले तक ऐसे पते से पहुँचें जिसे वह पहले से जानता है।</string>
+    <string name="chat_composer_attach_file">फ़ाइल संलग्न करें</string>
+    <string name="chat_composer_remove_file">फ़ाइल हटाएँ</string>
+    <string name="chat_attachment_uploading">अपलोड हो रहा है…</string>
+    <string name="chat_attachment_upload_failed">अपलोड विफल रहा। पुनः प्रयास के लिए टैप करें।</string>
+    <string name="chat_attachment_still_uploading">भेजने से पहले अपलोड पूरा होने की प्रतीक्षा करें।</string>
+    <string name="err_file_read_failed">वह फ़ाइल पढ़ी नहीं जा सकी।</string>
+    <string name="err_file_not_staged">harness के पास अब वह फ़ाइल नहीं है। इसे फिर से संलग्न करें।</string>
+    <string name="err_file_subagent_unsupported">सबएजेंट सत्र फ़ाइलें स्वीकार नहीं करते।</string>
+    <string name="err_file_send_failed">फ़ाइल भेजना विफल रहा (%1$s)। इसे फिर से संलग्न करें।</string>
 </resources>

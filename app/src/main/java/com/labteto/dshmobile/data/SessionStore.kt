@@ -5,7 +5,7 @@ import android.util.Log
 import com.labteto.dshmobile.connection.ConnectionManager
 import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.connection.HostsStore
-import com.labteto.dshmobile.core.session.ChunkRows
+import com.labteto.dshmobile.core.session.AssistantLiveState
 import com.labteto.dshmobile.core.session.ConversationSnapshot
 import com.labteto.dshmobile.core.session.EventFold
 import com.labteto.dshmobile.core.session.QueueItem
@@ -23,10 +23,13 @@ import com.labteto.dshmobile.core.wire.dto.AskUserQuestionItem
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionRequestEvent
 import com.labteto.dshmobile.core.wire.dto.CUSTOM_PRESET
 import com.labteto.dshmobile.core.wire.dto.CommandDescriptor
+import com.labteto.dshmobile.core.wire.dto.CommandSubmitAttachment
 import com.labteto.dshmobile.core.wire.dto.ContentBlock
 import com.labteto.dshmobile.core.wire.dto.ContextBreakdownView
 import com.labteto.dshmobile.core.wire.dto.ContextPressureView
+import com.labteto.dshmobile.core.wire.dto.EncodedFileUploadRequest
 import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
+import com.labteto.dshmobile.core.wire.dto.FileUploadValue
 import com.labteto.dshmobile.core.wire.dto.GoalRef
 import com.labteto.dshmobile.core.wire.dto.GoalSnapshot
 import com.labteto.dshmobile.core.wire.dto.HostDescription
@@ -83,8 +86,10 @@ import com.labteto.dshmobile.core.wire.dto.WorkspaceRenameRequest
 import com.labteto.dshmobile.core.wire.dto.WorkspaceValue
 import com.labteto.dshmobile.core.wire.dto.WorkspaceView
 import com.labteto.dshmobile.core.wire.dto.imageRejectionOf
+import com.labteto.dshmobile.core.wire.RpcError
 import com.labteto.dshmobile.core.wire.encodeToJsonElement
 import com.labteto.dshmobile.core.wire.newPromptRequestId
+import java.io.InputStream
 import java.io.OutputStream
 import java.time.Instant
 import java.util.TimeZone
@@ -427,6 +432,13 @@ class SessionStore @Inject constructor(
      * gap — so a page requested before the snapshot arrives has nothing to send and is skipped.
      */
     private var followCursor: Int? = null
+
+    /**
+     * The reply being written in the open session, as the follow stream's assistant frames show
+     * it. Harness 0.1.3 logs no deltas, so this is the only source of a streaming preview; it is
+     * folded after the durable window and retired by the settlement. Guarded by [lock].
+     */
+    private val liveAssistant = AssistantLiveState()
 
     /** The open session's live journal. Cancelled and replaced whenever the open session changes. */
     private var followJob: Job? = null
@@ -815,7 +827,20 @@ class SessionStore @Inject constructor(
         // gone, so the session that owns the event forwards it to whoever is watching for one.
         notificationSink?.invoke(sessionId, envelope)
         synchronized(lock) {
-            if (sessionId == currentId) appendCurrentEventLocked(envelope)
+            if (sessionId == currentId) {
+                // The durable settlement and the transient rows say the same thing; the moment
+                // the settlement lands the preview is redundant, and a fold that saw both would
+                // show the reply twice.
+                val data = envelope.data as? JsonObject
+                liveAssistant.acceptDurable(
+                    type = envelope.type,
+                    turn = data?.get("turn")?.jsonPrimitive?.intOrNull,
+                    step = data?.get("step")?.jsonPrimitive?.intOrNull,
+                    seq = envelope.seq,
+                    surfaceOp = envelope.surfaceOp,
+                )
+                appendCurrentEventLocked(envelope)
+            }
         }
     }
 
@@ -1043,7 +1068,7 @@ class SessionStore @Inject constructor(
     private fun rebuildCurrentLocked() {
         val sid = currentId ?: return
         val events = currentEvents.toList()
-        val snapshot = EventFold(sid).fold(events)
+        val snapshot = EventFold(sid).fold(events, liveAssistant.transientEnvelopes())
         val blank = if (events.isEmpty()) currentBlank else snapshot.blank
         val running = runningBySession[sid] ?: snapshot.running
         val merged = snapshot.copy(
@@ -1153,6 +1178,7 @@ class SessionStore @Inject constructor(
             currentBlank = sessionRows[sessionId]?.blank ?: true
             currentProjections.clear()
             currentQueue = emptyList()
+            liveAssistant.clear()
             if (!same) {
                 _currentConversation.value = null
                 _jobs.value = emptyList()
@@ -1182,6 +1208,11 @@ class SessionStore @Inject constructor(
      * snapshot, so the window is replaced wholesale rather than patched — which is why the
      * snapshot handler clears the buffer instead of merging into it.
      *
+     * The stream is opened with `assistantStream`, because since harness 0.1.3 that is the only
+     * way to see a reply while it is written: the durable log holds one settlement per model
+     * attempt and no deltas. The frames it adds are process-local presentation — never replayed,
+     * never paged — and are folded after the durable window as a provisional message.
+     *
      * Following does not resume a stopped agent: the host publishes a cold session's prepared
      * snapshot immediately and promotes it in the background, so opening a transcript is an
      * observation rather than an execution.
@@ -1202,6 +1233,7 @@ class SessionStore @Inject constructor(
                     SessionFollowRequest(
                         address = SessionAddress.Session(sessionId = sessionId),
                         maxMessages = HISTORY_PAGE_SIZE,
+                        assistantStream = true,
                     ),
                 ),
             )
@@ -1212,6 +1244,7 @@ class SessionStore @Inject constructor(
                     when (val frame = decodeOrNull(SessionFollowFrameSerializer, item)) {
                         is SessionFollowFrame.Snapshot -> applyFollowSnapshot(sessionId, frame)
                         is SessionFollowFrame.Entry -> applyFollowEntry(sessionId, frame.record)
+                        is SessionFollowFrame.AssistantStream -> applyAssistantFrame(sessionId, frame)
                         null -> log("undecodable session/follow frame")
                     }
                 }
@@ -1240,25 +1273,34 @@ class SessionStore @Inject constructor(
             (frame.projections["values"] as? JsonObject)?.forEach { (key, value) ->
                 mergeProjectionLocked(key, asOf, value)
             }
+            // A reconnect mid-answer: the baseline carries the compact prefix this generation
+            // missed, so the partial reply is on screen before the next live chunk arrives. A
+            // host that predates the feature sends no baseline, and the preview simply waits for
+            // the settlement.
+            liveAssistant.seed(frame.assistantStream)
             rebuildCurrentLocked()
         }
     }
 
-    /** One live event. Always scalar — packing applies to history pages only. */
+    /** One live event. */
     private fun applyFollowEntry(sessionId: String, record: SessionHistoryRecord) {
         for (envelope in expandRecords(listOf(record))) {
             handleSessionEvent(sessionId, envelope)
         }
     }
 
-    /**
-     * Flatten history records into the envelopes the fold consumes.
-     *
-     * A packed run expands into one event per member; see
-     * [com.labteto.dshmobile.core.session.ChunkRows] for why expansion rather than folding.
-     */
+    /** One process-local assistant frame: the reply being written, a chunk at a time. */
+    private fun applyAssistantFrame(sessionId: String, frame: SessionFollowFrame.AssistantStream) {
+        val changed = synchronized(lock) {
+            if (currentId != sessionId) return
+            liveAssistant.accept(frame.frame) != AssistantLiveState.Change.NONE
+        }
+        if (changed) rebuildTicks.trySend(Unit)
+    }
+
+    /** History records are plain events since harness 0.1.3; nothing is packed any more. */
     private fun expandRecords(records: List<SessionHistoryRecord>): List<SessionEventEnvelope> =
-        ChunkRows.expandAll(records).map { wireEventToEnvelope(it) }
+        records.map { wireEventToEnvelope(it.event) }
 
     /** Persist the landing session for this harness; a write failure is not worth surfacing. */
     private suspend fun rememberLastSession(sessionId: String) {
@@ -1382,22 +1424,64 @@ class SessionStore @Inject constructor(
         promptContent(mode, listOf(PromptContentPart.Text(text)))
 
     /**
-     * Prompt with attached raster images (bytes submitted base64, as the browser wire does).
+     * Prompt with attachments: raster images (bytes submitted base64, as the browser wire does)
+     * and files already staged through [uploadFile], cited by receipt.
      *
-     * All of them ride *one* call. `session.prompt` takes a list of content parts and the host
+     * All of them ride *one* call. `session/prompt` takes a list of content parts and the host
      * admits that list as a single batch, which is where its per-message image count and
      * aggregate-size limits live — sending one image per call, as this client used to, split one
-     * message into several and meant those two limits could never fire at all.
+     * message into several and meant those two limits could never fire at all. A file's bytes
+     * never ride the prompt: the receipt names an upload the host already holds, and the host
+     * refuses one it did not mint for this session.
      */
-    suspend fun promptWithImages(
+    suspend fun promptWithAttachments(
         text: String,
         mode: String,
         images: List<EncodedImageAttachment>,
+        fileReceipts: List<String> = emptyList(),
     ): PromptOutcome {
         val parts = mutableListOf<PromptContentPart>()
         if (text.isNotBlank()) parts.add(PromptContentPart.Text(text))
         images.mapTo(parts) { PromptContentPart.Image(it.mediaType, it.data, it.name) }
+        fileReceipts.mapTo(parts) { PromptContentPart.File(it) }
         return promptContent(mode, parts)
+    }
+
+    /**
+     * Stage one file for the open session and answer with its receipt.
+     *
+     * The bytes are streamed to the raw-byte route the way the web client does it, so a large
+     * file never sits in memory as base64. A deployment or relay that does not serve that route
+     * answers 404, which is a missing capability rather than a broken link; a file that fits
+     * comfortably in an RPC body is then retried through the `fileUploads/upload` Remote, which
+     * every 0.1.3 host composes beside the route. [open] is called once per attempt and must
+     * answer a fresh stream positioned at the first byte.
+     *
+     * A refusal is the composer's problem, not the connection's, so nothing here raises the
+     * connection banner: the chip that owns the file shows the failure and offers a retry.
+     */
+    suspend fun uploadFile(
+        name: String,
+        size: Long,
+        open: () -> InputStream?,
+        onProgress: (sent: Long) -> Unit = {},
+    ): RpcResult<FileUploadValue> = withContext(Dispatchers.IO) {
+        val sid = currentSessionId.value
+            ?: return@withContext RpcResult.Err(RpcError("internal", "no open session"))
+        val api = apiOrNull()
+            ?: return@withContext RpcResult.Err(RpcError("internal", "not connected"))
+        val stream = open()
+            ?: return@withContext RpcResult.Err(RpcError("internal", "could not read the file"))
+        val streamed = stream.use { api.uploadFileBinary(sid, name, size, it, onProgress) }
+        if (streamed !is RpcResult.Err || streamed.error.code != "capability-unavailable") return@withContext streamed
+        if (size !in 0..MAX_ENCODED_UPLOAD_BYTES) return@withContext streamed
+        log("upload route unavailable; falling back to fileUploads/upload for ${size}B")
+        val bytes = open()?.use { it.readBytes() }
+            ?: return@withContext RpcResult.Err(RpcError("internal", "could not read the file"))
+        api.fileUploadEncoded(
+            sid,
+            EncodedFileUploadRequest(data = Base64.encodeToString(bytes, Base64.NO_WRAP), name = name),
+        ).also { onProgress(bytes.size.toLong()) }
     }
 
     private suspend fun promptContent(mode: String, content: List<PromptContentPart>): PromptOutcome {
@@ -1414,9 +1498,9 @@ class SessionStore @Inject constructor(
         )
         return when (val r = api.sessionPrompt(request)) {
             is RpcResult.Ok -> PromptOutcome.Ok
-            is RpcResult.Err -> if (r.error.code == "attachment-error") {
-                // The host declined the pictures, not the connection. Report it where the pictures
-                // are so the composer can keep them and say which bound they crossed.
+            is RpcResult.Err -> if (r.error.code == ATTACHMENT_INVALID) {
+                // The host declined the attachments, not the connection. Report it where they are
+                // so the composer can keep them and say which bound they crossed.
                 val reason = (r.error.details as? JsonObject)
                     ?.get("reason")?.jsonPrimitive?.contentOrNull
                 PromptOutcome.Rejected(imageRejectionOf(reason.orEmpty()), reason)
@@ -1652,7 +1736,7 @@ class SessionStore @Inject constructor(
             parentSessionId = sid,
             childSessionId = childSessionId,
             mode = "continuable",
-            content = listOf(ContentBlock.Text(text)),
+            content = listOf(PromptContentPart.Text(text)),
             clientTimeZone = zone,
         )
         when (val r = api.subagentPrompt(request)) {
@@ -1810,18 +1894,18 @@ class SessionStore @Inject constructor(
      * codec folds an absent `value` slot into an empty object — so the discriminator is the
      * presence of `commandId`, not the emptiness of the value.
      *
-     * [images] must be empty unless the command's descriptor declares it takes them and the host
-     * carries them at all — see `DshApiClient.acceptsCommandImages`. A host that admits them but
-     * whose handler will not use them (`/plan off`, `/goal pause`) answers with an ordinary error
-     * result, which is the harness's own division of labour and not worth mirroring here.
+     * [attachments] must be empty unless the command's descriptor declares it takes them — see
+     * `CommandDescriptor.acceptsAttachments`. A host that admits them but whose handler will not
+     * use them (`/plan off`, `/goal pause`) answers with an ordinary error result, which is the
+     * harness's own division of labour and not worth mirroring here.
      */
     suspend fun runCommand(
         line: String,
-        images: List<EncodedImageAttachment> = emptyList(),
+        attachments: List<CommandSubmitAttachment> = emptyList(),
     ): CommandOutcome {
         val sid = currentSessionId.value ?: return CommandOutcome.Failed("no open session")
         val api = apiOrNull() ?: return CommandOutcome.Failed("not connected")
-        return when (val r = api.commandsExecute(sid, line, images)) {
+        return when (val r = api.commandsExecute(sid, line, attachments)) {
             is RpcResult.Ok -> {
                 val execution = r.value as? JsonObject
                 val commandId = execution?.get("commandId")
@@ -1838,9 +1922,9 @@ class SessionStore @Inject constructor(
                 }
             }
             is RpcResult.Err -> when (r.error.code) {
-                // The images were refused, by the host or by the client's own guard. A composer
-                // problem, so it must not raise the connection banner.
-                "attachment-error" -> CommandOutcome.Failed(r.error.message)
+                // The attachments were refused, by the host or by the client's own guard. A
+                // composer problem, so it must not raise the connection banner.
+                ATTACHMENT_INVALID -> CommandOutcome.Failed(r.error.message)
                 // No command gateway in this build (404) or the trust fence refused it (403).
                 // Neither is a connection fault, so the menu retires rather than the session.
                 "capability-unavailable", "forbidden" -> {
@@ -2011,14 +2095,14 @@ class SessionStore @Inject constructor(
     }
 
     /**
-     * Whether this connection's harness carries images on a slash command.
+     * Whether this connection's harness carries attachments on a slash command.
      *
-     * Always true from harness 0.1.2: `commands/execute` declares the `images` parameter
-     * unconditionally, and the shape-derived capability check this used to perform depended on
-     * `host.describe`, which no longer exists. Kept as a property so the composer's adjudication
-     * has one place to consult if a future release makes it conditional again.
+     * Always true from harness 0.1.2: `commands/execute` declares the parameter unconditionally,
+     * and the shape-derived capability check this used to perform depended on `host.describe`,
+     * which no longer exists. Kept as a property so the composer's adjudication has one place to
+     * consult if a future release makes it conditional again.
      */
-    val commandImagesSupported: Boolean get() = connectionManager.connectedApi != null
+    val commandAttachmentsSupported: Boolean get() = connectionManager.connectedApi != null
 
     private fun apiOrNull(): DshApiClient? {
         val api = connectionManager.connectedApi
@@ -2039,6 +2123,15 @@ class SessionStore @Inject constructor(
 
     private companion object {
         const val TAG = "SessionStore"
+
+        /**
+         * The host's refusal of a prompt's or command's attachments (harness 0.1.3; it was
+         * `attachment-error` through 0.1.2). Every business code is namespaced now.
+         */
+        const val ATTACHMENT_INVALID = "session/attachment-invalid"
+
+        /** Largest file the base64 Remote fallback will carry; anything bigger needs the route. */
+        const val MAX_ENCODED_UPLOAD_BYTES = 20L * 1024 * 1024
         const val HISTORY_PAGE_SIZE = 60
 
         /** Ceiling on events folded per page, whatever the host sends. */

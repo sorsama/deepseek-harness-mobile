@@ -42,6 +42,14 @@ class QuestionResponseEncodingTest {
             path: String,
             consume: (String?, String?, InputStream) -> T,
         ): T = consume(null, null, ByteArrayInputStream(ByteArray(0)))
+
+        override suspend fun upload(
+            path: String,
+            contentType: String,
+            contentLength: Long,
+            body: InputStream,
+            onProgress: ((Long) -> Unit)?,
+        ): RpcHttpResponse = error("not used")
     }
 
     private fun client(transport: RpcTransport) = DshApiClient(transport = transport)

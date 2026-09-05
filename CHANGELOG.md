@@ -3,6 +3,74 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [0.10.0] - 2026-09-05
+
+The protocol moved again, and this release moves with it.
+
+Harness 0.1.3-alpha.1 changed what a session log is. Through 0.1.2 a reply was
+written to the log one token at a time, as `assistant/chunk` events, and this
+app read those events back to show the answer as it was being written. Session
+format v2 keeps one event per model attempt instead: the assembled message,
+with the exact stream it came from folded inside it. The live deltas go to a
+follower only if it asks for them, over a separate stream that is never logged
+and never replayed.
+
+**A 0.9.x app on a 0.1.3 harness connects, reads history and sends messages,
+and never shows an answer being written.** It also cannot run a single slash
+command, because the argument that carries a command's attachments was renamed.
+The reverse holds too: this app asks a 0.1.2 harness for a stream it does not
+know and sends it an argument it does not declare. Upgrade both, or neither.
+Reaching a harness through a relay still needs **dsh-relay 0.2.1**.
+
+### Added
+
+- **Attach any file.** Harness 0.1.3 takes files as well as pictures, and so
+  does the `+` menu. A picked file starts uploading the moment it is chosen.
+  The bytes stream to the host's new raw-byte route with a progress ring on
+  the chip, or go through the base64 Remote when a relay does not proxy that
+  route, and the message that follows cites the receipt the upload answered
+  with. Files ride prompts, `/goal` and `/plan` alike, and appear in the
+  transcript as a name-and-size chip on both sides of the conversation. A file
+  you attach is copied verbatim onto the harness computer; `docs/SECURITY.md`
+  now says so. Strings were added in all eleven locales.
+- **A reply on screen while it is written.** The follow stream is opened with
+  `assistantStream`. Its `start`, `chunk` and `end` frames fold into one
+  provisional message that the settlement replaces, and a reconnect in the
+  middle of an answer restores the partial text from the snapshot's baseline
+  instead of showing nothing until the step ends.
+
+### Changed
+
+- **Protocol baseline moved to harness 0.1.3-alpha.1.** `assistant/chunk` is
+  gone from the durable vocabulary, and `assistant/attempt`, a model attempt
+  that settled without a message, joined it. The packed `chunks` history record
+  and the code that expanded it are gone with them, since there is nothing left
+  to pack. History records are plain events again.
+- **Every business error code is namespaced.** `attachment-error` is now
+  `session/attachment-invalid`, and the gateway's own refusals, which used to
+  arrive as a bare `internal`, carry `gateway/arguments-invalid`,
+  `gateway/input-invalid` and the rest. The app matches the new names. The
+  carrier codes it mints itself are unchanged.
+- **Commands carry attachments.** `commands/execute` takes
+  `submittedAttachments` where it took `images`: images and file receipts, each
+  tagged with its type. A catalog entry declares `input.attachments` where it
+  declared `input.images`. The composer's refusal copy says "attachments" in
+  every locale.
+- **Subagent follow-ups use prompt parts**, the same vocabulary a session
+  prompt uses, which is what 0.1.2-alpha.3 made them.
+- **The mock harness speaks 0.1.3**: namespaced gateway codes, the renamed
+  command argument, both upload paths, and a helper that pushes assistant
+  frames. The end-to-end test now streams a reply through the real mux, from a
+  baseline caught mid-stream to its settlement, and stages a file through the
+  real transport.
+
+### Fixed
+
+- **Streaming was never shown.** Even on 0.1.2, the fold accumulated a reply's
+  chunks and rendered nothing until the step settled; the transcript sat empty
+  under a running turn. It now emits a provisional message for the open
+  attempt, marked as streaming, after every durable node.
+
 ## [0.9.3] - 2026-08-29
 
 ### Fixed

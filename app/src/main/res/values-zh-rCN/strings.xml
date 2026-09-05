@@ -274,8 +274,8 @@
     <string name="err_image_model_unsupported">当前模型不支持图片，请切换支持图片的模型。</string>
     <string name="err_image_subagent_unsupported">子智能体会话暂不支持图片。</string>
     <string name="err_image_send_failed">图片发送失败（%1$s），请重新添加后再试。</string>
-    <string name="err_command_no_images">/%1$s 不接受图片附件，请先移除图片。</string>
-    <string name="err_command_images_host">/%1$s 只能在 harness 0.1.0-rc.8 及更新版本上携带图片，请先移除图片。</string>
+    <string name="err_command_no_images">/%1$s 不接受附件，请先移除。</string>
+    <string name="err_command_images_host">/%1$s 在此 harness 上无法携带附件，请先移除。</string>
     <string name="err_permission_denied">此操作仅在 Harness 所在电脑上可用。</string>
     <string name="err_timeout">Harness 未及时响应。</string>
     <string name="err_generic">错误：%1$s</string>
@@ -435,4 +435,13 @@
     <string name="connect_relay_refused">拒绝该地址</string>
     <string name="connect_relay_refused_hint">这里确实有中继在运行，但它只响应自己已知的地址。请在那台电脑上把 %1$s 加入中继 cordis.patch.yml 的 publicHostnames，然后重启中继。</string>
     <string name="pair_fail_host_refused">%1$s 是中继，但它拒绝以该地址发来的请求——配对码根本没有被读取。请把该地址加入中继 cordis.patch.yml 的 publicHostnames 并重启，或改用它已知的地址访问中继。</string>
+    <string name="chat_composer_attach_file">附加文件</string>
+    <string name="chat_composer_remove_file">移除文件</string>
+    <string name="chat_attachment_uploading">上传中…</string>
+    <string name="chat_attachment_upload_failed">上传失败，点按重试。</string>
+    <string name="chat_attachment_still_uploading">请等待上传完成后再发送。</string>
+    <string name="err_file_read_failed">无法读取该文件。</string>
+    <string name="err_file_not_staged">harness 已不再保留该文件，请重新附加。</string>
+    <string name="err_file_subagent_unsupported">子代理会话不接受文件。</string>
+    <string name="err_file_send_failed">发送文件失败（%1$s）。请重新附加。</string>
 </resources>

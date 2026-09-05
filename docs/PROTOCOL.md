@@ -1,11 +1,10 @@
 # Protocol notes
 
 What DSH Mobile speaks, in one page. Authoritative shapes live in the harness
-repository — `packages/api/*/src/types.ts` and
-`packages/api/gateway/src/stream-protocol.ts` — and this document records the
-subset the app implements, against harness **0.1.2-alpha.1**.
-
-The old home of these shapes, `packages/host/apiproxy`, was deleted upstream.
+repository — `packages/api/*/src/types.ts`,
+`packages/api/gateway/src/stream-protocol.ts`, `packages/llm/llm/src/assistant-stream.ts`
+and `packages/client/file-upload/src/*` — and this document records the
+subset the app implements, against harness **0.1.3-alpha.1**.
 
 ## Envelopes
 
@@ -34,7 +33,8 @@ chose:
   which is why a session-addressed method takes `agentId`.
 - Several calls take flat arguments rather than a request object:
   `settings/update` takes `{ns, patch, expectedRevision}`, `credentials/set`
-  takes `{ref, value}`, `agentPresets/copy` takes `{from, id, name?}`. And
+  takes `{ref, value}`, `agentPresets/copy` takes `{from, id, name?}`,
+  `commands/execute` takes `{agentId, line, submittedAttachments}`. And
   `session/list`'s sole argument is genuinely named `_request` — the host method
   ignores it, but the wire name is the parameter identifier verbatim.
 
@@ -42,7 +42,7 @@ Key matching is only the first of two checks. An endpoint whose sole argument is
 `request` then decodes that object against a strict codec, which refuses a
 missing required field *after* the args themselves passed — and says so
 differently: `wire field "request" failed boundary validation`, under code
-`internal`, since a shape mismatch gets no code of its own. Both prompt
+`gateway/input-invalid` (a bare `internal` through 0.1.2). Both prompt
 endpoints turn on a field this client did not always send: `session/prompt` and
 `subagents/prompt` require a `requestId`, minted by the sender, one fresh id per
 human message, which the host persists on the message the prompt is accepted as.
@@ -50,13 +50,30 @@ Omit it and every send fails while every other call still works.
 
 The namespaces this app uses: `session`, `workspace`, `directoryPicker`,
 `settings`, `credentials`, `llm`, `skills`, `subagents`, `agentPresets`, `goals`,
-`commands`, `fileReferences`, `pluginInventory`.
+`commands`, `fileReferences`, `pluginInventory`, `fileUploads`.
 
 A path no gateway claims answers **404**; the `Host`/`Origin` fence answers
 **403**; a caller with no browser session gets **401**. None of the three is a
 broken connection, so the client maps them to `capability-unavailable`,
 `forbidden` and `unauthenticated` and either hides the feature or asks the user
 to pair, rather than reporting a transport failure.
+
+### Error codes
+
+Every business code is namespaced since 0.1.3, `<service>/<fault>`. The ones
+this client reads:
+
+| Code | Was (0.1.2) | Meaning |
+|---|---|---|
+| `session/attachment-invalid` | `attachment-error` | a prompt's or command's attachments were refused; `details.reason` names the bound (`IMAGE_TOO_LARGE`, `FILE_NOT_STAGED`, `SUBAGENT_FILE_UNSUPPORTED`, …) |
+| `session/agent-busy` | `agent-busy` | the agent cannot take the request now |
+| `session/not-found` | `session-not-found` | no such session |
+| `gateway/arguments-invalid` | `internal` | the args object did not match the descriptor |
+| `gateway/input-invalid` | `internal` | a `request` object failed its codec |
+| `gateway/bad-request`, `gateway/internal`, `gateway/cancelled` | `internal` | the gateway's own failures |
+
+The four the client mints itself — `capability-unavailable`, `unauthenticated`,
+`forbidden`, `internal` — describe the carrier and are unchanged.
 
 `commands/execute` is the **only** command write path. `session/prompt` does not
 inspect its content — a leading-slash prompt reaches the model as ordinary user
@@ -70,25 +87,62 @@ value into `{}`, the discriminator is the presence of `commandId`.
 Its argument shape is fixed:
 
 ```json
-{"args":{"agentId","line","images":[…]}}
+{"args":{"agentId","line","submittedAttachments":[
+  {"type":"image","mediaType":"image/png","data":"<base64>","name":"a.png"},
+  {"type":"file","receiptId":"<from an upload>"}]}}
 ```
 
-`images` is required, carrying `{mediaType, data, name?}` per member with `data`
-as canonical base64. Through 0.1.1 this was the client's one version-shaped
-branch — rc.7 declared no such parameter, and the gateway refuses a missing key
-as readily as an unexpected one, so the shape had to be chosen from the presence
-of `host.describe.home`. 0.1.2 declares the parameter unconditionally and deleted
-`host.describe`, so both the branch and the signal it read are gone.
-
-A non-empty batch is only accepted by a command whose `commands/list` descriptor
-declares `input.images` — `/goal` and `/plan`, nothing else. The executor
-enforces that, not the composer, but the client refuses first so the draft and
-the pictures survive a refusal. Sub-command grammar stays with the host: `/plan
-off` and `/goal pause` answer with an ordinary error result rather than being
-adjudicated here.
+`submittedAttachments` is required, empty or not — it was `images` through
+0.1.2, and 0.1.3 renamed it when files joined, so the two releases refuse each
+other's key. A non-empty batch is only accepted by a command whose
+`commands/list` descriptor declares `input.attachments` (`input.images` through
+0.1.2) — `/goal` and `/plan`, nothing else. The executor enforces that, not the
+composer, but the client refuses first so the draft and the attachments survive
+a refusal. Sub-command grammar stays with the host: `/plan off` and `/goal
+pause` answer with an ordinary error result rather than being adjudicated here.
 
 The `command` slot on `session/prompt`'s response, and the `unknown-command` /
 `command-error` codes, are dead schema the host never populates.
+
+### Files (no envelope on the way up)
+
+Since 0.1.3 any file can accompany a prompt or a command. The bytes never ride
+either: they are **staged first**, and the message cites a receipt.
+
+```
+POST /api/session/uploadFileBinary?sessionId=<id>&name=<display name>
+Content-Type: application/octet-stream
+<bytes>
+```
+
+The route is a fetch route rather than a Remote, so it answers HTTP 200 with a
+**bare** result — `{"ok":true,"value":{"receiptId","file":{attachmentId,name,bytes}}}`
+or `{"ok":false,"error":{code,message,details}}` — and not a `server-response`
+envelope. Carrier misuse is a plain status: 415 for any other content type, 400
+without `sessionId`, 405 for any method but POST. A chunked body is accepted, so
+a provider that will not say a file's size costs only the progress display.
+
+The same receipt is minted by the `fileUploads/upload` Remote from canonical
+base64 (`{"args":{"agentId","request":{"data","name?"}}}`), which is what the
+client falls back to — for files up to 20 MB — when the route answers 404: a
+deployment that composes no file-upload service, or a relay that does not
+proxy the path.
+
+A receipt is scoped to the session that uploaded it and spent by the one prompt
+or command that cites it; the host retires it when it observes the accepted
+message. Citing a receipt from another session, or one already spent, is refused
+as `session/attachment-invalid` with reason `FILE_NOT_STAGED`. A subagent
+follow-up refuses files outright (`SUBAGENT_FILE_UNSUPPORTED`).
+
+The stored file is verbatim — no normalization, unlike images — and appears in
+the log as a content block:
+
+```json
+{"type":"file","attachment":{"attachmentId":"sha256:…","name":"notes.txt","bytes":42}}
+```
+
+There is no read-back route for a file; the bytes are for the agent's own file
+tools, and the client renders the block as a name-and-size chip.
 
 ### Downloads (no envelope)
 
@@ -102,7 +156,7 @@ Unary response (HTTP 200):
 
 ```json
 {"type":"server-response","rpcId":"<same>","result":{"ok":true,"value":{}}}
-{"type":"server-response","rpcId":"<same>","result":{"ok":false,"error":{"code":"agent-busy","message":"...","details":{}}}}
+{"type":"server-response","rpcId":"<same>","result":{"ok":false,"error":{"code":"session/agent-busy","message":"...","details":{}}}}
 ```
 
 ### Answering a question request
@@ -190,8 +244,9 @@ Host → client:
 ```
 
 The host sends RFC 6455 Ping every `websocketHeartbeatIntervalMs` (30s default)
-and the browser answers Pong at the protocol layer, so idle liveness needs no
-application frame. There is no Pong deadline; half-open detection is left to TCP.
+and the platform answers Pong at the protocol layer, so idle liveness needs no
+application frame. Since 0.1.3 the host terminates a socket that misses two
+pongs in a row; OkHttp answers every ping, so a healthy link never sees that.
 
 The streams this app opens:
 
@@ -199,7 +254,7 @@ The streams this app opens:
 |---|---|---|
 | `$events` | `ready` | host notifications and pending waterfalls |
 | `session/control` | complete `baseline` | queue, jobs and projections for every live session |
-| `session/follow` | complete `snapshot` | one session's journal |
+| `session/follow` | complete `snapshot` (+ `assistantStream` baseline) | one session's journal, and the reply being written |
 | `workspace/follow` | complete `baseline` | the workspace registry |
 
 **`$events`** is the connection's liveness source, opened unconditionally rather
@@ -220,11 +275,16 @@ on recovery must come from a query or a stream baseline instead. A `cancel`
 withdraws a delivered waterfall — another client answered first, or the host's
 caller gave up.
 
-**`session/follow`** opens with one complete snapshot and then yields live
-events:
+**`session/follow`** takes `{address, maxMessages?, assistantStream?}` and opens
+with one complete snapshot, then yields durable events and — when the follower
+opted in — the live assistant frames:
 
 ```json
-{"type":"snapshot","header":{…},"cursor":42,"records":[…],"hasMore":true,"projections":{…}}
+{"type":"snapshot","header":{"version":2,"id":"…","createdAt":…,"isSeeded":false},
+ "cursor":42,"records":[…],"hasMore":true,"projections":{…},
+ "assistantStream":{"revision":7,"activeAttempt":{…}}}
+{"type":"event","event":{"type":"turn/end","seq":43,"time":…,"data":{…}}}
+{"type":"assistant-stream","frame":{"type":"chunk","attemptId":"…","revision":8,"index":0,"time":…,"chunk":{…}}}
 ```
 
 Every reconnect sends another **complete** snapshot; there is no `afterSeq` and
@@ -239,28 +299,86 @@ joined without a gap; `-1` denotes an empty log, and `beforeSeq` selects an olde
 page before that cut rather than replacing the cursor. There is no way to read
 history without following first.
 
-### Packed history records
+### History records
 
-`records` (in a page or a follow snapshot) are not plain events:
+`records` (in a page or a follow snapshot) are plain events:
 
 ```json
-{"type":"event","event":{"type":"turn/end","seq":4,"time":5,"data":{…}}}
-{"type":"chunks","event":{"type":"chunkrow/text-chunks","seq":10,"time":100,"data":{…}}}
+{"type":"event","event":{"type":"turn/end","seq":4,"time":5,"data":{…},"ignorable":true}}
 ```
 
-A `chunks` record is a **lossless** run of consecutive same-block assistant
-deltas — upstream measured one 416,756-event tail as 696 records. Its `seq` and
-`time` anchor the run's *first* member; `data` carries `{turn, step, index, dt[],
-texts[] | args[]}`, where member `k` reconstructs as seq `seq + k` and time
-`time` plus the first `k` gaps (a gap may be negative — the wall clock can step
-backwards). A tool-call run also carries the run-constant `id` and, when every
-member agreed, `name`. One record therefore covers `[seq, seq + members - 1]`,
-which is what a continuity check has to use.
+Through 0.1.2 a record could also be a packed `chunks` run of assistant deltas.
+Session format v2 has nothing to pack: the deltas are not durable events any
+more (below), so the record class is gone and every record reads as an event.
+An `ignorable: true` marks an informational event a reader that does not
+recognise its `type` may skip; this client renders unknown events as passthrough
+rows either way.
 
-Packing applies to **history only**. Live follow frames are always scalar, so the
-same turn arrives one way while streaming and another after a reconnect. The app
-expands runs back into events (`core/session/ChunkRows.kt`) rather than folding
-them directly.
+### Session format v2: attempts and settlements
+
+0.1.3 removed `assistant/chunk` from the durable log. A model attempt settles as
+**one** event:
+
+- `assistant/message` — `{turn, step, message, stream, usage?, interrupted?}`
+  when the attempt produced a surface message. `stream` is the exact compact
+  raw stream (below); the assembled `message` is what a transcript reads.
+- `assistant/attempt` — `{turn, step, stream}`, new and log-only, when it did
+  not: a retried provider failure, a cancellation before any text, a stream
+  error. It carries no message and the client shows nothing for it.
+
+The compact stream is lossless: a run of consecutive same-block deltas becomes
+one record carrying the fragments and the inter-chunk time gaps, and every other
+chunk is kept verbatim.
+
+```json
+[{"type":"text-chunks","time0":1000,"index":0,"dt":[5,-2],"texts":["Hel","lo"," there"]},
+ {"type":"reasoning-chunks","time0":…,"index":0,"dt":[…],"texts":[…]},
+ {"type":"tool-call-chunks","time0":…,"index":1,"dt":[…],"id":"call-1","name":"bash","args":[…]},
+ {"type":"chunk","time":…,"chunk":{"type":"finish","reason":{"kind":"stop"}}}]
+```
+
+Member `k` of a run lands at `time0` plus the first `k` gaps (a gap may be
+negative — the host's wall clock can step backwards). `name` on a tool-call run
+is present only when every member agreed. The client expands this
+(`core/session/AssistantStream.kt`) in exactly one place: the reconnect
+baseline.
+
+### The assistant stream
+
+A follower that sent `assistantStream: true` receives the reply as it is
+written, as process-local frames that are never logged, never replayed and
+never paged:
+
+```json
+{"type":"start","attemptId":"s1:3","revision":7,"startedAfterSeq":41,"turn":2,"step":1}
+{"type":"chunk","attemptId":"s1:3","revision":8,"index":0,"time":…,"chunk":{"type":"text-delta","index":0,"text":"Hel"}}
+{"type":"end","attemptId":"s1:3","revision":9,"index":1,"outcome":{"kind":"committed","eventType":"assistant/message","seq":42}}
+```
+
+`chunk` carries the very shape `assistant/chunk` used to. Frames are dense:
+`revision` counts every frame the host emitted (a `start` at revision 1 opens a
+fresh agent lifecycle), `index` is the chunk's position in its attempt, and the
+`end` carries the count it closes. `end.outcome` is `{kind:"committed",
+eventType, seq}` naming the durable settlement, or `{kind:"abandoned"}` when no
+durable event will follow.
+
+The opening snapshot's `assistantStream` baseline is `{revision, activeAttempt?}`
+where `activeAttempt` is `{attemptId, startedAfterSeq, turn, step, nextIndex,
+stream}` — the compact prefix an attempt caught mid-stream had accumulated at the
+cut, with `nextIndex` the position the next live chunk will carry. The host
+forwards only frames after the cut, so the baseline and the tail join without
+overlap. A host that predates the feature omits the key.
+
+What the client does (`core/session/AssistantLiveState.kt`): keeps the one open
+attempt's chunks, folds them **after** the durable window as a single
+provisional message marked `streaming`, and retires the attempt the moment its
+settlement lands on the event path — an `assistant/message` appended to the
+surface, or an `assistant/attempt`, for the same turn and step, logged after
+`startedAfterSeq`. A hole in `index` or an `end` whose count disagrees drops the
+preview and nothing else: the settlement arrives regardless. This is a
+simplification of the web client's `ClientAssistantStream`, which stages the
+settlement until the `end` frame so the two swap atomically and reopens the
+stream on a fault.
 
 ## Session projections
 
@@ -276,9 +394,10 @@ watermark.
 | `sessionStats` | `{turns, steps, llmMs, toolMs, ttftMs, ttftSteps, decodeMs, decodeTokens}` — `ttftMs` is a **sum** over `ttftSteps`, and throughput must be derived from `decodeTokens / decodeMs` |
 | `tokenUsage` | `{uncachedInputTokens, outputTokens, cacheReadTokens, cacheWriteTokens}` |
 | `contextPressure` / `contextBreakdown` | context-window occupancy, and what fills it |
-| `imageLimits` | `{maxImageBytes, maxImagesPerMessage, maxMessageImageBytes, maxImagePixels, maxImageDimension, mediaTypes}` — the host's own attachment bounds, all of them enforced before upload; `maxImageDimension` is a per-side cap added in harness 0.1.0-rc.8, and 0.1.1-rc.2 raised every shipped bound (20MB per image, 200MB per message, 64M pixels, 8192px per side) |
-| `modelSelection` | `{lastUsed, next}` — this session's durable model choice. New in 0.1.2: the catalog moved to `session/modelCatalog` and describes the *host generation*, so the per-session selection lives here. `next` wins when present |
+| `imageLimits` | `{maxImageBytes, maxImagesPerMessage, maxMessageImageBytes, maxImagePixels, maxImageDimension, mediaTypes}` — the host's own attachment bounds, all of them enforced before upload; `maxImageDimension` is a per-side cap added in harness 0.1.0-rc.8, and 0.1.1-rc.2 raised every shipped bound (20MB per image, 200MB per message, 64M pixels, 8192px per side). Files have no published bound; the host refuses on upload |
+| `modelSelection` | `{lastUsed, next}` — this session's durable model choice. The catalog lives at `session/modelCatalog` and describes the *host generation*, so the per-session selection lives here. `next` wins when present |
 | `goal`, `todos`, `plan`, `title`, `sessionListMetadata` | the docks and list metadata |
+| `turnOutline`, `schedule`, `turnBoundary` | new in 0.1.2–0.1.3; carried but not yet read by this client |
 
 An absent key means the harness composes no such service; clients hide the
 control rather than showing a dead one.
@@ -293,9 +412,9 @@ the client sent, `attachmentId` is the digest of the normalized bytes, and an
 animated GIF flattens to one frame. When scaling occurred, `originalDimensions`
 carries the upload's pixel size. Byte-identical passthrough happens only for a
 clean single-frame image already inside the normalization bounds. The client
-treats `attachmentId` as opaque and renders what `session.attachment` returns,
+treats `attachmentId` as opaque and renders what `session/attachment` returns,
 so nothing here needs a branch — but nothing may assume the ref echoes the
-upload either.
+upload either. Files, by contrast, are stored verbatim.
 
 ## Handshake & liveness
 
@@ -306,15 +425,17 @@ listeners before answering, so no baseline read can race them.
 
 On loss: exponential backoff (500 ms × 2, cap 10 s, jitter), then a fresh
 generation — new socket, new `$events`, new complete baselines from
-`session/control` and `workspace/follow`, and a new complete snapshot for
-whatever session is open. Ending `$events`, cleanly or not, ends the generation.
+`session/control` and `workspace/follow`, and a new complete snapshot (with its
+assistant baseline) for whatever session is open. Ending `$events`, cleanly or
+not, ends the generation.
 
 ## Authentication
 
-Every `/api` request, the mux upgrade and the session-log download require a
-signed browser-session cookie. `GET /?token=<launch token>` exchanges the token
-the harness prints at startup for that cookie; the token is rejected on `/api`
-paths and in an `Authorization` header.
+Every `/api` request, the mux upgrade, the file-upload route and the
+session-log download require a signed browser-session cookie. `GET
+/?token=<launch token>` exchanges the token the harness prints at startup for
+that cookie; the token is rejected on `/api` paths and in an `Authorization`
+header.
 
 **401** = no browser session. **403** = the `Host`/`Origin` fence refused where
 the request came from; the app sends no `Origin`. The two need opposite remedies
@@ -342,10 +463,12 @@ across the network.
 Authorization: Bearer <token>
 ```
 
-On `POST /api/*`, on `GET /api/session.export`, and on the `/api/remote.mux`
-**upgrade**. The upgrade is the one that bites: it has no later request to carry
-a credential, a relay refuses it at the handshake, and the loop can only report
-that as a stream that would not open.
+On `POST /api/*`, on `GET /api/session.export`, on `POST
+/api/session/uploadFileBinary`, and on the `/api/remote.mux` **upgrade**. The
+upgrade is the one that bites: it has no later request to carry a credential, a
+relay refuses it at the handshake, and the loop can only report that as a stream
+that would not open. Whether a relay proxies the upload route at all is the
+relay's business; a 404 there sends the app to the `fileUploads/upload` Remote.
 
 **2. TLS is pinned, not merely verified.**
 

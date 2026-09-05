@@ -72,13 +72,13 @@ class MockHarnessTest {
         // The gateway refuses an args object that does not match its descriptor, for a missing key
         // as readily as an unexpected one. That is the whole reason `commands/execute` cannot be
         // written once for every harness release, so the mock has to say no the same way.
-        harness.remote("commands", "execute", setOf("agentId", "line", "images")) {
+        harness.remote("commands", "execute", setOf("agentId", "line", "submittedAttachments")) {
             Json.parseToJsonElement("""{"commandId":"c1"}""")
         }
 
         val accepted = post(
             "/api/commands/execute",
-            envelope("commands/execute", """{"args":{"agentId":"s1","line":"/compact","images":[]}}"""),
+            envelope("commands/execute", """{"args":{"agentId":"s1","line":"/compact","submittedAttachments":[]}}"""),
         )
         val acceptedResult = Json.parseToJsonElement(accepted.body()).jsonObject["result"]!!.jsonObject
         assertTrue(acceptedResult["ok"]!!.jsonPrimitive.boolean)
@@ -90,14 +90,14 @@ class MockHarnessTest {
         val refusedResult = Json.parseToJsonElement(refused.body()).jsonObject["result"]!!.jsonObject
         assertFalse(refusedResult["ok"]!!.jsonPrimitive.boolean)
         val error = refusedResult["error"]!!.jsonObject
-        assertEquals("internal", error["code"]!!.jsonPrimitive.content)
+        assertEquals("gateway/arguments-invalid", error["code"]!!.jsonPrimitive.content)
         assertTrue(error["message"]!!.jsonPrimitive.content.contains("missing"))
 
         val unexpected = post(
             "/api/commands/execute",
             envelope(
                 "commands/execute",
-                """{"args":{"agentId":"s1","line":"/compact","images":[],"mode":"queue"}}""",
+                """{"args":{"agentId":"s1","line":"/compact","submittedAttachments":[],"mode":"queue"}}""",
             ),
         )
         val unexpectedResult = Json.parseToJsonElement(unexpected.body()).jsonObject["result"]!!.jsonObject
@@ -123,8 +123,61 @@ class MockHarnessTest {
         val result = Json.parseToJsonElement(response.body()).jsonObject["result"]!!.jsonObject
         assertEquals(false, result["ok"]!!.jsonPrimitive.boolean)
         val error = result["error"]!!.jsonObject
-        assertEquals("internal", error["code"]!!.jsonPrimitive.content)
+        assertEquals("gateway/internal", error["code"]!!.jsonPrimitive.content)
         assertEquals("unregistered no.such.method", error["message"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun theBinaryUploadRouteStagesBytesAndAnswersABareResult() {
+        // Harness 0.1.3's raw-byte route: octets in, a `{ok, value}` result out with no envelope
+        // around it, and a receipt the session can cite. Carrier misuse is a plain status.
+        val request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port/api/session/uploadFileBinary?sessionId=s1&name=notes.txt"))
+            .header("Content-Type", "application/octet-stream")
+            .POST(HttpRequest.BodyPublishers.ofByteArray("hello".toByteArray()))
+            .build()
+        val response = http.send(request, HttpResponse.BodyHandlers.ofString())
+        assertEquals(200, response.statusCode())
+        val body = Json.parseToJsonElement(response.body()).jsonObject
+        assertTrue(body["ok"]!!.jsonPrimitive.boolean)
+        val value = body["value"]!!.jsonObject
+        assertTrue(value["receiptId"]!!.jsonPrimitive.content.isNotBlank())
+        assertEquals("notes.txt", value["file"]!!.jsonObject["name"]!!.jsonPrimitive.content)
+        assertEquals(5, value["file"]!!.jsonObject["bytes"]!!.jsonPrimitive.int)
+        val staged = harness.fileUploads.last()
+        assertEquals("s1", staged.sessionId)
+        assertEquals("hello", staged.bytes.decodeToString())
+
+        val wrongType = HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port/api/session/uploadFileBinary?sessionId=s1"))
+            .header("Content-Type", "text/plain")
+            .POST(HttpRequest.BodyPublishers.ofString("hello"))
+            .build()
+        assertEquals(415, http.send(wrongType, HttpResponse.BodyHandlers.ofString()).statusCode())
+
+        val noSession = HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port/api/session/uploadFileBinary"))
+            .header("Content-Type", "application/octet-stream")
+            .POST(HttpRequest.BodyPublishers.ofByteArray("x".toByteArray()))
+            .build()
+        assertEquals(400, http.send(noSession, HttpResponse.BodyHandlers.ofString()).statusCode())
+    }
+
+    @Test
+    fun theEncodedUploadRemoteIsAgentScoped() {
+        val response = post(
+            "/api/fileUploads/upload",
+            envelope("fileUploads/upload", """{"args":{"agentId":"s1","request":{"data":"aGVsbG8=","name":"a.bin"}}}"""),
+        )
+        val result = Json.parseToJsonElement(response.body()).jsonObject["result"]!!.jsonObject
+        assertTrue(result["ok"]!!.jsonPrimitive.boolean)
+        assertEquals("a.bin", result["value"]!!.jsonObject["file"]!!.jsonObject["name"]!!.jsonPrimitive.content)
+
+        // The request object is decoded against a strict codec: no `data`, no upload.
+        val refused = post(
+            "/api/fileUploads/upload",
+            envelope("fileUploads/upload", """{"args":{"agentId":"s1","request":{"name":"a.bin"}}}"""),
+        )
+        val refusedResult = Json.parseToJsonElement(refused.body()).jsonObject["result"]!!.jsonObject
+        assertFalse(refusedResult["ok"]!!.jsonPrimitive.boolean)
+        assertEquals("gateway/input-invalid", refusedResult["error"]!!.jsonObject["code"]!!.jsonPrimitive.content)
     }
 
     @Test
