@@ -32,6 +32,7 @@ class HostsStore @Inject constructor(
         val AUTO_LAST = booleanPreferencesKey("auto_last")
         val AUTO_LAN = booleanPreferencesKey("auto_lan")
         val AUTO_LOOPBACK = booleanPreferencesKey("auto_loopback")
+        val AUTO_START_LOOPBACK = booleanPreferencesKey("auto_start_loopback")
         val AUTO_RELAY = booleanPreferencesKey("auto_relay")
         val CONNECT_MODE = stringPreferencesKey("connect_mode")
         val BACKGROUND = booleanPreferencesKey("background")
@@ -67,6 +68,7 @@ class HostsStore @Inject constructor(
             autoConnectLast = prefs[Keys.AUTO_LAST] ?: true,
             autoConnectLan = prefs[Keys.AUTO_LAN] ?: false,
             autoConnectLoopback = prefs[Keys.AUTO_LOOPBACK] ?: true,
+            autoStartLoopbackHarness = prefs[Keys.AUTO_START_LOOPBACK] ?: false,
             autoConnectRelay = prefs[Keys.AUTO_RELAY] ?: false,
             connectMode = ConnectMode.of(prefs[Keys.CONNECT_MODE]),
             keepConnectedInBackground = prefs[Keys.BACKGROUND] ?: false,
@@ -217,6 +219,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.AUTO_LAST] = next.autoConnectLast
             prefs[Keys.AUTO_LAN] = next.autoConnectLan
             prefs[Keys.AUTO_LOOPBACK] = next.autoConnectLoopback
+            prefs[Keys.AUTO_START_LOOPBACK] = next.autoStartLoopbackHarness
             prefs[Keys.AUTO_RELAY] = next.autoConnectRelay
             prefs[Keys.CONNECT_MODE] = next.connectMode
             prefs[Keys.BACKGROUND] = next.keepConnectedInBackground
@@ -229,6 +232,48 @@ class HostsStore @Inject constructor(
         }
     }
 
+    /**
+     * Decide the connect mode once, on first run, and never again.
+     *
+     * Every [setSetting] writes the mode back, so an install that has been used even once carries a
+     * stored value and [default] is never consulted for it. The write is conditional inside the
+     * edit, so two callers racing on a fresh install cannot each pick differently.
+     *
+     * @return the mode in effect afterwards.
+     */
+    suspend fun setConnectModeIfUnset(default: suspend () -> String): String {
+        val stored = dataStore.data.first()[Keys.CONNECT_MODE]
+        if (stored != null) return ConnectMode.of(stored)
+        val chosen = ConnectMode.of(default())
+        dataStore.edit { prefs ->
+            if (prefs[Keys.CONNECT_MODE] == null) prefs[Keys.CONNECT_MODE] = chosen
+        }
+        return ConnectMode.of(dataStore.data.first()[Keys.CONNECT_MODE])
+    }
+
+    /**
+     * The remembered record for the harness on this device at [port], created when there is none.
+     *
+     * Deliberately not [rememberHost]: that stamps "connected just now", and this record has to
+     * exist *before* the first connection — the sign-in exchange stores its cookie against the
+     * record's id — so a fresh one is inserted with no recency at all. An existing record, with
+     * its history, is returned untouched.
+     */
+    suspend fun ensureLoopbackHost(port: Int): HostConfig {
+        val existing = hosts.first().firstOrNull { it.host == LOOPBACK_HOST && it.port == port }
+        if (existing != null) return existing
+        val config = HostConfig(
+            id = UUID.randomUUID().toString(),
+            name = LOOPBACK_HOST,
+            host = LOOPBACK_HOST,
+            port = port,
+            isLoopback = true,
+            lastConnectedAt = 0L,
+        )
+        upsertHost(config)
+        return config
+    }
+
     private suspend fun persist(list: List<HostConfig>) {
         dataStore.edit { it[Keys.HOSTS] = WireJson.encodeToString(hostsSerializer, list) }
     }
@@ -236,6 +281,9 @@ class HostsStore @Inject constructor(
     private companion object {
         /** Bound on the remembered-session map, matching the known-port cap. */
         const val MAX_REMEMBERED_HOSTS = 8
+
+        /** The address "this phone" mode reaches; the harness trusts it without configuration. */
+        const val LOOPBACK_HOST = "127.0.0.1"
     }
 }
 

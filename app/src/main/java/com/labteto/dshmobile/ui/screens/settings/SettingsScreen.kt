@@ -1,6 +1,8 @@
 package com.labteto.dshmobile.ui.screens.settings
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -43,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -57,6 +60,13 @@ import com.labteto.dshmobile.core.DshCore
 import com.labteto.dshmobile.core.wire.dto.PluginFiberPhase
 import com.labteto.dshmobile.core.wire.dto.PluginInventoryEntry
 import com.labteto.dshmobile.core.wire.dto.PluginInventorySnapshot
+import com.labteto.dshmobile.termux.HarnessControl
+import com.labteto.dshmobile.termux.TermuxPaths
+import com.labteto.dshmobile.ui.components.DsButtonSize
+import com.labteto.dshmobile.ui.screens.connect.LoopbackStatus
+import com.labteto.dshmobile.ui.screens.connect.harnessFailureCommand
+import com.labteto.dshmobile.ui.screens.connect.harnessFailureMessage
+import com.labteto.dshmobile.ui.screens.connect.loopbackStatusText
 import com.labteto.dshmobile.ui.components.DisclosureRow
 import com.labteto.dshmobile.ui.components.DsBottomSheet
 import com.labteto.dshmobile.ui.components.DsButton
@@ -147,6 +157,39 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         stringResource(R.string.connect_auto_loopback),
                         settings.autoConnectLoopback,
                     ) { viewModel.set { it.copy(autoConnectLoopback = !it.autoConnectLoopback) } }
+                }
+
+                // Only on a phone that has Termux: everything on this card goes through it.
+                if (viewModel.termuxInstalled) {
+                    val harnessControl by viewModel.harnessControl.collectAsStateWithLifecycle()
+                    val loopback by viewModel.loopback.collectAsStateWithLifecycle()
+                    val loopbackPort by viewModel.loopbackPort.collectAsStateWithLifecycle()
+                    val context = LocalContext.current
+                    val permissionLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.RequestPermission(),
+                    ) { granted -> if (granted) viewModel.startHarness() }
+                    LaunchedEffect(Unit) { viewModel.refreshLoopback() }
+                    TermuxCard(
+                        settings = settings,
+                        control = harnessControl,
+                        loopback = loopback,
+                        port = loopbackPort,
+                        onStart = {
+                            if (viewModel.hasTermuxPermission()) {
+                                viewModel.startHarness()
+                            } else {
+                                permissionLauncher.launch(TermuxPaths.PERMISSION)
+                            }
+                        },
+                        onStop = viewModel::stopHarness,
+                        onOpenTermux = {
+                            viewModel.openTermuxIntent()?.let { intent -> runCatching { context.startActivity(intent) } }
+                        },
+                        onAcknowledge = viewModel::acknowledgeHarnessControl,
+                        onToggleAutoStart = {
+                            viewModel.set { it.copy(autoStartLoopbackHarness = !it.autoStartLoopbackHarness) }
+                        },
+                    )
                 }
 
                 SettingsCard(stringResource(R.string.settings_notifications)) {
@@ -297,7 +340,7 @@ private fun SettingsCard(title: String, content: @Composable () -> Unit) {
  *
  * Read-only, because that is all the harness offers a client: `pluginInventory/list` has no
  * counterpart that changes anything, and the `settings.*` calls behind the web UI's configurable
- * plugin cards are loopback-pinned and answer 403 over the network. Enabling or disabling one means
+ * plugin cards edit a document this app has no editor for. Enabling or disabling one means
  * editing `cordis.patch.yml` on the harness computer.
  */
 @Composable
@@ -462,6 +505,81 @@ private fun moduleShortName(moduleName: String): String {
     var name = moduleName.substringAfterLast('/')
     for (prefix in prefixes) name = name.removePrefix(prefix)
     return name.ifBlank { moduleName }
+}
+
+/**
+ * Start, stop and auto-start for the harness on this device, from wherever the user is.
+ *
+ * The connect screen's card is where this lives when the app is not connected; this one exists
+ * for the other half of the time — stopping a harness from inside a chat, or turning auto-start
+ * on once the first manual start has worked. Same controller, same wording.
+ */
+@Composable
+private fun TermuxCard(
+    settings: AppSettings,
+    control: HarnessControl,
+    loopback: LoopbackStatus,
+    port: Int,
+    onStart: () -> Unit,
+    onStop: () -> Unit,
+    onOpenTermux: () -> Unit,
+    onAcknowledge: () -> Unit,
+    onToggleAutoStart: () -> Unit,
+) {
+    val colors = DsTheme.colors
+    SettingsCard(stringResource(R.string.settings_termux)) {
+        LabelledValue(stringResource(R.string.settings_termux_status), loopbackStatusText(loopback, control, port))
+        (control as? HarnessControl.Failed)?.let { failed ->
+            Text(harnessFailureMessage(failed.reason), style = DsType.caption11, color = colors.warnLabel)
+            harnessFailureCommand(failed.reason)?.let { command ->
+                Text(command, style = DsType.mdCode, color = colors.warnLabel)
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.compact)) {
+            val busy = control.busy
+            when (loopback) {
+                is LoopbackStatus.Down -> DsButton(
+                    text = stringResource(R.string.connect_loopback_start),
+                    onClick = onStart,
+                    enabled = !busy,
+                    variant = DsButtonVariant.Outline,
+                    size = DsButtonSize.Small,
+                )
+                LoopbackStatus.Unknown -> Unit
+                else -> DsButton(
+                    text = stringResource(R.string.connect_loopback_stop),
+                    onClick = onStop,
+                    enabled = !busy,
+                    variant = DsButtonVariant.Outline,
+                    size = DsButtonSize.Small,
+                )
+            }
+            DsButton(
+                text = stringResource(R.string.connect_loopback_open_termux),
+                onClick = onOpenTermux,
+                variant = DsButtonVariant.Ghost,
+                size = DsButtonSize.Small,
+            )
+            if (control is HarnessControl.Failed) {
+                DsButton(
+                    text = stringResource(R.string.common_ok),
+                    onClick = onAcknowledge,
+                    variant = DsButtonVariant.Ghost,
+                    size = DsButtonSize.Small,
+                )
+            }
+        }
+        ToggleRow(
+            stringResource(R.string.connect_auto_start_loopback),
+            settings.autoStartLoopbackHarness,
+            stringResource(R.string.connect_auto_start_loopback_hint),
+        ) { onToggleAutoStart() }
+        Text(
+            stringResource(R.string.settings_termux_hint),
+            style = DsType.caption11,
+            color = colors.labelCaption,
+        )
+    }
 }
 
 @Composable

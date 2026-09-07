@@ -95,13 +95,31 @@ DSH Mobile [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (
   स्वयं माँगना पड़ता है, इसलिए ऐप और हार्नेस दोनों साथ अपडेट होने चाहिए: पुराना ऐप 0.1.3 पर
   बनता हुआ उत्तर कभी नहीं देखता, और यह ऐप 0.1.2 पर स्लैश कमांड नहीं चला सकता।
   देखें [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)।
+- **यह फ़ोन** मोड के लिए: [Termux](https://github.com/termux/termux-app) 0.118 या नया
+  (F-Droid या GitHub वाला बिल्ड) और Node.js 22.19+। देखें
+  [`harness/TERMUX.md`](harness/TERMUX.md)।
 
 ## जल्दी शुरू करें
 
 1. नवीनतम APK
    [Releases](https://github.com/sorsama/deepseek-harness-mobile/releases/latest) से इंस्टॉल करें।
 2. ऐप खोलें और चुनें कि कैसे कनेक्ट करना है। ये एक ही सेटिंग के रूप नहीं हैं — वही चुनें
-   जो आपने कंप्यूटर पर सेट किया है।
+   जो इस बात से मेल खाता हो कि harness कहाँ चल रहा है।
+
+   **यह फ़ोन** — harness इसी फ़ोन पर Termux में चलता है। न पैच, न रिले, और कुछ भी डिवाइस से
+   बाहर नहीं जाता। Termux में:
+
+   ```sh
+   pkg install nodejs && npm install -g @deepseek-ai/dsh
+   mkdir -p ~/.termux && echo 'allow-external-apps = true' >> ~/.termux/termux.properties && termux-reload-settings
+   ```
+
+   फिर ऐप में: **यह फ़ोन → harness शुरू करें**, और Android जो Termux अनुमति माँगे उसे दें। ऐप
+   `dsh web` शुरू करता है, उसका छापा हुआ स्टार्टअप लिंक पढ़ता है, खुद साइन इन करता है और कनेक्ट
+   हो जाता है। हाथ से शुरू किया गया harness (`dsh web --no-open`) भी मिल जाता है: जब कार्ड
+   **साइन इन** कहे तो उसका स्टार्टअप लिंक एक बार पेस्ट करें। कंप्यूटर के harness को USB से
+   `adb reverse tcp:3080 tcp:3080` द्वारा फ़ॉरवर्ड करने का मोड भी यही है। विवरण, Termux या SSH
+   से अपडेट, और समस्या-निवारण: [`harness/TERMUX.md`](harness/TERMUX.md)।
 
    **रिले** — एन्क्रिप्टेड, प्रमाणित, और आपके Wi-Fi के बाहर से भी काम करता है।
    [`dsh-relay`](https://github.com/sorsama/deepseek-harness-relay) को harness की web प्रोफ़ाइल
@@ -125,8 +143,6 @@ DSH Mobile [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (
    एन्क्रिप्ट भर करता है, किसी की पहचान नहीं जाँचता। देखें
    [`harness/README.md`](harness/README.md)।
 
-   **USB / एमुलेटर** — `dsh web`, फिर `adb reverse tcp:3080 tcp:3080`, और लोकल-नेटवर्क मोड में
-   `127.0.0.1:3080` से कनेक्ट करें। कोई पैच नहीं चाहिए।
 3. कोई सेशन चुनें, चैट करें, और harness का काम पूरा होने पर सूचना पाएँ।
 
 कनेक्शन विफल होने पर ऐप कारण बता देता है; wiki का

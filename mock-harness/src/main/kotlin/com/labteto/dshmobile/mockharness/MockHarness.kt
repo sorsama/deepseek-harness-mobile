@@ -71,12 +71,17 @@ import java.util.concurrent.CopyOnWriteArrayList
  *
  * A trust fence rejects every POST whose Host header is neither loopback nor listed in
  * [trustedHosts] with HTTP 403, replicated before any dispatch.
+ *
+ * With a [session], the harness also authenticates as 0.1.2 does: every `/api` request and the
+ * mux upgrade answer 401 without the session cookie, and the only way to obtain that cookie is
+ * `GET /?token=<launch token>` on the index route, which answers 303 with `Set-Cookie`.
  */
 class MockHarness(
     private val trustedHosts: List<String> = emptyList(),
     private val port: Int = 0,
     private val relay: RelayMode? = null,
     private val relayRedirectTo: String? = null,
+    private val session: SessionMode? = null,
 ) {
     /** Consumed once the pairing code is claimed, so a replayed code is refused as the relay does. */
     @Volatile
@@ -271,7 +276,39 @@ class MockHarness(
                     }
                 }
             }
+            // The browser-session check harness 0.1.2 added, in the same place as the relay's
+            // credential check and for the same reason: the mux upgrade has to fail at the
+            // handshake with a bare status, exactly as a unary call does.
+            if (session != null) {
+                intercept(ApplicationCallPipeline.Plugins) {
+                    val inbound = context
+                    val path = inbound.request.path()
+                    if (path.startsWith("/api") && !inbound.request.carriesSession(session)) {
+                        inbound.respondText("unauthorized", status = HttpStatusCode.Unauthorized)
+                        finish()
+                    }
+                }
+            }
             routing {
+                // The index route is the one place the launch token is honoured. A matching token
+                // answers 303 to the clean `/` with the cookie on *that* response; a session that
+                // already exists is let through; anything else is told to reopen the startup URL.
+                get("/") {
+                    val mode = session
+                    when {
+                        mode == null -> call.respondText("dsh web", ContentType.Text.Html)
+                        call.request.queryParameters["token"] == mode.token -> {
+                            call.response.header("Set-Cookie", "${mode.cookie}; Path=/; HttpOnly; SameSite=Strict")
+                            call.response.header("Location", "/")
+                            call.respondText("", status = HttpStatusCode.SeeOther)
+                        }
+                        call.request.carriesSession(mode) -> call.respondText("dsh web", ContentType.Text.Html)
+                        else -> call.respondText(
+                            "dsh web authentication required; reopen the URL printed by dsh web.",
+                            status = HttpStatusCode.Unauthorized,
+                        )
+                    }
+                }
                 // The harness's own port since relay 0.1.1: nothing else claims `/relay`, so the
                 // plugin registers a prefix route that redirects to its listener rather than
                 // letting the single-page application's catch-all answer.
@@ -918,6 +955,10 @@ class MockHarness(
     private fun ApplicationRequest.hostHeader(): String =
         headers["Host"] ?: host()
 
+    /** Whether the request presents [mode]'s cookie, as a browser or the app would send it. */
+    private fun ApplicationRequest.carriesSession(mode: SessionMode): Boolean =
+        headers["Cookie"]?.split(';')?.any { it.trim() == mode.cookie } == true
+
     private fun isTrustedHost(rawHost: String): Boolean {
         val normalized = normalizeHost(rawHost)
         return normalized in LOOPBACK_HOSTS || normalized in normalizedTrustedHosts
@@ -1056,4 +1097,15 @@ data class FileUploadRecord(
     val receiptId: String,
     val name: String,
     val bytes: ByteArray,
+)
+
+/**
+ * The browser-session posture of harness 0.1.2 and later, for tests that exercise sign-in.
+ *
+ * [token] is what the harness would print on its startup line; [cookie] is the `name=value`
+ * pair the exchange answers with and every later request must carry.
+ */
+data class SessionMode(
+    val token: String = "launch-token-test",
+    val cookie: String = "dsh-auth-test=session-test",
 )

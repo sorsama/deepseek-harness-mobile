@@ -8,10 +8,9 @@ import kotlinx.serialization.Serializable
  *
  * The inventory is read-only by design: `pluginInventory/list` is the namespace's entire surface —
  * there is no enable/disable call anywhere in the harness. Which plugins load is decided by
- * `cordis.patch.yml`, and the settings that configure them go through `settings.*`, which is
- * loopback-pinned and answers 403 to anything reaching the host over the network. So a phone can
- * see the composition and nothing more, which is exactly what the harness's own "Plugin list" tab
- * offers.
+ * `cordis.patch.yml`, and the settings that configure them go through `settings.*`, a document
+ * this app has no editor for. So a phone can see the composition and nothing more, which is
+ * exactly what the harness's own "Plugin list" tab offers.
  */
 
 /** Where a plugin has got to in the Cordis loader's lifecycle. Absent means it never mounted. */

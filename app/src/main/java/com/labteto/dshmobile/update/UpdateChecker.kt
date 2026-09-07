@@ -19,10 +19,45 @@ import javax.inject.Singleton
 private data class GithubRelease(
     @SerialName("tag_name") val tagName: String = "",
     @SerialName("html_url") val htmlUrl: String = "",
+    val assets: List<GithubAsset> = emptyList(),
 )
 
-/** A release newer than the running build. */
-data class AvailableUpdate(val version: String, val url: String)
+@Serializable
+private data class GithubAsset(
+    val name: String = "",
+    @SerialName("browser_download_url") val downloadUrl: String = "",
+)
+
+/** One file attached to a release, by the name GitHub lists it under. */
+data class ReleaseAsset(val name: String, val url: String)
+
+/**
+ * A release newer than the running build.
+ *
+ * [apk] and [checksums] are what "install via Termux" needs and are null when the release
+ * carries no such files — the release page at [url] is always there.
+ */
+data class AvailableUpdate(
+    val version: String,
+    val url: String,
+    val apk: ReleaseAsset? = null,
+    val checksums: ReleaseAsset? = null,
+)
+
+/**
+ * The APK to install and the checksum file to verify it with, out of a release's assets.
+ *
+ * The release workflow uploads `app-release.apk` and `SHA256SUMS.txt`; the APK is matched by
+ * that name first and by extension second, so a renamed asset still installs. Only `https://`
+ * downloads are considered: the URL is spliced into a shell command in Termux.
+ */
+internal fun pickReleaseAssets(assets: List<ReleaseAsset>): Pair<ReleaseAsset?, ReleaseAsset?> {
+    val safe = assets.filter { it.url.startsWith("https://") && it.name.isNotBlank() }
+    val apk = safe.firstOrNull { it.name == "app-release.apk" }
+        ?: safe.firstOrNull { it.name.endsWith(".apk", ignoreCase = true) }
+    val sums = safe.firstOrNull { it.name.equals("SHA256SUMS.txt", ignoreCase = true) }
+    return apk to sums
+}
 
 /**
  * Is [candidate] a later version than [current]?
@@ -56,10 +91,12 @@ internal fun isNewerVersion(candidate: String, current: String): Boolean {
 /**
  * Asks GitHub whether a newer release exists.
  *
- * This is the only request the app makes to anything other than the harness the user pointed it at,
- * which is why it is behind a setting and why it never blocks anything: a failure — offline, rate
- * limited, no releases yet — leaves [available] null and is not reported. A release the user has
- * already declined stays declined until a later one appears.
+ * This is the only request the app itself makes to anything other than the harness the user
+ * pointed it at, which is why it is behind a setting and why it never blocks anything: a failure
+ * — offline, rate limited, no releases yet — leaves [available] null and is not reported. A
+ * release the user has already declined stays declined until a later one appears. (Installing
+ * through Termux downloads the APK too, but that is Termux fetching a file the user just asked
+ * for, not this app phoning anywhere.)
  */
 @Singleton
 class UpdateChecker @Inject constructor(
@@ -87,7 +124,8 @@ class UpdateChecker @Inject constructor(
         val version = release.tagName.trim().removePrefix("v")
         if (version.isEmpty() || !isNewerVersion(version, currentVersion)) return
         if (settings.dismissedUpdate == version) return
-        _available.value = AvailableUpdate(version, release.htmlUrl.ifBlank { RELEASES_URL })
+        val (apk, checksums) = pickReleaseAssets(release.assets.map { ReleaseAsset(it.name, it.downloadUrl) })
+        _available.value = AvailableUpdate(version, release.htmlUrl.ifBlank { RELEASES_URL }, apk, checksums)
     }
 
     /** Stop offering [version]; a later release will still be offered. */

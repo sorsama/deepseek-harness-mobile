@@ -88,13 +88,28 @@ harness，而不是对着一个敞开的端口。参见
   （已针对 `0.1.3-alpha.1` 测试）。**0.10.0 需要 harness 0.1.3** —— 该版本不再把回复的增量写入日志，
   改为通过 App 必须主动订阅的实时流传输，因此 App 与 harness 必须同时升级：旧版 App 在 0.1.3 上看不到
   正在生成的回答，而本版 App 在 0.1.2 上无法执行斜杠命令。参见 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)。
+- **本机**模式需要：[Termux](https://github.com/termux/termux-app) 0.118 或更新版本（F-Droid 或 GitHub 构建）
+  以及 Node.js 22.19+。参见 [`harness/TERMUX.md`](harness/TERMUX.md)。
 
 ## 快速开始
 
 1. 从 [Releases](https://github.com/sorsama/deepseek-harness-mobile/releases/latest)
    安装最新的 APK。
 2. 打开应用，选择连接方式。这几种不是同一个设置的不同变体 ——
-   挑与你在电脑上配置好的那一种。
+   挑与 harness 所在位置相符的那一种。
+
+   **本机** —— harness 就在这台手机的 Termux 里运行。不用补丁，不用中继，数据不离开设备。在 Termux 中：
+
+   ```sh
+   pkg install nodejs && npm install -g @deepseek-ai/dsh
+   mkdir -p ~/.termux && echo 'allow-external-apps = true' >> ~/.termux/termux.properties && termux-reload-settings
+   ```
+
+   然后在应用里：**本机 → 启动 harness**，并允许 Android 弹出的 Termux 权限。应用会启动 `dsh web`，
+   读取它打印的启动链接，自行登录并连接。你手动启动的 harness（`dsh web --no-open`）同样会被发现：
+   当卡片显示**登录**时，把它的启动链接粘贴一次即可。电脑上的 harness 通过 USB 用
+   `adb reverse tcp:3080 tcp:3080` 转发过来，也用这个模式。详细说明、通过 Termux 或 SSH 更新、
+   以及疑难解答：[`harness/TERMUX.md`](harness/TERMUX.md)。
 
    **中继** —— 加密、有身份验证，在 Wi-Fi 之外也能用。把
    [`dsh-relay`](https://github.com/sorsama/deepseek-harness-relay) 装进 harness 的 web 配置：
@@ -116,8 +131,6 @@ harness，而不是对着一个敞开的端口。参见
    代理可以转发到回环地址，所以 harness 不需要打补丁；但它只加密链路，不验证任何人的身份。
    参见 [`harness/README.md`](harness/README.md)。
 
-   **USB / 模拟器** —— 运行 `dsh web`，再执行 `adb reverse tcp:3080 tcp:3080`，
-   然后在局域网模式下连接 `127.0.0.1:3080`。不需要打补丁。
 3. 选一个会话开始聊，harness 干完活会通知你。
 
 如果连接失败，应用会直接说明原因；wiki 的

@@ -1,5 +1,7 @@
 package com.labteto.dshmobile.ui.screens.connect
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -23,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,17 +34,26 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.connection.ConnectMode
 import com.labteto.dshmobile.connection.ConnectStage
 import com.labteto.dshmobile.connection.DiscoveredHost
 import com.labteto.dshmobile.connection.HostConfig
+import com.labteto.dshmobile.termux.HarnessControl
+import com.labteto.dshmobile.termux.HarnessControlFailure
+import com.labteto.dshmobile.termux.StartSignIn
+import com.labteto.dshmobile.termux.TermuxPaths
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonSize
 import com.labteto.dshmobile.ui.components.DsButtonVariant
@@ -60,15 +73,18 @@ import com.labteto.dshmobile.ui.components.relativeTime
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import kotlinx.coroutines.delay
 
 /**
  * Choose how to reach a harness, then reach one.
  *
- * The mode chooser is the first control on the screen because the two paths are not variations of
- * one connection. Local network talks straight to a harness that has no authentication at all, and
- * is only safe on a network you trust. Relay talks to `dsh-relay`, which holds this device to a
- * token it was issued once and pins the key it answers with — and works from outside the Wi-Fi.
- * Nothing here, auto-connect included, ever connects the way that was not picked.
+ * The mode chooser is the first control on the screen because the paths are not variations of one
+ * connection. This phone talks to a harness running on the device itself, in Termux or forwarded
+ * over `adb reverse`, and nothing leaves the phone. Local network talks straight to a harness on
+ * the Wi-Fi with no encryption, and is only safe on a network you trust. Relay talks to
+ * `dsh-relay`, which holds this device to a token it was issued once and pins the key it answers
+ * with — and works from outside the Wi-Fi. Nothing here, auto-connect included, ever connects the
+ * way that was not picked.
  *
  * One rule shapes the layout: at most one paragraph of prose before something you can act on. The
  * first cut of relay mode opened with six lines of explanation across two blocks, then three empty
@@ -87,7 +103,20 @@ fun ConnectScreen(
     var host by rememberSaveable { mutableStateOf("") }
     var port by rememberSaveable { mutableStateOf("3080") }
     val relayMode = state.mode == ConnectMode.RELAY
+    val loopbackMode = state.mode == ConnectMode.LOOPBACK
     val paired = state.visibleHosts
+    val context = LocalContext.current
+
+    // The "this phone" watch lives exactly as long as the card is on screen in that mode. The
+    // ViewModel is scoped to the activity, so it cannot tell when this screen went away, and a
+    // poll nobody is looking at is two requests a tick for nothing.
+    LifecycleResumeEffect(loopbackMode) {
+        if (loopbackMode) {
+            viewModel.refreshTermux()
+            viewModel.startLoopbackWatch()
+        }
+        onPauseOrDispose { viewModel.stopLoopbackWatch() }
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = colors.bgBase) {
         Column(
@@ -117,40 +146,64 @@ fun ConnectScreen(
                 SectionHeader(stringResource(R.string.connect_mode_title))
                 DsSegmented(
                     segments = listOf(
+                        DsSegment(ConnectMode.LOOPBACK, stringResource(R.string.connect_mode_loopback)),
                         DsSegment(ConnectMode.LAN, stringResource(R.string.connect_mode_lan)),
                         DsSegment(ConnectMode.RELAY, stringResource(R.string.connect_mode_relay)),
                     ),
                     selectedKey = state.mode,
                     onSelect = viewModel::setMode,
                     role = Role.Tab,
-                    // Two halves of one decision, so each gets half the track. Hugging their labels
-                    // left a third of a full-width pill empty and made the thing look unfinished.
+                    // Three parts of one decision, so each gets a third of the track. Hugging their
+                    // labels left part of a full-width pill empty and made the thing look unfinished.
                     stretch = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 // One notice, not two. What the mode is and what it costs you are the same thought,
                 // and the tint carries the difference between them: local network is a warning,
-                // relay is a statement of fact.
+                // this phone and relay are statements of fact.
+                val warn = !relayMode && !loopbackMode
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium,
-                    color = if (relayMode) colors.hoverSolid else colors.warnTertiary,
+                    color = if (warn) colors.warnTertiary else colors.hoverSolid,
                 ) {
                     Text(
                         stringResource(
-                            if (relayMode) R.string.connect_mode_relay_hint else R.string.connect_mode_lan_hint,
+                            when {
+                                loopbackMode -> R.string.connect_mode_loopback_hint
+                                relayMode -> R.string.connect_mode_relay_hint
+                                else -> R.string.connect_mode_lan_hint
+                            },
                         ),
                         style = DsType.small13,
-                        color = if (relayMode) colors.labelTertiary else colors.warnLabel,
+                        color = if (warn) colors.warnLabel else colors.labelTertiary,
                         modifier = Modifier.padding(DsSpacing.medium),
                     )
                 }
             }
 
+            // ---- This phone --------------------------------------------------
+            if (loopbackMode) {
+                ThisPhoneCard(
+                    state = state,
+                    onPortChange = viewModel::setLoopbackPort,
+                    onConnect = viewModel::connectLoopback,
+                    onSignIn = viewModel::openLoopbackSignIn,
+                    onStart = viewModel::startHarness,
+                    onStop = viewModel::stopHarness,
+                    onPermissionResult = viewModel::onTermuxPermissionResult,
+                    onOpenTermux = {
+                        viewModel.openTermuxIntent()?.let { intent -> runCatching { context.startActivity(intent) } }
+                    },
+                    onAcknowledge = viewModel::acknowledgeHarnessControl,
+                )
+            }
+
             // ---- Recent ------------------------------------------------------
             // Hidden entirely when empty in relay mode: the pairing card below already says there
             // is nothing here, and saying it twice is what made the screen read as three dead ends.
-            if (paired.isNotEmpty() || !relayMode) {
+            // This phone has exactly one endpoint and the card above is it.
+            if (!loopbackMode && (paired.isNotEmpty() || !relayMode)) {
                 Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                     SectionHeader(
                         stringResource(
@@ -177,7 +230,8 @@ fun ConnectScreen(
             }
 
             // ---- Discovered --------------------------------------------------
-            Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+            // Nothing to sweep for on this phone: the harness is at one address or it is not.
+            if (!loopbackMode) Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                 SectionHeader(
                     title = stringResource(
                         if (relayMode) R.string.connect_relay_discovered else R.string.connect_discovered,
@@ -217,7 +271,7 @@ fun ConnectScreen(
 
             if (relayMode) {
                 PairCallToAction(hasPaired = paired.isNotEmpty()) { onPair(null) }
-            } else {
+            } else if (!loopbackMode) {
                 // ---- Manual --------------------------------------------------
                 Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                     SectionHeader(stringResource(R.string.connect_manual_title))
@@ -283,20 +337,28 @@ fun ConnectScreen(
                     label = stringResource(R.string.connect_auto_last),
                     checked = state.autoConnectLast,
                 ) { viewModel.setAuto("last", !state.autoConnectLast) }
-                if (relayMode) {
-                    ToggleRow(
+                when {
+                    relayMode -> ToggleRow(
                         label = stringResource(R.string.connect_auto_relay),
                         checked = state.autoConnectRelay,
                     ) { viewModel.setAuto("relay", !state.autoConnectRelay) }
-                } else {
-                    ToggleRow(
+                    loopbackMode -> {
+                        ToggleRow(
+                            label = stringResource(R.string.connect_auto_loopback),
+                            checked = state.autoConnectLoopback,
+                        ) { viewModel.setAuto("loopback", !state.autoConnectLoopback) }
+                        if (state.termuxInstalled) {
+                            ToggleRow(
+                                label = stringResource(R.string.connect_auto_start_loopback),
+                                checked = state.autoStartLoopbackHarness,
+                                hint = stringResource(R.string.connect_auto_start_loopback_hint),
+                            ) { viewModel.setAuto("autoStart", !state.autoStartLoopbackHarness) }
+                        }
+                    }
+                    else -> ToggleRow(
                         label = stringResource(R.string.connect_auto_lan),
                         checked = state.autoConnectLan,
                     ) { viewModel.setAuto("lan", !state.autoConnectLan) }
-                    ToggleRow(
-                        label = stringResource(R.string.connect_auto_loopback),
-                        checked = state.autoConnectLoopback,
-                    ) { viewModel.setAuto("loopback", !state.autoConnectLoopback) }
                 }
             }
 
@@ -335,6 +397,281 @@ private fun ConnectHeader() {
         }
     }
 }
+
+/**
+ * The harness on this device: what it is doing, and the one or two things to do about it.
+ *
+ * Four states drive it — down, up but not signed in, ready, or the port is someone else's — and
+ * each offers only the action that changes it. With Termux on the phone the card can also start
+ * and stop the harness, which is where the permission is asked for: on the first tap of Start,
+ * never on launch. A start that finishes reports how the sign-in went, then clears itself.
+ */
+@Composable
+private fun ThisPhoneCard(
+    state: ConnectUiState,
+    onPortChange: (String) -> Unit,
+    onConnect: () -> Unit,
+    onSignIn: () -> Unit,
+    onStart: () -> Unit,
+    onStop: () -> Unit,
+    onPermissionResult: (Boolean) -> Unit,
+    onOpenTermux: () -> Unit,
+    onAcknowledge: () -> Unit,
+) {
+    val colors = DsTheme.colors
+    val status = state.loopback
+    val control = state.harnessControl
+    val busy = control.busy
+    var portText by rememberSaveable { mutableStateOf(state.loopbackPort.toString()) }
+    // The remembered port arrives after the settings load; the field follows it once, and is
+    // otherwise left alone — a half-typed port is not a port the ViewModel knows about.
+    LaunchedEffect(state.loopbackPort) {
+        if (portText.toIntOrNull() != state.loopbackPort) portText = state.loopbackPort.toString()
+    }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+        onPermissionResult,
+    )
+    // A finished start says its piece and steps aside; nothing is waiting on a tap.
+    LaunchedEffect(control) {
+        if (control is HarnessControl.Started) {
+            delay(STARTED_NOTICE_MS)
+            onAcknowledge()
+        }
+    }
+    val dot = when {
+        busy -> StateDotState.Running
+        else -> when (status) {
+            LoopbackStatus.Unknown -> StateDotState.Running
+            is LoopbackStatus.Down -> StateDotState.Idle
+            LoopbackStatus.NeedsSignIn, is LoopbackStatus.Foreign -> StateDotState.Warning
+            is LoopbackStatus.Ready -> StateDotState.Done
+        }
+    }
+
+    DsCard(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            StateDot(dot, size = 8.dp)
+            Spacer(Modifier.width(DsSpacing.compact))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.connect_loopback_title),
+                    style = DsType.std14Strong,
+                    color = colors.labelPrimary,
+                )
+                Text(
+                    "127.0.0.1:${state.loopbackPort}",
+                    style = DsType.caption11,
+                    color = colors.labelTertiary,
+                )
+            }
+            Spacer(Modifier.width(DsSpacing.compact))
+            TextField(
+                value = portText,
+                onValueChange = { typed ->
+                    portText = typed.filter { c -> c.isDigit() }
+                    onPortChange(portText)
+                },
+                modifier = Modifier.width(92.dp),
+                singleLine = true,
+                enabled = !busy,
+                label = { Text(stringResource(R.string.connect_port_label)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                colors = connectFieldColors(),
+            )
+        }
+        Text(
+            loopbackStatusText(status, control, state.loopbackPort),
+            style = DsType.std14,
+            color = when {
+                busy -> colors.labelTertiary
+                control is HarnessControl.Started -> colors.success
+                status is LoopbackStatus.Ready -> colors.success
+                status is LoopbackStatus.NeedsSignIn || status is LoopbackStatus.Foreign -> colors.warnLabel
+                else -> colors.labelTertiary
+            },
+        )
+        loopbackHint(status, state)?.let { hint ->
+            Text(hint, style = DsType.small13, color = colors.labelTertiary)
+        }
+        (control as? HarnessControl.Failed)?.let { failed ->
+            HarnessControlFailureBlock(failed.reason, onAcknowledge)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.compact)) {
+            when (status) {
+                is LoopbackStatus.Ready -> DsButton(
+                    text = stringResource(R.string.connect_button),
+                    onClick = onConnect,
+                    enabled = !state.connecting && !busy,
+                    variant = DsButtonVariant.Info,
+                    size = DsButtonSize.Small,
+                )
+                LoopbackStatus.NeedsSignIn -> DsButton(
+                    text = stringResource(R.string.connect_sign_in),
+                    onClick = onSignIn,
+                    enabled = !busy,
+                    variant = DsButtonVariant.Info,
+                    size = DsButtonSize.Small,
+                )
+                else -> Unit
+            }
+            if (state.termuxInstalled) {
+                when (status) {
+                    is LoopbackStatus.Down -> DsButton(
+                        text = stringResource(R.string.connect_loopback_start),
+                        onClick = {
+                            if (state.termuxPermission) onStart() else permissionLauncher.launch(TermuxPaths.PERMISSION)
+                        },
+                        enabled = !busy,
+                        variant = DsButtonVariant.Info,
+                        size = DsButtonSize.Small,
+                    )
+                    LoopbackStatus.Unknown -> Unit
+                    else -> DsButton(
+                        text = stringResource(R.string.connect_loopback_stop),
+                        onClick = onStop,
+                        enabled = !busy,
+                        variant = DsButtonVariant.Outline,
+                        size = DsButtonSize.Small,
+                    )
+                }
+                DsButton(
+                    text = stringResource(R.string.connect_loopback_open_termux),
+                    onClick = onOpenTermux,
+                    variant = DsButtonVariant.Ghost,
+                    size = DsButtonSize.Small,
+                )
+            }
+        }
+    }
+}
+
+/** The card's third line, when the state has something to say about what to do next. */
+@Composable
+private fun loopbackHint(status: LoopbackStatus, state: ConnectUiState): String? = when {
+    state.harnessControl.busy || state.harnessControl is HarnessControl.Failed -> null
+    status is LoopbackStatus.Down -> if (state.termuxInstalled) {
+        stringResource(R.string.connect_loopback_down_hint, state.loopbackPort)
+    } else {
+        stringResource(R.string.connect_loopback_termux_missing)
+    }
+    status is LoopbackStatus.NeedsSignIn -> stringResource(R.string.connect_loopback_needs_sign_in_hint)
+    else -> null
+}
+
+/**
+ * Why a Termux command did not do what was asked, with the fix where there is one.
+ *
+ * Three of these are fixed by one line in Termux, so that line is shown verbatim with a Copy
+ * button rather than described: it is a command, not prose, and it is not translated.
+ */
+@Composable
+private fun HarnessControlFailureBlock(reason: HarnessControlFailure, onAcknowledge: () -> Unit) {
+    val colors = DsTheme.colors
+    val clipboard = LocalClipboardManager.current
+    val message = harnessFailureMessage(reason)
+    val command = harnessFailureCommand(reason)
+    val detail = when (reason) {
+        is HarnessControlFailure.Exited -> reason.tail
+        is HarnessControlFailure.ReadyTimeout -> reason.tail
+        is HarnessControlFailure.TermuxUnavailable -> reason.detail.orEmpty()
+        else -> ""
+    }.trim().ifBlank { null }
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = colors.warnTertiary,
+    ) {
+        Column(
+            modifier = Modifier.padding(DsSpacing.medium),
+            verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                StateDot(StateDotState.Error, size = 8.dp)
+                Spacer(Modifier.width(DsSpacing.xsmall))
+                Text(message, style = DsType.small13, color = colors.warnLabel, modifier = Modifier.weight(1f))
+            }
+            (command ?: detail)?.let { text ->
+                Text(
+                    text,
+                    style = DsType.mdCode,
+                    color = colors.warnLabel,
+                    maxLines = 8,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.compact)) {
+                if (command != null) {
+                    DsButton(
+                        text = stringResource(R.string.common_copy),
+                        onClick = { clipboard.setText(AnnotatedString(command)) },
+                        variant = DsButtonVariant.Ghost,
+                        size = DsButtonSize.Small,
+                    )
+                }
+                DsButton(
+                    text = stringResource(R.string.common_ok),
+                    onClick = onAcknowledge,
+                    variant = DsButtonVariant.Ghost,
+                    size = DsButtonSize.Small,
+                )
+            }
+        }
+    }
+}
+
+/** One sentence per way a Termux command can fail; shared with the Settings card. */
+@Composable
+internal fun harnessFailureMessage(reason: HarnessControlFailure): String = when (reason) {
+    HarnessControlFailure.NotInstalled -> stringResource(R.string.connect_loopback_termux_missing)
+    HarnessControlFailure.PermissionDenied -> stringResource(R.string.connect_loopback_permission_denied)
+    HarnessControlFailure.ExternalAppsDisabled -> stringResource(R.string.connect_loopback_external_apps)
+    HarnessControlFailure.DshMissing -> stringResource(R.string.connect_loopback_dsh_missing)
+    HarnessControlFailure.NodeMissing -> stringResource(R.string.connect_loopback_node_missing)
+    is HarnessControlFailure.Exited -> stringResource(R.string.connect_loopback_exited)
+    is HarnessControlFailure.ReadyTimeout -> stringResource(R.string.connect_loopback_ready_timeout)
+    is HarnessControlFailure.TermuxUnavailable -> stringResource(R.string.connect_loopback_termux_unavailable)
+    is HarnessControlFailure.InstallFailed -> stringResource(R.string.update_install_failed, reason.detail)
+}
+
+/** The Termux one-liner that fixes [reason], for the three failures one line does fix. */
+internal fun harnessFailureCommand(reason: HarnessControlFailure): String? = when (reason) {
+    HarnessControlFailure.ExternalAppsDisabled -> ENABLE_EXTERNAL_APPS_COMMAND
+    HarnessControlFailure.DshMissing -> INSTALL_DSH_COMMAND
+    HarnessControlFailure.NodeMissing -> INSTALL_NODE_COMMAND
+    else -> null
+}
+
+/** The status line for a harness on this device; shared with the Settings card. */
+@Composable
+internal fun loopbackStatusText(status: LoopbackStatus, control: HarnessControl, port: Int): String = when (control) {
+    is HarnessControl.Starting -> stringResource(R.string.connect_loopback_starting)
+    is HarnessControl.Stopping -> stringResource(R.string.connect_loopback_stopping)
+    is HarnessControl.Started -> when (control.signIn) {
+        StartSignIn.SIGNED_IN -> stringResource(R.string.connect_loopback_started)
+        StartSignIn.NO_TOKEN -> stringResource(R.string.connect_loopback_started_no_token)
+        StartSignIn.REFUSED, StartSignIn.UNREACHABLE -> stringResource(R.string.connect_loopback_sign_in_failed)
+    }
+    else -> when (status) {
+        LoopbackStatus.Unknown -> stringResource(R.string.connect_checking)
+        is LoopbackStatus.Down -> stringResource(R.string.connect_loopback_down)
+        LoopbackStatus.NeedsSignIn -> stringResource(R.string.connect_loopback_needs_sign_in)
+        is LoopbackStatus.Ready -> status.description?.home?.let { stringResource(R.string.connect_harness_home, it) }
+            ?: stringResource(R.string.connect_loopback_ready)
+        is LoopbackStatus.Foreign -> stringResource(R.string.connect_loopback_foreign, port)
+    }
+}
+
+/** How long a finished start stays on the card before it clears itself. */
+private const val STARTED_NOTICE_MS = 5_000L
+
+/** The one line that lets other apps run commands in Termux; `termux-reload-settings` applies it. */
+private const val ENABLE_EXTERNAL_APPS_COMMAND =
+    "mkdir -p ~/.termux && echo 'allow-external-apps = true' >> ~/.termux/termux.properties && termux-reload-settings"
+
+private const val INSTALL_NODE_COMMAND = "pkg install nodejs"
+
+private const val INSTALL_DSH_COMMAND = "pkg install nodejs && npm install -g @deepseek-ai/dsh"
 
 /**
  * The one thing this screen exists to offer, weighted by whether it has been done yet.

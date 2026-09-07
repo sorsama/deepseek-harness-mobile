@@ -187,6 +187,7 @@ ipconfig getifaddr en0        # macOS (Wi-Fi)
 - **File attachments**: a file attached in the app is copied verbatim onto this
   computer, into the harness's attachment store, over the same unencrypted link.
 - **Revert**: delete the patch row and restart to return to loopback-only.
-- **Same device**: to drive a harness running on the phone itself (e.g. via
-  Termux) or via `adb reverse tcp:3080 tcp:3080`, just connect to
-  `127.0.0.1:3080` — no patch needed.
+- **Same device**: a harness running on the phone itself (in Termux) or
+  forwarded to it with `adb reverse tcp:3080 tcp:3080` needs none of this
+  page. Pick **This phone** in the app; with Termux it can also start and stop
+  the harness and sign in on its own. See [`TERMUX.md`](./TERMUX.md).

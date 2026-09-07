@@ -3,6 +3,67 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [0.11.0] - 2026-09-07
+
+The harness runs on the phone itself now, as a first-class setup rather than a
+footnote. With the harness installed in Termux, the app starts it, stops it,
+signs itself in from the startup line it prints, and installs its own updates
+through Termux. Nothing leaves the device. This is the zero-configuration path
+the README now leads with; local network and relay are unchanged.
+
+No protocol change: 0.11.0 speaks to harness 0.1.3-alpha.1 exactly as 0.10.0
+did.
+
+### Added
+
+- **This phone mode.** A third way to connect, first in the chooser: a harness
+  on the device itself, reached over loopback — in Termux, or forwarded with
+  `adb reverse`. One card shows what the harness is doing (not running, running
+  but not signed in, ready, or the port belongs to something else) and offers
+  only the action that changes it. A fresh install on a phone with Termux and
+  no remembered harness starts in this mode. Strings were added in all eleven
+  locales.
+- **Start and stop the harness from the app.** On a phone with Termux the card
+  and a new Settings card run `dsh web` through Termux's command service,
+  behind the permission Termux declares for exactly this, asked for on the first
+  tap of Start and never on launch. The scripts ship inside the app — a wake
+  lock, `dsh web --no-open --port …`, a pid file, a log in
+  `~/.dsh/dsh-mobile-web.log` — so there is nothing to install in Termux beyond
+  `allow-external-apps = true`. An optional toggle starts the harness when the
+  app opens and finds it down. `harness/TERMUX.md` documents all of it, the SSH
+  admin flow included, and `docs/SECURITY.md` says what granting the permission
+  means.
+- **Sign in without pasting anything.** When the app starts the harness it
+  reads the `dsh web: http://127.0.0.1:3080/?token=…` line the harness prints
+  and exchanges the token itself, so a harness started from the app is connected
+  to with no further step. A harness started by hand is found too and asks for
+  its startup line once, as before.
+- **Install via Termux.** The update dialog can hand the download to Termux:
+  `curl` the release APK, check it against the published `SHA256SUMS.txt`, and
+  open the package installer. **Copy install command** puts the same line on the
+  clipboard for a phone administered over SSH. The dialog still links to the
+  release page, and the app still cannot update itself.
+
+### Changed
+
+- **Loopback auto-connect moved out of Local network mode** into This phone
+  mode, where its toggle now lives. Anyone driving a harness over `adb reverse`
+  picks **This phone**; local-network Recent lists no longer show the loopback
+  entry.
+- **The README leads with the same-device setup**, in all six languages, and
+  `harness/README.md` points at `harness/TERMUX.md` for it. `docs/SECURITY.md`
+  gained a section on this mode and now names the one other thing that can leave
+  the network — an update you asked Termux to download.
+
+### Fixed
+
+- **Auto-connect to a harness on this device did nothing on harness 0.1.2 and
+  later.** The loopback probe was anonymous, so a harness that had signed the
+  phone in answered 401 and the app silently gave up, every launch. Loopback and
+  manual probes now go through the remembered record, which is where the session
+  cookie lives — so a direct host you have signed in to no longer reports "sign
+  in" right after you did.
+
 ## [0.10.0] - 2026-09-05
 
 The protocol moved again, and this release moves with it.

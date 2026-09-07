@@ -1,16 +1,51 @@
 # Security
 
 DSH Mobile is a remote control for the **DeepSeek Harness**. Understand the
-trust model before using it — and note that the app now offers two, which is why
+trust model before using it — and note that the app offers three, which is why
 the connect screen makes you pick one rather than choosing for you.
 
 ## The thing to understand first
 
 The harness is a coding agent. It runs shell commands, reads and writes files,
 and can install software on the computer it runs on. **Anything that can reach
-it can do all of that.** There is no lesser tier of access. Both modes below
-grant the same power; they differ only in what has to be true before someone
-gets it.
+it can do all of that.** There is no lesser tier of access. All three modes
+below grant the same power; they differ only in what has to be true before
+someone gets it.
+
+## This phone (Termux) mode
+
+The harness runs on the phone itself, inside Termux, and the app reaches it at
+`127.0.0.1`. Nothing leaves the device: the harness keeps its loopback bind,
+loopback clears its trust fence without configuration, and the sign-in cookie
+the app holds is the same one it would hold for `adb reverse` (see **What DSH
+Mobile stores**). Whoever holds the phone unlocked holds the agent — which is
+already true of the Termux session next to it.
+
+Two things are new in this mode, both opt-in:
+
+- **The app can run commands in Termux.** Start, Stop and Install via Termux go
+  through Termux's `RunCommandService`, behind a permission Termux itself
+  declares (*Run commands in Termux environment*). Granting it lets DSH Mobile
+  run anything the Termux user can; the app asks for it only when Start, Stop or
+  Install is tapped, never on launch, and runs nothing while it is in the
+  background. What it runs is fixed and documented in
+  [`harness/TERMUX.md`](../harness/TERMUX.md): a start script (wake lock,
+  `dsh web --no-open --port …`, wait for the readiness line, print it back), a
+  stop script that signals only the process it recorded, and a download script
+  for updates. The scripts ship inside the app; nothing is installed in Termux,
+  and the only values spliced into them are the port and the release URLs, both
+  validated and quoted. Termux additionally requires `allow-external-apps = true`
+  in its own `termux.properties` before it accepts any of this. Revoke the
+  permission in Android's app settings to withdraw it all.
+- **The launch token is read from the harness's own output.** Since harness
+  0.1.2 a direct client must present the launch token the harness prints once per
+  process. When the app starts the harness, it reads that line from the process
+  it launched and exchanges the token at once — the same exchange it performs
+  when you paste the line, with the same cookie stored in the same place. The
+  token never leaves the phone and is never stored.
+
+A harness you start yourself in Termux is treated exactly as any other direct
+harness: found by probing loopback, signed in by pasting its startup line once.
 
 ## Local network mode
 
@@ -167,8 +202,12 @@ with one exception:
 - **The update check.** On start the app asks `api.github.com` for this
   repository's latest release, over HTTPS, so it can tell you when a newer APK
   exists. It sends no identifying information beyond what any HTTPS request
-  carries, and it is the only request that leaves your network. Turn it off in
-  **Settings → About → Check for updates**.
+  carries, and it is the only request the app itself makes that leaves your
+  network. Turn it off in **Settings → About → Check for updates**.
+- **Install via Termux**, when you tap it. Termux — not the app — downloads the
+  release APK and `SHA256SUMS.txt` from `github.com` with `curl`, verifies the
+  file, and opens Android's package installer, which asks you before anything
+  is installed. Nothing is downloaded unless you tap the button.
 - **Scanning** probes only your own device's IPv4 /24 — with a TCP connect
   followed by one argument-free `session/canOpenWorkspacePath` call in
   local-network mode, or by `/relay/health` in relay mode. Relay mode browses mDNS `_dsh._tcp` first and only sweeps if that

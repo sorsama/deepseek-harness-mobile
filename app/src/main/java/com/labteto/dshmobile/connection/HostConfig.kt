@@ -113,6 +113,14 @@ data class AppSettings(
     val autoConnectLast: Boolean = true,
     val autoConnectLan: Boolean = false,
     val autoConnectLoopback: Boolean = true,
+    /**
+     * In "this phone" mode, start the harness in Termux when the app opens and finds it down.
+     *
+     * Off by default and only ever acted on after the Termux permission has been granted from a
+     * tap: an app that fires commands into Termux on launch, before anyone asked it to, is the
+     * behaviour the permission exists to prevent.
+     */
+    val autoStartLoopbackHarness: Boolean = false,
     /** Relay mode's counterpart to [autoConnectLan]: connect to a paired relay that mDNS finds. */
     val autoConnectRelay: Boolean = false,
     val keepConnectedInBackground: Boolean = false,
@@ -120,12 +128,13 @@ data class AppSettings(
     val notifyGoal: Boolean = true,
     val notifyNeedsAction: Boolean = true,
     /**
-     * Which way the user chose to reach a harness: `lan` or `relay`.
+     * Which way the user chose to reach a harness: `loopback`, `lan` or `relay`.
      *
-     * Not a detected value. The two paths have different trust models — an unauthenticated LAN
-     * harness against a credentialed relay — and auto-connect never crosses between them, so the
-     * app connects only the way that was actually picked. Defaults to `lan` so an install that
-     * predates relay support comes back where it was.
+     * Not a detected value. The paths have different trust models — a harness on this device,
+     * an unauthenticated LAN harness, a credentialed relay — and auto-connect never crosses
+     * between them, so the app connects only the way that was actually picked. Defaults to `lan`
+     * so an install that predates relay support comes back where it was; a fresh install with
+     * Termux on the phone is started on `loopback` once, by [HostsStore.setConnectModeIfUnset].
      */
     val connectMode: String = ConnectMode.LAN,
     val themePreference: String = "system", // light | dark | system
@@ -143,8 +152,15 @@ data class AppSettings(
     val dismissedUpdate: String? = null,
 )
 
-/** The two ways the app can reach a harness. Persisted as [AppSettings.connectMode]. */
+/** The three ways the app can reach a harness. Persisted as [AppSettings.connectMode]. */
 object ConnectMode {
+    /**
+     * A harness on this very device — in Termux, or forwarded here with `adb reverse` — reached
+     * over loopback. The harness trusts loopback without configuration, and nothing leaves the
+     * phone; it still signs the device in once, like every direct connection since 0.1.2.
+     */
+    const val LOOPBACK: String = "loopback"
+
     /** Straight at a harness on the local network, over plain HTTP, with no credential. */
     const val LAN: String = "lan"
 
@@ -152,5 +168,24 @@ object ConnectMode {
     const val RELAY: String = "relay"
 
     /** Read a stored value back, falling back to [LAN] for anything unrecognised. */
-    fun of(value: String?): String = if (value == RELAY) RELAY else LAN
+    fun of(value: String?): String = when (value) {
+        RELAY -> RELAY
+        LOOPBACK -> LOOPBACK
+        else -> LAN
+    }
+}
+
+/**
+ * Whether this endpoint is one that [mode] reaches.
+ *
+ * The one predicate behind every per-mode list and every per-mode auto-connect. A relay belongs to
+ * relay mode whatever address it has; a loopback record belongs to "this phone"; everything else
+ * is a harness on the local network. Nothing crosses: a loopback host listed under local network
+ * would be offered a subnet check it can never pass, and a LAN host under "this phone" would make
+ * that mode's one promise — nothing leaves the device — untrue.
+ */
+fun HostConfig.belongsTo(mode: String): Boolean = when (mode) {
+    ConnectMode.RELAY -> isRelay
+    ConnectMode.LOOPBACK -> isLoopback && !isRelay
+    else -> !isRelay && !isLoopback
 }

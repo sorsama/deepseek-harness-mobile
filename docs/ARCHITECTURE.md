@@ -43,6 +43,13 @@ app/            Android UI
                   the live assistant attempt, file uploads
   notify/       NotificationObserver — classifier → channels, dedup,
                   deep links
+  termux/       TermuxBridge (one command into Termux's RunCommandService,
+                  result back through a PendingIntent), TermuxScripts (the
+                  start/stop/install scripts, shipped in the app),
+                  TermuxHarnessController (app-scoped start/stop/install
+                  state; signs in from the readiness line a start prints)
+  update/       UpdateChecker — GitHub latest-release lookup, release assets
+                  for install via Termux
   media/        AttachmentImages — LruCache + BitmapFactory decoding of
                   session attachments (no image library: the bytes arrive
                   through session/attachment, not a URL)
@@ -106,6 +113,12 @@ tools/capture/  Node recorder of real harness traffic → conformance fixtures
   different facts and are reported separately.
 - There is no loopback-only method tier: harness 0.1.2 deleted it, and one
   authenticated caller reaches the whole API (see `docs/COMPATIBILITY.md`).
+- Every remembered host belongs to exactly one connect mode
+  (`HostConfig.belongsTo`), and auto-connect never crosses modes. A loopback
+  host is probed with its stored cookie; an anonymous probe of a 0.1.2+ harness
+  can only ever answer 401.
+- Nothing runs in Termux without a tap having asked for it, and the app never
+  issues a Termux command from the background.
 - Tool cards are derived in the app from raw call/result data; the host
   sends no render intent.
 - Transient assistant rows never touch the durable cursor, never count as a

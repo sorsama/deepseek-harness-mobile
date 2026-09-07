@@ -69,8 +69,11 @@ et une [FAQ](https://github.com/sorsama/deepseek-harness-mobile/wiki/FAQ).
 
 - **Connexion sans effort** — découverte automatique d'un harness sur votre Wi-Fi (balayage actif
   du sous-réseau + handshake de disponibilité), mémorisation des hôtes et test de leur
-  disponibilité à l'ouverture, saisie manuelle de `host:port`, loopback pour une configuration sur
-  le même appareil, et bascules de connexion automatique (dernier utilisé / LAN / même appareil).
+  disponibilité à l'ouverture, saisie manuelle de `host:port`, et bascules de connexion
+  automatique (dernier utilisé / LAN / ce téléphone).
+- **Tourne sur le téléphone lui-même** — avec le harness dans Termux, le mode **Ce téléphone**
+  le démarre et l'arrête, se connecte à partir de la ligne de démarrage qu'il affiche, et
+  installe les mises à jour de l'app via Termux. Rien ne quitte l'appareil.
 - **Navigation façon Discord** — balayez vers la droite depuis le bord gauche pour ouvrir la liste
   des discussions groupée par espace de travail, vers la gauche pour la fermer, et depuis le bord
   droit vers la gauche pour le panneau de détails de la session.
@@ -104,13 +107,32 @@ et une [FAQ](https://github.com/sorsama/deepseek-harness-mobile/wiki/FAQ).
   ensemble : une app plus ancienne ne voit jamais une réponse s’écrire sur 0.1.3, et
   cette app ne peut pas exécuter de commandes slash sur 0.1.2.
   Voir [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
+- Pour le mode **Ce téléphone** : [Termux](https://github.com/termux/termux-app) 0.118 ou plus
+  récent (version F-Droid ou GitHub) avec Node.js 22.19+. Voir
+  [`harness/TERMUX.md`](harness/TERMUX.md).
 
 ## Démarrage rapide
 
 1. Installez le dernier APK depuis les
    [Releases](https://github.com/sorsama/deepseek-harness-mobile/releases/latest).
 2. Ouvrez l'application et choisissez le mode de connexion. Ce ne sont pas des variantes d'un même
-   réglage — prenez celui qui correspond à ce que vous avez mis en place sur l'ordinateur.
+   réglage — prenez celui qui correspond à l'endroit où tourne le harness.
+
+   **Ce téléphone** — le harness tourne dans Termux, sur le téléphone lui-même. Pas de correctif,
+   pas de relais, rien ne quitte l'appareil. Dans Termux :
+
+   ```sh
+   pkg install nodejs && npm install -g @deepseek-ai/dsh
+   mkdir -p ~/.termux && echo 'allow-external-apps = true' >> ~/.termux/termux.properties && termux-reload-settings
+   ```
+
+   Puis dans l'application : **Ce téléphone → Démarrer le harness**, et accordez la permission
+   Termux demandée par Android. L'app lance `dsh web`, lit le lien de démarrage qu'il affiche, se
+   connecte toute seule et établit la liaison. Un harness lancé à la main (`dsh web --no-open`)
+   est détecté aussi : collez son lien de démarrage une fois quand la carte affiche
+   **Se connecter**. C'est aussi le mode pour un harness d'ordinateur redirigé par USB avec
+   `adb reverse tcp:3080 tcp:3080`. Détails, mise à jour via Termux ou SSH, et dépannage :
+   [`harness/TERMUX.md`](harness/TERMUX.md).
 
    **Relais** — chiffré, authentifié, et utilisable même hors de votre Wi-Fi. Installez
    [`dsh-relay`](https://github.com/sorsama/deepseek-harness-relay) dans le profil web du harness :
@@ -134,8 +156,6 @@ et une [FAQ](https://github.com/sorsama/deepseek-harness-mobile/wiki/FAQ).
    mais il chiffre la liaison sans authentifier qui que ce soit. Voir
    [`harness/README.md`](harness/README.md).
 
-   **USB / émulateur** — `dsh web`, puis `adb reverse tcp:3080 tcp:3080`, et connectez-vous à
-   `127.0.0.1:3080` en mode réseau local. Aucun correctif nécessaire.
 3. Choisissez une session, discutez, et soyez averti quand le harness a terminé.
 
 Si une tentative de connexion échoue, l'application en nomme la cause ; la page

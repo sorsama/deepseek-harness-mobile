@@ -8,7 +8,8 @@ checked against.
 
 | DSH Mobile | Harness version | Status |
 |---|---|---|
-| 0.10.0 | 0.1.3-alpha.1 | Supported baseline |
+| 0.11.0 | 0.1.3-alpha.1 | Supported baseline |
+| 0.10.0 | 0.1.3-alpha.1 | Same protocol; no "This phone" mode |
 | 0.9.3 | 0.1.2-alpha.1 | Previous baseline — no streaming on 0.1.3, commands refused |
 | 0.9.2 | 0.1.2-alpha.1 | Cannot send messages |
 | 0.9.1 | 0.1.2-alpha.1 | Cannot send messages |
@@ -31,6 +32,21 @@ Upgrade both, or neither.
 
 **0.9.0 does not speak the 0.1.1 protocol** either; that break was at the
 handshake rather than partway through a session (see 0.9.0 in the changelog).
+
+## This phone (Termux)
+
+Running the harness on the phone itself needs nothing of the protocol beyond
+what the table above says. What it needs of the phone:
+
+| Component | Version | Why |
+|---|---|---|
+| Termux | 0.118 or newer, F-Droid or GitHub build | `RunCommandService` with result delivery (0.109+) and the current package signing; the Play Store build cannot run current Node |
+| Node.js | 22.19 or newer | The harness's own `engines` requirement |
+| Harness | 0.1.2 or newer for automatic sign-in | Older harnesses print no launch token; the app starts them all the same and asks for the startup line once |
+
+Without Termux the mode still works for a harness forwarded over
+`adb reverse`; the Start, Stop and Install via Termux affordances simply do not
+appear.
 
 ## Relay
 
