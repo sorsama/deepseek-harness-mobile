@@ -3,6 +3,35 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [0.10.1] - 2026-09-10
+
+### Fixed
+
+- **A picture could stay in the composer while the message went out without
+  it.** After switching sessions or starting a new one, a staged picture was
+  left out of the message. The text arrived on its own, the picture stayed in
+  the strip, no toast appeared and the harness stored nothing. Right after
+  launching it happened from the first send, because the chat screen appears
+  before the app has opened a session. Files and the attachments of `/goal`
+  and `/plan` were dropped the same way.
+
+  The send button was still wired to the attachment list of whichever session
+  was open when the chat screen first appeared. The composer holds its send
+  callback through `rememberUpdatedState`, which ignores a new value equal to
+  the one it already holds. The callback was `::send`, a reference to a local
+  function, and such a reference is equal to every other reference to the
+  same function whatever it captured, so each later session's callback was
+  thrown away. The same stale callback took the queue-or-steer choice from
+  that first session, sent any picture still staged there with a message from
+  a different session, and put a refused draft and its pictures back where
+  nobody could see them. The composer now gets a lambda, which is rebuilt when
+  what it captures changes and is compared by identity. The bug dates from
+  0.5.0.
+
+  Reported by @rutracker-dot, whose relay logs showed the pictures never left
+  the phone and whose screen recording showed one staying in the strip through
+  a send.
+
 ## [0.10.0] - 2026-09-05
 
 The protocol moved again, and this release moves with it.

@@ -490,7 +490,14 @@ fun ChatScreen(
                 running = conversation?.running == true,
                 enabled = currentSessionId != null,
                 onOpenSheet = { sheet = ChatSheet.Commands },
-                onSend = ::send,
+                // A lambda, not `::send`. The composer holds this through rememberUpdatedState,
+                // which keeps what it has when the new value is equal to it, and a reference to a
+                // local function equals every other reference to that function whatever it
+                // captured. Each session's `::send` compared equal to the first and was dropped, so
+                // the button went on sending with the attachment list of whichever session was
+                // open when this screen first composed. A lambda is rebuilt when what it captures
+                // changes and compares by identity, so the composer always holds the current one.
+                onSend = { text -> send(text) },
                 onStop = { scope.launch { store.cancelTurn() } },
             )
 

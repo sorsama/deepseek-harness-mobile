@@ -8,7 +8,8 @@ checked against.
 
 | DSH Mobile | Harness version | Status |
 |---|---|---|
-| 0.10.0 | 0.1.3-alpha.1 | Supported baseline |
+| 0.10.1 | 0.1.3-alpha.1 | Supported baseline |
+| 0.10.0 | 0.1.3-alpha.1 | |
 | 0.9.3 | 0.1.2-alpha.1 | Previous baseline — no streaming on 0.1.3, commands refused |
 | 0.9.2 | 0.1.2-alpha.1 | Cannot send messages |
 | 0.9.1 | 0.1.2-alpha.1 | Cannot send messages |
@@ -40,7 +41,7 @@ mounted beside the harness rather than part of it.
 
 | DSH Mobile | [dsh-relay](https://github.com/sorsama/deepseek-harness-relay) | Notes |
 |---|---|---|
-| 0.10.0 | 0.2.1 | Pairing payload `v: 1`; mDNS TXT `v: 1`. File uploads need the relay to proxy `/api/session/uploadFileBinary`, or the app falls back to the `fileUploads/upload` Remote |
+| 0.10.0 – 0.10.1 | 0.2.1 | Pairing payload `v: 1`; mDNS TXT `v: 1`. File uploads need the relay to proxy `/api/session/uploadFileBinary`, or the app falls back to the `fileUploads/upload` Remote |
 | 0.9.2 – 0.9.3 | 0.2.1 | |
 | 0.9.1 | 0.2.1 | |
 | 0.9.0 | 0.2.0 | |
