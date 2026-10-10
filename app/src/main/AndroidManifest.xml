@@ -17,6 +17,22 @@
         android:required="false" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!--
+        Defined by Termux, not by Android: it lets this app run a command inside Termux, which is
+        how "this phone" mode starts and stops a harness on the device. Termux declares it
+        `dangerous`, so the system asks the user, and the app only asks at the moment Start,
+        Stop or Install is tapped — never on launch. Meaningless on a phone without Termux.
+    -->
+    <uses-permission android:name="com.termux.permission.RUN_COMMAND" />
+
+    <!--
+        Package visibility (API 30+): without this the app cannot see whether Termux is installed,
+        cannot resolve its command service, and "this phone" mode would look broken only on real
+        devices. Termux is the only package named; nothing else is queried.
+    -->
+    <queries>
+        <package android:name="com.termux" />
+    </queries>
 
     <application
         android:name=".DshApplication"
@@ -66,6 +82,17 @@
             android:name=".connection.ConnectionService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <!--
+            Where Termux reports a command's exit code and output. Not exported: the result travels
+            in a PendingIntent this app minted, which executes with this app's own identity, so the
+            receiver never has to be reachable from outside. Declared here rather than registered
+            at runtime so a result arriving after the process was killed still lands — and a
+            harness the app started can still be signed in to.
+        -->
+        <receiver
+            android:name=".termux.TermuxResultReceiver"
+            android:exported="false" />
 
         <!--
             Opts into AppCompat's own storage for the per-app language. Below API 33 the framework

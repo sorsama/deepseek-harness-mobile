@@ -10,8 +10,9 @@ Thanks for your interest in DSH Mobile!
 ## Development against a real harness
 
 1. Run the DeepSeek Harness: `dsh web` on your computer (default port 3080).
-2. Device/emulator via USB: `adb reverse tcp:3080 tcp:3080`, then connect to
-   `127.0.0.1:3080` in the app.
+2. Device/emulator via USB: `adb reverse tcp:3080 tcp:3080`, then pick
+   **This phone** in the app (it probes `127.0.0.1:3080`). Or run the harness
+   in Termux on the device itself — see `harness/TERMUX.md`.
 3. Wi-Fi LAN mode: apply `harness/cordis.patch.lan.yml` as described in
    `harness/README.md`.
 
