@@ -7,10 +7,24 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ### Added
 
+- **Follow streaming replies is a setting.** It is on by default and stays dynamic: the transcript
+  follows the newest row while a reply is written, stops when you scroll away, and resumes when you
+  return to the bottom. Switched off, new rows land below the viewport and the jump pill reports
+  them instead of pulling the page down. Settings → Chat.
+
 - **Workspaces in the chat list preview their newest five sessions** instead of unfolding every
   session at once. The rest sit behind a **Show all N** row under the preview, and **Show less**
   puts them back away. A workspace that holds the session you are reading always keeps that
   session visible, so opening the drawer mid-run never hides where you are.
+
+### Fixed
+
+- **A long reply no longer drags the page while you read it.** The transcript is a reversed list,
+  so the newest row is the layout anchor. Scrolled up *inside* a reply taller than the screen the
+  anchor was still that row, and every chunk grew it away from its fixed bottom edge — the text
+  under your eyes slid toward the newest line until the reply settled. The transcript now holds the
+  rows where you left them while following is off, and catches up in one step when you return to
+  the bottom.
 
 ### Changed
 

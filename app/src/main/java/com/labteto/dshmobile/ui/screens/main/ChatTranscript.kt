@@ -107,10 +107,12 @@ private const val MAX_CUT_PAGES = 12
  * Reversed, the growing row is the anchor: it extends in place, nothing else moves, and no scroll
  * happens at all.
  *
- * It also makes reading history mid-turn stable for free. Scrolled up, the reader's anchor sits
- * above index 0, so the tail can grow as much as it likes without touching the viewport — no
- * freezing the tail and catching up later. And a page of older messages lands at the far end,
- * where it cannot move anything on screen.
+ * It also makes reading history mid-turn stable for free once the reader is past the tail row: their
+ * anchor sits above index 0, so the tail can grow without touching the viewport, and a page of older
+ * messages lands at the far end. Scrolled up *inside* a tail row that is taller than the screen the
+ * anchor is still index 0, and the row grows away from its fixed bottom edge — the text under the
+ * reader's eyes keeps sliding toward the newest line. That case is handled by freezing the row list
+ * while following is off (see `frozenRows` below).
  */
 @Composable
 internal fun ChatTranscript(
@@ -129,6 +131,8 @@ internal fun ChatTranscript(
     onSuggestion: ((String) -> Unit)? = null,
     /** Bumped each time the reader sends: their own message is always worth landing on. */
     sentTick: Int = 0,
+    /** Whether to follow the tail as a reply is written; off leaves new rows below the viewport. */
+    followStreaming: Boolean = true,
 ) {
     // Only the nodes that draw something: a zero-height item still costs its 4dp gap, and a turn's
     // worth of structural events stacks those gaps into a blank band under the chrome.
@@ -146,19 +150,7 @@ internal fun ChatTranscript(
         ).asReversed()
     }
     val hasMore = conversation?.hasMore == true
-    val itemCount = rows.size + if (hasMore) 1 else 0
     val sessionId = conversation?.sessionId
-
-    // Opening a session lands on its newest message. In reverse layout that is index 0, which is
-    // also where the list starts, so this only has to undo a position inherited from the session
-    // that was open before. Following the tail is handled just below, where the anchoring the
-    // reversal buys is overridden only when it would otherwise cost the reader the newest row.
-    var lastSession by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(sessionId) {
-        if (sessionId == lastSession) return@LaunchedEffect
-        lastSession = sessionId
-        if (itemCount > 0) listState.scrollToItem(0)
-    }
 
     // Following the tail is free only while the tail is one growing row. The layout keeps the first
     // visible *key* anchored, and in a reversed list that key is the bottom row: insert a row below
@@ -178,11 +170,40 @@ internal fun ChatTranscript(
     // where the list comes to rest at the end of one is the whole of the signal.
     //
     // Primed from the position rather than assumed: the list state is hoisted above the tab swap
-    // and outlives this composition. Today the session-open scroll above lands every new
+    // and outlives this composition. Today the session-open scroll below lands every new
     // composition on the tail anyway, so this only matters if that scroll ever stops doing so.
     fun atTail(): Boolean =
         listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
     var followTail by remember(sessionId) { mutableStateOf(true) }
+
+    // A reply is one row, and a long one is taller than the screen. Scrolled up inside that row the
+    // reader's anchor is still index 0, and the row keeps growing away from its fixed bottom edge:
+    // every delta shifts the text under their eyes toward the newest line, so a long answer cannot
+    // be read until it settles. Scrolled past it (index > 0) the reversed layout already holds
+    // still. Freezing the row list while following is off covers the first case too: the page stops
+    // where the reader left it, and the tail catches up in one step when they come back down.
+    var frozenRows by remember(sessionId) { mutableStateOf<List<TranscriptRow>?>(null) }
+    val displayRows = frozenRows?.let { frozen ->
+        // Paging adds rows at the far (oldest) end after the freeze, and those must still appear,
+        // or a reader scrolling to the top of the frozen page meets a Load older row that never
+        // resolves. Rows are newest-first, so anything older than the snapshot's oldest seq belongs
+        // below it.
+        val oldest = frozen.lastOrNull()?.seq ?: return@let rows
+        frozen + rows.filter { it.seq < oldest }
+    } ?: rows
+    val itemCount = displayRows.size + if (hasMore) 1 else 0
+
+    // Opening a session lands on its newest message. In reverse layout that is index 0, which is
+    // also where the list starts, so this only has to undo a position inherited from the session
+    // that was open before. Following the tail is handled just below, where the anchoring the
+    // reversal buys is overridden only when it would otherwise cost the reader the newest row.
+    var lastSession by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(sessionId) {
+        if (sessionId == lastSession) return@LaunchedEffect
+        lastSession = sessionId
+        if (itemCount > 0) listState.scrollToItem(0)
+    }
+
     LaunchedEffect(listState, sessionId) {
         followTail = atTail()
         snapshotFlow { listState.isScrollInProgress }.collect { scrolling ->
@@ -190,10 +211,17 @@ internal fun ChatTranscript(
             followTail = atTail()
         }
     }
-    LaunchedEffect(itemCount, followTail) {
+    // Captured where the reader came to rest, not on every delta: the effect is keyed on the
+    // following flag alone, so `rows` here is the page they left.
+    LaunchedEffect(followTail) {
+        frozenRows = if (followTail) null else rows
+    }
+    LaunchedEffect(itemCount, followTail, followStreaming) {
         // itemCount rather than the rows themselves: a delta changes the text of a row, not how
         // many rows there are, and only the arrival of a row can land the tail out of view.
-        if (followTail && itemCount > 0 && !listState.isScrollInProgress) {
+        // followStreaming is the user's choice: off leaves the arrival below the viewport and lets
+        // the jump pill report it instead.
+        if (followStreaming && followTail && itemCount > 0 && !listState.isScrollInProgress) {
             listState.requestScrollToItem(0)
         }
     }
@@ -218,8 +246,8 @@ internal fun ChatTranscript(
     // nothing. When the oldest row loaded — the top of the transcript — is a rewind divider and a
     // page just landed without changing the row count, keep paging (bounded) until something
     // above the cut appears.
-    val rowCount = rows.size
-    val dividerOnTop = (rows.lastOrNull() as? TranscriptRow.Message)?.node.let { it is UserMessageNode && it.isRewindMarker }
+    val rowCount = displayRows.size
+    val dividerOnTop = (displayRows.lastOrNull() as? TranscriptRow.Message)?.node.let { it is UserMessageNode && it.isRewindMarker }
     var lastPagedRowCount by remember(sessionId) { mutableIntStateOf(-1) }
     var cutPages by remember(sessionId) { mutableIntStateOf(0) }
     LaunchedEffect(rowCount, loadingOlder, hasMore, dividerOnTop) {
@@ -265,7 +293,7 @@ internal fun ChatTranscript(
     LaunchedEffect(jumpToSeq) {
         val seq = jumpToSeq ?: return@LaunchedEffect
         try {
-            val index = historyRowIndex(rows, seq) ?: return@LaunchedEffect
+            val index = historyRowIndex(displayRows, seq) ?: return@LaunchedEffect
             if (index == 0) {
                 followTail = true
                 listState.requestScrollToItem(0)
@@ -340,7 +368,7 @@ internal fun ChatTranscript(
         // is growing under anyone's eyes.
         verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom),
     ) {
-        if (rows.isEmpty()) {
+        if (displayRows.isEmpty()) {
             item(key = "empty") {
                 // A blank page with a blinking cursor is the hardest place to start from on a
                 // phone keyboard, so a new session offers a few starters. They fill the composer
@@ -359,7 +387,7 @@ internal fun ChatTranscript(
             }
         } else {
             items(
-                rows,
+                displayRows,
                 // A streaming row's seq is minted past the durable cursor and is explicitly not
                 // stable across folds, so keying on it destroyed and rebuilt the row the moment the
                 // settlement landed — a visible pop at the end of every reply. One constant key
@@ -409,7 +437,7 @@ internal fun ChatTranscript(
     // above), but on a long session the only way back used to be dragging through everything in
     // between. Shown only once the reader is clearly away, so it does not flicker in on a nudge.
     AnimatedVisibility(
-        visible = awayFromTail && rows.isNotEmpty(),
+        visible = awayFromTail && displayRows.isNotEmpty(),
         enter = DsAnimations.popEnter,
         exit = DsAnimations.popExit,
         modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 12.dp),
