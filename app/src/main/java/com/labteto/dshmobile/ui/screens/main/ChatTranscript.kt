@@ -45,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -330,7 +331,18 @@ internal fun ChatTranscript(
     var seenNewestKey by remember(sessionId) { mutableStateOf<Any?>(null) }
     // The streaming row's key is shared by every reply in turn, so it cannot mark a place.
     val newestKey = rows.firstNotNullOfOrNull { row -> transcriptRowKey(row).takeIf { it != STREAMING_ROW_KEY } }
-    LaunchedEffect(followTail, newestKey) { if (followTail) seenNewestKey = newestKey }
+    LaunchedEffect(followTail, newestKey, followStreaming) {
+        if (!followTail) return@LaunchedEffect
+        if (followStreaming) {
+            seenNewestKey = newestKey
+            return@LaunchedEffect
+        }
+        // Following is off, so nothing moves the viewport onto the arrival and "seen" is a question
+        // about the screen again. Wait for the row to be measured before judging, or the arrival
+        // that just landed below the viewport would be counted as already read.
+        withFrameNanos { }
+        if (atTail()) seenNewestKey = newestKey
+    }
     // A step the reader saw can fold into its turn's Process row when the turn answers, which is
     // exactly while they are away; that row then stands in for it, or the count drops to nothing
     // just as the reply lands.
@@ -447,6 +459,9 @@ internal fun ChatTranscript(
             running = context.running,
             onClick = {
                 followTail = true
+                // With following off the flag above is already true at the tail, so the effect that
+                // marks the newest row seen does not rerun; landing on it clears the count here.
+                seenNewestKey = newestKey
                 jumpScope.launch {
                     // A long way back is mostly rows nobody needs to watch go by: land near the tail
                     // first, then animate the last stretch so the motion still reads as "down".

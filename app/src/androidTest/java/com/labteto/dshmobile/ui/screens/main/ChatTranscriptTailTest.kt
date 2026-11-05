@@ -215,15 +215,16 @@ class ChatTranscriptTailTest {
     fun turningFollowingOffLeavesAnArrivalBelowTheViewport() {
         val history = longHistory()
         val h = harness(history, followStreaming = false)
-        val anchor = h.firstVisibleKey()
+        val anchor = compose.onNodeWithText("answer 29").getUnclippedBoundsInRoot()
 
         compose.runOnIdle { h.nodes = history + assistant(60, "a reply nobody asked to follow") }
         compose.waitForIdle()
 
         // No pin: the reader keeps the row they were on, and the arrival waits below for the jump
-        // pill rather than pulling the page down.
+        // pill rather than pulling the page down. The pill counts it, because nobody read it.
         assertFalse(h.atTail())
-        assertEquals(anchor, h.firstVisibleKey())
+        assertEquals(anchor.top, compose.onNodeWithText("answer 29").getUnclippedBoundsInRoot().top)
+        compose.onNodeWithContentDescription("1 new").assertExists()
     }
 
     @Test
