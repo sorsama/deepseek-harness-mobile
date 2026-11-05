@@ -17,15 +17,6 @@ All notable changes to DSH Mobile are documented here. Format based on
   puts them back away. A workspace that holds the session you are reading always keeps that
   session visible, so opening the drawer mid-run never hides where you are.
 
-### Fixed
-
-- **A long reply no longer drags the page while you read it.** The transcript is a reversed list,
-  so the newest row is the layout anchor. Scrolled up *inside* a reply taller than the screen the
-  anchor was still that row, and every chunk grew it away from its fixed bottom edge — the text
-  under your eyes slid toward the newest line until the reply settled. The transcript now holds the
-  rows where you left them while following is off, and catches up in one step when you return to
-  the bottom.
-
 ### Changed
 
 - **The changed-files card starts folded.** A turn that touched a dozen files ended with a dozen
@@ -42,6 +33,13 @@ All notable changes to DSH Mobile are documented here. Format based on
   currently running — are left expanded, because their steps are the progress you are watching.
 
 ### Fixed
+
+- **A long reply no longer drags the page while you read it.** The transcript is a reversed list,
+  so the newest row is the layout anchor. Scrolled up *inside* a reply taller than the screen the
+  anchor was still that row, and every chunk grew it away from its fixed bottom edge — the text
+  under your eyes slid toward the newest line until the reply settled. The transcript now holds the
+  rows where you left them while following is off, and catches up in one step when you return to
+  the bottom.
 
 - **Every question in a session notifies again.** Answering one `ask_user_question` prompt used to
   silence the next question in the same session. The notification dedupe key was built from the
