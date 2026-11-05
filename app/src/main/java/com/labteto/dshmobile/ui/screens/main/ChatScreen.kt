@@ -37,7 +37,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.labteto.dshmobile.connection.AppSettings
 import com.labteto.dshmobile.ui.media.sampleSizeFor
+import com.labteto.dshmobile.ui.rememberHostsStore
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswer
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswerItem
@@ -92,6 +94,8 @@ fun ChatScreen(
     detailsOpen: Boolean,
 ) {
     val store = rememberSessionStore()
+    val hostsStore = rememberHostsStore()
+    val appSettings by hostsStore.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
     val scope = rememberCoroutineScope()
     val colors = DsTheme.colors
     val context = LocalContext.current
@@ -568,6 +572,7 @@ fun ChatScreen(
                             jumpToSeq = pendingJumpSeq,
                             onJumpConsumed = { pendingJumpSeq = null },
                             sentTick = sentTick,
+                            followStreaming = appSettings.followStreamingReply,
                             onSuggestion = if (currentSessionId != null) {
                                 { text -> draft = text; composer.selection = text.length }
                             } else {

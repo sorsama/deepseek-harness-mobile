@@ -218,6 +218,9 @@
     <string name="presets_user">Personnalisé</string>
     <string name="settings_title">Paramètres</string>
     <string name="settings_general">Général</string>
+    <string name="settings_chat">Chat</string>
+    <string name="settings_follow_streaming">Suivre les réponses en streaming</string>
+    <string name="settings_follow_streaming_hint">Garde le message le plus récent visible pendant qu\'une réponse s\'écrit. Remontez pour lire à votre rythme ; le suivi reprend lorsque vous revenez en bas.</string>
     <string name="settings_models">Modèles</string>
     <string name="settings_plugins">Plugins</string>
     <string name="settings_plugins_inventory">Inventaire des plugins</string>

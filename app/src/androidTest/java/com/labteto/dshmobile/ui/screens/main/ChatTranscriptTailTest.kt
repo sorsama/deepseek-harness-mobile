@@ -51,7 +51,7 @@ class ChatTranscriptTailTest {
         lateinit var listState: LazyListState
     }
 
-    private fun harness(initial: List<ChatNode>): Harness {
+    private fun harness(initial: List<ChatNode>, followStreaming: Boolean = true): Harness {
         val h = Harness()
         h.nodes = initial
         compose.setContent {
@@ -72,6 +72,7 @@ class ChatTranscriptTailTest {
                     ),
                     listState = h.listState,
                     onLoadOlder = {},
+                    followStreaming = followStreaming,
                 )
             }
         }
@@ -208,6 +209,53 @@ class ChatTranscriptTailTest {
 
         assertTrue(h.atTail())
         compose.onNodeWithText("a reply after the round trip").assertIsDisplayed()
+    }
+
+    @Test
+    fun turningFollowingOffLeavesAnArrivalBelowTheViewport() {
+        val history = longHistory()
+        val h = harness(history, followStreaming = false)
+        val anchor = compose.onNodeWithText("answer 29").getUnclippedBoundsInRoot()
+
+        compose.runOnIdle { h.nodes = history + assistant(60, "a reply nobody asked to follow") }
+        compose.waitForIdle()
+
+        // No pin: the reader keeps the row they were on, and the arrival waits below for the jump
+        // pill rather than pulling the page down. The pill counts it, because nobody read it.
+        assertFalse(h.atTail())
+        assertEquals(anchor.top, compose.onNodeWithText("answer 29").getUnclippedBoundsInRoot().top)
+        compose.onNodeWithContentDescription("1 new").assertExists()
+    }
+
+    @Test
+    fun aGrowingReplyHoldsStillWhenTheReaderIsInsideIt() {
+        // One row taller than the screen: the anchor is still index 0, and without the freeze the
+        // row grows away from its fixed bottom edge, dragging the text up toward the newest line.
+        val reply = "unique-start\n" + (1..200).joinToString("\n") { "line $it" }
+        val h = harness(longHistory() + assistant(1000, reply, streaming = true))
+
+        // A slow, short drag inside the tall row, so it cannot fling past it into history.
+        compose.onNode(hasScrollToIndexAction()).performTouchInput {
+            swipeDown(startY = centerY - 100f, endY = centerY + 100f, durationMillis = 600)
+        }
+        compose.waitForIdle()
+        compose.runOnIdle {
+            assertEquals(0, h.listState.firstVisibleItemIndex)
+            assertTrue(h.listState.firstVisibleItemScrollOffset > 0)
+        }
+        val before = compose.onNodeWithText("unique-start", substring = true).getUnclippedBoundsInRoot()
+
+        compose.runOnIdle {
+            h.nodes = longHistory() + assistant(
+                1000,
+                reply + "\n" + (201..400).joinToString("\n") { "line $it" },
+                streaming = true,
+            )
+        }
+        compose.waitForIdle()
+
+        val after = compose.onNodeWithText("unique-start", substring = true).getUnclippedBoundsInRoot()
+        assertEquals(before.top, after.top)
     }
 
     @Test

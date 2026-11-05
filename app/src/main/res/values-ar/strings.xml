@@ -218,6 +218,9 @@
     <string name="presets_user">مخصص</string>
     <string name="settings_title">الإعدادات</string>
     <string name="settings_general">عام</string>
+    <string name="settings_chat">الدردشة</string>
+    <string name="settings_follow_streaming">متابعة الردود المتدفقة</string>
+    <string name="settings_follow_streaming_hint">يُبقي أحدث رسالة ظاهرة أثناء كتابة الرد. مرّر لأعلى للقراءة على وتيرتك؛ وتستأنف المتابعة عند العودة إلى الأسفل.</string>
     <string name="settings_models">النماذج</string>
     <string name="settings_plugins">الإضافات</string>
     <string name="settings_plugins_inventory">جرد الإضافات</string>

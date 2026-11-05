@@ -46,6 +46,7 @@ class HostsStore @Inject constructor(
         val SESSION_SORT = stringPreferencesKey("session_sort")
         val UPDATE_CHECK = booleanPreferencesKey("update_check")
         val DISMISSED_UPDATE = stringPreferencesKey("dismissed_update")
+        val FOLLOW_STREAMING = booleanPreferencesKey("follow_streaming")
     }
 
     private val hostsSerializer = ListSerializer(HostConfig.serializer())
@@ -80,6 +81,7 @@ class HostsStore @Inject constructor(
             knownPorts = ports,
             updateCheckEnabled = prefs[Keys.UPDATE_CHECK] ?: true,
             dismissedUpdate = prefs[Keys.DISMISSED_UPDATE],
+            followStreamingReply = prefs[Keys.FOLLOW_STREAMING] ?: true,
         )
     }
 
@@ -229,6 +231,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.NOTIFY_ACTION] = next.notifyNeedsAction
             prefs[Keys.THEME] = next.themePreference
             prefs[Keys.UPDATE_CHECK] = next.updateCheckEnabled
+            prefs[Keys.FOLLOW_STREAMING] = next.followStreamingReply
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)
         }
     }

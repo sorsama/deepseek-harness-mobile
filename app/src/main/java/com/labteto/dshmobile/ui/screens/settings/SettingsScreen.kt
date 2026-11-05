@@ -176,6 +176,14 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                     AppearanceRow(settings) { mode -> viewModel.set { it.copy(themePreference = mode) } }
                 }
 
+                SettingsCard(stringResource(R.string.settings_chat)) {
+                    ToggleRow(
+                        stringResource(R.string.settings_follow_streaming),
+                        settings.followStreamingReply,
+                        stringResource(R.string.settings_follow_streaming_hint),
+                    ) { viewModel.set { it.copy(followStreamingReply = !it.followStreamingReply) } }
+                }
+
                 SettingsCard(stringResource(R.string.settings_connection)) {
                     ConnectionSection(connectionState, onDisconnect = { showDisconnectDialog = true })
                     ToggleRow(

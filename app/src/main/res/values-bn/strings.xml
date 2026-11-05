@@ -218,6 +218,9 @@
     <string name="presets_user">কাস্টম</string>
     <string name="settings_title">সেটিংস</string>
     <string name="settings_general">সাধারণ</string>
+    <string name="settings_chat">চ্যাট</string>
+    <string name="settings_follow_streaming">স্ট্রিমিং উত্তর অনুসরণ করুন</string>
+    <string name="settings_follow_streaming_hint">উত্তর লেখার সময় সর্বশেষ বার্তাটি দৃশ্যমান রাখে। নিজের গতিতে পড়তে উপরে স্ক্রল করুন; নিচে ফিরলে অনুসরণ আবার শুরু হয়।</string>
     <string name="settings_models">মডেল</string>
     <string name="settings_plugins">প্লাগইন</string>
     <string name="settings_plugins_inventory">প্লাগইন তালিকা</string>

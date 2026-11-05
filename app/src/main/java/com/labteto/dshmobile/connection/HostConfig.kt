@@ -156,6 +156,14 @@ data class AppSettings(
     val updateCheckEnabled: Boolean = true,
     /** A release the user has already declined, so it is offered once rather than every launch. */
     val dismissedUpdate: String? = null,
+    /**
+     * Whether the transcript follows a reply as it is written.
+     *
+     * Dynamic, not a plain auto-scroll: following is switched off when the reader scrolls away
+     * from the newest row and comes back on when they return to it. Off, new rows land below the
+     * viewport and the jump pill reports them instead of pulling the page down.
+     */
+    val followStreamingReply: Boolean = true,
 )
 
 /** The three ways the app can reach a harness. Persisted as [AppSettings.connectMode]. */
