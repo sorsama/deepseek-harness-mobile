@@ -27,6 +27,15 @@ All notable changes to DSH Mobile are documented here. Format based on
   reasoning panels and tool groups as they were. Turns that have not answered yet — and the turn
   currently running — are left expanded, because their steps are the progress you are watching.
 
+### Fixed
+
+- **Every question in a session notifies again.** Answering one `ask_user_question` prompt used to
+  silence the next question in the same session. The notification dedupe key was built from the
+  session and the request's sequence number, which is 0 for every question, so the second and later
+  questions looked like replays of the first and were dropped. The key now uses the request's own
+  id: each new question notifies, and a reconnect that re-delivers a question you have already seen
+  stays silent. (#67)
+
 ## [0.18.0] - 2026-10-21
 
 Pressing and holding things in the app now opens a menu of what you can do with them. This
