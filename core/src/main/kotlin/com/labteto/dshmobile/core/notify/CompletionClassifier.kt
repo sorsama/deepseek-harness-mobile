@@ -39,13 +39,22 @@ sealed interface CompletionEvent {
         override val dedupKey: String get() = "review:$sessionId:$approvalId"
     }
 
-    /** ask_user_question waits for the user. */
+    /**
+     * ask_user_question waits for the user.
+     *
+     * [questionId] is the pending request's `eventId`, the same correlation id [ReviewRequested]
+     * keeps as `approvalId`. A waterfall carries no sequence number, so a key built from [seq]
+     * gives every question in a session one shared value and the observer drops the second and
+     * later ones as replays of the first. The event id is fresh per request and comes back
+     * unchanged when a reconnect re-delivers the frame, which is what dedupe actually needs.
+     */
     data class QuestionRequested(
         override val sessionId: String,
         override val seq: Long,
+        val questionId: String,
         val firstQuestion: String?,
     ) : CompletionEvent {
-        override val dedupKey: String get() = "question:$sessionId:$seq"
+        override val dedupKey: String get() = "question:$sessionId:$questionId"
     }
 
     /** A session that was running stopped (fallback completion signal). */
@@ -112,6 +121,8 @@ class CompletionClassifier {
      *
      * There is no sequence number on a waterfall. These are process-local requests with no place
      * in the durable log, so 0 is the honest value rather than a lookup this frame cannot satisfy.
+     * Neither request dedupes on it: both keys use the event id, unique per request and replayed
+     * unchanged after a reconnect (see [CompletionEvent.QuestionRequested.dedupKey]).
      *
      * @param event the Remote Event name.
      * @param eventId the pending request's correlation id, also what a later `cancel` names.
@@ -135,6 +146,7 @@ class CompletionClassifier {
         "user-questions/request" -> CompletionEvent.QuestionRequested(
             sessionId = agentId,
             seq = 0L,
+            questionId = eventId,
             firstQuestion = (request["questions"] as? kotlinx.serialization.json.JsonArray)
                 ?.firstOrNull()?.jsonObject?.get("question")?.jsonPrimitive?.contentOrNull,
         )
