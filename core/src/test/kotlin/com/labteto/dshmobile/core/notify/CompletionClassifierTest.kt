@@ -86,6 +86,57 @@ class CompletionClassifierTest {
         val result = classifier.classifyWaterfall("user-questions/request", "evt-2", "s1", request)
         assertTrue(result is CompletionEvent.QuestionRequested)
         assertEquals("which one?", (result as CompletionEvent.QuestionRequested).firstQuestion)
+        assertEquals("evt-2", result.questionId)
+        assertEquals("question:s1:evt-2", result.dedupKey)
+    }
+
+    @Test
+    fun secondQuestionInSameSessionIsNotDeduped() {
+        // The waterfall carries no seq — it is 0 for every request — so a seq-based key gave
+        // every question in a session one shared value and the observer dropped the second and
+        // later ones as duplicates. The key comes from the request's own eventId instead.
+        val first = buildJsonObject {
+            putJsonArray("questions") {
+                add(buildJsonObject { put("id", "q1"); put("question", "first?") })
+            }
+        }
+        val second = buildJsonObject {
+            putJsonArray("questions") {
+                add(buildJsonObject { put("id", "q2"); put("question", "second?") })
+            }
+        }
+        val a = classifier.classifyWaterfall("user-questions/request", "evt-a", "s1", first)
+        val b = classifier.classifyWaterfall("user-questions/request", "evt-b", "s1", second)
+        assertTrue(a is CompletionEvent.QuestionRequested)
+        assertTrue(b is CompletionEvent.QuestionRequested)
+        assertEquals("question:s1:evt-a", a!!.dedupKey)
+        assertEquals("question:s1:evt-b", b!!.dedupKey)
+        assertTrue(a.dedupKey != b.dedupKey)
+    }
+
+    @Test
+    fun replayedQuestionKeepsItsDedupKey() {
+        // A reconnect re-delivers a still-pending waterfall with the same eventId, so the
+        // observer sees the same key and stays silent rather than notifying the question twice.
+        // The body is rebuilt differently on purpose: identity has to come from the eventId
+        // alone, not from anything in the request.
+        val first = buildJsonObject {
+            putJsonArray("questions") {
+                add(buildJsonObject { put("id", "q1"); put("question", "again?") })
+            }
+        }
+        val replayed = buildJsonObject {
+            putJsonArray("questions") {
+                add(buildJsonObject { put("id", "q1"); put("question", "again? (replayed)") })
+            }
+        }
+        val a = classifier.classifyWaterfall("user-questions/request", "evt-4", "s1", first)
+        val b = classifier.classifyWaterfall("user-questions/request", "evt-4", "s1", replayed)
+        assertTrue(a is CompletionEvent.QuestionRequested)
+        assertTrue(b is CompletionEvent.QuestionRequested)
+        assertEquals("again?", (a as CompletionEvent.QuestionRequested).firstQuestion)
+        assertEquals("again? (replayed)", (b as CompletionEvent.QuestionRequested).firstQuestion)
+        assertEquals(a!!.dedupKey, b!!.dedupKey)
     }
 
     @Test
