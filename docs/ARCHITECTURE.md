@@ -103,6 +103,38 @@ tools/capture/  Node recorder of real harness traffic → conformance fixtures
    completions reach it from `SessionStore`, which owns the only stream
    they travel on.
 
+## Theme, appearance and touch
+
+- **One palette object, two schemes.** `ui/theme/Color.kt` holds the raw Ink (dark) and Paper
+  (light) scales; `ui/theme/Theme.kt` exposes the semantic `DsColors` roles through
+  `LocalDsColors`/`DsTheme.colors`. Screens never read primitives directly, so a token change
+  restyles the whole app — that is what made the Ink redesign a theme swap plus a component pass
+  instead of twenty-one independent restyles.
+- **The appearance is user data, not a build constant.** `ThemeCustomization` (scheme, accent,
+  OLED canvas, app text size, haptics) is assembled in `AppRoot` from `AppSettings` and handed to
+  `DshTheme`. Accent palettes carry a dark and a light ramp; AMOLED only moves the canvas rungs;
+  text size is applied by scaling the local `Density.fontScale` (so every `sp` and the user's
+  system font scale compose); haptics are gated through `LocalHapticsEnabled`, which
+  `rememberDsHaptics()` reads.
+- **Persistence follows the settings recipe** in `connection/HostsStore` (Keys → mapper →
+  `setSetting`). `themePreference` is additionally mirrored to `SharedPreferences` so
+  `DshApplication.onCreate` can set AppCompat night mode before any activity; the window
+  background resources (`values/colors.xml`, `values-night/colors.xml`) follow the same scheme so
+  a language-driven recreate never flashes the wrong colour.
+- **Haptics are a vocabulary, not a buzz.** `DsHaptics` maps tap / toggle / selection / confirm /
+  reject / attention / long-press to distinct platform effects (API-aware fallbacks), and every
+  control that matters calls the matching one. Disabling haptics in Appearance silences all of it.
+- **Motion is tokenised.** `DsAnimations` carries the kit's curves (standard, decelerate,
+  overshoot), screen/sheet/card/list transitions and the 0.97 press scale. Compose honours the
+  system animation scale; loops only run for live states (streaming, shimmer while loading).
+- **Contrast is part of the token contract.** Status colours that appear at caption sizes use the
+  text-tuned light-scheme values (`success`/`error` differ from their fill variants); the Paper
+  accents were chosen to pass AA on the warm canvas. See `.team/design-recon/SPEC.md` for the
+  measured table that the implementation follows.
+- **Non-Latin text falls back.** Geist/Geist Mono are bundled as Latin subsets in `res/font`; the
+  platform fallback carries the other ten shipped languages, and every layout is verified for
+  RTL (start/end alignment, auto-mirrored icons) and large font scales.
+
 ## Key invariants
 
 - The wire layer never crashes on unknown data: unknown keys are ignored,

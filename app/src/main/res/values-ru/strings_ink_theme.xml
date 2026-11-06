@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="splash_tagline">Ваш DeepSeek Harness в кармане.</string>
+    <string name="splash_connecting">Подключение к %1$s…</string>
+    <string name="splash_reconnecting">Переподключение к %1$s…</string>
+    <string name="appearance_customize_hint">Цвета и тактильная отдача применяются сразу.</string>
+    <string name="appearance_accent">Акцентный цвет</string>
+    <string name="appearance_accent_ink">Чернильно-синий</string>
+    <string name="appearance_accent_violet">Фиолетовый</string>
+    <string name="appearance_accent_teal">Бирюзовый</string>
+    <string name="appearance_accent_green">Зелёный</string>
+    <string name="appearance_accent_amber">Янтарный</string>
+    <string name="appearance_accent_rose">Розовый</string>
+    <string name="appearance_accent_mono">Монохромный</string>
+    <string name="appearance_amoled">Чистый чёрный</string>
+    <string name="appearance_amoled_hint">Чисто чёрный фон для OLED-экранов</string>
+    <string name="appearance_text_size">Размер текста</string>
+    <string name="appearance_text_size_compact">Компактный</string>
+    <string name="appearance_text_size_default">Обычный</string>
+    <string name="appearance_text_size_large">Крупный</string>
+    <string name="appearance_text_size_larger">Очень крупный</string>
+    <string name="appearance_haptics">Тактильная отдача</string>
+    <string name="appearance_haptics_hint">Короткая вибрация, когда вы нажимаете или выбираете что-то</string>
+    <string name="appearance_reset">Сбросить оформление</string>
+
+    <!-- Appearance: custom accent colour -->
+    <string name="appearance_accent_custom">Свой</string>
+    <string name="appearance_accent_custom_value">Свой, %1$s</string>
+    <string name="appearance_custom_title">Свой акцентный цвет</string>
+    <string name="appearance_custom_hint">Выберите цвет. Его яркость подстраивается под каждую тему, чтобы текст оставался читаемым.</string>
+    <string name="appearance_custom_preview">Предпросмотр</string>
+    <string name="appearance_custom_sample_button">Кнопка</string>
+    <string name="appearance_custom_sample_chip">Метка</string>
+    <string name="appearance_custom_sample_link">Ссылка</string>
+    <string name="appearance_custom_area">Насыщенность и яркость</string>
+    <string name="appearance_custom_area_state">Насыщенность %1$d%%, яркость %2$d%%</string>
+    <string name="appearance_custom_more_saturation">Больше насыщенности</string>
+    <string name="appearance_custom_less_saturation">Меньше насыщенности</string>
+    <string name="appearance_custom_more_brightness">Ярче</string>
+    <string name="appearance_custom_less_brightness">Темнее</string>
+    <string name="appearance_custom_hue">Оттенок</string>
+    <string name="appearance_custom_hue_state">%1$d°</string>
+    <string name="appearance_custom_hex">HEX-цвет</string>
+    <string name="appearance_custom_hex_invalid">Введите шесть шестнадцатеричных цифр, например #6E9BFF</string>
+    <string name="appearance_custom_quick_picks">Быстрый выбор</string>
+    <string name="appearance_custom_quick_pick">Выбрать %1$s</string>
+    <string name="appearance_custom_apply">Применить</string>
+</resources>

@@ -13,13 +13,13 @@
     <string name="ux_b_remove_reference">Supprimer la référence %1$s</string>
     <string name="ux_b_paused">En pause pendant la modification</string>
     <string name="ux_b_held">En attente de votre réponse</string>
-    <string name="ux_b_continued">Le travail a repris ; vous pouvez encore répondre</string>
+    <string name="ux_b_continued">Le travail a repris, mais vous pouvez encore répondre</string>
     <string name="ux_b_countdown_description">Compte à rebours de réponse en cours</string>
     <string name="ux_b_view_questions">Voir les questions</string>
     <string name="ux_b_view_answers">Voir les réponses</string>
     <string name="ux_b_skipped">Ignorée</string>
     <string name="ux_b_answer">Réponse</string>
-    <string name="ux_b_automation_unavailable">Cet hôte ne prend pas en charge les automatisations.</string>
+    <string name="ux_b_automation_unavailable">Ce harness ne prend pas en charge les automatisations.</string>
     <plurals name="ux_b_countdown_seconds">
         <item quantity="one">Reprise dans %1$s seconde</item>
         <item quantity="other">Reprise dans %1$s secondes</item>

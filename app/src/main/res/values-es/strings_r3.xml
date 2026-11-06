@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sessions drawer: ordering, grouping and dragging -->
+    <string name="chatlist_sort_project">Agrupar por proyecto</string>
+    <string name="chatlist_group_other">Otras</string>
+    <string name="chatlist_move_up">Subir</string>
+    <string name="chatlist_move_down">Bajar</string>
+    <string name="chatlist_move_announce">Movida a la posición %1$d de %2$d</string>
+    <string name="chatlist_reorder_scope">Moviendo dentro de %1$s</string>
+    <string name="chatlist_reorder_projects">Moviendo proyectos</string>
+    <string name="chatlist_reorder_blocked">Una sesión solo puede moverse dentro de su proyecto</string>
+    <string name="chatlist_reorder_failed">No se pudo mover esa sesión. Volvió a su sitio.</string>
+    <string name="chatlist_reorder_project_failed">No se pudo mover ese proyecto. Volvió a su sitio.</string>
+    <string name="chatlist_project_collapse">Contraer %1$s</string>
+    <string name="chatlist_project_expand">Expandir %1$s</string>
+
+    <!-- Sessions drawer: archived filter and the needs-you card -->
+    <string name="chatlist_archived_none">Aún no hay nada archivado</string>
+    <string name="chatlist_restore_failed">No se pudo restaurar esa sesión</string>
+    <string name="chatlist_approve_long">Comando largo. Léelo completo antes de aprobar.</string>
+</resources>

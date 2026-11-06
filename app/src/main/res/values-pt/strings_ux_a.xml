@@ -21,7 +21,7 @@
     <string name="ux_a_precise_time">Hora (HH:mm:ss, frações opcionais)</string>
     <string name="ux_a_time_error">Escolha um horário local válido para esta data e fuso.</string>
     <string name="ux_a_interval_amount">Duração do intervalo</string>
-    <string name="ux_a_interval_error">Insira um inteiro com intervalo mínimo de 60 segundos.</string>
+    <string name="ux_a_interval_error">Digite um número inteiro. O intervalo mínimo é de 60 segundos.</string>
     <string name="ux_a_weekdays_error">Escolha pelo menos um dia.</string>
     <string name="ux_a_cron_advanced">Cron (avançado)</string>
     <string name="ux_a_cron_error">Insira cinco campos cron válidos: minuto, hora, dia, mês, dia da semana.</string>
@@ -32,7 +32,7 @@
     <string name="ux_a_available">Disponíveis</string>
     <string name="ux_a_installed_version">Versão instalada: %1$s</string>
     <string name="ux_a_previous_install">Instalação anterior (pacote não registrado)</string>
-    <string name="ux_a_unknown">O resultado da instalação é desconhecido. Verifique o status ou atualize a lista antes de tentar novamente. Dispensar o aviso não desfaz a instalação.</string>
+    <string name="ux_a_unknown">Não dá para saber se a instalação deu certo. Verifique o status ou atualize a lista antes de tentar de novo. Fechar este aviso não desfaz a instalação.</string>
     <string name="ux_a_check_status">Verificar status</string>
     <string name="ux_a_approve_retry">Aprovar e tentar novamente</string>
     <string name="ux_a_inspected">Pacote inspecionado. Confira a versão antes de instalar.</string>
@@ -42,13 +42,13 @@
     <string name="ux_a_phase_applying">Aplicando alterações…</string>
     <string name="ux_a_phase_cancelling">Cancelando instalação…</string>
     <string name="ux_a_reason_required">O gerenciamento de plugins precisa deste componente. Ele não pode ser desativado nem removido.</string>
-    <string name="ux_a_reason_unaddressable">A configuração do host não identifica esta entrada de forma única.</string>
+    <string name="ux_a_reason_unaddressable">A configuração do harness não consegue diferenciar esta entrada das outras.</string>
     <string name="ux_a_reason_missing">Este plugin não está mais disponível. Atualize a lista.</string>
     <string name="ux_a_reason_spec">Insira um nome de pacote ou endereço válido.</string>
     <string name="ux_a_reason_ambiguous">Não foi possível identificar o pacote instalado. Atualize a lista.</string>
     <string name="ux_a_reason_bundle">Este pacote não declara um conjunto de plugins e não pode ser gerenciado aqui.</string>
     <string name="ux_a_reason_removable">Este pacote pertence a outro perfil ou é necessário para gerenciar plugins.</string>
-    <string name="ux_a_reason_stop">Pare este perfil do host e desinstale o pacote com dsh plugin.</string>
+    <string name="ux_a_reason_stop">Pare este perfil do harness e desinstale o pacote com dsh plugin.</string>
     <string name="ux_a_reason_in_use">Outra configuração usa este conjunto. Desative esses componentes primeiro.</string>
     <string name="ux_a_reason_approval">Os scripts pendentes mudaram. Instale novamente para revisar as novas aprovações.</string>
     <string name="ux_a_reason_version">Este plugin é incompatível com esta versão do DSH. Instale uma versão compatível.</string>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_panel_model_title">Modelo</string>
+    <string name="ink_panel_model_permission">Modelo y permisos</string>
+    <string name="ink_panel_model_default">Predeterminado del harness</string>
+    <string name="ink_panel_model_available">Disponible en %1$s</string>
+    <string name="ink_panel_effort_default">Predeterminado</string>
+    <string name="ink_panel_permission_readonly_desc">Lee archivos y responde. Nada cambia.</string>
+    <string name="ink_panel_permission_workspace_desc">Edita dentro del espacio de trabajo. Los comandos siguen pidiendo permiso.</string>
+    <string name="ink_panel_permission_full_desc">Todo en el ordenador. Sin solicitudes de aprobación.</string>
+    <string name="ink_panel_subagent_followup">Pregunta a este subagente</string>
+    <string name="ink_panel_trajectory_empty_hint">Las llamadas a herramientas aparecen aquí mientras el agente trabaja.</string>
+    <string name="ink_panel_open_session">Abrir sesión</string>
+</resources>

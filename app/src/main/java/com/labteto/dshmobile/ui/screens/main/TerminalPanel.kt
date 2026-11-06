@@ -2,16 +2,26 @@ package com.labteto.dshmobile.ui.screens.main
 
 import android.annotation.SuppressLint
 import android.webkit.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.labteto.dshmobile.R
@@ -21,14 +31,19 @@ import com.labteto.dshmobile.data.SessionStore
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.ui.Alignment
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonSize
 import com.labteto.dshmobile.ui.components.DsButtonVariant
+import com.labteto.dshmobile.ui.components.DsDialog
+import com.labteto.dshmobile.ui.components.inkFieldFrame
 import com.labteto.dshmobile.ui.components.DsIconButton
 import com.labteto.dshmobile.ui.components.DsPill
 import com.labteto.dshmobile.ui.components.EmptyHero
 import com.labteto.dshmobile.ui.components.FeatherIcons
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
+import com.labteto.dshmobile.ui.theme.DsAnimations
+import com.labteto.dshmobile.ui.theme.DsShapes
+import com.labteto.dshmobile.ui.theme.DsSizes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsType
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -38,6 +53,15 @@ import kotlinx.serialization.json.*
 import org.json.JSONObject
 import java.util.UUID
 
+/**
+ * The terminal tab: shell picker, open terminals, the xterm surface, and a key row for the keys a
+ * phone keyboard does not have.
+ *
+ * The xterm bridge is untouched — the WebView still owns input and rendering, the same attachment
+ * protocol drives it. What changed is the chrome around it: an Ink shell strip above, a code-block
+ * surface with a hairline instead of a raw WebView, and a scrollable row of terminal keys below, so
+ * `Tab`, `Esc`, arrows and `Ctrl-C` (and a clear) are reachable without a hardware keyboard.
+ */
 @Composable
 internal fun TerminalPanel(store: SessionStore, state: PanelState, modifier: Modifier) {
     val scope = rememberCoroutineScope()
@@ -65,47 +89,90 @@ internal fun TerminalPanel(store: SessionStore, state: PanelState, modifier: Mod
     }
     LaunchedEffect(key) { operation { refresh() } }
     val colors = DsTheme.colors
+    // The raw Material dropdown item has no haptic vocabulary of its own.
+    val haptics = rememberDsHaptics()
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
-        // Toolbar: which shell, a new one, refresh.
+        // Shell strip: the shell the next terminal opens with, then its own actions.
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall)) {
             Box {
                 DsPill(
                     text = state.shells.firstOrNull { it.path == state.shellPath }?.name ?: stringResource(R.string.terminal_shell),
-                    onClick = { if (!busy) shellMenu = true },
+                    selected = true,
+                    onClick = {
+                        if (!busy) {
+                            shellMenu = true
+                        }
+                    },
                 )
                 DropdownMenu(shellMenu, { shellMenu = false }) {
-                    state.shells.forEach { shell -> DropdownMenuItem(text = { Text(shell.name) }, onClick = { state.shellPath = shell.path; shellMenu = false }) }
+                    state.shells.forEach { shell ->
+                        DropdownMenuItem(text = { Text(shell.name, color = colors.labelPrimary) }, onClick = {
+                            haptics.selection()
+                            state.shellPath = shell.path
+                            shellMenu = false
+                        })
+                    }
                 }
             }
-            DsButton(
-                text = stringResource(R.string.terminal_new),
-                icon = Icons.Filled.Add,
-                enabled = !busy,
-                onClick = { operation {
-                    val api = store.apiForHost(key.host) ?: error(context.getString(R.string.common_offline))
-                    val info = api.terminalCreate(key.sessionId, TerminalCreateRequest(UUID.randomUUID().toString(), 80, 24, state.shellPath)).requireValue()
-                    state.selectedTerminal = info.id
-                    refresh()
-                } },
-                variant = DsButtonVariant.Info,
-                size = DsButtonSize.Small,
-            )
             Spacer(Modifier.weight(1f))
+            DsIconButton(
+                icon = Icons.Filled.Add,
+                contentDescription = stringResource(R.string.terminal_new),
+                onClick = {
+                    operation {
+                        val api = store.apiForHost(key.host) ?: error(context.getString(R.string.common_offline))
+                        val info = api.terminalCreate(key.sessionId, TerminalCreateRequest(UUID.randomUUID().toString(), 80, 24, state.shellPath)).requireValue()
+                        state.selectedTerminal = info.id
+                        refresh()
+                    }
+                },
+                enabled = !busy,
+                tint = colors.accent,
+            )
             DsIconButton(
                 icon = FeatherIcons.RefreshCw,
                 contentDescription = stringResource(R.string.common_retry),
                 onClick = { operation { refresh() } },
                 enabled = !busy,
+                iconSize = 18.dp,
             )
         }
-        if (busy) LinearProgressIndicator(Modifier.fillMaxWidth(), color = colors.accent, trackColor = colors.borderL1)
-        error?.let { Text(it, style = DsType.small13, color = colors.error) }
         // Open terminals as pills; the live one is selected.
         if (state.terminals.isNotEmpty()) {
-            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall)) {
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
+            ) {
                 state.terminals.forEach { terminal ->
-                    DsPill(text = terminal.title, selected = terminal.id == state.selectedTerminal, onClick = { state.selectedTerminal = terminal.id })
+                    DsPill(
+                        text = terminal.title,
+                        selected = terminal.id == state.selectedTerminal,
+                        onClick = {
+                            state.selectedTerminal = terminal.id
+                        },
+                    )
                 }
+            }
+        }
+        if (busy) LinearProgressIndicator(Modifier.fillMaxWidth(), color = colors.accent, trackColor = colors.borderL1)
+        error?.let { message ->
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(DsShapes.code)
+                    .background(colors.errorTertiary)
+                    .border(1.dp, colors.errorBorder, DsShapes.code)
+                    .padding(DsSpacing.medium),
+                verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
+            ) {
+                Text(message, style = DsType.small13, color = colors.error, softWrap = true)
+                DsButton(
+                    text = stringResource(R.string.common_retry),
+                    onClick = { operation { refresh() } },
+                    enabled = !busy,
+                    variant = DsButtonVariant.Outline,
+                    size = DsButtonSize.Small,
+                )
             }
         }
         val terminal = state.terminals.firstOrNull { it.id == state.selectedTerminal }
@@ -113,32 +180,69 @@ internal fun TerminalPanel(store: SessionStore, state: PanelState, modifier: Mod
             EmptyHero(headline = stringResource(R.string.terminal_empty), subtitle = null, showPreview = false)
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(terminal.title, style = DsType.std14Strong, color = colors.labelPrimary, modifier = Modifier.weight(1f))
+                Text(
+                    terminal.title,
+                    style = DsType.rowTitle,
+                    color = colors.labelPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
                 DsIconButton(
                     icon = FeatherIcons.Edit3,
                     contentDescription = stringResource(R.string.common_rename),
                     onClick = { rename = terminal.title },
+                    iconSize = 18.dp,
                 )
                 DsIconButton(
                     icon = Icons.Filled.Close,
                     contentDescription = stringResource(R.string.common_close),
                     enabled = !busy,
-                    onClick = { operation {
-                        store.apiForHost(key.host)?.terminalClose(key.sessionId, terminal.id)?.requireValue()
-                            ?: error(context.getString(R.string.common_offline))
-                        refresh()
-                    } },
+                    onClick = {
+                        operation {
+                            store.apiForHost(key.host)?.terminalClose(key.sessionId, terminal.id)?.requireValue()
+                                ?: error(context.getString(R.string.common_offline))
+                            refresh()
+                        }
+                    },
+                    iconSize = 18.dp,
                 )
             }
             key(terminal.id) { TerminalScreen(store, key, terminal, Modifier.weight(1f)) }
-            rename?.let { title -> AlertDialog(onDismissRequest = { rename = null }, title = { Text(stringResource(R.string.common_rename)) },
-                text = { OutlinedTextField(title, { rename = it }) },
-                confirmButton = { TextButton(enabled = title.isNotBlank() && title.length <= 120 && !busy, onClick = { operation {
-                    store.apiForHost(key.host)?.terminalRename(key.sessionId, terminal.id, title)?.requireValue()
-                        ?: error(context.getString(R.string.common_offline))
-                    rename = null; refresh()
-                } }) { Text(stringResource(R.string.common_save)) } },
-                dismissButton = { TextButton(onClick = { rename = null }) { Text(stringResource(R.string.common_cancel)) } }) }
+            rename?.let { title ->
+                DsDialog(stringResource(R.string.common_rename), { if (!busy) rename = null }) {
+                    TextField(
+                        value = title,
+                        onValueChange = { rename = it },
+                        modifier = Modifier.fillMaxWidth().inkFieldFrame(),
+                        singleLine = true,
+                        label = { Text(stringResource(R.string.common_rename), style = DsType.caption11) },
+                        textStyle = DsType.mono13,
+                        colors = dialogTextFieldColors(),
+                        shape = DsShapes.control,
+                    )
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+                        DsButton(
+                            text = stringResource(R.string.common_save),
+                            onClick = {
+                                    operation {
+                                    store.apiForHost(key.host)?.terminalRename(key.sessionId, terminal.id, title)?.requireValue()
+                                        ?: error(context.getString(R.string.common_offline))
+                                    rename = null; refresh()
+                                }
+                            },
+                            enabled = title.isNotBlank() && title.length <= 120 && !busy,
+                            variant = DsButtonVariant.Primary,
+                        )
+                        DsButton(
+                            text = stringResource(R.string.common_cancel),
+                            onClick = { rename = null },
+                            enabled = !busy,
+                            variant = DsButtonVariant.Outline,
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -163,7 +267,9 @@ private fun TerminalScreen(store: SessionStore, key: ComposerKey, initial: WebTe
     val attachmentId = remember(reconnect) { UUID.randomUUID().toString() }
     val input = remember { Channel<String>(64) }
     val colors = DsTheme.colors
-    val background = "#%06x".format(colors.bgBase.toArgb() and 0xffffff)
+    // The xterm palette follows the Ink tokens: the mouse surface is the code-block colour, text is
+    // the primary label. The same values are pushed into the page's setTheme() as it changes.
+    val background = "#%06x".format(colors.codeBlockBg.toArgb() and 0xffffff)
     val foreground = "#%06x".format(colors.labelPrimary.toArgb() and 0xffffff)
     val view = remember {
         WebView.setWebContentsDebuggingEnabled(com.labteto.dshmobile.BuildConfig.DEBUG)
@@ -279,14 +385,109 @@ private fun TerminalScreen(store: SessionStore, key: ComposerKey, initial: WebTe
         catch (_: Exception) { /* No retention service composed, or the terminal is already gone. */ }
     }
 
-    Column(modifier.fillMaxWidth()) {
-        if (!connected || !writable) Row {
-            Text(if (connected) stringResource(R.string.terminal_readonly) else stringResource(R.string.common_offline), Modifier.weight(1f).padding(12.dp))
-            TextButton(onClick = { reconnect++ }) { Text(stringResource(if (connected) R.string.terminal_control else R.string.common_retry)) }
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+        if (!connected || !writable) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(DsShapes.code)
+                    .background(colors.bgLayer2)
+                    .border(1.dp, colors.borderL1, DsShapes.code)
+                    .padding(start = DsSpacing.medium, end = DsSpacing.small, top = DsSpacing.tiny, bottom = DsSpacing.tiny),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    if (connected) stringResource(R.string.terminal_readonly) else stringResource(R.string.common_offline),
+                    style = DsType.small13,
+                    color = colors.labelSecondary,
+                    modifier = Modifier.weight(1f),
+                )
+                DsButton(
+                    text = stringResource(if (connected) R.string.terminal_control else R.string.common_retry),
+                    onClick = { reconnect++ },
+                    variant = DsButtonVariant.Outline,
+                    size = DsButtonSize.Small,
+                )
+            }
         }
-        if (info.state != "running") Text(stringResource(if (info.state == "failed") R.string.common_error else R.string.chat_stopped) + " (${info.exitCode ?: "—"})", Modifier.padding(12.dp))
-        error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(12.dp)) }
-        AndroidView(factory = { view }, modifier = Modifier.weight(1f).fillMaxWidth())
+        if (info.state != "running") {
+            val label = stringResource(if (info.state == "failed") R.string.common_error else R.string.chat_stopped) +
+                (info.exitCode?.let { " ($it)" } ?: "")
+            Text(label, style = DsType.small13, color = colors.labelSecondary, softWrap = true)
+        }
+        error?.let { Text(it, style = DsType.small13, color = colors.error, softWrap = true) }
+        Box(
+            Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .clip(DsShapes.code)
+                .background(colors.codeBlockBg)
+                .border(1.dp, colors.borderL1, DsShapes.code),
+        ) {
+            AndroidView(factory = { view }, modifier = Modifier.fillMaxSize())
+        }
+        TerminalKeyRow(enabled = writable) { data ->
+            scope.launch {
+                // Dropped rather than parked when the buffer is full: a key pressed while the host
+                // is behind should not surface minutes later as a stray character.
+                runCatching { input.trySend(buildJsonObject { put("type", JsonPrimitive("input")); put("data", JsonPrimitive(data)) }.toString()) }
+            }
+        }
+    }
+}
+
+/** The keys a phone keyboard does not have; each writes an ordinary escape sequence. */
+@Composable
+private fun TerminalKeyRow(enabled: Boolean, onSend: (String) -> Unit) {
+    val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(bottom = DsSpacing.tiny),
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TerminalKey(stringResource(R.string.ink_files_key_tab), enabled) { haptics.tap(); onSend("\t") }
+        TerminalKey(stringResource(R.string.ink_files_key_esc), enabled) { haptics.tap(); onSend("\u001B") }
+        TerminalKey(stringResource(R.string.ink_files_key_up), enabled) { haptics.tap(); onSend("\u001B[A") }
+        TerminalKey(stringResource(R.string.ink_files_key_down), enabled) { haptics.tap(); onSend("\u001B[B") }
+        TerminalKey(stringResource(R.string.ink_files_key_ctrl_c), enabled) { haptics.tap(); onSend("\u0003") }
+        TerminalKey(stringResource(R.string.ink_files_clear_terminal), enabled) { haptics.tap(); onSend("\u000C") }
+        TerminalKey(stringResource(R.string.ink_files_send_enter), enabled, primary = true) { haptics.confirm(); onSend("\r") }
+    }
+}
+
+@Composable
+private fun TerminalKey(label: String, enabled: Boolean, primary: Boolean = false, onClick: () -> Unit) {
+    val colors = DsTheme.colors
+    val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed && enabled) DsAnimations.Scale.pressed else DsAnimations.Scale.normal,
+        animationSpec = DsAnimations.pressScale,
+        label = "keyScale",
+    )
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier
+            .heightIn(min = DsSizes.chip)
+            .alpha(if (enabled) 1f else 0.45f)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
+        shape = DsShapes.pillFull,
+        color = if (primary) colors.brandPrimary else colors.bgLayer3,
+        contentColor = if (primary) colors.onBrandPrimary else colors.labelSecondary,
+        border = if (primary) null else androidx.compose.foundation.BorderStroke(1.dp, colors.borderL2),
+        interactionSource = interaction,
+    ) {
+        Box(Modifier.padding(horizontal = DsSpacing.medium), contentAlignment = Alignment.Center) {
+            Text(label, style = DsType.mono12, maxLines = 1)
+        }
     }
 }
 
@@ -461,3 +662,5 @@ private suspend fun followLegacy(
         pump.cancel()
     }
 }
+
+

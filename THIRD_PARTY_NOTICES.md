@@ -7,7 +7,9 @@ repository's sources.
 ## Feather
 
 Fifteen glyphs from the Feather icon set are traced as Compose `ImageVector`s in
-`app/src/main/java/com/labteto/dshmobile/ui/components/FeatherIcons.kt`.
+`app/src/main/java/com/labteto/dshmobile/ui/components/FeatherIcons.kt`, and the few more the file
+viewer needs (download, expand, play, pause, zoom, wrap and similar) in
+`app/src/main/java/com/labteto/dshmobile/ui/screens/main/preview/PreviewIcons.kt`.
 
 - Project: https://feathericons.com
 - Source: https://github.com/feathericons/feather

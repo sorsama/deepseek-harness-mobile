@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- File viewer: header and actions -->
+    <string name="preview_open_full">Полный просмотр</string>
+    <string name="preview_save_copy">Сохранить копию</string>
+    <string name="preview_saved">Сохранено на устройстве</string>
+    <string name="preview_save_failed">Не удалось сохранить файл</string>
+    <string name="preview_copy_path">Копировать путь</string>
+    <string name="preview_refresh">Обновить</string>
+    <string name="preview_more_actions">Ещё действия</string>
+    <string name="preview_kind_text">Текст</string>
+    <string name="preview_kind_binary">Двоичный</string>
+    <!-- View modes -->
+    <string name="preview_mode_pretty">Читаемый</string>
+    <string name="preview_mode_tree">Дерево</string>
+    <string name="preview_mode_raw">Исходный</string>
+    <string name="preview_mode_table">Таблица</string>
+    <!-- States -->
+    <string name="preview_too_large_title">Слишком большой для просмотра</string>
+    <string name="preview_too_large_body">Размер файла: %1$s. Копию можно сохранить на устройстве.</string>
+    <string name="preview_binary_title">Этот файл нельзя показать</string>
+    <string name="preview_binary_body">Это двоичный файл. Вот его первые байты. Сохраните копию, чтобы открыть в другом приложении.</string>
+    <string name="preview_hex_note">Первые %1$s из %2$s</string>
+    <string name="preview_empty_file">Файл пустой</string>
+    <string name="preview_cant_show_title">Не удаётся показать файл</string>
+    <string name="preview_image_unsupported">Этот телефон не может показать такое изображение. Сохраните копию, чтобы открыть в другом приложении.</string>
+    <string name="preview_media_unsupported">Этот телефон не может воспроизвести этот файл. Сохраните копию, чтобы открыть в другом приложении.</string>
+    <string name="preview_text_truncated">Показаны первые %1$s. Сохраните копию, чтобы получить весь файл.</string>
+    <string name="preview_json_invalid">Это некорректный JSON</string>
+    <string name="preview_json_at">Строка %1$d, столбец %2$d</string>
+    <string name="preview_json_at_line">Строка %1$d</string>
+    <string name="preview_notebook_invalid">Это не похоже на блокнот</string>
+    <string name="preview_output_hidden">Этот вывод нельзя показать здесь</string>
+    <string name="preview_table_truncated">Показано строк: %1$d из %2$d</string>
+    <string name="preview_table_summary">Строк: %1$d · Столбцов: %2$d</string>
+    <string name="preview_table_partial">Загружено строк: %1$d</string>
+    <!-- Text viewer -->
+    <string name="preview_wrap">Переносить строки</string>
+    <string name="preview_line_numbers">Номера строк</string>
+    <string name="preview_find">Найти в файле</string>
+    <string name="preview_find_placeholder">Найти</string>
+    <string name="preview_find_none">Ничего не найдено</string>
+    <string name="preview_find_next">Следующее совпадение</string>
+    <string name="preview_find_previous">Предыдущее совпадение</string>
+    <string name="preview_find_partial">Поиск идёт только по загруженной части</string>
+    <string name="preview_expand">Развернуть</string>
+    <string name="preview_collapse">Свернуть</string>
+    <string name="preview_json_more">Скрыто строк: %1$s</string>
+    <!-- Image, PDF and media viewers -->
+    <string name="preview_zoom_in">Увеличить</string>
+    <string name="preview_zoom_out">Уменьшить</string>
+    <string name="preview_fit">По размеру экрана</string>
+    <string name="preview_fill">Заполнить экран</string>
+    <string name="preview_prev_page">Предыдущая страница</string>
+    <string name="preview_next_page">Следующая страница</string>
+    <string name="preview_pdf_pages">Страниц: %1$d</string>
+    <string name="preview_play">Воспроизвести</string>
+    <string name="preview_pause">Пауза</string>
+    <string name="preview_seek">Позиция воспроизведения</string>
+    <!-- Archives and fonts -->
+    <string name="preview_archive_summary">Элементов: %1$d</string>
+    <string name="preview_archive_truncated">Показаны первые элементы: %1$d</string>
+    <string name="preview_archive_failed">Не удалось прочитать архив</string>
+    <string name="preview_font_failed">Не удалось загрузить шрифт</string>
+</resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ink redesign: sessions drawer, chat chrome and docks. Area-owned by impl-chat. -->
+<resources>
+    <string name="ink_chat_sessions">会话</string>
+    <string name="ink_chat_filter_all">全部 %1$d</string>
+    <string name="ink_chat_filter_running">运行中 %1$d</string>
+    <string name="ink_chat_filter_needs_you">待你处理 %1$d</string>
+    <string name="ink_chat_streaming">流式输出</string>
+    <string name="ink_chat_review">查看</string>
+    <string name="ink_chat_approve">批准</string>
+    <string name="ink_chat_start_task">在 %1$s 上开始任务…</string>
+    <string name="ink_chat_files_tab">文件 · %1$d</string>
+    <string name="ink_chat_files_empty">尚无文件更改</string>
+    <string name="ink_chat_steer_hint">引导智能体…</string>
+    <string name="ink_chat_goal_dock">目标 · %1$s</string>
+    <string name="ink_chat_more">更多</string>
+    <string name="ink_chat_queue_next_turn">下一回合</string>
+    <string name="ink_chat_workspaces">项目</string>
+    <string name="ink_chat_today">今天</string>
+    <string name="ink_chat_yesterday">昨天</string>
+    <string name="ink_chat_changed_this_session">本会话中的更改</string>
+</resources>

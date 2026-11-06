@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sessions drawer: ordering, grouping and dragging -->
+    <string name="chatlist_sort_project">จัดกลุ่มตามโปรเจกต์</string>
+    <string name="chatlist_group_other">อื่น ๆ</string>
+    <string name="chatlist_move_up">เลื่อนขึ้น</string>
+    <string name="chatlist_move_down">เลื่อนลง</string>
+    <string name="chatlist_move_announce">ย้ายไปตำแหน่งที่ %1$d จาก %2$d</string>
+    <string name="chatlist_reorder_scope">ย้ายภายใน %1$s</string>
+    <string name="chatlist_reorder_projects">กำลังย้ายโปรเจกต์</string>
+    <string name="chatlist_reorder_blocked">เซสชันย้ายได้เฉพาะภายในโปรเจกต์ของตัวเอง</string>
+    <string name="chatlist_reorder_failed">ย้ายเซสชันนั้นไม่ได้ เซสชันกลับไปอยู่ที่เดิมแล้ว</string>
+    <string name="chatlist_reorder_project_failed">ย้ายโปรเจกต์นั้นไม่ได้ โปรเจกต์กลับไปอยู่ที่เดิมแล้ว</string>
+    <string name="chatlist_project_collapse">ยุบ %1$s</string>
+    <string name="chatlist_project_expand">ขยาย %1$s</string>
+
+    <!-- Sessions drawer: archived filter and the needs-you card -->
+    <string name="chatlist_archived_none">ยังไม่มีอะไรในที่เก็บถาวร</string>
+    <string name="chatlist_restore_failed">กู้คืนเซสชันนั้นไม่ได้</string>
+    <string name="chatlist_approve_long">คำสั่งยาว อ่านให้ครบก่อนอนุมัติ</string>
+</resources>

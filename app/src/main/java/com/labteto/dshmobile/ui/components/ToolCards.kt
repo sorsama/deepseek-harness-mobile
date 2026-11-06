@@ -26,10 +26,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -88,33 +91,45 @@ fun ToolCard(
 
 // ---- Header helpers ---------------------------------------------------------
 
+@Composable
 private fun ToolCardView.displayTitle(): String = when (this) {
-    is ToolCardView.GenericCard -> title ?: kind ?: "Tool"
-    is ToolCardView.TerminalCard -> title ?: "Terminal"
-    is ToolCardView.DiffCard -> title ?: "Diff"
-    is ToolCardView.SearchCard -> title ?: "Search"
+    is ToolCardView.GenericCard -> title ?: kind ?: stringResource(R.string.toolcard_title_tool)
+    is ToolCardView.TerminalCard -> title ?: stringResource(R.string.toolcard_title_terminal)
+    is ToolCardView.DiffCard -> title ?: stringResource(R.string.toolcard_title_diff)
+    is ToolCardView.SearchCard -> title ?: stringResource(R.string.toolcard_title_search)
     is ToolCardView.ReadCard -> label
-    is ToolCardView.WebCard -> title ?: "Web"
+    is ToolCardView.WebCard -> title ?: stringResource(R.string.toolcard_title_web)
 }
 
+@Composable
 private fun ToolCardView.summary(): String? = when (this) {
     is ToolCardView.GenericCard ->
-        content?.size?.let { "$it block(s)" } ?: locations?.size?.let { "$it location(s)" }
-    is ToolCardView.TerminalCard -> when {
-        running == true -> "running"
-        signal != null -> "killed by $signal"
-        exitCode != null -> "exit $exitCode"
-        else -> description ?: cwd
-    }
+        content?.size?.let { pluralStringResource(R.plurals.toolcard_blocks, it, it) }
+            ?: locations?.size?.let { pluralStringResource(R.plurals.toolcard_locations, it, it) }
+    is ToolCardView.TerminalCard -> terminalStatus() ?: description ?: cwd
     is ToolCardView.DiffCard -> {
         val (added, removed, files) = diffStats(diffs)
-        "+$added -$removed · $files file(s)"
+        "+$added -$removed · " + pluralStringResource(R.plurals.toolcard_files, files, files)
     }
-    is ToolCardView.SearchCard -> "${total ?: resultCount()} result(s)"
-    is ToolCardView.ReadCard -> "$totalLines lines"
+    is ToolCardView.SearchCard -> (total ?: resultCount()).let { pluralStringResource(R.plurals.toolcard_results, it, it) }
+    is ToolCardView.ReadCard -> pluralStringResource(R.plurals.toolcard_lines, totalLines, totalLines)
     is ToolCardView.WebCard -> when (val kind = kind) {
-        is WebCardKind.Search -> kind.answer?.take(64) ?: "${kind.sources.size} source(s)"
+        is WebCardKind.Search -> kind.answer?.take(64)
+            ?: kind.sources.size.let { pluralStringResource(R.plurals.toolcard_sources, it, it) }
         is WebCardKind.Fetch -> kind.statusCode?.let { "HTTP $it" } ?: kind.url
+    }
+}
+
+/** "running", "killed by SIGTERM" or "exit 1" for a terminal card; null when it has none of those. */
+@Composable
+private fun ToolCardView.TerminalCard.terminalStatus(): String? {
+    val signal = signal
+    val exitCode = exitCode
+    return when {
+        running == true -> stringResource(R.string.toolcard_running)
+        signal != null -> stringResource(R.string.toolcard_killed_by, signal)
+        exitCode != null -> stringResource(R.string.toolcard_exit_code, exitCode)
+        else -> null
     }
 }
 
@@ -203,11 +218,9 @@ private fun TerminalBody(card: ToolCardView.TerminalCard) {
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
-            val status = when {
-                card.signal != null -> "killed by ${card.signal}"
-                card.exitCode != null -> "exit ${card.exitCode}"
-                else -> null
-            }
+            // The status line under the output is a finished call's: while it runs, the header
+            // already says so.
+            val status = if (card.running == true) null else card.terminalStatus()
             if (status != null) {
                 val ok = card.exitCode == 0 && card.signal == null
                 Text(
@@ -241,8 +254,11 @@ private fun DiffBody(card: ToolCardView.DiffCard) {
                 Column {
                     lines.forEach { line ->
                         Row {
-                            Text("${line.oldLine ?: ""} ${line.newLine ?: ""}", style = DsType.caption11,
-                                color = colors.labelCaption, modifier = Modifier.width(54.dp))
+                            // Two cells, one line each: both numbers in one narrow text wrapped onto
+                            // a second line once either reached four digits, and pushed the code
+                            // under it out of step with its own gutter.
+                            DiffGutterCell(line.oldLine)
+                            DiffGutterCell(line.newLine)
                             DiffLine(line.kind.toString(), line.text, when (line.kind) {
                                 '+' -> colors.success
                                 '-' -> colors.error
@@ -259,10 +275,31 @@ private fun DiffBody(card: ToolCardView.DiffCard) {
             Spacer(Modifier.width(4.dp))
             Text("-$removed", style = DsType.caption11Strong, color = colors.error)
             Spacer(Modifier.width(4.dp))
-            Text("· $files file(s)", style = DsType.caption11, color = colors.labelCaption)
+            Text(
+                "· " + pluralStringResource(R.plurals.toolcard_files, files, files),
+                style = DsType.caption11,
+                color = colors.labelCaption,
+            )
         }
     }
 }
+
+/** One line number of a diff's gutter: a fixed width, right-aligned, and never wrapped. */
+@Composable
+private fun DiffGutterCell(number: Int?) {
+    Text(
+        number?.toString().orEmpty(),
+        style = DsType.caption11,
+        color = DsTheme.colors.labelCaption,
+        textAlign = TextAlign.End,
+        maxLines = 1,
+        softWrap = false,
+        modifier = Modifier.width(DiffGutterCellWidth).padding(end = 4.dp),
+    )
+}
+
+/** Room for five digits at the caption size, so a very long file still fits its cell. */
+private val DiffGutterCellWidth = 36.dp
 
 @Composable
 private fun DiffLine(prefix: String, line: String, color: Color) {
@@ -323,7 +360,7 @@ private fun SearchBody(card: ToolCardView.SearchCard) {
         }
         if (card.truncated) {
             Text(
-                "showing $shown of ${card.total ?: shown}",
+                stringResource(R.string.toolcard_showing_of, shown, card.total ?: shown),
                 style = DsType.caption11,
                 color = colors.labelCaption,
             )
@@ -336,29 +373,30 @@ private fun ReadBody(card: ToolCardView.ReadCard) {
     val colors = DsTheme.colors
     if (card.lines.isEmpty()) {
         Text(
-            "(${card.totalLines} lines)",
+            "(" + pluralStringResource(R.plurals.toolcard_lines, card.totalLines, card.totalLines) + ")",
             style = DsType.caption11,
             color = colors.labelCaption,
         )
         return
     }
     val lineStyle = DsType.mdCode
-    Row(Modifier.fillMaxWidth()) {
-        Column(Modifier.width(48.dp)) {
-            card.lines.forEach {
+    // One row per source line, number and text together. They were two independent columns, so the
+    // first line long enough to wrap made every row under it taller than its number, and line N's
+    // number ended up beside line N+k's text.
+    Column(Modifier.fillMaxWidth()) {
+        card.lines.forEach {
+            Row(Modifier.fillMaxWidth()) {
                 Text(
                     "${it.number}",
                     style = lineStyle,
                     color = colors.labelCaption,
                     textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier.width(48.dp),
                 )
-            }
-        }
-        Spacer(Modifier.width(10.dp))
-        Column(Modifier.weight(1f)) {
-            card.lines.forEach {
-                Text(it.text, style = lineStyle, color = colors.labelPrimary, modifier = Modifier.fillMaxWidth())
+                Spacer(Modifier.width(10.dp))
+                Text(it.text, style = lineStyle, color = colors.labelPrimary, modifier = Modifier.weight(1f))
             }
         }
     }
@@ -413,7 +451,7 @@ private fun WebBody(card: ToolCardView.WebCard) {
                 }
                 if (kind.sources.size > 8) {
                     Text(
-                        "+${kind.sources.size - 8} more",
+                        stringResource(R.string.toolcard_more, kind.sources.size - 8),
                         style = DsType.caption11,
                         color = colors.labelCaption,
                     )
@@ -449,7 +487,7 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         card.rawInput?.let { raw ->
-            SectionLabel("IN")
+            SectionLabel(stringResource(R.string.toolcard_section_in))
             Text(
                 prettyJson(raw),
                 style = DsType.mdCode,
@@ -463,7 +501,7 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
             )
         }
         card.locations?.takeIf { it.isNotEmpty() }?.let { locations ->
-            SectionLabel("LOCATIONS")
+            SectionLabel(stringResource(R.string.toolcard_section_locations))
             locations.forEach { location ->
                 Text(
                     location,
@@ -475,7 +513,7 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
             }
         }
         card.content?.takeIf { it.isNotEmpty() }?.let { blocks ->
-            SectionLabel("OUT")
+            SectionLabel(stringResource(R.string.toolcard_section_out))
             blocks.forEach { block ->
                 when (block) {
                     is ContentBlockView.TextBlock -> Text(
@@ -490,9 +528,14 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
                     )
                     // A tool that returns a screenshot arrives here, not on the message path.
                     is ContentBlockView.ImageBlock -> AttachmentImage(
-                        attachmentId = block.attachmentId,
-                        intrinsicWidth = block.width,
-                        intrinsicHeight = block.height,
+                        ref = com.labteto.dshmobile.core.wire.dto.ImageAttachmentRef(
+                            attachmentId = block.attachmentId,
+                            mediaType = block.mediaType,
+                            bytes = block.bytes,
+                            width = block.width,
+                            height = block.height,
+                            name = block.name,
+                        ),
                         contentDescription = block.name,
                     )
                 }
@@ -504,7 +547,7 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
 @Composable
 private fun SectionLabel(text: String) {
     Text(
-        text,
+        text.uppercase(),
         style = DsType.caption11Strong,
         color = DsTheme.colors.labelCaption,
         modifier = Modifier.padding(bottom = 2.dp),

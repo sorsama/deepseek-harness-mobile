@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_files_search_files">بحث في الملفات</string>
+    <string name="ink_files_filter_files">تصفية هذا المجلد</string>
+    <string name="ink_files_no_matches">لا توجد ملفات مطابقة</string>
+    <string name="ink_files_all_files">كل الملفات</string>
+    <string name="ink_files_copy_contents">نسخ المحتوى</string>
+    <string name="ink_files_rendered">معروض</string>
+    <string name="ink_files_source">المصدر</string>
+    <string name="ink_files_output">المخرجات</string>
+    <string name="ink_files_key_tab">Tab</string>
+    <string name="ink_files_key_esc">Esc</string>
+    <string name="ink_files_key_up">سهم أعلى</string>
+    <string name="ink_files_key_down">سهم أسفل</string>
+    <string name="ink_files_key_ctrl_c">Ctrl C</string>
+    <string name="ink_files_clear_terminal">مسح الطرفية</string>
+    <string name="ink_files_send_enter">إرسال</string>
+    <string name="ink_files_automations_intro">مهام مجدولة ينفّذها الـharness على حاسوبك، حتى لو كان هاتفك بعيدًا.</string>
+    <string name="ink_files_new_automation">أتمتة جديدة</string>
+    <string name="ink_files_plugins_intro">تُثبَّت الإضافات على حاسوب الـharness. تسري التغييرات على الجلسات الجديدة.</string>
+    <string name="ink_files_archived_search">بحث في الجلسات المؤرشفة</string>
+    <string name="ink_files_this_week">هذا الأسبوع</string>
+    <string name="ink_files_this_month">هذا الشهر</string>
+    <string name="ink_files_changed_session">تغيّرت في هذه الجلسة</string>
+</resources>

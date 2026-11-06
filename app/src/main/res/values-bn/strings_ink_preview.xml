@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- File viewer: header and actions -->
+    <string name="preview_open_full">পূর্ণ প্রিভিউ</string>
+    <string name="preview_save_copy">কপি সেভ করুন</string>
+    <string name="preview_saved">আপনার ডিভাইসে সেভ হয়েছে</string>
+    <string name="preview_save_failed">ফাইলটি সেভ করা যায়নি</string>
+    <string name="preview_copy_path">পাথ কপি করুন</string>
+    <string name="preview_refresh">রিফ্রেশ করুন</string>
+    <string name="preview_more_actions">আরও বিকল্প</string>
+    <string name="preview_kind_text">টেক্সট</string>
+    <string name="preview_kind_binary">বাইনারি</string>
+    <!-- View modes -->
+    <string name="preview_mode_pretty">সাজানো</string>
+    <string name="preview_mode_tree">ট্রি</string>
+    <string name="preview_mode_raw">মূল</string>
+    <string name="preview_mode_table">টেবিল</string>
+    <!-- States -->
+    <string name="preview_too_large_title">প্রিভিউ করার জন্য খুব বড়</string>
+    <string name="preview_too_large_body">ফাইলটি %1$s। তবুও আপনি ডিভাইসে এর একটি কপি সেভ করতে পারেন।</string>
+    <string name="preview_binary_title">এই ফাইলটি দেখানো যাচ্ছে না</string>
+    <string name="preview_binary_body">এটি একটি বাইনারি ফাইল। এখানে এর প্রথম কয়েকটি বাইট দেখানো হলো। অন্য অ্যাপে খুলতে একটি কপি সেভ করুন।</string>
+    <string name="preview_hex_note">%2$s-এর প্রথম %1$s</string>
+    <string name="preview_empty_file">এই ফাইলটি খালি</string>
+    <string name="preview_cant_show_title">ফাইলটি দেখা যাচ্ছে না</string>
+    <string name="preview_image_unsupported">এই ফোন এই ধরনের ছবি দেখাতে পারে না। অন্য অ্যাপে খুলতে একটি কপি সেভ করুন।</string>
+    <string name="preview_media_unsupported">এই ফোন এই ফাইলটি চালাতে পারে না। অন্য অ্যাপে খুলতে একটি কপি সেভ করুন।</string>
+    <string name="preview_text_truncated">শুধু প্রথম %1$s দেখানো হচ্ছে। পুরো ফাইল পেতে একটি কপি সেভ করুন।</string>
+    <string name="preview_json_invalid">এটি সঠিক JSON নয়</string>
+    <string name="preview_json_at">লাইন %1$d, কলাম %2$d</string>
+    <string name="preview_json_at_line">লাইন %1$d</string>
+    <string name="preview_notebook_invalid">এটি নোটবুকের মতো মনে হচ্ছে না</string>
+    <string name="preview_output_hidden">এই আউটপুট এখানে দেখানো যাচ্ছে না</string>
+    <string name="preview_table_truncated">%2$dটির মধ্যে %1$dটি সারি দেখানো হচ্ছে</string>
+    <string name="preview_table_summary">সারি: %1$d · কলাম: %2$d</string>
+    <string name="preview_table_partial">এ পর্যন্ত লোড হওয়া সারি: %1$d</string>
+    <!-- Text viewer -->
+    <string name="preview_wrap">লাইন ভেঙে দেখান</string>
+    <string name="preview_line_numbers">লাইন নম্বর</string>
+    <string name="preview_find">ফাইলে খুঁজুন</string>
+    <string name="preview_find_placeholder">খুঁজুন</string>
+    <string name="preview_find_none">কিছু পাওয়া যায়নি</string>
+    <string name="preview_find_next">পরের ফলাফল</string>
+    <string name="preview_find_previous">আগের ফলাফল</string>
+    <string name="preview_find_partial">শুধু এ পর্যন্ত লোড হওয়া অংশে খোঁজা হয়</string>
+    <string name="preview_expand">খুলুন</string>
+    <string name="preview_collapse">গুটিয়ে নিন</string>
+    <string name="preview_json_more">আরও সারি দেখানো হয়নি: %1$s</string>
+    <!-- Image, PDF and media viewers -->
+    <string name="preview_zoom_in">জুম ইন</string>
+    <string name="preview_zoom_out">জুম আউট</string>
+    <string name="preview_fit">স্ক্রিনে ফিট করুন</string>
+    <string name="preview_fill">স্ক্রিন ভরুন</string>
+    <string name="preview_prev_page">আগের পেজ</string>
+    <string name="preview_next_page">পরের পেজ</string>
+    <string name="preview_pdf_pages">পেজ: %1$d</string>
+    <string name="preview_play">চালান</string>
+    <string name="preview_pause">পজ করুন</string>
+    <string name="preview_seek">প্লেব্যাকের অবস্থান</string>
+    <!-- Archives and fonts -->
+    <string name="preview_archive_summary">আইটেম: %1$d</string>
+    <string name="preview_archive_truncated">প্রথম %1$dটি আইটেম দেখানো হচ্ছে</string>
+    <string name="preview_archive_failed">এই আর্কাইভ পড়া যায়নি</string>
+    <string name="preview_font_failed">এই ফন্ট লোড করা যায়নি</string>
+</resources>

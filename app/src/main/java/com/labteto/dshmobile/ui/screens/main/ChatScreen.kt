@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,6 +49,7 @@ import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.core.wire.dto.CommandSubmitAttachment
 import com.labteto.dshmobile.core.wire.dto.ImageLimitsView
 import com.labteto.dshmobile.data.CommandOutcome
+import com.labteto.dshmobile.data.PermissionSwitchResult
 import com.labteto.dshmobile.data.PromptOutcome
 import com.labteto.dshmobile.data.QuestionOutcome
 import com.labteto.dshmobile.data.SessionStore
@@ -70,6 +72,8 @@ import com.labteto.dshmobile.ui.screens.main.commands.activeSlash
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.components.AnimatedPresence
 import com.labteto.dshmobile.ui.theme.DsTheme
+import com.labteto.dshmobile.ui.theme.DsSpacing
+import com.labteto.dshmobile.ui.theme.DsType
 import androidx.compose.ui.res.stringResource
 import com.labteto.dshmobile.R
 import java.util.UUID
@@ -92,6 +96,10 @@ fun ChatScreen(
     onOpenDetails: () -> Unit,
     onOpenDrawer: () -> Unit,
     detailsOpen: Boolean,
+    /** A subagent the Details panel asked to show; the Subagents sheet opens on it. */
+    subagentRequest: String? = null,
+    /** Called once the request has been taken, so the same child can be asked for again later. */
+    onSubagentRequestHandled: () -> Unit = {},
 ) {
     val store = rememberSessionStore()
     val hostsStore = rememberHostsStore()
@@ -111,6 +119,9 @@ fun ChatScreen(
     val subagents by store.subagents.collectAsStateWithLifecycle()
     val subagentConversation by store.subagentConversation.collectAsStateWithLifecycle()
     val subagentMode by store.subagentMode.collectAsStateWithLifecycle()
+    // Null for an ordinary session, non-null while a subagent child is open. A child is the
+    // harness's to drive, not the reader's: which controls still mean anything depends on it.
+    val currentSubagent by store.currentSubagent.collectAsStateWithLifecycle()
     val connectionError by store.connectionError.collectAsStateWithLifecycle()
     val loadingOlder by store.loadingOlder.collectAsStateWithLifecycle()
     val loadOlderFailed by store.loadOlderFailed.collectAsStateWithLifecycle()
@@ -156,6 +167,10 @@ fun ChatScreen(
     val eventTimes = remember(conversation?.journal) {
         conversation?.journal?.associate { it.seq to it.time }.orEmpty()
     }
+    // The goal loop's round counter, which the projection does not carry; read once per journal.
+    val goalRounds = remember(conversation?.journal) {
+        goalRoundsStarted(conversation?.journal.orEmpty())
+    }
     // A decorated command's picker (the phone's `popupSelect`), keyed by the command it serves.
     var popup by remember(composer.key) { mutableStateOf<Pair<String, CommandUiSpec.PopupSelect>?>(null) }
     // A message held and sent to rewind, by sequence and preview: rewind's picker, opened on its pick.
@@ -164,9 +179,28 @@ fun ChatScreen(
     var replaceDraftWith by remember(composer.key) { mutableStateOf<String?>(null) }
     var composerFocusTick by remember { mutableIntStateOf(0) }
 
+    // The Details panel's Subagents rows. The sheet closes the transcript stream when it goes, so
+    // opening it here, and only here, leaves no stream behind.
+    LaunchedEffect(subagentRequest) {
+        val childId = subagentRequest ?: return@LaunchedEffect
+        sheet = ChatSheet.Subagents
+        // On the screen's own scope: clearing the request below restarts this effect, and a load
+        // tied to it would be cancelled the moment it began.
+        scope.launch { store.openSubagentTranscript(childId) }
+        onSubagentRequestHandled()
+    }
+
     // Hoisted above the tab swap so each view keeps its own scroll position across switches.
     val chatListState = rememberLazyListState()
+    // What the transcript has already scrolled for, kept here for the same reason as its list state.
+    val transcriptMemory = remember { TranscriptMemory() }
+    // Which thinking panels are open, per message. One per open session: a reply settling replaces
+    // its row, and the reader's open panel has to outlive that.
+    val assistantMemory = remember(hostKey, currentSessionId) { AssistantMemory() }
     val trajectoryListState = rememberLazyListState()
+    val filesListState = rememberLazyListState()
+    // The session's changed files, shared by the Files tab label and the tab itself.
+    val sessionFiles = remember(conversation?.nodes) { sessionChangedFiles(conversation?.nodes.orEmpty()) }
 
     val commandFailed = stringResource(R.string.err_command_failed)
     val unknownCommand = stringResource(R.string.err_command_unknown)
@@ -176,6 +210,17 @@ fun ChatScreen(
             is CommandOutcome.Ok -> outcome.text?.takeIf { it.isNotBlank() }?.let { toast.second(it) }
             is CommandOutcome.Unknown -> toast.second(unknownCommand.format(outcome.line))
             is CommandOutcome.Failed -> toast.second(commandFailed.format(outcome.message))
+        }
+    }
+
+    val permissionUnconfirmed = stringResource(R.string.permission_unconfirmed)
+
+    /** Say so when a permission switch failed or went unconfirmed; the chip already shows the rest. */
+    fun reportPermission(result: PermissionSwitchResult) {
+        when (result) {
+            is PermissionSwitchResult.Failed -> report(result.outcome)
+            is PermissionSwitchResult.Unconfirmed -> toast.second(permissionUnconfirmed)
+            else -> Unit
         }
     }
 
@@ -476,16 +521,26 @@ fun ChatScreen(
             ChatTopBar(
                 title = title,
                 running = conversation?.running == true,
+                needsYou = pendingApproval?.sessionId == currentSessionId ||
+                    pendingQuestions?.sessionId == currentSessionId,
                 models = models,
+                // A child session runs on the model its parent gave it, and the host refuses a
+                // switch there; the chip states the model but offers no picker that could fail.
+                modelsEnabled = currentSubagent == null,
                 // The harness pins the preset once a session has started, so the chip — which
                 // reads as a picker — is only offered while the session is still blank. After
                 // that the preset is a fact, and the Details panel states it as one.
                 agentPresetLabel = currentSession?.agentPreset
-                    ?.takeIf { agentPresets?.modeSelectionEnabled != false && currentSession.blank }
+                    ?.takeIf {
+                        // Pinning a preset resolves the ordinary agent, which a child's identity
+                        // is not; the Details panel states the fact instead of offering a switch.
+                        currentSubagent == null && agentPresets?.modeSelectionEnabled != false && currentSession.blank
+                    }
                     ?.let { agentPresetLabel(it, agentPresets) },
                 subagentCount = subagents.size,
                 detailsOpen = detailsOpen,
                 tab = tab,
+                fileCount = sessionFiles.size,
                 onOpenDrawer = onOpenDrawer,
                 onOpenModels = { sheet = ChatSheet.Models },
                 onOpenHistory = { sheet = ChatSheet.History },
@@ -499,6 +554,7 @@ fun ChatScreen(
                 onOpenWorkspace = { panelKey = composer.key },
                 workspaceEnabled = currentSessionId != null,
                 historyEnabled = currentSessionId != null,
+                sessionOpen = currentSessionId != null,
             )
 
             AnimatedPresence(connectionError) {
@@ -540,6 +596,7 @@ fun ChatScreen(
                     null
                 },
                 onMention = if (currentSessionId != null) ({ path, folder -> mention(path, folder) }) else null,
+                assistantMemory = assistantMemory,
             )
 
             BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
@@ -573,6 +630,7 @@ fun ChatScreen(
                             onJumpConsumed = { pendingJumpSeq = null },
                             sentTick = sentTick,
                             followStreaming = appSettings.followStreamingReply,
+                            memory = transcriptMemory,
                             onSuggestion = if (currentSessionId != null) {
                                 { text -> draft = text; composer.selection = text.length }
                             } else {
@@ -589,6 +647,14 @@ fun ChatScreen(
                             loadOlderFailed = loadOlderFailed,
                             onLoadOlder = { scope.launch { store.loadOlder() } },
                         )
+                        // The files this session touched, the list behind the tab's own count. It
+                        // is a chat-owned view: the workspace browser is a separate screen opened
+                        // from the folder button at the end of the same tab row.
+                        ChatTab.Files -> SessionFilesTab(
+                            files = sessionFiles,
+                            cwd = workingDirectory,
+                            listState = filesListState,
+                        )
                     }
                 }
 
@@ -602,8 +668,17 @@ fun ChatScreen(
                         // Each dock slides in and out on its own, so one arriving mid-turn eases the
                         // transcript up rather than shoving it by a whole row in a single frame.
                         AnimatedPresence(parseTodos(conv.projections["todos"])?.takeIf { it.isNotEmpty() }) { TodoDock(it) }
-                        AnimatedPresence(parseGoal(conv.projections["goal"])) { GoalBar(it, store) }
-                        AnimatedPresence(conv.queue.takeIf { it.isNotEmpty() }) { QueueDock(it, store) }
+                        // A goal's controls are `goals/*` calls, refused for a child session; the
+                        // bar states nothing the agent chat can act on, so it is not drawn there.
+                        AnimatedPresence(parseGoal(conv.projections["goal"]).takeIf { currentSubagent == null }) {
+                            GoalBar(it, store, roundsStarted = goalRounds)
+                        }
+                        // Queue mutations go through `session/updateQueue`, which the host accepts
+                        // only for a live continuable child; a read-only agent's dock states what
+                        // is pending without offering verbs that can only be refused.
+                        AnimatedPresence(conv.queue.takeIf { it.isNotEmpty() }) {
+                            QueueDock(it, store, blocked = currentSubagent?.continuable == false)
+                        }
                     }
                 }
 
@@ -657,9 +732,9 @@ fun ChatScreen(
                             onApprove = { decide(review.approve) },
                             onDecline = { review.decline?.let { decide(it) } },
                             // Wanting to talk it over first is not one of the options the asker stated,
-                            // so it ends the request rather than answering it with the refusal.
+                            // so it ends the request rather than answering it with the refusal. The
+                            // draft stays: what the reader typed is what they came to send next.
                             onDiscuss = {
-                                draft = ""
                                 settle { store.dismissQuestions(questions.sessionId) }
                             },
                         )
@@ -704,6 +779,18 @@ fun ChatScreen(
                     )
                 }
 
+                // A child whose mode is `one-shot`, and one whose own descriptor has not arrived
+                // yet, refuses every prompt. Saying so above the composer beats a dead field that
+                // looks like a loading state: the transcript stays readable either way.
+                if (currentSubagent?.continuable == false) {
+                    Text(
+                        stringResource(R.string.subagents_readonly),
+                        style = DsType.caption11,
+                        color = colors.labelTertiary,
+                        modifier = Modifier.padding(horizontal = DsSpacing.medium),
+                    )
+                }
+
                 Composer(
                     modifier = Modifier.heightIn(max = composerMaxHeight),
                     references = composer.references,
@@ -733,13 +820,24 @@ fun ChatScreen(
                     onRetryAttachment = { index ->
                         (attachments.getOrNull(index) as? PendingAttachment.File)?.let { startUpload(it) }
                     },
-                    permissions = permissions,
+                    // The permission preset is changed through `/permission`, a command the host
+                    // resolves like any other agent operation — refused for a child session. No
+                    // chip rather than a chip whose only outcome is an error.
+                    permissions = permissions.takeIf { currentSubagent == null },
                     pendingPermission = pendingPermission,
-                    onPermissionPick = { value -> scope.launch { report(store.setPermissionPreset(value)) } },
+                    onPermissionPick = { value -> scope.launch { reportPermission(store.setPermissionPreset(value)) } },
                     contextBreakdown = contextBreakdown,
                     contextPressure = contextPressure,
-                    running = conversation?.running == true,
-                    enabled = currentSessionId != null && !composer.submitting,
+                    // Stop on a child is the subagent interrupt, which only exists for a
+                    // continuable one; offering the button on a one-shot child promised a route
+                    // the host does not have.
+                    running = conversation?.running == true && (currentSubagent?.continuable != false),
+                    // Only an ordinary session and a continuable child can be prompted; every
+                    // other child refuses, and the notice above the composer says so.
+                    enabled = currentSessionId != null && (currentSubagent?.continuable != false),
+                    // A send in flight holds the buttons but not the text field, so the keyboard
+                    // stays up between messages.
+                    submitting = composer.submitting,
                     preparing = composer.preparing,
                     onOpenSheet = { sheet = ChatSheet.Commands },
                     // A lambda, not `::send`. The composer holds this through rememberUpdatedState,
@@ -817,6 +915,10 @@ fun ChatScreen(
             mode = mode,
             running = conversation?.running == true,
             canAttach = currentSessionId != null && !composer.preparing && !composer.submitting,
+            // Files never reach a child: the host refuses every subagent upload, while image parts
+            // ride `subagents/prompt` normally. The sheet states the reason instead of offering a
+            // row that can only fail.
+            fileAttachEnabled = currentSubagent == null,
             onModeChange = { mode = it },
             onAttach = {
                 if (!composer.preparing && store.composers.imagePickTarget == null) {
@@ -836,7 +938,14 @@ fun ChatScreen(
                     toast.second(context.getString(R.string.err_command_no_images, name))
                 }
             },
-            onPrefillDraft = { prefix -> draft = prefix },
+            // A picked command or skill goes in front of what the reader already typed, as its
+            // argument, rather than replacing it.
+            onPrefillDraft = { prefix ->
+                val next = prefilledDraft(draft, prefix)
+                draft = next
+                composer.selection = next.length
+                composerFocusTick++
+            },
             onDismiss = { sheet = null },
         )
         ChatSheet.Models -> ModelsSheet(models = models, store = store, onDismiss = { sheet = null })

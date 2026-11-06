@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="splash_tagline">आपका DeepSeek Harness, आपकी जेब में।</string>
+    <string name="splash_connecting">%1$s से कनेक्ट हो रहा है…</string>
+    <string name="splash_reconnecting">%1$s से फिर कनेक्ट हो रहा है…</string>
+    <string name="appearance_customize_hint">रंग और हैप्टिक फ़ीडबैक तुरंत लागू हो जाते हैं।</string>
+    <string name="appearance_accent">एक्सेंट रंग</string>
+    <string name="appearance_accent_ink">इंक नीला</string>
+    <string name="appearance_accent_violet">बैंगनी</string>
+    <string name="appearance_accent_teal">टील</string>
+    <string name="appearance_accent_green">हरा</string>
+    <string name="appearance_accent_amber">एम्बर</string>
+    <string name="appearance_accent_rose">गुलाबी</string>
+    <string name="appearance_accent_mono">मोनो</string>
+    <string name="appearance_amoled">पूरा काला</string>
+    <string name="appearance_amoled_hint">OLED स्क्रीन के लिए पूरी तरह काली पृष्ठभूमि</string>
+    <string name="appearance_text_size">टेक्स्ट साइज़</string>
+    <string name="appearance_text_size_compact">कॉम्पैक्ट</string>
+    <string name="appearance_text_size_default">डिफ़ॉल्ट</string>
+    <string name="appearance_text_size_large">बड़ा</string>
+    <string name="appearance_text_size_larger">बहुत बड़ा</string>
+    <string name="appearance_haptics">हैप्टिक फ़ीडबैक</string>
+    <string name="appearance_haptics_hint">कुछ दबाने या चुनने पर हल्का वाइब्रेशन</string>
+    <string name="appearance_reset">दिखावट रीसेट करें</string>
+
+    <!-- Appearance: custom accent colour -->
+    <string name="appearance_accent_custom">कस्टम</string>
+    <string name="appearance_accent_custom_value">कस्टम, %1$s</string>
+    <string name="appearance_custom_title">कस्टम एक्सेंट</string>
+    <string name="appearance_custom_hint">एक रंग चुनें। टेक्स्ट आसानी से पढ़ा जा सके, इसलिए हर थीम में उसकी चमक अपने आप ठीक की जाती है।</string>
+    <string name="appearance_custom_preview">प्रीव्यू</string>
+    <string name="appearance_custom_sample_button">बटन</string>
+    <string name="appearance_custom_sample_chip">चिप</string>
+    <string name="appearance_custom_sample_link">लिंक</string>
+    <string name="appearance_custom_area">सैचुरेशन और ब्राइटनेस</string>
+    <string name="appearance_custom_area_state">सैचुरेशन %1$d%%, ब्राइटनेस %2$d%%</string>
+    <string name="appearance_custom_more_saturation">ज़्यादा सैचुरेशन</string>
+    <string name="appearance_custom_less_saturation">कम सैचुरेशन</string>
+    <string name="appearance_custom_more_brightness">ज़्यादा ब्राइटनेस</string>
+    <string name="appearance_custom_less_brightness">कम ब्राइटनेस</string>
+    <string name="appearance_custom_hue">ह्यू</string>
+    <string name="appearance_custom_hue_state">%1$d°</string>
+    <string name="appearance_custom_hex">हेक्स रंग</string>
+    <string name="appearance_custom_hex_invalid">छह हेक्स अंक दर्ज करें, जैसे #6E9BFF</string>
+    <string name="appearance_custom_quick_picks">झटपट विकल्प</string>
+    <string name="appearance_custom_quick_pick">%1$s चुनें</string>
+    <string name="appearance_custom_apply">लागू करें</string>
+</resources>

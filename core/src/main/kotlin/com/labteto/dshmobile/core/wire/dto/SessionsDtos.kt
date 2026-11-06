@@ -358,9 +358,24 @@ data class EncodedFileUploadRequest(
     @SerialName("name") val name: String? = null,
 )
 
-/** Request payload of `session.attachment`. */
+/**
+ * Request payload of `session.attachment`.
+ *
+ * Harness 0.2.1-alpha.1 named the image by `attachmentId`; from 0.2.2 the method takes the whole
+ * [ImageAttachmentRef] instead, and the gateway verifies id, format, byte length and dimensions
+ * against the stored reference. Sending only an id to a current host fails the gateway's strict
+ * request codec (`wire field "request" failed boundary validation`), which is why the client now
+ * sends the reference and retries the legacy shape for older hosts.
+ */
 @Serializable
 data class SessionAttachmentRequest(
+    @SerialName("sessionId") val sessionId: String,
+    @SerialName("attachment") val attachment: ImageAttachmentRef,
+)
+
+/** Pre-0.2.2 `session.attachment` request, kept for the fallback path to older hosts. */
+@Serializable
+data class LegacySessionAttachmentRequest(
     @SerialName("sessionId") val sessionId: String,
     @SerialName("attachmentId") val attachmentId: String,
 )

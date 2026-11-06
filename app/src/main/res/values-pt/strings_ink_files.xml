@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_files_search_files">Pesquisar arquivos</string>
+    <string name="ink_files_filter_files">Filtrar esta pasta</string>
+    <string name="ink_files_no_matches">Nenhum arquivo correspondente</string>
+    <string name="ink_files_all_files">Todos os arquivos</string>
+    <string name="ink_files_copy_contents">Copiar conteúdo</string>
+    <string name="ink_files_rendered">Renderizado</string>
+    <string name="ink_files_source">Código-fonte</string>
+    <string name="ink_files_output">Saída</string>
+    <string name="ink_files_key_tab">Tab</string>
+    <string name="ink_files_key_esc">Esc</string>
+    <string name="ink_files_key_up">Seta para cima</string>
+    <string name="ink_files_key_down">Seta para baixo</string>
+    <string name="ink_files_key_ctrl_c">Ctrl C</string>
+    <string name="ink_files_clear_terminal">Limpar terminal</string>
+    <string name="ink_files_send_enter">Enviar</string>
+    <string name="ink_files_automations_intro">Tarefas agendadas que o harness executa no seu computador, mesmo com o telefone longe.</string>
+    <string name="ink_files_new_automation">Nova automação</string>
+    <string name="ink_files_plugins_intro">Os plugins são instalados no computador do harness. As mudanças valem para novas sessões.</string>
+    <string name="ink_files_archived_search">Pesquisar sessões arquivadas</string>
+    <string name="ink_files_this_week">Esta semana</string>
+    <string name="ink_files_this_month">Este mês</string>
+    <string name="ink_files_changed_session">Alterados nesta sessão</string>
+</resources>

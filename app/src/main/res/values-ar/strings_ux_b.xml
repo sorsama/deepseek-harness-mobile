@@ -19,7 +19,7 @@
     <string name="ux_b_view_answers">عرض الإجابات</string>
     <string name="ux_b_skipped">تم التخطي</string>
     <string name="ux_b_answer">الإجابة</string>
-    <string name="ux_b_automation_unavailable">هذا المضيف لا يدعم الأتمتة.</string>
+    <string name="ux_b_automation_unavailable">هذا harness لا يدعم الأتمتة.</string>
     <plurals name="ux_b_countdown_seconds">
         <item quantity="zero">سيستمر العمل خلال %1$s ثانية</item>
         <item quantity="one">سيستمر العمل خلال ثانية واحدة (%1$s)</item>

@@ -36,7 +36,7 @@ fun StateDot(
 ) {
     val color = when (state) {
         StateDotState.Idle -> DsTheme.colors.labelCaption
-        StateDotState.Running -> Ds.Deepseek450
+        StateDotState.Running -> DsTheme.colors.accent
         StateDotState.Done -> DsTheme.colors.success
         StateDotState.Warning -> DsTheme.colors.warn
         StateDotState.Error -> DsTheme.colors.error

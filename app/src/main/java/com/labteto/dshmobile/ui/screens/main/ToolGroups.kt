@@ -167,7 +167,7 @@ internal fun ToolGroupRow(calls: List<ToolCallNode>, context: ChatNodeContext) {
     val elapsed = if (starts.isNotEmpty() && ends.isNotEmpty()) (ends.max() - starts.min()).coerceAtLeast(0) else null
     Column(Modifier.fillMaxWidth().clip(DsShapes.block).background(colors.bgLayer1)
         .border(1.dp, colors.borderL2, DsShapes.block)) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 36.dp).clickable(role = Role.Button) { expanded = !expanded }
+        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).clickable(role = Role.Button) { expanded = !expanded }
             .padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(FeatherIcons.Tool, null, Modifier.size(14.dp), tint = colors.labelTertiary)
@@ -190,7 +190,7 @@ internal fun ContextGroupRow(nodes: List<ChatNode>, context: ChatNodeContext) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth().clip(DsShapes.block).background(colors.bgLayer1)
         .border(1.dp, colors.borderL2, DsShapes.block)) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 36.dp).clickable(role = Role.Button) { expanded = !expanded }
+        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).clickable(role = Role.Button) { expanded = !expanded }
             .padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(FeatherIcons.Layers, null, Modifier.size(14.dp), tint = colors.labelCaption)
             Spacer(Modifier.width(8.dp))
@@ -214,7 +214,7 @@ internal fun ProcessRow(row: TranscriptRow.Process, context: ChatNodeContext) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth().clip(DsShapes.block).background(colors.bgLayer1)
         .border(1.dp, colors.borderL2, DsShapes.block)) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 36.dp).clickable(role = Role.Button) { expanded = !expanded }
+        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).clickable(role = Role.Button) { expanded = !expanded }
             .padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(FeatherIcons.Activity, null, Modifier.size(14.dp), tint = colors.labelTertiary)

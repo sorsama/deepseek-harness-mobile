@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ink redesign: sessions drawer, chat chrome and docks. Area-owned by impl-chat. -->
+<resources>
+    <string name="ink_chat_sessions">เซสชัน</string>
+    <string name="ink_chat_filter_all">ทั้งหมด %1$d</string>
+    <string name="ink_chat_filter_running">กำลังทำงาน %1$d</string>
+    <string name="ink_chat_filter_needs_you">รอคุณอยู่ %1$d</string>
+    <string name="ink_chat_streaming">กำลังสตรีม</string>
+    <string name="ink_chat_review">ตรวจสอบ</string>
+    <string name="ink_chat_approve">อนุมัติ</string>
+    <string name="ink_chat_start_task">เริ่มงานบน %1$s…</string>
+    <string name="ink_chat_files_tab">ไฟล์ · %1$d</string>
+    <string name="ink_chat_files_empty">ยังไม่มีไฟล์ที่เปลี่ยน</string>
+    <string name="ink_chat_steer_hint">แทรกคำสั่งให้เอเจนต์…</string>
+    <string name="ink_chat_goal_dock">เป้าหมาย · %1$s</string>
+    <string name="ink_chat_more">เพิ่มเติม</string>
+    <string name="ink_chat_queue_next_turn">เทิร์นถัดไป</string>
+    <string name="ink_chat_workspaces">โปรเจกต์</string>
+    <string name="ink_chat_today">วันนี้</string>
+    <string name="ink_chat_yesterday">เมื่อวาน</string>
+    <string name="ink_chat_changed_this_session">เปลี่ยนในเซสชันนี้</string>
+</resources>

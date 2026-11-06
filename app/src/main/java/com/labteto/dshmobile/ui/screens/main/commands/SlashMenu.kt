@@ -5,23 +5,30 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.dto.CommandDescriptor
 import com.labteto.dshmobile.core.wire.dto.SkillEntry
+import com.labteto.dshmobile.ui.components.FeatherIcons
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
+import com.labteto.dshmobile.ui.screens.main.GlyphTile
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -87,6 +94,10 @@ internal fun slashRows(query: String, commands: List<CommandDescriptor>, skills:
  * The `/` autocomplete above the composer: what the harness's own composer shows as you type a
  * slash line. A tap on a bare command submits it (and a decorated one opens its picker); a tap on
  * an argument-taking command or a skill completes the token and leaves the cursor after it.
+ *
+ * Styled as the top edge of a sheet: the Ink card surface, a bordered glyph per row, and the
+ * command's argument hint in monospace at the trailing edge so the list reads as a menu, not as
+ * three lines of grey text.
  */
 @Composable
 internal fun SlashMenu(
@@ -97,37 +108,68 @@ internal fun SlashMenu(
     modifier: Modifier = Modifier,
 ) {
     val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
     val rows = remember(query, commands, skills) { slashRows(query.query, commands, skills) }
     if (rows.isEmpty()) return
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = DsSpacing.medium),
-        shape = DsShapes.menu,
+        shape = DsShapes.block,
         color = colors.bgLayer2,
         border = BorderStroke(1.dp, colors.borderL1),
         shadowElevation = 6.dp,
     ) {
-        LazyColumn(Modifier.heightIn(max = 240.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 4.dp)) {
-            items(rows, key = { (if (it is SlashRow.Skill) "s:" else "c:") + it.name }) { row ->
+        LazyColumn(
+            Modifier.heightIn(max = 260.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = DsSpacing.tiny),
+        ) {
+            itemsIndexed(rows, key = { _, row -> (if (row is SlashRow.Skill) "s:" else "c:") + row.name }) { index, row ->
                 Row(
                     Modifier.fillMaxWidth()
-                        .clickable { onPick(row) }
-                        .padding(horizontal = DsSpacing.medium, vertical = 8.dp),
+                        .clip(DsShapes.row)
+                        .clickable {
+                            haptics.tap()
+                            onPick(row)
+                        }
+                        .heightIn(min = 46.dp)
+                        .padding(horizontal = DsSpacing.small, vertical = DsSpacing.xsmall),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+                    horizontalArrangement = Arrangement.spacedBy(DsSpacing.medium),
                 ) {
+                    GlyphTile(if (row is SlashRow.Skill) FeatherIcons.Zap else FeatherIcons.Terminal)
                     Column(Modifier.weight(1f)) {
-                        Text("/${row.name}", style = DsType.std14Strong, color = colors.labelPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(
+                            "/${row.name}",
+                            style = DsType.std14Strong,
+                            color = colors.labelPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                         if (row.description.isNotBlank()) {
-                            Text(row.description, style = DsType.caption11, color = colors.labelTertiary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(
+                                row.description,
+                                style = DsType.caption11,
+                                color = colors.labelTertiary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
                     }
                     val trailing = when (row) {
                         is SlashRow.Command -> row.descriptor.input?.hint
                         is SlashRow.Skill -> stringResource(R.string.skills_title)
                     }
-                    trailing?.let { Text(it, style = DsType.caption11, color = colors.labelCaption, maxLines = 1) }
+                    trailing?.let {
+                        Spacer(Modifier.width(DsSpacing.xsmall))
+                        Text(it, style = DsType.mono12, color = colors.labelCaption, maxLines = 1)
+                    }
+                }
+                if (index != rows.lastIndex) {
+                    HorizontalDivider(
+                        color = colors.borderL1,
+                        modifier = Modifier.padding(start = 44.dp),
+                    )
                 }
             }
         }

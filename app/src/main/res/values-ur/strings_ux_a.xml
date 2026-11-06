@@ -9,13 +9,13 @@
     <string name="ux_a_cron">%1$s · %2$s</string>
     <string name="ux_a_cron_expression">Cron قاعدہ: %1$s</string>
     <string name="ux_a_next_run">اگلی بار: %1$s (%2$s)</string>
-    <string name="ux_a_due_now">اب وقت ہے</string>
+    <string name="ux_a_due_now">وقت ہو گیا ہے</string>
     <string name="ux_a_in">%1$s میں</string>
     <string name="ux_a_overdue">%1$s کی تاخیر</string>
-    <string name="ux_a_retention">تاریخ میں زیادہ سے زیادہ %1$s اور %2$s رکھے جاتے ہیں۔</string>
+    <string name="ux_a_retention">ہسٹری میں زیادہ سے زیادہ %1$s اور %2$s رکھے جاتے ہیں۔</string>
     <string name="ux_a_load_error">فہرست لوڈ نہیں ہو سکی۔ دوبارہ کوشش کریں۔</string>
     <string name="ux_a_action_error">عمل مکمل نہیں ہو سکا۔ تازہ کر کے دوبارہ کوشش کریں۔</string>
-    <string name="ux_a_session_archived">یہ چیٹ محفوظ شدہ ہے۔</string>
+    <string name="ux_a_session_archived">یہ چیٹ آرکائیو ہو چکی ہے۔</string>
     <string name="ux_a_session_unavailable">یہ چیٹ اب دستیاب نہیں ہے۔</string>
     <string name="ux_a_date">تاریخ</string>
     <string name="ux_a_precise_time">وقت (HH:mm:ss، کسر اختیاری)</string>
@@ -23,7 +23,7 @@
     <string name="ux_a_interval_amount">وقفے کی مقدار</string>
     <string name="ux_a_interval_error">کم از کم 60 سیکنڈ کے وقفے کے لیے صحیح عدد درج کریں۔</string>
     <string name="ux_a_weekdays_error">ہفتے کا کم از کم ایک دن منتخب کریں۔</string>
-    <string name="ux_a_cron_advanced">Cron (اعلیٰ)</string>
+    <string name="ux_a_cron_advanced">Cron (ایڈوانسڈ)</string>
     <string name="ux_a_cron_error">پانچ درست cron خانے درج کریں: منٹ، گھنٹہ، دن، مہینہ، ہفتے کا دن۔</string>
     <string name="ux_a_zone_search">ٹائم زون تلاش کریں</string>
     <string name="ux_a_manage_plugins">پلگ ان کا نظم کریں</string>
@@ -42,13 +42,13 @@
     <string name="ux_a_phase_applying">تبدیلیاں لاگو ہو رہی ہیں…</string>
     <string name="ux_a_phase_cancelling">تنصیب منسوخ ہو رہی ہے…</string>
     <string name="ux_a_reason_required">پلگ ان کے نظم کے لیے یہ جزو ضروری ہے۔ اسے بند یا حذف نہیں کیا جا سکتا۔</string>
-    <string name="ux_a_reason_unaddressable">ہوسٹ کی ترتیب اس اندراج کو منفرد طور پر شناخت نہیں کر سکتی۔</string>
+    <string name="ux_a_reason_unaddressable">harness کی ترتیب اس اندراج کو دوسروں سے الگ نہیں پہچان سکتی۔</string>
     <string name="ux_a_reason_missing">یہ پلگ ان اب دستیاب نہیں۔ فہرست تازہ کریں۔</string>
     <string name="ux_a_reason_spec">درست پیکیج نام یا پتہ درج کریں۔</string>
     <string name="ux_a_reason_ambiguous">نصب شدہ پیکیج کی شناخت نہیں ہو سکی۔ فہرست تازہ کریں۔</string>
-    <string name="ux_a_reason_bundle">یہ پیکیج پلگ ان بنڈل ظاہر نہیں کرتا، یہاں نظم نہیں ہو سکتا۔</string>
+    <string name="ux_a_reason_bundle">یہ پیکیج پلگ ان بنڈل نہیں بتاتا، اس لیے اسے یہاں سنبھالا نہیں جا سکتا۔</string>
     <string name="ux_a_reason_removable">یہ پیکیج کسی اور پروفائل کا ہے یا پلگ ان کے نظم کے لیے ضروری ہے۔</string>
-    <string name="ux_a_reason_stop">یہ ہوسٹ پروفائل روکیں، پھر dsh plugin سے پیکیج ہٹائیں۔</string>
+    <string name="ux_a_reason_stop">اس harness پروفائل کو روکیں، پھر dsh plugin سے پیکیج ہٹائیں۔</string>
     <string name="ux_a_reason_in_use">دوسری ترتیب یہ بنڈل استعمال کرتی ہے۔ پہلے وہ اجزا بند کریں۔</string>
     <string name="ux_a_reason_approval">زیر التوا اسکرپٹ بدل گئے ہیں۔ نئی منظوری کی فہرست دیکھنے کے لیے دوبارہ نصب کریں۔</string>
     <string name="ux_a_reason_version">یہ پلگ ان اس DSH ورژن سے مطابقت نہیں رکھتا۔ موافق ورژن نصب کریں۔</string>
@@ -72,7 +72,7 @@
         <item quantity="one">%1$s ترسیل</item>
         <item quantity="other">%1$s ترسیلات</item>
     </plurals>
-    <string name="ux_a_reason_installed">یہ پیکیج پہلے سے نصب ہے۔ اس کی قطار میں اپ ڈیٹ منتخب کریں۔</string>
+    <string name="ux_a_reason_installed">یہ پیکیج پہلے سے نصب ہے۔ فہرست میں اس کی لائن سے اپ ڈیٹ چنیں۔</string>
     <string name="ux_a_reason_network">پیکیج کے ماخذ تک رسائی نہیں ہوئی۔ کنکشن دیکھ کر دوبارہ کوشش کریں۔</string>
     <string name="ux_a_reason_package">اس پتے پر پیکیج نہیں ہے۔ پیکیج نام یا راستہ دیکھیں۔</string>
     <string name="ux_a_time">وقت</string>

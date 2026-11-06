@@ -970,19 +970,34 @@ class MockHarness(
      *
      * It rides `session/control` now rather than the all-session mux — the stream that also
      * carries queue and job state for every live session.
+     *
+     * Harness 0.2.2 folds projections per committed event: one frame carries every key the
+     * event touched as `changes: [{key, val}]`. The older single `key`/`value` frame is still
+     * reachable with [legacyShape] so a client can be exercised against a host from either side
+     * of that split.
      */
     suspend fun pushProjection(
         sessionId: String,
         key: String,
         value: JsonElement,
         seq: Int = 0,
+        legacyShape: Boolean = false,
     ) = pushStream(
         SESSION_CONTROL_ENDPOINT,
         buildJsonObject {
             put("type", "projection")
             put("sessionId", sessionId)
-            put("key", key)
-            put("value", value)
+            if (legacyShape) {
+                put("key", key)
+                put("value", value)
+            } else {
+                putJsonArray("changes") {
+                    addJsonObject {
+                        put("key", key)
+                        put("val", value)
+                    }
+                }
+            }
             put("seq", seq)
         },
     )

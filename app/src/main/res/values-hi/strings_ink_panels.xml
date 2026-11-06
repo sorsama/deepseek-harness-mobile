@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_panel_model_title">मॉडल</string>
+    <string name="ink_panel_model_permission">मॉडल और अनुमति</string>
+    <string name="ink_panel_model_default">Harness डिफ़ॉल्ट</string>
+    <string name="ink_panel_model_available">%1$s पर उपलब्ध</string>
+    <string name="ink_panel_effort_default">डिफ़ॉल्ट</string>
+    <string name="ink_panel_permission_readonly_desc">फ़ाइलें पढ़कर जवाब देता है। कुछ नहीं बदलता।</string>
+    <string name="ink_panel_permission_workspace_desc">वर्कस्पेस के अंदर बदलाव कर सकता है। कमांड चलाने से पहले अब भी पूछता है।</string>
+    <string name="ink_panel_permission_full_desc">कंप्यूटर पर कुछ भी कर सकता है। मंज़ूरी नहीं माँगता।</string>
+    <string name="ink_panel_subagent_followup">इस सबएजेंट से आगे का प्रश्न पूछें</string>
+    <string name="ink_panel_trajectory_empty_hint">एजेंट के काम करते समय टूल कॉल यहाँ दिखते हैं।</string>
+    <string name="ink_panel_open_session">सेशन खोलें</string>
+</resources>

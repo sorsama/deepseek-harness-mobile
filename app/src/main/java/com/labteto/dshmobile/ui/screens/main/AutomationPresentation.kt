@@ -44,6 +44,10 @@ internal class ScheduleFormatter(
             DayOfWeek.of(it).getDisplayName(TextStyle.SHORT, locale)
         }, task.time.orEmpty(), zone(task.timeZone ?: "UTC"))
         "cron" -> t(R.string.ux_a_cron, cronPreview(task.expression.orEmpty()), zone(task.timeZone ?: "UTC"))
+        // Harness 0.2.2 makes every model-created task an RFC 5545 rule; the rule is shown as stored
+        // (the app has no RRULE editor), one line so a list row keeps its single-line readout.
+        "rrule" -> task.rrule?.trim()?.lineSequence()?.joinToString(" · ") { it.trim() }
+            ?: t(R.string.common_unavailable)
         else -> t(R.string.common_unavailable)
     }
     fun cronPreview(expression: String): String {
@@ -60,6 +64,21 @@ internal class ScheduleFormatter(
     fun runSummary(task: AutomationTask, now: Instant = Instant.now()): String? =
         if (task.status == "active") nextRun(task.scheduledAt, now)
         else task.lastDelivery?.let { t(R.string.ux_a_last_run, absolute(it.deliveredAt)) }
+
+    /**
+     * Just the distance to the next run — "in 5h", "due now", "2 minutes overdue".
+     *
+     * The list row shows the absolute time elsewhere; this is the compact readout beside the
+     * status dot, so it never repeats the full date.
+     */
+    fun nextRelative(iso: String, now: Instant = Instant.now()): String {
+        val target = runCatching { Instant.parse(iso) }.getOrNull() ?: return absolute(iso)
+        val seconds = Duration.between(now, target).toMillis() / 1000.0
+        val unit = ScheduleUnit.entries.firstOrNull { abs(seconds) >= it.seconds } ?: ScheduleUnit.SECOND
+        val count = max(1L, (if (seconds > 0) ceil(abs(seconds) / unit.seconds) else floor(abs(seconds) / unit.seconds)).toLong())
+        return if (seconds == 0.0) t(R.string.ux_a_due_now) else t(
+            if (seconds > 0) R.string.ux_a_in else R.string.ux_a_overdue, amount(count, unit))
+    }
 
     fun nextRun(iso: String, now: Instant = Instant.now()): String {
         val target = runCatching { Instant.parse(iso) }.getOrNull() ?: return absolute(iso)
@@ -79,8 +98,18 @@ internal data class TimingKindDraft(
     val preferredOffset: ZoneOffset? = null,
 )
 
-/** Each kind owns a draft; selecting a different kind never reinterprets another kind's text. */
-internal data class TimingEditorDraft(val kind: String, val drafts: Map<String, TimingKindDraft>) {
+/**
+ * Each kind owns a draft; selecting a different kind never reinterprets another kind's text.
+ *
+ * [timingEditable] is false for kinds the app can display but not author. Harness 0.2.2 added
+ * `kind:"rrule"`; an RRULE has no draft (editing it would need the new `patch.timing = {kind,
+ * rrule}` shape), so the editor hides the timing controls instead of throwing when it renders.
+ */
+internal data class TimingEditorDraft(
+    val kind: String,
+    val drafts: Map<String, TimingKindDraft>,
+    val timingEditable: Boolean = true,
+) {
     val current get() = drafts.getValue(kind)
     fun select(kind: String) = copy(kind = kind)
     fun edit(change: (TimingKindDraft) -> TimingKindDraft) = copy(drafts = drafts + (kind to change(current)))
@@ -101,6 +130,9 @@ internal data class TimingEditorDraft(val kind: String, val drafts: Map<String, 
     fun change() = com.labteto.dshmobile.core.wire.automationTiming(kind, value(), current.zone, current.weekdays.sorted().joinToString(","))
     val valid get() = runCatching { change(); if (kind == "cron") require(validCron(current.expression)) }.isSuccess
     companion object {
+        /** Kinds the timing editor can author; `after` is a creation-only rule shown as a one-off. */
+        private val EDITABLE_KINDS = setOf("at", "every", "daily", "weekly", "cron")
+
         fun from(task: AutomationTask, deviceZone: ZoneId = ZoneId.systemDefault()): TimingEditorDraft {
             val zone = task.timeZone ?: deviceZone.id
             val at = Instant.parse(task.scheduledAt).atZone(ZoneId.of(zone))
@@ -108,8 +140,15 @@ internal data class TimingEditorDraft(val kind: String, val drafts: Map<String, 
             val unit = ScheduleUnit.entries.first { seconds % it.seconds == 0L }
             val seed = TimingKindDraft(at.toLocalDate(), task.time ?: at.toLocalTime().toString(), zone,
                 (seconds / unit.seconds).toString(), unit, task.weekdays?.toSet() ?: setOf(at.dayOfWeek.value), task.expression ?: "0 9 * * *", at.offset)
-            return TimingEditorDraft(if (task.kind == "after") "at" else task.kind,
-                listOf("at", "every", "daily", "weekly", "cron").associateWith { seed })
+            // `rrule` (harness 0.2.2), and any future kind the app does not know, has no seed in
+            // `drafts`; `current`'s getValue would throw the moment the editor rendered. Seed the
+            // "at" draft the summary/next-run already displays and mark the timing read-only.
+            val kind = when (task.kind) {
+                "after" -> "at"
+                else -> task.kind.takeIf { it in EDITABLE_KINDS } ?: "at"
+            }
+            return TimingEditorDraft(kind, listOf("at", "every", "daily", "weekly", "cron").associateWith { seed },
+                timingEditable = task.kind in EDITABLE_KINDS)
         }
     }
 }

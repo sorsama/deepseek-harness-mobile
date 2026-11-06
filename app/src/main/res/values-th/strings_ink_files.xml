@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_files_search_files">ค้นหาไฟล์</string>
+    <string name="ink_files_filter_files">กรองโฟลเดอร์นี้</string>
+    <string name="ink_files_no_matches">ไม่พบไฟล์ที่ตรงกัน</string>
+    <string name="ink_files_all_files">ไฟล์ทั้งหมด</string>
+    <string name="ink_files_copy_contents">คัดลอกเนื้อหา</string>
+    <string name="ink_files_rendered">แสดงผล</string>
+    <string name="ink_files_source">ซอร์ส</string>
+    <string name="ink_files_output">เอาต์พุต</string>
+    <string name="ink_files_key_tab">Tab</string>
+    <string name="ink_files_key_esc">Esc</string>
+    <string name="ink_files_key_up">ลูกศรขึ้น</string>
+    <string name="ink_files_key_down">ลูกศรลง</string>
+    <string name="ink_files_key_ctrl_c">Ctrl C</string>
+    <string name="ink_files_clear_terminal">ล้างเทอร์มินัล</string>
+    <string name="ink_files_send_enter">ส่ง Enter</string>
+    <string name="ink_files_automations_intro">งานตามกำหนดที่ harness รันบนคอมพิวเตอร์ของคุณ แม้โทรศัพท์จะอยู่ไกล</string>
+    <string name="ink_files_new_automation">งานอัตโนมัติใหม่</string>
+    <string name="ink_files_plugins_intro">ปลั๊กอินติดตั้งบนคอมพิวเตอร์ของ harness การเปลี่ยนแปลงมีผลกับเซสชันใหม่</string>
+    <string name="ink_files_archived_search">ค้นหาเซสชันที่เก็บถาวร</string>
+    <string name="ink_files_this_week">สัปดาห์นี้</string>
+    <string name="ink_files_this_month">เดือนนี้</string>
+    <string name="ink_files_changed_session">เปลี่ยนในเซสชันนี้</string>
+</resources>

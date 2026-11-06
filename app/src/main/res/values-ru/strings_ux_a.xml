@@ -42,13 +42,13 @@
     <string name="ux_a_phase_applying">Применение изменений…</string>
     <string name="ux_a_phase_cancelling">Отмена установки…</string>
     <string name="ux_a_reason_required">Этот компонент нужен для управления плагинами. Его нельзя отключить или удалить.</string>
-    <string name="ux_a_reason_unaddressable">Конфигурация хоста не позволяет однозначно определить эту запись.</string>
+    <string name="ux_a_reason_unaddressable">Конфигурация harness не позволяет отличить эту запись от других.</string>
     <string name="ux_a_reason_missing">Этот плагин больше недоступен. Обновите список.</string>
     <string name="ux_a_reason_spec">Введите допустимое имя пакета или адрес.</string>
     <string name="ux_a_reason_ambiguous">Не удалось определить установленный пакет. Обновите список.</string>
-    <string name="ux_a_reason_bundle">Пакет не объявляет набор плагинов; управление здесь недоступно.</string>
+    <string name="ux_a_reason_bundle">Пакет не объявляет набор плагинов, поэтому управлять им здесь нельзя.</string>
     <string name="ux_a_reason_removable">Пакет принадлежит другому профилю или нужен для управления плагинами.</string>
-    <string name="ux_a_reason_stop">Остановите профиль хоста, затем удалите пакет через dsh plugin.</string>
+    <string name="ux_a_reason_stop">Остановите этот профиль harness, затем удалите пакет через dsh plugin.</string>
     <string name="ux_a_reason_in_use">Набор используется другой конфигурацией. Сначала отключите её компоненты.</string>
     <string name="ux_a_reason_approval">Ожидающие скрипты изменились. Повторите установку, чтобы проверить новый список разрешений.</string>
     <string name="ux_a_reason_version">Плагин несовместим с этой версией DSH. Установите совместимую версию.</string>

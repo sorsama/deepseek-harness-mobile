@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="splash_tagline">DeepSeek Harness ของคุณ อยู่ในกระเป๋า</string>
+    <string name="splash_connecting">กำลังเชื่อมต่อกับ %1$s…</string>
+    <string name="splash_reconnecting">กำลังเชื่อมต่อใหม่กับ %1$s…</string>
+    <string name="appearance_customize_hint">สีและการตอบสนองแบบสัมผัสมีผลทันที</string>
+    <string name="appearance_accent">สีเน้น</string>
+    <string name="appearance_accent_ink">น้ำเงินหมึก</string>
+    <string name="appearance_accent_violet">ม่วง</string>
+    <string name="appearance_accent_teal">เขียวอมฟ้า</string>
+    <string name="appearance_accent_green">เขียว</string>
+    <string name="appearance_accent_amber">เหลืองอำพัน</string>
+    <string name="appearance_accent_rose">ชมพูกุหลาบ</string>
+    <string name="appearance_accent_mono">ขาวดำ</string>
+    <string name="appearance_amoled">ดำสนิท</string>
+    <string name="appearance_amoled_hint">พื้นหลังดำสนิทสำหรับจอ OLED</string>
+    <string name="appearance_text_size">ขนาดข้อความ</string>
+    <string name="appearance_text_size_compact">กะทัดรัด</string>
+    <string name="appearance_text_size_default">ค่าเริ่มต้น</string>
+    <string name="appearance_text_size_large">ใหญ่</string>
+    <string name="appearance_text_size_larger">ใหญ่พิเศษ</string>
+    <string name="appearance_haptics">การตอบสนองแบบสัมผัส</string>
+    <string name="appearance_haptics_hint">สั่นสั้น ๆ เมื่อแตะปุ่มหรือกดยืนยัน</string>
+    <string name="appearance_reset">รีเซ็ตรูปลักษณ์</string>
+
+    <!-- Appearance: custom accent colour -->
+    <string name="appearance_accent_custom">กำหนดเอง</string>
+    <string name="appearance_accent_custom_value">กำหนดเอง, %1$s</string>
+    <string name="appearance_custom_title">สีเน้นที่กำหนดเอง</string>
+    <string name="appearance_custom_hint">เลือกสีหนึ่งสี ระบบจะปรับความสว่างในแต่ละธีมเพื่อให้ข้อความยังอ่านได้ชัดเจน</string>
+    <string name="appearance_custom_preview">ตัวอย่าง</string>
+    <string name="appearance_custom_sample_button">ปุ่ม</string>
+    <string name="appearance_custom_sample_chip">ชิป</string>
+    <string name="appearance_custom_sample_link">ลิงก์</string>
+    <string name="appearance_custom_area">ความอิ่มสีและความสว่าง</string>
+    <string name="appearance_custom_area_state">ความอิ่มสี %1$d%%, ความสว่าง %2$d%%</string>
+    <string name="appearance_custom_more_saturation">อิ่มสีมากขึ้น</string>
+    <string name="appearance_custom_less_saturation">อิ่มสีน้อยลง</string>
+    <string name="appearance_custom_more_brightness">สว่างขึ้น</string>
+    <string name="appearance_custom_less_brightness">มืดลง</string>
+    <string name="appearance_custom_hue">เฉดสี</string>
+    <string name="appearance_custom_hue_state">%1$d°</string>
+    <string name="appearance_custom_hex">สีแบบเลขฐานสิบหก</string>
+    <string name="appearance_custom_hex_invalid">ใส่เลขฐานสิบหก 6 หลัก เช่น #6E9BFF</string>
+    <string name="appearance_custom_quick_picks">ตัวเลือกด่วน</string>
+    <string name="appearance_custom_quick_pick">ใช้ %1$s</string>
+    <string name="appearance_custom_apply">ใช้</string>
+</resources>

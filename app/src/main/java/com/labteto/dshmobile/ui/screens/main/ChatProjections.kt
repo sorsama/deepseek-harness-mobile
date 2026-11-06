@@ -39,6 +39,25 @@ internal fun parseGoal(element: JsonElement?): GoalSnapshot? {
 /** One to-do entry as the dock renders it. */
 internal data class TodoEntry(val content: String, val status: String)
 
+/**
+ * The highest goal round the harness has started, from the newest `goal/change` event.
+ *
+ * The goal *projection* carries the durable snapshot but not how far the round loop has got; that
+ * count rides the event that produced the snapshot, so the journal is the place to read it. Used
+ * only for the compact dock's `3/10` meter — absent means "not known", never zero.
+ */
+internal fun goalRoundsStarted(journal: List<com.labteto.dshmobile.core.session.SessionEventEnvelope>): Int? =
+    journal.asReversed().firstNotNullOfOrNull { event ->
+        if (event.type != "goal/change") {
+            null
+        } else {
+            runCatching {
+                decodeFromJsonElement(com.labteto.dshmobile.core.wire.dto.GoalChangeData.serializer(), event.data)
+                    .roundsStarted
+            }.getOrNull()
+        }
+    }
+
 /** The todo list, whether it arrived bare or wrapped in a `{ todos: [...] }` envelope. */
 internal fun parseTodos(element: JsonElement?): List<TodoEntry>? {
     if (element == null) return null

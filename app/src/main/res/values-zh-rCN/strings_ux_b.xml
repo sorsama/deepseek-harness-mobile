@@ -19,7 +19,7 @@
     <string name="ux_b_view_answers">查看回答</string>
     <string name="ux_b_skipped">已跳过</string>
     <string name="ux_b_answer">回答</string>
-    <string name="ux_b_automation_unavailable">此主机不支持自动化。</string>
+    <string name="ux_b_automation_unavailable">此 harness 不支持自动化。</string>
     <plurals name="ux_b_countdown_seconds">
         <item quantity="other">%1$s 秒后继续工作</item>
     </plurals>

@@ -8,6 +8,7 @@ import com.labteto.dshmobile.core.wire.dto.JobFollowRequest
 import com.labteto.dshmobile.core.wire.dto.JobListFrame
 import com.labteto.dshmobile.core.wire.dto.JobListRequest
 import com.labteto.dshmobile.core.wire.dto.GoalRef
+import com.labteto.dshmobile.core.wire.dto.ImageAttachmentRef
 import com.labteto.dshmobile.core.wire.dto.MessageFeedbackDeleteRequest
 import com.labteto.dshmobile.core.wire.dto.MessageFeedbackPutRequest
 import com.labteto.dshmobile.core.wire.dto.SessionAttachmentRequest
@@ -198,7 +199,24 @@ class EndpointCatalogueConformanceTest {
         check("session/fork", client.api.sessionFork(SessionForkRequest(missing)))
         check("session/fork (atSeq)", client.api.sessionFork(SessionForkRequest(missing, atSeq = 1)))
         check("job/kill", client.api.jobKill(sessionId, "bash-999"))
-        check("session/attachment", client.api.sessionAttachment(SessionAttachmentRequest(sessionId, missing)))
+        // From 0.2.2 the site takes the whole durable image reference, not just its id; a made-up
+        // reference is enough here, because this test only proves the arguments the client sends
+        // are the ones the host method declares.
+        check(
+            "session/attachment",
+            client.api.sessionAttachment(
+                SessionAttachmentRequest(
+                    sessionId,
+                    ImageAttachmentRef(
+                        attachmentId = missing,
+                        mediaType = "image/png",
+                        bytes = 1,
+                        width = 1,
+                        height = 1,
+                    ),
+                ),
+            ),
+        )
         check(
             "session/selectModel",
             client.api.sessionSelectModel(

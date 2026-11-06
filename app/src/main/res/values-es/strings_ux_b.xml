@@ -19,7 +19,7 @@
     <string name="ux_b_view_answers">Ver respuestas</string>
     <string name="ux_b_skipped">Omitida</string>
     <string name="ux_b_answer">Respuesta</string>
-    <string name="ux_b_automation_unavailable">Este host no admite automatizaciones.</string>
+    <string name="ux_b_automation_unavailable">Este harness no admite automatizaciones.</string>
     <plurals name="ux_b_countdown_seconds">
         <item quantity="one">Continuará en %1$s segundo</item>
         <item quantity="other">Continuará en %1$s segundos</item>

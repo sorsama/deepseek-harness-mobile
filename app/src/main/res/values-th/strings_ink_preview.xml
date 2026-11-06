@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- File viewer: header and actions -->
+    <string name="preview_open_full">ดูแบบเต็ม</string>
+    <string name="preview_save_copy">บันทึกสำเนา</string>
+    <string name="preview_saved">บันทึกลงในอุปกรณ์ของคุณแล้ว</string>
+    <string name="preview_save_failed">บันทึกไฟล์ไม่ได้</string>
+    <string name="preview_copy_path">คัดลอกพาธ</string>
+    <string name="preview_refresh">รีเฟรช</string>
+    <string name="preview_more_actions">ตัวเลือกเพิ่มเติม</string>
+    <string name="preview_kind_text">ข้อความ</string>
+    <string name="preview_kind_binary">ไบนารี</string>
+    <!-- View modes -->
+    <string name="preview_mode_pretty">จัดรูปแบบ</string>
+    <string name="preview_mode_tree">ต้นไม้</string>
+    <string name="preview_mode_raw">ข้อมูลดิบ</string>
+    <string name="preview_mode_table">ตาราง</string>
+    <!-- States -->
+    <string name="preview_too_large_title">ใหญ่เกินกว่าจะดูตัวอย่างได้</string>
+    <string name="preview_too_large_body">ไฟล์นี้มีขนาด %1$s แต่คุณยังบันทึกสำเนาลงในอุปกรณ์ได้</string>
+    <string name="preview_binary_title">แสดงไฟล์นี้ไม่ได้</string>
+    <string name="preview_binary_body">นี่เป็นไฟล์ไบนารี ด้านล่างคือไบต์แรก ๆ ของไฟล์ บันทึกสำเนาเพื่อเปิดในแอปอื่น</string>
+    <string name="preview_hex_note">%1$s แรกจาก %2$s</string>
+    <string name="preview_empty_file">ไฟล์นี้ว่างเปล่า</string>
+    <string name="preview_cant_show_title">แสดงไฟล์นี้ไม่ได้</string>
+    <string name="preview_image_unsupported">โทรศัพท์เครื่องนี้แสดงรูปภาพประเภทนี้ไม่ได้ บันทึกสำเนาเพื่อเปิดในแอปอื่น</string>
+    <string name="preview_media_unsupported">โทรศัพท์เครื่องนี้เล่นไฟล์นี้ไม่ได้ บันทึกสำเนาเพื่อเปิดในแอปอื่น</string>
+    <string name="preview_text_truncated">แสดงเฉพาะ %1$s แรก บันทึกสำเนาเพื่อรับไฟล์ทั้งหมด</string>
+    <string name="preview_json_invalid">JSON นี้ไม่ถูกต้อง</string>
+    <string name="preview_json_at">บรรทัด %1$d คอลัมน์ %2$d</string>
+    <string name="preview_json_at_line">บรรทัด %1$d</string>
+    <string name="preview_notebook_invalid">ดูไม่เหมือนไฟล์ Notebook</string>
+    <string name="preview_output_hidden">แสดงผลลัพธ์นี้ที่นี่ไม่ได้</string>
+    <string name="preview_table_truncated">แสดง %1$d จาก %2$d แถว</string>
+    <string name="preview_table_summary">แถว: %1$d · คอลัมน์: %2$d</string>
+    <string name="preview_table_partial">แถวที่โหลดแล้ว: %1$d</string>
+    <!-- Text viewer -->
+    <string name="preview_wrap">ตัดบรรทัดอัตโนมัติ</string>
+    <string name="preview_line_numbers">เลขบรรทัด</string>
+    <string name="preview_find">ค้นหาในไฟล์</string>
+    <string name="preview_find_placeholder">ค้นหา</string>
+    <string name="preview_find_none">ไม่พบ</string>
+    <string name="preview_find_next">ผลลัพธ์ถัดไป</string>
+    <string name="preview_find_previous">ผลลัพธ์ก่อนหน้า</string>
+    <string name="preview_find_partial">ค้นหาเฉพาะส่วนที่โหลดแล้ว</string>
+    <string name="preview_expand">ขยาย</string>
+    <string name="preview_collapse">ย่อ</string>
+    <string name="preview_json_more">แถวที่ยังไม่แสดง: %1$s</string>
+    <!-- Image, PDF and media viewers -->
+    <string name="preview_zoom_in">ซูมเข้า</string>
+    <string name="preview_zoom_out">ซูมออก</string>
+    <string name="preview_fit">พอดีหน้าจอ</string>
+    <string name="preview_fill">เต็มหน้าจอ</string>
+    <string name="preview_prev_page">หน้าก่อนหน้า</string>
+    <string name="preview_next_page">หน้าถัดไป</string>
+    <string name="preview_pdf_pages">หน้า: %1$d</string>
+    <string name="preview_play">เล่น</string>
+    <string name="preview_pause">หยุดชั่วคราว</string>
+    <string name="preview_seek">ตำแหน่งการเล่น</string>
+    <!-- Archives and fonts -->
+    <string name="preview_archive_summary">รายการ: %1$d</string>
+    <string name="preview_archive_truncated">แสดง %1$d รายการแรก</string>
+    <string name="preview_archive_failed">อ่านไฟล์เก็บถาวรนี้ไม่ได้</string>
+    <string name="preview_font_failed">โหลดฟอนต์นี้ไม่ได้</string>
+</resources>

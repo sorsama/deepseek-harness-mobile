@@ -3,6 +3,7 @@ package com.labteto.dshmobile.ui.screens.main
 import androidx.annotation.StringRes
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.dto.AgentPresetEntry
@@ -156,9 +157,28 @@ internal fun AgentPresetEntry.displayDescription(): String? =
 
 @Composable
 internal fun dialogTextFieldColors() = TextFieldDefaults.colors(
-    focusedContainerColor = DsTheme.colors.bgLayer1,
-    unfocusedContainerColor = DsTheme.colors.bgLayer1,
-    focusedIndicatorColor = DsTheme.colors.accent,
-    unfocusedIndicatorColor = DsTheme.colors.borderL2,
+    focusedContainerColor = DsTheme.colors.bgLayer2,
+    unfocusedContainerColor = DsTheme.colors.bgLayer2,
+    disabledContainerColor = DsTheme.colors.bgLayer1,
+    // No underline: the field's outline comes from `inkFieldFrame`, so it reads as the same plate as
+    // every other input in the app. The default underline on a rounded plate is clipped to a stub.
+    focusedIndicatorColor = Color.Transparent,
+    unfocusedIndicatorColor = Color.Transparent,
+    disabledIndicatorColor = Color.Transparent,
+    errorIndicatorColor = Color.Transparent,
     cursorColor = DsTheme.colors.accent,
+)
+
+/** A field that sits *inside* a composer card: no plate and no outline of its own, the card is the frame. */
+@Composable
+internal fun composerFieldColors() = TextFieldDefaults.colors(
+    focusedContainerColor = Color.Transparent,
+    unfocusedContainerColor = Color.Transparent,
+    disabledContainerColor = Color.Transparent,
+    focusedIndicatorColor = Color.Transparent,
+    unfocusedIndicatorColor = Color.Transparent,
+    disabledIndicatorColor = Color.Transparent,
+    cursorColor = DsTheme.colors.accent,
+    focusedTextColor = DsTheme.colors.labelPrimary,
+    unfocusedTextColor = DsTheme.colors.labelPrimary,
 )

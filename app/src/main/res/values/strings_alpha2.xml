@@ -2,5 +2,5 @@
     <string name="alpha2_translate">Translate with %1$s</string>
     <string name="alpha2_original">Show original</string>
     <string name="alpha2_external">External run (no local transcript)</string>
-    <string name="alpha2_migration">Open the original session to complete migration, then try again.</string>
+    <string name="alpha2_migration">Open the original session to finish the migration, then try again.</string>
 </resources>

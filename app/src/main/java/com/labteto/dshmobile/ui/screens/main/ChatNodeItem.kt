@@ -112,6 +112,11 @@ internal data class ChatNodeContext(
     val onRewindTo: ((Long, String) -> Unit)? = null,
     /** Adds an `@` mention of a workspace path to the composer; null where there is no composer. */
     val onMention: ((path: String, folder: Boolean) -> Unit)? = null,
+    /**
+     * Where assistant messages keep their open/closed state so it survives a reply settling. Null
+     * falls back to state local to the row, which is right where the rows are short-lived.
+     */
+    val assistantMemory: AssistantMemory? = null,
 )
 
 /**
@@ -129,12 +134,7 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
         is UserMessageNode -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             node.blocks.filter { it.kind == "image" }.forEach { block ->
                 parseImageRef(block)?.let { ref ->
-                    AttachmentImage(
-                        attachmentId = ref.attachmentId,
-                        intrinsicWidth = ref.width,
-                        intrinsicHeight = ref.height,
-                        contentDescription = ref.name,
-                    )
+                    AttachmentImage(ref = ref, contentDescription = ref.name)
                 }
             }
             // A file is a chip, not a preview: the host stores it verbatim and the model reads it
@@ -380,8 +380,24 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
     val knownToolCallIds = remember(context.nodes) {
         context.nodes.filterIsInstance<ToolCallNode>().mapTo(mutableSetOf()) { it.callId }
     }
-    val reasoningExpanded = remember(node.seq) { mutableStateMapOf<Int, Boolean>() }
-    var actionsVisible by remember(node.seq) { mutableStateOf(false) }
+    // Keyed on the message's identity across its settling, not on `seq`: a streaming message's
+    // sequence number is replaced by the durable one when the reply finishes, and state keyed on it
+    // folded the reader's open thinking panel shut at that moment. See [assistantStateKey].
+    val stateKey = assistantStateKey(node)
+    val memory = context.assistantMemory
+    val reasoningExpanded = remember(memory, stateKey) {
+        memory?.reasoningFor(stateKey) ?: mutableStateMapOf<Int, Boolean>()
+    }
+    val actionsVisibleState = remember(memory, stateKey) {
+        memory?.actionsFor(stateKey) ?: mutableStateOf(false)
+    }
+    var actionsVisible by actionsVisibleState
+    // Where the streaming caret goes: the last block that renders prose. The caret is a plain
+    // glyph appended to the markdown source because the renderer owns the inline spans; it is the
+    // same character the web client draws, so a reply being written looks like it is being typed.
+    val lastTextBlock = remember(node.blocks) {
+        node.blocks.indexOfLast { it.kind == "text" && !it.text.isNullOrBlank() }
+    }
 
     Column(
         modifier = Modifier
@@ -391,7 +407,15 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
     ) {
         node.blocks.forEachIndexed { index, block ->
             when (block.kind) {
-                "text" -> if (!block.text.isNullOrBlank()) MarkdownText(block.text.orEmpty())
+                "text" -> if (!block.text.isNullOrBlank()) {
+                    // The live reply's last prose block carries the shared blinking caret. It is
+                    // the renderer's own component, so it sits inline after the final line instead
+                    // of being glued onto the markdown source as a glyph.
+                    MarkdownText(
+                        block.text.orEmpty(),
+                        streamingCaret = streaming && index == lastTextBlock,
+                    )
+                }
                 "reasoning" -> if (!block.text.isNullOrBlank() || streaming) {
                     val expanded = reasoningExpanded[index] ?: false
                     ThinkingPanel(
@@ -410,12 +434,7 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
                 }
                 "tool-result" -> Unit
                 "image" -> parseImageRef(block)?.let { ref ->
-                    AttachmentImage(
-                        attachmentId = ref.attachmentId,
-                        intrinsicWidth = ref.width,
-                        intrinsicHeight = ref.height,
-                        contentDescription = ref.name,
-                    )
+                    AttachmentImage(ref = ref, contentDescription = ref.name)
                 }
                 "file" -> parseFileRef(block)?.let { ref -> FileChip(name = ref.name, bytes = ref.bytes) }
                 else -> block.text?.let {
@@ -558,12 +577,7 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         // file changing or being deleted, and shares the transcript's decoded-image cache.
         val images = remember(result?.content) { toolResultImages(result?.content) }
         images.forEach { ref ->
-            AttachmentImage(
-                attachmentId = ref.attachmentId,
-                intrinsicWidth = ref.width,
-                intrinsicHeight = ref.height,
-                contentDescription = ref.name,
-            )
+            AttachmentImage(ref = ref, contentDescription = ref.name)
         }
         result?.content?.let { JsonDisclosure(stringResource(R.string.chat_output_placeholder), it) }
         result?.meta?.let { JsonDisclosure(node.name, it) }
@@ -789,3 +803,4 @@ private fun ToolSetChangeRow(node: DeveloperMessageNode) {
         Text(summary, style = DsType.small13, color = DsTheme.colors.labelSecondary)
     }
 }
+

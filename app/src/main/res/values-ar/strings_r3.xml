@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sessions drawer: ordering, grouping and dragging -->
+    <string name="chatlist_sort_project">تجميع حسب المشروع</string>
+    <string name="chatlist_group_other">أخرى</string>
+    <string name="chatlist_move_up">نقل لأعلى</string>
+    <string name="chatlist_move_down">نقل لأسفل</string>
+    <string name="chatlist_move_announce">نُقلت إلى الموضع %1$d من %2$d</string>
+    <string name="chatlist_reorder_scope">النقل داخل %1$s</string>
+    <string name="chatlist_reorder_projects">نقل المشاريع</string>
+    <string name="chatlist_reorder_blocked">لا يمكن نقل الجلسة إلا داخل مشروعها</string>
+    <string name="chatlist_reorder_failed">تعذّر نقل تلك الجلسة. عادت إلى مكانها.</string>
+    <string name="chatlist_reorder_project_failed">تعذّر نقل ذلك المشروع. عاد إلى مكانه.</string>
+    <string name="chatlist_project_collapse">طيّ %1$s</string>
+    <string name="chatlist_project_expand">توسيع %1$s</string>
+
+    <!-- Sessions drawer: archived filter and the needs-you card -->
+    <string name="chatlist_archived_none">لا شيء مؤرشف بعد</string>
+    <string name="chatlist_restore_failed">تعذّرت استعادة تلك الجلسة</string>
+    <string name="chatlist_approve_long">أمر طويل. اقرأه كاملًا قبل الموافقة.</string>
+</resources>

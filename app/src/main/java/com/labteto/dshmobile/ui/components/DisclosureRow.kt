@@ -74,14 +74,19 @@ fun DisclosureRow(
     content: (@Composable () -> Unit)? = null,
 ) {
     val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
     val interaction = remember { MutableInteractionSource() }
     val hovered by interaction.collectIsHoveredAsState()
     val running = state == DisclosureState.Running
+    val toggle: () -> Unit = {
+        haptics.tap()
+        onToggle?.invoke()
+    }
     Column(modifier = modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 24.dp)
+                .heightIn(min = 32.dp)
                 .then(
                     if (onToggle != null && onHold != null) {
                         Modifier
@@ -91,7 +96,7 @@ fun DisclosureRow(
                                 onHold = onHold,
                                 role = Role.Button,
                                 interactionSource = interaction,
-                                onClick = onToggle,
+                                onClick = toggle,
                             )
                     } else if (onToggle != null) {
                         Modifier
@@ -100,13 +105,13 @@ fun DisclosureRow(
                                 interactionSource = interaction,
                                 indication = LocalIndication.current,
                                 role = Role.Button,
-                                onClick = onToggle,
+                                onClick = toggle,
                             )
                     } else {
                         Modifier
                     },
                 )
-                .padding(horizontal = 4.dp, vertical = 4.dp),
+                .padding(horizontal = 6.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             // The chevron is always visible when the row can expand. It used to be revealed by
@@ -161,7 +166,7 @@ fun DisclosureRow(
                 Spacer(Modifier.width(6.dp))
                 Text(
                     summary,
-                    style = DsType.std14,
+                    style = DsType.small13,
                     color = colors.labelTertiary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -189,7 +194,7 @@ private fun LeadingSlot(content: @Composable () -> Unit) {
 
 /** Glare band used for the running-state shimmer sweep. */
 private fun runningBrush(colors: DsColors): Brush = Brush.linearGradient(
-    colors = listOf(Color.Transparent, Color.White.copy(alpha = 0.5f), Color.Transparent),
+    colors = listOf(Color.Transparent, colors.labelPrimary.copy(alpha = 0.30f), Color.Transparent),
 )
 
 /** Tiny 2x2 dot grid used as a title/summary separator. */

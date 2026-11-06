@@ -59,7 +59,8 @@ class AutomationPresentationTest {
         for (language in listOf("en", "ar")) {
             val f = formatter(language)
             assertEquals(f.nextRun(task.scheduledAt, now), f.runSummary(task, now))
-            for (status in listOf("inactive", "completed")) {
+            // 0.2.2's vocabulary is paused|ended; inactive/completed cover older hosts and records.
+            for (status in listOf("inactive", "completed", "paused", "ended")) {
                 val ended = task.copy(status = status)
                 assertNull(f.runSummary(ended, now))
                 val delivery = com.labteto.dshmobile.core.wire.dto.DeliveryRecord(task.scheduledAt, "2026-10-07T16:17:00Z", "message")
@@ -105,10 +106,29 @@ class AutomationPresentationTest {
     @Test fun `DST gaps cannot silently shift selected wall clock`() {
         assertFalse(TimingEditorDraft.from(task).edit { it.copy(date = LocalDate.of(2026, 3, 8), time = "02:30", zone = "America/New_York") }.valid)
     }
-    @Test fun `unchanged once draft retains later offset during DST overlap`() {
-        val repeatedHour = task.copy(scheduledAt = "2026-11-01T06:30:00.125Z")
-        val draft = TimingEditorDraft.from(repeatedHour, ZoneId.of("America/New_York"))
-        assertEquals(repeatedHour.scheduledAt, draft.value())
-        assertEquals(repeatedHour.scheduledAt, draft.select("weekly").select("at").value())
+    @Test fun `rrule frequency shows the stored rule instead of unavailable`() {
+        val f = formatter()
+        val rule = "DTSTART;TZID=Asia/Bangkok:20260101T090000\nRRULE:FREQ=HOURLY;INTERVAL=1"
+        val frequency = f.frequency(task.copy(kind = "rrule", rrule = rule))
+        assertTrue(frequency.contains("DTSTART"))
+        assertTrue(frequency.contains("FREQ=HOURLY"))
+        assertFalse(frequency.contains("Unavailable"))
+        assertEquals("Unavailable", f.frequency(task.copy(kind = "rrule", rrule = null)))
+    }
+    @Test fun `rrule task opens a read-only timing draft instead of crashing`() {
+        val rule = "DTSTART;TZID=Asia/Bangkok:20260101T090000\nRRULE:FREQ=HOURLY;INTERVAL=1"
+        val rrule = task.copy(kind = "rrule", rrule = rule)
+        // `from` used to seed a draft keyed by the stored kind; `drafts.getValue("rrule")` threw the
+        // moment the editor rendered. It now seeds the displayed "at" draft and marks it read-only.
+        val draft = TimingEditorDraft.from(rrule, ZoneId.of("Asia/Bangkok"))
+        assertFalse(draft.timingEditable)
+        assertEquals("at", draft.kind)
+        assertEquals(rrule.scheduledAt, draft.value())
+        assertTrue(draft.valid)
+        // A kind the app does not know (a later harness addition) falls back the same way.
+        val unknown = TimingEditorDraft.from(rrule.copy(kind = "yearly"), ZoneId.of("Asia/Bangkok"))
+        assertFalse(unknown.timingEditable)
+        assertEquals("at", unknown.kind)
+        assertEquals(rrule.scheduledAt, unknown.value())
     }
 }

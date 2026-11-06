@@ -16,7 +16,11 @@ class Harness021ConformanceTest {
     @Before fun boot() {
         Assume.assumeTrue("new surfaces excluded from the explicit legacy run", System.getenv("DSH_LEGACY_CONFORMANCE") != "true")
         Assume.assumeTrue("built checkout required", HarnessProcess.available())
-        model = MockModel.start(listOf("tool_call_success", "success"), toolName = "schedule_create", toolArguments = """{"title":"check","prompt":"check","every_seconds":3600}""")
+        // Harness 0.2.2's schedule_create takes an explicit RFC 5545 rule and a delivery target; every
+        // model-created task is now `kind:"rrule"`. `this_session` is the tool's spelling for a
+        // `{kind:"session",sessionId}` target. Keep the payload space-free for Windows (see MockModel).
+        model = MockModel.start(listOf("tool_call_success", "success"), toolName = "schedule_create", toolArguments =
+            """{"title":"check","prompt":"check","rrule":"DTSTART;TZID=Asia/Bangkok:20260101T090000\nRRULE:FREQ=HOURLY;INTERVAL=1","target":"this_session"}""")
         harness = HarnessProcess.start(model)
         client = HarnessClient(harness)
     }
@@ -39,30 +43,52 @@ class Harness021ConformanceTest {
         client.api.sessionReferenceCandidates(session, "").featureValue()
         assertFalse(client.api.answerContinuedQuestion(session, "absent-call", AskUserQuestionAnswer(emptyList())).featureValue())
     }
-    @Test fun `automation edits compare the complete record and preserve calendar rules`() = runBlocking {
+    @Test fun `automation edits use schedule edit and compare updatedAt`() = runBlocking {
         val session = client.api.sessionCreate(SessionCreateRequest(cwd = harness.workspacePath)).featureValue().sessionId
         client.api.sessionPrompt(SessionPromptRequest(UUID.randomUUID().toString(), session, "queue", listOf(PromptContentPart.Text("schedule")))).featureValue()
         val original = withTimeout(90_000) {
             var task: AutomationTask? = null
-            while (task == null) { task = client.api.automationCatalog().featureValue().firstOrNull { it.sessionId == session }; if (task == null) delay(200) }
+            while (task == null) {
+                task = client.api.automationCatalog().featureValue().firstOrNull { it.sessionIdEffective == session }
+                if (task == null) delay(200)
+            }
             task
         }
-        assertEquals("every", original.kind)
-        assertEquals(original.id, client.api.automationList(session).featureValue().single().id)
-        val updated = client.api.automationUpdate(AutomationUpdate(session, original.id, original.expectedRecord(), title = "daily", change = automationTiming("daily", "09:30:00", "Asia/Bangkok", ""))).featureValue()
-        assertEquals(true, updated.updated)
-        assertEquals("Asia/Bangkok", updated.record?.timeZone)
-        val stale = client.api.automationUpdate(AutomationUpdate(session, original.id, original.expectedRecord(), title = "stale")).featureValue()
+        // Harness 0.2.2's schedule_create makes `kind:"rrule"` tasks and moved the Session into `target`.
+        assertEquals("rrule", original.kind)
+        assertTrue(original.rrule!!.contains("FREQ=HOURLY"))
+        assertEquals(session, original.sessionIdEffective)
+        assertEquals("session", (original.target?.get("kind") as? JsonPrimitive)?.content)
+        val listed = client.api.automationList(limit = 100).featureValue()
+        // 0.2.2's `schedule/list` is a host-wide page, not the removed per-Session array.
+        assertTrue("$listed", listed.items.any { it.id == original.id })
+        // A successful update answers with the whole catalog entry; only its id matters to the client.
+        val updated = client.api.automationEdit(AutomationEditRequest(original.id, "update", AutomationPatch(title = "check renamed"))).featureValue()
+        assertNull("$updated", updated.code)
+        assertEquals(original.id, updated.id)
+        var current = client.api.automationList(limit = 100).featureValue().items.single { it.id == original.id }
+        assertEquals("check renamed", current.title)
+        // The editor's read revision is `updatedAt`; a newer stored value is a conflict, not a write.
+        val stale = client.api.automationEdit(AutomationEditRequest(original.id, "update", AutomationPatch(title = "stale"), original.updatedAt)).featureValue()
         assertEquals("schedule_conflict", stale.code)
-        var current = updated.record!!
-        for ((kind, value) in listOf("weekly" to "10:00:00", "cron" to "0 11 * * 1", "at" to "2099-01-01T00:00:00Z")) {
-            val result = client.api.automationUpdate(AutomationUpdate(session, current.id, current.expectedRecord(), change = automationTiming(kind, value, "Asia/Bangkok", "1,3,5"))).featureValue()
-            assertEquals("$kind: $result", true, result.updated)
-            current = result.record!!
+        // Timing edits are the same `patch.timing` shapes 0.2.1's update accepted.
+        for ((kind, value) in listOf("daily" to "09:30:00", "weekly" to "10:00:00", "cron" to "0 11 * * 1", "at" to "2099-01-01T00:00:00Z")) {
+            val result = client.api.automationEdit(AutomationEditRequest(
+                id = current.id,
+                action = "update",
+                patch = AutomationPatch(timing = automationTiming(kind, value, "Asia/Bangkok", "1,3,5")),
+                expectedUpdatedAt = current.updatedAt,
+            )).featureValue()
+            assertNull("$kind: $result", result.code)
+            current = client.api.automationList(limit = 100).featureValue().items.single { it.id == original.id }
+            assertEquals("$kind: $current", kind, current.kind)
+            if (kind != "at") assertEquals("$kind: $current", "Asia/Bangkok", current.timeZone)
         }
-        assertTrue(client.api.automationHistory(session, original.id).featureValue().records.isEmpty())
-        assertEquals(true, client.api.automationDelete(session, original.id).featureValue().deleted)
-        assertTrue(client.api.automationList(session).featureValue().isEmpty())
+        // 0.2.2 dropped the request's `sessionId`: saved deliveries are addressed by task id alone.
+        assertTrue(client.api.automationHistory(original.id).featureValue().records.isEmpty())
+        val deleted = client.api.automationEdit(AutomationEditRequest(original.id, "delete", expectedUpdatedAt = current.updatedAt)).featureValue()
+        assertEquals(true, deleted.deleted)
+        assertTrue(client.api.automationList(limit = 100).featureValue().items.none { it.id == original.id })
     }
     @Test fun `a local bundle can be inspected installed disabled updated and removed`() = runBlocking {
         val directory = java.io.File(harness.workspacePath, "bundle").apply { mkdirs() }

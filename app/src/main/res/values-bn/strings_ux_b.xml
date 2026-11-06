@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ux_b_clear_search">অনুসন্ধান মুছুন</string>
-    <string name="ux_b_no_models">কোনো মিলে যাওয়া মডেল নেই</string>
+    <string name="ux_b_clear_search">খোঁজা মুছুন</string>
+    <string name="ux_b_no_models">মেলে এমন মডেল নেই</string>
     <string name="ux_b_no_references">কোনো রেফারেন্স নেই</string>
-    <string name="ux_b_no_matches">কোনো মিলে যাওয়া রেফারেন্স নেই</string>
+    <string name="ux_b_no_matches">মেলে এমন রেফারেন্স নেই</string>
     <string name="ux_b_reference_error">কিছু রেফারেন্স লোড করা যায়নি। আবার চেষ্টা করুন।</string>
     <string name="ux_b_file">ফাইল</string>
     <string name="ux_b_folder">ফোল্ডার</string>
@@ -11,20 +11,20 @@
     <string name="ux_b_browse_folder">%1$s ফোল্ডার দেখুন</string>
     <string name="ux_b_open_reference">%1$s খুলুন: %2$s</string>
     <string name="ux_b_remove_reference">%1$s রেফারেন্স সরান</string>
-    <string name="ux_b_paused">সম্পাদনার সময় বিরতি দেওয়া হয়েছে</string>
-    <string name="ux_b_held">আপনার উত্তরের জন্য অপেক্ষা করা হচ্ছে</string>
-    <string name="ux_b_continued">কাজ চলতে শুরু করেছে; আপনি এখনও উত্তর দিতে পারেন</string>
-    <string name="ux_b_countdown_description">উত্তরের সময় গণনা চলছে</string>
+    <string name="ux_b_paused">এডিট করার সময় থেমে আছে</string>
+    <string name="ux_b_held">আপনার উত্তরের অপেক্ষায়</string>
+    <string name="ux_b_continued">কাজ চলছে। আপনি এখনও উত্তর দিতে পারেন।</string>
+    <string name="ux_b_countdown_description">উত্তরের জন্য কাউন্টডাউন চলছে</string>
     <string name="ux_b_view_questions">প্রশ্ন দেখুন</string>
     <string name="ux_b_view_answers">উত্তর দেখুন</string>
     <string name="ux_b_skipped">এড়িয়ে যাওয়া হয়েছে</string>
     <string name="ux_b_answer">উত্তর</string>
-    <string name="ux_b_automation_unavailable">এই হোস্ট অটোমেশন সমর্থন করে না।</string>
+    <string name="ux_b_automation_unavailable">এই harness অটোমেশন সমর্থন করে না।</string>
     <plurals name="ux_b_countdown_seconds">
-        <item quantity="one">%1$s সেকেন্ডে কাজ চলবে</item>
-        <item quantity="other">%1$s সেকেন্ডে কাজ চলবে</item>
+        <item quantity="one">%1$s সেকেন্ড পরে কাজ চলবে</item>
+        <item quantity="other">%1$s সেকেন্ড পরে কাজ চলবে</item>
     </plurals>
     <string name="ux_b_select_reference">%1$s রেফারেন্স যোগ করুন: %2$s</string>
-    <string name="ux_b_expanded">প্রসারিত</string>
-    <string name="ux_b_collapsed">সংকুচিত</string>
+    <string name="ux_b_expanded">খোলা</string>
+    <string name="ux_b_collapsed">গুটানো</string>
 </resources>

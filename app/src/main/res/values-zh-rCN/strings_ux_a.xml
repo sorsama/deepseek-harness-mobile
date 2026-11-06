@@ -7,9 +7,9 @@
     <string name="ux_a_daily_clock">每天 %1$s</string>
     <string name="ux_a_weekly">%1$s %2$s · %3$s</string>
     <string name="ux_a_cron">%1$s · %2$s</string>
-    <string name="ux_a_cron_expression">Cron 规则：%1$s</string>
+    <string name="ux_a_cron_expression">Cron 表达式：%1$s</string>
     <string name="ux_a_next_run">下次运行：%1$s（%2$s）</string>
-    <string name="ux_a_due_now">现在到期</string>
+    <string name="ux_a_due_now">已到时间</string>
     <string name="ux_a_in">%1$s后</string>
     <string name="ux_a_overdue">已逾期 %1$s</string>
     <string name="ux_a_retention">历史最多保留 %1$s 和 %2$s。</string>
@@ -42,14 +42,14 @@
     <string name="ux_a_phase_applying">正在应用更改…</string>
     <string name="ux_a_phase_cancelling">正在取消安装…</string>
     <string name="ux_a_reason_required">插件管理需要此组件，无法禁用或卸载。</string>
-    <string name="ux_a_reason_unaddressable">主机配置无法唯一定位此条目。</string>
+    <string name="ux_a_reason_unaddressable">harness 的配置无法把这个条目和其他条目区分开。</string>
     <string name="ux_a_reason_missing">此插件已不可用，请刷新列表。</string>
     <string name="ux_a_reason_spec">请输入有效的包名或地址。</string>
     <string name="ux_a_reason_ambiguous">无法识别已安装的软件包，请刷新已安装列表。</string>
-    <string name="ux_a_reason_bundle">此软件包未声明插件组合包，无法在此管理。</string>
+    <string name="ux_a_reason_bundle">此软件包不含插件包，无法在此管理。</string>
     <string name="ux_a_reason_removable">此软件包属于其他配置，或为插件管理所必需。</string>
-    <string name="ux_a_reason_stop">请停止此主机配置，再使用 dsh plugin 卸载软件包。</string>
-    <string name="ux_a_reason_in_use">其他配置仍在使用此组合包，请先禁用相关组件。</string>
+    <string name="ux_a_reason_stop">请先停止这个 harness 配置，再用 dsh plugin 卸载软件包。</string>
+    <string name="ux_a_reason_in_use">其他配置仍在使用此插件包，请先禁用相关组件。</string>
     <string name="ux_a_reason_approval">待批准的脚本已变化，请重新安装以查看新的审批列表。</string>
     <string name="ux_a_reason_version">此插件与当前 DSH 版本不兼容，请安装兼容的插件版本。</string>
     <plurals name="ux_a_days">
@@ -72,7 +72,7 @@
     <string name="ux_a_reason_package">此地址不包含软件包，请检查包名或路径。</string>
     <string name="ux_a_time">时间</string>
     <string name="ux_a_zone">时区</string>
-    <string name="ux_a_save_error">无法保存此自动任务，请刷新规则后重试。</string>
-    <string name="ux_a_delete_error">无法删除此自动任务，请刷新列表后重试。</string>
+    <string name="ux_a_save_error">无法保存此自动化任务，请刷新规则后重试。</string>
+    <string name="ux_a_delete_error">无法删除此自动化任务，请刷新列表后重试。</string>
     <string name="ux_a_last_run">上次运行：%1$s</string>
 </resources>

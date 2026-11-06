@@ -1,14 +1,26 @@
 package com.labteto.dshmobile.ui.screens.main
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,7 +30,9 @@ import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -30,8 +44,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
@@ -43,11 +61,13 @@ import com.labteto.dshmobile.core.wire.dto.GoalPhase
 import com.labteto.dshmobile.core.wire.dto.GoalSnapshot
 import com.labteto.dshmobile.core.wire.dto.SessionStatsView
 import com.labteto.dshmobile.core.wire.dto.TokenUsageView
+import com.labteto.dshmobile.data.ActionOutcome
 import com.labteto.dshmobile.data.SessionStore
-import com.labteto.dshmobile.ui.components.DisclosureRow
 import com.labteto.dshmobile.ui.components.DsButton
+import com.labteto.dshmobile.ui.components.DsButtonSize
 import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsDialog
+import com.labteto.dshmobile.ui.components.inkFieldFrame
 import com.labteto.dshmobile.ui.components.DsMenu
 import com.labteto.dshmobile.ui.components.DsPill
 import com.labteto.dshmobile.ui.components.FeatherIcons
@@ -56,10 +76,14 @@ import com.labteto.dshmobile.ui.components.HoldMenu
 import com.labteto.dshmobile.ui.components.MenuItem
 import com.labteto.dshmobile.ui.components.holdable
 import com.labteto.dshmobile.ui.components.rememberCopier
-import com.labteto.dshmobile.ui.components.SectionHeader
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.StateDot
 import com.labteto.dshmobile.ui.components.formatDurationMs
 import com.labteto.dshmobile.ui.components.formatTokens
+import com.labteto.dshmobile.ui.theme.DsAnimations
+import com.labteto.dshmobile.ui.theme.DsShapes
+import com.labteto.dshmobile.ui.theme.DsSizes
+import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.coroutines.launch
@@ -68,11 +92,132 @@ import kotlinx.coroutines.launch
  * The strip of persistent context between the transcript and the composer: to-dos, the ongoing
  * goal, the queue, and the run statistics.
  *
- * These render as collapsed one-line summaries and expand on tap, rather than appearing and
- * vanishing as their data arrives. A dock that pops into existence mid-turn shoves the transcript
- * and the composer around while you are reading or typing, which is most of what made the old
- * layout feel unsettled.
+ * The Ink redesign turns these into one compact bar each — a leading glyph, a one-line fact, a
+ * count or meter on the right — that expands in place when tapped. The old disclosure rows spent a
+ * full transcript row on a chevron and a title; these cost 40dp and keep the numbers visible
+ * without opening anything, which is what a reader watching a long turn actually wants.
  */
+
+// ---------------------------------------------------------------------------
+// Shared compact bar
+// ---------------------------------------------------------------------------
+
+/**
+ * The one dock shape: a rounded 40dp bar with a leading glyph, a title, a right-hand count/meter,
+ * and a disclosure chevron. [fraction] draws the thin meter the mock puts on the goal bar.
+ */
+@Composable
+private fun DockBar(
+    icon: ImageVector,
+    title: String,
+    trailing: String?,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+    fraction: Float? = null,
+    accent: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
+    val chevron by animateFloatAsState(
+        targetValue = if (expanded) 90f else 0f,
+        animationSpec = DsAnimations.chevron,
+        label = "dockChevron",
+    )
+    val tint = if (accent) colors.accent else colors.labelSecondary
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = DsShapes.control,
+        color = colors.bgLayer2,
+        border = BorderStroke(1.dp, colors.borderL1),
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = DsSizes.button)
+                    .clickable(role = Role.Button) {
+                        haptics.tap()
+                        onToggle()
+                    }
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(16.dp))
+                Text(
+                    title,
+                    style = DsType.dockTitle,
+                    color = colors.labelSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                if (trailing != null) {
+                    Text(
+                        trailing,
+                        style = DsType.mono12,
+                        color = colors.labelTertiary,
+                        maxLines = 1,
+                    )
+                }
+                if (fraction != null) {
+                    Box(
+                        Modifier
+                            .width(48.dp)
+                            .height(4.dp)
+                            .clip(DsShapes.pillFull)
+                            .background(colors.borderL2),
+                    ) {
+                        Box(
+                            Modifier
+                                .fillMaxWidth(fraction.coerceIn(0f, 1f))
+                                .height(4.dp)
+                                .clip(DsShapes.pillFull)
+                                .background(colors.accent),
+                        )
+                    }
+                }
+                Icon(
+                    FeatherIcons.ChevronRight,
+                    contentDescription = null,
+                    tint = colors.labelTertiary,
+                    modifier = Modifier
+                        .size(14.dp)
+                        .graphicsLayer { rotationZ = chevron },
+                )
+            }
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(DsAnimations.expand) + fadeIn(DsAnimations.fade),
+                exit = shrinkVertically(DsAnimations.expand) + fadeOut(DsAnimations.fade),
+            ) {
+                Column(
+                    Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) { content() }
+            }
+        }
+    }
+}
+
+/** A compact section label inside a dock's expanded body. */
+@Composable
+private fun DockLabel(text: String) {
+    Text(
+        text.uppercase(),
+        style = DsType.label12,
+        color = DsTheme.colors.labelTertiary,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.padding(top = 2.dp),
+    )
+}
+
+// ---------------------------------------------------------------------------
+// To-dos
+// ---------------------------------------------------------------------------
 
 @Composable
 internal fun TodoDock(todos: List<TodoEntry>, modifier: Modifier = Modifier) {
@@ -80,38 +225,55 @@ internal fun TodoDock(todos: List<TodoEntry>, modifier: Modifier = Modifier) {
     // Not keyed on the list: every todo update used to fold an open dock shut under the reader.
     var expanded by rememberSaveable { mutableStateOf(false) }
     val completed = todos.count { it.status == "completed" }
-    DisclosureRow(
-        title = stringResource(R.string.chat_todo_title),
-        summary = stringResource(R.string.chat_todo_progress, completed, todos.size),
+    DockBar(
         icon = FeatherIcons.CheckSquare,
+        title = stringResource(R.string.chat_todo_title),
+        trailing = stringResource(R.string.chat_todo_progress, completed, todos.size),
+        fraction = if (todos.isEmpty()) null else completed.toFloat() / todos.size,
         expanded = expanded,
         onToggle = { expanded = !expanded },
         modifier = modifier,
     ) {
+        DockLabel(stringResource(R.string.chat_todo_title))
         todos.forEach { todo ->
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 28.dp, top = 2.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 StateDot(todoStatusDot(todo.status), size = 8.dp)
                 Spacer(Modifier.width(8.dp))
-                Text(todo.content, style = DsType.small13, color = DsTheme.colors.labelSecondary)
+                Text(
+                    todo.content,
+                    style = DsType.small13,
+                    color = if (todo.status == "completed") DsTheme.colors.labelTertiary else DsTheme.colors.labelSecondary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
-        Spacer(Modifier.height(2.dp))
     }
 }
+
+// ---------------------------------------------------------------------------
+// Goals
+// ---------------------------------------------------------------------------
 
 /** The read-only goal summary shown inline in the transcript when a goal event lands. */
 @Composable
 internal fun GoalSummary(goal: GoalSnapshot) {
     val colors = DsTheme.colors
-    SectionHeader(stringResource(R.string.goal_title))
-    GoalPhaseBadge(goal.phase)
-    Spacer(Modifier.height(4.dp))
-    Text(goal.objective, style = DsType.small13, color = colors.labelSecondary)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Icon(FeatherIcons.Target, contentDescription = null, tint = colors.accent, modifier = Modifier.size(16.dp))
+        Text(
+            stringResource(R.string.ink_chat_goal_dock, goal.objective),
+            style = DsType.dockTitle,
+            color = colors.labelSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        GoalPhaseBadge(goal.phase)
+    }
     goal.blockedReason?.let {
         Text(
             stringResource(R.string.goal_blocked_reason, it.message),
@@ -121,69 +283,137 @@ internal fun GoalSummary(goal: GoalSnapshot) {
     }
 }
 
-/** The live goal bar above the composer, with its phase verbs. */
+/**
+ * The live goal bar above the composer: the mock's compact card, expanding into its verbs.
+ *
+ * The mock's round meter (`3/10`) needs a completed-round count the goal projection does not
+ * publish — it carries the cap only — so the bar states the phase on the right and the expanded
+ * body states the cap. Inventing a fraction would be worse than leaving it out.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier = Modifier) {
-    val scope = rememberCoroutineScope()
+internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier = Modifier, roundsStarted: Int? = null) {
     val colors = DsTheme.colors
-    var editing by remember { mutableStateOf(false) }
-    var clearing by remember { mutableStateOf(false) }
-    var editText by remember(goal.revision) { mutableStateOf(goal.objective) }
-    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        StateDot(
-            when (goal.phase) {
-                GoalPhase.ACTIVE -> com.labteto.dshmobile.ui.components.StateDotState.Running
-                GoalPhase.BLOCKED -> com.labteto.dshmobile.ui.components.StateDotState.Warning
-                GoalPhase.COMPLETE -> com.labteto.dshmobile.ui.components.StateDotState.Done
-                GoalPhase.PAUSED -> com.labteto.dshmobile.ui.components.StateDotState.Idle
-                GoalPhase.UNKNOWN -> com.labteto.dshmobile.ui.components.StateDotState.Idle
-            },
-            size = 8.dp,
-        )
-        Spacer(Modifier.width(8.dp))
+    var expanded by rememberSaveable(goal.id) { mutableStateOf(false) }
+    val cap = goal.maxGoalRounds.takeIf { it > 0 }
+    val rounds = roundsStarted?.takeIf { cap != null }
+    val fraction = if (rounds != null && cap != null) rounds.toFloat() / cap else null
+
+    DockBar(
+        icon = FeatherIcons.Target,
+        title = stringResource(R.string.ink_chat_goal_dock, goal.objective),
+        // The meter's count is the mock's "3/10"; with no round event this build cannot read, the
+        // bar falls back to the phase, which is always known.
+        trailing = if (rounds != null && cap != null) {
+            stringResource(R.string.chat_todo_progress, rounds, cap)
+        } else {
+            stringResource(goalPhaseLabelRes(goal.phase))
+        },
+        fraction = fraction,
+        expanded = expanded,
+        onToggle = { expanded = !expanded },
+        modifier = modifier,
+        accent = goal.phase == GoalPhase.ACTIVE,
+    ) {
         Text(
             goal.objective,
             style = DsType.small13,
             color = colors.labelSecondary,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
         )
-        Spacer(Modifier.width(8.dp))
-        GoalPhaseBadge(goal.phase)
-        Spacer(Modifier.width(4.dp))
-        DsMenu(
-            anchor = {
-                Icon(
-                    Icons.Filled.MoreVert,
-                    contentDescription = stringResource(R.string.goal_edit),
-                    tint = colors.labelTertiary,
-                    modifier = Modifier.size(20.dp),
-                )
-            },
-            items = buildList {
-                when (goal.phase) {
-                    GoalPhase.ACTIVE -> add(
-                        MenuItem(stringResource(R.string.goal_pause)) {
-                            scope.launch { store.goalAction("pause") }
-                        },
-                    )
-                    GoalPhase.PAUSED, GoalPhase.BLOCKED -> add(
-                        MenuItem(stringResource(R.string.goal_resume)) {
-                            scope.launch { store.goalAction("resume") }
-                        },
-                    )
-                    // Nothing to pause or resume: a finished goal has no next state, and a phase
-                    // from a newer harness has none this build can name. Edit and clear stay.
-                    GoalPhase.COMPLETE, GoalPhase.UNKNOWN -> Unit
-                }
-                add(MenuItem(stringResource(R.string.goal_edit)) { editing = true })
-                add(
-                    MenuItem(stringResource(R.string.goal_clear), danger = true) { clearing = true },
-                )
-            },
+        goal.blockedReason?.let {
+            Text(
+                stringResource(R.string.goal_blocked_reason, it.message),
+                style = DsType.caption11,
+                color = colors.warnText,
+            )
+        }
+        if (rounds != null && cap != null) {
+            Text(
+                stringResource(R.string.goal_rounds, rounds, cap.toString()),
+                style = DsType.caption11,
+                color = colors.labelTertiary,
+            )
+        }
+        Text(
+            stringResource(R.string.goal_max_rounds, goal.maxGoalRounds.toString()),
+            style = DsType.caption11,
+            color = colors.labelTertiary,
+        )
+        GoalActions(goal, store)
+    }
+}
+
+/**
+ * The goal's verbs: pause or resume, edit, clear, and the two dialogs the last two open.
+ *
+ * Shared by the dock above the composer and the details panel's Goal row. The panel is drawn over
+ * the chat, so the chat's error banner is hidden behind it; it passes [onFailed] and says a refusal
+ * itself, and the store stays off the banner for that call. With no [onFailed] a refusal goes to
+ * the banner, as it always did.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun GoalActions(
+    goal: GoalSnapshot,
+    store: SessionStore,
+    modifier: Modifier = Modifier,
+    onFailed: ((String?) -> Unit)? = null,
+) {
+    val scope = rememberCoroutineScope()
+    val haptics = rememberDsHaptics()
+    var editing by remember { mutableStateOf(false) }
+    var clearing by remember { mutableStateOf(false) }
+    var editText by remember(goal.revision) { mutableStateOf(goal.objective) }
+
+    fun run(action: String, objective: String? = null) {
+        scope.launch {
+            val outcome = store.goalAction(action, objective, report = onFailed == null)
+            if (outcome is ActionOutcome.Failed) onFailed?.invoke(outcome.message)
+        }
+    }
+
+    FlowRow(
+        modifier = modifier.padding(top = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        when (goal.phase) {
+            GoalPhase.ACTIVE -> DsButton(
+                text = stringResource(R.string.goal_pause),
+                onClick = {
+                    haptics.tap()
+                    run("pause")
+                },
+                variant = DsButtonVariant.Outline,
+                size = DsButtonSize.Small,
+            )
+            GoalPhase.PAUSED, GoalPhase.BLOCKED -> DsButton(
+                text = stringResource(R.string.goal_resume),
+                onClick = {
+                    haptics.tap()
+                    run("resume")
+                },
+                variant = DsButtonVariant.Outline,
+                size = DsButtonSize.Small,
+            )
+            // A finished goal has no next state, and a phase from a newer harness has none
+            // this build can name. Edit and clear stay.
+            GoalPhase.COMPLETE, GoalPhase.UNKNOWN -> Unit
+        }
+        DsButton(
+            text = stringResource(R.string.goal_edit),
+            onClick = { haptics.tap(); editing = true },
+            variant = DsButtonVariant.Outline,
+            size = DsButtonSize.Small,
+        )
+        DsButton(
+            text = stringResource(R.string.goal_clear),
+            onClick = { haptics.reject(); clearing = true },
+            variant = DsButtonVariant.Danger,
+            size = DsButtonSize.Small,
         )
     }
+
     if (clearing) {
         ConfirmDialog(
             title = stringResource(R.string.goal_clear),
@@ -192,7 +422,7 @@ internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier
             onDismiss = { clearing = false },
             onConfirm = {
                 clearing = false
-                scope.launch { store.goalAction("clear") }
+                run("clear")
             },
         )
     }
@@ -202,15 +432,16 @@ internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier
                 minLines = 3,
                 value = editText,
                 onValueChange = { editText = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().inkFieldFrame(),
                 placeholder = { Text(stringResource(R.string.goal_title), style = DsType.std14) },
                 colors = dialogTextFieldColors(),
+                shape = DsShapes.control,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DsButton(
                     text = stringResource(R.string.common_ok),
                     onClick = {
-                        scope.launch { store.goalAction("edit", editText) }
+                        run("edit", editText)
                         editing = false
                     },
                     variant = DsButtonVariant.Info,
@@ -232,9 +463,20 @@ private fun GoalPhaseBadge(phase: GoalPhase) {
     Box(Modifier.clearAndSetSemantics { contentDescription = label }) { DsPill(text = label) }
 }
 
+// ---------------------------------------------------------------------------
+// Queue
+// ---------------------------------------------------------------------------
+
 /** Pending turns, with the edit / remove / steer verbs the harness exposes. */
 @Composable
-internal fun QueueDock(queue: List<QueueItem>, store: SessionStore, modifier: Modifier = Modifier, sessionId: String? = store.currentSessionId.value, blocked: Boolean = false, operationState: androidx.compose.runtime.MutableState<Boolean>? = null) {
+internal fun QueueDock(
+    queue: List<QueueItem>,
+    store: SessionStore,
+    modifier: Modifier = Modifier,
+    sessionId: String? = store.currentSessionId.value,
+    blocked: Boolean = false,
+    operationState: androidx.compose.runtime.MutableState<Boolean>? = null,
+) {
     if (queue.isEmpty()) return
     val scope = rememberCoroutineScope()
     val colors = DsTheme.colors
@@ -260,24 +502,30 @@ internal fun QueueDock(queue: List<QueueItem>, store: SessionStore, modifier: Mo
             ?.takeIf { it.isNotBlank() }
             ?: item.previewText
 
-    DisclosureRow(
+    DockBar(
+        icon = FeatherIcons.List,
         title = stringResource(R.string.chat_queue_title),
-        summary = queue.size.toString(),
+        trailing = queue.size.toString(),
         expanded = expanded,
         onToggle = { expanded = !expanded },
         modifier = modifier,
     ) {
-        DsButton(text = stringResource(R.string.chat_queue_steer), enabled = !busy && !blocked,
+        DsButton(
+            text = stringResource(R.string.chat_queue_steer),
+            enabled = !busy && !blocked,
             onClick = {
                 busy = true
                 val ids = queue.map { it.id }
                 scope.launch { try { ids.forEach { store.updateQueue(it, "steer", sessionId = sessionId) } } finally { busy = false } }
-            }, variant = DsButtonVariant.Ghost)
+            },
+            variant = DsButtonVariant.Ghost,
+            size = DsButtonSize.Small,
+        )
         queue.forEach { item ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 28.dp, top = 2.dp)
+                    .padding(top = 2.dp)
                     .holdable(holdLabel) { heldId = item.id },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -315,7 +563,6 @@ internal fun QueueDock(queue: List<QueueItem>, store: SessionStore, modifier: Mo
                 )
             }
         }
-        Spacer(Modifier.height(2.dp))
     }
 
     // Looked up by id on every pass, so a turn that leaves the queue while its menu is open takes
@@ -347,9 +594,10 @@ internal fun QueueDock(queue: List<QueueItem>, store: SessionStore, modifier: Mo
             TextField(
                 value = editText,
                 onValueChange = { editText = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().inkFieldFrame(),
                 placeholder = { Text(stringResource(R.string.chat_composer_hint), style = DsType.std14) },
                 colors = dialogTextFieldColors(),
+                shape = DsShapes.control,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DsButton(
@@ -374,8 +622,12 @@ internal fun QueueDock(queue: List<QueueItem>, store: SessionStore, modifier: Mo
     }
 }
 
+// ---------------------------------------------------------------------------
+// Statistics footer
+// ---------------------------------------------------------------------------
+
 /**
- * The run statistics line under the transcript.
+ * The run statistics line under the transcript, as the mock's mono caption strip.
  *
  * Two of these numbers are aggregates on the wire, not averages: `ttftMs` is a *sum* across
  * `ttftSteps`, and there is no throughput field at all — it comes from decoded tokens over decode
@@ -393,20 +645,26 @@ internal fun StatsFooter(
     val parts = buildList {
         stats?.let {
             add(pluralStringResource(R.plurals.chat_stats_turn_count, it.turns, it.turns) + " · " + pluralStringResource(R.plurals.trajectory_step_count, it.steps, it.steps))
-            add(
-                stringResource(
-                    R.string.chat_stats_speed,
-                    formatDurationMs(it.meanTtftMs),
-                    it.tokensPerSecond?.let { rate -> String.format(java.util.Locale.US, "%.0f", rate) } ?: "—",
-                ),
-            )
+            val ttftMs = it.meanTtftMs
+            val rate = it.tokensPerSecond
+            // Both numbers come from the first steps of a run; until they exist the clause is left out.
+            if (ttftMs != null && rate != null) {
+                add(
+                    stringResource(
+                        R.string.chat_stats_speed,
+                        formatDurationMs(ttftMs),
+                        String.format(java.util.Locale.US, "%.0f", rate),
+                    ),
+                )
+            }
         }
         usage?.cacheHitRatio?.let { add(stringResource(R.string.chat_stats_cache, (it * 100).toInt())) }
     }
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .animateContentSize(),
+            .animateContentSize()
+            .padding(horizontal = 12.dp),
     ) {
         Text(
             parts.joinToString(" · "),
@@ -418,7 +676,7 @@ internal fun StatsFooter(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { expanded = !expanded }
-                .padding(vertical = 2.dp),
+                .padding(vertical = 3.dp),
         )
         if (expanded) {
             stats?.let {
@@ -457,7 +715,9 @@ private fun DetailLine(text: String) {
 /** The wire's placement words (`queued`, `steering`, `context`) in the reader's language. */
 @Composable
 private fun queuePlacementLabel(placement: String): String = when (placement) {
-    com.labteto.dshmobile.core.wire.dto.InboxProjection.QUEUED -> stringResource(R.string.chat_queue_placement_queued)
+    // The mock's tag for a waiting turn is "Next turn", which says when it runs rather than
+    // repeating the dock's own title.
+    com.labteto.dshmobile.core.wire.dto.InboxProjection.QUEUED -> stringResource(R.string.ink_chat_queue_next_turn)
     com.labteto.dshmobile.core.wire.dto.InboxProjection.STEERING -> stringResource(R.string.chat_queue_placement_steering)
     com.labteto.dshmobile.core.wire.dto.InboxProjection.CONTEXT -> stringResource(R.string.chat_queue_placement_context)
     else -> placement

@@ -30,8 +30,7 @@ fun relativeTime(timestampMs: Long, nowMs: Long = System.currentTimeMillis()): S
 }
 
 /** Compact duration for job and turn timings: `4.2s`, `1:03`, `12:45`. */
-fun formatDurationMs(ms: Long?): String = when {
-    ms == null -> "—"
+fun formatDurationMs(ms: Long): String = when {
     ms < 1_000 -> "${ms}ms"
     ms < 60_000 -> String.format(java.util.Locale.US, "%.1fs", ms / 1000.0)
     ms >= 3_600_000 -> String.format(java.util.Locale.US, "%d:%02d:%02d", ms / 3_600_000, ms / 60_000 % 60, ms / 1000 % 60)
@@ -42,8 +41,7 @@ fun formatDurationMs(ms: Long?): String = when {
 }
 
 /** Token counts read better abbreviated once they pass a thousand. */
-fun formatTokens(value: Long?): String = when {
-    value == null -> "—"
+fun formatTokens(value: Long): String = when {
     value < 1_000 -> value.toString()
     value < 1_000_000 -> String.format(java.util.Locale.US, "%.1fk", value / 1_000.0)
     else -> String.format(java.util.Locale.US, "%.1fM", value / 1_000_000.0)

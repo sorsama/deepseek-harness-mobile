@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_failed_rename">تعذّرت إعادة تسمية هذه الجلسة.</string>
+    <string name="details_failed_fork">تعذّر تفريع هذه الجلسة.</string>
+    <string name="details_failed_archive">تعذّرت أرشفة هذه الجلسة.</string>
+    <string name="details_archived">تمت أرشفة الجلسة.</string>
+    <string name="details_failed_stop_job">تعذّر إيقاف تلك المهمة.</string>
+    <string name="details_failed_queue_remove">تعذّرت إزالتها من قائمة الانتظار.</string>
+    <string name="details_failed_goal">تعذّر تحديث الهدف.</string>
+    <string name="details_failed_plan">تعذّر تغيير وضع التخطيط.</string>
+    <string name="details_failed_link">تعذّر إنشاء رابط الآن. تحقّق من الاتصال.</string>
+    <string name="details_fork_done_title">النسخة جاهزة</string>
+    <string name="details_fork_done_body">تم إنشاء نسخة من هذه الجلسة. هل تريد فتحها الآن؟</string>
+    <string name="details_fork_open">افتح النسخة</string>
+    <string name="details_fork_stay">ابقَ هنا</string>
+    <string name="details_open_output">افتح المخرجات</string>
+    <string name="models_switch_failed">تعذّر تبديل النموذج.</string>
+    <string name="settings_forget_hosts_confirm_title">نسيان كل أجهزة harness؟</string>
+    <string name="settings_forget_hosts_confirm_action">نسيان الكل</string>
+    <string name="settings_clear_last_sessions_confirm_title">نسيان آخر جلسة مفتوحة؟</string>
+    <string name="settings_clear_last_sessions_confirm_body">في المرة القادمة سيفتح التطبيق أحدث جلسة في كل harness بدل آخر جلسة استخدمتها. لن تُحذف أي جلسة.</string>
+    <string name="settings_clear_last_sessions_confirm_action">نسيان</string>
+    <string name="feedback_error_conflict">تم تغيير هذا التقييم من مكان آخر. ملاحظتك محفوظة، لذا يمكنك إرسالها مرة أخرى.</string>
+    <string name="feedback_error_generic">تعذّر حفظ ملاحظاتك. حاول مرة أخرى بعد قليل.</string>
+    <string name="toolcard_title_tool">أداة</string>
+    <string name="toolcard_title_terminal">الطرفية</string>
+    <string name="toolcard_title_diff">الفروقات</string>
+    <string name="toolcard_title_search">بحث</string>
+    <string name="toolcard_title_web">الويب</string>
+    <string name="toolcard_running">قيد التشغيل</string>
+    <string name="toolcard_killed_by">أُنهي بواسطة %1$s</string>
+    <string name="toolcard_exit_code">رمز الخروج %1$d</string>
+    <string name="toolcard_showing_of">عرض %1$d من %2$d</string>
+    <string name="toolcard_more">+%1$d أخرى</string>
+    <string name="toolcard_section_in">الإدخال</string>
+    <string name="toolcard_section_out">المُخرجات</string>
+    <string name="toolcard_section_locations">المواقع</string>
+    <plurals name="settings_forget_hosts_confirm_body">
+        <item quantity="zero">ستُحذف %d من أجهزة harness المحفوظة واقتراناتها بالمُرحِّل من هذا الهاتف. لاستخدامها مجددًا، اتصل بها أو اقرنها من جديد.</item>
+        <item quantity="one">ستُحذف %d من أجهزة harness المحفوظة واقتراناتها بالمُرحِّل من هذا الهاتف. لاستخدامها مجددًا، اتصل بها أو اقرنها من جديد.</item>
+        <item quantity="two">ستُحذف %d من أجهزة harness المحفوظة واقتراناتها بالمُرحِّل من هذا الهاتف. لاستخدامها مجددًا، اتصل بها أو اقرنها من جديد.</item>
+        <item quantity="few">ستُحذف %d من أجهزة harness المحفوظة واقتراناتها بالمُرحِّل من هذا الهاتف. لاستخدامها مجددًا، اتصل بها أو اقرنها من جديد.</item>
+        <item quantity="many">ستُحذف %d من أجهزة harness المحفوظة واقتراناتها بالمُرحِّل من هذا الهاتف. لاستخدامها مجددًا، اتصل بها أو اقرنها من جديد.</item>
+        <item quantity="other">ستُحذف %d من أجهزة harness المحفوظة واقتراناتها بالمُرحِّل من هذا الهاتف. لاستخدامها مجددًا، اتصل بها أو اقرنها من جديد.</item>
+    </plurals>
+    <plurals name="toolcard_blocks">
+        <item quantity="zero">%d كتلة</item>
+        <item quantity="one">%d كتلة</item>
+        <item quantity="two">%d كتلتان</item>
+        <item quantity="few">%d كتل</item>
+        <item quantity="many">%d كتلة</item>
+        <item quantity="other">%d كتلة</item>
+    </plurals>
+    <plurals name="toolcard_locations">
+        <item quantity="zero">%d موقع</item>
+        <item quantity="one">%d موقع</item>
+        <item quantity="two">%d موقعان</item>
+        <item quantity="few">%d مواقع</item>
+        <item quantity="many">%d موقعًا</item>
+        <item quantity="other">%d موقع</item>
+    </plurals>
+    <plurals name="toolcard_files">
+        <item quantity="zero">%d ملف</item>
+        <item quantity="one">%d ملف</item>
+        <item quantity="two">%d ملفان</item>
+        <item quantity="few">%d ملفات</item>
+        <item quantity="many">%d ملفًا</item>
+        <item quantity="other">%d ملف</item>
+    </plurals>
+    <plurals name="toolcard_results">
+        <item quantity="zero">%d نتيجة</item>
+        <item quantity="one">%d نتيجة</item>
+        <item quantity="two">%d نتيجتان</item>
+        <item quantity="few">%d نتائج</item>
+        <item quantity="many">%d نتيجة</item>
+        <item quantity="other">%d نتيجة</item>
+    </plurals>
+    <plurals name="toolcard_lines">
+        <item quantity="zero">%d سطر</item>
+        <item quantity="one">%d سطر</item>
+        <item quantity="two">%d سطران</item>
+        <item quantity="few">%d أسطر</item>
+        <item quantity="many">%d سطرًا</item>
+        <item quantity="other">%d سطر</item>
+    </plurals>
+    <plurals name="toolcard_sources">
+        <item quantity="zero">%d مصدر</item>
+        <item quantity="one">%d مصدر</item>
+        <item quantity="two">%d مصدران</item>
+        <item quantity="few">%d مصادر</item>
+        <item quantity="many">%d مصدرًا</item>
+        <item quantity="other">%d مصدر</item>
+    </plurals>
+</resources>

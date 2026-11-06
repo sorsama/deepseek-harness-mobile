@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- File viewer: header and actions -->
+    <string name="preview_open_full">معاينة كاملة</string>
+    <string name="preview_save_copy">حفظ نسخة</string>
+    <string name="preview_saved">تم الحفظ على جهازك</string>
+    <string name="preview_save_failed">تعذّر حفظ الملف</string>
+    <string name="preview_copy_path">نسخ المسار</string>
+    <string name="preview_refresh">تحديث</string>
+    <string name="preview_more_actions">إجراءات أخرى</string>
+    <string name="preview_kind_text">نص</string>
+    <string name="preview_kind_binary">ثنائي</string>
+    <!-- View modes -->
+    <string name="preview_mode_pretty">منسّق</string>
+    <string name="preview_mode_tree">شجرة</string>
+    <string name="preview_mode_raw">خام</string>
+    <string name="preview_mode_table">جدول</string>
+    <!-- States -->
+    <string name="preview_too_large_title">كبير جدًا للمعاينة</string>
+    <string name="preview_too_large_body">حجم هذا الملف %1$s. ما زال بإمكانك حفظ نسخة على جهازك.</string>
+    <string name="preview_binary_title">لا يمكن عرض هذا الملف</string>
+    <string name="preview_binary_body">هذا ملف ثنائي. هذه أولى بايتاته. احفظ نسخة لفتحه في تطبيق آخر.</string>
+    <string name="preview_hex_note">أول %1$s من %2$s</string>
+    <string name="preview_empty_file">هذا الملف فارغ</string>
+    <string name="preview_cant_show_title">تعذّر عرض هذا الملف</string>
+    <string name="preview_image_unsupported">لا يستطيع هذا الهاتف عرض هذا النوع من الصور. احفظ نسخة لفتحها في تطبيق آخر.</string>
+    <string name="preview_media_unsupported">لا يستطيع هذا الهاتف تشغيل هذا الملف. احفظ نسخة لفتحه في تطبيق آخر.</string>
+    <string name="preview_text_truncated">يظهر أول %1$s فقط. احفظ نسخة للحصول على الملف كاملًا.</string>
+    <string name="preview_json_invalid">هذا JSON غير صالح</string>
+    <string name="preview_json_at">السطر %1$d، العمود %2$d</string>
+    <string name="preview_json_at_line">السطر %1$d</string>
+    <string name="preview_notebook_invalid">لا يبدو هذا دفتر ملاحظات</string>
+    <string name="preview_output_hidden">لا يمكن عرض هذا الناتج هنا</string>
+    <string name="preview_table_truncated">عرض %1$d من %2$d صفًا</string>
+    <string name="preview_table_summary">الصفوف: %1$d · الأعمدة: %2$d</string>
+    <string name="preview_table_partial">الصفوف المحمّلة حتى الآن: %1$d</string>
+    <!-- Text viewer -->
+    <string name="preview_wrap">التفاف الأسطر</string>
+    <string name="preview_line_numbers">أرقام الأسطر</string>
+    <string name="preview_find">بحث في الملف</string>
+    <string name="preview_find_placeholder">بحث</string>
+    <string name="preview_find_none">لا توجد نتائج</string>
+    <string name="preview_find_next">النتيجة التالية</string>
+    <string name="preview_find_previous">النتيجة السابقة</string>
+    <string name="preview_find_partial">يشمل البحث الجزء المحمّل حتى الآن فقط</string>
+    <string name="preview_expand">توسيع</string>
+    <string name="preview_collapse">طيّ</string>
+    <string name="preview_json_more">صفوف أخرى غير معروضة: %1$s</string>
+    <!-- Image, PDF and media viewers -->
+    <string name="preview_zoom_in">تكبير</string>
+    <string name="preview_zoom_out">تصغير</string>
+    <string name="preview_fit">ملاءمة الشاشة</string>
+    <string name="preview_fill">ملء الشاشة</string>
+    <string name="preview_prev_page">الصفحة السابقة</string>
+    <string name="preview_next_page">الصفحة التالية</string>
+    <string name="preview_pdf_pages">الصفحات: %1$d</string>
+    <string name="preview_play">تشغيل</string>
+    <string name="preview_pause">إيقاف مؤقت</string>
+    <string name="preview_seek">موضع التشغيل</string>
+    <!-- Archives and fonts -->
+    <string name="preview_archive_summary">العناصر: %1$d</string>
+    <string name="preview_archive_truncated">عرض أول %1$d عنصرًا</string>
+    <string name="preview_archive_failed">تعذّرت قراءة هذا الأرشيف</string>
+    <string name="preview_font_failed">تعذّر تحميل هذا الخط</string>
+</resources>

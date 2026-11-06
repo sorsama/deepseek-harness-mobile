@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_failed_rename">เปลี่ยนชื่อเซสชันนี้ไม่ได้</string>
+    <string name="details_failed_fork">ฟอร์กเซสชันนี้ไม่ได้</string>
+    <string name="details_failed_archive">เก็บถาวรเซสชันนี้ไม่ได้</string>
+    <string name="details_archived">เก็บถาวรเซสชันแล้ว</string>
+    <string name="details_failed_stop_job">หยุดงานนั้นไม่ได้</string>
+    <string name="details_failed_queue_remove">นำออกจากคิวไม่ได้</string>
+    <string name="details_failed_goal">อัปเดตเป้าหมายไม่ได้</string>
+    <string name="details_failed_plan">เปลี่ยนโหมดวางแผนไม่ได้</string>
+    <string name="details_failed_link">สร้างลิงก์ไม่ได้ในตอนนี้ ลองตรวจสอบการเชื่อมต่อ</string>
+    <string name="details_fork_done_title">ฟอร์กพร้อมแล้ว</string>
+    <string name="details_fork_done_body">สร้างสำเนาของเซสชันนี้แล้ว เปิดตอนนี้เลยหรือไม่</string>
+    <string name="details_fork_open">เปิดสำเนา</string>
+    <string name="details_fork_stay">อยู่ที่นี่ต่อ</string>
+    <string name="details_open_output">เปิดผลลัพธ์</string>
+    <string name="models_switch_failed">เปลี่ยนโมเดลไม่ได้</string>
+    <string name="settings_forget_hosts_confirm_title">ลืม harness ทั้งหมดหรือไม่</string>
+    <string name="settings_forget_hosts_confirm_action">ลืมทั้งหมด</string>
+    <string name="settings_clear_last_sessions_confirm_title">ลืมว่าจะเปิดเซสชันใดหรือไม่</string>
+    <string name="settings_clear_last_sessions_confirm_body">คราวหน้าแอปจะเปิดเซสชันล่าสุดของแต่ละ harness แทนเซสชันที่คุณใช้ครั้งก่อน และจะไม่มีเซสชันใดถูกลบ</string>
+    <string name="settings_clear_last_sessions_confirm_action">ลืม</string>
+    <string name="feedback_error_conflict">มีการแก้ไขคะแนนนี้จากที่อื่นแล้ว บันทึกของคุณยังอยู่ ส่งใหม่ได้เลย</string>
+    <string name="feedback_error_generic">บันทึกความคิดเห็นไม่ได้ ลองอีกครั้งในอีกสักครู่</string>
+    <string name="toolcard_title_tool">เครื่องมือ</string>
+    <string name="toolcard_title_terminal">เทอร์มินัล</string>
+    <string name="toolcard_title_diff">ส่วนที่ต่าง</string>
+    <string name="toolcard_title_search">ค้นหา</string>
+    <string name="toolcard_title_web">เว็บ</string>
+    <string name="toolcard_running">กำลังทำงาน</string>
+    <string name="toolcard_killed_by">ถูกยุติโดย %1$s</string>
+    <string name="toolcard_exit_code">รหัสออก %1$d</string>
+    <string name="toolcard_showing_of">แสดง %1$d จาก %2$d</string>
+    <string name="toolcard_more">อีก %1$d รายการ</string>
+    <string name="toolcard_section_in">อินพุต</string>
+    <string name="toolcard_section_out">เอาต์พุต</string>
+    <string name="toolcard_section_locations">ตำแหน่ง</string>
+    <plurals name="settings_forget_hosts_confirm_body">
+        <item quantity="other">จะลบ harness ที่บันทึกไว้ %d รายการและการจับคู่รีเลย์ออกจากโทรศัพท์เครื่องนี้ ถ้าจะใช้อีก ต้องเชื่อมต่อหรือจับคู่ใหม่</item>
+    </plurals>
+    <plurals name="toolcard_blocks">
+        <item quantity="other">%d บล็อก</item>
+    </plurals>
+    <plurals name="toolcard_locations">
+        <item quantity="other">%d ตำแหน่ง</item>
+    </plurals>
+    <plurals name="toolcard_files">
+        <item quantity="other">%d ไฟล์</item>
+    </plurals>
+    <plurals name="toolcard_results">
+        <item quantity="other">%d ผลลัพธ์</item>
+    </plurals>
+    <plurals name="toolcard_lines">
+        <item quantity="other">%d บรรทัด</item>
+    </plurals>
+    <plurals name="toolcard_sources">
+        <item quantity="other">%d แหล่งที่มา</item>
+    </plurals>
+</resources>

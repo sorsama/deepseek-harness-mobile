@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -45,6 +46,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.ui.input.key.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -69,11 +71,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
@@ -90,9 +91,11 @@ import com.labteto.dshmobile.core.wire.dto.displayPermissionPreset
 import com.labteto.dshmobile.ui.components.ContextMeter
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.DsIconButton
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.skeleton
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
+import com.labteto.dshmobile.ui.theme.DsSizes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -182,6 +185,12 @@ internal fun Composer(
     onStop: () -> Unit,
     modifier: Modifier = Modifier,
     preparing: Boolean = false,
+    /**
+     * A send is on its way to the host. Send and the attach buttons wait for it, but the text field
+     * does not: it used to be disabled with them, and a focused field that goes disabled loses its
+     * focus and drops the keyboard, so every message needed a tap on the field before the next one.
+     */
+    submitting: Boolean = false,
     cursor: Int = draft.length,
     onCursorChange: (Int) -> Unit = {},
     references: List<DraftReference> = emptyList(),
@@ -200,15 +209,20 @@ internal fun Composer(
         if (editor.text != draft || editor.selection.end != cursor) editor = editor.copy(text = draft, selection = androidx.compose.ui.text.TextRange(cursor.coerceIn(0, draft.length)))
     }
     val colors = DsTheme.colors
-    val haptics = LocalHapticFeedback.current
+    val haptics = rememberDsHaptics()
     // A file that is still uploading has no receipt to cite yet, and one that failed never will;
     // the send affordance waits for the chips rather than sending a message that names neither.
     val attachmentsSettled = attachments.none { it is PendingAttachment.File && it.state !is FileUploadState.Ready }
-    val canSend = enabled && !preparing && (draft.isNotBlank() || attachments.isNotEmpty()) && attachmentsSettled
+    val canSend = enabled && !submitting && !preparing && (draft.isNotBlank() || attachments.isNotEmpty()) && attachmentsSettled
+    // The buttons that start something wait for a send in flight; the field itself stays live.
+    val controlsEnabled = enabled && !submitting
     val currentDraft by rememberUpdatedState(draft)
     val currentOnDraftChange by rememberUpdatedState(onDraftChange)
     val currentOnSend by rememberUpdatedState(onSend)
     var sendMenuOpen by remember { mutableStateOf(false) }
+    // The mock's focused composer takes an accent hairline and a soft glow; the border is the part
+    // a phone can show without a second shadow layer, so it is the part wired here.
+    var fieldFocused by remember { mutableStateOf(false) }
     val fieldFocus = remember { androidx.compose.ui.focus.FocusRequester() }
     val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     // Text put back from the transcript is there to be edited, so the field takes focus and the
@@ -224,21 +238,18 @@ internal fun Composer(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = DsSpacing.medium, vertical = DsSpacing.small)
+            .padding(horizontal = 12.dp, vertical = 6.dp)
             .animateContentSize(),
         shape = DsShapes.composer,
         color = colors.composerCard,
-        border = BorderStroke(1.dp, colors.borderL1),
+        border = BorderStroke(1.dp, if (fieldFocused) colors.accent else colors.borderL2),
     ) {
-        BoxWithConstraints {
-            val boundedHeight = constraints.hasBoundedHeight
+        Box {
             Column(
-                Modifier.padding(horizontal = DsSpacing.medium, vertical = DsSpacing.small),
+                Modifier.padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 6.dp),
                 verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
             ) {
-                // Reserve the action row before measuring any draft content, including attachments.
                 Column(
-                    Modifier.then(if (boundedHeight) Modifier.weight(1f, fill = false) else Modifier),
                     verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
                 ) {
                 if (references.isNotEmpty()) {
@@ -287,9 +298,10 @@ internal fun Composer(
                     // Measure the controls first, then give the editor the remaining height. With
                     // unbounded height, omit weight so the editor keeps its natural line height.
                     modifier = Modifier
-                        .then(if (boundedHeight) Modifier.weight(1f, fill = false) else Modifier)
+                        .heightIn(min = 48.dp)
                         .fillMaxWidth()
                         .focusRequester(fieldFocus)
+                        .onFocusChanged { fieldFocused = it.isFocused }
                         .onPreviewKeyEvent { event ->
                         if (event.key == Key.Enter && (event.isCtrlPressed || event.isMetaPressed)) {
                             if (event.type == KeyEventType.KeyUp && canSend) {
@@ -308,7 +320,12 @@ internal fun Composer(
                     enabled = enabled,
                     placeholder = {
                         Text(
-                            stringResource(R.string.chat_composer_hint),
+                            // Mid-turn the composer's message steers the running turn, and the
+                            // placeholder says so instead of offering the same "Message the agent"
+                            // as an idle session. Both are the same field and the same button.
+                            stringResource(
+                                if (running) R.string.ink_chat_steer_hint else R.string.chat_composer_hint,
+                            ),
                             style = DsType.std14,
                             color = colors.labelTertiary,
                         )
@@ -337,34 +354,36 @@ internal fun Composer(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                    horizontalArrangement = Arrangement.spacedBy(DsSpacing.compact),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp),
+                    horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
                 ) {
                     CircleAction(
                         icon = Icons.Filled.Add,
                         description = stringResource(R.string.chat_composer_commands),
-                        size = 30,
-                        background = colors.hoverSolid,
+                        size = 44,
+                        background = colors.bgLayer3,
                         tint = colors.labelPrimary,
-                        enabled = enabled,
+                        enabled = controlsEnabled,
                         onClick = onOpenSheet,
+                        haptic = { haptics.tap() },
                     )
 
                     CircleAction(
                         icon = FeatherIcons.AtSign,
                         description = stringResource(R.string.harness_add_reference),
-                        size = 30,
-                        background = colors.hoverSolid,
+                        size = 44,
+                        background = colors.bgLayer3,
                         tint = colors.labelPrimary,
-                        enabled = enabled,
+                        enabled = controlsEnabled,
                         onClick = onAddReference,
+                        haptic = { haptics.tap() },
                     )
 
                     Box(Modifier.weight(1f)) {
                         PermissionChip(
                             select = permissions,
                             pending = pendingPermission,
-                            enabled = enabled,
+                            enabled = controlsEnabled,
                             onPick = onPermissionPick,
                         )
                     }
@@ -391,7 +410,7 @@ internal fun Composer(
                         label = "sendFill",
                     )
                     val sendTint by animateColorAsState(
-                        if (canSend) Color.White else colors.labelTertiary,
+                        if (canSend) colors.onAccent else colors.labelTertiary,
                         DsAnimations.tabSwapColor,
                         label = "sendTint",
                     )
@@ -407,7 +426,7 @@ internal fun Composer(
                         // keyboard finishing its composing word) carried the sent text back in.
                         editor = androidx.compose.ui.text.input.TextFieldValue("")
                         currentOnDraftChange("")
-                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        haptics.confirm()
                         deliver(text)
                     }
                     // Mid-turn a message can steer the running turn or wait for it to end, and the
@@ -417,7 +436,7 @@ internal fun Composer(
                     CircleAction(
                         icon = Icons.Filled.ArrowUpward,
                         description = stringResource(R.string.chat_composer_send),
-                        size = 40,
+                        size = 44,
                         background = sendFill,
                         tint = sendTint,
                         enabled = canSend,
@@ -457,12 +476,12 @@ internal fun Composer(
                         CircleAction(
                             icon = null,
                             description = stringResource(R.string.chat_composer_stop),
-                            size = 40,
+                            size = 44,
                             background = colors.error,
                             tint = Color.White,
                             enabled = true,
                             onClick = {
-                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                haptics.reject()
                                 onStop()
                             },
                         ) {
@@ -470,7 +489,7 @@ internal fun Composer(
                                 Modifier
                                     .size(11.dp)
                                     .clip(RoundedCornerShape(3.dp))
-                                    .background(Color.White),
+                                    .background(colors.bgBase),
                             )
                         }
                     }
@@ -496,6 +515,7 @@ private fun PermissionChip(
     onPick: (String) -> Unit,
 ) {
     val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
     if (select == null) return
     var menuOpen by remember { mutableStateOf(false) }
     var confirming by remember { mutableStateOf<String?>(null) }
@@ -510,28 +530,38 @@ private fun PermissionChip(
     Box {
         Row(
             modifier = Modifier
-                .clip(DsShapes.cube)
-                .clickable(enabled = enabled && pending == null) { menuOpen = true }
-                // 24dp of chip was the smallest target in the composer for a setting that decides
-                // whether the agent can run commands unasked.
-                .heightIn(min = 36.dp)
+                // Drawn 36dp like every other chip, inside a 48dp target: 24dp of chip was the smallest
+                // target in the composer for a setting that decides whether the agent can run commands
+                // unasked.
+                .minimumInteractiveComponentSize()
+                .heightIn(min = DsSizes.chip)
+                .clip(DsShapes.pillFull)
+                .background(colors.bgLayer3)
+                .border(1.dp, colors.borderL2, DsShapes.pillFull)
+                // Never gated on `pending`: the switch in flight always ends (see PermissionSwitch),
+                // but a chip that went dead while it waited was exactly how one that never ended
+                // took the whole control with it. A second pick simply replaces the first.
+                .clickable(enabled = enabled) {
+                    haptics.tap()
+                    menuOpen = true
+                }
                 .wrapContentHeight(Alignment.CenterVertically)
-                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .padding(horizontal = 12.dp)
                 .then(
                     if (pending != null) {
-                        Modifier.skeleton(colors.bgLayer2, colors.hover, DsShapes.cube)
+                        Modifier.skeleton(colors.bgLayer2, colors.hover, DsShapes.pillFull)
                     } else {
                         Modifier
                     },
                 ),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             Icon(
                 Icons.Outlined.Shield,
                 contentDescription = stringResource(R.string.permission_preset),
-                tint = if (effective == FULL_ACCESS_PRESET) colors.warnLabel else colors.labelTertiary,
-                modifier = Modifier.size(14.dp),
+                tint = if (effective == FULL_ACCESS_PRESET) colors.warnLabel else colors.labelSecondary,
+                modifier = Modifier.size(15.dp),
             )
             Text(
                 label,
@@ -539,12 +569,6 @@ private fun PermissionChip(
                 color = colors.labelSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-            )
-            Icon(
-                Icons.Filled.KeyboardArrowDown,
-                contentDescription = null,
-                tint = colors.labelTertiary,
-                modifier = Modifier.size(12.dp),
             )
         }
 
@@ -555,6 +579,7 @@ private fun PermissionChip(
                 onDismiss = { menuOpen = false },
                 onPick = { value ->
                     menuOpen = false
+                    haptics.selection()
                     // Full access removes the approval prompt entirely, so it gets an explicit
                     // acknowledgement the way the desktop client does.
                     if (value == FULL_ACCESS_PRESET) confirming = value else onPick(value)
@@ -585,9 +610,14 @@ private fun AttachmentStrip(
     onRetry: (Int) -> Unit,
 ) {
     val colors = DsTheme.colors
+    // Room for the remove target's overhang: it is 48dp around an 18dp badge that sits on the
+    // tile's corner, so it reaches past the tile on the top and the end. The scroll region clips
+    // what lies outside it, so the room is part of the scrolled content.
     Row(
-        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
-        modifier = Modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.medium),
+        modifier = Modifier
+            .horizontalScroll(rememberScrollState())
+            .padding(top = RemoveOverhang, end = RemoveOverhang),
     ) {
         attachments.forEachIndexed { index, attachment ->
             Box {
@@ -609,26 +639,61 @@ private fun AttachmentStrip(
                     }
                     is PendingAttachment.File -> FileAttachmentChip(attachment, onRetry = { onRetry(index) })
                 }
-                Box(
-                    Modifier
-                        .align(Alignment.TopEnd)
-                        .size(18.dp)
-                        .clip(CircleShape)
-                        .background(colors.toastBg)
-                        .clickable { onRemove(index) },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        Icons.Filled.Close,
-                        contentDescription = stringResource(
-                            if (attachment is PendingAttachment.File) R.string.chat_composer_remove_file
-                            else R.string.chat_composer_remove_image,
-                        ),
-                        tint = Color.White,
-                        modifier = Modifier.size(12.dp),
-                    )
-                }
+                RemoveBadge(
+                    description = stringResource(
+                        if (attachment is PendingAttachment.File) R.string.chat_composer_remove_file
+                        else R.string.chat_composer_remove_image,
+                    ),
+                    onClick = { onRemove(index) },
+                    modifier = Modifier.align(Alignment.TopEnd),
+                )
             }
+        }
+    }
+}
+
+/** The glyph is 18dp; the touch target around it is 48dp. */
+private val RemoveBadgeSize = 18.dp
+
+/** How far the 48dp target reaches past the tile's top and end edges, so the badge stays on the corner. */
+private val RemoveOverhang = (DsSpacing.touchTarget - RemoveBadgeSize) / 2
+
+/**
+ * The small "x" on a pending attachment.
+ *
+ * The badge was the whole target at 18dp. It is now a 48dp target centred on the same corner spot,
+ * pushed out past the tile's corner by [RemoveOverhang] so the visible badge has not moved.
+ */
+@Composable
+private fun RemoveBadge(description: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = DsTheme.colors
+    val rtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
+    Box(
+        modifier = modifier
+            .offset {
+                val over = RemoveOverhang.roundToPx()
+                // `offset` is not mirrored: the end edge is the left one in a right-to-left layout.
+                androidx.compose.ui.unit.IntOffset(if (rtl) -over else over, -over)
+            }
+            .size(DsSpacing.touchTarget)
+            .clip(CircleShape)
+            .semantics { contentDescription = description }
+            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier
+                .size(RemoveBadgeSize)
+                .clip(CircleShape)
+                .background(colors.toastBg),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                Icons.Filled.Close,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(12.dp),
+            )
         }
     }
 }
@@ -712,38 +777,55 @@ private fun CircleAction(
     /** A hold, for the one button with a second thing to offer; null keeps the plain tap. */
     onLongClick: (() -> Unit)? = null,
     longClickLabel: String? = null,
+    /** Touch feedback for the plain tap; null where the caller already gives its own. */
+    haptic: (() -> Unit)? = null,
     content: (@Composable () -> Unit)? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
-    // Described here rather than on the icon, because not every one of these has an icon: the
-    // stop button draws a plain square through `content`, and while the description hung off
-    // the icon that button announced nothing at all to a screen reader.
-    val described = modifier.pressScale(interaction, 0.9f).size(size.dp).semantics { this.contentDescription = description }
-    if (onLongClick == null) {
-        Surface(
-            onClick = onClick,
-            interactionSource = interaction,
-            modifier = described,
-            enabled = enabled,
-            shape = CircleShape,
-            color = background,
-        ) { CircleGlyph(icon, size, tint, content) }
-    } else {
-        // Surface's own onClick has no hold, so the clickable moves onto the modifier, clipped to
-        // the circle so the ripple stays inside it.
-        Surface(
-            modifier = described
+    val tap = {
+        haptic?.invoke()
+        onClick()
+    }
+    // The circle draws at [size], but what a thumb has to hit is never smaller than 48dp: the
+    // plain `+` and `@` buttons are 40dp, and a miss on them opens nothing at all. The outer box
+    // is the target and carries the click, the hold and the description; the circle inside keeps
+    // its look. Described here rather than on the icon, because not every one of these has an
+    // icon: the stop button draws a plain square through `content`, and while the description
+    // hung off the icon that button announced nothing at all to a screen reader.
+    Box(
+        modifier = modifier
+            .size(maxOf(size.dp, DsSpacing.touchTarget))
+            .clip(CircleShape)
+            .semantics { this.contentDescription = description }
+            .then(
+                if (onLongClick == null) {
+                    Modifier.clickable(
+                        interactionSource = interaction,
+                        indication = androidx.compose.foundation.LocalIndication.current,
+                        enabled = enabled,
+                        role = androidx.compose.ui.semantics.Role.Button,
+                        onClick = tap,
+                    )
+                } else {
+                    // `clickable` has no hold, so this one takes both.
+                    Modifier.clickableWithHold(
+                        holdLabel = longClickLabel.orEmpty(),
+                        onHold = onLongClick,
+                        enabled = enabled,
+                        role = androidx.compose.ui.semantics.Role.Button,
+                        interactionSource = interaction,
+                        onClick = tap,
+                    )
+                },
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier
+                .pressScale(interaction, 0.9f)
+                .size(size.dp)
                 .clip(CircleShape)
-                .clickableWithHold(
-                    holdLabel = longClickLabel.orEmpty(),
-                    onHold = onLongClick,
-                    enabled = enabled,
-                    role = androidx.compose.ui.semantics.Role.Button,
-                    interactionSource = interaction,
-                    onClick = onClick,
-                ),
-            shape = CircleShape,
-            color = background,
+                .background(background),
         ) { CircleGlyph(icon, size, tint, content) }
     }
 }

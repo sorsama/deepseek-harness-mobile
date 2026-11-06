@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -24,14 +27,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.theme.DsShapes
+import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 
 // ---------------------------------------------------------------------------
 // Interaction takeovers: sandbox-approval and plan review. The ask_user_question
 // composer has its own file. These mirror the harness composer-takeover panels
-// (amber strip, floating capsule, outline/primary pill actions).
+// (amber strip, floating capsule, outline/primary pill actions), restyled to the
+// Ink kit: a card floating over the composer with the mascot's attention colour.
 // ---------------------------------------------------------------------------
+
+/** The tallest the approval reason grows before it scrolls; the buttons under it never move. */
+private val ApprovalReasonMaxHeight = 150.dp
 
 /** Sandbox escalation / approval request panel. */
 @Composable
@@ -49,8 +57,8 @@ fun ApprovalPanel(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = DsShapes.approvalCard,
-        color = colors.composerCard,
-        border = BorderStroke(1.dp, colors.warnSecondary),
+        color = colors.bgLayer1,
+        border = BorderStroke(1.dp, colors.warnBorder),
         shadowElevation = 2.dp,
     ) {
         Column {
@@ -58,49 +66,65 @@ fun ApprovalPanel(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(colors.warnTertiary)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
                     Icons.Filled.WarningAmber,
                     contentDescription = null,
                     tint = colors.warn,
-                    modifier = Modifier.width(14.dp),
+                    modifier = Modifier.size(16.dp),
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     stringResource(R.string.approval_title),
                     style = DsType.small13Strong,
-                    color = colors.warnLabel,
+                    color = colors.warnText,
                 )
             }
-            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    stringResource(R.string.approval_reason, reason ?: toolName),
-                    style = DsType.small13,
-                    color = colors.labelSecondary,
-                )
-                // Full-size, half-width each: the one decision the turn is waiting on gets the
-                // biggest targets on the card, with Reject on the left, away from the thumb's rest.
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DsButton(
-                        text = stringResource(R.string.approval_reject),
-                        onClick = { haptics.reject(); onReject() },
-                        variant = DsButtonVariant.Outline,
-                        modifier = Modifier.weight(1f),
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(DsSpacing.medium),
+            ) {
+                // The reason is the command, and a heredoc or a long commit message runs to dozens
+                // of lines. It scrolls inside a capped region and takes only the height the buttons
+                // leave over, so Allow and Reject are always laid out and the composer below the
+                // card keeps its room. The plan card above does the same with its own text.
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = false)
+                        .heightIn(max = ApprovalReasonMaxHeight)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    Text(
+                        stringResource(R.string.approval_reason, reason ?: toolName),
+                        style = DsType.std14,
+                        color = colors.labelSecondary,
                     )
+                }
+                // Full-size buttons: the one decision the turn is waiting on gets the biggest
+                // targets on the card, with Reject away from the thumb's rest position.
+                Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                     DsButton(
                         text = stringResource(R.string.approval_allow_once),
                         onClick = { haptics.confirm(); onAllow() },
-                        variant = DsButtonVariant.Info,
-                        modifier = Modifier.weight(1f),
+                        variant = DsButtonVariant.Attention,
+                        modifier = Modifier.fillMaxWidth(),
                     )
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+                        DsButton(
+                            text = stringResource(R.string.approval_reject),
+                            onClick = { haptics.reject(); onReject() },
+                            variant = DsButtonVariant.Danger,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
         }
     }
 }
-
 
 /**
  * Plan-review takeover: the plan itself, then approve, refuse, or take it to the chat.
@@ -120,56 +144,52 @@ internal fun PlanReviewPanel(
     modifier: Modifier = Modifier,
 ) {
     val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = DsShapes.approvalCard,
-        color = colors.composerCard,
-        border = BorderStroke(1.dp, colors.warnSecondary),
+        color = colors.bgLayer1,
+        border = BorderStroke(1.dp, colors.accentBorder),
         shadowElevation = 2.dp,
     ) {
         Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(colors.warnTertiary)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .background(colors.accentTertiary)
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    stringResource(R.string.plan_review_title),
-                    style = DsType.small13Strong,
-                    color = colors.warnLabel,
-                )
+                MascotMark(size = 28.dp, state = MascotState.Working)
+                Spacer(Modifier.width(10.dp))
+                Column {
+                    Text(
+                        stringResource(R.string.plan_review_title),
+                        style = DsType.small13Strong,
+                        color = colors.accent,
+                    )
+                }
             }
-            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(DsSpacing.medium),
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 220.dp)
+                        .heightIn(max = 260.dp)
                         .verticalScroll(rememberScrollState()),
                 ) {
                     MarkdownText(review.plan)
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DsButton(
-                        text = stringResource(R.string.plan_review_approve),
-                        onClick = onApprove,
-                        enabled = !busy,
-                        variant = DsButtonVariant.Info,
-                        size = DsButtonSize.Small,
-                    )
-                    // Only when the asker offered a second option. A refusal it never named is not
-                    // one this card can send: the host checks every selected label against the
-                    // question's own options and refuses one it does not recognise.
-                    if (review.decline != null) {
-                        DsButton(
-                            text = stringResource(R.string.plan_review_decline),
-                            onClick = onDecline,
-                            enabled = !busy,
-                            variant = DsButtonVariant.Outline,
-                            size = DsButtonSize.Small,
-                        )
-                    }
+                DsButton(
+                    text = stringResource(R.string.plan_review_approve),
+                    onClick = { haptics.confirm(); onApprove() },
+                    enabled = !busy,
+                    variant = DsButtonVariant.Info,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                     // "Chat about it" dismisses the request rather than answering it with the
                     // refusal, which is what the harness's own card does — declining picks a stated
                     // option, whereas wanting to talk first is not one of the choices on offer.
@@ -177,9 +197,21 @@ internal fun PlanReviewPanel(
                         text = stringResource(R.string.plan_review_discuss),
                         onClick = onDiscuss,
                         enabled = !busy,
-                        variant = DsButtonVariant.Ghost,
-                        size = DsButtonSize.Small,
+                        variant = DsButtonVariant.Outline,
+                        modifier = Modifier.weight(1f),
                     )
+                    // Only when the asker offered a second option. A refusal it never named is not
+                    // one this card can send: the host checks every selected label against the
+                    // question's own options and refuses one it does not recognise.
+                    if (review.decline != null) {
+                        DsButton(
+                            text = stringResource(R.string.plan_review_decline),
+                            onClick = { haptics.reject(); onDecline() },
+                            enabled = !busy,
+                            variant = DsButtonVariant.Danger,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
         }

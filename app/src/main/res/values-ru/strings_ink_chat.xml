@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ink redesign: sessions drawer, chat chrome and docks. Area-owned by impl-chat. -->
+<resources>
+    <string name="ink_chat_sessions">Сеансы</string>
+    <string name="ink_chat_filter_all">Все %1$d</string>
+    <string name="ink_chat_filter_running">Выполняется %1$d</string>
+    <string name="ink_chat_filter_needs_you">Нужно ваше участие %1$d</string>
+    <string name="ink_chat_streaming">Отвечает</string>
+    <string name="ink_chat_review">Проверить</string>
+    <string name="ink_chat_approve">Одобрить</string>
+    <string name="ink_chat_start_task">Начать задачу на %1$s…</string>
+    <string name="ink_chat_files_tab">Файлы · %1$d</string>
+    <string name="ink_chat_files_empty">Файлы ещё не изменены</string>
+    <string name="ink_chat_steer_hint">Направьте агента…</string>
+    <string name="ink_chat_goal_dock">Цель · %1$s</string>
+    <string name="ink_chat_more">Ещё</string>
+    <string name="ink_chat_queue_next_turn">Следующий ход</string>
+    <string name="ink_chat_workspaces">Проекты</string>
+    <string name="ink_chat_today">Сегодня</string>
+    <string name="ink_chat_yesterday">Вчера</string>
+    <string name="ink_chat_changed_this_session">Изменено в этом сеансе</string>
+</resources>

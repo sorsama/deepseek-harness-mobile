@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import com.labteto.dshmobile.core.wire.dto.ImageAttachmentRef
 import com.labteto.dshmobile.data.SessionStore
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -74,19 +75,17 @@ class AttachmentCache @Inject constructor() {
  */
 @Composable
 fun rememberAttachmentImage(
-    attachmentId: String,
-    intrinsicWidth: Int,
-    intrinsicHeight: Int,
+    ref: ImageAttachmentRef,
     targetWidthPx: Int,
     store: SessionStore,
     cache: AttachmentCache,
 ): State<AttachmentImageState> {
-    val sample = remember(intrinsicWidth, targetWidthPx) {
-        sampleSizeFor(intrinsicWidth, targetWidthPx)
+    val sample = remember(ref.width, targetWidthPx) {
+        sampleSizeFor(ref.width, targetWidthPx)
     }
     val sessionId by store.currentSessionId.collectAsStateWithLifecycle()
     val owner = LocalAttachmentScope.current ?: (store.activeHostKey.orEmpty() to sessionId.orEmpty())
-    val key = remember(owner, attachmentId, sample) { "${owner.first}|${owner.second}|$attachmentId@$sample" }
+    val key = remember(owner, ref.attachmentId, sample) { "${owner.first}|${owner.second}|${ref.attachmentId}@$sample" }
     // A cache hit resolves during composition so a scrolled-back image does not flash a skeleton.
     val state = remember(key) {
         mutableStateOf(
@@ -95,7 +94,7 @@ fun rememberAttachmentImage(
     }
     LaunchedEffect(key) {
         if (state.value is AttachmentImageState.Loading) {
-            state.value = loadAttachment(attachmentId, key, sample, store, cache, owner)
+            state.value = loadAttachment(ref, key, sample, store, cache, owner)
         }
     }
     return state
@@ -103,7 +102,7 @@ fun rememberAttachmentImage(
 
 /** Cache hit, else fetch and decode. Returns the terminal state; it never throws. */
 private suspend fun loadAttachment(
-    attachmentId: String,
+    ref: ImageAttachmentRef,
     key: String,
     sampleSize: Int,
     store: SessionStore,
@@ -111,7 +110,7 @@ private suspend fun loadAttachment(
     owner: Pair<String, String>,
 ): AttachmentImageState {
     cache.get(key)?.let { return AttachmentImageState.Ready(it) }
-    val bytes = store.fetchAttachment(attachmentId, owner.second, owner.first)
+    val bytes = store.fetchAttachment(ref, owner.second, owner.first)
     if (bytes == null || bytes.isEmpty()) return AttachmentImageState.Failed
     val decoded = withContext(Dispatchers.Default) { decode(bytes, sampleSize) }
         ?: return AttachmentImageState.Failed

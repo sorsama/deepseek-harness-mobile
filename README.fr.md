@@ -62,12 +62,21 @@ Le [site du projet](https://dshm.zyphite.com) présente l'application sur une se
 - Gardez un œil sur les travaux longs. Les objectifs, les listes de tâches, les messages en file
   d'attente, les tâches en arrière-plan et les sous-agents ont chacun leur propre vue, et vous
   pouvez les mettre en pause, les réorienter ou les arrêter.
+- Organisez vos sessions à votre façon. Faites-les glisser dans l'ordre voulu, ou regroupez-les
+  par projet et repliez les groupes que vous n'utilisez pas.
+- Retrouvez ce que vous cherchez avec le même champ de recherche partout : sessions, modèles,
+  commandes, plugins, tâches planifiées et fichiers de l'espace de travail.
 - Recevez une notification quand un tour se termine, quand un objectif est atteint ou bloqué, ou
   quand l'agent attend une réponse. La connexion reste active en arrière-plan.
 - Parcourez et prévisualisez les fichiers de l'espace de travail, et ouvrez un terminal sur
   l'ordinateur du harness.
+- Ouvrez les fichiers en plein écran dans l'aperçu : tableaux CSV, arbres JSON, notebooks, PDF,
+  images, vidéo, audio et archives, avec recherche dans le fichier. « Enregistrer une copie » met
+  n'importe quel fichier sur votre téléphone.
 - Gérez le harness lui-même : modèles, préréglages d'agent, plugins, tâches planifiées et sessions
   archivées.
+- Personnalisez l'application. Le design Ink existe en clair et en sombre, avec des couleurs
+  d'accent prédéfinies ou la vôtre, un noir pur pour les écrans OLED et une taille de texte réglable.
 - Utilisez l'application en anglais, chinois, hindi, espagnol, français, arabe, bengali, portugais,
   russe, ourdou ou thaï. Les langues qui s'écrivent de droite à gauche sont prises en charge.
 
@@ -148,7 +157,7 @@ ordinateur. Autoriser une connexion revient à donner un accès shell.
 
 ## Compatibilité
 
-DSH Mobile est testé avec **DeepSeek Harness 0.2.1-rc.2**. Les versions plus anciennes du harness,
+DSH Mobile est testé avec **DeepSeek Harness 0.2.2-rc.1**. Les versions plus anciennes du harness,
 jusqu'à la 0.1.6, fonctionnent encore pour l'essentiel, mais les fonctions récentes demandent un
 harness récent. Le [tableau de compatibilité](docs/COMPATIBILITY.md) indique quelle version de
 l'application va avec quel harness.

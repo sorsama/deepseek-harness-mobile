@@ -2,7 +2,7 @@
 <resources>
     <string name="ux_b_clear_search">खोज साफ़ करें</string>
     <string name="ux_b_no_models">कोई मेल खाता मॉडल नहीं</string>
-    <string name="ux_b_no_references">कोई संदर्भ उपलब्ध नहीं</string>
+    <string name="ux_b_no_references">कोई संदर्भ नहीं</string>
     <string name="ux_b_no_matches">कोई मेल खाता संदर्भ नहीं</string>
     <string name="ux_b_reference_error">कुछ संदर्भ लोड नहीं हो सके। फिर कोशिश करें।</string>
     <string name="ux_b_file">फ़ाइल</string>
@@ -11,20 +11,20 @@
     <string name="ux_b_browse_folder">फ़ोल्डर %1$s देखें</string>
     <string name="ux_b_open_reference">%1$s खोलें: %2$s</string>
     <string name="ux_b_remove_reference">संदर्भ %1$s हटाएँ</string>
-    <string name="ux_b_paused">संपादन के दौरान रुका हुआ</string>
-    <string name="ux_b_held">आपके उत्तर की प्रतीक्षा है</string>
-    <string name="ux_b_continued">काम जारी है; आप अभी भी उत्तर दे सकते हैं</string>
-    <string name="ux_b_countdown_description">उत्तर की उलटी गिनती चल रही है</string>
+    <string name="ux_b_paused">एडिट करते समय रुका हुआ</string>
+    <string name="ux_b_held">आपके जवाब का इंतज़ार है</string>
+    <string name="ux_b_continued">काम चल रहा है। आप अब भी जवाब दे सकते हैं।</string>
+    <string name="ux_b_countdown_description">जवाब के लिए उलटी गिनती चल रही है</string>
     <string name="ux_b_view_questions">प्रश्न देखें</string>
     <string name="ux_b_view_answers">उत्तर देखें</string>
     <string name="ux_b_skipped">छोड़ दिया गया</string>
     <string name="ux_b_answer">उत्तर</string>
-    <string name="ux_b_automation_unavailable">यह होस्ट ऑटोमेशन का समर्थन नहीं करता।</string>
+    <string name="ux_b_automation_unavailable">यह harness ऑटोमेशन नहीं चला सकता।</string>
     <plurals name="ux_b_countdown_seconds">
         <item quantity="one">%1$s सेकंड में काम जारी होगा</item>
         <item quantity="other">%1$s सेकंड में काम जारी होगा</item>
     </plurals>
     <string name="ux_b_select_reference">%1$s संदर्भ जोड़ें: %2$s</string>
-    <string name="ux_b_expanded">विस्तृत</string>
-    <string name="ux_b_collapsed">संक्षिप्त</string>
+    <string name="ux_b_expanded">खुला हुआ</string>
+    <string name="ux_b_collapsed">समेटा हुआ</string>
 </resources>

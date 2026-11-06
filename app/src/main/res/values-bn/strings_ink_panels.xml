@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_panel_model_title">মডেল</string>
+    <string name="ink_panel_model_permission">মডেল ও অনুমতি</string>
+    <string name="ink_panel_model_default">Harness ডিফল্ট</string>
+    <string name="ink_panel_model_available">%1$s-এ উপলব্ধ</string>
+    <string name="ink_panel_effort_default">ডিফল্ট</string>
+    <string name="ink_panel_permission_readonly_desc">ফাইল পড়ে উত্তর দেয়। কিছুই বদলায় না।</string>
+    <string name="ink_panel_permission_workspace_desc">ওয়ার্কস্পেসের ভিতরে এডিট করতে পারে। কমান্ড চালানোর আগে এখনও জিজ্ঞেস করে।</string>
+    <string name="ink_panel_permission_full_desc">কম্পিউটারে সবকিছু করতে পারে। অনুমোদন চায় না।</string>
+    <string name="ink_panel_subagent_followup">এই সাবএজেন্টকে আরেকটি প্রশ্ন করুন</string>
+    <string name="ink_panel_trajectory_empty_hint">এজেন্ট কাজ করার সময় টুল কল এখানে দেখা যাবে।</string>
+    <string name="ink_panel_open_session">সেশন খুলুন</string>
+</resources>

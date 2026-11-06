@@ -57,25 +57,5 @@ fun Modifier.pressScale(interactionSource: InteractionSource, pressed: Float = 0
     }
 }
 
-/**
- * Haptic vocabulary for decisions. Compose's own `HapticFeedbackType` only offers a long press and a
- * text-handle tick, so a confirm and a reject used to feel the same as selecting text. The platform
- * has distinct confirm and reject effects from API 30; below that both fall back to a short tap.
- */
-class DsHaptics(private val view: android.view.View) {
-    fun confirm() = perform(if (android.os.Build.VERSION.SDK_INT >= 30) android.view.HapticFeedbackConstants.CONFIRM else android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-    fun reject() = perform(if (android.os.Build.VERSION.SDK_INT >= 30) android.view.HapticFeedbackConstants.REJECT else android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-    fun tick() = perform(android.view.HapticFeedbackConstants.CLOCK_TICK)
-    /** Something arrived that needs the person: an approval, a question. */
-    fun attention() = perform(android.view.HapticFeedbackConstants.LONG_PRESS)
-
-    private fun perform(constant: Int) {
-        view.performHapticFeedback(constant)
-    }
-}
-
-@Composable
-fun rememberDsHaptics(): DsHaptics {
-    val view = androidx.compose.ui.platform.LocalView.current
-    return remember(view) { DsHaptics(view) }
-}
+// The haptic vocabulary lives in Haptics.kt, next to nothing else, so a screen that only wants
+// touch feedback does not have to import the motion helpers too.

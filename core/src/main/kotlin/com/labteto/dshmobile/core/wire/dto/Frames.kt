@@ -1,9 +1,28 @@
+@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
+
 package com.labteto.dshmobile.core.wire.dto
 
 import com.labteto.dshmobile.core.wire.RpcError
+import com.labteto.dshmobile.core.wire.decodeFromJsonElement
+import com.labteto.dshmobile.core.wire.encodeToJsonElement
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.buildSerialDescriptor
+import kotlinx.serialization.descriptors.element
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Shapes carried by the host's live state, ported from `packages/api/session-controller`
@@ -88,18 +107,75 @@ data class AskUserQuestionOption(
     @SerialName("description") val description: String? = null,
 )
 
-/** A caller-declared presentation intent; tagged so further intents can be added. */
-@Serializable
-@kotlinx.serialization.json.JsonClassDiscriminator("kind")
+/**
+ * A caller-declared presentation intent; tagged so further intents can be added.
+ *
+ * Harness 0.2.2 grew a second tag, `approval` (produced by the experimental CUA plugin), and the
+ * upstream union is explicitly open: a UI that does not know a tag renders the generic option list
+ * and the answer encoding is identical either way — an intent changes presentation, never the
+ * protocol. A closed decode would instead throw on the whole [AskUserQuestionItem], and both the
+ * `$events` waterfall and the durable `userQuestions` projection then drop the question card
+ * entirely, leaving the turn blocked until timeout. So any unrecognised `kind` lands in [Other]
+ * with its complete object preserved; [PlanReview] stays the only tag this build interprets.
+ */
+@Serializable(with = AskUserQuestionIntentSerializer::class)
 sealed class AskUserQuestionIntent {
+    /** The wire discriminant. */
+    abstract val kind: String
+
     /** A plan submitted for review: `detail` is the plan markdown, the decision approves or declines it. */
     @Serializable
-    @SerialName("plan-review")
     data class PlanReview(
         /** The option label that approves the plan; every other option declines it. */
         @SerialName("approve") val approve: String,
+    ) : AskUserQuestionIntent() {
+        override val kind: String get() = "plan-review"
+    }
+
+    /**
+     * An intent of a `kind` this build does not model — `approval` today, any future tag after it —
+     * preserved verbatim so the surrounding question keeps its id, wording and options and stays
+     * answerable through the generic flow. Never constructed for [PlanReview]'s tag.
+     */
+    data class Other(
+        override val kind: String,
+        val raw: JsonElement,
     ) : AskUserQuestionIntent()
 }
+
+/** Custom `kind`-dispatching serializer for [AskUserQuestionIntent]; an unknown kind is kept, not failed. */
+object AskUserQuestionIntentSerializer : KSerializer<AskUserQuestionIntent> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("AskUserQuestionIntent") {
+        element("kind", buildSerialDescriptor("kotlin.String", PrimitiveKind.STRING))
+    }
+
+    override fun serialize(encoder: Encoder, value: AskUserQuestionIntent) {
+        val json: JsonElement = when (value) {
+            is AskUserQuestionIntent.PlanReview ->
+                encodeToJsonElement(AskUserQuestionIntent.PlanReview.serializer(), value)
+                    .withKind(value.kind)
+            is AskUserQuestionIntent.Other -> value.raw
+        }
+        (encoder as JsonEncoder).encodeJsonElement(json)
+    }
+
+    override fun deserialize(decoder: Decoder): AskUserQuestionIntent {
+        val json = (decoder as JsonDecoder).decodeJsonElement().jsonObject
+        val kind = json["kind"]?.jsonPrimitive?.contentOrNull ?: ""
+        return when (kind) {
+            "plan-review" -> decodeFromJsonElement(AskUserQuestionIntent.PlanReview.serializer(), json)
+            else -> AskUserQuestionIntent.Other(kind, json)
+        }
+    }
+}
+
+/** The concrete serializer omits the computed [AskUserQuestionIntent.kind]; restore it for the wire. */
+private fun JsonElement.withKind(kind: String): JsonElement = JsonObject(
+    linkedMapOf<String, JsonElement>().apply {
+        putAll(this@withKind.jsonObject)
+        put("kind", JsonPrimitive(kind))
+    },
+)
 
 /** One question in a user-questions request. */
 @Serializable

@@ -17,6 +17,7 @@ import com.labteto.dshmobile.core.wire.RelayPairing
 import com.labteto.dshmobile.core.wire.RelayPairingPayload
 import com.labteto.dshmobile.core.wire.RelayTls
 import com.labteto.dshmobile.core.wire.TransportFailure
+import com.labteto.dshmobile.core.wire.worthAnotherOrigin
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -168,7 +169,7 @@ class PairViewModel @Inject constructor(
                 _state.update {
                     it.copy(scanned = payload, url = payload.url, code = payload.code, failure = null)
                 }
-                claim(payload.url, payload.code, payload.fingerprint)
+                claim(payload.url, payload.code, payload.fingerprint, payload.urls.orEmpty())
             }
         }
     }
@@ -189,53 +190,96 @@ class PairViewModel @Inject constructor(
         claim(url, current.code, fingerprint = null)
     }
 
-    private fun claim(url: String, code: String, fingerprint: String?) {
+    /**
+     * Claim [code] at the first address that answers, of the ones [url] stands for.
+     *
+     * [alternatives] are the other origins a scanned invitation named, in its order. A relay on a
+     * machine with more than one network address cannot know which one this phone is on, so it
+     * names them all; trying only the first is what turns a perfectly good QR into "could not
+     * reach 192.168.1.122" while the phone is on another subnet. Only failures that say nothing
+     * about the code are retried — see [worthAnotherOrigin].
+     */
+    private fun claim(
+        url: String,
+        code: String,
+        fingerprint: String?,
+        alternatives: List<String> = emptyList(),
+    ) {
         _state.update { it.copy(stage = PairStage.Claiming, failure = null) }
         viewModelScope.launch {
-            // Ask the address where the relay is before deciding how to talk to it. Since relay
-            // 0.1.1 the harness's own port redirects `/relay` to the relay's listener, so the
-            // address people already know — the one this app has asked them for since day one —
-            // is a usable way in. The redirect has to be resolved here rather than followed by the
-            // HTTP client: it names a different scheme and port, which decides both the pin to
-            // present and what gets remembered, and a 302 would rewrite the claim's POST to a GET.
-            val effective = when (val located = RelayPairing.locate(url, okHttpClient)) {
-                is RelayOrigin.Redirected -> located.origin
-                // `None` still gets an attempt. Health is unauthenticated and always served, so
-                // this should not happen — but refusing to try on its say-so would turn one
-                // unanswered probe into a pairing that cannot be completed at all.
-                else -> url
-            }
-            val parsed = effective.toHttpUrlOrNull()
-            if (parsed == null) {
-                fail(PairFailure.InvalidUrl)
-                return@launch
-            }
-            val authority = "${parsed.host}:${parsed.port}"
-            val secure = parsed.scheme == "https"
-            val observed = ObservedKey()
-            val client = when {
-                fingerprint != null -> clientFactory.httpClient(fingerprint)
-                // The relay only reveals its key in the claim answer, so a typed https address has
-                // to be spoken to before it can be verified. The screen labels this differently
-                // from a scanned pairing for exactly that reason.
-                secure -> RelayTls.trustOnFirstUseClient(okHttpClient, observed)
-                else -> okHttpClient
-            }
             val name = _state.value.deviceName.ifBlank { defaultDeviceName() }
-            when (val outcome = RelayPairing.claim(effective, code, name, client)) {
-                is RelayPairOutcome.Paired -> enrol(parsed, outcome, fingerprint ?: observed.pin)
-                RelayPairOutcome.Rejected -> fail(PairFailure.Rejected)
-                RelayPairOutcome.HostRefused -> fail(PairFailure.HostRefused(authority))
-                RelayPairOutcome.NotARelay -> fail(PairFailure.NotARelay(authority))
-                is RelayPairOutcome.RateLimited -> fail(PairFailure.RateLimited(outcome.retryAfterSeconds))
-                is RelayPairOutcome.Unreachable -> fail(
-                    if (outcome.kind == TransportFailure.CERTIFICATE_PIN) {
-                        PairFailure.CertificateMismatch(authority)
-                    } else {
-                        PairFailure.Unreachable(authority)
-                    },
-                )
+            val candidates = RelayPairing.candidates(url, alternatives).ifEmpty { listOf(url) }
+            var lastFailure: PairFailure = PairFailure.Unreachable(url)
+            for (candidate in candidates) {
+                when (val attempt = attempt(candidate, code, name, fingerprint)) {
+                    is ClaimAttempt.Paired -> {
+                        enrol(attempt.url, attempt.outcome, attempt.pin)
+                        return@launch
+                    }
+                    is ClaimAttempt.Failed -> {
+                        lastFailure = attempt.failure
+                        if (!attempt.retryable) {
+                            fail(attempt.failure)
+                            return@launch
+                        }
+                    }
+                }
             }
+            fail(lastFailure)
+        }
+    }
+
+    /**
+     * One origin's worth of the claim: find the relay, speak to it with the right key, ask.
+     *
+     * The redirect is resolved here rather than followed by the HTTP client because it names a
+     * different scheme and port, which decides both the pin to present and what gets remembered,
+     * and a 302 would rewrite the claim's POST to a GET. A probe that answers nothing still gets an
+     * attempt: health is unauthenticated and always served, so refusing to try on its silence would
+     * turn one unanswered probe into a pairing that cannot be completed at all.
+     */
+    private suspend fun attempt(
+        url: String,
+        code: String,
+        name: String,
+        fingerprint: String?,
+    ): ClaimAttempt {
+        val effective = when (val located = RelayPairing.locate(url, okHttpClient)) {
+            is RelayOrigin.Redirected -> located.origin
+            else -> url
+        }
+        val parsed = effective.toHttpUrlOrNull()
+            ?: return ClaimAttempt.Failed(PairFailure.InvalidUrl, retryable = false)
+        val authority = "${parsed.host}:${parsed.port}"
+        val secure = parsed.scheme == "https"
+        val observed = ObservedKey()
+        val client = when {
+            fingerprint != null -> clientFactory.httpClient(fingerprint)
+            // The relay only reveals its key in the claim answer, so a typed https address has to
+            // be spoken to before it can be verified. The screen labels that differently from a
+            // scanned pairing for exactly that reason.
+            secure -> RelayTls.trustOnFirstUseClient(okHttpClient, observed)
+            else -> okHttpClient
+        }
+        return when (val outcome = RelayPairing.claim(effective, code, name, client)) {
+            is RelayPairOutcome.Paired ->
+                ClaimAttempt.Paired(parsed, outcome, fingerprint ?: observed.pin)
+            RelayPairOutcome.Rejected ->
+                ClaimAttempt.Failed(PairFailure.Rejected, retryable = false)
+            RelayPairOutcome.HostRefused ->
+                ClaimAttempt.Failed(PairFailure.HostRefused(authority), outcome.worthAnotherOrigin())
+            RelayPairOutcome.NotARelay ->
+                ClaimAttempt.Failed(PairFailure.NotARelay(authority), outcome.worthAnotherOrigin())
+            is RelayPairOutcome.RateLimited ->
+                ClaimAttempt.Failed(PairFailure.RateLimited(outcome.retryAfterSeconds), retryable = false)
+            is RelayPairOutcome.Unreachable -> ClaimAttempt.Failed(
+                if (outcome.kind == TransportFailure.CERTIFICATE_PIN) {
+                    PairFailure.CertificateMismatch(authority)
+                } else {
+                    PairFailure.Unreachable(authority)
+                },
+                outcome.worthAnotherOrigin(),
+            )
         }
     }
 
@@ -308,3 +352,14 @@ private fun defaultDeviceName(): String =
     listOfNotNull(Build.MANUFACTURER?.takeIf { Build.MODEL?.startsWith(it, ignoreCase = true) == false }, Build.MODEL)
         .joinToString(" ")
         .ifBlank { "Android device" }
+
+/** One origin's outcome, and whether the next origin the invitation names is worth a try. */
+private sealed interface ClaimAttempt {
+    data class Paired(
+        val url: okhttp3.HttpUrl,
+        val outcome: RelayPairOutcome.Paired,
+        val pin: String?,
+    ) : ClaimAttempt
+
+    data class Failed(val failure: PairFailure, val retryable: Boolean) : ClaimAttempt
+}

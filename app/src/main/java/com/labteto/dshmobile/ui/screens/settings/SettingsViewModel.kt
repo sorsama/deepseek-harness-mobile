@@ -83,6 +83,11 @@ class SettingsViewModel @Inject constructor(
         .map { hosts -> hosts.firstOrNull { it.isLoopback && !it.isRelay }?.port ?: DEFAULT_PORT }
         .stateIn(viewModelScope, SharingStarted.Eagerly, DEFAULT_PORT)
 
+    /** How many harnesses the phone remembers, so "forget them" can say how many it means. */
+    val rememberedHostCount: StateFlow<Int> = hostsStore.hosts
+        .map { hosts -> hosts.size }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
     val connectionState: StateFlow<ConnectionUiState> = connectionManager.state.stateIn(
         viewModelScope,
         SharingStarted.Eagerly,

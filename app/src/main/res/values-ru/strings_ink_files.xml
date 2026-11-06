@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_files_search_files">Поиск файлов</string>
+    <string name="ink_files_filter_files">Фильтр по этой папке</string>
+    <string name="ink_files_no_matches">Нет подходящих файлов</string>
+    <string name="ink_files_all_files">Все файлы</string>
+    <string name="ink_files_copy_contents">Копировать содержимое</string>
+    <string name="ink_files_rendered">Просмотр</string>
+    <string name="ink_files_source">Исходник</string>
+    <string name="ink_files_output">Вывод</string>
+    <string name="ink_files_key_tab">Tab</string>
+    <string name="ink_files_key_esc">Esc</string>
+    <string name="ink_files_key_up">Стрелка вверх</string>
+    <string name="ink_files_key_down">Стрелка вниз</string>
+    <string name="ink_files_key_ctrl_c">Ctrl C</string>
+    <string name="ink_files_clear_terminal">Очистить терминал</string>
+    <string name="ink_files_send_enter">Отправить</string>
+    <string name="ink_files_automations_intro">Задачи по расписанию, которые harness выполняет на вашем компьютере, даже когда телефона нет рядом.</string>
+    <string name="ink_files_new_automation">Новая автоматизация</string>
+    <string name="ink_files_plugins_intro">Плагины устанавливаются на компьютер harness. Изменения применяются к новым сеансам.</string>
+    <string name="ink_files_archived_search">Поиск в архиве</string>
+    <string name="ink_files_this_week">На этой неделе</string>
+    <string name="ink_files_this_month">В этом месяце</string>
+    <string name="ink_files_changed_session">Изменены в этом сеансе</string>
+</resources>

@@ -5,14 +5,14 @@
     <string name="chat_suggest_tests">Запусти тесты и исправь то, что падает</string>
     <string name="chat_suggest_changes">Проверь мои незакоммиченные изменения</string>
     <string name="chat_queue_placement_queued">Следующий ход</string>
-    <string name="chat_queue_placement_steering">Корректировка</string>
+    <string name="chat_queue_placement_steering">Направляется</string>
     <string name="chat_queue_placement_context">Контекст</string>
     <string name="chat_status_running">Работает</string>
     <string name="chat_status_idle">Ожидает</string>
     <string name="chatlist_session_copy_id">Скопировать ID сеанса</string>
     <string name="connect_paste">Вставить</string>
     <string name="connect_try_again">Повторить попытку</string>
-    <string name="connect_manual_paste_hint">Вставьте ссылку, которую печатает dsh web, вместе с токеном, и вход выполнится сразу.</string>
+    <string name="connect_manual_paste_hint">Вставьте ссылку, которую показывает dsh web, вместе с токеном, и вход выполнится сразу.</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="one">%d новое</item>
         <item quantity="few">%d новых</item>

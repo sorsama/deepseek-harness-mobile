@@ -4,10 +4,40 @@ What DSH Mobile speaks, in one page. Authoritative shapes live in the harness
 repository — `packages/api/*/src/types.ts`,
 `packages/api/gateway/src/stream-protocol.ts`, `packages/llm/llm/src/assistant-stream.ts`
 and `packages/client/file-upload/src/*` — and this document records the
-subset the app implements, against harness **0.2.1-rc.2**. New management and
+subset the app implements, against harness **0.2.2-rc.1**. New management and
 question surfaces are additive. Where 0.1.7 changed a shape the app still reads the
 0.1.6 one too; [0.12.0 contract additions](#0120-contract-additions-harness-017)
 lists both.
+
+## 0.18.0 contract changes (harness 0.2.2-rc.1)
+
+Harness 0.2.2 keeps the 0.2.1-rc.2 baseline below for the shapes the app still reads, and changes
+these:
+
+- `session/control` folds projections per committed event: one `projection` frame now carries
+  `{sessionId, seq, changes:[{key, val}]}` for every key that event touched, where through 0.2.1 a
+  frame named a single `key`/`value`. The app normalizes the old shape to a one-element `changes`
+  list. The control baseline is unchanged.
+- `session/attachment` takes the whole durable image reference: `{sessionId, attachment:
+  ImageAttachmentRef}`, verified by the host against its stored copy. The id-only request is kept as
+  a fallback for older hosts only when the host refuses the new form as invalid input.
+- `session/page`'s `throughSeq` is optional (omission selects the observed log end) and
+  `session/follow` gained `activate`; the app still pins `throughSeq` and sends `activate:true` so an
+  opened session is promoted as the web client's follow does. A subagent child is never promoted.
+- `schedule/update` and `schedule/delete` are gone. Both are one `schedule/edit` request:
+  `{id, action:"update"|"delete", patch?:{title?,prompt?,timing?,target?,active?},
+  expectedUpdatedAt?}`. A successful update answers the catalog entry, a delete `{id,deleted:true}`,
+  and a miss/conflict `{id,code}`; the conflict check compares `expectedUpdatedAt` rather than the
+  complete record. `schedule/list` is host-wide and paged (`{active?,limit?,offset?}` →
+  `{items,shown,total,limit,offset}`), `schedule/history` takes `{id,limit,before?}`, and
+  `schedule/catalog` entries carry `target:{kind,sessionId?,create?}`, `involvedSessionIds`,
+  `status:"active"|"paused"|"ended"` (0.2.1 sent `"inactive"`), `createdAt?`, `updatedAt?` and
+  `kind:"rrule"` (`{rrule}`) tasks. The app reads the delivery Session as `target.sessionId`, treats
+  non-active as inactive and displays an RRULE read-only.
+- The `ask_user_question` intent union is open: `{kind:"plan-review",approve}` gained
+  `{kind:"approval",approve,reject,always?,subject?,display?}` (the experimental CUA plugin). An
+  intent changes presentation only, so the app keeps an unknown kind as an `Other` value and renders
+  the question's own options rather than failing the batch; the answer encoding is unchanged.
 
 ## 0.17.0 contract changes (harness 0.2.1-rc.2)
 
@@ -343,7 +373,7 @@ The streams this app opens:
 | Endpoint | Opens with | Carries |
 |---|---|---|
 | `$events` | `ready` | host notifications and pending waterfalls |
-| `session/control` | complete `baseline` | projections for every live session (and queue and jobs from a 0.1.6 host) |
+| `session/control` | complete `baseline` | projections for every live session (one `changes:[{key,val}]` frame per committed event from 0.2.2; one `key`/`value` frame through 0.2.1), and queue and jobs from a 0.1.6 host |
 | `session/follow` | complete `snapshot` (+ `assistantStream` baseline) | one session's journal, and the reply being written |
 | `workspace/follow` | complete `baseline` | the workspace registry, its archive set and (0.1.7) its pin set |
 | `job/list` | `{type:"rows",jobs}` | the open session's background jobs, whole-set on every change (0.1.7) |
@@ -494,6 +524,13 @@ Several facts the UI needs never arrive as an RPC result — they are pushed as
 snapshot. The two baselines are produced independently, so neither is
 authoritative on its own: the client keeps whichever carries the higher
 watermark.
+
+A `projection` frame's shape changed in harness 0.2.2. Through 0.2.1 every
+frame named one unit: `{type:"projection",sessionId,key,value,seq}`. From 0.2.2
+the host folds projections per committed event and one frame names every key
+that event changed: `{type:"projection",sessionId,seq,changes:[{key,val}]}`.
+The client normalizes the old single-key shape to a one-element `changes` list,
+so both generations share one apply path.
 
 | Key | Carries |
 |---|---|
@@ -682,7 +719,8 @@ the phone's own /24.
   the catalog. Auto review is offered only if present in those options.
 - `agentPresets/list` no longer requires `hasDocument`; `modeSelectionEnabled` controls
   the composer preset switch. `subagents/prompt` includes `delivery: queue | steer`.
-  Child transcripts open their own `session/follow` address and assistant baseline.
+  Child transcripts open their own `session/follow` address and assistant baseline. That address
+  must be a subagent address — parent and child session ids plus mode — not a plain session address.
 - `workspace/unarchiveSession` takes `{request:{sessionId}}` and returns
   `{archivedSessionIds}`.
   `workspace/follow` reconnects with `{type:"baseline",value:{items,archivedSessionIds}}`;
@@ -708,8 +746,10 @@ the phone's own /24.
 HTML/SVG previews disable JavaScript, file/content access, external network loads, and
 navigation; they have no native bridge. Related assets are fetched by Kotlin through
 `workspaceFiles/readBytes` with `options.baseFile` (`readRelated` on a 0.1.6 host) with
-bounded size and timeout. Unsupported files retain
-the path, retry, and an explicit host-open action, subject to host availability.
+bounded size and timeout. Files the app cannot draw retain the path, retry, a hex dump of their
+first bytes (a `readBytes` window of 16 KB), and a save-a-copy action that streams the file from
+`readBytes` in 256 KB windows. Files over the preview caps (32 MB as bytes, 4 MB as text) are not an
+error: the preview says so and offers the same save.
 
 Photo picking uses `GetMultipleContents("image/*")`. URI reads, bounds decoding and
 thumbnail decoding run sequentially off the main thread. The image admission ledger
@@ -786,7 +826,7 @@ fixture is `core/src/test/resources/protocol/5badb15.json`; `4878cda.json` remai
 for the earlier contract. See [validation status](VALIDATION-0.13.0.md) for run results.
 
 - Routes resolve relative to the configured proxy root, including token exchange, RPC, uploads, downloads and the mux. Host identity includes scheme and root path.
-- `schedule/catalog`, `list`, `history`, `update`, `delete` use `{request: ...}` except the argument-free catalog. Timing selectors retain explicit IANA zones and ISO weekdays. Updates echo a complete storage record in `expected`; catalog-only fields are removed. Creation stages a chat draft.
+- `schedule/catalog`, `list`, `history`, `update`, `delete` use `{request: ...}` except the argument-free catalog. Timing selectors retain explicit IANA zones and ISO weekdays. Updates echo a complete storage record in `expected`; catalog-only fields are removed. Creation stages a chat draft. (0.2.2 replaces `update`/`delete` with `schedule/edit` and changes the catalog/list shapes — see [0.18.0](#0180-contract-changes-harness-022-rc1).)
 - `pluginManager/listBundles`, `listPlugins`, `registries`, `inspect`, `installBundle`, `waitForInstall`, `cancelInstall`, `setBundleEnabled`, `setPluginEnabled`, `removeBundle` use the host method parameter names. Bundle toggles use `name`, entry toggles use `id`. Installation defaults to disabled in the manager UI. Actual installed version and application outcome are shown separately. Script approvals name the listed packages explicitly. An absent recovery receipt is unknown, not success. Install IDs persist across process restart; install and recovery requests have no ordinary RPC read timeout.
 - A question request may carry `wait: {callId, timed?}`. Timed requests attach `userQuestions/attachWait` using `agentId` and `callId`, then count the opening `remainingMs` locally. Focus pauses; edits and Take time hold. Closing hides the card. Expiry rejects with `UserQuestionError/ASK_TIMED_OUT` and releases the claim. The projection decides continuation and settlement. `userQuestions/answer` submits later answers; inbox provenance marks queued replies. Requests without `wait` retain the legacy blocking flow.
 - Composer references retain UTF-16 spans, type, target and canonical mention text locally. Submission still uses ordinary text content. File candidates use the file-reference grammar; session candidates supply their canonical mention. Editing through a reference dissolves its metadata. Composer text and references, and question answer drafts, persist in local preferences across app restarts. They are scoped by host and session; questions additionally use call ID. Attachment bytes and upload state are not part of this persisted draft record.

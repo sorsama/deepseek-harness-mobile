@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="splash_tagline">你的 DeepSeek Harness，随身携带。</string>
+    <string name="splash_connecting">正在连接 %1$s…</string>
+    <string name="splash_reconnecting">正在重新连接 %1$s…</string>
+    <string name="appearance_customize_hint">颜色与触感反馈即时生效。</string>
+    <string name="appearance_accent">强调色</string>
+    <string name="appearance_accent_ink">墨蓝</string>
+    <string name="appearance_accent_violet">紫罗兰</string>
+    <string name="appearance_accent_teal">青绿</string>
+    <string name="appearance_accent_green">绿色</string>
+    <string name="appearance_accent_amber">琥珀</string>
+    <string name="appearance_accent_rose">玫红</string>
+    <string name="appearance_accent_mono">单色</string>
+    <string name="appearance_amoled">纯黑</string>
+    <string name="appearance_amoled_hint">OLED 屏幕专用的纯黑背景</string>
+    <string name="appearance_text_size">文字大小</string>
+    <string name="appearance_text_size_compact">紧凑</string>
+    <string name="appearance_text_size_default">默认</string>
+    <string name="appearance_text_size_large">大</string>
+    <string name="appearance_text_size_larger">特大</string>
+    <string name="appearance_haptics">触感反馈</string>
+    <string name="appearance_haptics_hint">点按或选择时轻振一下</string>
+    <string name="appearance_reset">重置外观</string>
+
+    <!-- Appearance: custom accent colour -->
+    <string name="appearance_accent_custom">自定义</string>
+    <string name="appearance_accent_custom_value">自定义，%1$s</string>
+    <string name="appearance_custom_title">自定义强调色</string>
+    <string name="appearance_custom_hint">选择一种颜色。系统会在每种主题下调整其明度，使文字保持清晰可读。</string>
+    <string name="appearance_custom_preview">预览</string>
+    <string name="appearance_custom_sample_button">按钮</string>
+    <string name="appearance_custom_sample_chip">标签</string>
+    <string name="appearance_custom_sample_link">链接</string>
+    <string name="appearance_custom_area">饱和度和亮度</string>
+    <string name="appearance_custom_area_state">饱和度 %1$d%%，亮度 %2$d%%</string>
+    <string name="appearance_custom_more_saturation">提高饱和度</string>
+    <string name="appearance_custom_less_saturation">降低饱和度</string>
+    <string name="appearance_custom_more_brightness">提高亮度</string>
+    <string name="appearance_custom_less_brightness">降低亮度</string>
+    <string name="appearance_custom_hue">色相</string>
+    <string name="appearance_custom_hue_state">%1$d°</string>
+    <string name="appearance_custom_hex">十六进制颜色</string>
+    <string name="appearance_custom_hex_invalid">请输入六位十六进制数字，例如 #6E9BFF</string>
+    <string name="appearance_custom_quick_picks">快速选择</string>
+    <string name="appearance_custom_quick_pick">使用 %1$s</string>
+    <string name="appearance_custom_apply">应用</string>
+</resources>

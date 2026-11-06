@@ -1,18 +1,37 @@
 package com.labteto.dshmobile.ui.screens.main
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.*
@@ -24,45 +43,181 @@ import com.labteto.dshmobile.ui.components.*
 import com.labteto.dshmobile.ui.theme.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.ZoneId
 
+/**
+ * The full-screen management page shared by Automations and Plugins.
+ *
+ * The design draws these as pushed screens with a back bar, not as bottom sheets, so this is a
+ * dialog window that fills the screen: it keeps the window-level stacking the sheets had (every
+ * nested dialog and picker still opens over the right layer) while reading as a page. The content
+ * rises in once on mount and never animates again.
+ */
 @Composable
-internal fun FeaturePage(title: String, onClose: () -> Unit, onRefresh: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
-    DsBottomSheet(title, onClose, trailing = {
-        Row {
-            if (onRefresh != null) DsIconButton(Icons.Default.Refresh, stringResource(R.string.ux_a_refresh), onRefresh)
-            DsIconButton(Icons.Default.Close, stringResource(R.string.common_close), onClose)
+internal fun FeaturePage(
+    title: String,
+    onClose: () -> Unit,
+    onRefresh: (() -> Unit)? = null,
+    subtitle: String? = null,
+    footer: (@Composable () -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val colors = DsTheme.colors
+    var shown by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { shown = true }
+    Dialog(
+        onDismissRequest = onClose,
+        // Draw edge to edge inside the dialog too: otherwise the dialog window keeps its own
+        // system-bar background, which is what produced a light strip behind the gesture bar on a
+        // dark theme while the page itself was dark.
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+    ) {
+        androidx.compose.material3.Surface(Modifier.fillMaxSize(), color = colors.bgBase) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing),
+            ) {
+                Row(
+                    Modifier.fillMaxWidth().padding(
+                        start = DsSpacing.small,
+                        end = DsSpacing.small,
+                        top = DsSpacing.small,
+                        bottom = DsSpacing.xsmall,
+                    ),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    DsIconButton(
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.common_back),
+                        onClick = onClose,
+                    )
+                    Column(Modifier.weight(1f).padding(horizontal = DsSpacing.xsmall)) {
+                        Text(
+                            title,
+                            style = DsType.large20,
+                            color = colors.labelPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        subtitle?.let {
+                            Text(
+                                it,
+                                style = DsType.caption11,
+                                color = colors.labelTertiary,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                    if (onRefresh != null) {
+                        DsIconButton(
+                            icon = Icons.Filled.Refresh,
+                            contentDescription = stringResource(R.string.ux_a_refresh),
+                            onClick = onRefresh,
+                        )
+                    }
+                }
+                AnimatedVisibility(
+                    visible = shown,
+                    modifier = Modifier.weight(1f),
+                    enter = fadeIn(tween(180, easing = DsAnimations.inkDecelerate)) +
+                        slideInVertically(tween(240, easing = DsAnimations.inkDecelerate)) { it / 30 },
+                ) {
+                    Column(Modifier.fillMaxSize()) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                                .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small),
+                            verticalArrangement = Arrangement.spacedBy(DsSpacing.medium),
+                            content = content,
+                        )
+                        footer?.let {
+                            Box(Modifier.fillMaxWidth().padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small)) {
+                                it()
+                            }
+                        }
+                    }
+                }
+            }
         }
-    }) {
-        Column(Modifier.fillMaxWidth().weight(1f, fill = false).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(DsSpacing.medium), content = content)
     }
 }
 
+/** The Ink input: filled layer-2 plate, hairline border, accent focus ring. */
 @Composable
-internal fun FeatureField(value: String, onChange: (String) -> Unit, label: Int, enabled: Boolean = true, singleLine: Boolean = false, technical: Boolean = false) {
-    TextField(value, onChange, Modifier.fillMaxWidth(), label = { Text(stringResource(label)) }, enabled = enabled,
-        singleLine = singleLine, textStyle = if (technical) DsType.std14.copy(textDirection = androidx.compose.ui.text.style.TextDirection.Ltr) else DsType.std14,
-        colors = dialogTextFieldColors(), shape = DsShapes.block)
+internal fun FeatureField(
+    value: String,
+    onChange: (String) -> Unit,
+    label: Int,
+    enabled: Boolean = true,
+    singleLine: Boolean = false,
+    technical: Boolean = false,
+) {
+    TextField(
+        value = value,
+        onValueChange = onChange,
+        modifier = Modifier.fillMaxWidth().inkFieldFrame(),
+        enabled = enabled,
+        singleLine = singleLine,
+        label = { Text(stringResource(label)) },
+        textStyle = if (technical) {
+            DsType.mono13.copy(textDirection = TextDirection.Ltr)
+        } else {
+            DsType.std14
+        },
+        colors = dialogTextFieldColors(),
+        shape = DsShapes.control,
+    )
 }
 
 @Composable
-internal fun FeatureProgress() = LinearProgressIndicator(Modifier.fillMaxWidth(), color = DsTheme.colors.accent, trackColor = DsTheme.colors.borderL1)
+internal fun FeatureProgress() = LinearProgressIndicator(
+    Modifier.fillMaxWidth(),
+    color = DsTheme.colors.accent,
+    trackColor = DsTheme.colors.borderL1,
+)
 
 @Composable
 internal fun FeatureAction(text: String, enabled: Boolean = true, variant: DsButtonVariant = DsButtonVariant.Outline, onClick: () -> Unit) {
-    Box(Modifier.fillMaxWidth().heightIn(min = DsSpacing.touchTarget), contentAlignment = androidx.compose.ui.Alignment.CenterStart) {
-        DsButton(text, onClick, enabled = enabled, variant = variant, allowWrap = true)
+    Box(Modifier.fillMaxWidth().heightIn(min = DsSpacing.touchTarget), contentAlignment = Alignment.CenterStart) {
+        DsButton(
+            text,
+            onClick,
+            enabled = enabled,
+            variant = variant,
+            allowWrap = true,
+        )
     }
 }
 
 @Composable
 internal fun FeatureDiagnostics(text: String?) {
     if (text.isNullOrBlank()) return
+    val colors = DsTheme.colors
     var expanded by remember { mutableStateOf(false) }
-    DisclosureRow(title = stringResource(R.string.ux_a_details), expanded = expanded, onToggle = { expanded = !expanded },
-        modifier = Modifier.heightIn(min = DsSpacing.touchTarget)) {
-        Text(text, style = DsType.caption11, color = DsTheme.colors.labelTertiary)
+    DisclosureRow(
+        title = stringResource(R.string.ux_a_details),
+        expanded = expanded,
+        onToggle = { expanded = !expanded },
+        modifier = Modifier.heightIn(min = DsSpacing.touchTarget),
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = DsSpacing.xsmall)
+                .clip(DsShapes.code)
+                .background(colors.codeBlockBg)
+                .border(1.dp, colors.borderL1, DsShapes.code)
+                .padding(DsSpacing.small),
+        ) {
+            SelectionContainer {
+                Text(text, style = DsType.mono12, color = colors.labelSecondary, softWrap = true)
+            }
+        }
     }
 }
 
@@ -75,12 +230,16 @@ internal fun scheduleFormatter(): ScheduleFormatter {
         { id, count, number -> resources.getQuantityString(id, count, number) }) }
 }
 
+/** The stored rule in words, its next/last run, and whether it is live. */
 @Composable
 internal fun ScheduleSummary(task: AutomationTask) {
+    val colors = DsTheme.colors
     val formatter = scheduleFormatter()
-    Text(formatter.frequency(task), style = DsType.small13, color = DsTheme.colors.labelSecondary)
-    formatter.runSummary(task)?.let { Text(it, style = DsType.caption11, color = DsTheme.colors.labelTertiary) }
-    DsPill(stringResource(if (task.status == "active") R.string.harness_active else R.string.harness_inactive))
+    Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall)) {
+        Text(formatter.frequency(task), style = DsType.small13, color = colors.labelSecondary)
+        formatter.runSummary(task)?.let { Text(it, style = DsType.caption11, color = colors.labelTertiary) }
+        DsPill(stringResource(if (task.status == "active") R.string.harness_active else R.string.harness_inactive))
+    }
 }
 
 /** New tasks are drafted through the agent; the management API has no create endpoint. */
@@ -118,7 +277,8 @@ internal fun AutomationScreen(sessionId: String? = null, onClose: () -> Unit, on
     suspend fun refresh() {
         val api = store.apiForHost(host) ?: error(offline)
         val result = store.featureCall(HarnessFeature.AUTOMATION, api) { api.automationCatalog() }.featureValue()
-        if (host == store.activeHostKey) tasks = result.filter { sessionId == null || it.sessionId == sessionId }
+        // 0.2.2 moved the delivery Session into `target`; `belongsToSession` reads both vocabularies.
+        if (host == store.activeHostKey) tasks = result.filter { sessionId == null || it.belongsToSession(sessionId) }
     }
     fun run(block: suspend () -> Unit) { scope.launch {
         busy = true; error = null
@@ -127,17 +287,42 @@ internal fun AutomationScreen(sessionId: String? = null, onClose: () -> Unit, on
     } }
     LaunchedEffect(host, sessionId, connection.phase, revision) { run { refresh() } }
     LaunchedEffect(host) { store.hostEvents.collect { if (it.first == "schedule/changed") revision++ } }
-    FeaturePage(stringResource(R.string.harness_automations), onClose, onRefresh = { if (!busy) revision++ }) {
-        FeatureAction(stringResource(R.string.harness_new), !busy, DsButtonVariant.Primary) { run {
-            if (host != null && store.stageFeatureDraft(host, newPrompt)) onClose() else error(offline)
-        } }
-        FeatureField(search, { search = it }, R.string.harness_automation_search, singleLine = true)
-        DsSegmented(AutomationStatusFilter.entries.map { filter -> DsSegment(filter.name, stringResource(when (filter) {
-            AutomationStatusFilter.ALL -> R.string.harness_automation_all
-            AutomationStatusFilter.ACTIVE -> R.string.harness_active
-            AutomationStatusFilter.INACTIVE -> R.string.harness_inactive
-        })) }, statusFilter.name, { statusFilter = AutomationStatusFilter.valueOf(it) }, stretch = true,
-            minSegmentHeight = DsSpacing.touchTarget, maxLabelLines = Int.MAX_VALUE)
+    FeaturePage(
+        title = stringResource(R.string.harness_automations),
+        subtitle = stringResource(R.string.ink_files_automations_intro),
+        onClose = onClose,
+        onRefresh = { if (!busy) revision++ },
+        footer = {
+            DsButton(
+                text = stringResource(R.string.ink_files_new_automation),
+                icon = Icons.Filled.Add,
+                onClick = {
+                    run {
+                        if (host != null && store.stageFeatureDraft(host, newPrompt)) onClose() else error(offline)
+                    }
+                },
+                enabled = !busy,
+                variant = DsButtonVariant.Primary,
+                allowWrap = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+    ) {
+        DsSearchField(search, { search = it }, stringResource(R.string.harness_automation_search))
+        DsSegmented(
+            AutomationStatusFilter.entries.map { filter ->
+                DsSegment(filter.name, stringResource(when (filter) {
+                    AutomationStatusFilter.ALL -> R.string.harness_automation_all
+                    AutomationStatusFilter.ACTIVE -> R.string.harness_active
+                    AutomationStatusFilter.INACTIVE -> R.string.harness_inactive
+                }))
+            },
+            statusFilter.name,
+            { statusFilter = AutomationStatusFilter.valueOf(it) },
+            stretch = true,
+            minSegmentHeight = DsSpacing.touchTarget,
+            maxLabelLines = Int.MAX_VALUE,
+        )
         if (busy) FeatureProgress()
         error?.let { diagnostic -> DsCard {
             Text(stringResource(R.string.ux_a_load_error), color = DsTheme.colors.error, style = DsType.std14)
@@ -152,27 +337,94 @@ internal fun AutomationScreen(sessionId: String? = null, onClose: () -> Unit, on
             }), null, showPreview = false)
         }
         listModel.tasks.forEach { task ->
-            DsCard(onClick = { selected = task }) {
-                Text(task.title, style = DsType.std14Strong, color = DsTheme.colors.labelPrimary,
-                    textDecoration = if (task.status == "inactive") TextDecoration.LineThrough else null)
-                Text(task.prompt, maxLines = 3, style = DsType.std14, color = DsTheme.colors.labelSecondary)
-                ScheduleSummary(task)
+            AutomationCard(task) { selected = task }
+        }
+    }
+    selected?.let { task -> key(host, task.sessionIdEffective, task.id) {
+        AutomationEditor(store, host, task, onClose = { selected = null; revision++ }, onSessionOpened = onClose)
+    } }
+}
+
+/** One scheduled task: the rule, when it next runs, and whether it is live. */
+@Composable
+private fun AutomationCard(task: AutomationTask, onClick: () -> Unit) {
+    val colors = DsTheme.colors
+    val formatter = scheduleFormatter()
+    val active = task.status == "active"
+    val lastRun = task.lastDelivery?.let { stringResource(R.string.ux_a_last_run, formatter.absolute(it.deliveredAt)) }
+    val next = if (active) runCatching { formatter.nextRelative(task.scheduledAt) }.getOrNull() else null
+    DsCard(
+        onClick = onClick,
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
+    ) {
+        Row(verticalAlignment = Alignment.Top) {
+            Box(
+                Modifier
+                    .size(36.dp)
+                    .clip(DsShapes.buttonSmall)
+                    .background(colors.bgLayer3),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(18.dp), tint = colors.accent)
+            }
+            Spacer(Modifier.width(DsSpacing.medium))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    task.title,
+                    style = DsType.rowTitle,
+                    color = colors.labelPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textDecoration = if (!active) TextDecoration.LineThrough else null,
+                )
+                Text(
+                    formatter.frequency(task),
+                    style = DsType.mono12,
+                    color = colors.labelTertiary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Spacer(Modifier.width(DsSpacing.small))
+            DsPill(
+                text = stringResource(if (active) R.string.harness_active else R.string.harness_inactive),
+                selected = active,
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
+        ) {
+            Box(
+                Modifier
+                    .size(6.dp)
+                    .clip(DsShapes.pillFull)
+                    .background(if (active) colors.success else colors.labelDimmed),
+            )
+            Text(
+                lastRun ?: task.prompt,
+                style = DsType.small13,
+                color = colors.labelSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            if (active && next != null) {
+                Text(next, style = DsType.mono12, color = colors.labelTertiary, maxLines = 1)
             }
         }
     }
-    selected?.let { task -> key(host, task.sessionId, task.id) {
-        AutomationEditor(store, host, task, onClose = { selected = null; revision++ }, onSessionOpened = onClose)
-    } }
 }
 
 @Composable
 private fun AutomationEditor(store: SessionStore, host: String?, task: AutomationTask, onClose: () -> Unit, onSessionOpened: () -> Unit) {
     val scope = rememberCoroutineScope()
+    val colors = DsTheme.colors
     var title by remember(task) { mutableStateOf(task.title) }
     var prompt by remember(task) { mutableStateOf(task.prompt) }
     var timing by remember { mutableStateOf(false) }
     var draft by remember { mutableStateOf(TimingEditorDraft.from(task)) }
-    var tab by remember(task.sessionId, task.id) { mutableIntStateOf(0) }
+    var tab by remember(task.sessionIdEffective, task.id) { mutableIntStateOf(0) }
     var busy by remember { mutableStateOf(false) }
     var deleteConfirm by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
@@ -180,11 +432,15 @@ private fun AutomationEditor(store: SessionStore, host: String?, task: Automatio
     val sessions by store.sessions.collectAsStateWithLifecycle()
     val archived by store.archivedSessionIds.collectAsStateWithLifecycle()
     val connection by store.connectionState.collectAsStateWithLifecycle()
+    // 0.2.2 keeps the delivery Session in `target` (`sessionIdEffective`); a `new` target creates a
+    // fresh Session per delivery and names none, so there is no single Session to open or check.
+    val deliverySession = task.sessionIdEffective
     val linkMessage = when {
+        deliverySession == null -> null
         connection.phase == com.labteto.dshmobile.connection.ConnectionPhase.DISCONNECTED -> R.string.common_offline
         connection.phase != com.labteto.dshmobile.connection.ConnectionPhase.CONNECTED -> R.string.common_loading
-        task.sessionId in archived -> R.string.ux_a_session_archived
-        sessions.none { it.sessionId == task.sessionId } -> R.string.ux_a_session_unavailable
+        deliverySession in archived -> R.string.ux_a_session_archived
+        sessions.none { it.sessionId == deliverySession } -> R.string.ux_a_session_unavailable
         else -> null
     }
     val offline = stringResource(R.string.common_offline)
@@ -201,47 +457,127 @@ private fun AutomationEditor(store: SessionStore, host: String?, task: Automatio
         catch (e: Exception) { message = errorText; diagnostics = e.message }
         finally { busy = false }
     } }
-    FeaturePage(task.title, onClose) {
-        DsSegmented(listOf(DsSegment("0", stringResource(R.string.harness_automation_rules)), DsSegment("1", stringResource(R.string.harness_automation_records))),
-            tab.toString(), { tab = it.toInt() }, enabled = !busy, stretch = true,
-            minSegmentHeight = DsSpacing.touchTarget, maxLabelLines = Int.MAX_VALUE)
+    FeaturePage(title = task.title, onClose = onClose) {
+        DsSegmented(
+            listOf(
+                DsSegment("0", stringResource(R.string.harness_automation_rules)),
+                DsSegment("1", stringResource(R.string.harness_automation_records)),
+            ),
+            tab.toString(),
+            {
+                tab = it.toInt()
+            },
+            enabled = !busy,
+            stretch = true,
+            minSegmentHeight = DsSpacing.touchTarget,
+            maxLabelLines = Int.MAX_VALUE,
+        )
         if (tab == 1) AutomationRecords(store, host, task) else {
+            SectionLabel(stringResource(R.string.harness_automation_rules))
             FeatureField(title, { title = it }, R.string.harness_title, active && !busy)
             FeatureField(prompt, { prompt = it }, R.string.harness_prompt, active && !busy)
-            ScheduleSummary(task)
-            FeatureAction(stringResource(R.string.harness_open_session), !busy && linkMessage == null) { run {
-                if (host == store.activeHostKey) {
-                    store.openSession(task.sessionId)
-                    if (host == store.activeHostKey && store.currentSessionId.value == task.sessionId) onSessionOpened()
-                }
-            } }
-            linkMessage?.let { Text(stringResource(it), style = DsType.small13, color = DsTheme.colors.labelSecondary) }
-            if (active) {
-                ToggleRow(stringResource(R.string.harness_change_timing), timing, enabled = !busy) { timing = !timing }
-                if (timing) AutomationTimingFields(draft, { draft = it }, !busy)
-                FeatureAction(stringResource(R.string.common_save), !busy && title.trim().isNotEmpty() && title.trim().length <= 120 && prompt.trim().isNotEmpty() && (!timing || draft.valid), DsButtonVariant.Primary) { run(saveFailure) { api ->
-                    val result = store.featureCall(HarnessFeature.AUTOMATION, api) { api.automationUpdate(AutomationUpdate(task.sessionId, task.id, task.expectedRecord(), title.trim(), prompt.trim(), if (timing) draft.change() else null)) }.featureValue()
-                    if (result.code == null && result.record != null) onClose() else {
-                        message = when (result.code) { "schedule_conflict" -> conflict; "schedule_not_found" -> notFound; else -> saveFailure }
-                        diagnostics = listOfNotNull(result.code, result.message).joinToString("\n")
+            DsCard {
+                ScheduleSummary(task)
+            }
+            if (deliverySession != null) {
+                FeatureAction(stringResource(R.string.harness_open_session), !busy && linkMessage == null) {
+                    run {
+                        if (host == store.activeHostKey) {
+                            store.openSession(deliverySession)
+                            if (host == store.activeHostKey && store.currentSessionId.value == deliverySession) onSessionOpened()
+                        }
                     }
-                } }
-                FeatureAction(stringResource(R.string.common_delete), !busy, DsButtonVariant.Danger) { deleteConfirm = true }
+                }
+                linkMessage?.let { Text(stringResource(it), style = DsType.small13, color = colors.labelSecondary) }
+            }
+            if (active) {
+                // `rrule` tasks have no timing editor (harness 0.2.2 uses `patch.timing = {kind,rrule}`
+                // for that); the rule is still shown read-only by ScheduleSummary above.
+                if (draft.timingEditable) {
+                    SectionLabel(stringResource(R.string.harness_change_timing))
+                    ToggleRow(stringResource(R.string.harness_change_timing), timing, enabled = !busy) {
+                        timing = !timing
+                    }
+                    if (timing) AutomationTimingFields(draft, { draft = it }, !busy)
+                }
+                DsButton(
+                    text = stringResource(R.string.common_save),
+                    onClick = {
+                        run(saveFailure) { api ->
+                            val result = store.featureCall(HarnessFeature.AUTOMATION, api) {
+                                api.automationEdit(AutomationEditRequest(
+                                    id = task.id,
+                                    action = "update",
+                                    patch = AutomationPatch(
+                                        title = title.trim(),
+                                        prompt = prompt.trim(),
+                                        timing = if (timing && draft.timingEditable) draft.change() else null,
+                                    ),
+                                    // 0.2.2 compares `updatedAt` instead of 0.2.1's complete `expected` record.
+                                    expectedUpdatedAt = task.updatedAt,
+                                ))
+                            }.featureValue()
+                            // 0.2.2 answers an update with the whole catalog entry, so `id` without a
+                            // code is the success signal; `record` remains 0.2.1's shape at no cost.
+                            // Closing drops the cached row and re-reads the catalog for the new revision.
+                            if (result.code == null && result.id != null) onClose() else {
+                                message = when (result.code) { "schedule_conflict" -> conflict; "schedule_not_found" -> notFound; else -> saveFailure }
+                                diagnostics = listOfNotNull(result.code, result.message).joinToString("\n")
+                            }
+                        }
+                    },
+                    enabled = !busy && title.trim().isNotEmpty() && title.trim().length <= 120 && prompt.trim().isNotEmpty() && (!timing || draft.valid),
+                    variant = DsButtonVariant.Primary,
+                    allowWrap = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                    DsButton(
+                        text = stringResource(R.string.common_delete),
+                        onClick = { deleteConfirm = true },
+                        enabled = !busy,
+                        variant = DsButtonVariant.Danger,
+                        allowWrap = true,
+                    )
+                }
             }
             if (busy) FeatureProgress()
-            message?.let { DsCard {
-                Text(it, color = DsTheme.colors.error, style = DsType.std14)
+            message?.let { text -> DsCard {
+                Text(text, color = colors.error, style = DsType.std14)
                 FeatureAction(stringResource(R.string.ux_a_refresh), !busy, onClick = onClose)
                 FeatureDiagnostics(diagnostics)
             } }
         }
     }
     if (deleteConfirm) DsDialog(stringResource(R.string.common_delete), { deleteConfirm = false }) {
-        Text(task.title, style = DsType.std14, color = DsTheme.colors.labelPrimary)
-        FeatureAction(stringResource(R.string.common_delete), variant = DsButtonVariant.Danger) { deleteConfirm = false; run(deleteFailure) { api ->
-            val result = store.featureCall(HarnessFeature.AUTOMATION, api) { api.automationDelete(task.sessionId, task.id) }.featureValue()
-            if (result.deleted == true) onClose() else { message = if (result.code == "schedule_not_found") notFound else deleteFailure; diagnostics = listOfNotNull(result.code, result.message).joinToString("\n") }
-        } }
+        Text(task.title, style = DsType.std14, color = colors.labelPrimary)
+        Text(
+            stringResource(R.string.ux_a_delete_error),
+            style = DsType.caption11,
+            color = colors.labelTertiary,
+        )
+        FeatureAction(stringResource(R.string.common_delete), variant = DsButtonVariant.Danger) {
+            deleteConfirm = false
+            run(deleteFailure) { api ->
+                // 0.2.2 folds delete into `schedule/edit`; the expected revision still guards the write.
+                val result = store.featureCall(HarnessFeature.AUTOMATION, api) {
+                    api.automationEdit(AutomationEditRequest(task.id, "delete", expectedUpdatedAt = task.updatedAt))
+                }.featureValue()
+                if (result.deleted == true) onClose() else { message = if (result.code == "schedule_not_found") notFound else deleteFailure; diagnostics = listOfNotNull(result.code, result.message).joinToString("\n") }
+            }
+        }
         FeatureAction(stringResource(R.string.common_cancel)) { deleteConfirm = false }
     }
 }
+
+/** Uppercase section label used inside management pages. */
+@Composable
+internal fun SectionLabel(text: String) {
+    Text(
+        text.uppercase(),
+        style = DsType.label12,
+        color = DsTheme.colors.labelTertiary,
+        modifier = Modifier.padding(top = DsSpacing.tiny),
+    )
+}
+

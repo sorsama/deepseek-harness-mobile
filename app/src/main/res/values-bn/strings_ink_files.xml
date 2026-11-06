@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_files_search_files">ফাইল খুঁজুন</string>
+    <string name="ink_files_filter_files">এই ফোল্ডার ফিল্টার করুন</string>
+    <string name="ink_files_no_matches">মেলে এমন ফাইল নেই</string>
+    <string name="ink_files_all_files">সব ফাইল</string>
+    <string name="ink_files_copy_contents">কনটেন্ট কপি করুন</string>
+    <string name="ink_files_rendered">রেন্ডার করা</string>
+    <string name="ink_files_source">সোর্স</string>
+    <string name="ink_files_output">আউটপুট</string>
+    <string name="ink_files_key_tab">Tab</string>
+    <string name="ink_files_key_esc">Esc</string>
+    <string name="ink_files_key_up">উপরের তীর</string>
+    <string name="ink_files_key_down">নিচের তীর</string>
+    <string name="ink_files_key_ctrl_c">Ctrl C</string>
+    <string name="ink_files_clear_terminal">টার্মিনাল ক্লিয়ার করুন</string>
+    <string name="ink_files_send_enter">Enter পাঠান</string>
+    <string name="ink_files_automations_intro">আপনার কম্পিউটারে harness যে কাজগুলো নির্দিষ্ট সময়ে চালায়, ফোন দূরে থাকলেও।</string>
+    <string name="ink_files_new_automation">নতুন অটোমেশন</string>
+    <string name="ink_files_plugins_intro">প্লাগইন harness-এর কম্পিউটারে ইনস্টল হয়। পরিবর্তন নতুন সেশনে কার্যকর হয়।</string>
+    <string name="ink_files_archived_search">আর্কাইভ করা সেশন খুঁজুন</string>
+    <string name="ink_files_this_week">এই সপ্তাহ</string>
+    <string name="ink_files_this_month">এই মাস</string>
+    <string name="ink_files_changed_session">এই সেশনে বদলেছে</string>
+</resources>

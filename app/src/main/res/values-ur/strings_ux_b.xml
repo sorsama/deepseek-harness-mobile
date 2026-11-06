@@ -19,7 +19,7 @@
     <string name="ux_b_view_answers">جوابات دیکھیں</string>
     <string name="ux_b_skipped">چھوڑ دیا گیا</string>
     <string name="ux_b_answer">جواب</string>
-    <string name="ux_b_automation_unavailable">یہ ہوسٹ آٹومیشن کو سپورٹ نہیں کرتا۔</string>
+    <string name="ux_b_automation_unavailable">یہ harness آٹومیشن کی سہولت نہیں دیتا۔</string>
     <plurals name="ux_b_countdown_seconds">
         <item quantity="one">%1$s سیکنڈ میں کام جاری ہوگا</item>
         <item quantity="other">%1$s سیکنڈ میں کام جاری ہوگا</item>

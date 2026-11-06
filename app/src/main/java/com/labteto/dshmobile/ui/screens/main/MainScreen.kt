@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.min
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.components.DsToastHost
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.theme.DsTheme
 import kotlinx.coroutines.CancellationException
@@ -81,6 +82,9 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     val scope = rememberCoroutineScope()
     var automationsOpen by remember { mutableStateOf(false) }
     var automationSession by remember { mutableStateOf<String?>(null) }
+    // A subagent the Details panel asked to show. The transcript is the chat screen's sheet, so the
+    // request travels from the panel to the chat through here and is cleared once the chat has it.
+    var subagentRequest by remember { mutableStateOf<String?>(null) }
     val store = com.labteto.dshmobile.ui.rememberSessionStore()
     val automationAvailable by store.automationAvailable.collectAsStateWithLifecycle()
     val toast = rememberDsToast()
@@ -98,7 +102,11 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     // goes through `settleDetails`, so a fling's velocity carries into the settle.
     var detailsOpen by remember { mutableStateOf(false) }
     val reveal = remember { Animatable(0f) }
+    val haptics = rememberDsHaptics()
     fun settleDetails(open: Boolean, velocity: Float = 0f) {
+        // Only the intent speaks: a drag that settles keeps its silence, an open/close from a tap
+        // or the back gesture gets one tick.
+        if (open != detailsOpen) haptics.selection()
         detailsOpen = open
         scope.launch { reveal.animateTo(if (open) 1f else 0f, PanelSpring, initialVelocity = velocity) }
     }
@@ -197,8 +205,13 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                 Box(Modifier.fillMaxSize().blur((6 * progress).dp)) {
                     ChatScreen(
                         onOpenDetails = { settleDetails(true) },
-                        onOpenDrawer = { scope.launch { drawerState.open() } },
+                        onOpenDrawer = {
+                            haptics.tap()
+                            scope.launch { drawerState.open() }
+                        },
                         detailsOpen = detailsOpen,
+                        subagentRequest = subagentRequest,
+                        onSubagentRequestHandled = { subagentRequest = null },
                     )
                 }
 
@@ -222,6 +235,16 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                         onOpenAutomations = {
                             automationSession = store.currentSessionId.value
                             automationsOpen = true
+                            settleDetails(false)
+                        },
+                        onOpenSubagent = { childId ->
+                            subagentRequest = childId
+                            settleDetails(false)
+                        },
+                        // Launched here rather than in the panel: the panel is on its way out, and a
+                        // coroutine tied to it would be cancelled before the session finished opening.
+                        onOpenSession = { sessionId ->
+                            scope.launch { store.openSession(sessionId) }
                             settleDetails(false)
                         },
                         modifier = Modifier

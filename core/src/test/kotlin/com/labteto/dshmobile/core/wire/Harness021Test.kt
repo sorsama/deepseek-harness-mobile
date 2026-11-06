@@ -28,11 +28,56 @@ class Harness021Test {
         assertFalse(partialArgumentStrings("""{"nested":{"path":"bad"}}""").containsKey("path"))
         assertEquals("abc", partialArgumentStrings("""{"path":"abc\u0""")["path"]!!.jsonPrimitive.content)
     }
-    @Test fun `expected schedule is the complete stored record without catalogue decorations`() {
-        val task = AutomationTask("t", "weekly", "test", "prompt", "2099-01-01T00:00:00Z", sessionId = "s", time = "10:00:00.000", timeZone = "UTC", weekdays = listOf(1,3))
-        val expected = task.expectedRecord()
-        assertFalse(expected.containsKey("sessionId")); assertFalse(expected.containsKey("status")); assertFalse(expected.containsKey("lastDelivery"))
-        assertEquals(JsonArray(listOf(JsonPrimitive(1), JsonPrimitive(3))), expected["weekdays"])
+    @Test fun `catalog entries decode target bindings and legacy session ids`() {
+        val entry = WireJson.decodeFromString(AutomationTask.serializer(), """
+            {"id":"t","kind":"rrule","title":"check","prompt":"check",
+             "scheduledAt":"2026-01-01T02:00:00.000Z",
+             "rrule":"DTSTART;TZID=Asia/Bangkok:20260101T090000\nRRULE:FREQ=HOURLY;INTERVAL=1",
+             "target":{"kind":"session","sessionId":"s-1"},"involvedSessionIds":["s-1","s-2"],
+             "status":"paused","createdAt":"2026-01-01T00:00:00.000Z","updatedAt":"2026-01-01T00:01:00.000Z"}
+        """.trimIndent())
+        assertEquals("rrule", entry.kind)
+        assertTrue(entry.rrule!!.contains("FREQ=HOURLY"))
+        assertEquals("s-1", entry.sessionIdEffective)
+        assertEquals(listOf("s-1", "s-2"), entry.involvedSessionIds)
+        assertEquals("paused", entry.status)
+        assertEquals("2026-01-01T00:01:00.000Z", entry.updatedAt)
+        // A `new` target creates a fresh Session per delivery, so it names no delivery Session.
+        assertNull(entry.copy(target = buildJsonObject { put("kind", "new") }, sessionId = "").sessionIdEffective)
+        // A 0.2.1 catalog entry still decodes: the binding used to be a top-level `sessionId`.
+        val legacy = WireJson.decodeFromString(AutomationTask.serializer(),
+            """{"id":"t","kind":"at","title":"old","prompt":"old","scheduledAt":"2026-01-01T00:00:00.000Z","sessionId":"s-legacy","status":"inactive"}""")
+        assertEquals("s-legacy", legacy.sessionIdEffective)
+        assertEquals("inactive", legacy.status)
+    }
+
+    @Test fun `schedule edit encodes the update patch and omits absent fields`() {
+        val update = WireJson.encodeToJsonElement(AutomationEditRequest.serializer(), AutomationEditRequest(
+            id = "t", action = "update",
+            patch = AutomationPatch(title = "renamed", timing = automationTiming("daily", "09:00", "UTC", "")),
+            expectedUpdatedAt = "u-1",
+        )).jsonObject
+        assertEquals("update", update["action"]!!.jsonPrimitive.content)
+        assertEquals("u-1", update["expectedUpdatedAt"]!!.jsonPrimitive.content)
+        val patch = update["patch"]!!.jsonObject
+        assertEquals("renamed", patch["title"]!!.jsonPrimitive.content)
+        assertEquals("daily", patch["timing"]!!.jsonObject["kind"]!!.jsonPrimitive.content)
+        assertFalse(patch.containsKey("prompt")); assertFalse(patch.containsKey("active")); assertFalse(patch.containsKey("target"))
+        val delete = WireJson.encodeToJsonElement(AutomationEditRequest.serializer(), AutomationEditRequest("t", "delete")).jsonObject
+        assertEquals("delete", delete["action"]!!.jsonPrimitive.content)
+        assertFalse(delete.containsKey("patch")); assertFalse(delete.containsKey("expectedUpdatedAt"))
+    }
+
+    @Test fun `schedule edit outcomes decode as entry delete miss or conflict`() {
+        val entry = WireJson.decodeFromString(AutomationMutation.serializer(),
+            """{"id":"t","kind":"rrule","title":"check","prompt":"check","scheduledAt":"2026-01-01T00:00:00Z","status":"active","updatedAt":"u-2"}""")
+        assertEquals("t", entry.id); assertNull(entry.code); assertNull(entry.record)
+        val deleted = WireJson.decodeFromString(AutomationMutation.serializer(), """{"id":"t","deleted":true}""")
+        assertEquals(true, deleted.deleted)
+        assertEquals("schedule_not_found",
+            WireJson.decodeFromString(AutomationMutation.serializer(), """{"id":"t","code":"schedule_not_found"}""").code)
+        assertEquals("schedule_conflict",
+            WireJson.decodeFromString(AutomationMutation.serializer(), """{"id":"t","code":"schedule_conflict"}""").code)
     }
     @Test fun `legacy question requests still decode without a wait`() {
         assertNull(WireJson.decodeFromString(AskUserQuestionRequestEvent.serializer(), """{"questions":[]}""").wait)

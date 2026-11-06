@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_panel_model_title">ماڈل</string>
+    <string name="ink_panel_model_permission">ماڈل اور اجازت</string>
+    <string name="ink_panel_model_default">Harness ڈیفالٹ</string>
+    <string name="ink_panel_model_available">%1$s پر دستیاب</string>
+    <string name="ink_panel_effort_default">ڈیفالٹ</string>
+    <string name="ink_panel_permission_readonly_desc">فائلیں پڑھیں اور جواب دیں۔ کچھ تبدیل نہیں ہوتا۔</string>
+    <string name="ink_panel_permission_workspace_desc">ورک اسپیس کے اندر ترمیم۔ کمانڈز اب بھی پوچھتی ہیں۔</string>
+    <string name="ink_panel_permission_full_desc">کمپیوٹر پر سب کچھ۔ منظوری کی درخواست نہیں۔</string>
+    <string name="ink_panel_subagent_followup">اس ذیلی ایجنٹ سے فالو اپ پوچھیں</string>
+    <string name="ink_panel_trajectory_empty_hint">ایجنٹ کے کام کرتے وقت ٹول کالز یہاں دکھائی دیتی ہیں۔</string>
+    <string name="ink_panel_open_session">سیشن کھولیں</string>
+</resources>

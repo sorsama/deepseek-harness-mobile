@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ink redesign: details panel, trajectory and sheets (design 09-16) -->
+    <string name="ink_panel_model_title">Model</string>
+    <string name="ink_panel_model_permission">Model &amp; permission</string>
+    <string name="ink_panel_model_default">Harness default</string>
+    <string name="ink_panel_model_available">Available on %1$s</string>
+    <string name="ink_panel_effort_default">Default</string>
+    <string name="ink_panel_permission_readonly_desc">Read files and answer. Nothing is changed.</string>
+    <string name="ink_panel_permission_workspace_desc">Edits inside the workspace. Commands still ask.</string>
+    <string name="ink_panel_permission_full_desc">Anything on the computer. No approval prompts.</string>
+    <string name="ink_panel_subagent_followup">Ask this subagent a follow-up</string>
+    <string name="ink_panel_trajectory_empty_hint">Tool calls appear here as the agent works.</string>
+    <string name="ink_panel_open_session">Open session</string>
+</resources>

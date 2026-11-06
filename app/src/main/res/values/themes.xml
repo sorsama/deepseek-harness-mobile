@@ -6,13 +6,14 @@
     <!--
         The manifest theme, so it is what the window starts with on *every* creation of the
         activity — including the recreate that applying a language forces, which happens long after
-        any splash. Its background was a hardcoded white, which is why that recreate flashed against
-        a dark app; it now follows the same token as the post-splash theme.
+        any splash. It follows the same window token as the post-splash theme, so there is no flash.
     -->
     <style name="Theme.DshMobile.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/window_background</item>
         <item name="android:windowBackground">@color/window_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <!-- The mascot, not the launcher icon: the launch moment is the one place the character introduces the app. -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/mascot_mark</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/window_background</item>
         <item name="postSplashScreenTheme">@style/Theme.DshMobile</item>
     </style>
 </resources>

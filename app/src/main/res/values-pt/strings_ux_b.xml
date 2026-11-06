@@ -17,9 +17,9 @@
     <string name="ux_b_countdown_description">Contagem regressiva para resposta em andamento</string>
     <string name="ux_b_view_questions">Ver perguntas</string>
     <string name="ux_b_view_answers">Ver respostas</string>
-    <string name="ux_b_skipped">Ignorada</string>
+    <string name="ux_b_skipped">Pulada</string>
     <string name="ux_b_answer">Resposta</string>
-    <string name="ux_b_automation_unavailable">Este host não oferece suporte a automações.</string>
+    <string name="ux_b_automation_unavailable">Este harness não oferece suporte a automações.</string>
     <plurals name="ux_b_countdown_seconds">
         <item quantity="one">Continuando em %1$s segundo</item>
         <item quantity="other">Continuando em %1$s segundos</item>

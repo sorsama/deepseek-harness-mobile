@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="splash_tagline">DeepSeek Harness، في جيبك.</string>
+    <string name="splash_connecting">جارٍ الاتصال بـ %1$s…</string>
+    <string name="splash_reconnecting">جارٍ إعادة الاتصال بـ %1$s…</string>
+    <string name="appearance_customize_hint">تُطبَّق الألوان والاستجابة اللمسية فورًا.</string>
+    <string name="appearance_accent">لون التمييز</string>
+    <string name="appearance_accent_ink">أزرق حبري</string>
+    <string name="appearance_accent_violet">بنفسجي</string>
+    <string name="appearance_accent_teal">أزرق مخضر</string>
+    <string name="appearance_accent_green">أخضر</string>
+    <string name="appearance_accent_amber">كهرماني</string>
+    <string name="appearance_accent_rose">وردي</string>
+    <string name="appearance_accent_mono">أحادي</string>
+    <string name="appearance_amoled">أسود نقي</string>
+    <string name="appearance_amoled_hint">خلفية سوداء نقية لشاشات OLED</string>
+    <string name="appearance_text_size">حجم النص</string>
+    <string name="appearance_text_size_compact">مضغوط</string>
+    <string name="appearance_text_size_default">افتراضي</string>
+    <string name="appearance_text_size_large">كبير</string>
+    <string name="appearance_text_size_larger">أكبر</string>
+    <string name="appearance_haptics">استجابة لمسية</string>
+    <string name="appearance_haptics_hint">اهتزاز قصير عند النقر أو الاختيار</string>
+    <string name="appearance_reset">إعادة ضبط المظهر</string>
+
+    <!-- Appearance: custom accent colour -->
+    <string name="appearance_accent_custom">مخصص</string>
+    <string name="appearance_accent_custom_value">مخصص، %1$s</string>
+    <string name="appearance_custom_title">لون تمييز مخصص</string>
+    <string name="appearance_custom_hint">اختر لونًا واحدًا. يُضبط سطوعه في كل مظهر ليبقى النص مقروءًا.</string>
+    <string name="appearance_custom_preview">معاينة</string>
+    <string name="appearance_custom_sample_button">زر</string>
+    <string name="appearance_custom_sample_chip">شارة</string>
+    <string name="appearance_custom_sample_link">رابط</string>
+    <string name="appearance_custom_area">التشبّع والسطوع</string>
+    <string name="appearance_custom_area_state">التشبّع %1$d%%، السطوع %2$d%%</string>
+    <string name="appearance_custom_more_saturation">تشبّع أكثر</string>
+    <string name="appearance_custom_less_saturation">تشبّع أقل</string>
+    <string name="appearance_custom_more_brightness">سطوع أكثر</string>
+    <string name="appearance_custom_less_brightness">سطوع أقل</string>
+    <string name="appearance_custom_hue">درجة اللون</string>
+    <string name="appearance_custom_hue_state">%1$d°</string>
+    <string name="appearance_custom_hex">لون سداسي عشري</string>
+    <string name="appearance_custom_hex_invalid">استخدم ستة أرقام سداسية عشرية، مثل #6E9BFF</string>
+    <string name="appearance_custom_quick_picks">اختيارات سريعة</string>
+    <string name="appearance_custom_quick_pick">استخدام %1$s</string>
+    <string name="appearance_custom_apply">تطبيق</string>
+</resources>

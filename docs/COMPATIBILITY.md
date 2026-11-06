@@ -6,6 +6,7 @@ DSH Mobile speaks the DeepSeek Harness web-client protocol over `/api`. The prot
 
 | DSH Mobile | Harness | Notes |
 |---|---|---|
+| 0.19.0 | 0.2.2-rc.1 | All 15 real-host conformance scenarios pass on 0.2.2-rc.1, which changed live state frames, schedule edits, subagent chat addresses and image reads. Saving or deleting an automation needs a 0.2.2 host, because `schedule/edit` replaces `schedule/update` and `schedule/delete`. The in-app protocol baseline label still names the 0.2.1-rc.2 fixture until that fixture is regenerated |
 | 0.18.0 | 0.2.1-rc.2 | Same protocol baseline as 0.17.0. Rewind to this message, from holding a sent message, needs dsh-rewind-plugin on the host |
 | 0.17.0 | 0.2.1-rc.2 | All 15 real-host conformance scenarios pass on rc.2, including a typed round trip through `terminal/attach`. The terminal falls back to follow-and-call on hosts before 0.2.1-alpha.3 |
 | 0.16.0 | 0.2.1-alpha.2 | All 14 real-host conformance scenarios passed across full and targeted runs; Android and signing gates in [validation](VALIDATION-0.16.0.md) |
@@ -113,6 +114,41 @@ in the validation document.
 ## Breaking changes by harness release
 
 See [protocol notes](PROTOCOL.md) for the shapes.
+
+### 0.2.2
+
+Live projections are folded per committed event: one `session/control` `projection` frame carries
+`changes:[{key,val}]` for every key the event touched, where through 0.2.1 a frame named a single
+`key`/`value`. The app normalizes both, so model selection, permissions, todos, goal, plan, the
+inbox queue, subagent catalog and agent preset continue to update live. `session/follow` gained
+`activate`, which the app now sends so an opened session is promoted like the web client's follow;
+the host never promotes a subagent child this way. `session/page`'s `throughSeq` became optional,
+which changes nothing for the app (it still pins the follow cursor).
+
+`session/attachment` now takes the whole durable image reference (`{sessionId, attachment}`
+instead of `attachmentId`); the app sends it and keeps the id-only request only as a fallback for a
+host that refuses the new form as invalid input.
+
+The schedule management API was replaced: `schedule/update` and `schedule/delete` are gone and both
+are one `schedule/edit` (`{id, action, patch?, expectedUpdatedAt?}`), the conflict check compares
+`updatedAt` rather than a complete record, `schedule/list` is the host-wide paged list, and catalog
+entries carry the destination as `target`, list `involvedSessionIds`, use `active|paused|ended`, and
+include `kind:"rrule"` tasks. The app reads all of these; per-session Automations match the delivery
+Session or any involved Session, the Inactive filter means "not active", and an RRULE task shows
+its rule read-only rather than failing or crashing the editor. A 0.2.1 host keeps its old
+`update`/`delete` methods, which this build no longer sends.
+
+The `ask_user_question` intent union is open. 0.2.2 adds `kind:"approval"` (experimental CUA plugin);
+the app decodes any unknown intent into an opaque value and renders the question's own options, so a
+question batch is never dropped because of a presentation tag.
+
+Child transcripts are opened with a subagent address, not a plain session address:
+`{kind:"subagent", parentSessionId, childSessionId, mode}`. 0.2.2 hosts require it and
+refuse a plain address with `subagent Sessions require their durable parent address`; the app
+opens agent chats this way. A one-shot child is read-only, and a child whose descriptor has not
+arrived yet (`unknown`) is read-only only until it does. A continuable child is messageable while
+its exact parent Agent is live on the host (`subagents/prompt` answers `subagent/parent-unavailable`
+otherwise).
 
 ### 0.2.1
 

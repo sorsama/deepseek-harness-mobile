@@ -1,23 +1,41 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
-import com.labteto.dshmobile.ui.components.MarkdownText
 import com.labteto.dshmobile.ui.components.DsCard
-import com.labteto.dshmobile.ui.components.DsButton
-import com.labteto.dshmobile.ui.components.DsButtonVariant
+import com.labteto.dshmobile.ui.components.MarkdownText
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
+import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -52,22 +70,58 @@ internal fun documentFrontmatter(text: String): Frontmatter? {
 internal fun DocumentMarkdown(text: String) {
     val frontmatter = remember(text) { documentFrontmatter(text) }
     var expanded by remember(text) { mutableStateOf(false) }
+    val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
     Column {
         frontmatter?.let { metadata ->
-            DsCard {
-                DsButton(
-                    stringResource(R.string.harness_frontmatter), { expanded = !expanded },
-                    variant = DsButtonVariant.Ghost,
-                    icon = if (expanded) Icons.Filled.KeyboardArrowDown else Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            DsCard(verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall)) {
+                val rotation by animateFloatAsState(
+                    targetValue = if (expanded) 90f else 0f,
+                    animationSpec = DsAnimations.chevron,
+                    label = "frontmatterChevron",
                 )
-                if (expanded) Column(
-                    Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable(role = Role.Button) { haptics.tap(); expanded = !expanded }
+                        .heightIn(min = DsSpacing.touchTarget),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    metadata.fields.forEach { (key, value) ->
-                        Column {
-                            Text(key, style = DsType.caption11, color = DsTheme.colors.labelTertiary)
-                            Text(value, style = DsType.std14, color = DsTheme.colors.labelPrimary)
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp).rotate(rotation),
+                        tint = colors.labelTertiary,
+                    )
+                    Text(
+                        stringResource(R.string.harness_frontmatter),
+                        style = DsType.label12,
+                        color = colors.labelTertiary,
+                        modifier = Modifier.weight(1f).padding(start = DsSpacing.small),
+                    )
+                    Text(
+                        metadata.fields.size.toString(),
+                        style = DsType.mono12,
+                        color = colors.labelCaption,
+                    )
+                }
+                AnimatedVisibility(
+                    visible = expanded,
+                    enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
+                    exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
+                ) {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 240.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+                    ) {
+                        metadata.fields.forEach { (key, value) ->
+                            Column {
+                                Text(key, style = DsType.caption11, color = colors.labelTertiary)
+                                Text(value, style = DsType.std14, color = colors.labelPrimary)
+                            }
                         }
                     }
                 }

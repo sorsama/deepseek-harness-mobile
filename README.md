@@ -58,11 +58,19 @@ The [project site](https://dshm.zyphite.com) has a one-page overview, and the
   review a plan before it starts.
 - Keep an eye on long work. Goals, todo lists, queued messages, background jobs and subagents
   each have their own view, and you can pause, steer or stop them.
+- Keep your sessions the way you like them. Drag them into your own order, or group them by
+  project and fold the groups you are not using.
+- Find things with one search field that works the same everywhere: sessions, models, commands,
+  plugins, scheduled tasks and workspace files.
 - Get a notification when a turn finishes, a goal completes or gets blocked, or the agent is
   waiting for an answer. The connection stays up in the background.
 - Browse and preview the workspace files, and open a terminal on the harness computer.
+- Open files full screen in Preview: CSV tables, JSON trees, notebooks, PDFs, pictures, video,
+  audio and archives, with find in file. Save a copy puts any file on your phone.
 - Manage the harness itself: models, agent presets, plugins, scheduled tasks and archived
   sessions.
+- Make it yours. The Ink design comes in light and dark, with accent presets or a colour of your
+  own, true black for OLED screens and a text size you can change.
 - Use the app in English, Chinese, Hindi, Spanish, French, Arabic, Bengali, Portuguese,
   Russian, Urdu or Thai. Right-to-left languages are supported.
 
@@ -140,7 +148,7 @@ giving out shell access.
 
 ## Compatibility
 
-DSH Mobile is tested against **DeepSeek Harness 0.2.1-rc.2**. Older harness versions back to
+DSH Mobile is tested against **DeepSeek Harness 0.2.2-rc.1**. Older harness versions back to
 0.1.6 still work for the most part, but newer features need a newer harness. The
 [compatibility table](docs/COMPATIBILITY.md) lists which app version goes with which harness.
 

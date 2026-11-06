@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_panel_model_title">โมเดล</string>
+    <string name="ink_panel_model_permission">โมเดลและสิทธิ์</string>
+    <string name="ink_panel_model_default">ค่าเริ่มต้นของ harness</string>
+    <string name="ink_panel_model_available">ใช้ได้บน %1$s</string>
+    <string name="ink_panel_effort_default">ค่าเริ่มต้น</string>
+    <string name="ink_panel_permission_readonly_desc">อ่านไฟล์และตอบเท่านั้น ไม่เปลี่ยนแปลงอะไร</string>
+    <string name="ink_panel_permission_workspace_desc">แก้ไขได้ในพื้นที่ทำงาน ส่วนคำสั่งยังต้องขออนุญาต</string>
+    <string name="ink_panel_permission_full_desc">ทำได้ทุกอย่างบนคอมพิวเตอร์ โดยไม่ขออนุมัติ</string>
+    <string name="ink_panel_subagent_followup">ถามซับเอเจนต์นี้ต่อ</string>
+    <string name="ink_panel_trajectory_empty_hint">การเรียกใช้เครื่องมือจะปรากฏที่นี่ขณะเอเจนต์ทำงาน</string>
+    <string name="ink_panel_open_session">เปิดเซสชัน</string>
+</resources>

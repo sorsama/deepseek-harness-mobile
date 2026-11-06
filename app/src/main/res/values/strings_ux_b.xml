@@ -4,7 +4,7 @@
     <string name="ux_b_no_models">No matching models</string>
     <string name="ux_b_no_references">No references available</string>
     <string name="ux_b_no_matches">No matching references</string>
-    <string name="ux_b_reference_error">Some references could not be loaded. Try again.</string>
+    <string name="ux_b_reference_error">Some references didn\'t load. Try again.</string>
     <string name="ux_b_file">File</string>
     <string name="ux_b_folder">Folder</string>
     <string name="ux_b_session">Conversation</string>
@@ -13,13 +13,13 @@
     <string name="ux_b_remove_reference">Remove reference %1$s</string>
     <string name="ux_b_paused">Paused while editing</string>
     <string name="ux_b_held">Waiting until you answer</string>
-    <string name="ux_b_continued">Work continued; you can still answer</string>
+    <string name="ux_b_continued">Work continued. You can still answer.</string>
     <string name="ux_b_countdown_description">Answer countdown running</string>
     <string name="ux_b_view_questions">View questions</string>
     <string name="ux_b_view_answers">View answers</string>
     <string name="ux_b_skipped">Skipped</string>
     <string name="ux_b_answer">Answer</string>
-    <string name="ux_b_automation_unavailable">This host does not support Automation.</string>
+    <string name="ux_b_automation_unavailable">This harness doesn\'t support automations.</string>
     <plurals name="ux_b_countdown_seconds">
         <item quantity="one">Continuing in %1$s second</item>
         <item quantity="other">Continuing in %1$s seconds</item>

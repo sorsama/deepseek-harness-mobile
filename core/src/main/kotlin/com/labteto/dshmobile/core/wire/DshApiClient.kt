@@ -23,6 +23,7 @@ import com.labteto.dshmobile.core.wire.dto.PluginInventorySnapshot
 import com.labteto.dshmobile.core.wire.dto.REMOTE_EVENT_RESULT_ENDPOINT
 import com.labteto.dshmobile.core.wire.dto.RemoteEventOutcome
 import com.labteto.dshmobile.core.wire.dto.RemoteEventResult
+import com.labteto.dshmobile.core.wire.dto.LegacySessionAttachmentRequest
 import com.labteto.dshmobile.core.wire.dto.SessionAttachmentRequest
 import com.labteto.dshmobile.core.wire.dto.SessionAttachmentValue
 import com.labteto.dshmobile.core.wire.dto.SessionCancelRequest
@@ -357,6 +358,15 @@ class DshApiClient(
 
     /** `session/attachment` — reads one durable image after session-log reference proof. */
     suspend fun sessionAttachment(request: SessionAttachmentRequest): RpcResult<SessionAttachmentValue> =
+        callRequest("session/attachment", request)
+
+    /**
+     * `session/attachment` in the pre-0.2.2 shape: the site takes only the attachment id.
+     *
+     * Used as a fallback when a host rejects the reference-shaped request as invalid input, so an
+     * app that has been updated ahead of its harness still renders images on the older wire.
+     */
+    suspend fun sessionAttachmentLegacy(request: LegacySessionAttachmentRequest): RpcResult<SessionAttachmentValue> =
         callRequest("session/attachment", request)
 
     /** `session/updateQueue` — edits, removes, or strictly steers one pending queued occurrence. */

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_files_search_files">搜索文件</string>
+    <string name="ink_files_filter_files">筛选此文件夹</string>
+    <string name="ink_files_no_matches">没有匹配的文件</string>
+    <string name="ink_files_all_files">所有文件</string>
+    <string name="ink_files_copy_contents">复制内容</string>
+    <string name="ink_files_rendered">渲染视图</string>
+    <string name="ink_files_source">源代码</string>
+    <string name="ink_files_output">输出</string>
+    <string name="ink_files_key_tab">Tab</string>
+    <string name="ink_files_key_esc">Esc</string>
+    <string name="ink_files_key_up">上箭头</string>
+    <string name="ink_files_key_down">下箭头</string>
+    <string name="ink_files_key_ctrl_c">Ctrl C</string>
+    <string name="ink_files_clear_terminal">清空终端</string>
+    <string name="ink_files_send_enter">回车</string>
+    <string name="ink_files_automations_intro">harness 在你的电脑上按计划运行的任务，手机不在身边也照常执行。</string>
+    <string name="ink_files_new_automation">新建自动化</string>
+    <string name="ink_files_plugins_intro">插件安装在 harness 电脑上。更改对新会话生效。</string>
+    <string name="ink_files_archived_search">搜索已归档会话</string>
+    <string name="ink_files_this_week">本周</string>
+    <string name="ink_files_this_month">本月</string>
+    <string name="ink_files_changed_session">本会话中的更改</string>
+</resources>

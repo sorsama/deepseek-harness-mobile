@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- File viewer: header and actions -->
+    <string name="preview_open_full">Visualização completa</string>
+    <string name="preview_save_copy">Salvar uma cópia</string>
+    <string name="preview_saved">Salvo no seu dispositivo</string>
+    <string name="preview_save_failed">Não foi possível salvar o arquivo</string>
+    <string name="preview_copy_path">Copiar caminho</string>
+    <string name="preview_refresh">Atualizar</string>
+    <string name="preview_more_actions">Mais ações</string>
+    <string name="preview_kind_text">Texto</string>
+    <string name="preview_kind_binary">Binário</string>
+    <!-- View modes -->
+    <string name="preview_mode_pretty">Formatado</string>
+    <string name="preview_mode_tree">Árvore</string>
+    <string name="preview_mode_raw">Sem formatação</string>
+    <string name="preview_mode_table">Tabela</string>
+    <!-- States -->
+    <string name="preview_too_large_title">Grande demais para visualizar</string>
+    <string name="preview_too_large_body">Este arquivo tem %1$s. Você ainda pode salvar uma cópia no seu dispositivo.</string>
+    <string name="preview_binary_title">Não dá para mostrar este arquivo</string>
+    <string name="preview_binary_body">É um arquivo binário. Estes são os primeiros bytes. Salve uma cópia para abrir em outro app.</string>
+    <string name="preview_hex_note">Primeiros %1$s de %2$s</string>
+    <string name="preview_empty_file">Este arquivo está vazio</string>
+    <string name="preview_cant_show_title">Arquivo não exibido</string>
+    <string name="preview_image_unsupported">Este telefone não consegue mostrar esse tipo de imagem. Salve uma cópia para abrir em outro app.</string>
+    <string name="preview_media_unsupported">Este telefone não consegue reproduzir este arquivo. Salve uma cópia para abrir em outro app.</string>
+    <string name="preview_text_truncated">Mostrando os primeiros %1$s. Salve uma cópia para ter o arquivo inteiro.</string>
+    <string name="preview_json_invalid">Este JSON não é válido</string>
+    <string name="preview_json_at">Linha %1$d, coluna %2$d</string>
+    <string name="preview_json_at_line">Linha %1$d</string>
+    <string name="preview_notebook_invalid">Isto não parece um notebook</string>
+    <string name="preview_output_hidden">Esta saída não pode ser mostrada aqui</string>
+    <string name="preview_table_truncated">Mostrando %1$d de %2$d linhas</string>
+    <string name="preview_table_summary">Linhas: %1$d · Colunas: %2$d</string>
+    <string name="preview_table_partial">Linhas carregadas até agora: %1$d</string>
+    <!-- Text viewer -->
+    <string name="preview_wrap">Quebrar linhas</string>
+    <string name="preview_line_numbers">Números de linha</string>
+    <string name="preview_find">Buscar no arquivo</string>
+    <string name="preview_find_placeholder">Buscar</string>
+    <string name="preview_find_none">Nada encontrado</string>
+    <string name="preview_find_next">Próxima ocorrência</string>
+    <string name="preview_find_previous">Ocorrência anterior</string>
+    <string name="preview_find_partial">A busca vale só para a parte já carregada</string>
+    <string name="preview_expand">Expandir</string>
+    <string name="preview_collapse">Recolher</string>
+    <string name="preview_json_more">Mais linhas não exibidas: %1$s</string>
+    <!-- Image, PDF and media viewers -->
+    <string name="preview_zoom_in">Aumentar o zoom</string>
+    <string name="preview_zoom_out">Diminuir o zoom</string>
+    <string name="preview_fit">Ajustar à tela</string>
+    <string name="preview_fill">Preencher a tela</string>
+    <string name="preview_prev_page">Página anterior</string>
+    <string name="preview_next_page">Próxima página</string>
+    <string name="preview_pdf_pages">Páginas: %1$d</string>
+    <string name="preview_play">Reproduzir</string>
+    <string name="preview_pause">Pausar</string>
+    <string name="preview_seek">Posição da reprodução</string>
+    <!-- Archives and fonts -->
+    <string name="preview_archive_summary">Itens: %1$d</string>
+    <string name="preview_archive_truncated">Mostrando os primeiros %1$d itens</string>
+    <string name="preview_archive_failed">Não foi possível ler este arquivo compactado</string>
+    <string name="preview_font_failed">Não foi possível carregar esta fonte</string>
+</resources>

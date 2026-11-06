@@ -11,6 +11,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,12 +24,18 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import com.labteto.dshmobile.ui.components.DsSegment
 import com.labteto.dshmobile.ui.components.DsSegmented
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,14 +45,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,6 +62,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -75,6 +83,7 @@ import com.labteto.dshmobile.ui.screens.connect.LoopbackStatus
 import com.labteto.dshmobile.ui.screens.connect.harnessFailureCommand
 import com.labteto.dshmobile.ui.screens.connect.harnessFailureMessage
 import com.labteto.dshmobile.ui.screens.connect.loopbackStatusText
+import com.labteto.dshmobile.ui.screens.main.ConfirmDialog
 import com.labteto.dshmobile.ui.components.DisclosureRow
 import com.labteto.dshmobile.ui.components.DsBottomSheet
 import com.labteto.dshmobile.ui.components.DsButton
@@ -82,18 +91,33 @@ import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsDialog
 import com.labteto.dshmobile.ui.components.DsIconButton
 import com.labteto.dshmobile.ui.components.DsMenu
+import com.labteto.dshmobile.ui.components.DsSearchField
 import com.labteto.dshmobile.ui.components.DsToastHost
+import com.labteto.dshmobile.ui.components.MascotMark
+import com.labteto.dshmobile.ui.components.MascotState
 import com.labteto.dshmobile.ui.components.MenuItem
 import com.labteto.dshmobile.ui.components.SectionHeader
 import com.labteto.dshmobile.ui.components.StateDot
 import com.labteto.dshmobile.ui.components.StateDotState
 import com.labteto.dshmobile.ui.components.ToggleRow
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.theme.AccentPalette
+import com.labteto.dshmobile.ui.theme.CUSTOM_ACCENT_KEY
 import com.labteto.dshmobile.ui.theme.DsShapes
+import com.labteto.dshmobile.ui.theme.DsSizes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import com.labteto.dshmobile.ui.theme.FontSizeOption
+import com.labteto.dshmobile.ui.theme.ThemeCustomization
+import com.labteto.dshmobile.ui.theme.ThemePreference
+import com.labteto.dshmobile.ui.theme.deriveAccentRamp
+import com.labteto.dshmobile.ui.theme.isDsDark
+import com.labteto.dshmobile.ui.theme.parseAccentHex
+import com.labteto.dshmobile.ui.theme.resolveCustomAccent
+import com.labteto.dshmobile.ui.theme.toAccentHex
 import java.util.Locale
 
 /**
@@ -123,6 +147,34 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
 
     val hostsCleared = stringResource(R.string.settings_forget_hosts_done)
     val sessionsCleared = stringResource(R.string.settings_clear_last_sessions_done)
+    val rememberedHosts by viewModel.rememberedHostCount.collectAsStateWithLifecycle()
+    var confirmForget by remember { mutableStateOf(false) }
+    var confirmClearSessions by remember { mutableStateOf(false) }
+
+    if (confirmForget) {
+        ConfirmDialog(
+            title = stringResource(R.string.settings_forget_hosts_confirm_title),
+            body = pluralStringResource(R.plurals.settings_forget_hosts_confirm_body, rememberedHosts, rememberedHosts),
+            confirmLabel = stringResource(R.string.settings_forget_hosts_confirm_action),
+            onDismiss = { confirmForget = false },
+            onConfirm = {
+                confirmForget = false
+                viewModel.forgetHosts { toast.second(hostsCleared) }
+            },
+        )
+    }
+    if (confirmClearSessions) {
+        ConfirmDialog(
+            title = stringResource(R.string.settings_clear_last_sessions_confirm_title),
+            body = stringResource(R.string.settings_clear_last_sessions_confirm_body),
+            confirmLabel = stringResource(R.string.settings_clear_last_sessions_confirm_action),
+            onDismiss = { confirmClearSessions = false },
+            onConfirm = {
+                confirmClearSessions = false
+                viewModel.clearLastSessions { toast.second(sessionsCleared) }
+            },
+        )
+    }
 
     // Fetched on open rather than kept live: the inventory only changes when the harness is
     // restarted with a different composition, and nothing pushes that over the wire.
@@ -142,10 +194,12 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         icon = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.common_back),
                         onClick = onClose,
+                        tint = colors.labelPrimary,
                     )
+                    Spacer(Modifier.width(DsSpacing.small))
                     Text(
                         stringResource(R.string.settings_title),
-                        style = DsType.large20,
+                        style = DsType.display24,
                         color = colors.labelPrimary,
                     )
                 }
@@ -173,8 +227,12 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
 
                 SettingsCard(stringResource(R.string.settings_general)) {
                     LanguageRow(settings) { tag -> viewModel.set { it.copy(localeOverride = tag) } }
-                    AppearanceRow(settings) { mode -> viewModel.set { it.copy(themePreference = mode) } }
                 }
+
+                // The customizable theme: scheme, accent, OLED canvas, text size and touch feedback.
+                // Its own card and its own heading because it is the one group that restyles
+                // everything else on screen as you use it.
+                AppearanceCard(settings) { transform -> viewModel.set(transform) }
 
                 SettingsCard(stringResource(R.string.settings_chat)) {
                     ToggleRow(
@@ -302,15 +360,21 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                 } else plugins?.let { PluginsCard(it) { pluginsOpen = true } }
 
                 SettingsCard(stringResource(R.string.settings_data)) {
+                    // Both ask first. Forgetting the harnesses also drops every relay credential, so
+                    // each relay needs a fresh QR pairing, and neither can be taken back.
                     DsButton(
                         text = stringResource(R.string.settings_forget_hosts),
-                        onClick = { viewModel.forgetHosts { toast.second(hostsCleared) } },
-                        variant = DsButtonVariant.Outline,
+                        onClick = {
+                            // Nothing remembered means nothing to lose, so no question to ask.
+                            if (rememberedHosts > 0) confirmForget = true
+                            else viewModel.forgetHosts { toast.second(hostsCleared) }
+                        },
+                        variant = DsButtonVariant.Danger,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     DsButton(
                         text = stringResource(R.string.settings_clear_last_sessions),
-                        onClick = { viewModel.clearLastSessions { toast.second(sessionsCleared) } },
+                        onClick = { confirmClearSessions = true },
                         variant = DsButtonVariant.Ghost,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -421,12 +485,14 @@ private fun SettingsCard(title: String, content: @Composable () -> Unit) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth().animateContentSize()) {
         SectionHeader(title)
+        Spacer(Modifier.height(DsSpacing.small))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(DsShapes.block)
                 .background(colors.bgLayer1)
-                .padding(horizontal = DsSpacing.medium, vertical = DsSpacing.small),
+                .border(1.dp, colors.borderL2, DsShapes.block)
+                .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small),
             verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
         ) {
             content()
@@ -518,20 +584,7 @@ internal fun PluginsSheet(inventory: PluginInventorySnapshot, onDismiss: () -> U
         subtitle = inventory.entries.size.toString(),
         onDismiss = onDismiss,
     ) {
-        TextField(
-            value = filter,
-            onValueChange = { filter = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(stringResource(R.string.plugins_search_hint), style = DsType.std14) },
-            singleLine = true,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = colors.bgLayer2,
-                unfocusedContainerColor = colors.bgLayer2,
-                focusedIndicatorColor = colors.accent,
-                unfocusedIndicatorColor = colors.borderL2,
-                cursorColor = colors.accent,
-            ),
-        )
+        DsSearchField(filter, { filter = it }, stringResource(R.string.plugins_search_hint))
         if (matching.isEmpty()) {
             Text(
                 stringResource(R.string.plugins_empty),
@@ -773,15 +826,18 @@ private fun LanguageRow(settings: AppSettings, onSelect: (String?) -> Unit) {
             modifier = Modifier.weight(1f),
         )
         DsMenu(
+            // A select is a control, not a status pill: the 12dp corner every other input and button has.
+            anchorShape = DsShapes.control,
             anchor = {
                 Row(
                     modifier = Modifier
-                        .clip(DsShapes.pillFull)
-                        .background(colors.hoverSolid)
-                        .border(1.dp, colors.borderL2, DsShapes.pillFull)
-                        .padding(horizontal = DsSpacing.compact, vertical = DsSpacing.tiny),
+                        .height(DsSizes.buttonCompact)
+                        .clip(DsShapes.control)
+                        .background(colors.bgLayer2)
+                        .border(1.dp, colors.borderL2, DsShapes.control)
+                        .padding(horizontal = DsSpacing.medium),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
+                    horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
                 ) {
                     Text(
                         labels[current].orEmpty(),
@@ -807,49 +863,298 @@ private fun LanguageRow(settings: AppSettings, onSelect: (String?) -> Unit) {
     }
 }
 
+/**
+ * The customizable theme card: scheme, accent, OLED canvas, text size and touch feedback.
+ *
+ * Everything here writes through [SettingsViewModel.set] like the rest of the page, so a change is
+ * persisted and re-themes the whole app in the same frame. The controls are previews as well as
+ * pickers — the segmented thumb, the accent swatch and the sample text are already rendered in the
+ * scheme being chosen.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AppearanceRow(settings: AppSettings, onSelect: (String) -> Unit) {
+private fun AppearanceCard(
+    settings: AppSettings,
+    onSet: ((AppSettings) -> AppSettings) -> Unit,
+) {
     val colors = DsTheme.colors
-    Column(modifier = Modifier.padding(vertical = DsSpacing.small)) {
+    val haptics = rememberDsHaptics()
+    val preference = ThemePreference.of(settings.themePreference)
+    val accent = AccentPalette.of(settings.themeAccent)
+    // The colour in force, if the accent is the user's own. The stored colour on its own is not
+    // that: it is kept behind a preset too, so the Custom swatch can keep showing it.
+    val customInForce = resolveCustomAccent(settings.themeAccent, settings.themeCustomAccent)
+    val storedCustom = parseAccentHex(settings.themeCustomAccent)
+    val fontSize = FontSizeOption.of(settings.fontSize)
+    val dark = isDsDark(
+        ThemeCustomization(
+            preference = preference,
+            accent = accent,
+            customAccent = customInForce,
+            amoled = settings.amoledBlack,
+            fontSize = fontSize,
+            haptics = settings.hapticsEnabled,
+        ),
+    )
+    var pickerOpen by remember { mutableStateOf(false) }
+    SettingsCard(stringResource(R.string.settings_appearance)) {
+        // Scheme.
+        DsSegmented(
+            segments = listOf(
+                DsSegment("light", stringResource(R.string.settings_appearance_light)),
+                DsSegment("dark", stringResource(R.string.settings_appearance_dark)),
+                DsSegment("system", stringResource(R.string.settings_appearance_system)),
+            ),
+            selectedKey = preference.name.lowercase(),
+            onSelect = { mode ->
+                onSet { it.copy(themePreference = mode.lowercase()) }
+            },
+            stretch = true,
+            role = Role.Tab,
+            modifier = Modifier.fillMaxWidth(),
+        )
         Text(
-            stringResource(R.string.settings_appearance),
-            style = DsType.std14,
-            color = colors.labelSecondary,
+            stringResource(R.string.appearance_customize_hint),
+            style = DsType.small13,
+            color = colors.labelTertiary,
+            modifier = Modifier.padding(top = DsSpacing.tiny, bottom = DsSpacing.medium),
+        )
+
+        // Accent.
+        Text(stringResource(R.string.appearance_accent), style = DsType.label12, color = colors.labelTertiary)
+        Spacer(Modifier.height(DsSpacing.small))
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(DsSpacing.medium),
+            verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+        ) {
+            AccentPalette.entries.forEach { palette ->
+                AccentSwatch(
+                    palette = palette,
+                    selected = customInForce == null && palette == accent,
+                    dark = dark,
+                    onClick = {
+                        haptics.selection()
+                        onSet { it.copy(themeAccent = palette.key) }
+                    },
+                )
+            }
+            CustomAccentSwatch(
+                color = storedCustom,
+                selected = customInForce != null,
+                dark = dark,
+                onClick = {
+                    haptics.tap()
+                    pickerOpen = true
+                },
+            )
+        }
+        Spacer(Modifier.height(DsSpacing.small))
+
+        // OLED canvas. Disabled in the light scheme, where it would change nothing and read as a
+        // broken switch.
+        ToggleRow(
+            label = stringResource(R.string.appearance_amoled),
+            checked = settings.amoledBlack,
+            hint = stringResource(R.string.appearance_amoled_hint),
+            enabled = dark,
+            onChange = { onSet { it.copy(amoledBlack = !it.amoledBlack) } },
+        )
+
+        // Text size, applied as a multiplier on top of the system font scale.
+        Text(
+            stringResource(R.string.appearance_text_size),
+            style = DsType.label12,
+            color = colors.labelTertiary,
+            modifier = Modifier.padding(top = DsSpacing.small),
         )
         Spacer(Modifier.height(DsSpacing.small))
-        Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
-            AppearanceChip(
-                stringResource(R.string.settings_appearance_light),
-                settings.themePreference == "light",
-            ) { onSelect("light") }
-            AppearanceChip(
-                stringResource(R.string.settings_appearance_dark),
-                settings.themePreference == "dark",
-            ) { onSelect("dark") }
-            AppearanceChip(
-                stringResource(R.string.settings_appearance_system),
-                settings.themePreference == "system",
-            ) { onSelect("system") }
+        DsSegmented(
+            segments = listOf(
+                DsSegment(FontSizeOption.Compact.key, stringResource(R.string.appearance_text_size_compact)),
+                DsSegment(FontSizeOption.Default.key, stringResource(R.string.appearance_text_size_default)),
+                DsSegment(FontSizeOption.Large.key, stringResource(R.string.appearance_text_size_large)),
+                DsSegment(FontSizeOption.Larger.key, stringResource(R.string.appearance_text_size_larger)),
+            ),
+            selectedKey = fontSize.key,
+            onSelect = { key -> onSet { it.copy(fontSize = key) } },
+            stretch = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        ToggleRow(
+            label = stringResource(R.string.appearance_haptics),
+            checked = settings.hapticsEnabled,
+            hint = stringResource(R.string.appearance_haptics_hint),
+            onChange = {
+                haptics.toggle(!settings.hapticsEnabled)
+                onSet { it.copy(hapticsEnabled = !it.hapticsEnabled) }
+            },
+        )
+
+        // Reset to the ink defaults, keeping the light/dark choice: resetting appearance should not
+        // also undo the scheme the user is comfortable in.
+        Text(
+            stringResource(R.string.appearance_reset),
+            style = DsType.small13Strong,
+            color = colors.accent,
+            modifier = Modifier
+                .padding(top = DsSpacing.small)
+                .clip(DsShapes.pillFull)
+                .clickable {
+                    haptics.tap()
+                    onSet {
+                        it.copy(
+                            themeAccent = AccentPalette.Ink.key,
+                            // The picked colour goes too: "reset" that left a custom colour behind
+                            // would reset to Ink and still show a swatch for something not in use.
+                            themeCustomAccent = null,
+                            amoledBlack = false,
+                            fontSize = FontSizeOption.Default.key,
+                            hapticsEnabled = true,
+                        )
+                    }
+                }
+                .padding(horizontal = 4.dp, vertical = 8.dp),
+        )
+    }
+    if (pickerOpen) {
+        AccentPickerSheet(
+            // Where the reader already is: the stored pick if there is one, else the accent that
+            // is painting the app right now.
+            initial = storedCustom ?: colors.accent,
+            onApply = { picked ->
+                onSet { it.copy(themeAccent = CUSTOM_ACCENT_KEY, themeCustomAccent = picked.toAccentHex()) }
+            },
+            onDismiss = { pickerOpen = false },
+        )
+    }
+}
+
+/** One accent choice: the colour disc plus its name, checked when active. */
+@Composable
+private fun AccentSwatch(
+    palette: AccentPalette,
+    selected: Boolean,
+    dark: Boolean,
+    onClick: () -> Unit,
+) {
+    val fill = if (dark) palette.dark else palette.light
+    val onFill = if (dark) palette.onDark else palette.onLight
+    SwatchFrame(
+        label = stringResource(accentLabelRes(palette)),
+        selected = selected,
+        onClick = onClick,
+    ) {
+        Box(Modifier.fillMaxSize().background(fill), contentAlignment = Alignment.Center) {
+            if (selected) {
+                Icon(
+                    Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = onFill,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
         }
     }
 }
 
+/**
+ * The swatch that opens the picker: the user's colour once one is set (drawn the way the app will
+ * paint it in the active scheme, like the presets beside it), a colour wheel with a plus until then.
+ */
 @Composable
-private fun AppearanceChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    val colors = DsTheme.colors
-    Box(
-        modifier = Modifier
-            .clip(DsShapes.cube)
-            .background(if (selected) colors.accentTertiary else colors.bgModulePlatform)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = DsSpacing.small),
+private fun CustomAccentSwatch(
+    color: Color?,
+    selected: Boolean,
+    dark: Boolean,
+    onClick: () -> Unit,
+) {
+    val ramp = remember(color) { color?.let(::deriveAccentRamp) }
+    val label = stringResource(R.string.appearance_accent_custom)
+    val description = color?.let { stringResource(R.string.appearance_accent_custom_value, it.toAccentHex()) } ?: label
+    val wheel = remember { Brush.sweepGradient((0..6).map { Color.hsv(it * 60f, 0.75f, 1f) }) }
+    SwatchFrame(
+        label = label,
+        description = description,
+        selected = selected,
+        onClick = onClick,
     ) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .then(if (ramp != null) Modifier.background(ramp.fill(dark)) else Modifier.background(wheel)),
+            contentAlignment = Alignment.Center,
+        ) {
+            when {
+                selected && ramp != null -> Icon(
+                    Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = ramp.on(dark),
+                    modifier = Modifier.size(18.dp),
+                )
+                ramp == null -> Icon(
+                    Icons.Filled.Add,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Shared chrome of an accent swatch: a 36dp disc over its name, one selectable radio target.
+ *
+ * The whole column is the target — at least 48dp each way, so a swatch is as easy to hit as any
+ * other control — and it speaks as one radio button: the name (or [description]), and whether it
+ * is the one in force.
+ */
+@Composable
+private fun SwatchFrame(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    description: String = label,
+    disc: @Composable () -> Unit,
+) {
+    val colors = DsTheme.colors
+    Column(
+        modifier = modifier
+            .heightIn(min = DsSpacing.touchTarget)
+            .widthIn(min = DsSpacing.touchTarget)
+            .clip(DsShapes.row)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .semantics { contentDescription = description }
+            .padding(vertical = DsSpacing.tiny),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(DsShapes.pillFull)
+                .border(if (selected) 2.dp else 1.dp, if (selected) colors.labelPrimary else colors.borderL2, DsShapes.pillFull),
+        ) { disc() }
+        Spacer(Modifier.height(4.dp))
         Text(
             label,
-            style = DsType.small13,
-            color = if (selected) colors.accent else colors.labelSecondary,
+            style = DsType.caption11,
+            color = if (selected) colors.labelPrimary else colors.labelTertiary,
+            maxLines = 1,
         )
     }
+}
+
+private fun accentLabelRes(palette: AccentPalette): Int = when (palette) {
+    AccentPalette.Ink -> R.string.appearance_accent_ink
+    AccentPalette.Violet -> R.string.appearance_accent_violet
+    AccentPalette.Teal -> R.string.appearance_accent_teal
+    AccentPalette.Green -> R.string.appearance_accent_green
+    AccentPalette.Amber -> R.string.appearance_accent_amber
+    AccentPalette.Rose -> R.string.appearance_accent_rose
+    AccentPalette.Mono -> R.string.appearance_accent_mono
 }
 
 private const val PAGE_SETTINGS = "settings"

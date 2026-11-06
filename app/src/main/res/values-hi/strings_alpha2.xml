@@ -1,6 +1,6 @@
 <resources>
     <string name="alpha2_translate">%1$s से अनुवाद करें</string>
     <string name="alpha2_original">मूल दिखाएँ</string>
-    <string name="alpha2_external">बाहरी रन (कोई स्थानीय प्रतिलेख नहीं)</string>
-    <string name="alpha2_migration">माइग्रेशन पूरा करने के लिए मूल सत्र खोलें, फिर दोबारा कोशिश करें।</string>
+    <string name="alpha2_external">बाहर चला रन (लोकल ट्रांसक्रिप्ट नहीं है)</string>
+    <string name="alpha2_migration">माइग्रेशन पूरा करने के लिए पहले वाला सेशन खोलें, फिर दोबारा कोशिश करें।</string>
 </resources>

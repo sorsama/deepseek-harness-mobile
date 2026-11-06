@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_files_search_files">فائلیں تلاش کریں</string>
+    <string name="ink_files_filter_files">اس فولڈر کو فلٹر کریں</string>
+    <string name="ink_files_no_matches">کوئی مماثل فائل نہیں</string>
+    <string name="ink_files_all_files">تمام فائلیں</string>
+    <string name="ink_files_copy_contents">مواد کاپی کریں</string>
+    <string name="ink_files_rendered">رینڈر شدہ</string>
+    <string name="ink_files_source">سورس</string>
+    <string name="ink_files_output">آؤٹ پٹ</string>
+    <string name="ink_files_key_tab">Tab</string>
+    <string name="ink_files_key_esc">Esc</string>
+    <string name="ink_files_key_up">اوپر تیر</string>
+    <string name="ink_files_key_down">نیچے تیر</string>
+    <string name="ink_files_key_ctrl_c">Ctrl C</string>
+    <string name="ink_files_clear_terminal">ٹرمینل صاف کریں</string>
+    <string name="ink_files_send_enter">بھیجیں</string>
+    <string name="ink_files_automations_intro">شیڈول کیے ہوئے کام جو harness آپ کے کمپیوٹر پر چلاتا ہے، فون دور ہو تب بھی۔</string>
+    <string name="ink_files_new_automation">نیا آٹومیشن</string>
+    <string name="ink_files_plugins_intro">پلگ ان harness والے کمپیوٹر پر انسٹال ہوتے ہیں۔ تبدیلیاں نئے سیشنز پر لاگو ہوتی ہیں۔</string>
+    <string name="ink_files_archived_search">آرکائیو شدہ سیشن تلاش کریں</string>
+    <string name="ink_files_this_week">اس ہفتے</string>
+    <string name="ink_files_this_month">اس مہینے</string>
+    <string name="ink_files_changed_session">اس سیشن میں تبدیل شدہ</string>
+</resources>

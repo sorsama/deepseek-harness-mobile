@@ -1,5 +1,9 @@
 package com.labteto.dshmobile.ui.components
 
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -102,7 +106,7 @@ fun isFolderReference(path: String): Boolean {
  * `code` chips and [links](https://example.com). Tables render as plain text.
  */
 @Composable
-fun MarkdownText(text: String, modifier: Modifier = Modifier) {
+fun MarkdownText(text: String, modifier: Modifier = Modifier, streamingCaret: Boolean = false) {
     val colors = DsTheme.colors
     // The parser lives in :core (pure JVM) so it is unit-testable and survives a renderer rewrite.
     // List items arrive one per block, so runs of them are regrouped here: the renderer needs the
@@ -139,7 +143,40 @@ fun MarkdownText(text: String, modifier: Modifier = Modifier) {
                 }
             }
         }
+        // The design's live-write signal: a small accent block that blinks while a reply is being
+        // written and stops the moment it settles. Kept out of the text itself so it never leaks
+        // into copy/selection.
+        if (streamingCaret) StreamingCaret()
     }
+}
+
+/**
+ * The streaming caret: an accent block that steps between visible and hidden once a second.
+ *
+ * Discrete steps, not a fade — a caret that eases in and out reads as a decorative pulse, while a
+ * hard blink reads as a cursor. It is never shown for a finished reply.
+ */
+@Composable
+fun StreamingCaret(modifier: Modifier = Modifier) {
+    val colors = DsTheme.colors
+    val transition = rememberInfiniteTransition(label = "streamingCaret")
+    val alpha by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse,
+        ),
+        label = "caretAlpha",
+    )
+    Box(
+        modifier
+            .padding(top = 2.dp)
+            .width(9.dp)
+            .height(17.dp)
+            .clip(RoundedCornerShape(2.dp))
+            .background(colors.accent.copy(alpha = alpha)),
+    )
 }
 
 
@@ -382,11 +419,11 @@ private fun FilePill(path: String, label: String, style: TextStyle) {
     val openFolder = LocalFolderOpener.current
     Row(
         Modifier
-            .clip(DsShapes.pill)
-            .background(colors.bgModulePlatform)
-            .border(1.dp, colors.borderL3, DsShapes.pill)
+            .clip(DsShapes.chip)
+            .background(colors.inlineCode)
+            .border(1.dp, colors.borderL1, DsShapes.chip)
             .clickable(role = Role.Button) { openWorkspaceReference(path, openFile, openFolder) }
-            .padding(horizontal = 8.dp, vertical = 2.dp),
+            .padding(horizontal = 8.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -602,45 +639,43 @@ private fun CodeBlock(lang: String?, code: String, modifier: Modifier = Modifier
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(DsShapes.block)
+            .clip(DsShapes.code)
             .background(colors.codeBlockBg)
-            .border(1.dp, colors.borderL1, DsShapes.block),
+            .border(1.dp, colors.borderL1, DsShapes.code),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(colors.codeBlockBanner)
-                .padding(start = 12.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+                .padding(start = 14.dp, end = 6.dp, top = 2.dp, bottom = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 lang ?: stringResource(R.string.tool_copy_code),
-                style = DsType.caption11Strong.copy(fontFamily = DsType.codeFont, color = colors.labelCaption),
-                color = colors.labelCaption,
+                style = DsType.mono12,
+                color = colors.labelTertiary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            Icon(
-                Icons.Filled.ContentCopy,
+            DsIconButton(
+                icon = Icons.Filled.ContentCopy,
                 contentDescription = stringResource(R.string.tool_copy_code),
+                onClick = { clipboard.setText(AnnotatedString(code)) },
+                iconSize = 15.dp,
                 tint = colors.labelTertiary,
-                modifier = Modifier
-                    .size(16.dp)
-                    .clip(DsShapes.chip)
-                    .clickable { clipboard.setText(AnnotatedString(code)) }
-                    .padding(2.dp),
             )
         }
         // Highlighting is resolved in the pure-JVM core lexer; this layer only maps its token
         // kinds to theme colors, so a merge that rewrites the renderer cannot break the tokenizer
-        // and a theme change cannot break the lexer.
-        val highlighted = remember(code, lang) { codeAnnotated(code, lang) }
+        // and a theme change cannot break the lexer. The palette is scheme-aware now: the old fixed
+        // light-theme tints were unreadable on the Ink canvas.
+        val highlighted = remember(code, lang, colors) { codeAnnotated(code, lang, colors) }
         Text(
             highlighted,
             style = DsType.mdCode,
             color = colors.labelPrimary,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
         )
     }
 }
@@ -653,21 +688,21 @@ private fun CodeBlock(lang: String?, code: String, modifier: Modifier = Modifier
  * as ordinary code with no per-line layout of its own, and the lexer guarantees the concatenation
  * reproduces the input exactly.
  */
-private fun codeAnnotated(code: String, lang: String?): AnnotatedString {
+private fun codeAnnotated(code: String, lang: String?, tint: com.labteto.dshmobile.ui.theme.DsColors): AnnotatedString {
     if (!isHighlighted(lang)) return AnnotatedString(code)
     val builder = AnnotatedString.Builder()
     highlightCode(code, lang).forEachIndexed { index, line ->
         if (index > 0) builder.append('\n')
         line.forEach { span ->
-            // Syntax tints are a fixed palette, not theme roles: code reads the same in light and
-            // dark, the way it does on the web client.
+            // Syntax tints follow the scheme: the fixed light-theme palette the web client uses
+            // was unreadable on the Ink canvas, so each role has a dark ramp.
             val color = when (span.token) {
-                SyntaxToken.Comment -> Ds.SyntaxComment
-                SyntaxToken.String -> Ds.SyntaxString
-                SyntaxToken.Number -> Ds.SyntaxConstant
-                SyntaxToken.Keyword -> Ds.SyntaxKeyword
-                SyntaxToken.Function -> Ds.SyntaxFunction
-                SyntaxToken.Type -> Ds.SyntaxConstant
+                SyntaxToken.Comment -> tint.syntaxComment
+                SyntaxToken.String -> tint.syntaxString
+                SyntaxToken.Number -> tint.syntaxConstant
+                SyntaxToken.Keyword -> tint.syntaxKeyword
+                SyntaxToken.Function -> tint.syntaxFunction
+                SyntaxToken.Type -> tint.syntaxConstant
                 SyntaxToken.Plain -> null
             }
             if (color == null) builder.append(span.text)

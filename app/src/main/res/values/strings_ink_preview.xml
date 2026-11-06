@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- File viewer: header and actions -->
+    <string name="preview_open_full">Full preview</string>
+    <string name="preview_save_copy">Save a copy</string>
+    <string name="preview_saved">Saved to your device</string>
+    <string name="preview_save_failed">Couldn\'t save the file</string>
+    <string name="preview_copy_path">Copy path</string>
+    <string name="preview_refresh">Refresh</string>
+    <string name="preview_more_actions">More actions</string>
+    <string name="preview_kind_text">Text</string>
+    <string name="preview_kind_binary">Binary</string>
+    <!-- View modes -->
+    <string name="preview_mode_pretty">Pretty</string>
+    <string name="preview_mode_tree">Tree</string>
+    <string name="preview_mode_raw">Raw</string>
+    <string name="preview_mode_table">Table</string>
+    <!-- States -->
+    <string name="preview_too_large_title">Too large to preview</string>
+    <string name="preview_too_large_body">This file is %1$s. You can still save a copy to your device.</string>
+    <string name="preview_binary_title">We can\'t show this file</string>
+    <string name="preview_binary_body">This is a binary file. Here are its first bytes. Save a copy to open it in another app.</string>
+    <string name="preview_hex_note">First %1$s of %2$s</string>
+    <string name="preview_empty_file">This file is empty</string>
+    <string name="preview_cant_show_title">Can\'t show this file</string>
+    <string name="preview_image_unsupported">This phone can\'t show this kind of image. Save a copy to open it in another app.</string>
+    <string name="preview_media_unsupported">This phone can\'t play this file. Save a copy to open it in another app.</string>
+    <string name="preview_text_truncated">Showing the first %1$s. Save a copy to get the whole file.</string>
+    <string name="preview_json_invalid">This isn\'t valid JSON</string>
+    <string name="preview_json_at">Line %1$d, column %2$d</string>
+    <string name="preview_json_at_line">Line %1$d</string>
+    <string name="preview_notebook_invalid">This doesn\'t look like a notebook</string>
+    <string name="preview_output_hidden">This output can\'t be shown here</string>
+    <string name="preview_table_truncated">Showing %1$d of %2$d rows</string>
+    <string name="preview_table_summary">Rows: %1$d · Columns: %2$d</string>
+    <string name="preview_table_partial">Rows loaded so far: %1$d</string>
+    <!-- Text viewer -->
+    <string name="preview_wrap">Wrap lines</string>
+    <string name="preview_line_numbers">Line numbers</string>
+    <string name="preview_find">Find in file</string>
+    <string name="preview_find_placeholder">Find</string>
+    <string name="preview_find_none">No matches</string>
+    <string name="preview_find_next">Next match</string>
+    <string name="preview_find_previous">Previous match</string>
+    <string name="preview_find_partial">Only the part loaded so far is searched</string>
+    <string name="preview_expand">Expand</string>
+    <string name="preview_collapse">Collapse</string>
+    <string name="preview_json_more">More rows not shown: %1$s</string>
+    <!-- Image, PDF and media viewers -->
+    <string name="preview_zoom_in">Zoom in</string>
+    <string name="preview_zoom_out">Zoom out</string>
+    <string name="preview_fit">Fit to screen</string>
+    <string name="preview_fill">Fill screen</string>
+    <string name="preview_prev_page">Previous page</string>
+    <string name="preview_next_page">Next page</string>
+    <string name="preview_pdf_pages">Pages: %1$d</string>
+    <string name="preview_play">Play</string>
+    <string name="preview_pause">Pause</string>
+    <string name="preview_seek">Playback position</string>
+    <!-- Archives and fonts -->
+    <string name="preview_archive_summary">Items: %1$d</string>
+    <string name="preview_archive_truncated">Showing the first %1$d items</string>
+    <string name="preview_archive_failed">Couldn\'t read this archive</string>
+    <string name="preview_font_failed">Couldn\'t load this font</string>
+</resources>

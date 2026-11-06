@@ -144,6 +144,27 @@ data class AppSettings(
      */
     val connectMode: String = ConnectMode.LAN,
     val themePreference: String = "system", // light | dark | system
+
+    /**
+     * Which accent the customizable theme paints with. A key, not a colour: the accent has a dark
+     * and a light ramp (see `AccentPalette`), and storing the resolved ARGB would freeze one scheme's
+     * value into the other's. Unknown keys fall back to the Ink blue default.
+     */
+    val themeAccent: String = "ink",
+    /**
+     * The user's own accent colour as `#RRGGBB`, the colour that was *picked* — the dark and light
+     * ramps are derived from it at read time (see `deriveAccentRamp`), never stored. It applies
+     * only while [themeAccent] is `custom`, and is kept when a preset is chosen so the Custom
+     * swatch still shows it. Absent or unparseable means no custom colour; the theme then falls
+     * back to the preset named by [themeAccent], or Ink.
+     */
+    val themeCustomAccent: String? = null,
+    /** True-black canvas for OLED panels. Only consulted in the dark scheme. */
+    val amoledBlack: Boolean = false,
+    /** App-level text size multiplier key (`compact|default|large|larger`), on top of the system scale. */
+    val fontSize: String = "default",
+    /** Touch feedback for controls and decisions. */
+    val hapticsEnabled: Boolean = true,
     val localeOverride: String? = null, // null = system
     val knownPorts: List<Int> = listOf(3080),
     /**

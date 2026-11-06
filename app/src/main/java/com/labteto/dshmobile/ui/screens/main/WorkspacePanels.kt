@@ -1,65 +1,109 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.pdf.PdfRenderer
-import android.os.ParcelFileDescriptor
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import com.labteto.dshmobile.R
-import com.labteto.dshmobile.core.wire.RpcResult
-import com.labteto.dshmobile.core.wire.dto.*
-import com.labteto.dshmobile.data.SessionStore
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.labteto.dshmobile.R
+import com.labteto.dshmobile.core.wire.RpcResult
+import com.labteto.dshmobile.core.wire.dto.WorkspaceDirectoryEntry
+import com.labteto.dshmobile.core.wire.dto.WorkspaceDirectoryListing
+import com.labteto.dshmobile.data.SessionStore
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonSize
 import com.labteto.dshmobile.ui.components.DsButtonVariant
+import com.labteto.dshmobile.ui.components.DsCard
 import com.labteto.dshmobile.ui.components.DsIconButton
 import com.labteto.dshmobile.ui.components.DsPill
+import com.labteto.dshmobile.ui.components.DsSearchField
 import com.labteto.dshmobile.ui.components.DsSegment
 import com.labteto.dshmobile.ui.components.DsSegmented
 import com.labteto.dshmobile.ui.components.EmptyHero
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.clickableWithHold
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
+import com.labteto.dshmobile.ui.components.skeleton
+import com.labteto.dshmobile.ui.screens.main.preview.DocumentPreview
+import com.labteto.dshmobile.ui.screens.main.preview.formatBytes
+import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
-import com.labteto.dshmobile.ui.theme.DsType
-import androidx.compose.ui.unit.sp
-import com.labteto.dshmobile.ui.components.DsCard
-import com.labteto.dshmobile.ui.components.MarkdownText
 import com.labteto.dshmobile.ui.theme.DsTheme
-import kotlinx.coroutines.*
-import java.io.File
+import com.labteto.dshmobile.ui.theme.DsType
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 internal fun <T> RpcResult<T>.requireValue(): T = when (this) {
     is RpcResult.Ok -> value
     is RpcResult.Err -> throw IllegalStateException("${error.code}: ${error.message}")
 }
 
+/**
+ * The workspace, full screen: an Ink top bar (back, title, working directory, search) above the
+ * Files / Preview / Terminal tabs.
+ *
+ * The window is still a platform [Dialog] because the chat surface underneath is a separate
+ * composition with its own overlays; keeping it a dialog means every sheet and dialog the panels
+ * open still lands above the right layer. The content fades and rises in on mount so the panel
+ * arrives instead of snapping into place. Insets are consumed here, since the chat screen's own
+ * padding does not reach into the dialog window.
+ */
 @Composable
 internal fun WorkspacePanels(
     store: SessionStore,
@@ -71,27 +115,123 @@ internal fun WorkspacePanels(
     val colors = DsTheme.colors
     val sessions by store.sessions.collectAsStateWithLifecycle()
     val cwd = sessions.firstOrNull { it.sessionId == state.key.sessionId }?.cwd
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(Modifier.fillMaxSize(), color = colors.bgBase) {
-            Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-                Row(
-                    Modifier.fillMaxWidth().padding(horizontal = DsSpacing.small, vertical = DsSpacing.xsmall),
-                    verticalAlignment = Alignment.CenterVertically,
+    var searchOpen by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    var shown by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { shown = true }
+    // Search belongs to the Files tab: leaving it closes the search rather than carrying a hidden
+    // filter into the next visit, which would greet the reader with a list that looks truncated.
+    LaunchedEffect(state.section) {
+        if (state.section != 0 && searchOpen) {
+            searchOpen = false
+            query = ""
+        }
+    }
+    // Back — the system key and the top bar's arrow alike — closes an open search and forgets its
+    // query before it leaves the panel. Wired through the dialog's own `onDismissRequest` rather
+    // than a `BackHandler`: this panel is a separate window, the system sends it the back key, and a
+    // `BackHandler` composed inside it registers with the activity's dispatcher, which that key
+    // never reaches while the window is up.
+    val back = {
+        if (searchOpen) {
+            searchOpen = false
+            query = ""
+        } else {
+            onDismiss()
+        }
+    }
+    Dialog(
+        onDismissRequest = back,
+        // Edge to edge inside the dialog window as well: its own system-bar insets are otherwise
+        // never applied, which put the terminal key row (and the panel's bottom edge) behind the
+        // phone's gesture/navigation bar where it could not be seen or tapped.
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+    ) {
+        androidx.compose.material3.Surface(Modifier.fillMaxSize(), color = colors.bgBase) {
+            AnimatedVisibility(
+                visible = shown,
+                enter = fadeIn(tween(180, easing = DsAnimations.inkDecelerate)) +
+                    slideInVertically(tween(260, easing = DsAnimations.inkDecelerate)) { it / 28 },
+                exit = fadeOut(tween(120)),
+            ) {
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.safeDrawing),
                 ) {
-                    DsIconButton(
-                        icon = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.common_back),
-                        onClick = onDismiss,
+                    WorkspaceTopBar(
+                        title = stringResource(R.string.panel_workspace),
+                        subtitle = cwd,
+                        onBack = back,
+                        searchVisible = state.section == 0,
+                        searchOpen = searchOpen,
+                        onSearch = {
+                            searchOpen = !searchOpen
+                            if (!searchOpen) query = ""
+                        },
                     )
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.panel_workspace), style = DsType.large20, color = colors.labelPrimary)
-                        cwd?.let {
-                            Text(technicalDisplay(it), style = DsType.caption11, color = colors.labelCaption, softWrap = true)
-                        }
-                    }
+                    WorkspacePanelBody(
+                        store = store,
+                        state = state,
+                        modifier = Modifier.fillMaxSize(),
+                        onMention = onMention,
+                        searchOpen = searchOpen,
+                        query = query,
+                        onQuery = { query = it },
+                    )
                 }
-                WorkspacePanelBody(store, state, Modifier.fillMaxSize(), onMention)
             }
+        }
+    }
+}
+
+/** Back, title, working directory and the Files search trigger. */
+@Composable
+private fun WorkspaceTopBar(
+    title: String,
+    subtitle: String?,
+    onBack: () -> Unit,
+    searchVisible: Boolean,
+    searchOpen: Boolean,
+    onSearch: () -> Unit,
+) {
+    val colors = DsTheme.colors
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = DsSpacing.small, end = DsSpacing.small, top = DsSpacing.xsmall, bottom = DsSpacing.xsmall),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        DsIconButton(
+            icon = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = stringResource(R.string.common_back),
+            onClick = onBack,
+        )
+        Column(Modifier.weight(1f).padding(horizontal = DsSpacing.xsmall)) {
+            Text(
+                title,
+                style = DsType.large20,
+                color = colors.labelPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            subtitle?.let {
+                Text(
+                    technicalDisplay(it),
+                    style = DsType.mono12,
+                    color = colors.labelTertiary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        if (searchVisible) {
+            DsIconButton(
+                icon = if (searchOpen) Icons.Filled.Close else FeatherIcons.Search,
+                contentDescription = stringResource(if (searchOpen) R.string.common_close else R.string.ink_files_search_files),
+                onClick = onSearch,
+                tint = if (searchOpen) colors.accent else colors.labelSecondary,
+            )
         }
     }
 }
@@ -106,26 +246,48 @@ internal fun WorkspacePanelBody(
     state: PanelState,
     modifier: Modifier = Modifier,
     onMention: ((String, Boolean) -> Unit)? = null,
+    searchOpen: Boolean = false,
+    query: String = "",
+    onQuery: (String) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val key = state.key
+    val colors = DsTheme.colors
     var heldEntry by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     val activeDocument = state.previews.getOrNull(state.selectedPreview)?.path
+    // The chat already knows which files this session's turns touched; showing them in the
+    // workspace is presentation only, and only when the panel belongs to the live session.
+    val conversation by store.currentConversation.collectAsStateWithLifecycle()
+    val currentSessionId by store.currentSessionId.collectAsStateWithLifecycle()
+    val changedFiles = remember(conversation?.nodes, currentSessionId, key.sessionId) {
+        if (key.sessionId == currentSessionId) sessionChangedFiles(conversation?.nodes.orEmpty()).distinct() else emptyList()
+    }
     fun listDirectory(path: String) {
         if (state.busy) return
+        // `workspaceFiles/list` refuses an empty `path` and answers the root as "" (harness
+        // `workspacePathOf`: "Empty for the root"), so normalize before the request: a browse
+        // target that is empty or the host's root spelling is ".", never "".
+        val directory = workspacePath(path)
         state.busy = true; state.error = null
         scope.launch {
             try {
                 val api = store.apiForHost(key.host) ?: error(context.getString(R.string.common_offline))
-                when (val result = api.workspaceFileList(key.sessionId, path)) {
-                    is RpcResult.Ok -> { state.listing = result.value; state.directory = path }
+                when (val result = api.workspaceFileList(key.sessionId, directory)) {
+                    is RpcResult.Ok -> {
+                        state.listing = result.value
+                        // Adopt the host's canonical workspace-relative directory. Empty is the
+                        // workspace root, which Files spells "."; taking the answer rather than the
+                        // request also keeps a browse that started from an absolute path relative
+                        // afterwards, so the toolbar and entry joins stay workspace-scoped.
+                        state.directory = workspacePath(result.value.path)
+                    }
                     // A reference guessed to be a folder (see isFolderReference) that names a
                     // file: show the file, and leave Files on the folder that holds it.
                     is RpcResult.Err -> if (result.error.code == "workspace-file/not-directory") {
-                        state.directory = path.substringBeforeLast('/', ".").ifEmpty { "." }
+                        state.directory = workspaceParentPath(directory)
                         state.listing = null
-                        state.open(path)
+                        state.open(directory)
                     } else result.requireValue()
                 }
             } catch (e: CancellationException) { throw e }
@@ -146,7 +308,7 @@ internal fun WorkspacePanelBody(
     val watched = state.previews.map { it.path }.distinct()
     var workspaceWide by remember(key, mux) { mutableStateOf(false) }
     fun invalidate(raw: kotlinx.serialization.json.JsonElement) {
-        val frame = com.labteto.dshmobile.core.wire.decodeFromJsonElement(WorkspaceFileWatchFrame.serializer(), raw)
+        val frame = com.labteto.dshmobile.core.wire.decodeFromJsonElement(com.labteto.dshmobile.core.wire.dto.WorkspaceFileWatchFrame.serializer(), raw)
         frame.change?.let { change ->
             state.previews.filter { it.stat?.absolutePath == change.absolutePath }.forEach {
                 if (change.absent || it.stat?.version != change.version) { it.stat = null; it.bytes = null; it.text = null }
@@ -185,396 +347,411 @@ internal fun WorkspacePanelBody(
         com.labteto.dshmobile.ui.components.LocalFileOpener provides { path: String -> state.open(resolve(path)) },
         com.labteto.dshmobile.ui.components.LocalFolderOpener provides { path: String -> state.browse(resolve(path)) },
     ) {
-            val colors = DsTheme.colors
-            Column(modifier.padding(horizontal = DsSpacing.medium), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
-                DsSegmented(
-                    segments = listOf(
-                        DsSegment("0", stringResource(R.string.panel_files)),
-                        DsSegment("1", stringResource(R.string.panel_preview) + state.previews.size.takeIf { it > 0 }?.let { " · $it" }.orEmpty()),
-                        DsSegment("2", stringResource(R.string.panel_terminal)),
-                    ),
-                    selectedKey = state.section.toString(),
-                    onSelect = { state.section = it.toInt() },
-                    role = Role.Tab,
-                    stretch = true,
-                    modifier = Modifier.fillMaxWidth(),
+        Column(
+            modifier.fillMaxWidth().padding(horizontal = DsSpacing.comfortable),
+            verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+        ) {
+            DsSegmented(
+                segments = listOf(
+                    DsSegment("0", stringResource(R.string.panel_files)),
+                    DsSegment("1", stringResource(R.string.panel_preview) + state.previews.size.takeIf { it > 0 }?.let { " · $it" }.orEmpty()),
+                    DsSegment("2", stringResource(R.string.panel_terminal)),
+                ),
+                selectedKey = state.section.toString(),
+                onSelect = {
+                    state.section = it.toInt()
+                },
+                role = Role.Tab,
+                stretch = true,
+                minSegmentHeight = 36.dp,
+                modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.xsmall),
+            )
+            when (state.section) {
+                0 -> FilesSection(
+                    modifier = Modifier.weight(1f),
+                    state = state,
+                    searchOpen = searchOpen,
+                    query = query,
+                    onQuery = onQuery,
+                    onRoot = { listDirectory(".") },
+                    onParent = {
+                        listDirectory(workspaceParentPath(state.directory))
+                    },
+                    onRefresh = { listDirectory(state.directory) },
+                    onOpenDirectory = { if (!state.busy) listDirectory(it) },
+                    onOpenFile = { state.open(it) },
+                    onHold = { path, folder -> heldEntry = path to folder },
+                    changedFiles = changedFiles,
+                    onOpenChanged = { state.open(it) },
                 )
-                when (state.section) {
-                    0 -> {
-                        // Toolbar: where you are, and the two moves that are always meaningful.
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall)) {
-                            DsButton(
-                                text = stringResource(R.string.panel_root),
-                                icon = FeatherIcons.Folder,
-                                onClick = { listDirectory(".") },
-                                enabled = !state.busy && state.directory != ".",
-                                variant = DsButtonVariant.Outline,
-                                size = DsButtonSize.Small,
-                            )
-                            DsButton(
-                                text = stringResource(R.string.panel_parent),
-                                icon = FeatherIcons.CornerLeftUp,
-                                onClick = { listDirectory(state.directory.substringBeforeLast('/', ".").ifEmpty { "." }) },
-                                enabled = !state.busy && state.directory != ".",
-                                variant = DsButtonVariant.Outline,
-                                size = DsButtonSize.Small,
-                            )
-                            Spacer(Modifier.weight(1f))
-                            DsIconButton(
-                                icon = FeatherIcons.RefreshCw,
-                                contentDescription = stringResource(R.string.common_retry),
-                                onClick = { listDirectory(state.directory) },
-                                enabled = !state.busy,
-                            )
-                        }
-                        Text(
-                            technicalDisplay(if (state.directory == ".") "/" else state.directory),
-                            style = DsType.caption11,
-                            color = colors.labelCaption,
-                            softWrap = true,
-                        )
-                        if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth(), color = colors.accent, trackColor = colors.borderL1)
-                        state.error?.let { Text(it, style = DsType.small13, color = colors.error) }
-                        if (state.listing?.truncated == true) {
-                            Text(stringResource(R.string.panel_truncated), style = DsType.caption11, color = colors.warnLabel)
-                        }
-                        val entries = state.listing?.entries.orEmpty()
-                            .sortedWith(compareBy({ it.type != "directory" }, { it.name.lowercase() }))
-                        if (!state.busy && state.listing != null && entries.isEmpty() && state.error == null) {
-                            Text(stringResource(R.string.panel_empty_folder), style = DsType.std14, color = colors.labelTertiary, modifier = Modifier.padding(DsSpacing.medium))
-                        }
-                        LazyColumn(
-                            Modifier.weight(1f),
-                            state = state.directoryScroll.getOrPut(state.directory) { androidx.compose.foundation.lazy.LazyListState() },
-                            verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
-                        ) {
-                            items(entries, key = { it.name }) { entry ->
-                                val directory = entry.type == "directory"
-                                val path = if (state.directory == ".") entry.name else "${state.directory}/${entry.name}"
-                                Row(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .clip(DsShapes.row)
-                                        .clickableWithHold(
-                                            holdLabel = stringResource(R.string.hold_file_actions),
-                                            onHold = { heldEntry = path to directory },
-                                            enabled = !state.busy,
-                                        ) {
-                                            if (directory) listDirectory(path) else state.open(path)
-                                        }
-                                        .padding(horizontal = DsSpacing.small, vertical = DsSpacing.xsmall),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
-                                ) {
-                                    Icon(
-                                        if (directory) FeatherIcons.Folder else FeatherIcons.FileText,
-                                        null,
-                                        Modifier.size(18.dp),
-                                        tint = if (directory) colors.accent else colors.labelTertiary,
-                                    )
-                                    Text(
-                                        technicalDisplay(entry.name),
-                                        style = DsType.std14,
-                                        color = colors.labelPrimary,
-                                        modifier = Modifier.weight(1f),
-                                        softWrap = true,
-                                    )
-                                    if (directory) {
-                                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.size(16.dp), tint = colors.labelCaption)
-                                    } else {
-                                        entry.size?.let { Text(formatBytes(it), style = DsType.caption11, color = colors.labelCaption) }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    1 -> {
-                        if (state.previews.isEmpty()) {
-                            EmptyHero(headline = stringResource(R.string.panel_preview_empty), subtitle = stringResource(R.string.panel_preview_hint), showPreview = false)
-                        } else {
-                            // Open files as pills; the live one is selected.
-                            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall)) {
-                                state.previews.forEachIndexed { i, preview ->
-                                    DsPill(
-                                        text = technicalDisplay(preview.path.substringAfterLast('/').substringAfterLast('\\')),
-                                        selected = i == state.selectedPreview,
-                                        onClick = { state.selectedPreview = i },
-                                    )
-                                }
-                            }
-                            val index = state.selectedPreview.coerceIn(0, state.previews.lastIndex)
-                            val preview = state.previews[index]
-                            key(preview) {
-                                DocumentPreview(
-                                    store, key, preview, Modifier.weight(1f),
-                                    onClose = { state.previews.removeAt(index); state.selectedPreview = (index - 1).coerceAtLeast(0) },
-                                    onDirectory = {
-                                        state.previews.remove(preview); state.selectedPreview = (index - 1).coerceAtLeast(0)
-                                        state.browse(preview.path)
-                                    },
-                                )
-                            }
-                        }
-                    }
-                    2 -> TerminalPanel(store, state, Modifier.weight(1f))
-                }
+                1 -> PreviewSection(store, key, state, Modifier.weight(1f))
+                2 -> TerminalPanel(store, state, Modifier.weight(1f))
             }
+        }
     }
     heldEntry?.let { (path, folder) ->
         FileHoldMenu(path = path, folder = folder, onMention = onMention, onDismiss = { heldEntry = null })
     }
 }
 
+// ---------------------------------------------------------------------------
+// Files
+// ---------------------------------------------------------------------------
+
 @Composable
-private fun DocumentPreview(
-    store: SessionStore, key: ComposerKey, tab: PreviewTab, modifier: Modifier,
-    onClose: () -> Unit, onDirectory: () -> Unit,
+private fun FilesSection(
+    modifier: Modifier = Modifier,
+    state: PanelState,
+    searchOpen: Boolean,
+    query: String,
+    onQuery: (String) -> Unit,
+    onRoot: () -> Unit,
+    onParent: () -> Unit,
+    onRefresh: () -> Unit,
+    onOpenDirectory: (String) -> Unit,
+    onOpenFile: (String) -> Unit,
+    onHold: (String, Boolean) -> Unit,
+    changedFiles: List<String> = emptyList(),
+    onOpenChanged: (String) -> Unit = {},
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val colors = DsTheme.colors
-    // "Open on host" needs a desktop on the harness computer. A headless host (a server behind a
-    // tunnel, a container) says so up front through `canOpenWorkspacePath`, and the button is
-    // withheld rather than offered and failed. Null while the answer is still in flight.
-    var canOpenOnHost by remember(key.host) { mutableStateOf<Boolean?>(null) }
-    LaunchedEffect(key.host) {
-        canOpenOnHost = runCatching {
-            store.apiForHost(key.host)?.sessionCanOpenWorkspacePath()?.let { (it as? RpcResult.Ok)?.value } ?: false
-        }.getOrDefault(false)
+    val haptics = rememberDsHaptics()
+    val busy = state.busy
+    val entries = remember(state.listing, query) {
+        state.listing?.entries.orEmpty()
+            .sortedWith(compareBy({ it.type != "directory" }, { it.name.lowercase() }))
+            .filter { matchesFileQuery(it.name, query) }
     }
-    val openFailed = stringResource(R.string.panel_open_host_failed)
-    val extension = tab.path.substringAfterLast('.', "").lowercase()
-    val binary = extension in setOf("png", "jpg", "jpeg", "webp", "gif", "pdf")
-    fun load(more: Boolean = false) {
-        if (tab.busy) return
-        tab.busy = true; tab.error = null
-        scope.launch {
-            try {
-                val api = store.apiForHost(key.host) ?: error(context.getString(R.string.common_offline))
-                val statResult = api.workspaceFileStat(key.sessionId, tab.path)
-                // A reference guessed to be a file that names a folder (`.github`): browse it.
-                if (statResult is RpcResult.Err && statResult.error.code == "workspace-file/not-regular-file" &&
-                    (statResult.error.details as? kotlinx.serialization.json.JsonObject)?.get("kind")
-                        ?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.content } == "directory"
-                ) { onDirectory(); return@launch }
-                val stat = statResult.requireValue()
-                val changed = stat.version != tab.stat?.version
-                if (changed) { tab.text = null; tab.bytes = null; tab.nextLine = 1; tab.eof = false }
-                tab.stat = stat
-                if (binary && tab.bytes == null) {
-                    if ((stat.bytes ?: 0) > 32L * 1024 * 1024) error(context.getString(R.string.panel_too_large))
-                    val data = api.workspaceFileReadBytes(key.sessionId, tab.path).requireValue()
-                    if (data.version != stat.version) error(context.getString(R.string.panel_changed))
-                    if (data.data.size > 32 * 1024 * 1024) error(context.getString(R.string.panel_too_large))
-                    tab.bytes = data.data
-                    tab.eof = true
-                } else if (!binary && (tab.text == null || more)) {
-                    val data = api.workspaceFileRead(key.sessionId, tab.path, WorkspaceFileRange(tab.nextLine)).requireValue()
-                    if (data.version != stat.version) error(context.getString(R.string.panel_changed))
-                    if (tab.text.orEmpty().length + data.text.length > 4 * 1024 * 1024) error(context.getString(R.string.panel_too_large))
-                    tab.text = if (more && !changed) tab.text.orEmpty() + "\n" + data.text else data.text
-                    tab.nextLine = data.offset + data.lines
-                    tab.eof = data.eof || data.lines == 0
-                }
-            } catch (e: CancellationException) { throw e }
-            catch (e: Exception) { tab.error = e.message }
-            finally { tab.busy = false }
-        }
-    }
-    LaunchedEffect(tab) { load() }
-    LaunchedEffect(tab.stat) { if (tab.stat == null) load() }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
-        // File header: name, path and size on the left; the three actions on the right.
-        DsCard(verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    if (binary) FeatherIcons.Image else FeatherIcons.FileText,
-                    null,
-                    Modifier.size(18.dp),
-                    tint = colors.labelTertiary,
-                )
-                Spacer(Modifier.width(DsSpacing.small))
-                Column(Modifier.weight(1f)) {
-                    val name = tab.path.substringAfterLast('/').substringAfterLast('\\')
-                    Text(technicalDisplay(name), style = DsType.std14Strong, color = colors.labelPrimary)
-                    // The folder it is in, when it is in one; a root file would only repeat its name.
-                    val folder = tab.path.replace('\\', '/').substringBeforeLast('/', "")
-                    val meta = listOfNotNull(
-                        folder.takeIf { it.isNotEmpty() }?.let { technicalDisplay("$it/") },
-                        tab.stat?.bytes?.let { formatBytes(it) },
-                    ).joinToString(" · ")
-                    if (meta.isNotEmpty()) {
-                        SelectionContainer {
-                            Text(meta, style = DsType.caption11, color = colors.labelCaption, softWrap = true)
-                        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(FeatherIcons.Folder, null, Modifier.size(16.dp), tint = colors.accent)
+            Spacer(Modifier.width(DsSpacing.xsmall))
+            Text(
+                technicalDisplay(if (state.directory == ".") "/" else state.directory),
+                style = DsType.mono12,
+                color = colors.labelSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            DsIconButton(
+                icon = FeatherIcons.Folder,
+                contentDescription = stringResource(R.string.panel_root),
+                onClick = onRoot,
+                enabled = !busy && state.directory != ".",
+                iconSize = 18.dp,
+            )
+            DsIconButton(
+                icon = FeatherIcons.CornerLeftUp,
+                contentDescription = stringResource(R.string.panel_parent),
+                onClick = onParent,
+                enabled = !busy && state.directory != ".",
+                iconSize = 18.dp,
+            )
+            DsIconButton(
+                icon = FeatherIcons.RefreshCw,
+                contentDescription = stringResource(R.string.common_retry),
+                onClick = onRefresh,
+                enabled = !busy,
+                iconSize = 18.dp,
+            )
+        }
+        AnimatedVisibility(
+            visible = searchOpen,
+            enter = fadeIn(tween(160)) + androidx.compose.animation.expandVertically(),
+            exit = fadeOut(tween(120)) + androidx.compose.animation.shrinkVertically(),
+        ) {
+            // Composed only while the toggle has it open, so `autoFocus` is "the toggle was just
+            // tapped": the field takes focus and the keyboard comes up with it.
+            DsSearchField(
+                value = query,
+                onValueChange = onQuery,
+                placeholder = stringResource(R.string.ink_files_filter_files),
+                autoFocus = true,
+            )
+        }
+        if (busy && state.listing != null) {
+            LinearProgressIndicator(Modifier.fillMaxWidth(), color = colors.accent, trackColor = colors.borderL1)
+        }
+        state.error?.let { message ->
+            ErrorNotice(message = message, onRetry = onRefresh)
+        }
+        if (state.listing?.truncated == true) {
+            Text(stringResource(R.string.panel_truncated), style = DsType.caption11, color = colors.warnLabel)
+        }
+        // The filter reaches the card too: a query that hides every file below but leaves the card
+        // full of unrelated paths reads as a search that did nothing. The card lists whole paths,
+        // so it matches on the path; the folder listing matches on the entry name.
+        val shownChanged = remember(changedFiles, query) { filterChangedFiles(changedFiles, query) }
+        if (shownChanged.isNotEmpty()) {
+            DsCard(verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        stringResource(R.string.ink_files_changed_session),
+                        style = DsType.label12,
+                        color = colors.labelTertiary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        shownChanged.size.toString(),
+                        style = DsType.mono12,
+                        color = colors.labelCaption,
+                    )
+                }
+                shownChanged.take(5).forEach { path ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 36.dp)
+                            .clip(DsShapes.row)
+                            .clickable {
+                                haptics.tap()
+                                onOpenChanged(path)
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+                    ) {
+                        Icon(FeatherIcons.FileText, null, Modifier.size(15.dp), tint = colors.warnLabel)
+                        Text(
+                            technicalDisplay(path),
+                            style = DsType.mono12,
+                            color = colors.labelPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
                     }
                 }
-                if (canOpenOnHost == true) DsIconButton(
-                    icon = FeatherIcons.ExternalLink,
-                    contentDescription = stringResource(R.string.panel_open_host),
-                    onClick = { scope.launch {
-                        try { store.apiForHost(key.host)?.sessionOpenWorkspacePath(key.sessionId, tab.path)?.requireValue() }
-                        catch (e: CancellationException) { throw e }
-                        catch (e: Exception) { tab.error = openFailed }
-                    } },
-                )
-                DsIconButton(
-                    icon = FeatherIcons.RefreshCw,
-                    contentDescription = stringResource(R.string.common_retry),
-                    onClick = { tab.stat = null; tab.text = null; tab.bytes = null },
-                    enabled = !tab.busy,
-                )
-                DsIconButton(
-                    icon = Icons.Filled.Close,
-                    contentDescription = stringResource(R.string.common_close),
-                    onClick = onClose,
-                )
+                if (shownChanged.size > 5) {
+                    Text(
+                        "+${shownChanged.size - 5}",
+                        style = DsType.caption11,
+                        color = colors.labelCaption,
+                        modifier = Modifier.padding(start = DsSpacing.tiny),
+                    )
+                }
             }
         }
-        if (tab.busy) LinearProgressIndicator(Modifier.fillMaxWidth(), color = colors.accent, trackColor = colors.borderL1)
-        tab.error?.let { Text(it, style = DsType.small13, color = colors.error) }
+        Text(
+            stringResource(R.string.ink_files_all_files),
+            style = DsType.label12,
+            color = colors.labelTertiary,
+            modifier = Modifier.padding(start = DsSpacing.tiny, top = DsSpacing.tiny),
+        )
+        val listing = state.listing
         when {
-            extension == "pdf" && tab.bytes != null -> PdfPreview(tab.bytes!!, Modifier.weight(1f))
-            binary && tab.bytes != null -> {
-                var image by remember(tab.bytes) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
-                LaunchedEffect(tab.bytes) {
-                    image = withContext(Dispatchers.Default) {
-                        val bytes = tab.bytes ?: return@withContext null
-                        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-                        val options = BitmapFactory.Options().apply { inSampleSize = com.labteto.dshmobile.ui.media.sampleSizeFor(maxOf(bounds.outWidth, bounds.outHeight), 2048) }
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)?.asImageBitmap()
-                    }
-                    if (image == null) tab.error = context.getString(R.string.panel_failed)
-                }
-                image?.let { Image(it, tab.path, Modifier.fillMaxWidth().weight(1f)) }
-            }
-            extension in setOf("html", "htm", "svg") && tab.text != null -> {
-                val base = android.net.Uri.Builder().scheme("https").authority("preview.invalid")
-                    .path("/workspace/" + tab.path.replace('\\', '/').removePrefix("/")).build()
-                AndroidView(modifier = Modifier.weight(1f).fillMaxWidth(), factory = { ctx ->
-                    WebView(ctx).apply {
-                        if (android.os.Build.VERSION.SDK_INT <= 30) setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
-                        settings.javaScriptEnabled = false
-                        settings.allowFileAccess = false; settings.allowContentAccess = false
-                        settings.blockNetworkLoads = true
-                        webViewClient = object : WebViewClient() {
-                            private var totalBytes = 0L
-                            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?) = true
-                            override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse {
-                                val denied = { WebResourceResponse("text/plain", "utf-8", java.io.ByteArrayInputStream(ByteArray(0))) }
-                                val uri = request?.url ?: return denied()
-                                if (uri.scheme != "https" || uri.host != "preview.invalid") return denied()
-                                val relative = uri.path?.let { com.labteto.dshmobile.core.session.relativePreviewResource(base.path.orEmpty(), it) }
-                                    ?.takeIf { it.isNotBlank() } ?: return denied()
-                                return try {
-                                    val bytes = runBlocking(Dispatchers.IO) {
-                                        withTimeout(10000) {
-                                            val api = store.apiForHost(key.host) ?: return@withTimeout null
-                                            val data = api.workspaceFileReadBytes(
-                                                key.sessionId, relative, WorkspaceByteReadOptions(baseFile = tab.path),
-                                            ).requireValue()
-                                            if ((data.bytes ?: 0) > 4 * 1024 * 1024 || data.data.size > 4 * 1024 * 1024) return@withTimeout null
-                                            data.data
-                                        }
-                                    } ?: return denied()
-                                    synchronized(this) { totalBytes += bytes.size; if (totalBytes > 32 * 1024 * 1024) return denied() }
-                                    val mime = android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(relative.substringAfterLast('.')) ?: "application/octet-stream"
-                                    WebResourceResponse(mime, "utf-8", bytes.inputStream())
-                                } catch (_: Exception) { denied() }
-                            }
-                        }
-                    }
-                }, update = { it.loadDataWithBaseURL(base.toString(), tab.text.orEmpty(), if (extension == "svg") "image/svg+xml" else "text/html", "utf-8", null) },
-                    onRelease = { it.destroy() })
-            }
-            tab.text != null -> {
-                // Markdown reads as a document; everything else is code, in the app's code font on
-                // a code background with the file's own line breaks, scrollable both ways.
-                val markdown = extension in setOf("md", "markdown")
-                Box(
-                    Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clip(DsShapes.block)
-                        .background(if (markdown) androidx.compose.ui.graphics.Color.Transparent else colors.bgLayer1)
-                        .then(if (markdown) Modifier else Modifier.border(1.dp, colors.borderL2, DsShapes.block)),
+            busy && listing == null -> SkeletonList()
+            listing != null && entries.isEmpty() -> EmptyPane(
+                icon = if (query.isNotBlank()) FeatherIcons.Search else FeatherIcons.Folder,
+                title = stringResource(if (query.isNotBlank()) R.string.ink_files_no_matches else R.string.panel_empty_folder),
+            )
+            else -> AnimatedContent(
+                targetState = listing,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                transitionSpec = {
+                    (fadeIn(tween(200, easing = DsAnimations.inkDecelerate)) +
+                        slideInVertically(tween(240, easing = DsAnimations.inkDecelerate)) { it / 10 })
+                        .togetherWith(fadeOut(tween(120)))
+                },
+                label = "directory",
+            ) { target ->
+                val rows = (target?.entries.orEmpty())
+                    .sortedWith(compareBy({ it.type != "directory" }, { it.name.lowercase() }))
+                    .filter { matchesFileQuery(it.name, query) }
+                // The listing's `path` is the host's canonical workspace path, and it is the EMPTY
+                // STRING for the workspace root (`workspacePathOf`: "Empty for the root"). It has to
+                // be normalized before an entry is joined onto it: joining the raw root path built
+                // "/name", which the host answers with
+                // `workspace-file/not-found: no entry at "/name"`.
+                val directory = target?.path?.let { workspacePath(it) } ?: state.directory
+                LazyColumn(
+                    Modifier.fillMaxSize(),
+                    state = state.directoryScroll.getOrPut(directory) { androidx.compose.foundation.lazy.LazyListState() },
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    contentPadding = PaddingValues(bottom = DsSpacing.medium),
                 ) {
-                    SelectionContainer(
-                        Modifier
-                            .fillMaxSize()
-                            .verticalScroll(tab.scroll)
-                            .then(if (markdown) Modifier else Modifier.horizontalScroll(rememberScrollState()))
-                            .padding(DsSpacing.medium),
-                    ) {
-                        if (markdown) DocumentMarkdown(tab.text.orEmpty())
-                        else Text(
-                            tab.text.orEmpty(),
-                            style = DsType.caption11.copy(fontFamily = DsType.codeFont, fontSize = 12.sp, lineHeight = 18.sp),
-                            color = colors.labelPrimary,
-                            softWrap = false,
+                    itemsIndexed(rows, key = { _, entry -> entry.name }) { _, entry ->
+                        val entryPath = workspaceChildPath(directory, entry.name)
+                        FileRow(
+                            entry = entry,
+                            busy = busy,
+                            onOpen = {
+                                haptics.tap()
+                                if (entry.type == "directory") onOpenDirectory(entryPath) else onOpenFile(entryPath)
+                            },
+                            onHold = {
+                                onHold(entryPath, entry.type == "directory")
+                            },
                         )
                     }
                 }
             }
         }
-        if (!tab.eof && tab.text != null) {
-            DsButton(
-                text = stringResource(R.string.panel_more),
-                onClick = { load(true) },
-                enabled = !tab.busy,
-                variant = DsButtonVariant.Outline,
-                size = DsButtonSize.Small,
-                modifier = Modifier.fillMaxWidth(),
+    }
+}
+
+@Composable
+private fun FileRow(
+    entry: WorkspaceDirectoryEntry,
+    busy: Boolean,
+    onOpen: () -> Unit,
+    onHold: () -> Unit,
+) {
+    val colors = DsTheme.colors
+    val directory = entry.type == "directory"
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 44.dp)
+            .clip(DsShapes.row)
+            .clickableWithHold(
+                holdLabel = stringResource(R.string.hold_file_actions),
+                onHold = onHold,
+                enabled = !busy,
+                role = Role.Button,
+                onClick = onOpen,
             )
+            .padding(horizontal = DsSpacing.xsmall, vertical = DsSpacing.tiny),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
+    ) {
+        if (directory) {
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = colors.labelCaption,
+            )
+        } else {
+            Spacer(Modifier.width(16.dp))
+        }
+        Icon(
+            if (directory) FeatherIcons.Folder else FeatherIcons.FileText,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = if (directory) colors.accent else colors.labelTertiary,
+        )
+        Text(
+            technicalDisplay(entry.name),
+            style = DsType.mono13,
+            color = colors.labelPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        if (!directory) {
+            entry.size?.let {
+                Text(
+                    formatBytes(it),
+                    style = DsType.mono12,
+                    color = colors.labelCaption,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+/** Six placeholder rows while a listing is still on the wire. */
+@Composable
+private fun SkeletonList() {
+    val colors = DsTheme.colors
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+        repeat(6) { index ->
+            Row(
+                Modifier.fillMaxWidth().height(44.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+            ) {
+                Box(Modifier.size(18.dp).skeleton(colors.bgLayer1, colors.borderL2, DsShapes.chip))
+                Box(
+                    Modifier
+                        .fillMaxWidth(if (index % 3 == 0) 0.38f else if (index % 3 == 1) 0.55f else 0.46f)
+                        .height(12.dp)
+                        .skeleton(colors.bgLayer1, colors.borderL2, DsShapes.chip),
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun PdfPreview(bytes: ByteArray, modifier: Modifier) {
-    val context = LocalContext.current
-    var page by remember(bytes) { mutableIntStateOf(0) }
-    var count by remember(bytes) { mutableIntStateOf(0) }
-    var failure by remember(bytes) { mutableStateOf(false) }
-    var bitmap by remember(bytes, page) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
-    LaunchedEffect(bytes, page) {
-        bitmap = withContext(Dispatchers.IO) {
-            val file = File.createTempFile("preview-", ".pdf", context.cacheDir)
-            try {
-                file.writeBytes(bytes)
-                ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
-                    PdfRenderer(fd).use { pdf ->
-                        count = pdf.pageCount
-                        if (count == 0) return@withContext null
-                        pdf.openPage(page.coerceIn(0, count - 1)).use { p ->
-                            val scale = minOf(2f, 2048f / maxOf(p.width, p.height))
-                            val image = Bitmap.createBitmap((p.width * scale).toInt().coerceAtLeast(1), (p.height * scale).toInt().coerceAtLeast(1), Bitmap.Config.ARGB_8888)
-                            image.eraseColor(android.graphics.Color.WHITE)
-                            p.render(image, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                            image.asImageBitmap()
-                        }
-                    }
-                }
-            } catch (e: CancellationException) { throw e }
-            catch (_: Exception) { failure = true; null }
-            finally { file.delete() }
-        }
-    }
-    Column(modifier) {
-        if (failure) Text(stringResource(R.string.panel_failed))
-        bitmap?.let { Image(it, null, Modifier.weight(1f).fillMaxWidth()) }
-        Row {
-            TextButton(onClick = { page-- }, enabled = page > 0) { Text(stringResource(R.string.common_back)) }
-            Text("${page + 1} / $count", Modifier.padding(16.dp))
-            TextButton(onClick = { page++ }, enabled = page + 1 < count) { Text(stringResource(R.string.panel_next)) }
-        }
+private fun EmptyPane(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String) {
+    val colors = DsTheme.colors
+    Column(
+        Modifier.fillMaxWidth().padding(vertical = DsSpacing.xxlarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(28.dp), tint = colors.labelDimmed)
+        Text(title, style = DsType.small13, color = colors.labelTertiary, textAlign = TextAlign.Center)
     }
 }
 
-/** `1.2 KB`, `3.4 MB` — a size a person can read beside a file name. */
-private fun formatBytes(bytes: Long): String = when {
-    bytes < 1024 -> "$bytes B"
-    bytes < 1024 * 1024 -> "%.1f KB".format(bytes / 1024.0)
-    else -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
+@Composable
+private fun ErrorNotice(message: String, onRetry: () -> Unit) {
+    val colors = DsTheme.colors
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(DsShapes.code)
+            .background(colors.errorTertiary)
+            .border(1.dp, colors.errorBorder, DsShapes.code)
+            .padding(DsSpacing.medium),
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
+    ) {
+        Text(message, style = DsType.small13, color = colors.error, softWrap = true)
+        DsButton(
+            text = stringResource(R.string.common_retry),
+            onClick = onRetry,
+            variant = DsButtonVariant.Outline,
+            size = DsButtonSize.Small,
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Preview
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun PreviewSection(store: SessionStore, key: ComposerKey, state: PanelState, modifier: Modifier = Modifier) {
+    if (state.previews.isEmpty()) {
+        EmptyHero(
+            headline = stringResource(R.string.panel_preview_empty),
+            subtitle = stringResource(R.string.panel_preview_hint),
+            showPreview = false,
+        )
+        return
+    }
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+        // Open files as pills; the live one is selected.
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall)) {
+            state.previews.forEachIndexed { i, preview ->
+                DsPill(
+                    text = technicalDisplay(preview.path.substringAfterLast('/').substringAfterLast('\\')),
+                    selected = i == state.selectedPreview,
+                    onClick = {
+                        state.selectedPreview = i
+                    },
+                )
+            }
+        }
+        val index = state.selectedPreview.coerceIn(0, state.previews.lastIndex)
+        val preview = state.previews[index]
+        key(preview) {
+            DocumentPreview(
+                store, key, preview, Modifier.weight(1f),
+                onClose = {
+                    state.previews.removeAt(index)
+                    state.selectedPreview = (index - 1).coerceAtLeast(0)
+                },
+                onDirectory = {
+                    state.previews.remove(preview)
+                    state.selectedPreview = (index - 1).coerceAtLeast(0)
+                    state.browse(preview.path)
+                },
+            )
+        }
+    }
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connect_hero_subtitle">Следите за harness, который работает на вашем компьютере.</string>
+    <string name="connect_loopback_notice">Запускает harness в Termux на этом телефоне. DSH может запускать и останавливать его, а также входить за вас.</string>
+    <string name="connect_lan_notice">Без шифрования. Используйте «Локальную сеть» только в Wi-Fi, которому доверяете.</string>
+    <string name="connect_relay_notice">Соединение шифруется, доступ по паролю. Отсканируйте QR-код сопряжения из dsh-relay.</string>
+    <string name="connect_section_discovered">Найдено</string>
+    <string name="connect_section_discovered_relay">Найденные релеи</string>
+    <string name="connect_scan_progress_short">Сканирование %1$d из %2$d</string>
+    <string name="connect_harness_actions">Действия с harness</string>
+    <string name="connect_forget_harness">Забыть этот harness</string>
+    <string name="connect_connecting_to">Подключение к %1$s</string>
+    <string name="connect_step_address">Проверка адреса</string>
+    <string name="connect_step_reaching">Соединение с %1$s</string>
+    <string name="connect_step_streams">Открытие потоков событий</string>
+    <string name="connect_step_verify">Проверка harness</string>
+    <string name="connect_lost_reconnecting">Переподключение к %1$s</string>
+    <string name="connect_lost_body">Агент продолжает работать на компьютере. Ваш черновик и место в каждом чате сохранены.</string>
+    <string name="connect_lost_retry_now">Повторить сейчас</string>
+    <string name="connect_lost_choose">Выбрать другой harness</string>
+    <string name="connect_lost_attempt">Попытка %1$d</string>
+    <string name="connect_lost_tag">Переподключение</string>
+    <string name="connect_sign_in_to">Войти в %1$s</string>
+    <string name="connect_sign_in_subtitle">Этот harness ещё не разрешил вход с этого телефона.</string>
+    <string name="connect_sign_in_link_body">Harness печатает ссылку при запуске. Вставьте её или только токен после ?token=.</string>
+    <string name="connect_sign_in_token_hint">Токен меняется при каждом перезапуске harness.</string>
+    <string name="pair_hero_title">Отсканируйте код сопряжения</string>
+    <string name="pair_step_run">На компьютере выполните %1$s</string>
+    <string name="pair_step_scan">Наведите камеру на показанный QR-код. Затем зададите пароль устройства.</string>
+    <string name="pair_code_hint">8 цифр</string>
+    <string name="pair_scanned">Сопряжение с %1$s</string>
+</resources>

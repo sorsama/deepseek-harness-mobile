@@ -7,7 +7,7 @@
     <string name="ux_a_daily_clock">ทุกวัน เวลา %1$s</string>
     <string name="ux_a_weekly">%1$s เวลา %2$s · %3$s</string>
     <string name="ux_a_cron">%1$s · %2$s</string>
-    <string name="ux_a_cron_expression">กฎ Cron: %1$s</string>
+    <string name="ux_a_cron_expression">Cron: %1$s</string>
     <string name="ux_a_next_run">ครั้งถัดไป: %1$s (%2$s)</string>
     <string name="ux_a_due_now">ถึงเวลาแล้ว</string>
     <string name="ux_a_in">อีก %1$s</string>
@@ -15,8 +15,8 @@
     <string name="ux_a_retention">ประวัติเก็บไว้ไม่เกิน %1$s และ %2$s</string>
     <string name="ux_a_load_error">โหลดรายการไม่ได้ ลองอีกครั้ง</string>
     <string name="ux_a_action_error">ดำเนินการไม่สำเร็จ รีเฟรชแล้วลองอีกครั้ง</string>
-    <string name="ux_a_session_archived">แชตนี้ถูกเก็บถาวรแล้ว</string>
-    <string name="ux_a_session_unavailable">แชตนี้ไม่พร้อมใช้งานแล้ว</string>
+    <string name="ux_a_session_archived">แชทนี้ถูกเก็บถาวรแล้ว</string>
+    <string name="ux_a_session_unavailable">แชทนี้ไม่พร้อมใช้งานแล้ว</string>
     <string name="ux_a_date">วันที่</string>
     <string name="ux_a_precise_time">เวลา (HH:mm:ss ใส่เศษวินาทีได้)</string>
     <string name="ux_a_time_error">เลือกเวลาที่มีอยู่จริงในวันที่และเขตเวลานี้</string>
@@ -24,7 +24,7 @@
     <string name="ux_a_interval_error">ใส่จำนวนเต็ม โดยช่วงเวลาต้องไม่น้อยกว่า 60 วินาที</string>
     <string name="ux_a_weekdays_error">เลือกวันอย่างน้อยหนึ่งวัน</string>
     <string name="ux_a_cron_advanced">Cron (ขั้นสูง)</string>
-    <string name="ux_a_cron_error">ใส่กฎ Cron ที่ถูกต้อง 5 ช่อง: นาที ชั่วโมง วันที่ เดือน วันในสัปดาห์</string>
+    <string name="ux_a_cron_error">ใส่ฟิลด์ cron ที่ถูกต้อง 5 ช่อง: นาที ชั่วโมง วันที่ เดือน วันในสัปดาห์</string>
     <string name="ux_a_zone_search">ค้นหาเขตเวลา</string>
     <string name="ux_a_manage_plugins">จัดการปลั๊กอิน</string>
     <string name="ux_a_update">อัปเดต</string>
@@ -42,16 +42,16 @@
     <string name="ux_a_phase_applying">กำลังใช้การเปลี่ยนแปลง…</string>
     <string name="ux_a_phase_cancelling">กำลังยกเลิกการติดตั้ง…</string>
     <string name="ux_a_reason_required">ระบบจัดการปลั๊กอินต้องใช้ส่วนนี้ จึงปิดหรือลบไม่ได้</string>
-    <string name="ux_a_reason_unaddressable">การตั้งค่าโฮสต์ไม่สามารถระบุรายการนี้ได้อย่างชัดเจน</string>
-    <string name="ux_a_reason_missing">ไม่พบปลั๊กอินนี้แล้ว โปรดรีเฟรชรายการ</string>
+    <string name="ux_a_reason_unaddressable">การตั้งค่าของ harness แยกรายการนี้ออกจากรายการอื่นไม่ได้</string>
+    <string name="ux_a_reason_missing">ไม่พบปลั๊กอินนี้แล้ว ลองรีเฟรชรายการ</string>
     <string name="ux_a_reason_spec">ใส่ชื่อแพ็กเกจหรือที่อยู่ที่ถูกต้อง</string>
-    <string name="ux_a_reason_ambiguous">ไม่สามารถระบุแพ็กเกจที่ติดตั้งได้ โปรดรีเฟรชรายการที่ติดตั้ง</string>
-    <string name="ux_a_reason_bundle">แพ็กเกจนี้ไม่ได้ประกาศชุดปลั๊กอิน จึงจัดการที่นี่ไม่ได้</string>
+    <string name="ux_a_reason_ambiguous">ระบุแพ็กเกจที่ติดตั้งไม่ได้ ลองรีเฟรชรายการที่ติดตั้ง</string>
+    <string name="ux_a_reason_bundle">แพ็กเกจนี้ไม่มีชุดปลั๊กอิน จึงจัดการที่นี่ไม่ได้</string>
     <string name="ux_a_reason_removable">แพ็กเกจนี้เป็นของโปรไฟล์อื่น หรือระบบจัดการปลั๊กอินจำเป็นต้องใช้</string>
-    <string name="ux_a_reason_stop">หยุดโปรไฟล์โฮสต์นี้ แล้วถอนการติดตั้งแพ็กเกจด้วย dsh plugin</string>
-    <string name="ux_a_reason_in_use">การตั้งค่าอื่นยังใช้ชุดปลั๊กอินนี้อยู่ โปรดปิดส่วนเหล่านั้นก่อน</string>
-    <string name="ux_a_reason_approval">รายการสคริปต์ที่รออนุมัติเปลี่ยนไป โปรดติดตั้งอีกครั้งเพื่อตรวจรายการใหม่</string>
-    <string name="ux_a_reason_version">ปลั๊กอินนี้ใช้กับ DSH เวอร์ชันนี้ไม่ได้ โปรดติดตั้งปลั๊กอินเวอร์ชันที่รองรับ</string>
+    <string name="ux_a_reason_stop">หยุดโปรไฟล์ harness นี้ แล้วถอนการติดตั้งแพ็กเกจด้วย dsh plugin</string>
+    <string name="ux_a_reason_in_use">การตั้งค่าอื่นยังใช้ชุดปลั๊กอินนี้อยู่ ให้ปิดส่วนเหล่านั้นก่อน</string>
+    <string name="ux_a_reason_approval">รายการสคริปต์ที่รออนุมัติเปลี่ยนไป ติดตั้งอีกครั้งเพื่อตรวจรายการใหม่</string>
+    <string name="ux_a_reason_version">ปลั๊กอินนี้ใช้กับ DSH เวอร์ชันนี้ไม่ได้ ติดตั้งปลั๊กอินเวอร์ชันที่รองรับ</string>
     <plurals name="ux_a_days">
         <item quantity="other">%1$s วัน</item>
     </plurals>
@@ -69,10 +69,10 @@
     </plurals>
     <string name="ux_a_reason_installed">ติดตั้งแพ็กเกจนี้แล้ว ใช้ปุ่มอัปเดตในรายการที่ติดตั้ง</string>
     <string name="ux_a_reason_network">ติดต่อแหล่งแพ็กเกจไม่ได้ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง</string>
-    <string name="ux_a_reason_package">ที่อยู่นี้ไม่มีแพ็กเกจ ตรวจสอบชื่อแพ็กเกจหรือเส้นทาง</string>
+    <string name="ux_a_reason_package">ที่อยู่นี้ไม่มีแพ็กเกจ ตรวจสอบชื่อแพ็กเกจหรือพาธ</string>
     <string name="ux_a_time">เวลา</string>
     <string name="ux_a_zone">เขตเวลา</string>
     <string name="ux_a_save_error">บันทึกงานอัตโนมัตินี้ไม่ได้ รีเฟรชกฎแล้วลองอีกครั้ง</string>
     <string name="ux_a_delete_error">ลบงานอัตโนมัตินี้ไม่ได้ รีเฟรชรายการแล้วลองอีกครั้ง</string>
-    <string name="ux_a_last_run">เรียกใช้ล่าสุด: %1$s</string>
+    <string name="ux_a_last_run">รันล่าสุด: %1$s</string>
 </resources>

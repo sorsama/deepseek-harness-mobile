@@ -6,10 +6,14 @@ import kotlinx.coroutines.test.runTest
 import com.labteto.dshmobile.core.wire.dto.CommandSubmitAttachment
 import com.labteto.dshmobile.core.wire.dto.EncodedFileUploadRequest
 import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
+import com.labteto.dshmobile.core.wire.dto.ImageAttachmentRef
+import com.labteto.dshmobile.core.wire.dto.LegacySessionAttachmentRequest
 import com.labteto.dshmobile.core.wire.dto.PromptContentPart
+import com.labteto.dshmobile.core.wire.dto.SessionAttachmentRequest
 import com.labteto.dshmobile.core.wire.dto.SessionPromptRequest
 import com.labteto.dshmobile.core.wire.dto.SubagentPromptRequest
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -358,5 +362,58 @@ class DshApiClientRemoteTest {
         assertEquals("session-9", args["agentId"]!!.jsonPrimitive.content)
         assertEquals(setOf("data", "name"), args["request"]!!.jsonObject.keys)
         assertEquals("r-2", (result as RpcResult.Ok).value.receiptId)
+    }
+
+    /**
+     * Since harness 0.2.2 the image read takes the whole durable reference, not just its id, and
+     * verifies every field against what was stored. Sending the id-only shape to such a host fails
+     * the gateway's strict request codec with `wire field "request" failed boundary validation`,
+     * which is exactly the error the phone showed when rendering a sent image.
+     */
+    @Test
+    fun `a durable image is read with the whole reference`() = runTest {
+        val transport = RecordingTransport { _, body ->
+            val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
+            ok(
+                rpcId,
+                """{"attachment":{"attachmentId":"sha256:abc","mediaType":"image/png","bytes":10,""" +
+                    """"width":2,"height":3},"data":"AA=="}""",
+            )
+        }
+        val ref = ImageAttachmentRef("sha256:abc", "image/png", bytes = 10, width = 2, height = 3)
+        val result = client(transport).sessionAttachment(SessionAttachmentRequest("session-1", ref))
+
+        assertEquals("/api/session/attachment", transport.lastPath)
+        val args = Json.parseToJsonElement(transport.lastBody!!)
+            .jsonObject["payload"]!!.jsonObject["args"]!!.jsonObject
+        val request = args["request"]!!.jsonObject
+        assertEquals(setOf("sessionId", "attachment"), request.keys)
+        assertEquals("session-1", request["sessionId"]!!.jsonPrimitive.content)
+        val attachment = request["attachment"]!!.jsonObject
+        assertEquals("sha256:abc", attachment["attachmentId"]!!.jsonPrimitive.content)
+        assertEquals("image/png", attachment["mediaType"]!!.jsonPrimitive.content)
+        assertEquals(10, attachment["bytes"]!!.jsonPrimitive.int)
+        assertEquals(2, attachment["width"]!!.jsonPrimitive.int)
+        assertEquals(3, attachment["height"]!!.jsonPrimitive.int)
+        assertEquals("AA==", (result as RpcResult.Ok).value.data)
+    }
+
+    @Test
+    fun `the legacy attachment shape stays reachable for older hosts`() = runTest {
+        val transport = RecordingTransport { _, body ->
+            val rpcId = Json.parseToJsonElement(body).jsonObject["rpcId"]!!.jsonPrimitive.content
+            ok(
+                rpcId,
+                """{"attachment":{"attachmentId":"sha256:abc","mediaType":"image/png","bytes":10,""" +
+                    """"width":2,"height":3},"data":"AA=="}""",
+            )
+        }
+        client(transport).sessionAttachmentLegacy(LegacySessionAttachmentRequest("session-1", "sha256:abc"))
+
+        val args = Json.parseToJsonElement(transport.lastBody!!)
+            .jsonObject["payload"]!!.jsonObject["args"]!!.jsonObject
+        val request = args["request"]!!.jsonObject
+        assertEquals(setOf("sessionId", "attachmentId"), request.keys)
+        assertEquals("sha256:abc", request["attachmentId"]!!.jsonPrimitive.content)
     }
 }

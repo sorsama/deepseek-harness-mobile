@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- File viewer: header and actions -->
+    <string name="preview_open_full">Aperçu complet</string>
+    <string name="preview_save_copy">Enregistrer une copie</string>
+    <string name="preview_saved">Enregistré sur votre appareil</string>
+    <string name="preview_save_failed">Impossible d\'enregistrer le fichier</string>
+    <string name="preview_copy_path">Copier le chemin</string>
+    <string name="preview_refresh">Actualiser</string>
+    <string name="preview_more_actions">Plus d\'actions</string>
+    <string name="preview_kind_text">Texte</string>
+    <string name="preview_kind_binary">Binaire</string>
+    <!-- View modes -->
+    <string name="preview_mode_pretty">Formaté</string>
+    <string name="preview_mode_tree">Arbre</string>
+    <string name="preview_mode_raw">Brut</string>
+    <string name="preview_mode_table">Tableau</string>
+    <!-- States -->
+    <string name="preview_too_large_title">Trop volumineux pour l\'aperçu</string>
+    <string name="preview_too_large_body">Ce fichier fait %1$s. Vous pouvez quand même en enregistrer une copie sur votre appareil.</string>
+    <string name="preview_binary_title">Ce fichier ne peut pas être affiché</string>
+    <string name="preview_binary_body">C\'est un fichier binaire. Voici ses premiers octets. Enregistrez une copie pour l\'ouvrir dans une autre appli.</string>
+    <string name="preview_hex_note">Premiers %1$s sur %2$s</string>
+    <string name="preview_empty_file">Ce fichier est vide</string>
+    <string name="preview_cant_show_title">Impossible d\'afficher ce fichier</string>
+    <string name="preview_image_unsupported">Ce téléphone ne peut pas afficher ce type d\'image. Enregistrez une copie pour l\'ouvrir dans une autre appli.</string>
+    <string name="preview_media_unsupported">Ce téléphone ne peut pas lire ce fichier. Enregistrez une copie pour l\'ouvrir dans une autre appli.</string>
+    <string name="preview_text_truncated">Seuls les premiers %1$s sont affichés. Enregistrez une copie pour obtenir tout le fichier.</string>
+    <string name="preview_json_invalid">Ce JSON n\'est pas valide</string>
+    <string name="preview_json_at">Ligne %1$d, colonne %2$d</string>
+    <string name="preview_json_at_line">Ligne %1$d</string>
+    <string name="preview_notebook_invalid">Ça ne ressemble pas à un notebook</string>
+    <string name="preview_output_hidden">Cette sortie ne peut pas être affichée ici</string>
+    <string name="preview_table_truncated">%1$d lignes affichées sur %2$d</string>
+    <string name="preview_table_summary">Lignes : %1$d · Colonnes : %2$d</string>
+    <string name="preview_table_partial">Lignes chargées pour l\'instant : %1$d</string>
+    <!-- Text viewer -->
+    <string name="preview_wrap">Retour à la ligne</string>
+    <string name="preview_line_numbers">Numéros de ligne</string>
+    <string name="preview_find">Rechercher dans le fichier</string>
+    <string name="preview_find_placeholder">Rechercher</string>
+    <string name="preview_find_none">Aucun résultat</string>
+    <string name="preview_find_next">Résultat suivant</string>
+    <string name="preview_find_previous">Résultat précédent</string>
+    <string name="preview_find_partial">La recherche porte seulement sur la partie déjà chargée</string>
+    <string name="preview_expand">Développer</string>
+    <string name="preview_collapse">Réduire</string>
+    <string name="preview_json_more">Autres lignes non affichées : %1$s</string>
+    <!-- Image, PDF and media viewers -->
+    <string name="preview_zoom_in">Zoom avant</string>
+    <string name="preview_zoom_out">Zoom arrière</string>
+    <string name="preview_fit">Ajuster à l\'écran</string>
+    <string name="preview_fill">Remplir l\'écran</string>
+    <string name="preview_prev_page">Page précédente</string>
+    <string name="preview_next_page">Page suivante</string>
+    <string name="preview_pdf_pages">Pages : %1$d</string>
+    <string name="preview_play">Lecture</string>
+    <string name="preview_pause">Pause</string>
+    <string name="preview_seek">Position de lecture</string>
+    <!-- Archives and fonts -->
+    <string name="preview_archive_summary">Éléments : %1$d</string>
+    <string name="preview_archive_truncated">Affichage des %1$d premiers éléments</string>
+    <string name="preview_archive_failed">Impossible de lire cette archive</string>
+    <string name="preview_font_failed">Impossible de charger cette police</string>
+</resources>

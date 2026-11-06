@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="chat_jump_latest">नवीनतम पर जाएँ</string>
-    <string name="chat_suggest_overview">इस प्रोजेक्ट का एक अवलोकन दो</string>
+    <string name="chat_jump_latest">सबसे नए पर जाएँ</string>
+    <string name="chat_suggest_overview">इस प्रोजेक्ट का ओवरव्यू दो</string>
     <string name="chat_suggest_tests">टेस्ट चलाओ और जो फ़ेल हों उन्हें ठीक करो</string>
-    <string name="chat_suggest_changes">मेरे बिना कमिट किए बदलावों की समीक्षा करो</string>
+    <string name="chat_suggest_changes">मेरे जो बदलाव कमिट नहीं हुए, उनका रिव्यू करो</string>
     <string name="chat_queue_placement_queued">अगला टर्न</string>
-    <string name="chat_queue_placement_steering">स्टीयरिंग</string>
-    <string name="chat_queue_placement_context">संदर्भ</string>
-    <string name="chat_status_running">काम जारी</string>
+    <string name="chat_queue_placement_steering">दिशा</string>
+    <string name="chat_queue_placement_context">कॉन्टेक्स्ट</string>
+    <string name="chat_status_running">काम चल रहा है</string>
     <string name="chat_status_idle">निष्क्रिय</string>
     <string name="chatlist_session_copy_id">सेशन ID कॉपी करें</string>
     <string name="connect_paste">पेस्ट करें</string>
     <string name="connect_try_again">फिर से कोशिश करें</string>
-    <string name="connect_manual_paste_hint">dsh web जो लिंक प्रिंट करता है, टोकन सहित पेस्ट करें, इससे साइन इन भी हो जाएगा।</string>
+    <string name="connect_manual_paste_hint">dsh web जो लिंक दिखाता है, उसे टोकन समेत पेस्ट करें। इससे साइन इन भी हो जाएगा।</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="one">%d नया</item>
         <item quantity="other">%d नए</item>

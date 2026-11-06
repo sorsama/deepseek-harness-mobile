@@ -1,6 +1,6 @@
 <resources>
     <string name="alpha2_translate">%1$s দিয়ে অনুবাদ করুন</string>
     <string name="alpha2_original">মূল দেখান</string>
-    <string name="alpha2_external">বাহ্যিক রান (স্থানীয় কথোপকথন নেই)</string>
-    <string name="alpha2_migration">স্থানান্তর সম্পূর্ণ করতে মূল সেশনটি খুলুন, তারপর আবার চেষ্টা করুন।</string>
+    <string name="alpha2_external">বাইরে চালানো রান (লোকাল ট্রান্সক্রিপ্ট নেই)</string>
+    <string name="alpha2_migration">মাইগ্রেশন শেষ করতে আগের সেশনটি খুলুন, তারপর আবার চেষ্টা করুন।</string>
 </resources>

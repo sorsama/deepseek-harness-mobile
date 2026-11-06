@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_failed_rename">Не удалось переименовать сеанс.</string>
+    <string name="details_failed_fork">Не удалось создать ветку сеанса.</string>
+    <string name="details_failed_archive">Не удалось архивировать сеанс.</string>
+    <string name="details_archived">Сеанс архивирован.</string>
+    <string name="details_failed_stop_job">Не удалось остановить задачу.</string>
+    <string name="details_failed_queue_remove">Не удалось убрать из очереди.</string>
+    <string name="details_failed_goal">Не удалось обновить цель.</string>
+    <string name="details_failed_plan">Не удалось сменить режим плана.</string>
+    <string name="details_failed_link">Сейчас не получилось создать ссылку. Проверьте подключение.</string>
+    <string name="details_fork_done_title">Ветка готова</string>
+    <string name="details_fork_done_body">Копия сеанса создана. Открыть её сейчас?</string>
+    <string name="details_fork_open">Открыть копию</string>
+    <string name="details_fork_stay">Остаться здесь</string>
+    <string name="details_open_output">Открыть вывод</string>
+    <string name="models_switch_failed">Не удалось сменить модель.</string>
+    <string name="settings_forget_hosts_confirm_title">Забыть все harness?</string>
+    <string name="settings_forget_hosts_confirm_action">Забыть все</string>
+    <string name="settings_clear_last_sessions_confirm_title">Забыть, какой сеанс открывать?</string>
+    <string name="settings_clear_last_sessions_confirm_body">В следующий раз приложение откроет самый свежий сеанс на каждом harness вместо того, которым вы пользовались последним. Ни один сеанс не удаляется.</string>
+    <string name="settings_clear_last_sessions_confirm_action">Забыть</string>
+    <string name="feedback_error_conflict">Эту оценку изменили в другом месте. Ваша заметка сохранена, можно отправить её снова.</string>
+    <string name="feedback_error_generic">Не удалось сохранить отзыв. Попробуйте ещё раз чуть позже.</string>
+    <string name="toolcard_title_tool">Инструмент</string>
+    <string name="toolcard_title_terminal">Терминал</string>
+    <string name="toolcard_title_diff">Изменения</string>
+    <string name="toolcard_title_search">Поиск</string>
+    <string name="toolcard_title_web">Веб</string>
+    <string name="toolcard_running">выполняется</string>
+    <string name="toolcard_killed_by">завершён сигналом %1$s</string>
+    <string name="toolcard_exit_code">код выхода %1$d</string>
+    <string name="toolcard_showing_of">показано %1$d из %2$d</string>
+    <string name="toolcard_more">ещё %1$d</string>
+    <string name="toolcard_section_in">Ввод</string>
+    <string name="toolcard_section_out">Вывод</string>
+    <string name="toolcard_section_locations">Расположения</string>
+    <plurals name="settings_forget_hosts_confirm_body">
+        <item quantity="one">С этого телефона будет удалён %d сохранённый harness и его сопряжение с реле. Чтобы снова им пользоваться, подключите или сопрягите его заново.</item>
+        <item quantity="few">С этого телефона будут удалены %d сохранённых harness и их сопряжения с реле. Чтобы снова ими пользоваться, подключите или сопрягите их заново.</item>
+        <item quantity="many">С этого телефона будут удалены %d сохранённых harness и их сопряжения с реле. Чтобы снова ими пользоваться, подключите или сопрягите их заново.</item>
+        <item quantity="other">С этого телефона будут удалены %d сохранённых harness и их сопряжения с реле. Чтобы снова ими пользоваться, подключите или сопрягите их заново.</item>
+    </plurals>
+    <plurals name="toolcard_blocks">
+        <item quantity="one">%d блок</item>
+        <item quantity="few">%d блока</item>
+        <item quantity="many">%d блоков</item>
+        <item quantity="other">%d блока</item>
+    </plurals>
+    <plurals name="toolcard_locations">
+        <item quantity="one">%d расположение</item>
+        <item quantity="few">%d расположения</item>
+        <item quantity="many">%d расположений</item>
+        <item quantity="other">%d расположения</item>
+    </plurals>
+    <plurals name="toolcard_files">
+        <item quantity="one">%d файл</item>
+        <item quantity="few">%d файла</item>
+        <item quantity="many">%d файлов</item>
+        <item quantity="other">%d файла</item>
+    </plurals>
+    <plurals name="toolcard_results">
+        <item quantity="one">%d результат</item>
+        <item quantity="few">%d результата</item>
+        <item quantity="many">%d результатов</item>
+        <item quantity="other">%d результата</item>
+    </plurals>
+    <plurals name="toolcard_lines">
+        <item quantity="one">%d строка</item>
+        <item quantity="few">%d строки</item>
+        <item quantity="many">%d строк</item>
+        <item quantity="other">%d строки</item>
+    </plurals>
+    <plurals name="toolcard_sources">
+        <item quantity="one">%d источник</item>
+        <item quantity="few">%d источника</item>
+        <item quantity="many">%d источников</item>
+        <item quantity="other">%d источника</item>
+    </plurals>
+</resources>

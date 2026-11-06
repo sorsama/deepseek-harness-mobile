@@ -31,6 +31,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -94,6 +95,14 @@ data class ConnectUiState(
     val attempted: String? = null,
     /** The loop is still retrying in the background, so a cancel is worth offering. */
     val retrying: Boolean = false,
+    /**
+     * Consecutive failed handshake attempts reported by the connection loop; 0 while none failed.
+     *
+     * Mirrored from [ConnectionManager] so the connection-lost surface can say "Attempt 2" the way
+     * the design does, instead of a generic "reconnecting" that hides how often this has already
+     * failed. UI-only: nothing makes decisions from it.
+     */
+    val attempts: Int = 0,
     /** The launch-token prompt is showing. */
     val signInOpen: Boolean = false,
     /** An exchange is in flight. */
@@ -205,6 +214,17 @@ class ConnectViewModel @Inject constructor(
     private var probeJob: Job? = null
 
     /**
+     * The pre-flight of a manual or discovered connect: validation, the probe and the writes that
+     * remember the host. Held so Cancel can stop it. Without it, Cancel only reset the screen and the
+     * probe went on to finish behind it, then either connected the app the user had backed out of or
+     * raised a failure over the form they had gone back to.
+     */
+    private val preflight = LatestAttempt()
+
+    /** The hand-off to the connection manager, so Cancel can stop one that has not started its loop. */
+    private val handoff = LatestAttempt()
+
+    /**
      * Exchange a harness launch token for a browser session, then retry the connection.
      *
      * Harness 0.1.2 authenticates its whole `/api` surface, so a direct connection to a harness
@@ -266,6 +286,7 @@ class ConnectViewModel @Inject constructor(
                         // no address at all, and the message read "Something answered at , but…".
                         attempted = current.attempted ?: conn.host?.authority,
                         retrying = !owned && !connected && conn.attempts > 0,
+                        attempts = if (owned) current.attempts else conn.attempts,
                         // The Recent card's liveness dot used to be greyed by the failure callback
                         // that no longer exists; without this a dead entry keeps looking healthy.
                         recentStatus = current.attempted
@@ -713,10 +734,11 @@ class ConnectViewModel @Inject constructor(
         val isLoopback = input.host == LOOPBACK || input.host == "localhost"
 
         localStage = ConnectStage.Validating
-        _state.update { it.copy(stage = ConnectStage.Validating, failure = null, attempted = authority) }
+        _state.update { it.copy(stage = ConnectStage.Validating, failure = null, attempted = authority, attempts = 0) }
 
-        viewModelScope.launch {
+        preflight.start(viewModelScope) {
             val remembered = hostsStore.hosts.first()
+            ensureActive()
             val paired = remembered.firstOrNull { it.authority == authority && it.isRelay }
             // A remembered direct host is probed through its record too: that is where its
             // session cookie lives, and an anonymous probe of a harness this phone is signed in
@@ -732,7 +754,7 @@ class ConnectViewModel @Inject constructor(
             // supported case with a confident, wrong explanation.
             if (!isLoopback && paired == null && input.useTls == null && !discoveryEngine.isOnLocalSubnet(input.host)) {
                 fail(ConnectFailure.DifferentSubnet(discoveryEngine.localSubnetLabel()), authority)
-                return@launch
+                return@start
             }
             localStage = ConnectStage.Reaching
             _state.update { it.copy(stage = ConnectStage.Reaching) }
@@ -745,30 +767,36 @@ class ConnectViewModel @Inject constructor(
                 config = known,
                 basePath = input.basePath,
             )
+            // The probe is a blocking call and does not notice a cancel while it runs. Whatever it
+            // found, a Cancel that arrived meanwhile has already put the screen back, and a late
+            // result must not connect, fail or write anything over that.
+            ensureActive()
             if (outcome !is ProbeOutcome.Reachable) {
                 // Authentication happens before a successful probe. Remember the exact attempted
                 // authority so a first-time host can exchange its launch token from the dialog.
                 if (outcome is ProbeOutcome.Unauthenticated && paired == null) {
                     val target = hostsStore.rememberHost(name = input.host, host = input.host,
                         port = portInt, isLoopback = isLoopback, useTls = useTls, basePath = input.basePath)
+                    ensureActive()
                     _state.update { it.copy(remembered = it.remembered.filterNot { h -> h.id == target.id } + target) }
                     if (pastedToken != null) {
                         val exchange = harnessSessions.pair(target.id, target.baseUrl, pastedToken)
+                        ensureActive()
                         if (exchange is SessionExchange.Granted) {
                             _state.update { it.copy(attempted = authority) }
                             connectTo(target)
-                            return@launch
+                            return@start
                         }
                         // The token was stale or for another harness process: fall through to the
                         // ordinary sign-in failure, which offers the dialog for a fresh one.
                     }
                 }
                 fail(ConnectFailure.from(outcome, relay = paired != null), authority)
-                return@launch
+                return@start
             }
             if (paired != null) {
                 connectTo(paired)
-                return@launch
+                return@start
             }
             hostsStore.addKnownPort(portInt)
             val config = hostsStore.rememberHost(
@@ -780,17 +808,21 @@ class ConnectViewModel @Inject constructor(
                 description = outcome.description,
                 basePath = input.basePath,
             )
+            ensureActive()
             connectTo(config)
         }
     }
 
     /** Stop a connect attempt that the loop would otherwise keep retrying every few seconds. */
     fun cancelConnect() {
+        // Stop the pre-flight first, so nothing it is still doing can land after the reset below.
+        preflight.cancel()
+        handoff.cancel()
         // Keep ownership: the manager resets its own state on disconnect, but claiming Idle here
         // means the screen is never briefly re-driven by a trailing emission.
         localStage = ConnectStage.Idle
         connectionManager.disconnect()
-        _state.update { it.copy(stage = ConnectStage.Idle, failure = null, retrying = false) }
+        _state.update { it.copy(stage = ConnectStage.Idle, failure = null, retrying = false, attempts = 0) }
     }
 
     /**
@@ -828,15 +860,17 @@ class ConnectViewModel @Inject constructor(
                 failure = null,
                 attempted = host.authority,
                 retrying = false,
+                attempts = 0,
             )
         }
-        viewModelScope.launch { connectionManager.connect(host) }
+        handoff.start(viewModelScope) { connectionManager.connect(host) }
     }
 
     fun connectDiscovered(discovered: DiscoveredHost) {
         _state.update { it.copy(failure = null, attempted = discovered.authority) }
-        viewModelScope.launch {
+        preflight.start(viewModelScope) {
             hostsStore.addKnownPort(discovered.port)
+            ensureActive()
             val config = hostsStore.rememberHost(
                 name = hostLabel(discovered.host),
                 host = discovered.host,
@@ -844,6 +878,7 @@ class ConnectViewModel @Inject constructor(
                 isLoopback = false,
                 description = discovered.description,
             )
+            ensureActive()
             connectTo(config)
         }
     }

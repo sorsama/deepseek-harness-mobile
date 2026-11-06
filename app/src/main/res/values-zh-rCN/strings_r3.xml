@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sessions drawer: ordering, grouping and dragging -->
+    <string name="chatlist_sort_project">按项目分组</string>
+    <string name="chatlist_group_other">其他</string>
+    <string name="chatlist_move_up">上移</string>
+    <string name="chatlist_move_down">下移</string>
+    <string name="chatlist_move_announce">已移到第 %1$d 位，共 %2$d 位</string>
+    <string name="chatlist_reorder_scope">在“%1$s”内移动</string>
+    <string name="chatlist_reorder_projects">正在移动项目</string>
+    <string name="chatlist_reorder_blocked">会话只能在所属项目内移动</string>
+    <string name="chatlist_reorder_failed">无法移动该会话，已恢复原位。</string>
+    <string name="chatlist_reorder_project_failed">无法移动该项目，已恢复原位。</string>
+    <string name="chatlist_project_collapse">折叠 %1$s</string>
+    <string name="chatlist_project_expand">展开 %1$s</string>
+
+    <!-- Sessions drawer: archived filter and the needs-you card -->
+    <string name="chatlist_archived_none">还没有归档的内容</string>
+    <string name="chatlist_restore_failed">无法恢复该会话</string>
+    <string name="chatlist_approve_long">命令较长，请先看完再批准。</string>
+</resources>

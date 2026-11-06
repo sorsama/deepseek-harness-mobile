@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_panel_model_title">模型</string>
+    <string name="ink_panel_model_permission">模型与权限</string>
+    <string name="ink_panel_model_default">Harness 默认</string>
+    <string name="ink_panel_model_available">在 %1$s 可用</string>
+    <string name="ink_panel_effort_default">默认</string>
+    <string name="ink_panel_permission_readonly_desc">读取文件并回答。不会更改任何内容。</string>
+    <string name="ink_panel_permission_workspace_desc">在工作区内编辑。命令仍需确认。</string>
+    <string name="ink_panel_permission_full_desc">可操作电脑上的任何位置，不再请求批准。</string>
+    <string name="ink_panel_subagent_followup">向此子智能体追问</string>
+    <string name="ink_panel_trajectory_empty_hint">智能体工作时，工具调用会显示在这里。</string>
+    <string name="ink_panel_open_session">打开会话</string>
+</resources>

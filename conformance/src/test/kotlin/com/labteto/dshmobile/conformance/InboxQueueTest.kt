@@ -119,8 +119,12 @@ class InboxQueueTest {
                 WireJson.decodeFromJsonElement(SessionControlFrame.serializer(), raw)
             }.getOrNull() ?: continue
             if (frame !is SessionControlFrame.Projection) continue
-            if (frame.sessionId != sessionId || frame.key != "inbox") continue
-            val items = InboxProjection.itemsFrom(frame.value)
+            if (frame.sessionId != sessionId) continue
+            // 0.2.2 folds every projection key one committed event touched into one `changes`
+            // frame; older hosts send one key per frame. The DTO normalizes both to `changes`, so
+            // this reads the same entry whether the host under test is before or after the split.
+            val inbox = frame.changes.firstOrNull { it.key == "inbox" } ?: continue
+            val items = InboxProjection.itemsFrom(inbox.value)
             if (items.isNotEmpty()) return items
         }
     }

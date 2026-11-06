@@ -501,6 +501,7 @@ private fun mapContentBlock(block: com.labteto.dshmobile.core.wire.dto.ContentBl
         is com.labteto.dshmobile.core.wire.dto.ContentBlock.Image -> ContentBlockView.ImageBlock(
             attachmentId = block.attachment.attachmentId,
             mediaType = block.attachment.mediaType,
+            bytes = block.attachment.bytes,
             width = block.attachment.width,
             height = block.attachment.height,
             name = block.attachment.name,

@@ -86,6 +86,35 @@ object RelayPairing {
     }
 
     /**
+     * The origins an invitation names, in the order a client should try them.
+     *
+     * A relay on a laptop with both Ethernet and Wi-Fi cannot tell which network the phone is on,
+     * so it names every address it could be reached at, best guess first. Trying only [primary]
+     * is what makes a QR that looks perfect fail with "could not reach 192.168.1.122" when the
+     * phone is on the 192.168.1.140 subnet — the invitation knew where to go and the client never
+     * asked again.
+     *
+     * Alternatives are additive and optional; entries that are not usable `http(s)` origins are
+     * dropped rather than failed over to, and duplicates (including one repeating [primary]) are
+     * collapsed so one bad guess cannot be retried twice.
+     */
+    fun candidates(primary: String, alternatives: List<String>? = null): List<String> {
+        val seen = LinkedHashSet<String>()
+        val ordered = ArrayList<String>()
+        fun add(raw: String?) {
+            val text = raw?.trim().orEmpty()
+            if (text.isEmpty()) return
+            val url = text.toHttpUrlOrNull() ?: return
+            if (url.scheme != "http" && url.scheme != "https") return
+            val key = "${url.host}:${url.port}${url.encodedPath.trimEnd('/')}"
+            if (seen.add(key)) ordered += text
+        }
+        add(primary)
+        alternatives.orEmpty().forEach(::add)
+        return ordered
+    }
+
+    /**
      * Claim a pairing code, minting this device's bearer token.
      *
      * [baseUrl] must be the relay's **primary** origin. The plain-HTTP compatibility listener serves
@@ -262,6 +291,15 @@ data class RelayPairingPayload(
     /** Origin of the primary listener, scheme included. This is the one to use. */
     val url: String,
     /**
+     * Other origins that serve this same relay, most likely first.
+     *
+     * A machine with more than one network address cannot know which one a phone is on, so the
+     * relay names all of them and expects a client to fail over when [url] does not answer. It is
+     * additive and the payload version stays 1: a client that does not know this field reads
+     * [url] exactly as before.
+     */
+    val urls: List<String>? = null,
+    /**
      * Origin of the plain-HTTP compatibility listener, when one is running.
      *
      * Read but deliberately unused. It exists for clients that cannot hold a credential; this one
@@ -340,6 +378,26 @@ sealed interface RelayPairOutcome {
 
     /** Nothing usable answered; [kind] is why, including a certificate-pin mismatch. */
     data class Unreachable(val kind: TransportFailure, val message: String?) : RelayPairOutcome
+}
+
+/**
+ * Whether the next origin the invitation names is worth a try.
+ *
+ * Only the failures that say nothing about the *code* are worth moving on from. A refused code, a
+ * lockout, or a paid-out pairing are answers about this invitation, and asking a second address the
+ * same question would either be the same answer or burn the code's one use. A pin mismatch is the
+ * deliberate exception: another address answering with a different key is exactly what a
+ * misdirected QR looks like, so the client stops and says so instead of shopping for a match.
+ */
+fun RelayPairOutcome.worthAnotherOrigin(): Boolean = when (this) {
+    is RelayPairOutcome.Paired,
+    RelayPairOutcome.Rejected,
+    is RelayPairOutcome.RateLimited,
+    -> false
+    RelayPairOutcome.NotARelay,
+    RelayPairOutcome.HostRefused,
+    -> true
+    is RelayPairOutcome.Unreachable -> kind != TransportFailure.CERTIFICATE_PIN
 }
 
 /** Where a relay is, relative to an address that was asked. */

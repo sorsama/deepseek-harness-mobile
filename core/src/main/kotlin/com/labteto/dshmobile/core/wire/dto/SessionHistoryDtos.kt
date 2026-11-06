@@ -7,6 +7,7 @@ import com.labteto.dshmobile.core.wire.encodeToJsonElement
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
@@ -18,9 +19,11 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -221,12 +224,21 @@ data class SessionPage(
  * to see a reply while it is being written. It is declared as `true | undefined` upstream, so a
  * follower that does not want them omits the key rather than sending `false`; WireJson drops the
  * null.
+ *
+ * [activate] (harness 0.2.2) asks the host to promote a *prepared* session in the background;
+ * before 0.2.2 every follow activated it, and omission now leaves the read passive. It defaults to
+ * `true`, so opening a transcript activates it the way the web client's follow does instead of
+ * freezing at the prepared snapshot. The host promotes only an ordinary session that is still
+ * prepared (`origin !== 'subagent'`), so the same default on a subagent follow never promotes the
+ * child; a pre-0.2.2 host drops the key as unknown. An explicit `null` omits it, leaving the read
+ * passive.
  */
 @Serializable
 data class SessionFollowRequest(
     @SerialName("address") val address: SessionAddress,
     @SerialName("maxMessages") val maxMessages: Int? = null,
     @SerialName("assistantStream") val assistantStream: Boolean? = null,
+    @SerialName("activate") val activate: Boolean? = true,
 )
 
 // ============================================================================================
@@ -533,13 +545,19 @@ sealed class SessionControlFrame {
         @SerialName("jobs") val jobs: List<JobView> = emptyList(),
     ) : SessionControlFrame()
 
-    /** One projection unit's finished value and its durable watermark. */
+    /**
+     * Every projection unit one committed event changed, at that event's watermark.
+     *
+     * Harness 0.2.2 folds projections per committed event and sends one frame carrying every key
+     * the event touched as `changes: [{key, val}]`. Through 0.2.1 each frame named exactly one
+     * `key` and `value`, so the serializer normalizes that shape to a one-element [changes] list:
+     * the store applies a frame the same way whichever host produced it.
+     */
     @Serializable
     data class Projection(
         @SerialName("type") override val type: String = "projection",
         @SerialName("sessionId") val sessionId: String,
-        @SerialName("key") val key: String,
-        @SerialName("value") val value: JsonElement,
+        @SerialName("changes") val changes: List<SessionProjectionChange> = emptyList(),
         @SerialName("seq") val seq: Int,
     ) : SessionControlFrame()
 
@@ -549,6 +567,18 @@ sealed class SessionControlFrame {
         val raw: JsonElement,
     ) : SessionControlFrame()
 }
+
+/**
+ * One projection key a 0.2.2 `session/control` frame reports as changed.
+ *
+ * The host calls the new value `val` on the wire — it is a change, not the durable `value` a
+ * baseline carries — so only the serialized name differs from the property here.
+ */
+@Serializable
+data class SessionProjectionChange(
+    @SerialName("key") val key: String,
+    @SerialName("val") val value: JsonElement,
+)
 
 /** The complete live-control baseline emitted once per control-stream generation. */
 @Serializable
@@ -585,9 +615,37 @@ object SessionControlFrameSerializer : KSerializer<SessionControlFrame> {
             "baseline" -> decodeFromJsonElement(SessionControlFrame.Baseline.serializer(), json)
             "queue" -> decodeFromJsonElement(SessionControlFrame.Queue.serializer(), json)
             "jobs" -> decodeFromJsonElement(SessionControlFrame.Jobs.serializer(), json)
-            "projection" -> decodeFromJsonElement(SessionControlFrame.Projection.serializer(), json)
+            "projection" -> decodeProjection(json)
             else -> SessionControlFrame.Unknown(type, json)
         }
+    }
+
+    /**
+     * Decode one `projection` frame from either generation of the control stream.
+     *
+     * Through harness 0.2.1 a frame carried a single top-level `key` and `value`; 0.2.2 carries
+     * every key the committed event changed as `changes: [{key, val}]`. Normalizing the old shape
+     * to a one-element list is what lets a pre-0.2.2 host and a current one share the store's
+     * apply path. A frame that names neither shape changed nothing visible, which reads as no
+     * changes rather than as a decode failure.
+     */
+    private fun decodeProjection(json: JsonObject): SessionControlFrame.Projection {
+        val sessionId = json["sessionId"]?.jsonPrimitive?.contentOrNull
+            ?: throw SerializationException("projection frame without a sessionId")
+        val changes = if (json.containsKey("changes")) {
+            (json["changes"] as? JsonArray).orEmpty().map {
+                decodeFromJsonElement(SessionProjectionChange.serializer(), it)
+            }
+        } else {
+            val key = json["key"]?.jsonPrimitive?.contentOrNull
+            if (key == null) emptyList()
+            else listOf(SessionProjectionChange(key = key, value = json["value"] ?: JsonNull))
+        }
+        return SessionControlFrame.Projection(
+            sessionId = sessionId,
+            changes = changes,
+            seq = json["seq"]?.jsonPrimitive?.intOrNull ?: 0,
+        )
     }
 }
 

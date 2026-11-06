@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_failed_rename">اس سیشن کا نام تبدیل نہیں ہو سکا۔</string>
+    <string name="details_failed_fork">اس سیشن کو فورک نہیں کیا جا سکا۔</string>
+    <string name="details_failed_archive">اس سیشن کو آرکائیو نہیں کیا جا سکا۔</string>
+    <string name="details_archived">سیشن آرکائیو ہو گیا۔</string>
+    <string name="details_failed_stop_job">وہ کام روکا نہیں جا سکا۔</string>
+    <string name="details_failed_queue_remove">اسے قطار سے ہٹایا نہیں جا سکا۔</string>
+    <string name="details_failed_goal">ہدف اپ ڈیٹ نہیں ہو سکا۔</string>
+    <string name="details_failed_plan">پلان موڈ تبدیل نہیں ہو سکا۔</string>
+    <string name="details_failed_link">ابھی لنک نہیں بن سکا۔ اپنا کنکشن دیکھیں۔</string>
+    <string name="details_fork_done_title">فورک تیار ہے</string>
+    <string name="details_fork_done_body">اس سیشن کی ایک کاپی بن گئی ہے۔ ابھی کھولیں؟</string>
+    <string name="details_fork_open">کاپی کھولیں</string>
+    <string name="details_fork_stay">یہیں رہیں</string>
+    <string name="details_open_output">آؤٹ پٹ کھولیں</string>
+    <string name="models_switch_failed">ماڈل تبدیل نہیں ہو سکا۔</string>
+    <string name="settings_forget_hosts_confirm_title">تمام harness بھول جائیں؟</string>
+    <string name="settings_forget_hosts_confirm_action">سب بھول جائیں</string>
+    <string name="settings_clear_last_sessions_confirm_title">آخری کھولا ہوا سیشن بھول جائیں؟</string>
+    <string name="settings_clear_last_sessions_confirm_body">اگلی بار ایپ ہر harness پر آپ کے آخری استعمال شدہ سیشن کے بجائے سب سے نیا سیشن کھولے گی۔ کوئی سیشن حذف نہیں ہوگا۔</string>
+    <string name="settings_clear_last_sessions_confirm_action">بھول جائیں</string>
+    <string name="feedback_error_conflict">یہ ریٹنگ کسی اور جگہ سے بدل دی گئی تھی۔ آپ کا نوٹ محفوظ ہے، اس لیے دوبارہ بھیج سکتے ہیں۔</string>
+    <string name="feedback_error_generic">آپ کی رائے محفوظ نہیں ہو سکی۔ تھوڑی دیر بعد دوبارہ کوشش کریں۔</string>
+    <string name="toolcard_title_tool">ٹول</string>
+    <string name="toolcard_title_terminal">ٹرمینل</string>
+    <string name="toolcard_title_diff">فرق</string>
+    <string name="toolcard_title_search">تلاش</string>
+    <string name="toolcard_title_web">ویب</string>
+    <string name="toolcard_running">چل رہا ہے</string>
+    <string name="toolcard_killed_by">%1$s کے ذریعے بند ہوا</string>
+    <string name="toolcard_exit_code">ایگزٹ %1$d</string>
+    <string name="toolcard_showing_of">%2$d میں سے %1$d دکھائے جا رہے ہیں</string>
+    <string name="toolcard_more">مزید %1$d</string>
+    <string name="toolcard_section_in">ان پٹ</string>
+    <string name="toolcard_section_out">آؤٹ پٹ</string>
+    <string name="toolcard_section_locations">مقامات</string>
+    <plurals name="settings_forget_hosts_confirm_body">
+        <item quantity="one">اس فون سے %d محفوظ harness اور اس کی ریلے پیئرنگ ہٹا دی جائے گی۔ دوبارہ استعمال کے لیے اسے نئے سرے سے جوڑنا یا پیئر کرنا ہوگا۔</item>
+        <item quantity="other">اس فون سے %d محفوظ harness اور ان کی ریلے پیئرنگ ہٹا دی جائیں گی۔ دوبارہ استعمال کے لیے انہیں نئے سرے سے جوڑنا یا پیئر کرنا ہوگا۔</item>
+    </plurals>
+    <plurals name="toolcard_blocks">
+        <item quantity="one">%d بلاک</item>
+        <item quantity="other">%d بلاکس</item>
+    </plurals>
+    <plurals name="toolcard_locations">
+        <item quantity="one">%d مقام</item>
+        <item quantity="other">%d مقامات</item>
+    </plurals>
+    <plurals name="toolcard_files">
+        <item quantity="one">%d فائل</item>
+        <item quantity="other">%d فائلیں</item>
+    </plurals>
+    <plurals name="toolcard_results">
+        <item quantity="one">%d نتیجہ</item>
+        <item quantity="other">%d نتائج</item>
+    </plurals>
+    <plurals name="toolcard_lines">
+        <item quantity="one">%d لائن</item>
+        <item quantity="other">%d لائنیں</item>
+    </plurals>
+    <plurals name="toolcard_sources">
+        <item quantity="one">%d ماخذ</item>
+        <item quantity="other">%d ماخذ</item>
+    </plurals>
+</resources>

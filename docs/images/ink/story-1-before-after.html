@@ -1,0 +1,47 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 1600px; height: 1000px; overflow: hidden; background: #0B0C0F; color: #ECEDEF;
+       font-family: "Segoe UI", system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+.board { width: 1600px; height: 1000px; padding: 52px 64px 34px; display: flex; flex-direction: column; }
+.kicker { font-size: 13px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: #6E9BFF; }
+h1 { margin-top: 14px; font-size: 54px; line-height: 1.02; font-weight: 600; letter-spacing: -2px; }
+h1 .muted { color: #80848D; }
+.sub { margin-top: 14px; font-size: 18px; color: #A0A3AB; }
+.row { display: flex; gap: 36px; margin-top: 36px; flex: 1; }
+.phone { width: 285px; flex: none; }
+.phone .frame { width: 285px; height: 617px; border-radius: 30px; overflow: hidden;
+                border: 1px solid #23252C; background: #15161B; box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+.phone img { width: 285px; height: 617px; object-fit: cover; display: block; }
+.cap { margin-top: 16px; font-size: 14px; color: #80848D; letter-spacing: .02em; }
+.cap b { color: #ECEDEF; font-weight: 500; }
+.after .frame { border-color: #6E9BFF; box-shadow: 0 24px 70px rgba(110,155,255,.22); }
+.after .cap { color: #9DBBFF; }
+.after .cap b { color: #C9D9FF; }
+.foot { margin-top: auto; display: flex; gap: 26px; align-items: center; font-size: 14px; color: #80848D; }
+.foot .dot { width: 5px; height: 5px; border-radius: 50%; background: #2A2C33; }
+.badge { padding: 7px 14px; border-radius: 999px; border: 1px solid #23252C; background: #15161B; color: #C9CBD1; font-size: 13px; }
+.accents { display: flex; gap: 18px; margin-top: 22px; }
+.acc { width: 76px; text-align: center; font-size: 12px; color: #80848D; }
+.acc .c { width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 10px; border: 1px solid rgba(255,255,255,.14); }
+.side { flex: 1; display: flex; flex-direction: column; gap: 26px; padding-top: 6px; }
+.tile { background: #15161B; border: 1px solid #23252C; border-radius: 20px; padding: 26px 28px; }
+.tile h2 { font-size: 24px; font-weight: 600; letter-spacing: -.5px; }
+.tile p { margin-top: 8px; font-size: 15px; color: #A0A3AB; line-height: 1.5; }
+.chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.chip { padding: 9px 16px; border-radius: 999px; border: 1px solid #2A2C33; background: #0B0C0F; color: #C9CBD1; font-size: 14px; }
+.chip.on { background: #ECEDEF; color: #0B0C0F; border-color: #ECEDEF; font-weight: 600; }
+.chip.blue { background: #141A2B; border-color: #233256; color: #9DBBFF; }
+.size-xl { font-size: 26px; font-weight: 600; letter-spacing: -.5px; }
+.size-lg { font-size: 19px; font-weight: 600; }
+.size-md { font-size: 15px; color: #A0A3AB; }
+.size-sm { font-size: 12px; color: #80848D; }</style></head><body><div class='board'>
+  <div class='kicker'>DSH Mobile · redesign</div>
+  <h1>Same app. <span class='muted'>New skin.</span></h1>
+  <div class='sub'>Every screen rebuilt on the Ink design from your reference — then fixed where it clipped.</div>
+  <div class='row'>
+    <div class='phone'><div class='frame'><img src='file:///G:/LAB/deepseek-harness-mobile/docs/images/home.png'></div><div class='cap'><b>Before</b> · Connect</div></div>
+    <div class='phone after'><div class='frame'><img src='file:///G:/LAB/deepseek-harness-mobile/docs/images/ink/connect-dark.png'></div><div class='cap'><b>After</b> · Connect · dark</div></div>
+    <div class='phone'><div class='frame'><img src='file:///G:/LAB/deepseek-harness-mobile/docs/images/chat.png'></div><div class='cap'><b>Before</b> · Chat</div></div>
+    <div class='phone after'><div class='frame'><img src='file:///G:/LAB/deepseek-harness-mobile/docs/images/ink/chat-light.png'></div><div class='cap'><b>After</b> · Chat · light</div></div>
+  </div>
+  <div class='foot'><span class='badge'>25 / 25 screens</span><span class='badge'>Light + Dark</span><span class='badge'>Geist type</span><span class='dot'></span><span>422 tests · lint clean · 11 languages</span></div>
+</div></body></html>

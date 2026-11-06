@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="splash_tagline">آپ کا DeepSeek Harness، آپ کی جیب میں۔</string>
+    <string name="splash_connecting">%1$s سے جڑ رہا ہے…</string>
+    <string name="splash_reconnecting">%1$s سے دوبارہ جڑ رہا ہے…</string>
+    <string name="appearance_customize_hint">رنگ اور ٹچ فیڈبیک فوراً لاگو ہو جاتے ہیں۔</string>
+    <string name="appearance_accent">نمایاں رنگ</string>
+    <string name="appearance_accent_ink">روشنائی نیلا</string>
+    <string name="appearance_accent_violet">بنفشی</string>
+    <string name="appearance_accent_teal">فیروزی</string>
+    <string name="appearance_accent_green">سبز</string>
+    <string name="appearance_accent_amber">عنبری</string>
+    <string name="appearance_accent_rose">گلابی</string>
+    <string name="appearance_accent_mono">یک رنگ</string>
+    <string name="appearance_amoled">خالص سیاہ</string>
+    <string name="appearance_amoled_hint">OLED اسکرینوں کے لیے خالص سیاہ پس منظر</string>
+    <string name="appearance_text_size">متن کا سائز</string>
+    <string name="appearance_text_size_compact">مختصر</string>
+    <string name="appearance_text_size_default">ڈیفالٹ</string>
+    <string name="appearance_text_size_large">بڑا</string>
+    <string name="appearance_text_size_larger">بہت بڑا</string>
+    <string name="appearance_haptics">ٹچ فیڈبیک</string>
+    <string name="appearance_haptics_hint">بٹن دبانے اور فیصلے کرنے پر ہلکی کمپن</string>
+    <string name="appearance_reset">ظاہری شکل ری سیٹ کریں</string>
+
+    <!-- Appearance: custom accent colour -->
+    <string name="appearance_accent_custom">حسبِ ضرورت</string>
+    <string name="appearance_accent_custom_value">حسبِ ضرورت، %1$s</string>
+    <string name="appearance_custom_title">اپنی مرضی کا نمایاں رنگ</string>
+    <string name="appearance_custom_hint">ایک رنگ منتخب کریں۔ متن پڑھنے کے قابل رہے اس لیے ہر تھیم میں اس کی روشنی ایڈجسٹ کی جاتی ہے۔</string>
+    <string name="appearance_custom_preview">پیش منظر</string>
+    <string name="appearance_custom_sample_button">بٹن</string>
+    <string name="appearance_custom_sample_chip">چپ</string>
+    <string name="appearance_custom_sample_link">لنک</string>
+    <string name="appearance_custom_area">سیچوریشن اور چمک</string>
+    <string name="appearance_custom_area_state">سیچوریشن %1$d%%، چمک %2$d%%</string>
+    <string name="appearance_custom_more_saturation">زیادہ سیچوریشن</string>
+    <string name="appearance_custom_less_saturation">کم سیچوریشن</string>
+    <string name="appearance_custom_more_brightness">زیادہ چمک</string>
+    <string name="appearance_custom_less_brightness">کم چمک</string>
+    <string name="appearance_custom_hue">رنگت</string>
+    <string name="appearance_custom_hue_state">%1$d°</string>
+    <string name="appearance_custom_hex">ہیکس رنگ</string>
+    <string name="appearance_custom_hex_invalid">چھ ہیکس ہندسے درج کریں، جیسے #6E9BFF</string>
+    <string name="appearance_custom_quick_picks">فوری انتخاب</string>
+    <string name="appearance_custom_quick_pick">%1$s استعمال کریں</string>
+    <string name="appearance_custom_apply">لاگو کریں</string>
+</resources>

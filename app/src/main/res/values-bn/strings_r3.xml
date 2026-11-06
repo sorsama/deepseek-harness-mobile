@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sessions drawer: ordering, grouping and dragging -->
+    <string name="chatlist_sort_project">প্রজেক্ট অনুযায়ী গ্রুপ করুন</string>
+    <string name="chatlist_group_other">অন্যান্য</string>
+    <string name="chatlist_move_up">উপরে নিন</string>
+    <string name="chatlist_move_down">নিচে নিন</string>
+    <string name="chatlist_move_announce">%2$dটির মধ্যে %1$d নম্বরে সরানো হয়েছে</string>
+    <string name="chatlist_reorder_scope">%1$s-এর ভেতরে সরানো হচ্ছে</string>
+    <string name="chatlist_reorder_projects">প্রজেক্ট সরানো হচ্ছে</string>
+    <string name="chatlist_reorder_blocked">সেশন শুধু নিজের প্রজেক্টের ভেতরেই সরানো যায়</string>
+    <string name="chatlist_reorder_failed">ওই সেশন সরানো গেল না। এটি আগের জায়গায় ফিরে গেছে।</string>
+    <string name="chatlist_reorder_project_failed">ওই প্রজেক্ট সরানো গেল না। এটি আগের জায়গায় ফিরে গেছে।</string>
+    <string name="chatlist_project_collapse">%1$s গুটিয়ে নিন</string>
+    <string name="chatlist_project_expand">%1$s খুলুন</string>
+
+    <!-- Sessions drawer: archived filter and the needs-you card -->
+    <string name="chatlist_archived_none">এখনো কিছু আর্কাইভ করা নেই</string>
+    <string name="chatlist_restore_failed">ওই সেশন ফিরিয়ে আনা গেল না</string>
+    <string name="chatlist_approve_long">কমান্ডটি লম্বা। অনুমোদনের আগে পুরোটা পড়ে নিন।</string>
+</resources>

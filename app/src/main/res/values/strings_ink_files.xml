@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Workspace: files, preview, terminal (Ink redesign) -->
+    <string name="ink_files_search_files">Search files</string>
+    <string name="ink_files_filter_files">Filter this folder</string>
+    <string name="ink_files_no_matches">No matching files</string>
+    <string name="ink_files_all_files">All files</string>
+    <string name="ink_files_copy_contents">Copy contents</string>
+    <string name="ink_files_rendered">Rendered</string>
+    <string name="ink_files_source">Source</string>
+    <string name="ink_files_output">Output</string>
+    <!-- Terminal key row -->
+    <string name="ink_files_key_tab">Tab</string>
+    <string name="ink_files_key_esc">Esc</string>
+    <string name="ink_files_key_up">Arrow up</string>
+    <string name="ink_files_key_down">Arrow down</string>
+    <string name="ink_files_key_ctrl_c">Ctrl C</string>
+    <string name="ink_files_clear_terminal">Clear terminal</string>
+    <string name="ink_files_send_enter">Send Enter</string>
+    <!-- Automations -->
+    <string name="ink_files_automations_intro">Scheduled tasks the harness runs on your computer, even while your phone is away.</string>
+    <string name="ink_files_new_automation">New automation</string>
+    <!-- Plugins -->
+    <string name="ink_files_plugins_intro">Plugins install on the harness computer. Changes apply to new sessions.</string>
+    <!-- Archived -->
+    <string name="ink_files_archived_search">Search archived sessions</string>
+    <string name="ink_files_this_week">This week</string>
+    <string name="ink_files_this_month">This month</string>
+    <string name="ink_files_changed_session">Changed this session</string>
+</resources>

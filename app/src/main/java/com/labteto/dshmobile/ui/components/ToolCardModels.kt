@@ -20,6 +20,7 @@ sealed interface ContentBlockView {
     data class ImageBlock(
         val attachmentId: String,
         val mediaType: String,
+        val bytes: Int,
         val width: Int,
         val height: Int,
         val name: String? = null,

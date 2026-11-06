@@ -98,6 +98,20 @@ private const val MAX_AUTO_PAGES = 1
 private const val MAX_CUT_PAGES = 12
 
 /**
+ * What a [ChatTranscript] has already done, kept above the tab swap that disposes it.
+ *
+ * Plain fields rather than state: they are only read inside effects, and an effect that changed a
+ * snapshot value here would recompose the screen for nothing.
+ */
+internal class TranscriptMemory {
+    /** The session whose newest message the list was last scrolled to on open. */
+    var scrolledForSession: String? = null
+
+    /** The last send tick the transcript followed to the bottom. */
+    var handledSentTick: Int = 0
+}
+
+/**
  * The conversation itself.
  *
  * The list is laid out in reverse: the newest row is index 0, pinned at the bottom of the
@@ -134,6 +148,12 @@ internal fun ChatTranscript(
     sentTick: Int = 0,
     /** Whether to follow the tail as a reply is written; off leaves new rows below the viewport. */
     followStreaming: Boolean = true,
+    /**
+     * What this transcript has already acted on. Held by the caller, because the tab swap disposes
+     * this composition and a fresh one would otherwise take a session it had scrolled to, and a send
+     * it had already followed, for new ones.
+     */
+    memory: TranscriptMemory = remember { TranscriptMemory() },
 ) {
     // Only the nodes that draw something: a zero-height item still costs its 4dp gap, and a turn's
     // worth of structural events stacks those gaps into a blank band under the chrome.
@@ -198,10 +218,13 @@ internal fun ChatTranscript(
     // also where the list starts, so this only has to undo a position inherited from the session
     // that was open before. Following the tail is handled just below, where the anchoring the
     // reversal buys is overridden only when it would otherwise cost the reader the newest row.
-    var lastSession by remember { mutableStateOf<String?>(null) }
+    //
+    // The marker lives in [memory], not here. Leaving for the Trajectory or Files tab disposes this
+    // composition, and a marker that went with it made coming back look like opening a new session:
+    // the list jumped to the newest message however far up the reader had been.
     LaunchedEffect(sessionId) {
-        if (sessionId == lastSession) return@LaunchedEffect
-        lastSession = sessionId
+        if (sessionId == memory.scrolledForSession) return@LaunchedEffect
+        memory.scrolledForSession = sessionId
         if (itemCount > 0) listState.scrollToItem(0)
     }
 
@@ -360,7 +383,10 @@ internal fun ChatTranscript(
     // Sending from halfway up the history used to leave the new message, and the reply to it, out
     // of view below. A send is the clearest possible "take me to the end".
     LaunchedEffect(sentTick) {
-        if (sentTick == 0) return@LaunchedEffect
+        // A tick this transcript already followed is history: the effect starts afresh whenever the
+        // tab swap rebuilds the screen, and replaying an old send yanked the reader to the bottom.
+        if (sentTick == 0 || sentTick == memory.handledSentTick) return@LaunchedEffect
+        memory.handledSentTick = sentTick
         followTail = true
         if (listState.firstVisibleItemIndex > JUMP_SNAP_ROWS) listState.scrollToItem(JUMP_SNAP_ROWS)
         listState.animateScrollToItem(0)
@@ -370,7 +396,7 @@ internal fun ChatTranscript(
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
         // Newest first, so the row the viewport anchors on is the one that grows.
         reverseLayout = true,
         // Still bottom-aligned: a transcript shorter than the viewport belongs above the composer,
@@ -378,7 +404,7 @@ internal fun ChatTranscript(
         // space, not the reversed one, so this reads the same as it always did — and it only has
         // any effect while the content is shorter than the viewport, which is exactly when no row
         // is growing under anyone's eyes.
-        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom),
+        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
     ) {
         if (displayRows.isEmpty()) {
             item(key = "empty") {

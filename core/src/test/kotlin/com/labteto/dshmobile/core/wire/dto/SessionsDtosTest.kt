@@ -87,6 +87,32 @@ class SessionsDtosTest {
     }
 
     @Test
+    fun `a follow request activates the session by default and can stay passive`() {
+        // Harness 0.2.2 makes `activate` optional and omission now leaves the read passive; an
+        // opened session must still activate like the web client's follow does, so the default
+        // has to reach the wire instead of being left for the host to guess.
+        val ordinary = encodeToJsonElement(
+            SessionFollowRequest.serializer(),
+            SessionFollowRequest(address = SessionAddress.Session(sessionId = "s1")),
+        ).jsonObject
+        assertTrue(ordinary["activate"]!!.jsonPrimitive.content.toBoolean())
+
+        // Explicitly declining it omits the key (the host reads `activate === true`), which is how
+        // a caller asks for a passive read.
+        val passive = encodeToJsonElement(
+            SessionFollowRequest.serializer(),
+            SessionFollowRequest(address = SessionAddress.Session(sessionId = "s1"), activate = null),
+        ).jsonObject
+        assertFalse(passive.containsKey("activate"))
+
+        val declined = encodeToJsonElement(
+            SessionFollowRequest.serializer(),
+            SessionFollowRequest(address = SessionAddress.Session(sessionId = "s1"), activate = false),
+        ).jsonObject
+        assertFalse(declined["activate"]!!.jsonPrimitive.content.toBoolean())
+    }
+
+    @Test
     fun `a follow snapshot carries the opted-in assistant baseline`() {
         val frame = WireJson.decodeFromString(
             SessionFollowFrameSerializer,

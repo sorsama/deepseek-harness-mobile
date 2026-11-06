@@ -16,9 +16,11 @@ reconnection, and access over local networks or the authenticated relay.
 
 ## Brand Personality
 
-Direct, restrained, familiar. Follow the Harness visual language and the existing
-Compose components and design tokens. Light, dark, and system themes serve phone
-use in changing ambient light.
+Direct, restrained, tactile. "Ink": a near-black canvas and warm-paper light scheme,
+one accent colour, Geist type, generous corner radii, and the mascot as the only
+expressive surface. The theme is customizable — scheme, accent, OLED black, text size
+and haptics — so the app can match the operator's device instead of prescribing one
+look. Motion explains a change; it never decorates one.
 
 ## Anti-references
 
@@ -30,7 +32,9 @@ ordinary workflows when an existing native control can express the same action.
 - Keep host-owned facts authoritative and distinguish pending work from completion.
 - Use progressive disclosure for tool details while keeping the conversation readable.
 - Preserve drafts and navigation context across interruptions.
-- Follow established mobile components rather than inventing new interaction styles.
+- Follow established mobile components and the Ink tokens rather than inventing one-off styles.
+- Never hide a control below a fold or behind a clipped edge: list, wrap or scroll instead.
+- Touch feedback is part of the interface — haptics and press states confirm what happened.
 
 ## Accessibility & Inclusion
 

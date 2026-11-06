@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_panel_model_title">Модель</string>
+    <string name="ink_panel_model_permission">Модель и разрешения</string>
+    <string name="ink_panel_model_default">По умолчанию в harness</string>
+    <string name="ink_panel_model_available">Доступна на %1$s</string>
+    <string name="ink_panel_effort_default">По умолчанию</string>
+    <string name="ink_panel_permission_readonly_desc">Читает файлы и отвечает. Ничего не меняется.</string>
+    <string name="ink_panel_permission_workspace_desc">Правки внутри рабочей области. Команды по-прежнему спрашивают разрешение.</string>
+    <string name="ink_panel_permission_full_desc">Всё на компьютере. Без запросов подтверждения.</string>
+    <string name="ink_panel_subagent_followup">Задать вопрос этому субагенту</string>
+    <string name="ink_panel_trajectory_empty_hint">Вызовы инструментов появляются здесь, пока агент работает.</string>
+    <string name="ink_panel_open_session">Открыть сеанс</string>
+</resources>

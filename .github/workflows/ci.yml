@@ -43,8 +43,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: deepseek-ai/deepseek-harness
-          ref: 687f282e8625c6b8d11ff58211a90524be2e4317
-          path: build/harness-0.2.1-rc.2
+          ref: 66491b05e3f05ad35bcdd4f6cd7ed26041d9e3db
+          path: build/harness-0.2.2-rc.1
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -53,7 +53,7 @@ jobs:
           version: 11.28.5
           run_install: false
       - name: Build pinned harness
-        working-directory: build/harness-0.2.1-rc.2
+        working-directory: build/harness-0.2.2-rc.1
         run: |
           pnpm install --frozen-lockfile
           # POSIX session checkpoints require the native flock addon before any model turn.
@@ -69,7 +69,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Real harness conformance
         env:
-          DSH_HARNESS_SRC: ${{ github.workspace }}/build/harness-0.2.1-rc.2
+          DSH_HARNESS_SRC: ${{ github.workspace }}/build/harness-0.2.2-rc.1
         run: ./gradlew :core:test :conformance:test --stacktrace
       - name: Upload conformance results
         if: always()

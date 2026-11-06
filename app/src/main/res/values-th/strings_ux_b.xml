@@ -19,7 +19,7 @@
     <string name="ux_b_view_answers">ดูคำตอบ</string>
     <string name="ux_b_skipped">ข้ามแล้ว</string>
     <string name="ux_b_answer">คำตอบ</string>
-    <string name="ux_b_automation_unavailable">โฮสต์นี้ไม่รองรับงานอัตโนมัติ</string>
+    <string name="ux_b_automation_unavailable">harness นี้ไม่รองรับงานอัตโนมัติ</string>
     <plurals name="ux_b_countdown_seconds">
         <item quantity="other">จะทำงานต่อใน %1$s วินาที</item>
     </plurals>

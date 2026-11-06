@@ -61,12 +61,21 @@ El [sitio del proyecto](https://dshm.zyphite.com) ofrece una presentación en un
 - Seguir de cerca los trabajos largos. Los objetivos, las listas de tareas pendientes, los
   mensajes en cola, los trabajos en segundo plano y los subagentes tienen cada uno su propia
   vista, y puedes pausarlos, dirigirlos o detenerlos.
+- Organizar las sesiones a tu manera. Arrástralas para ponerlas en el orden que quieras, o
+  agrúpalas por proyecto y pliega los grupos que no uses.
+- Buscar con un mismo campo de búsqueda en todas partes: sesiones, modelos, comandos, plugins,
+  tareas programadas y archivos del espacio de trabajo.
 - Recibir una notificación cuando termina un turno, cuando un objetivo se completa o se bloquea, o
   cuando el agente espera una respuesta. La conexión se mantiene activa en segundo plano.
 - Explorar y previsualizar los archivos del espacio de trabajo, y abrir una terminal en el
   ordenador del harness.
+- Abrir archivos a pantalla completa en la vista previa: tablas CSV, árboles JSON, notebooks,
+  PDF, imágenes, vídeo, audio y archivos comprimidos, con búsqueda dentro del archivo. Guardar una
+  copia deja cualquier archivo en tu teléfono.
 - Gestionar el propio harness: modelos, preajustes de agente, plugins, tareas programadas y
   sesiones archivadas.
+- Personalizar la aplicación. El diseño Ink viene en claro y oscuro, con colores de acento
+  predefinidos o uno propio, negro puro para pantallas OLED y un tamaño de texto que puedes cambiar.
 - Usar la aplicación en inglés, chino, hindi, español, francés, árabe, bengalí, portugués, ruso,
   urdu o tailandés. Admite idiomas que se escriben de derecha a izquierda.
 
@@ -145,7 +154,7 @@ tu ordenador. Iniciar sesión equivale a dar acceso a un shell.
 
 ## Compatibilidad
 
-DSH Mobile se prueba con **DeepSeek Harness 0.2.1-rc.2**. Las versiones anteriores del harness,
+DSH Mobile se prueba con **DeepSeek Harness 0.2.2-rc.1**. Las versiones anteriores del harness,
 hasta la 0.1.6, siguen funcionando en su mayor parte, pero las funciones nuevas necesitan un
 harness más reciente. La [tabla de compatibilidad](docs/COMPATIBILITY.md) indica qué versión de la
 aplicación corresponde a cada versión del harness.

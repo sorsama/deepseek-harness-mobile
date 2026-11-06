@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ink_panel_model_title">النموذج</string>
+    <string name="ink_panel_model_permission">النموذج والصلاحيات</string>
+    <string name="ink_panel_model_default">افتراضي الـ harness</string>
+    <string name="ink_panel_model_available">متاح على %1$s</string>
+    <string name="ink_panel_effort_default">افتراضي</string>
+    <string name="ink_panel_permission_readonly_desc">قراءة الملفات والإجابة. لا يتغيّر شيء.</string>
+    <string name="ink_panel_permission_workspace_desc">تعديل داخل مساحة العمل. الأوامر ما زالت تسأل.</string>
+    <string name="ink_panel_permission_full_desc">كل شيء على الحاسوب. بلا طلبات موافقة.</string>
+    <string name="ink_panel_subagent_followup">اسأل هذا الوكيل الفرعي سؤالًا متابعًا</string>
+    <string name="ink_panel_trajectory_empty_hint">تظهر استدعاءات الأدوات هنا أثناء عمل الوكيل.</string>
+    <string name="ink_panel_open_session">فتح الجلسة</string>
+</resources>

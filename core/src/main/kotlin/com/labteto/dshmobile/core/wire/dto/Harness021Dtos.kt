@@ -3,6 +3,8 @@ package com.labteto.dshmobile.core.wire.dto
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 
 @Serializable
 data class QuestionWait(val callId: String, val timed: Boolean = false)
@@ -22,7 +24,15 @@ data class UserQuestionsView(
     val settled: List<SettledQuestion> = emptyList(),
 )
 
-/** Host storage records, distinct from the frozen v1 schedule/change event vocabulary. */
+/**
+ * One host storage record as `schedule/catalog` returns it, distinct from the frozen v1
+ * `schedule/change` event vocabulary.
+ *
+ * Harness 0.2.2 spread the record into a `ScheduleCatalogEntry`: the rule fields are unchanged, the
+ * delivery destination moved from a top-level `sessionId` into [target], the status vocabulary is
+ * `active|paused|ended` (0.2.1 sent `active|inactive`), and `kind:"rrule"` was added. The legacy
+ * `sessionId` stays decoded so a 0.2.1 host remains readable.
+ */
 @Serializable
 data class AutomationTask(
     val id: String,
@@ -39,7 +49,27 @@ data class AutomationTask(
     val weekdays: List<Int>? = null,
     val expression: String? = null,
     val lastDelivery: DeliveryRecord? = null,
-)
+    /** 0.2.2: one normalized DTSTART line and one RRULE line; present only for `kind:"rrule"`. */
+    val rrule: String? = null,
+    /** 0.2.2: stored delivery destination, `{kind:"session",sessionId}` or `{kind:"new_once"|"new",...}`. */
+    val target: JsonObject? = null,
+    /** 0.2.2: creating/editing Sessions plus each existing or reserved target Session; `new` targets excluded. */
+    val involvedSessionIds: List<String> = emptyList(),
+    val createdAt: String? = null,
+    /** 0.2.2: latest stored change; editors send it back as `expectedUpdatedAt`. */
+    val updatedAt: String? = null,
+) {
+    /**
+     * The Session this task delivers to, under either vocabulary.
+     *
+     * 0.2.2 moved the binding into [target] (`sessionId` for `session`/`new_once`; a `new` target
+     * creates a fresh Session per delivery and names none), so the legacy top-level `sessionId` is
+     * only a fallback for 0.2.1 hosts.
+     */
+    val sessionIdEffective: String?
+        get() = (target?.get("sessionId") as? JsonPrimitive)?.contentOrNull?.takeIf { it.isNotEmpty() }
+            ?: sessionId.takeIf { it.isNotEmpty() }
+}
 
 @Serializable
 data class DeliveryRecord(val scheduledAt: String, val deliveredAt: String, val messageId: String, val prompt: String? = null)
@@ -55,16 +85,36 @@ data class AutomationHistory(
     val code: String? = null,
 )
 
+/**
+ * One closed `schedule/edit` operation (harness 0.2.2 replaced `schedule/update` and
+ * `schedule/delete` with this: `action "update"` carries [patch], `action "delete"` must not).
+ */
 @Serializable
-data class AutomationUpdate(
-    val sessionId: String,
+data class AutomationEditRequest(
     val id: String,
-    val expected: JsonObject,
-    val title: String? = null,
-    val prompt: String? = null,
-    val change: JsonObject? = null,
+    val action: String,
+    val patch: AutomationPatch? = null,
+    val expectedUpdatedAt: String? = null,
 )
 
+/** Fields one update changes atomically; the host keeps every omitted field (harness 0.2.2 `SchedulePatch`). */
+@Serializable
+data class AutomationPatch(
+    val title: String? = null,
+    val prompt: String? = null,
+    /** A `ScheduleTiming` object; [com.labteto.dshmobile.core.wire.automationTiming] builds the shapes the app edits. */
+    val timing: JsonObject? = null,
+    val target: JsonObject? = null,
+    val active: Boolean? = null,
+)
+
+/**
+ * One `schedule/edit` outcome (harness 0.2.2 `ScheduleEditResult`): a successful update answers with
+ * the whole catalog entry (`id` plus fields, no `record`), a successful delete with
+ * `{id,deleted:true}`, and a miss/conflict with `{id,code}`. The entry-shaped fields other than [id]
+ * are irrelevant to the app, which refreshes the catalog instead; [record] keeps decoding a 0.2.1
+ * host's `{id,updated,record}` result.
+ */
 @Serializable
 data class AutomationMutation(
     val id: String? = null,
@@ -73,6 +123,16 @@ data class AutomationMutation(
     val record: AutomationTask? = null,
     val code: String? = null,
     val message: String? = null,
+)
+
+/** One page of the host-wide task list (harness 0.2.2 `schedule/list`; the per-Session request is gone). */
+@Serializable
+data class ScheduleListResult(
+    val items: List<AutomationTask> = emptyList(),
+    val shown: Int = 0,
+    val total: Int = 0,
+    val limit: Int = 0,
+    val offset: Int = 0,
 )
 
 @Serializable

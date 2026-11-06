@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connect_hero_subtitle">کمپیوٹر پر چلنے والا harness اپنے فون پر دیکھیں۔</string>
+    <string name="connect_loopback_notice">اس فون پر Termux میں harness چلاتا ہے۔ DSH اسے شروع، بند اور سائن ان کر سکتا ہے۔</string>
+    <string name="connect_lan_notice">غیر خفیہ کردہ۔ لوکل نیٹ ورک صرف قابلِ اعتماد Wi-Fi پر استعمال کریں۔</string>
+    <string name="connect_relay_notice">خفیہ کردہ اور پاس ورڈ سے محفوظ۔ dsh-relay سے پیئرنگ QR اسکین کریں۔</string>
+    <string name="connect_section_discovered">دریافت شدہ</string>
+    <string name="connect_section_discovered_relay">دریافت شدہ ریلے</string>
+    <string name="connect_scan_progress_short">اسکین ہو رہا ہے %1$d از %2$d</string>
+    <string name="connect_harness_actions">Harness کی کارروائیاں</string>
+    <string name="connect_forget_harness">یہ harness بھول جائیں</string>
+    <string name="connect_connecting_to">%1$s سے جڑ رہا ہے</string>
+    <string name="connect_step_address">پتہ جانچا جا رہا ہے</string>
+    <string name="connect_step_reaching">%1$s تک پہنچ رہے ہیں</string>
+    <string name="connect_step_streams">ایونٹ اسٹریمز کھولے جا رہے ہیں</string>
+    <string name="connect_step_verify">Harness کی تصدیق ہو رہی ہے</string>
+    <string name="connect_lost_reconnecting">%1$s سے دوبارہ جڑ رہا ہے</string>
+    <string name="connect_lost_body">ایجنٹ کمپیوٹر پر کام کرتا رہتا ہے۔ آپ کا ڈرافٹ اور ہر چیٹ میں آپ کی جگہ محفوظ ہے۔</string>
+    <string name="connect_lost_retry_now">ابھی دوبارہ کوشش کریں</string>
+    <string name="connect_lost_choose">دوسرا harness منتخب کریں</string>
+    <string name="connect_lost_attempt">کوشش %1$d</string>
+    <string name="connect_lost_tag">دوبارہ جڑ رہا ہے</string>
+    <string name="connect_sign_in_to">%1$s میں سائن ان کریں</string>
+    <string name="connect_sign_in_subtitle">اس harness نے ابھی اس فون کو سائن ان نہیں کیا۔</string>
+    <string name="connect_sign_in_link_body">Harness شروع ہونے پر ایک لنک دکھاتا ہے۔ وہ لنک پیسٹ کریں، یا صرف ?token= کے بعد والا ٹوکن۔</string>
+    <string name="connect_sign_in_token_hint">Harness کے ہر ری اسٹارٹ پر ٹوکن بدل جاتا ہے۔</string>
+    <string name="pair_hero_title">پیئرنگ کوڈ اسکین کریں</string>
+    <string name="pair_step_run">اپنے کمپیوٹر پر چلائیں %1$s</string>
+    <string name="pair_step_scan">کیمرہ دکھائے گئے QR کوڈ پر رکھیں۔ اس کے بعد ڈیوائس پاس ورڈ مقرر کریں گے۔</string>
+    <string name="pair_code_hint">8 ہندسے</string>
+    <string name="pair_scanned">%1$s کے ساتھ پیئر ہو رہا ہے</string>
+</resources>

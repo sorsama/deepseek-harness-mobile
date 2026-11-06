@@ -1,6 +1,6 @@
 <resources>
     <string name="alpha2_translate">Перевести через %1$s</string>
     <string name="alpha2_original">Показать оригинал</string>
-    <string name="alpha2_external">Внешний запуск (без локальной переписки)</string>
-    <string name="alpha2_migration">Откройте исходную сессию для завершения миграции и повторите попытку.</string>
+    <string name="alpha2_external">Внешний запуск (локальной расшифровки нет)</string>
+    <string name="alpha2_migration">Откройте исходный сеанс, чтобы завершить перенос, и повторите попытку.</string>
 </resources>

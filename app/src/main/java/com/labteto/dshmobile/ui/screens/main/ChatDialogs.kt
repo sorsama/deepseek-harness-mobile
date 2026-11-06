@@ -18,6 +18,8 @@ import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsDialog
+import com.labteto.dshmobile.ui.components.inkFieldFrame
+import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -36,11 +38,12 @@ internal fun RenameDialog(
         TextField(
             value = text,
             onValueChange = { text = it },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().inkFieldFrame(),
             singleLine = !multiline,
             minLines = if (multiline) 3 else 1,
             placeholder = { Text(title, style = DsType.std14) },
             colors = dialogTextFieldColors(),
+            shape = DsShapes.control,
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             DsButton(

@@ -92,8 +92,7 @@ fun UserBubble(
                 // Only the bubble holds, not the empty width beside it: a press in the gutter of a
                 // scrolling transcript is a scroll that has not started yet.
                 .then(if (onHold != null) Modifier.holdable(holdLabel, onHold = onHold) else Modifier)
-                .background(colors.userBubble, DsShapes.bubble)
-                .border(1.dp, colors.borderL3, DsShapes.bubble)
+                .background(colors.userBubble, DsShapes.bubbleUser)
                 .padding(horizontal = 16.dp, vertical = 10.dp),
         )
     }
@@ -161,14 +160,16 @@ fun ConnectionBanner(
     onAction: (() -> Unit)? = null,
 ) {
     val colors = DsTheme.colors
-    val background = if (warning) colors.warnTertiary else colors.error
-    val content = if (warning) colors.warnLabel else Color.White
+    val background = if (warning) colors.warnTertiary else colors.errorTertiary
+    val content = if (warning) colors.warnLabel else colors.error
+    val border = if (warning) colors.warnBorder else colors.errorBorder
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(background)
+            .border(1.dp, border)
             .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }
-            .padding(start = 16.dp, end = if (actionLabel != null) 4.dp else 16.dp, top = 6.dp, bottom = 6.dp),
+            .padding(start = 16.dp, end = if (actionLabel != null) 4.dp else 16.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (warning) {
@@ -207,11 +208,11 @@ fun StatsLine(
 ) {
     val colors = DsTheme.colors
     val text = buildString {
-        append("Turns $turns")
-        append(" · Steps $steps")
-        append(" · LLM ${formatDuration(llmMs)}")
-        append(" · TTFT ${formatDuration(ttftMs)}")
-        append(" · ${formatRate(tokPerSec)} tok/s")
+        append("$turns turns")
+        append(" · $steps steps")
+        if (ttftMs != null) append(" · TTFT ${formatDuration(ttftMs)}")
+        if (tokPerSec != null) append(" · ${formatRate(tokPerSec)} tok/s")
+        if (llmMs != null) append(" · LLM ${formatDuration(llmMs)}")
     }
     Text(
         text,
@@ -222,14 +223,12 @@ fun StatsLine(
     )
 }
 
-private fun formatDuration(ms: Long?): String = when {
-    ms == null -> "—"
+private fun formatDuration(ms: Long): String = when {
     ms >= 1000 -> "%.1fs".format(Locale.US, ms / 1000.0)
     else -> "${ms}ms"
 }
 
-private fun formatRate(perSec: Double?): String =
-    perSec?.let { "%.1f".format(Locale.US, it) } ?: "—"
+private fun formatRate(perSec: Double): String = "%.1f".format(Locale.US, perSec)
 
 @Preview(showBackground = true, widthDp = 360)
 @Composable
@@ -241,7 +240,7 @@ private fun ChatComponentsPreview() {
         ) {
             UserBubble("Build the shared component library.")
             ThinkingRow("Working through the diff…", expanded = false, onToggle = {}, streaming = true)
-            ConnectionBanner("Connection lost — retrying…")
+            ConnectionBanner(stringResource(R.string.common_reconnecting))
             StatsLine(turns = 3, steps = 12, llmMs = 2100, ttftMs = 420, tokPerSec = 18.4)
         }
     }

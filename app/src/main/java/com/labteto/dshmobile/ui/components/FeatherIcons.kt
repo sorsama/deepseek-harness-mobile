@@ -218,6 +218,21 @@ internal object FeatherIcons {
         }
     }
 
+    /**
+     * A six-dot grip, the drag handle. Not a Feather glyph (the set has none): six round-capped points
+     * laid out on the same 24-unit grid, each a zero-length stroke that the round cap turns into a dot.
+     */
+    val GripVertical: ImageVector by lazy {
+        feather("GripVertical") {
+            moveTo(9f, 5f); lineTo(9.01f, 5f)
+            moveTo(9f, 12f); lineTo(9.01f, 12f)
+            moveTo(9f, 19f); lineTo(9.01f, 19f)
+            moveTo(15f, 5f); lineTo(15.01f, 5f)
+            moveTo(15f, 12f); lineTo(15.01f, 12f)
+            moveTo(15f, 19f); lineTo(15.01f, 19f)
+        }
+    }
+
     /** feather:layers */
     val Layers: ImageVector by lazy {
         feather("Layers") {

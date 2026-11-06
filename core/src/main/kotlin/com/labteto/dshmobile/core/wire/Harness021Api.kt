@@ -11,24 +11,33 @@ private fun named(vararg pairs: Pair<String, JsonElement>) = JsonObject(mapOf(*p
 private fun str(value: String) = JsonPrimitive(value)
 private fun request(value: JsonElement) = named("request" to value)
 
-fun AutomationTask.expectedRecord(): JsonObject = JsonObject(
-    WireJson.encodeToJsonElement(AutomationTask.serializer(), this).jsonObject.filterKeys {
-        it !in setOf("sessionId", "status", "lastDelivery")
-    },
-)
-
 suspend fun DshApiClient.automationCatalog(): RpcResult<List<AutomationTask>> = featureCall("schedule/catalog")
-suspend fun DshApiClient.automationList(sessionId: String): RpcResult<List<AutomationTask>> =
-    featureCall("schedule/list", request(named("sessionId" to str(sessionId))))
-suspend fun DshApiClient.automationHistory(sessionId: String, id: String, before: String? = null): RpcResult<AutomationHistory> =
+
+/**
+ * Harness 0.2.2 removed `schedule/update` and `schedule/delete`; `schedule/edit` serves both as one
+ * closed operation and compares `expectedUpdatedAt` instead of the complete record 0.2.1 expected.
+ */
+suspend fun DshApiClient.automationEdit(request: AutomationEditRequest): RpcResult<AutomationMutation> =
+    featureCall("schedule/edit", request(WireJson.encodeToJsonElement(AutomationEditRequest.serializer(), request)))
+
+/**
+ * Host-wide tasks page, not a Session-scoped list: 0.2.2 dropped the `sessionId` request member and
+ * answers `{items,shown,total,limit,offset}`. The app reads the catalog, so this stays for
+ * conformance/management parity.
+ */
+suspend fun DshApiClient.automationList(active: Boolean? = null, limit: Int? = null, offset: Int? = null): RpcResult<ScheduleListResult> =
+    featureCall("schedule/list", request(buildJsonObject {
+        active?.let { put("active", JsonPrimitive(it)) }
+        limit?.let { put("limit", JsonPrimitive(it)) }
+        offset?.let { put("offset", JsonPrimitive(it)) }
+    }))
+
+/** 0.2.2 addresses saved deliveries by task id alone; the host drops the old `sessionId` member. */
+suspend fun DshApiClient.automationHistory(id: String, before: String? = null): RpcResult<AutomationHistory> =
     featureCall("schedule/history", request(buildJsonObject {
-        put("sessionId", sessionId); put("id", id); put("limit", 25)
+        put("id", id); put("limit", 25)
         before?.let { put("before", it) }
     }))
-suspend fun DshApiClient.automationUpdate(value: AutomationUpdate): RpcResult<AutomationMutation> =
-    featureCall("schedule/update", request(WireJson.encodeToJsonElement(AutomationUpdate.serializer(), value)))
-suspend fun DshApiClient.automationDelete(sessionId: String, id: String): RpcResult<AutomationMutation> =
-    featureCall("schedule/delete", request(named("sessionId" to str(sessionId), "id" to str(id))))
 
 suspend fun DshApiClient.answerContinuedQuestion(sessionId: String, callId: String, answer: AskUserQuestionAnswer): RpcResult<Boolean> =
     featureCall("userQuestions/answer", named("agentId" to str(sessionId), "callId" to str(callId),

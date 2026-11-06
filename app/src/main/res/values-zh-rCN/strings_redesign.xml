@@ -7,7 +7,7 @@
     <string name="chat_queue_placement_queued">下一回合</string>
     <string name="chat_queue_placement_steering">引导中</string>
     <string name="chat_queue_placement_context">上下文</string>
-    <string name="chat_status_running">运行中</string>
+    <string name="chat_status_running">工作中</string>
     <string name="chat_status_idle">空闲</string>
     <string name="chatlist_session_copy_id">复制会话 ID</string>
     <string name="connect_paste">粘贴</string>

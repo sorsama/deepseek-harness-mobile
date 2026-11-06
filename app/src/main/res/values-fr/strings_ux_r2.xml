@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_failed_rename">Impossible de renommer cette session.</string>
+    <string name="details_failed_fork">Impossible de dupliquer cette session.</string>
+    <string name="details_failed_archive">Impossible d’archiver cette session.</string>
+    <string name="details_archived">Session archivée.</string>
+    <string name="details_failed_stop_job">Impossible d’arrêter cette tâche.</string>
+    <string name="details_failed_queue_remove">Impossible de la retirer de la file d’attente.</string>
+    <string name="details_failed_goal">Impossible de mettre à jour l’objectif.</string>
+    <string name="details_failed_plan">Impossible de changer le mode plan.</string>
+    <string name="details_failed_link">Impossible de créer un lien pour le moment. Vérifiez votre connexion.</string>
+    <string name="details_fork_done_title">Copie prête</string>
+    <string name="details_fork_done_body">Une copie de cette session a été créée. L’ouvrir maintenant ?</string>
+    <string name="details_fork_open">Ouvrir la copie</string>
+    <string name="details_fork_stay">Rester ici</string>
+    <string name="details_open_output">Ouvrir la sortie</string>
+    <string name="models_switch_failed">Impossible de changer de modèle.</string>
+    <string name="settings_forget_hosts_confirm_title">Oublier tous les harness ?</string>
+    <string name="settings_forget_hosts_confirm_action">Tout oublier</string>
+    <string name="settings_clear_last_sessions_confirm_title">Oublier quelle session ouvrir ?</string>
+    <string name="settings_clear_last_sessions_confirm_body">La prochaine fois, l’application ouvrira la session la plus récente de chaque harness au lieu de la dernière que vous avez utilisée. Aucune session n’est supprimée.</string>
+    <string name="settings_clear_last_sessions_confirm_action">Oublier</string>
+    <string name="feedback_error_conflict">Cette évaluation a été modifiée ailleurs. Votre note est conservée, vous pouvez la renvoyer.</string>
+    <string name="feedback_error_generic">Impossible d’enregistrer votre avis. Réessayez dans un instant.</string>
+    <string name="toolcard_title_tool">Outil</string>
+    <string name="toolcard_title_terminal">Terminal</string>
+    <string name="toolcard_title_diff">Différences</string>
+    <string name="toolcard_title_search">Recherche</string>
+    <string name="toolcard_title_web">Web</string>
+    <string name="toolcard_running">en cours</string>
+    <string name="toolcard_killed_by">arrêté par %1$s</string>
+    <string name="toolcard_exit_code">code de sortie %1$d</string>
+    <string name="toolcard_showing_of">%1$d affichés sur %2$d</string>
+    <string name="toolcard_more">+%1$d de plus</string>
+    <string name="toolcard_section_in">Entrée</string>
+    <string name="toolcard_section_out">Sortie</string>
+    <string name="toolcard_section_locations">Emplacements</string>
+    <plurals name="settings_forget_hosts_confirm_body">
+        <item quantity="one">%d harness mémorisé et son appairage relais seront retirés de ce téléphone. Pour l’utiliser de nouveau, reconnectez-le ou appairez-le.</item>
+        <item quantity="many">%d harness mémorisés et leurs appairages relais seront retirés de ce téléphone. Pour les utiliser de nouveau, reconnectez-les ou appairez-les.</item>
+        <item quantity="other">%d harness mémorisés et leurs appairages relais seront retirés de ce téléphone. Pour les utiliser de nouveau, reconnectez-les ou appairez-les.</item>
+    </plurals>
+    <plurals name="toolcard_blocks">
+        <item quantity="one">%d bloc</item>
+        <item quantity="many">%d blocs</item>
+        <item quantity="other">%d blocs</item>
+    </plurals>
+    <plurals name="toolcard_locations">
+        <item quantity="one">%d emplacement</item>
+        <item quantity="many">%d emplacements</item>
+        <item quantity="other">%d emplacements</item>
+    </plurals>
+    <plurals name="toolcard_files">
+        <item quantity="one">%d fichier</item>
+        <item quantity="many">%d fichiers</item>
+        <item quantity="other">%d fichiers</item>
+    </plurals>
+    <plurals name="toolcard_results">
+        <item quantity="one">%d résultat</item>
+        <item quantity="many">%d résultats</item>
+        <item quantity="other">%d résultats</item>
+    </plurals>
+    <plurals name="toolcard_lines">
+        <item quantity="one">%d ligne</item>
+        <item quantity="many">%d lignes</item>
+        <item quantity="other">%d lignes</item>
+    </plurals>
+    <plurals name="toolcard_sources">
+        <item quantity="one">%d source</item>
+        <item quantity="many">%d sources</item>
+        <item quantity="other">%d sources</item>
+    </plurals>
+</resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sessions drawer: ordering, grouping and dragging -->
+    <string name="chatlist_sort_project">پروجیکٹ کے حساب سے گروپ کریں</string>
+    <string name="chatlist_group_other">دیگر</string>
+    <string name="chatlist_move_up">اوپر لے جائیں</string>
+    <string name="chatlist_move_down">نیچے لے جائیں</string>
+    <string name="chatlist_move_announce">%2$d میں سے %1$d نمبر پر منتقل ہو گیا</string>
+    <string name="chatlist_reorder_scope">%1$s کے اندر منتقل کر رہے ہیں</string>
+    <string name="chatlist_reorder_projects">پروجیکٹ منتقل کر رہے ہیں</string>
+    <string name="chatlist_reorder_blocked">سیشن صرف اپنے پروجیکٹ کے اندر ہی منتقل ہو سکتا ہے</string>
+    <string name="chatlist_reorder_failed">وہ سیشن منتقل نہیں ہو سکا۔ وہ اپنی جگہ واپس آ گیا ہے۔</string>
+    <string name="chatlist_reorder_project_failed">وہ پروجیکٹ منتقل نہیں ہو سکا۔ وہ اپنی جگہ واپس آ گیا ہے۔</string>
+    <string name="chatlist_project_collapse">%1$s سمیٹیں</string>
+    <string name="chatlist_project_expand">%1$s کھولیں</string>
+
+    <!-- Sessions drawer: archived filter and the needs-you card -->
+    <string name="chatlist_archived_none">ابھی کچھ آرکائیو نہیں ہوا</string>
+    <string name="chatlist_restore_failed">وہ سیشن بحال نہیں ہو سکا</string>
+    <string name="chatlist_approve_long">یہ کمانڈ لمبی ہے۔ منظوری سے پہلے پوری پڑھ لیں۔</string>
+</resources>

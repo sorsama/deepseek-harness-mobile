@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_failed_rename">No se pudo renombrar esta sesión.</string>
+    <string name="details_failed_fork">No se pudo bifurcar esta sesión.</string>
+    <string name="details_failed_archive">No se pudo archivar esta sesión.</string>
+    <string name="details_archived">Sesión archivada.</string>
+    <string name="details_failed_stop_job">No se pudo detener ese trabajo.</string>
+    <string name="details_failed_queue_remove">No se pudo quitar de la cola.</string>
+    <string name="details_failed_goal">No se pudo actualizar el objetivo.</string>
+    <string name="details_failed_plan">No se pudo cambiar el modo plan.</string>
+    <string name="details_failed_link">No se pudo crear el enlace ahora. Revisa tu conexión.</string>
+    <string name="details_fork_done_title">Bifurcación lista</string>
+    <string name="details_fork_done_body">Se hizo una copia de esta sesión. ¿Abrirla ahora?</string>
+    <string name="details_fork_open">Abrir copia</string>
+    <string name="details_fork_stay">Quedarme aquí</string>
+    <string name="details_open_output">Abrir salida</string>
+    <string name="models_switch_failed">No se pudo cambiar el modelo.</string>
+    <string name="settings_forget_hosts_confirm_title">¿Olvidar todos los harness?</string>
+    <string name="settings_forget_hosts_confirm_action">Olvidar todos</string>
+    <string name="settings_clear_last_sessions_confirm_title">¿Olvidar qué sesión abrir?</string>
+    <string name="settings_clear_last_sessions_confirm_body">La próxima vez la app abrirá la sesión más reciente de cada harness, en lugar de la última que usaste. No se borra ninguna sesión.</string>
+    <string name="settings_clear_last_sessions_confirm_action">Olvidar</string>
+    <string name="feedback_error_conflict">Esta valoración se cambió en otro lugar. Tu nota se conserva, así que puedes enviarla de nuevo.</string>
+    <string name="feedback_error_generic">No se pudo guardar tu opinión. Inténtalo de nuevo en un momento.</string>
+    <string name="toolcard_title_tool">Herramienta</string>
+    <string name="toolcard_title_terminal">Terminal</string>
+    <string name="toolcard_title_diff">Diferencias</string>
+    <string name="toolcard_title_search">Búsqueda</string>
+    <string name="toolcard_title_web">Web</string>
+    <string name="toolcard_running">en ejecución</string>
+    <string name="toolcard_killed_by">terminado por %1$s</string>
+    <string name="toolcard_exit_code">salida %1$d</string>
+    <string name="toolcard_showing_of">mostrando %1$d de %2$d</string>
+    <string name="toolcard_more">+%1$d más</string>
+    <string name="toolcard_section_in">Entrada</string>
+    <string name="toolcard_section_out">Salida</string>
+    <string name="toolcard_section_locations">Ubicaciones</string>
+    <plurals name="settings_forget_hosts_confirm_body">
+        <item quantity="one">Se quitará %d harness guardado y su emparejamiento por relay de este teléfono. Para usarlo de nuevo, vuelve a conectarlo o emparejarlo.</item>
+        <item quantity="many">Se quitarán %d harness guardados y sus emparejamientos por relay de este teléfono. Para usarlos de nuevo, vuelve a conectarlos o emparejarlos.</item>
+        <item quantity="other">Se quitarán %d harness guardados y sus emparejamientos por relay de este teléfono. Para usarlos de nuevo, vuelve a conectarlos o emparejarlos.</item>
+    </plurals>
+    <plurals name="toolcard_blocks">
+        <item quantity="one">%d bloque</item>
+        <item quantity="many">%d bloques</item>
+        <item quantity="other">%d bloques</item>
+    </plurals>
+    <plurals name="toolcard_locations">
+        <item quantity="one">%d ubicación</item>
+        <item quantity="many">%d ubicaciones</item>
+        <item quantity="other">%d ubicaciones</item>
+    </plurals>
+    <plurals name="toolcard_files">
+        <item quantity="one">%d archivo</item>
+        <item quantity="many">%d archivos</item>
+        <item quantity="other">%d archivos</item>
+    </plurals>
+    <plurals name="toolcard_results">
+        <item quantity="one">%d resultado</item>
+        <item quantity="many">%d resultados</item>
+        <item quantity="other">%d resultados</item>
+    </plurals>
+    <plurals name="toolcard_lines">
+        <item quantity="one">%d línea</item>
+        <item quantity="many">%d líneas</item>
+        <item quantity="other">%d líneas</item>
+    </plurals>
+    <plurals name="toolcard_sources">
+        <item quantity="one">%d fuente</item>
+        <item quantity="many">%d fuentes</item>
+        <item quantity="other">%d fuentes</item>
+    </plurals>
+</resources>

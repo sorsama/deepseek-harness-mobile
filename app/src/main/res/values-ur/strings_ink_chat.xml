@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ink redesign: sessions drawer, chat chrome and docks. Area-owned by impl-chat. -->
+<resources>
+    <string name="ink_chat_sessions">سیشنز</string>
+    <string name="ink_chat_filter_all">سب %1$d</string>
+    <string name="ink_chat_filter_running">چل رہا ہے %1$d</string>
+    <string name="ink_chat_filter_needs_you">آپ کی ضرورت %1$d</string>
+    <string name="ink_chat_streaming">اسٹریمنگ</string>
+    <string name="ink_chat_review">جائزہ</string>
+    <string name="ink_chat_approve">منظور کریں</string>
+    <string name="ink_chat_start_task">%1$s پر کام شروع کریں…</string>
+    <string name="ink_chat_files_tab">فائلیں · %1$d</string>
+    <string name="ink_chat_files_empty">ابھی کوئی فائل تبدیل نہیں ہوئی</string>
+    <string name="ink_chat_steer_hint">ایجنٹ کی رہنمائی کریں…</string>
+    <string name="ink_chat_goal_dock">ہدف · %1$s</string>
+    <string name="ink_chat_more">مزید</string>
+    <string name="ink_chat_queue_next_turn">اگلا ٹرن</string>
+    <string name="ink_chat_workspaces">پروجیکٹس</string>
+    <string name="ink_chat_today">آج</string>
+    <string name="ink_chat_yesterday">کل</string>
+    <string name="ink_chat_changed_this_session">اس سیشن میں تبدیل شدہ</string>
+</resources>

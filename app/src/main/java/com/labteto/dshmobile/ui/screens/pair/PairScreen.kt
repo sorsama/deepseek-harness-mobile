@@ -1,52 +1,82 @@
 package com.labteto.dshmobile.ui.screens.pair
 
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.QrCodeScanner
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanOptions
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.components.DsButton
+import com.labteto.dshmobile.ui.components.DsButtonSize
 import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsIconButton
-import com.labteto.dshmobile.ui.components.SectionHeader
-import com.labteto.dshmobile.ui.components.StateDot
-import com.labteto.dshmobile.ui.components.StateDotState
+import com.labteto.dshmobile.ui.components.MascotMark
+import com.labteto.dshmobile.ui.components.MascotState
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
+import com.labteto.dshmobile.ui.screens.connect.InkTextField
+import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 
+/** The command the pairing steps name; a literal, never translated. */
+private const val PAIR_COMMAND = "dsh relay pair"
+
 /**
- * Enrol this device with a relay, by QR or by typed code.
+ * Enrol this device with a relay, by QR or by typed code (design 05).
  *
  * Both routes end in the same `POST /relay/pair`, but they do not establish the same thing, and the
  * screen says which one happened rather than reporting "paired" twice. The QR carries the relay's
@@ -65,6 +95,7 @@ fun PairScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
     BackHandler(onBack = onClose)
 
     LaunchedEffect(prefillUrl) { prefillUrl?.let(viewModel::prefill) }
@@ -78,109 +109,272 @@ fun PairScreen(
             onClose()
         }
     }
-
-    val scanner = rememberLauncherForActivityResult(ScanContract()) { result ->
-        // A null payload is a cancel or a denied camera. Both leave the typed form on screen, which
-        // is the fallback, so there is nothing to announce.
-        result.contents?.let(viewModel::onScanned)
+    LaunchedEffect(state.failure) {
+        if (state.failure != null) haptics.reject()
     }
-    val scanPrompt = stringResource(R.string.pair_scan_prompt)
+
+    // The scanner is a sheet over this screen, not a separate destination: the typed form stays
+    // composed underneath it, so closing the camera lands on the fallback already in place rather
+    // than on a blank screen — which is what a refused camera permission used to look like.
+    // Remembered across configuration changes: turning the phone while the camera is open used to
+    // tear the sheet down, which reads as the scanner "closing itself" mid-scan.
+    var scanning by rememberSaveable { mutableStateOf(false) }
+    var focusCode by remember { mutableStateOf(false) }
+    val codeFocus = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val scrollState = rememberScrollState()
+    LaunchedEffect(focusCode) {
+        if (focusCode) {
+            // Coming back from the scanner: the typed form is below the fold, so bring the code
+            // field (and its keyboard) into view rather than leaving the person on the scan button.
+            scrollState.animateScrollTo(scrollState.maxValue)
+            codeFocus.requestFocus()
+            keyboard?.show()
+            focusCode = false
+        }
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = colors.bgBase) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .verticalScroll(rememberScrollState())
-                .padding(DsSpacing.xlarge),
-            verticalArrangement = Arrangement.spacedBy(DsSpacing.large),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                DsIconButton(
-                    icon = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.common_back),
-                    onClick = onClose,
-                )
-                Text(stringResource(R.string.pair_title), style = DsType.large20, color = colors.labelPrimary)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .safeDrawingPadding(),
+            ) {
+                // A plain top bar, like the design's: back, the screen's name, and the balance space
+                // that keeps the title centred rather than leaning on the back arrow.
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = DsSpacing.touchTarget)
+                        .padding(horizontal = DsSpacing.small),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    DsIconButton(
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.common_back),
+                        onClick = onClose,
+                    )
+                    Text(
+                        stringResource(R.string.pair_title),
+                        style = DsType.large20,
+                        color = colors.labelPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = DsSpacing.small),
+                    )
+                    Spacer(Modifier.width(DsSpacing.touchTarget))
+                }
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = DsSpacing.large)
+                        .padding(top = DsSpacing.small, bottom = DsSpacing.xlarge),
+                    verticalArrangement = Arrangement.spacedBy(DsSpacing.large),
+                ) {
+                    PairHero()
+
+                    // The one unambiguous action on the screen, as the design draws it. Everything
+                    // else here is a fallback for the case where the camera cannot do its job.
+                    DsButton(
+                        text = stringResource(R.string.pair_scan),
+                        onClick = {
+                            haptics.tap()
+                            scanning = true
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !state.busy,
+                        variant = DsButtonVariant.Primary,
+                        size = DsButtonSize.Large,
+                        icon = Icons.Outlined.QrCodeScanner,
+                    )
+
+                    state.scanned?.let { payload ->
+                        Text(
+                            stringResource(R.string.pair_scanned, payload.url),
+                            style = DsType.small13,
+                            color = colors.labelSecondary,
+                        )
+                    }
+
+                    PairSteps()
+
+                    // ---- Manual entry ------------------------------------------------
+                    Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+                        Text(
+                            stringResource(R.string.pair_manual_title).uppercase(),
+                            style = DsType.label12,
+                            color = colors.labelTertiary,
+                        )
+                        InkTextField(
+                            value = state.url,
+                            onValueChange = viewModel::setUrl,
+                            modifier = Modifier.fillMaxWidth(),
+                            label = stringResource(R.string.pair_url_label),
+                            placeholder = stringResource(R.string.pair_url_hint),
+                            mono = true,
+                            enabled = !state.busy,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                        )
+                        InkTextField(
+                            value = state.code,
+                            onValueChange = { viewModel.setCode(it.take(8)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            label = stringResource(R.string.pair_code_label),
+                            mono = true,
+                            enabled = !state.busy,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                            focusRequester = codeFocus,
+                        )
+                        Text(
+                            stringResource(R.string.pair_code_hint),
+                            style = DsType.xsmall12,
+                            color = colors.labelTertiary,
+                        )
+                        InkTextField(
+                            value = state.deviceName,
+                            onValueChange = viewModel::setDeviceName,
+                            modifier = Modifier.fillMaxWidth(),
+                            label = stringResource(R.string.pair_name_label),
+                            enabled = !state.busy,
+                        )
+                        DsButton(
+                            text = stringResource(
+                                if (state.busy) R.string.pair_working else R.string.pair_submit,
+                            ),
+                            onClick = viewModel::submit,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !state.busy,
+                            variant = DsButtonVariant.Info,
+                            size = DsButtonSize.Large,
+                        )
+                    }
+
+                    TransportNotice(state.provenance())
+
+                    state.failure?.let { failure -> PairFailureCard(failure) }
+                }
             }
 
+            AnimatedVisibility(
+                visible = scanning,
+                enter = fadeIn(tween(160)) + slideInVertically(tween(260)) { it },
+                exit = fadeOut(tween(140)) + slideOutVertically(tween(200)) { it },
+            ) {
+                QrScanSheet(
+                    onClose = { scanning = false },
+                    onDecoded = { text ->
+                        scanning = false
+                        viewModel.onScanned(text)
+                    },
+                    onTypeCode = {
+                        scanning = false
+                        focusCode = true
+                    },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The screen's masthead: mascot, what to do, and why the camera is worth allowing.
+ *
+ * The subtitle keeps the design's wording but not its length: it says both routes exist and both
+ * expire, which is the one thing a person needs before choosing between them.
+ */
+@Composable
+private fun PairHero() {
+    val colors = DsTheme.colors
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.medium),
+    ) {
+        MascotMark(size = 48.dp, state = MascotState.Idle)
+        Column(Modifier.weight(1f)) {
+            Text(
+                stringResource(R.string.pair_hero_title),
+                style = DsType.large20,
+                color = colors.labelPrimary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
             Text(
                 stringResource(R.string.pair_subtitle),
-                style = DsType.std14,
-                color = colors.labelSecondary,
-            )
-
-            // The trust statement belongs here rather than on the connect screen: this is the
-            // moment the reach is actually granted, and on the screen before it was one of six
-            // lines of prose nobody had a reason to read yet.
-            Text(
-                stringResource(R.string.connect_relay_banner),
                 style = DsType.small13,
                 color = colors.labelTertiary,
             )
-
-            DsButton(
-                text = stringResource(R.string.pair_scan),
-                onClick = {
-                    scanner.launch(
-                        ScanOptions()
-                            .setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-                            .setPrompt(scanPrompt)
-                            .setBeepEnabled(false)
-                            // The pairing page is often read off a laptop held at an angle; locking
-                            // to portrait makes that harder for no benefit.
-                            .setOrientationLocked(false),
-                    )
-                },
-                enabled = !state.busy,
-                variant = DsButtonVariant.Info,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
-                SectionHeader(stringResource(R.string.pair_manual_title))
-                TextField(
-                    value = state.url,
-                    onValueChange = viewModel::setUrl,
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    label = { Text(stringResource(R.string.pair_url_label)) },
-                    placeholder = { Text(stringResource(R.string.pair_url_hint), style = DsType.std14) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                    colors = pairFieldColors(),
-                )
-                TextField(
-                    value = state.code,
-                    onValueChange = viewModel::setCode,
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    label = { Text(stringResource(R.string.pair_code_label)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                    colors = pairFieldColors(),
-                )
-                TextField(
-                    value = state.deviceName,
-                    onValueChange = viewModel::setDeviceName,
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    label = { Text(stringResource(R.string.pair_name_label)) },
-                    colors = pairFieldColors(),
-                )
-                DsButton(
-                    text = stringResource(if (state.busy) R.string.pair_working else R.string.pair_submit),
-                    onClick = viewModel::submit,
-                    enabled = !state.busy,
-                    variant = DsButtonVariant.Primary,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            TransportNotice(state.provenance())
-
-            state.failure?.let { PairFailureBlock(it) }
-
-            Spacer(Modifier.height(DsSpacing.xlarge))
         }
+    }
+}
+
+/**
+ * The design's two numbered steps, with `dsh relay pair` set as the command it is rather than as
+ * prose. The command is passed through the translated sentence as an argument, so a translator can
+ * put it wherever their grammar needs it; the span styling finds it in the finished string.
+ */
+@Composable
+private fun PairSteps() {
+    val colors = DsTheme.colors
+    val run = stringResource(R.string.pair_step_run, PAIR_COMMAND)
+    val runStyled = remember(run, colors) {
+        buildAnnotatedString {
+            val at = run.indexOf(PAIR_COMMAND)
+            if (at < 0) {
+                append(run)
+            } else {
+                append(run.substring(0, at))
+                withStyle(
+                    SpanStyle(
+                        fontFamily = com.labteto.dshmobile.ui.theme.DsType.codeFont,
+                        color = colors.labelPrimary,
+                        background = colors.bgLayer3,
+                    ),
+                ) {
+                    append(PAIR_COMMAND)
+                }
+                append(run.substring(at + PAIR_COMMAND.length))
+            }
+        }
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.medium)) {
+        PairStep(number = 1, text = runStyled)
+        PairStep(number = 2, text = AnnotatedString(stringResource(R.string.pair_step_scan)))
+    }
+}
+
+@Composable
+private fun PairStep(number: Int, text: AnnotatedString) {
+    val colors = DsTheme.colors
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.medium),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(26.dp)
+                .clip(DsShapes.chip)
+                .background(colors.bgLayer3),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                number.toString(),
+                style = DsType.mono12,
+                color = colors.labelSecondary,
+            )
+        }
+        Text(
+            text,
+            style = DsType.std14,
+            color = colors.labelSecondary,
+        )
     }
 }
 
@@ -201,21 +395,22 @@ private fun TransportNotice(provenance: KeyProvenance) {
     }
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        color = if (warn) colors.warnTertiary else colors.hoverSolid,
+        shape = DsShapes.buttonLarge,
+        color = if (warn) colors.warnTertiary else colors.accentTertiary,
+        border = BorderStroke(1.dp, if (warn) colors.warnBorder else colors.accentBorder),
     ) {
         Text(
             text,
             style = DsType.small13,
-            color = if (warn) colors.warnLabel else colors.labelTertiary,
-            modifier = Modifier.padding(DsSpacing.medium),
+            color = if (warn) colors.warnText else colors.accent,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = DsSpacing.medium),
         )
     }
 }
 
 /** Why the claim did not produce a credential, in terms of what to do next. */
 @Composable
-private fun PairFailureBlock(failure: PairFailure) {
+private fun PairFailureCard(failure: PairFailure) {
     val colors = DsTheme.colors
     val body = when (failure) {
         PairFailure.NotAPairingCode -> stringResource(R.string.pair_fail_not_a_code)
@@ -233,25 +428,22 @@ private fun PairFailureBlock(failure: PairFailure) {
     }
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        color = colors.warnTertiary,
+        shape = DsShapes.buttonLarge,
+        color = colors.errorTertiary,
+        border = BorderStroke(1.dp, colors.errorBorder),
     ) {
         Row(
             modifier = Modifier.padding(DsSpacing.medium),
             verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
         ) {
-            StateDot(StateDotState.Error, size = 8.dp)
-            Spacer(Modifier.width(DsSpacing.xsmall))
-            Text(body, style = DsType.small13, color = colors.warnLabel)
+            Icon(
+                Icons.Filled.Warning,
+                contentDescription = null,
+                tint = colors.error,
+                modifier = Modifier.size(16.dp),
+            )
+            Text(body, style = DsType.small13, color = colors.error)
         }
     }
 }
-
-@Composable
-private fun pairFieldColors() = TextFieldDefaults.colors(
-    focusedContainerColor = DsTheme.colors.bgLayer1,
-    unfocusedContainerColor = DsTheme.colors.bgLayer1,
-    focusedIndicatorColor = DsTheme.colors.accent,
-    unfocusedIndicatorColor = DsTheme.colors.borderL2,
-    cursorColor = DsTheme.colors.accent,
-)

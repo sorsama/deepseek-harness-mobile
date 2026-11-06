@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_failed_rename">Couldn\'t rename this session.</string>
+    <string name="details_failed_fork">Couldn\'t fork this session.</string>
+    <string name="details_failed_archive">Couldn\'t archive this session.</string>
+    <string name="details_archived">Session archived.</string>
+    <string name="details_failed_stop_job">Couldn\'t stop that job.</string>
+    <string name="details_failed_queue_remove">Couldn\'t remove it from the queue.</string>
+    <string name="details_failed_goal">Couldn\'t update the goal.</string>
+    <string name="details_failed_plan">Couldn\'t change plan mode.</string>
+    <string name="details_failed_link">Couldn\'t make a link right now. Check your connection.</string>
+    <string name="details_fork_done_title">Fork ready</string>
+    <string name="details_fork_done_body">A copy of this session was made. Open it now?</string>
+    <string name="details_fork_open">Open copy</string>
+    <string name="details_fork_stay">Stay here</string>
+    <string name="details_open_output">Open output</string>
+    <string name="models_switch_failed">Couldn\'t switch the model.</string>
+    <string name="settings_forget_hosts_confirm_title">Forget all harnesses?</string>
+    <string name="settings_forget_hosts_confirm_action">Forget all</string>
+    <string name="settings_clear_last_sessions_confirm_title">Forget which session to open?</string>
+    <string name="settings_clear_last_sessions_confirm_body">Next time the app will open the newest session on each harness instead of the one you used last. No session is deleted.</string>
+    <string name="settings_clear_last_sessions_confirm_action">Forget</string>
+    <string name="feedback_error_conflict">This rating was changed somewhere else. Your note is kept, so you can send it again.</string>
+    <string name="feedback_error_generic">Couldn\'t save your feedback. Try again in a moment.</string>
+    <string name="toolcard_title_tool">Tool</string>
+    <string name="toolcard_title_terminal">Terminal</string>
+    <string name="toolcard_title_diff">Diff</string>
+    <string name="toolcard_title_search">Search</string>
+    <string name="toolcard_title_web">Web</string>
+    <string name="toolcard_running">running</string>
+    <string name="toolcard_killed_by">killed by %1$s</string>
+    <string name="toolcard_exit_code">exit %1$d</string>
+    <string name="toolcard_showing_of">showing %1$d of %2$d</string>
+    <string name="toolcard_more">+%1$d more</string>
+    <string name="toolcard_section_in">In</string>
+    <string name="toolcard_section_out">Out</string>
+    <string name="toolcard_section_locations">Locations</string>
+    <plurals name="settings_forget_hosts_confirm_body">
+        <item quantity="one">%d saved harness and its relay pairing will be removed from this phone. To use it again, connect or pair it again.</item>
+        <item quantity="other">%d saved harnesses and their relay pairings will be removed from this phone. To use them again, connect or pair them again.</item>
+    </plurals>
+    <plurals name="toolcard_blocks">
+        <item quantity="one">%d block</item>
+        <item quantity="other">%d blocks</item>
+    </plurals>
+    <plurals name="toolcard_locations">
+        <item quantity="one">%d location</item>
+        <item quantity="other">%d locations</item>
+    </plurals>
+    <plurals name="toolcard_files">
+        <item quantity="one">%d file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
+    <plurals name="toolcard_results">
+        <item quantity="one">%d result</item>
+        <item quantity="other">%d results</item>
+    </plurals>
+    <plurals name="toolcard_lines">
+        <item quantity="one">%d line</item>
+        <item quantity="other">%d lines</item>
+    </plurals>
+    <plurals name="toolcard_sources">
+        <item quantity="one">%d source</item>
+        <item quantity="other">%d sources</item>
+    </plurals>
+</resources>

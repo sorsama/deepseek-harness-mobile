@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- File viewer: header and actions -->
+    <string name="preview_open_full">完整预览</string>
+    <string name="preview_save_copy">保存副本</string>
+    <string name="preview_saved">已保存到你的设备</string>
+    <string name="preview_save_failed">无法保存文件</string>
+    <string name="preview_copy_path">复制路径</string>
+    <string name="preview_refresh">刷新</string>
+    <string name="preview_more_actions">更多操作</string>
+    <string name="preview_kind_text">文本</string>
+    <string name="preview_kind_binary">二进制</string>
+    <!-- View modes -->
+    <string name="preview_mode_pretty">格式化</string>
+    <string name="preview_mode_tree">树形</string>
+    <string name="preview_mode_raw">原始</string>
+    <string name="preview_mode_table">表格</string>
+    <!-- States -->
+    <string name="preview_too_large_title">文件太大，无法预览</string>
+    <string name="preview_too_large_body">这个文件有 %1$s。你仍然可以把副本保存到设备上。</string>
+    <string name="preview_binary_title">这个文件无法显示</string>
+    <string name="preview_binary_body">这是二进制文件，下面是它开头的字节。保存副本后可以用其他应用打开。</string>
+    <string name="preview_hex_note">%2$s 中的前 %1$s</string>
+    <string name="preview_empty_file">这个文件是空的</string>
+    <string name="preview_cant_show_title">无法显示此文件</string>
+    <string name="preview_image_unsupported">这部手机无法显示这种图片。保存副本后可以用其他应用打开。</string>
+    <string name="preview_media_unsupported">这部手机无法播放这个文件。保存副本后可以用其他应用打开。</string>
+    <string name="preview_text_truncated">只显示了前 %1$s。保存副本可获得完整文件。</string>
+    <string name="preview_json_invalid">这不是有效的 JSON</string>
+    <string name="preview_json_at">第 %1$d 行，第 %2$d 列</string>
+    <string name="preview_json_at_line">第 %1$d 行</string>
+    <string name="preview_notebook_invalid">这看起来不像 Notebook 文件</string>
+    <string name="preview_output_hidden">这里无法显示这个输出</string>
+    <string name="preview_table_truncated">显示 %2$d 行中的 %1$d 行</string>
+    <string name="preview_table_summary">行数：%1$d · 列数：%2$d</string>
+    <string name="preview_table_partial">已加载的行数：%1$d</string>
+    <!-- Text viewer -->
+    <string name="preview_wrap">自动换行</string>
+    <string name="preview_line_numbers">行号</string>
+    <string name="preview_find">在文件中查找</string>
+    <string name="preview_find_placeholder">查找</string>
+    <string name="preview_find_none">没有匹配项</string>
+    <string name="preview_find_next">下一个匹配项</string>
+    <string name="preview_find_previous">上一个匹配项</string>
+    <string name="preview_find_partial">只会在已加载的部分中查找</string>
+    <string name="preview_expand">展开</string>
+    <string name="preview_collapse">收起</string>
+    <string name="preview_json_more">未显示的更多行：%1$s</string>
+    <!-- Image, PDF and media viewers -->
+    <string name="preview_zoom_in">放大</string>
+    <string name="preview_zoom_out">缩小</string>
+    <string name="preview_fit">适应屏幕</string>
+    <string name="preview_fill">填满屏幕</string>
+    <string name="preview_prev_page">上一页</string>
+    <string name="preview_next_page">下一页</string>
+    <string name="preview_pdf_pages">页数：%1$d</string>
+    <string name="preview_play">播放</string>
+    <string name="preview_pause">暂停</string>
+    <string name="preview_seek">播放位置</string>
+    <!-- Archives and fonts -->
+    <string name="preview_archive_summary">项目数：%1$d</string>
+    <string name="preview_archive_truncated">显示前 %1$d 个项目</string>
+    <string name="preview_archive_failed">无法读取这个压缩包</string>
+    <string name="preview_font_failed">无法加载这个字体</string>
+</resources>

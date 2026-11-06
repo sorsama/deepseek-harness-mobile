@@ -11,9 +11,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.R
@@ -53,6 +55,14 @@ internal fun referenceKindLabel(kind: String): String = stringResource(when (kin
     else -> R.string.ux_b_file
 })
 
+/**
+ * The `@` reference picker (design 15's file list).
+ *
+ * The sheet filters the host's own file and session references as the token after `@` is typed.
+ * Rows are the Ink file row: a glyph tile, the path in monospace (it is a path, not prose), and the
+ * kind underneath; a folder carries a browse chevron that narrows the query instead of inserting
+ * the mention.
+ */
 @Composable
 internal fun ReferencePicker(store: SessionStore, composer: ComposerDraft, initial: AtQuery, onClose: () -> Unit) {
     val sessionsAvailable by store.sessionReferencesAvailable.collectAsStateWithLifecycle()
@@ -62,6 +72,7 @@ internal fun ReferencePicker(store: SessionStore, composer: ComposerDraft, initi
     var loading by remember { mutableStateOf(true) }
     var revision by remember { mutableIntStateOf(0) }
     val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
     fun replaceQuery(value: String) { query = value; rows = emptyList(); loading = true; failed = false }
     LaunchedEffect(query, composer.key, revision) {
         rows = emptyList(); loading = true; failed = false
@@ -96,12 +107,30 @@ internal fun ReferencePicker(store: SessionStore, composer: ComposerDraft, initi
         } finally { loading = false }
     }
     DsBottomSheet(
-        title = stringResource(R.string.harness_references), onDismiss = onClose,
-        trailing = { DsIconButton(Icons.Filled.Close, stringResource(R.string.common_close), onClose) },
+        title = stringResource(R.string.harness_references),
+        onDismiss = {
+            haptics.tap()
+            onClose()
+        },
+        trailing = {
+            DsIconButton(
+                Icons.Filled.Close,
+                stringResource(R.string.common_close),
+                {
+                    haptics.tap()
+                    onClose()
+                },
+            )
+        },
     ) {
-        ChatSearchField(query, ::replaceQuery)
-        if (loading) LinearProgressIndicator(Modifier.fillMaxWidth(), color = colors.accent, trackColor = colors.borderL1)
-        Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+        DsSearchField(query, ::replaceQuery, stringResource(R.string.common_search))
+        if (loading) {
+            LinearProgressIndicator(Modifier.fillMaxWidth(), color = colors.accent, trackColor = colors.borderL1)
+        }
+        Column(
+            Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
+        ) {
             if (failed) DsCard {
                 Text(stringResource(R.string.ux_b_reference_error), style = DsType.small13, color = colors.error)
                 DsButton(stringResource(R.string.common_retry), { rows = emptyList(); loading = true; revision++ }, variant = DsButtonVariant.Outline)
@@ -116,25 +145,36 @@ internal fun ReferencePicker(store: SessionStore, composer: ComposerDraft, initi
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Row(
                         Modifier.weight(1f).heightIn(min = DsSpacing.touchTarget)
+                            .clip(DsShapes.row)
                             .clickable {
-                                composer.insertReference(initial.start, initial.end, row.mention, row.label, row.kind, row.target); onClose()
+                                haptics.selection()
+                                composer.insertReference(initial.start, initial.end, row.mention, row.label, row.kind, row.target)
+                                onClose()
                             }
                             .semantics(mergeDescendants = true) { contentDescription = selectLabel }
-                            .padding(DsSpacing.small),
+                            .padding(horizontal = DsSpacing.xsmall, vertical = DsSpacing.small),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+                        horizontalArrangement = Arrangement.spacedBy(DsSpacing.medium),
                     ) {
-                        Icon(referenceKindIcon(row.kind), null, Modifier.size(20.dp), tint = colors.labelSecondary)
+                        GlyphTile(referenceKindIcon(row.kind))
                         Column(Modifier.weight(1f)) {
-                            Text(technicalDisplay(row.label), style = DsType.std14, color = colors.labelPrimary)
-                            Text(type, style = DsType.caption11, color = colors.labelTertiary)
+                            Text(
+                                technicalDisplay(row.label),
+                                style = DsType.mono13,
+                                color = colors.labelPrimary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(type, style = DsType.caption11, color = colors.labelTertiary, maxLines = 1)
                         }
                     }
-                    if (row.kind == "folder") DsIconButton(
-                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        stringResource(R.string.ux_b_browse_folder, row.label),
-                        { replaceQuery(row.target.trimEnd('/') + "/") },
-                    )
+                    if (row.kind == "folder") {
+                        DsIconButton(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            stringResource(R.string.ux_b_browse_folder, row.label),
+                            { replaceQuery(row.target.trimEnd('/') + "/") },
+                        )
+                    }
                 }
             }
         }

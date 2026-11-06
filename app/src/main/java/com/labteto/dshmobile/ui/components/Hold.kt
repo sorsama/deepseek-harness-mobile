@@ -88,7 +88,7 @@ private const val HOLD_FEEDBACK_DELAY_MS = 90L
  */
 fun Modifier.holdable(label: String, enabled: Boolean = true, onHold: () -> Unit): Modifier = composed {
     if (!enabled) return@composed Modifier
-    val haptics = LocalHapticFeedback.current
+    val haptics = rememberDsHaptics()
     val currentOnHold by rememberUpdatedState(onHold)
     var pressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
@@ -117,7 +117,7 @@ fun Modifier.holdable(label: String, enabled: Boolean = true, onHold: () -> Unit
                     }
                 },
                 onLongPress = {
-                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    haptics.longPress()
                     currentOnHold()
                 },
             )
@@ -144,7 +144,7 @@ fun Modifier.clickableWithHold(
     interactionSource: MutableInteractionSource? = null,
     onClick: () -> Unit,
 ): Modifier = composed {
-    val haptics = LocalHapticFeedback.current
+    val haptics = rememberDsHaptics()
     combinedClickable(
         interactionSource = interactionSource,
         indication = LocalIndication.current,
@@ -152,7 +152,7 @@ fun Modifier.clickableWithHold(
         role = role,
         onLongClickLabel = holdLabel,
         onLongClick = {
-            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+            haptics.longPress()
             onHold()
         },
         onClick = onClick,
@@ -179,7 +179,7 @@ fun HoldMenu(
         if (!preview.isNullOrBlank()) {
             Text(
                 preview,
-                style = if (monospacePreview) DsType.small13.copy(fontFamily = FontFamily.Monospace) else DsType.small13,
+                style = if (monospacePreview) DsType.mono13 else DsType.small13,
                 color = colors.labelSecondary,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
@@ -225,7 +225,7 @@ private fun HoldMenuRow(action: HoldAction, onClick: () -> Unit) {
         )
         Spacer(Modifier.width(DsSpacing.medium))
         Column(Modifier.weight(1f)) {
-            Text(action.label, style = DsType.std14, color = tint)
+            Text(action.label, style = DsType.rowTitle, color = tint)
             action.detail?.let {
                 Text(it, style = DsType.caption11, color = colors.labelTertiary)
             }
@@ -299,3 +299,4 @@ fun SelectTextDialog(text: String, onDismiss: () -> Unit) {
         }
     }
 }
+

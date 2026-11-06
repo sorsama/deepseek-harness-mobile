@@ -1,0 +1,30 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 1600px; height: 1000px; overflow: hidden; background: #0B0C0F; color: #ECEDEF;
+       font-family: "Segoe UI", system-ui, sans-serif; }
+.board { width: 1600px; height: 1000px; padding: 52px 64px 34px; display: flex; flex-direction: column; }
+.kicker { font-size: 13px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: #6E9BFF; }
+h1 { margin-top: 14px; font-size: 52px; line-height: 1.02; font-weight: 600; letter-spacing: -2px; }
+h1 .muted { color: #80848D; }
+.sub { margin-top: 14px; font-size: 18px; color: #A0A3AB; }
+.row { display: flex; gap: 64px; margin-top: 36px; align-items: flex-start; }
+.phone { width: 330px; }
+.frame { width: 330px; height: 715px; border-radius: 32px; overflow: hidden; border: 1px solid #2A2C33; background: #15161B; }
+.frame img { width: 330px; height: 715px; object-fit: cover; object-position: 50% 38%; display: block; }
+.cap { margin-top: 16px; font-size: 15px; color: #80848D; }
+.cap b { color: #ECEDEF; font-weight: 500; }
+.bad .frame { border-color: #3A2024; }
+.good .frame { border-color: #6E9BFF; box-shadow: 0 24px 70px rgba(110,155,255,.18); }
+.note { margin-top: 18px; font-size: 14px; color: #80848D; }
+.note b { color: #C9CBD1; font-weight: 500; }</style></head><body><div class='board'>
+  <div class='kicker'>Localization · Thai</div>
+  <h1>Glyphs, <span class='muted'>no longer clipped.</span></h1>
+  <div class='sub'>The fallback font's ascent was taller than the line box, so tone marks were cut. Line heights now reserve the real metrics.</div>
+  <div class='row'>
+    <div class='phone bad'><div class='frame'><img src='file:///G:/LAB/deepseek-harness-mobile/.team/design-recon/shots/final/thai-chat.png'></div><div class='cap'><b>Before</b> · title + tone marks clipped</div></div>
+    <div class='phone good'><div class='frame'><img src='file:///G:/LAB/deepseek-harness-mobile/.team/design-recon/shots/final/thai-fixed-chat2.png'></div><div class='cap'><b>After</b> · complete Thai text</div></div>
+    <div style='flex:1; padding-top: 40px'>
+      <div class='note'><b>Fixed in all 11 languages</b><br>Line heights and platform font padding now cover Noto fallbacks — titles, pills, empty-state heroes and composer text render whole.</div>
+      <div class='note' style='margin-top: 26px'><b>Also fixed</b><br>• Image sending on harness ≥ 0.2.2<br>• Commands sheet: one scroll surface, Ink search field, consistent names<br>• Automation/plugin pages: edge-to-edge in their dialog window<br>• Composer: 48dp text floor, no overflow past the card</div>
+    </div>
+  </div>
+</div></body></html>

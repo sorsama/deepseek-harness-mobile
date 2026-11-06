@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="splash_tagline">Seu DeepSeek Harness, no seu bolso.</string>
+    <string name="splash_connecting">Conectando a %1$s…</string>
+    <string name="splash_reconnecting">Reconectando a %1$s…</string>
+    <string name="appearance_customize_hint">Cores e resposta tátil são aplicadas na hora.</string>
+    <string name="appearance_accent">Cor de destaque</string>
+    <string name="appearance_accent_ink">Azul tinta</string>
+    <string name="appearance_accent_violet">Violeta</string>
+    <string name="appearance_accent_teal">Verde-azulado</string>
+    <string name="appearance_accent_green">Verde</string>
+    <string name="appearance_accent_amber">Âmbar</string>
+    <string name="appearance_accent_rose">Rosa</string>
+    <string name="appearance_accent_mono">Monocromático</string>
+    <string name="appearance_amoled">Preto puro</string>
+    <string name="appearance_amoled_hint">Fundo preto puro para telas OLED</string>
+    <string name="appearance_text_size">Tamanho do texto</string>
+    <string name="appearance_text_size_compact">Compacto</string>
+    <string name="appearance_text_size_default">Padrão</string>
+    <string name="appearance_text_size_large">Grande</string>
+    <string name="appearance_text_size_larger">Muito grande</string>
+    <string name="appearance_haptics">Resposta tátil</string>
+    <string name="appearance_haptics_hint">Uma vibração curta ao tocar ou escolher algo</string>
+    <string name="appearance_reset">Redefinir aparência</string>
+
+    <!-- Appearance: custom accent colour -->
+    <string name="appearance_accent_custom">Personalizado</string>
+    <string name="appearance_accent_custom_value">Personalizado, %1$s</string>
+    <string name="appearance_custom_title">Destaque personalizado</string>
+    <string name="appearance_custom_hint">Escolha uma cor. A luminosidade é ajustada em cada tema para que o texto continue legível.</string>
+    <string name="appearance_custom_preview">Pré-visualização</string>
+    <string name="appearance_custom_sample_button">Botão</string>
+    <string name="appearance_custom_sample_chip">Chip</string>
+    <string name="appearance_custom_sample_link">Link</string>
+    <string name="appearance_custom_area">Saturação e brilho</string>
+    <string name="appearance_custom_area_state">Saturação %1$d%%, brilho %2$d%%</string>
+    <string name="appearance_custom_more_saturation">Mais saturação</string>
+    <string name="appearance_custom_less_saturation">Menos saturação</string>
+    <string name="appearance_custom_more_brightness">Mais brilho</string>
+    <string name="appearance_custom_less_brightness">Menos brilho</string>
+    <string name="appearance_custom_hue">Matiz</string>
+    <string name="appearance_custom_hue_state">%1$d°</string>
+    <string name="appearance_custom_hex">Cor hexadecimal</string>
+    <string name="appearance_custom_hex_invalid">Use seis dígitos hexadecimais, como #6E9BFF</string>
+    <string name="appearance_custom_quick_picks">Seleção rápida</string>
+    <string name="appearance_custom_quick_pick">Usar %1$s</string>
+    <string name="appearance_custom_apply">Aplicar</string>
+</resources>

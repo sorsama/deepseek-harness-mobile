@@ -42,13 +42,13 @@
     <string name="ux_a_phase_applying">جارٍ تطبيق التغييرات…</string>
     <string name="ux_a_phase_cancelling">جارٍ إلغاء التثبيت…</string>
     <string name="ux_a_reason_required">إدارة الإضافات تحتاج هذا المكوّن. لا يمكن تعطيله أو إزالته.</string>
-    <string name="ux_a_reason_unaddressable">لا يمكن لإعدادات المضيف تحديد هذا العنصر بشكل فريد.</string>
+    <string name="ux_a_reason_unaddressable">لا تستطيع إعدادات harness تمييز هذا العنصر عن غيره.</string>
     <string name="ux_a_reason_missing">هذه الإضافة لم تعد متاحة. حدّث القائمة.</string>
     <string name="ux_a_reason_spec">أدخل اسم حزمة أو عنوانًا صالحًا.</string>
     <string name="ux_a_reason_ambiguous">تعذر تحديد الحزمة المثبّتة. حدّث قائمة المثبّت.</string>
     <string name="ux_a_reason_bundle">هذه الحزمة لا تعرّف مجموعة إضافات ولا يمكن إدارتها هنا.</string>
     <string name="ux_a_reason_removable">هذه الحزمة تخص ملفًا آخر أو تحتاجها إدارة الإضافات.</string>
-    <string name="ux_a_reason_stop">أوقف ملف المضيف هذا ثم أزل الحزمة باستخدام dsh plugin.</string>
+    <string name="ux_a_reason_stop">أوقف ملف harness هذا ثم أزل الحزمة باستخدام dsh plugin.</string>
     <string name="ux_a_reason_in_use">إعدادات أخرى تستخدم هذه المجموعة. عطّل تلك المكوّنات أولًا.</string>
     <string name="ux_a_reason_approval">تغيّرت البرامج النصية المعلّقة. أعد التثبيت لمراجعة قائمة الموافقة الجديدة.</string>
     <string name="ux_a_reason_version">هذه الإضافة غير متوافقة مع إصدار DSH هذا. ثبّت إصدارًا متوافقًا.</string>
@@ -92,7 +92,7 @@
         <item quantity="many">%1$s عملية إرسال</item>
         <item quantity="other">%1$s عملية إرسال</item>
     </plurals>
-    <string name="ux_a_reason_installed">هذه الحزمة مثبّتة بالفعل. استخدم تحديث من صفها في القائمة.</string>
+    <string name="ux_a_reason_installed">هذه الحزمة مثبّتة بالفعل. استخدم «تحديث» من صفها في القائمة.</string>
     <string name="ux_a_reason_network">تعذر الوصول إلى مصدر الحزمة. تحقق من الاتصال وحاول مجددًا.</string>
     <string name="ux_a_reason_package">هذا العنوان لا يحتوي على حزمة. تحقق من الاسم أو المسار.</string>
     <string name="ux_a_time">الوقت</string>

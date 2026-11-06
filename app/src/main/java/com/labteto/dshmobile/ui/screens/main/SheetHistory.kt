@@ -2,15 +2,19 @@ package com.labteto.dshmobile.ui.screens.main
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,14 +23,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
+import com.labteto.dshmobile.ui.components.DsSearchField
 import com.labteto.dshmobile.ui.components.DsBottomSheet
 import com.labteto.dshmobile.ui.components.DsPill
+import com.labteto.dshmobile.ui.components.EmptyHero
+import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.clickableWithHold
 import com.labteto.dshmobile.ui.components.relativeTime
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
+import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -35,23 +45,12 @@ import com.labteto.dshmobile.ui.theme.DsType
  * The prompts the reader sent in this session, so they can jump back to something asked a hundred
  * screens ago without dragging through the replies it produced.
  *
- * One row per prompt, because a prompt is the only unit here with a stable identity: the transcript
- * draws a turn as a run of assistant steps and tool cards, and listing those would fill the sheet
- * with the machinery the reader is trying to scroll past. The transcript is still where the answers
- * live — this sheet only answers "where did I ask that".
+ * One row per prompt, because a prompt is the only unit here with a stable identity. Rows are
+ * hairline-separated and the timestamp leads as a micro label, so a long list reads as a log rather
+ * than as cards.
  *
  * The transcript is the only place the rows exist, and the sheet has no access to its layout, so a
- * pick is reported as the node's sequence and [ChatTranscript] turns that into a scroll. That keeps
- * the sheet a pure list of what was asked: it never has to know how tool calls group, which rows are
- * still loading, or where the streamed tail currently sits.
- *
- * Search is offered only once the list is long enough that scanning it would be slower than typing,
- * matching how the model sheet decides the same thing.
- *
- * The list is the loaded history, not the whole session: a session opens on its last sixty
- * messages, which in a tool-heavy one is only a few prompts. While older history exists, the foot
- * of the sheet pages it in — the transcript's own row, so loading, failure and retry read the same
- * in both places — and the prompts it carries join the list below the ones already shown.
+ * pick is reported as the node's sequence and [ChatTranscript] turns that into a scroll.
  */
 @Composable
 internal fun HistorySheet(
@@ -66,6 +65,7 @@ internal fun HistorySheet(
     onEdit: ((String) -> Unit)? = null,
 ) {
     val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
     var query by remember { mutableStateOf("") }
     var held by remember { mutableStateOf<HistoryEntry?>(null) }
     val shown = remember(entries, query) {
@@ -74,17 +74,18 @@ internal fun HistorySheet(
     DsBottomSheet(
         title = stringResource(R.string.chat_history_title),
         subtitle = if (entries.isEmpty()) null else entries.size.toString(),
-        onDismiss = onDismiss,
+        onDismiss = {
+            haptics.tap()
+            onDismiss()
+        },
     ) {
-        if (entries.size > SEARCH_FROM) ChatSearchField(query, { query = it })
+        if (entries.size > SEARCH_FROM) DsSearchField(query, { query = it }, stringResource(R.string.common_search))
         when {
             // Nothing loaded yet is not "nothing sent" while there is history left to page in.
             entries.isEmpty() -> if (!hasMore) {
-                Text(
-                    stringResource(R.string.chat_history_empty),
-                    style = DsType.caption11,
-                    color = colors.labelTertiary,
-                )
+                Box(Modifier.fillMaxWidth().padding(vertical = DsSpacing.medium)) {
+                    EmptyHero(headline = stringResource(R.string.chat_history_empty), subtitle = null)
+                }
             }
             shown.isEmpty() -> Text(
                 stringResource(R.string.chat_history_no_match),
@@ -93,15 +94,21 @@ internal fun HistorySheet(
             )
             else -> LazyColumn(
                 modifier = Modifier.heightIn(max = 440.dp),
-                verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
+                verticalArrangement = Arrangement.spacedBy(0.dp),
             ) {
-                items(shown, key = { it.seq }) { entry ->
+                itemsIndexed(shown, key = { _, entry -> entry.seq }) { index, entry ->
                     HistoryRow(
                         entry = entry,
-                        onClick = { onPick(entry.seq) },
+                        onClick = {
+                            haptics.tap()
+                            onPick(entry.seq)
+                        },
                         // An image-only prompt has no words to copy or edit, so it keeps the tap alone.
                         onHold = if (entry.text.isNotEmpty()) ({ held = entry }) else null,
                     )
+                    if (index != shown.lastIndex) {
+                        HorizontalDivider(color = colors.borderL1)
+                    }
                 }
             }
         }
@@ -123,20 +130,33 @@ internal fun HistorySheet(
     }
 }
 
-/** One prompt: when it was sent, and enough of it to recognise. */
+/** One prompt: when it was sent, then enough of it to recognise. */
 @Composable
 private fun HistoryRow(entry: HistoryEntry, onClick: () -> Unit, onHold: (() -> Unit)?) {
     val colors = DsTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(DsShapes.row)
             .then(
-                if (onHold != null) Modifier.clickableWithHold(stringResource(R.string.hold_message_actions), onHold = onHold, onClick = onClick)
-                else Modifier.clickable(onClick = onClick),
+                if (onHold != null) {
+                    Modifier.clickableWithHold(stringResource(R.string.hold_message_actions), onHold = onHold, onClick = onClick)
+                } else {
+                    Modifier.clickable(onClick = onClick)
+                },
             )
-            .padding(vertical = DsSpacing.small),
+            .padding(horizontal = DsSpacing.xsmall, vertical = DsSpacing.small),
         verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
     ) {
+        // The log's left column: a quote glyph and the timestamp, so the row is scannable by when
+        // as well as by what.
+        Icon(
+            FeatherIcons.MessageSquare,
+            contentDescription = null,
+            tint = colors.labelTertiary,
+            modifier = Modifier.padding(top = 2.dp).size(16.dp),
+        )
         Column(Modifier.weight(1f)) {
             entry.timeMs?.let { timestamp ->
                 Text(
@@ -144,12 +164,12 @@ private fun HistoryRow(entry: HistoryEntry, onClick: () -> Unit, onHold: (() -> 
                     style = DsType.caption11,
                     color = colors.labelTertiary,
                 )
-                Spacer(Modifier.height(DsSpacing.tiny))
+                Spacer(Modifier.height(2.dp))
             }
             val text = entry.text.ifEmpty { stringResource(R.string.chat_history_image) }
             Text(
                 text,
-                style = DsType.small13,
+                style = DsType.std14,
                 color = colors.labelPrimary,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,

@@ -206,7 +206,7 @@ internal fun QuestionsPanel(
                 .then(if (compact) Modifier else Modifier.heightIn(max = cap))
                 .animateContentSize(DsAnimations.expand),
             shape = DsShapes.approvalCard,
-            color = colors.composerCard,
+            color = colors.bgLayer1,
             border = BorderStroke(1.dp, colors.borderL2),
             shadowElevation = 2.dp,
         ) {
@@ -414,7 +414,7 @@ private fun QuestionBody(
         // part that scrolls.
         Text(
             question.question,
-            style = DsType.std14Strong,
+            style = DsType.large20,
             color = DsTheme.colors.labelPrimary,
         )
 
@@ -454,17 +454,21 @@ private fun OptionRow(
     onClick: () -> Unit,
 ) {
     val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
     val display = remember(option.label) { parseRecommendedLabel(option.label) }
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable(enabled = enabled) {
+                haptics.selection()
+                onClick()
+            },
         shape = DsShapes.menu,
-        color = if (selected) colors.accentTertiary else colors.bgModulePlatform,
-        border = if (selected) BorderStroke(1.dp, colors.accent) else null,
+        color = if (selected) colors.accentTertiary else Color.Transparent,
+        border = BorderStroke(1.dp, if (selected) colors.accent else colors.borderL3),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             // Top, not centre: a wrapped description would otherwise drift the marker down the
             // copy block and stop it reading as a control.
             verticalAlignment = Alignment.Top,
@@ -481,16 +485,20 @@ private fun OptionRow(
                 ) {
                     Text(
                         display.display,
-                        style = DsType.std14,
+                        style = DsType.base16Strong,
                         color = if (selected) colors.accent else colors.labelPrimary,
                         modifier = Modifier.weight(1f, fill = false),
                     )
                     if (display.recommended) {
-                        DsPill(stringResource(R.string.questions_recommended), selected = true)
+                        Text(
+                            stringResource(R.string.questions_recommended),
+                            style = DsType.small13,
+                            color = colors.accent,
+                        )
                     }
                 }
                 option.description?.takeIf { it.isNotBlank() }?.let {
-                    Text(it, style = DsType.caption11, color = colors.labelTertiary)
+                    Text(it, style = DsType.small13, color = colors.labelTertiary)
                 }
             }
         }
@@ -502,26 +510,24 @@ private fun OptionRow(
 private fun OptionMarker(ordinal: Int, selected: Boolean, multiSelect: Boolean) {
     val colors = DsTheme.colors
     Surface(
-        modifier = Modifier.size(20.dp),
+        modifier = Modifier.size(22.dp),
         shape = if (multiSelect) DsShapes.chip else CircleShape,
         color = if (selected) colors.accent else Color.Transparent,
-        border = BorderStroke(1.dp, if (selected) colors.accent else colors.borderL2),
+        border = BorderStroke(1.dp, if (selected) colors.accent else colors.borderL3),
     ) {
         Box(contentAlignment = Alignment.Center) {
-            if (multiSelect) {
-                if (selected) {
-                    Icon(
-                        Icons.Filled.Check,
-                        contentDescription = null,
-                        tint = colors.onAccent,
-                        modifier = Modifier.size(12.dp),
-                    )
-                }
+            if (selected) {
+                Icon(
+                    Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = colors.onAccent,
+                    modifier = Modifier.size(14.dp),
+                )
             } else {
                 Text(
                     ordinal.toString(),
                     style = DsType.caption11,
-                    color = if (selected) colors.onAccent else colors.labelTertiary,
+                    color = colors.labelTertiary,
                 )
             }
         }
@@ -550,7 +556,8 @@ private fun CustomAnswerField(
     TextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().inkFieldFrame(),
+        shape = DsShapes.control,
         enabled = enabled,
         placeholder = {
             Text(
@@ -586,12 +593,15 @@ private fun CustomAnswerField(
             onDone = { onContinue() },
             onNext = { onContinue() },
         ),
+        // The same Ink plate as every other input: bgLayer2, a 12dp corner, and the outline from
+        // `inkFieldFrame` rather than Material's underline.
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = colors.bgLayer1,
-            unfocusedContainerColor = colors.bgLayer1,
+            focusedContainerColor = colors.bgLayer2,
+            unfocusedContainerColor = colors.bgLayer2,
             disabledContainerColor = colors.bgLayer1,
-            focusedIndicatorColor = colors.accent,
-            unfocusedIndicatorColor = colors.borderL2,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
         ),
     )
 }
@@ -638,7 +648,7 @@ private fun QuestionFooter(
             text = stringResource(R.string.questions_skip),
             onClick = onSkip,
             enabled = !busy,
-            variant = DsButtonVariant.Ghost,
+            variant = DsButtonVariant.Outline,
             size = DsButtonSize.Small,
         )
         Spacer(Modifier.width(8.dp))
@@ -650,7 +660,7 @@ private fun QuestionFooter(
             },
             onClick = onContinue,
             enabled = canContinue && !busy,
-            variant = DsButtonVariant.Info,
+            variant = DsButtonVariant.Primary,
             size = DsButtonSize.Small,
         )
     }

@@ -67,4 +67,8 @@ internal fun imageRejectionText(
 }
 
 private fun sendFailed(context: Context, rawReason: String?): String =
-    context.getString(R.string.err_image_send_failed, rawReason ?: "unknown")
+    if (rawReason.isNullOrBlank()) {
+        context.getString(R.string.err_image_send_failed_plain)
+    } else {
+        context.getString(R.string.err_image_send_failed, rawReason)
+    }
