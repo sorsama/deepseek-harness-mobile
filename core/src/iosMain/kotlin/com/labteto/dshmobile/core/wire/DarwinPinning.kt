@@ -42,6 +42,7 @@ import platform.posix.memcpy
  * [darwinHttpClient] turns the engine's failure into an [IosPinMismatchException] when it matches a
  * mismatch just recorded for the same host, which is what [hasPinMismatch] looks for.
  */
+@OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
 internal fun pinnedChallengeHandler(expectedPin: String, mismatches: PinMismatchLog): ChallengeHandler =
     { _, _, challenge, completionHandler ->
         val space = challenge.protectionSpace

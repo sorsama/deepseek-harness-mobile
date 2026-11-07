@@ -4,6 +4,7 @@ import com.labteto.dshmobile.core.wire.DshApiClient
 import com.labteto.dshmobile.core.wire.HarnessSession
 import com.labteto.dshmobile.core.wire.KtorMuxSocket
 import com.labteto.dshmobile.core.wire.KtorRpcTransport
+import com.labteto.dshmobile.core.wire.MuxSocket
 import com.labteto.dshmobile.core.wire.OkHttpRpcTransport
 import com.labteto.dshmobile.core.wire.RemoteStreamMux
 import com.labteto.dshmobile.core.wire.RpcTransport
@@ -111,12 +112,22 @@ class HarnessClient(harness: HarnessProcess, existingCookie: String? = null) : A
         TransportChoice.KTOR -> KtorRpcTransport(baseUrl, ktor!!, 15_000, 30_000, cookie = cookie)
     }
 
+    private val rpc: RpcTransport = transport(cookie)
+
     /** The unary half, authenticated. */
-    val api: DshApiClient = DshApiClient(transport(cookie))
+    val api: DshApiClient = DshApiClient(rpc)
+
+    /** The class carrying the unary calls; a test pins it so a Ktor run cannot quietly be an OkHttp one. */
+    val rpcTransportClass: String get() = rpc::class.simpleName.orEmpty()
+
+    /** The class of the mux socket most recently built, or null before the mux has started. */
+    @Volatile
+    var muxSocketClass: String? = null
+        private set
 
     /** The stream half. One socket, as the app opens one. */
     val mux: RemoteStreamMux = RemoteStreamMux { sink ->
-        when (choice) {
+        val socket: MuxSocket = when (choice) {
             TransportChoice.OKHTTP -> WsChannel(
                 url = baseUrl + REMOTE_STREAM_MUX_PATH,
                 client = http,
@@ -130,6 +141,8 @@ class HarnessClient(harness: HarnessProcess, existingCookie: String? = null) : A
                 cookie = cookie,
             )
         }
+        muxSocketClass = socket::class.simpleName
+        socket
     }
 
     /** An unauthenticated client against the same harness, for the 401 and fence cases. */
