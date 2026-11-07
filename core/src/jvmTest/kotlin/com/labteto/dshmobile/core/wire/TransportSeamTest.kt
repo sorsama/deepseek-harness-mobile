@@ -15,15 +15,26 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
 /**
- * Pins what the common transport seam promises the Android app.
+ * Pins what the common transport seam promises its callers, against every implementation of it.
  *
  * `RpcTransport` and `RpcTransportException` moved to common code, which meant swapping
  * `java.io.IOException` and `java.io.InputStream` for kotlinx-io's types. Both swaps are supposed to
- * be invisible to the app — this is where that is checked rather than assumed.
+ * be invisible to the app — this is where that is checked rather than assumed. The transport tests
+ * run once per [TransportKind] (OkHttp, which Android ships, and Ktor, which iOS ships), so the
+ * promise is the seam's and not one library's.
  */
-class TransportSeamTest {
+@RunWith(Parameterized::class)
+class TransportSeamTest(private val kind: TransportKind) {
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun kinds(): List<TransportKind> = TransportKind.parameters()
+    }
 
     @Test
     fun `kotlinx-io IOException is java IOException on the JVM`() {
@@ -56,7 +67,7 @@ class TransportSeamTest {
                 exchange.responseBody.use { it.write(reply) }
             }
             val progress = mutableListOf<Long>()
-            val response = OkHttpRpcTransport("http://127.0.0.1:${server.address.port}").upload(
+            val response = kind.rpc("http://127.0.0.1:${server.address.port}").upload(
                 path = "/api/up",
                 contentType = "application/octet-stream",
                 contentLength = payload.size.toLong(),
@@ -88,7 +99,7 @@ class TransportSeamTest {
                 exchange.responseBody.use { it.write(reply) }
             }
             val progress = mutableListOf<Long>()
-            OkHttpRpcTransport("http://127.0.0.1:${server.address.port}").upload(
+            kind.rpc("http://127.0.0.1:${server.address.port}").upload(
                 path = "/api/up",
                 contentType = "application/octet-stream",
                 contentLength = 0,
@@ -110,7 +121,7 @@ class TransportSeamTest {
                 exchange.responseBody.use { it.write(payload) }
             }
             val copied = ByteArrayOutputStream()
-            val seen = OkHttpRpcTransport("http://127.0.0.1:${server.address.port}")
+            val seen = kind.rpc("http://127.0.0.1:${server.address.port}")
                 .download("/api/session.export?sessionId=s1") { contentType, disposition, body ->
                     // The app's own consumer shape: stream the source into an OutputStream.
                     body.asInputStream().copyTo(copied)
@@ -130,7 +141,7 @@ class TransportSeamTest {
                 exchange.sendResponseHeaders(200, bytes.size.toLong())
                 exchange.responseBody.use { it.write(bytes) }
             }
-            val text = OkHttpRpcTransport("http://127.0.0.1:${server.address.port}")
+            val text = kind.rpc("http://127.0.0.1:${server.address.port}")
                 .download("/api/session.export") { _, _, body -> body.readByteArray().decodeToString() }
             assertEquals("PK-zip-bytes", text)
         }
@@ -144,7 +155,7 @@ class TransportSeamTest {
                 exchange.close()
             }
             val failure = try {
-                OkHttpRpcTransport("http://127.0.0.1:${server.address.port}")
+                kind.rpc("http://127.0.0.1:${server.address.port}")
                     .download("/api/session.export") { _, _, _ -> error("must not be consumed") }
                 null
             } catch (e: RpcTransportException) {

@@ -1,16 +1,13 @@
 package com.labteto.dshmobile.connection
 
 import com.labteto.dshmobile.core.wire.DshApiClient
-import com.labteto.dshmobile.core.wire.OkHttpRpcTransport
 import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.core.wire.TransportFailure
 import com.labteto.dshmobile.core.wire.TransportFailures
-import com.labteto.dshmobile.core.wire.WsChannel
 import com.labteto.dshmobile.core.wire.WsChannelSink
 import com.labteto.dshmobile.mockharness.MockHarness
 import com.labteto.dshmobile.mockharness.RelayMode
 import kotlinx.coroutines.runBlocking
-import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -18,6 +15,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -29,11 +28,17 @@ import java.util.concurrent.TimeUnit
  * at the handshake. That surfaces as "the stream would not open", which reads like a firewall or
  * a VPN — everything except the one thing it is.
  */
-class RelayAuthHeaderTest {
+@RunWith(Parameterized::class)
+class RelayAuthHeaderTest(private val kind: TransportKind) {
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun kinds(): List<TransportKind> = TransportKind.parameters()
+    }
 
     private lateinit var harness: MockHarness
     private var port: Int = -1
-    private val http = OkHttpClient()
 
     private val token = "Bearer relay-test-token"
     private val baseUrl get() = "http://127.0.0.1:$port"
@@ -68,7 +73,7 @@ class RelayAuthHeaderTest {
     @Test
     fun `an authenticated upgrade opens`() {
         val sink = LatchSink()
-        val socket = WsChannel("$baseUrl/api/remote.mux", http, sink, token)
+        val socket = kind.socket("$baseUrl/api/remote.mux", sink, token)
         socket.start()
         assertTrue(sink.opened.await(5, TimeUnit.SECONDS))
         assertNull(sink.failure)
@@ -78,7 +83,7 @@ class RelayAuthHeaderTest {
     @Test
     fun `an upgrade with no credential is refused at the handshake`() {
         val sink = LatchSink()
-        val socket = WsChannel("$baseUrl/api/remote.mux", http, sink, authorization = null)
+        val socket = kind.socket("$baseUrl/api/remote.mux", sink, authorization = null)
         socket.start()
         assertTrue(sink.closed.await(5, TimeUnit.SECONDS))
         val failure = sink.failure
@@ -98,7 +103,7 @@ class RelayAuthHeaderTest {
     @Test
     fun `an authenticated socket accepts a stream open`() {
         val sink = LatchSink()
-        val socket = WsChannel("$baseUrl/api/remote.mux", http, sink, token)
+        val socket = kind.socket("$baseUrl/api/remote.mux", sink, token)
         socket.start()
         assertTrue(sink.opened.await(5, TimeUnit.SECONDS))
         assertTrue(
@@ -110,9 +115,8 @@ class RelayAuthHeaderTest {
     }
 
     private fun clientWith(authorization: String?) = DshApiClient(
-        transport = OkHttpRpcTransport(
+        transport = kind.rpc(
             baseUrl = baseUrl,
-            client = http,
             connectTimeoutMs = 5_000,
             readTimeoutMs = 5_000,
             authorization = authorization,

@@ -24,9 +24,10 @@ object HtmlSanitizer {
 
     class Result(val html: String, val remoteImages: List<String>)
 
+    // `[\s\S]` where the pattern wants "any character including a newline": `RegexOption.DOT_MATCHES_ALL`
+    // is JVM-only, and this object has to compile for iOS. The two spellings match the same text.
     private val TOKEN = Regex(
-        """<!--.*?-->|<!\[CDATA\[.*?]]>|<![^>]*>|<\?[^>]*>|<(/?)([A-Za-z][A-Za-z0-9-]*)((?:"[^"]*"|'[^']*'|[^'">])*)>""",
-        RegexOption.DOT_MATCHES_ALL,
+        """<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?]]>|<![^>]*>|<\?[^>]*>|<(/?)([A-Za-z][A-Za-z0-9-]*)((?:"[^"]*"|'[^']*'|[^'">])*)>""",
     )
     private val ATTRIBUTE = Regex("""([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?""")
 
