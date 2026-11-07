@@ -83,7 +83,7 @@ interface RemoteStream {
  * the host interleaves them freely.
  */
 class RemoteStreamMux(
-    private val channelFactory: (sink: WsChannelSink) -> WsChannel,
+    private val channelFactory: MuxSocketFactory,
 ) {
 
     /** What can arrive on a logical stream. */
@@ -138,7 +138,7 @@ class RemoteStreamMux(
     private var closedCause: Throwable? = null
 
     @Volatile
-    private var channel: WsChannel? = null
+    private var channel: MuxSocket? = null
 
     private val sink = object : WsChannelSink {
         override fun onOpen() {
