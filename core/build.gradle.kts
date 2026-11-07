@@ -1,6 +1,10 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
+    // Common atomics for the mux and the connection loop, which are touched from OkHttp's socket
+    // threads and from coroutines at once. The plugin rewrites `atomic(...)` into plain field
+    // updaters on the JVM (no wrapper objects) and into Kotlin/Native atomic intrinsics on iOS.
+    alias(libs.plugins.kotlinx.atomicfu)
 }
 
 kotlin {
@@ -13,8 +17,9 @@ kotlin {
     }
 
     // The iOS targets exist to keep the shared code honestly shared. They compile `commonMain`
-    // only — every JVM-only dependency lives in `jvmMain` — so a file that quietly grows a
-    // `java.*` import fails the iOS compile instead of waiting for the real iOS app to find it.
+    // plus `iosMain`, which holds only the small `actual`s that common code's `expect`s need —
+    // every JVM-only dependency lives in `jvmMain` — so a file that quietly grows a `java.*`
+    // import fails the iOS compile instead of waiting for the real iOS app to find it.
     // Kotlin/Native cross-compiles these from any host OS (CI does it on Linux); assembling an
     // actual .ipa still needs Xcode on macOS, which is a later milestone of the iOS port.
     iosArm64()
@@ -25,6 +30,10 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
+            // `api`, not `implementation`: `RpcTransport` exposes kotlinx-io's `Source` and
+            // `IOException` in its signatures, so every module that implements or calls it (the
+            // app, the conformance suite) has to see them on its own compile classpath.
+            api(libs.kotlinx.io.core)
         }
         jvmMain.dependencies {
             // The HTTP/WebSocket transport and the commonmark Markdown renderer are JVM-only and

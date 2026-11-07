@@ -1,13 +1,15 @@
 package com.labteto.dshmobile.core.wire
 
 import java.io.IOException
-import java.io.InputStream
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.io.Source
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -22,80 +24,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
-import okhttp3.WebSocket
-import okhttp3.WebSocketListener
 import okio.BufferedSink
-
-/**
- * One HTTP carrier exchange: the status code and raw body of a POST /api request.
- * HTTP status is carrier-only — business errors arrive as HTTP 200 with `ok: false` in the body.
- */
-data class RpcHttpResponse(
-    val status: Int,
-    val body: String,
-    /** The response `Content-Type`, when the carrier reported one. */
-    val contentType: String? = null,
-    /**
-     * The undecoded body of a multipart answer, harness 0.1.7's shape for a result that carries
-     * raw bytes (see [RpcMultipart]); [body] is empty then. Null for every JSON answer.
-     */
-    val multipart: ByteArray? = null,
-)
-
-/** Thrown by [RpcTransport] on a non-2xx carrier response or a network-level failure. */
-class RpcTransportException(
-    val status: Int,
-    message: String,
-    cause: Throwable? = null,
-    /**
-     * Seconds the peer asked the caller to wait, from `Retry-After` on a 429.
-     *
-     * Only a relay throttles today, and older ones omitted the header on their lockout paths, so
-     * an absent value is normal rather than a fault — the caller falls back to its own default
-     * rather than retrying immediately.
-     */
-    val retryAfterSeconds: Long? = null,
-) : IOException(message, cause)
-
-/** The HTTP carrier for unary RPCs: one `POST /api/<path>` exchange. */
-interface RpcTransport {
-    /**
-     * POST [body] to [path] (e.g. "/api/session.list"). Returns the carrier response, or throws
-     * [RpcTransportException] on a non-2xx status or transport failure.
-     */
-    suspend fun post(path: String, body: String): RpcHttpResponse
-
-    /**
-     * GET a binary download from [path] (e.g. "/api/session.export?sessionId=…"), the harness's
-     * one non-envelope read channel.
-     *
-     * [consume] runs on an IO thread with the response still open and must not retain the stream —
-     * the connection is released as soon as it returns. Throws [RpcTransportException] on a non-2xx
-     * status or transport failure.
-     */
-    suspend fun <T> download(
-        path: String,
-        consume: (contentType: String?, contentDisposition: String?, body: InputStream) -> T,
-    ): T
-
-    /**
-     * POST raw bytes to [path] — the harness's one non-envelope *write* channel, the streaming
-     * file-upload route harness 0.1.3 added (`/api/session/uploadFileBinary`).
-     *
-     * [body] is read once on an IO thread and must be positioned at the first byte to send;
-     * [contentLength] is declared up front so the host can refuse an oversized upload before
-     * reading it. [onProgress] is called with the running byte count as the body is written.
-     * Returns the carrier response (the route answers 200 with a bare `{ok, value|error}`
-     * result), or throws [RpcTransportException] on a non-2xx status or transport failure.
-     */
-    suspend fun upload(
-        path: String,
-        contentType: String,
-        contentLength: Long,
-        body: InputStream,
-        onProgress: ((sent: Long) -> Unit)? = null,
-    ): RpcHttpResponse
-}
 
 /** JSON media type used for every /api POST. */
 private val JSON_MEDIA_TYPE: MediaType = "application/json; charset=utf-8".toMediaType()
@@ -206,7 +135,7 @@ class OkHttpRpcTransport(
 
     override suspend fun <T> download(
         path: String,
-        consume: (contentType: String?, contentDisposition: String?, body: InputStream) -> T,
+        consume: (contentType: String?, contentDisposition: String?, body: Source) -> T,
     ): T = withContext(Dispatchers.IO) {
         val target = resolveHarnessUrl(base.toString(), path)
         val request = Request.Builder()
@@ -225,10 +154,12 @@ class OkHttpRpcTransport(
             if (!resp.isSuccessful) throw RpcTransportException(resp.code, carrierMessage(resp.code))
             val body = resp.body
                 ?: throw RpcTransportException(resp.code, "download carried no body")
+            // A live view of the response stream, not a copy: `asSource()` pulls from the
+            // connection as `consume` reads, and `response.use` still closes it afterwards.
             consume(
                 resp.header("Content-Type"),
                 resp.header("Content-Disposition"),
-                body.byteStream(),
+                body.byteStream().asSource().buffered(),
             )
         }
     }
@@ -237,7 +168,7 @@ class OkHttpRpcTransport(
         path: String,
         contentType: String,
         contentLength: Long,
-        body: InputStream,
+        body: Source,
         onProgress: ((sent: Long) -> Unit)?,
     ): RpcHttpResponse = withContext(Dispatchers.IO) {
         val target = resolveHarnessUrl(base.toString(), path)
@@ -246,15 +177,26 @@ class OkHttpRpcTransport(
             override fun contentLength(): Long = contentLength
             override fun isOneShot(): Boolean = true
             override fun writeTo(sink: BufferedSink) {
-                val buffer = ByteArray(64 * 1024)
+                val buffer = ByteArray(UPLOAD_READ_BYTES)
                 var sent = 0L
+                var reported = 0L
                 while (true) {
-                    val read = body.read(buffer)
+                    val read = body.readAtMostTo(buffer)
                     if (read < 0) break
                     sink.write(buffer, 0, read)
                     sent += read
-                    onProgress?.invoke(sent)
+                    // kotlinx-io hands back at most one 8 KiB segment per read, where the
+                    // `InputStream` this replaced returned up to 64 KiB. Reporting on every read
+                    // would have multiplied the progress callbacks (each one is a Compose state
+                    // update in the app) by eight, so report on the old cadence instead: every
+                    // 64 KiB, plus the final total below. The bytes are written as soon as they are
+                    // read either way; only the reporting is paced.
+                    if (onProgress != null && sent - reported >= UPLOAD_PROGRESS_STEP_BYTES) {
+                        onProgress(sent)
+                        reported = sent
+                    }
                 }
+                if (onProgress != null && sent != reported) onProgress(sent)
             }
         }
         val request = Request.Builder()
@@ -277,6 +219,12 @@ class OkHttpRpcTransport(
     }
 
     private companion object {
+        /** One upload read: a kotlinx-io segment, the most a buffered [Source] returns at once. */
+        const val UPLOAD_READ_BYTES = 8 * 1024
+
+        /** How many bytes an upload advances between two progress reports. */
+        const val UPLOAD_PROGRESS_STEP_BYTES = 64 * 1024
+
         fun defaultClient(): OkHttpClient = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -386,111 +334,4 @@ private fun refusalReason(body: String?): String? {
         WireJson.parseToJsonElement(text).jsonObject["error"]?.jsonPrimitive?.contentOrNull
     }.getOrNull()
     return reason?.trim()?.takeIf { it.isNotEmpty() && it.length <= 200 }
-}
-
-/** Receives WebSocket carrier events; all callbacks may run on OkHttp's socket threads. */
-interface WsChannelSink {
-    /**
-     * One complete text message, still unparsed.
-     *
-     * The carrier deliberately does not decode: harness 0.1.2 multiplexes every logical stream
-     * over this one socket, so which parser applies is a function of the message, not the socket.
-     * Parsing here would put the mux's dispatch table in the transport.
-     */
-    fun onMessage(text: String)
-
-    /** The WebSocket handshake completed and the socket is ready. */
-    fun onOpen()
-
-    /**
-     * The socket closed or failed. `cause` is non-null on a failure, null on a clean close.
-     * Every logical stream riding this socket ends with it.
-     */
-    fun onClosed(cause: Throwable?)
-}
-
-/**
- * A bidirectional WebSocket to `/api/remote.mux`.
- *
- * Its predecessor was downlink-only: `/api/events.mux` and `/api/events.host` closed the socket
- * with 1008 on any client message. The 0.1.2 mux is the opposite — the client must send `open`
- * and `cancel` to get anything at all — so [send] is the substantive difference here, not an
- * extra.
- *
- * The host sends RFC 6455 Ping at `websocketHeartbeatIntervalMs` (30s by default) and OkHttp
- * answers Pong at the protocol layer, so idle liveness needs no application code and no
- * application-level heartbeat frame. There is no Pong deadline upstream; half-open detection is
- * left to TCP.
- *
- * [authorization] rides on the upgrade itself, which is the whole credential for this socket:
- * there is no later request to carry one. `dsh-relay` refuses an unauthenticated upgrade at the
- * handshake, and against a direct 0.1.2 harness the browser-session cookie is required here too —
- * a missing credential costs the entire connection generation rather than one call.
- */
-open class WsChannel(
-    private val url: String,
-    private val client: OkHttpClient,
-    private val sink: WsChannelSink,
-    private val authorization: String? = null,
-    private val cookie: String? = null,
-) {
-    @Volatile
-    private var webSocket: WebSocket? = null
-
-    @Volatile
-    private var started: Boolean = false
-
-    private val listener = object : WebSocketListener() {
-        override fun onOpen(webSocket: WebSocket, response: Response) {
-            sink.onOpen()
-        }
-
-        override fun onMessage(webSocket: WebSocket, text: String) {
-            sink.onMessage(text)
-        }
-
-        override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-            sink.onClosed(null)
-        }
-
-        override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-            // A rejected upgrade carries its status only on the response; OkHttp reports it as a
-            // bare ProtocolException ("Expected HTTP 101 … was '403'"), which no caller can
-            // classify without reading English. Re-wrap so a trust-fence rejection of the stream
-            // reads the same as one on a POST — and so 401 (no browser session) stays tellable
-            // apart from 403 (Host/Origin refused), which now mean different things.
-            sink.onClosed(
-                if (response != null) {
-                    RpcTransportException(response.code, carrierMessage(response.code), t)
-                } else {
-                    t
-                },
-            )
-        }
-    }
-
-    /** Perform the RFC 6455 handshake and begin reading messages. Idempotent. */
-    open fun start() {
-        if (started) return
-        started = true
-        val request = Request.Builder()
-            .url(url)
-            .authorized(authorization)
-            .cookied(cookie)
-            .build()
-        webSocket = client.newWebSocket(request, listener)
-    }
-
-    /**
-     * Queue one text message. Returns false when the socket is gone or its send buffer is full —
-     * the caller must treat that as the stream having failed rather than retrying, because
-     * OkHttp has already begun tearing the socket down by then.
-     */
-    open fun send(text: String): Boolean = webSocket?.send(text) ?: false
-
-    /** Tear the socket down. Idempotent. */
-    open fun close() {
-        webSocket?.cancel()
-        webSocket = null
-    }
 }

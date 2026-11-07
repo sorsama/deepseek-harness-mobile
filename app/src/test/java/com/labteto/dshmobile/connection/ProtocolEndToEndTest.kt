@@ -45,6 +45,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.add
@@ -400,7 +402,7 @@ class ProtocolEndToEndTest {
             sessionId = "s1",
             name = "notes.txt",
             contentLength = 5,
-            body = ByteArrayInputStream("hello".toByteArray()),
+            body = ByteArrayInputStream("hello".toByteArray()).asSource().buffered(),
         )
         val receipt = (uploaded as? RpcResult.Ok)?.value ?: error("upload failed: $uploaded")
         assertEquals("notes.txt", receipt.file.name)
@@ -427,7 +429,7 @@ class ProtocolEndToEndTest {
         // missing capability rather than a broken link, and the encoded Remote still stages the
         // file — which is the whole reason it exists beside the route.
         harness.refuseBinaryUploads = true
-        val streamed = client().uploadFileBinary("s1", "a.bin", 3, ByteArrayInputStream("abc".toByteArray()))
+        val streamed = client().uploadFileBinary("s1", "a.bin", 3, ByteArrayInputStream("abc".toByteArray()).asSource().buffered())
         assertEquals("capability-unavailable", (streamed as RpcResult.Err).error.code)
 
         val encoded = client().fileUploadEncoded(

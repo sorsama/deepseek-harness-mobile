@@ -3,10 +3,10 @@ package com.labteto.dshmobile.data
 import android.content.SharedPreferences
 import com.labteto.dshmobile.core.wire.*
 import com.labteto.dshmobile.core.wire.dto.*
-import java.io.InputStream
 import java.lang.reflect.Proxy
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.*
+import kotlinx.io.Source
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
@@ -49,8 +49,8 @@ class PluginOperationsTest {
             }
             return RpcHttpResponse(200, """{"type":"server-response","rpcId":${request["rpcId"]},"result":{"ok":true,"value":$value}}""")
         }
-        override suspend fun <T> download(path: String, consume: (String?, String?, InputStream) -> T): T = error("unused")
-        override suspend fun upload(path: String, contentType: String, contentLength: Long, body: InputStream, onProgress: ((Long) -> Unit)?): RpcHttpResponse = error("unused")
+        override suspend fun <T> download(path: String, consume: (String?, String?, Source) -> T): T = error("unused")
+        override suspend fun upload(path: String, contentType: String, contentLength: Long, body: Source, onProgress: ((Long) -> Unit)?): RpcHttpResponse = error("unused")
     }
 
     /** Only the string persistence operations used by PluginOperations; no Android runtime needed. */

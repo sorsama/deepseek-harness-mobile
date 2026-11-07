@@ -3,6 +3,7 @@ package com.labteto.dshmobile.core.wire
 import com.labteto.dshmobile.core.wire.dto.HostDescription
 import com.labteto.dshmobile.core.wire.dto.REMOTE_EVENT_STREAM_ENDPOINT
 import com.labteto.dshmobile.core.wire.dto.RemoteEventFrame
+import kotlin.concurrent.Volatile
 import kotlin.math.pow
 import kotlin.random.Random
 import kotlinx.coroutines.CoroutineDispatcher
@@ -148,6 +149,12 @@ private suspend fun defaultSleep(ms: Long) {
  * it, opened through [HostGeneration.mux].
  *
  * [start] and [stop] are idempotent. Sink exceptions are contained and never kill the loop.
+ *
+ * [start] and [stop] are called from whatever thread the app's lifecycle happens to be on while
+ * the loop itself runs on [dispatcher], so the two handles they share with it (`job` and
+ * `current`) are `@Volatile`: a `stop` from another thread sees the generation the loop most
+ * recently opened and tears that one down. This is the same visibility guarantee the JVM-only
+ * version had; moving to common code changed the annotation's package, not its meaning.
  */
 class ConnectionLoop(
     private val muxFactory: suspend () -> RemoteStreamMux,

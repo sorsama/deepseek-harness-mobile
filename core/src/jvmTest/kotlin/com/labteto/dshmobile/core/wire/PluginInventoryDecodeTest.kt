@@ -2,11 +2,11 @@ package com.labteto.dshmobile.core.wire
 
 import com.labteto.dshmobile.core.wire.dto.PluginFiberPhase
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.Source
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.io.InputStream
 
 /**
  * `pluginInventory/list` decoding.
@@ -22,14 +22,14 @@ class PluginInventoryDecodeTest {
         override suspend fun post(path: String, body: String): RpcHttpResponse =
             RpcHttpResponse(200, this.body)
 
-        override suspend fun <T> download(path: String, consume: (String?, String?, InputStream) -> T): T =
+        override suspend fun <T> download(path: String, consume: (String?, String?, Source) -> T): T =
             error("not used")
 
         override suspend fun upload(
             path: String,
             contentType: String,
             contentLength: Long,
-            body: InputStream,
+            body: Source,
             onProgress: ((Long) -> Unit)?,
         ): RpcHttpResponse = error("not used")
     }
