@@ -261,6 +261,19 @@ class MuxSocketContractTest(private val kind: TransportKind) {
         assertFalse("the socket is gone", socket.send("late"))
     }
 
+    @Test
+    fun `a connection that drops with no close frame is a failure, not a clean close`() {
+        val server = DroppingServer().also { cleanup += { it.close() } }
+        val probe = Probe()
+        socket("http://127.0.0.1:${server.port}/api/remote.mux", probe).start()
+
+        assertTrue(probe.opened.await(15, TimeUnit.SECONDS))
+        assertTrue(probe.closed.await(15, TimeUnit.SECONDS))
+        // "The host closed the stream" and "the link died" explain the same reconnect differently.
+        assertNotNull("an abrupt drop must be reported as a failure", probe.failure)
+        assertEquals(1, probe.closeCalls.get())
+    }
+
     // ------------------------------------------------------------------ keep-alive
 
     @Test
@@ -276,6 +289,42 @@ class MuxSocketContractTest(private val kind: TransportKind) {
         assertEquals(listOf("alive"), probe.messages.toList())
         assertEquals("still connected", 1L, probe.closed.count)
         assertNull(probe.failure)
+    }
+
+    /** Completes the WebSocket handshake by hand, then drops the TCP connection with no Close frame. */
+    private class DroppingServer : AutoCloseable {
+        private val server = ServerSocket(0, 1, java.net.InetAddress.getByName("127.0.0.1"))
+        val port: Int get() = server.localPort
+
+        init {
+            Thread {
+                runCatching {
+                    server.accept().use { socket ->
+                        val reader = socket.getInputStream().bufferedReader(Charsets.ISO_8859_1)
+                        var key: String? = null
+                        while (true) {
+                            val line = reader.readLine() ?: break
+                            if (line.isEmpty()) break
+                            if (line.startsWith("Sec-WebSocket-Key:", ignoreCase = true)) key = line.substringAfter(':').trim()
+                        }
+                        val accept = java.util.Base64.getEncoder().encodeToString(
+                            java.security.MessageDigest.getInstance("SHA-1")
+                                .digest("${key}258EAFA5-E914-47DA-95CA-C5AB0DC85B11".toByteArray()),
+                        )
+                        socket.getOutputStream().apply {
+                            write(
+                                ("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n" +
+                                    "Sec-WebSocket-Accept: $accept\r\n\r\n").toByteArray(),
+                            )
+                            flush()
+                        }
+                        Thread.sleep(300)
+                    }
+                }
+            }.apply { isDaemon = true }.start()
+        }
+
+        override fun close() = runCatching { server.close() }.let { }
     }
 
     // ------------------------------------------------------------------ the test server

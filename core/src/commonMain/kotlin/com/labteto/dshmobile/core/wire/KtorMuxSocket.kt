@@ -12,6 +12,7 @@ import io.ktor.client.request.prepareGet
 import io.ktor.client.request.url
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
+import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
 import kotlin.concurrent.Volatile
@@ -25,6 +26,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.io.IOException
 
 /**
  * A bidirectional WebSocket to `/api/remote.mux` on Ktor: the multiplatform implementation of
@@ -185,6 +188,14 @@ class KtorMuxSocket(
                 for (frame in session.incoming) {
                     if (frame is Frame.Text) sink.onMessage(frame.readText())
                 }
+                // The incoming channel also ends, without an error, when the connection drops with
+                // no Close frame (Ktor's session and the Darwin engine both do this). OkHttp reports
+                // that as a failure, and so must this: "the host closed the stream" and "the link
+                // died" are different explanations for the same reconnect.
+                val reason = withTimeoutOrNull(CLOSE_REASON_WAIT_MS) { session.closeReason.await() }
+                if (reason != null && reason.code == CloseReason.Codes.CLOSED_ABNORMALLY.code) {
+                    readFailure = IOException("websocket closed without a close frame: ${reason.message}")
+                }
             } catch (e: CancellationException) {
                 if (writeFailure == null) throw e
             } catch (e: Throwable) {
@@ -198,6 +209,9 @@ class KtorMuxSocket(
 
     private companion object {
         const val HTTP_SWITCHING_PROTOCOLS = 101
+
+        /** How long to wait for the close reason once the incoming channel has ended. */
+        const val CLOSE_REASON_WAIT_MS = 1_000L
 
         /** OkHttp's own cap on queued outgoing bytes. */
         const val MAX_QUEUE_BYTES = 16L * 1024 * 1024
