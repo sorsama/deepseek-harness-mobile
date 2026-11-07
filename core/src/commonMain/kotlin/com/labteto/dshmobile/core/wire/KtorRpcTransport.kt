@@ -254,15 +254,24 @@ class KtorRpcTransport(
  *   agree.
  * - **`HttpTimeout`**, so the per-request connect and read deadlines [KtorRpcTransport] sets are
  *   honoured by every engine rather than only the ones that read them without the plugin.
- * - **`WebSockets`**, which [KtorMuxSocket] needs for `/api/remote.mux`. No client-initiated ping:
- *   the harness pings and the engine answers (see [KtorMuxSocket]).
+ * - **`WebSockets`**, which [KtorMuxSocket] needs for `/api/remote.mux`, with a 128 MiB message
+ *   limit. No client-initiated ping: the harness pings and the engine answers (see [KtorMuxSocket]).
  */
 fun HttpClientConfig<*>.dshCarrier() {
     followRedirects = false
     expectSuccess = false
     install(HttpTimeout)
-    install(WebSockets)
+    install(WebSockets) {
+        // A session snapshot is one text frame. The plugin only forwards this to the engine when it
+        // differs from its default, and the Darwin engine otherwise keeps NSURLSessionWebSocketTask's
+        // own limit of 1 MiB, past which the task fails with "message too long". OkHttp enforces no
+        // limit on a message, so this is large enough to never be the thing that decides.
+        maxFrameSize = MAX_MUX_FRAME_BYTES
+    }
 }
+
+/** The largest mux message the Ktor carrier accepts: 128 MiB. */
+private const val MAX_MUX_FRAME_BYTES = 128L * 1024 * 1024
 
 /**
  * Client attribute: `false` on a client whose engine already fails a body that ends short, so
