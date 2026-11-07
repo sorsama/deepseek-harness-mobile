@@ -95,4 +95,54 @@ class TransportFailureTest {
         assertEquals(TransportFailure.TIMEOUT, TransportFailures.of(error))
         assertNull(TransportFailures.statusOf(error))
     }
+
+    // The pin check is the one piece of classification that walks causes, and it moved behind the
+    // platform `expect`/`actual` split. These pin the JVM actual's behaviour, not just its types.
+
+    /**
+     * OkHttp never hands the trust manager's exception through: it arrives as the cause of an
+     * SSLHandshakeException. Reading that as plain TLS would tell someone to check their
+     * certificate authority when the relay's key simply changed.
+     */
+    @Test
+    fun `a pin mismatch wrapped by the handshake is a pin failure, not plain TLS`() {
+        val pin = PinMismatchException("expected", "presented")
+        val handshake = SSLHandshakeException("handshake failed").also { it.initCause(pin) }
+        assertEquals(TransportFailure.CERTIFICATE_PIN, TransportFailures.classify(handshake))
+        assertEquals(TransportFailure.CERTIFICATE_PIN, TransportFailures.classify(pin))
+    }
+
+    @Test
+    fun `a pin mismatch under a carrier exception with no status is still a pin failure`() {
+        val pin = PinMismatchException("expected", "presented")
+        val handshake = SSLHandshakeException("handshake failed").also { it.initCause(pin) }
+        val carrier = RpcTransportException(0, "transport failure", handshake)
+        assertEquals(TransportFailure.CERTIFICATE_PIN, TransportFailures.classify(carrier))
+    }
+
+    @Test
+    fun `the pin walk gives up on a chain deeper than any real one`() {
+        // Eight causes are followed. A pin at the ninth link is out of reach, and what answers is
+        // the ordinary TLS verdict for the wrapper it sits behind.
+        var chain: Throwable = PinMismatchException("expected", "presented")
+        repeat(8) { chain = IOException("link", chain) }
+        assertEquals(TransportFailure.OTHER, TransportFailures.classify(chain))
+
+        var reachable: Throwable = PinMismatchException("expected", "presented")
+        repeat(7) { reachable = IOException("link", reachable) }
+        assertEquals(TransportFailure.CERTIFICATE_PIN, TransportFailures.classify(reachable))
+    }
+
+    @Test
+    fun `a self-referential cause chain terminates`() {
+        val loop = object : Exception("loop") {
+            override val cause: Throwable get() = this
+        }
+        assertEquals(TransportFailure.OTHER, TransportFailures.classify(loop))
+    }
+
+    @Test
+    fun `a throwable that is not an io failure is OTHER`() {
+        assertEquals(TransportFailure.OTHER, TransportFailures.classify(IllegalStateException("timed out")))
+    }
 }

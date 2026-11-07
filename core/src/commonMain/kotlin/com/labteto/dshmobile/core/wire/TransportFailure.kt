@@ -7,13 +7,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import java.io.IOException
-import java.net.ConnectException
-import java.net.NoRouteToHostException
-import java.net.PortUnreachableException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import javax.net.ssl.SSLException
 
 /**
  * Why a carrier-level call did not produce an answer.
@@ -113,7 +106,12 @@ enum class TransportFailure {
  * matching on that would make a log line into an API. The verdict rides along in
  * [RpcError.details] instead, which is already a free-form slot on the envelope.
  *
- * Pure JVM (`java.net`), so `:core` stays free of Android imports.
+ * Everything here is platform-free except one question: what a *socket-level* exception looks like.
+ * `java.net.SocketTimeoutException` and `javax.net.ssl.SSLException` mean something on the JVM and do
+ * not exist on iOS, where the same facts surface as NSURLError codes wrapped by whatever engine
+ * the transport uses. That question is the `expect`/`actual` pair [classifyPlatformFailure] (plus
+ * [hasPinMismatch] for the certificate pin); the HTTP-status rules, the details encoding and the
+ * `Retry-After` handling are shared, so both platforms report a 401 or a 429 identically.
  */
 object TransportFailures {
 
@@ -125,9 +123,6 @@ object TransportFailures {
 
     /** Key under which a 429's `Retry-After`, in seconds, is written when the peer stated one. */
     const val RETRY_AFTER_KEY: String = "retryAfterSeconds"
-
-    /** How far [hasPinMismatch] follows a cause chain before giving up. */
-    private const val MAX_CAUSE_DEPTH = 8
 
     /** Classify a carrier exception: HTTP status first, then the underlying I/O cause. */
     fun classify(e: RpcTransportException): TransportFailure = when (e.status) {
@@ -151,53 +146,9 @@ object TransportFailures {
     fun classify(t: Throwable?): TransportFailure = when {
         t == null -> TransportFailure.OTHER
         hasPinMismatch(t) -> TransportFailure.CERTIFICATE_PIN
-        else -> classifyIo(t)
-    }
-
-    /** Whether [t] or anything it wraps is a [PinMismatchException]. */
-    private fun hasPinMismatch(t: Throwable): Boolean {
-        // Bounded rather than "walk until null": a self-referential cause chain is rare but it is a
-        // hang, and nothing legitimate nests this deep.
-        var cause: Throwable? = t
-        var depth = 0
-        while (cause != null && depth < MAX_CAUSE_DEPTH) {
-            if (cause is PinMismatchException) return true
-            cause = cause.cause
-            depth++
-        }
-        return false
-    }
-
-    private fun classifyIo(t: Throwable): TransportFailure = when (t) {
-        is RpcTransportException -> classify(t)
-        is SocketTimeoutException -> TransportFailure.TIMEOUT
-        is UnknownHostException -> TransportFailure.DNS
-        is NoRouteToHostException, is PortUnreachableException -> TransportFailure.UNREACHABLE
-        is ConnectException -> TransportFailure.REFUSED
-        // Before the IOException arm: SSLException is an IOException, and its message would
-        // otherwise be sniffed for words it does not contain.
-        is SSLException -> TransportFailure.TLS
-        is IOException -> classifyByMessage(t)
-        else -> TransportFailure.OTHER
-    }
-
-    /**
-     * Last resort for an [IOException] with no distinguishing subtype.
-     *
-     * Android's socket layer can surface a kernel connect deadline as a plain `IOException` naming
-     * ETIMEDOUT rather than as [SocketTimeoutException]. This is a fallback only — the manual
-     * connect path enforces its own deadline with a raw socket precisely so it does not depend on
-     * this guess.
-     */
-    private fun classifyByMessage(t: IOException): TransportFailure {
-        val message = t.message?.lowercase() ?: return TransportFailure.OTHER
-        return when {
-            "etimedout" in message || "timed out" in message || "timeout" in message -> TransportFailure.TIMEOUT
-            "econnrefused" in message || "refused" in message -> TransportFailure.REFUSED
-            "enetunreach" in message || "ehostunreach" in message || "unreachable" in message ->
-                TransportFailure.UNREACHABLE
-            else -> TransportFailure.OTHER
-        }
+        // The carrier's own exception already carries the verdict; no platform type to inspect.
+        t is RpcTransportException -> classify(t)
+        else -> classifyPlatformFailure(t)
     }
 
     /** The `details` object carrying [kind] (and [status]/[retryAfterSeconds], when known). */
@@ -238,4 +189,46 @@ object TransportFailures {
     fun statusOf(error: RpcError): Int? = runCatching {
         error.details.jsonObject[STATUS_KEY]?.jsonPrimitive?.int
     }.getOrNull()
+}
+
+/**
+ * Whether [t] or anything in its cause chain is this platform's "the relay's key is not the one we
+ * pinned" marker.
+ *
+ * `expect`/`actual` because the marker is a platform type. On the JVM the OkHttp trust manager
+ * throws `PinMismatchException`, which OkHttp then wraps in an `SSLHandshakeException`, so the
+ * answer needs a bounded walk down the causes; the pin is never the throwable handed in. iOS has no
+ * marker yet: certificate pinning there arrives with the Darwin transport.
+ */
+internal expect fun hasPinMismatch(t: Throwable): Boolean
+
+/**
+ * Classify a throwable that is not an [RpcTransportException], by inspecting its platform type.
+ *
+ * `expect`/`actual` because the useful distinctions — refused, timed out, no such host, TLS — are
+ * made by exception types that only exist on one platform. Implementations return
+ * [TransportFailure.OTHER] rather than guess when they cannot tell; a wrong verdict sends someone to
+ * reconfigure the wrong thing, which is worse than an honest "something else".
+ */
+internal expect fun classifyPlatformFailure(t: Throwable): TransportFailure
+
+/**
+ * Last resort for an I/O failure with no distinguishing type: read its message for the names the
+ * operating system gives these conditions.
+ *
+ * Android's socket layer can surface a kernel connect deadline as a plain `IOException` naming
+ * ETIMEDOUT rather than as a `SocketTimeoutException`, and Darwin's wording ("The request timed
+ * out.") is matched by the same word. This is a fallback only — the manual connect path enforces its
+ * own deadline with a raw socket precisely so it does not depend on this guess. Shared so both
+ * [classifyPlatformFailure] actuals apply one rule.
+ */
+internal fun classifyByMessage(t: Throwable): TransportFailure {
+    val message = t.message?.lowercase() ?: return TransportFailure.OTHER
+    return when {
+        "etimedout" in message || "timed out" in message || "timeout" in message -> TransportFailure.TIMEOUT
+        "econnrefused" in message || "refused" in message -> TransportFailure.REFUSED
+        "enetunreach" in message || "ehostunreach" in message || "unreachable" in message ->
+            TransportFailure.UNREACHABLE
+        else -> TransportFailure.OTHER
+    }
 }

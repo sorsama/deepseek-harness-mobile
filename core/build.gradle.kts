@@ -13,8 +13,9 @@ kotlin {
     }
 
     // The iOS targets exist to keep the shared code honestly shared. They compile `commonMain`
-    // only — every JVM-only dependency lives in `jvmMain` — so a file that quietly grows a
-    // `java.*` import fails the iOS compile instead of waiting for the real iOS app to find it.
+    // plus `iosMain`, which holds only the small `actual`s that common code's `expect`s need —
+    // every JVM-only dependency lives in `jvmMain` — so a file that quietly grows a `java.*`
+    // import fails the iOS compile instead of waiting for the real iOS app to find it.
     // Kotlin/Native cross-compiles these from any host OS (CI does it on Linux); assembling an
     // actual .ipa still needs Xcode on macOS, which is a later milestone of the iOS port.
     iosArm64()
