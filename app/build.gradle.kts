@@ -103,7 +103,14 @@ android {
 }
 
 dependencies {
-    implementation(project(":core"))
+    implementation(project(":core")) {
+        // `:core` carries Ktor for the iOS transport (`KtorRpcTransport`, `KtorMuxSocket`). The
+        // Android app keeps using OkHttp and never loads those classes, and release minification is
+        // off, so leaving Ktor on the runtime classpath would ship its client, utils and HTTP
+        // modules in every APK for nothing. The classes in `:core` that mention Ktor are never
+        // touched by the app, so the missing jars are never looked up.
+        exclude(group = "io.ktor")
+    }
     implementation("org.yaml:snakeyaml:2.5")
 
     implementation(libs.androidx.core.ktx)

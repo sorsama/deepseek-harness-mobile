@@ -20,8 +20,9 @@ kotlin {
     // plus `iosMain`, which holds only the small `actual`s that common code's `expect`s need —
     // every JVM-only dependency lives in `jvmMain` — so a file that quietly grows a `java.*`
     // import fails the iOS compile instead of waiting for the real iOS app to find it.
-    // Kotlin/Native cross-compiles these from any host OS (CI does it on Linux); assembling an
-    // actual .ipa still needs Xcode on macOS, which is a later milestone of the iOS port.
+    // Kotlin/Native builds Apple targets on macOS only: on Linux and Windows Gradle disables them
+    // and every iOS task is SKIPPED, which is why CI's `ios-compile` job runs on a macOS runner.
+    // Assembling an actual .ipa also needs Xcode, which is a later milestone of the iOS port.
     iosArm64()
     iosSimulatorArm64()
     iosX64()
@@ -34,11 +35,21 @@ kotlin {
             // `IOException` in its signatures, so every module that implements or calls it (the
             // app, the conformance suite) has to see them on its own compile classpath.
             api(libs.kotlinx.io.core)
+            // The multiplatform HTTP and WebSocket client behind `KtorRpcTransport` and
+            // `KtorMuxSocket`. `implementation`: callers hand those classes an `HttpClient`, so a
+            // module that builds one declares Ktor itself. The Android app does not use these
+            // classes at all and keeps Ktor out of its APK; see `app/build.gradle.kts`.
+            implementation(libs.ktor.client.core)
+        }
+        iosMain.dependencies {
+            // NSURLSession, through Ktor: the iOS engine. Its own platform libraries come from the
+            // Kotlin/Native toolchain, so this only resolves (and compiles) on a macOS host.
+            implementation(libs.ktor.client.darwin)
         }
         jvmMain.dependencies {
             // The HTTP/WebSocket transport and the commonmark Markdown renderer are JVM-only and
             // deliberately kept out of common code: the shared logic sees them only through the
-            // `RpcTransport` interface. An iOS transport will implement that interface natively.
+            // `RpcTransport` interface. The iOS transport implements that interface with Ktor.
             implementation(libs.okhttp)
             implementation(libs.commonmark)
             implementation(libs.commonmark.ext.gfm.tables)
@@ -50,6 +61,17 @@ kotlin {
         jvmTest.dependencies {
             implementation(libs.junit)
             implementation(libs.kotlinx.coroutines.test)
+            // The Ktor transport is common code, so it can only run on the JVM through a JVM
+            // engine. CIO is test-scoped on purpose rather than a `jvmMain` dependency: the app
+            // never builds a Ktor client, and a production class whose only caller is a test would
+            // be dead weight in the shipped APK. The iOS build uses Darwin instead.
+            implementation(libs.ktor.client.cio)
+            // The transport contract tests drive both transports against the same real harness
+            // stand-in, and the ping test needs a server that sends RFC 6455 pings.
+            implementation(project(":mock-harness"))
+            implementation(libs.ktor.server.core)
+            implementation(libs.ktor.server.netty)
+            implementation(libs.ktor.server.websockets)
         }
     }
 }
