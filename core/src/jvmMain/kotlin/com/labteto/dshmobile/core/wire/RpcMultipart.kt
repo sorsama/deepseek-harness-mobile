@@ -39,8 +39,7 @@ data class BinaryRpcValue(
 object RpcMultipart {
 
     /** Whether a response of this `Content-Type` is the multipart shape rather than JSON. */
-    fun isMultipart(contentType: String?): Boolean =
-        contentType?.trimStart()?.startsWith("multipart/", ignoreCase = true) == true
+    fun isMultipart(contentType: String?): Boolean = isMultipartContentType(contentType)
 
     /** One multipart response, split into its envelope and its attachments. */
     class Decoded(
