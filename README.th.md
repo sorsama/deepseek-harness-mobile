@@ -161,7 +161,7 @@ DSH Mobile ทดสอบกับ **DeepSeek Harness 0.2.2-rc.1** ส่วน
 ```sh
 ./gradlew :app:assembleDebug      # debug APK
 ./gradlew :app:assembleRelease    # release APK, signed when the keystore environment is set
-./gradlew :core:test :app:testDebugUnitTest
+./gradlew :core:jvmTest :app:testDebugUnitTest
 ```
 
 ถ้าจะตรวจแอปกับ harness ตัวจริง ให้บิลด์ harness จากซอร์สที่ checkout ไว้ แล้วรันชุดทดสอบ conformance:

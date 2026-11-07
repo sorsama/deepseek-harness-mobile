@@ -17,7 +17,7 @@ kotlin {
 /**
  * Conformance against a real harness.
  *
- * Its own module rather than a source set in `:core`, for two reasons. `:core:test` is hermetic and
+ * Its own module rather than a source set in `:core`, for two reasons. `:core:jvmTest` is hermetic and
  * fast — no sockets, no subprocesses — and it should stay that way, because it is what runs on every
  * push. And these tests need only `:core` plus OkHttp and a process, so putting them in `:app` would
  * drag the whole Android toolchain into a suite that never touches Android.

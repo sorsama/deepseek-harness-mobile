@@ -161,7 +161,7 @@ DSH Mobile को **DeepSeek Harness 0.2.2-rc.1** पर टेस्ट कि�
 ```sh
 ./gradlew :app:assembleDebug      # debug APK
 ./gradlew :app:assembleRelease    # release APK, signed when the keystore environment is set
-./gradlew :core:test :app:testDebugUnitTest
+./gradlew :core:jvmTest :app:testDebugUnitTest
 ```
 
 ऐप को असली harness के साथ जाँचने के लिए, harness का एक checkout बिल्ड करें और कन्फ़ॉर्मेंस सूट चलाएँ:

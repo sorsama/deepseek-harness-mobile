@@ -172,7 +172,7 @@ l'application va avec quel harness.
 ```sh
 ./gradlew :app:assembleDebug      # debug APK
 ./gradlew :app:assembleRelease    # release APK, signed when the keystore environment is set
-./gradlew :core:test :app:testDebugUnitTest
+./gradlew :core:jvmTest :app:testDebugUnitTest
 ```
 
 Pour vérifier l'application face à un vrai harness, compilez une copie locale du harness et lancez
