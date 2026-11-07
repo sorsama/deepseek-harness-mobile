@@ -141,7 +141,7 @@ import kotlinx.coroutines.launch
 internal const val WORKSPACE_PREVIEW_LIMIT = 5
 
 /** The quick filters above the list. */
-private enum class DrawerFilter { All, Running, NeedsYou, Archived }
+internal enum class DrawerFilter { All, Running, NeedsYou, Archived }
 
 /**
  * The sessions drawer: the Ink redesign's "Sessions" screen.
@@ -514,50 +514,13 @@ fun ChatListDrawer(
         // fades at its trailing edge so there is never a chip half-cut with no way to reach it.
         // Each chip is drawn 36dp tall inside a 48dp touch target, so the row is 48dp and needs no
         // spacer above it.
-        Box(Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                DsFilterChip(
-                    label = stringResource(R.string.ink_chat_filter_all, listable.size),
-                    selected = filter == DrawerFilter.All,
-                    onClick = { filter = DrawerFilter.All },
-                )
-                DsFilterChip(
-                    label = stringResource(R.string.ink_chat_filter_running, runningCount),
-                    selected = filter == DrawerFilter.Running,
-                    onClick = { filter = DrawerFilter.Running },
-                )
-                DsFilterChip(
-                    label = stringResource(R.string.ink_chat_filter_needs_you, needsYouCount),
-                    selected = filter == DrawerFilter.NeedsYou,
-                    warn = needsYouCount > 0,
-                    onClick = { filter = DrawerFilter.NeedsYou },
-                )
-                DsFilterChip(
-                    label = stringResource(R.string.chatlist_archived),
-                    selected = filter == DrawerFilter.Archived,
-                    onClick = { filter = DrawerFilter.Archived },
-                )
-            }
-            // A scroll affordance, not decoration: the last chip must never look chopped. The
-            // gradient runs toward the reading end, so it fades into the sidebar on both LTR and RTL.
-            val rtl = androidx.compose.ui.platform.LocalLayoutDirection.current ==
-                androidx.compose.ui.unit.LayoutDirection.Rtl
-            Box(
-                Modifier
-                    .align(Alignment.CenterEnd)
-                    .width(32.dp)
-                    .fillMaxHeight()
-                    .background(
-                        Brush.horizontalGradient(
-                            if (rtl) listOf(colors.sidebar, Color.Transparent) else listOf(Color.Transparent, colors.sidebar),
-                        ),
-                    ),
-            )
-        }
+        DrawerQuickFilters(
+            totalCount = listable.size,
+            runningCount = runningCount,
+            needsYouCount = needsYouCount,
+            filter = filter,
+            onFilterChange = { filter = it },
+        )
 
         // ---- The one session that needs a person ----------------------------------------------
         AnimatedVisibility(visible = needsYouSession != null && query.isBlank()) {
@@ -940,6 +903,66 @@ fun ChatListDrawer(
             scope = scope,
             onDismiss = { workspacesOpen = false },
         )
+    }
+}
+
+/** The drawer's quick-filter strip, shared with the bounded-height layout regression tests. */
+@Composable
+internal fun DrawerQuickFilters(
+    totalCount: Int,
+    runningCount: Int,
+    needsYouCount: Int,
+    filter: DrawerFilter,
+    onFilterChange: (DrawerFilter) -> Unit,
+) {
+    val colors = DsTheme.colors
+    Box(Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            DsFilterChip(
+                label = stringResource(R.string.ink_chat_filter_all, totalCount),
+                selected = filter == DrawerFilter.All,
+                onClick = { onFilterChange(DrawerFilter.All) },
+            )
+            DsFilterChip(
+                label = stringResource(R.string.ink_chat_filter_running, runningCount),
+                selected = filter == DrawerFilter.Running,
+                onClick = { onFilterChange(DrawerFilter.Running) },
+            )
+            DsFilterChip(
+                label = stringResource(R.string.ink_chat_filter_needs_you, needsYouCount),
+                selected = filter == DrawerFilter.NeedsYou,
+                warn = needsYouCount > 0,
+                onClick = { onFilterChange(DrawerFilter.NeedsYou) },
+            )
+            DsFilterChip(
+                label = stringResource(R.string.chatlist_archived),
+                selected = filter == DrawerFilter.Archived,
+                onClick = { onFilterChange(DrawerFilter.Archived) },
+            )
+        }
+        // A scroll affordance, not decoration: the last chip must never look chopped. The
+        // gradient runs toward the reading end, so it fades into the sidebar on both LTR and RTL.
+        val rtl = androidx.compose.ui.platform.LocalLayoutDirection.current ==
+            androidx.compose.ui.unit.LayoutDirection.Rtl
+        // Only the chips determine this strip's height. Measuring the fade with fillMaxHeight
+        // directly in the outer Box consumes the Column's remaining height and starves the list.
+        Box(Modifier.matchParentSize()) {
+            Box(
+                Modifier
+                    .align(Alignment.CenterEnd)
+                    .width(32.dp)
+                    .fillMaxHeight()
+                    .background(
+                        Brush.horizontalGradient(
+                            if (rtl) listOf(colors.sidebar, Color.Transparent) else listOf(Color.Transparent, colors.sidebar),
+                        ),
+                    ),
+            )
+        }
     }
 }
 
