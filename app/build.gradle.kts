@@ -151,6 +151,10 @@ dependencies {
     // conformance test runs the real encoder through it rather than through a copy, because a copy
     // is a second thing to keep in step and the failure it guards against is a silent one.
     testImplementation(project(":mock-harness"))
+    // The app's own build keeps Ktor out of `:core`'s runtime classpath (see above); the
+    // end-to-end tests run the Ktor transport against the mock harness too, so they bring it back.
+    testImplementation(libs.ktor.client.core)
+    testImplementation(libs.ktor.client.cio)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

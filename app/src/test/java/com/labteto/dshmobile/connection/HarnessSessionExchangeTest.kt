@@ -3,7 +3,6 @@ package com.labteto.dshmobile.connection
 import com.labteto.dshmobile.core.wire.DshApiClient
 import com.labteto.dshmobile.core.wire.HarnessLaunchLine
 import com.labteto.dshmobile.core.wire.HarnessSession
-import com.labteto.dshmobile.core.wire.OkHttpRpcTransport
 import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.core.wire.SessionExchange
 import com.labteto.dshmobile.core.wire.TransportFailure
@@ -17,6 +16,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
 /**
  * The sign-in a harness on this phone needs, end to end over a real socket: the probe answers
@@ -24,10 +25,19 @@ import org.junit.Test
  * with it. This is the path "start the harness from the app" automates, so the pieces it chains
  * — [HarnessLaunchLine], [HarnessSession] and the transport's cookie — are checked together.
  */
-class HarnessSessionExchangeTest {
+@RunWith(Parameterized::class)
+class HarnessSessionExchangeTest(private val kind: TransportKind) {
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun kinds(): List<TransportKind> = TransportKind.parameters()
+    }
 
     private lateinit var harness: MockHarness
     private var port: Int = -1
+
+    /** The launch-token exchange is not part of the transport seam yet, so it stays on OkHttp. */
     private val http = OkHttpClient()
 
     private val baseUrl get() = "http://127.0.0.1:$port"
@@ -42,7 +52,7 @@ class HarnessSessionExchangeTest {
     fun tearDown() = runBlocking { harness.stop() }
 
     private fun client(cookie: String? = null) =
-        DshApiClient(OkHttpRpcTransport(baseUrl, http, 5_000, 5_000, cookie = cookie))
+        DshApiClient(kind.rpc(baseUrl, 5_000, 5_000, cookie = cookie))
 
     @Test
     fun `without a session the probe call is refused with 401`() = runBlocking {
