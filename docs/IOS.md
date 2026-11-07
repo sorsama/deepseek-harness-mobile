@@ -17,6 +17,16 @@ The port has started at the bottom, where the sharing is real:
 - The JVM-only pieces — the OkHttp transport, the commonmark renderer, the TLS pairing and
   URL plumbing — stayed in `jvmMain`, in the same packages, with the same class names. The
   Android app consumes them exactly as before; nothing about the shipping app changed.
+- **M2a moved the transport seam into `commonMain`.** `RpcTransport`, `RpcTransportException`,
+  the `MuxSocket`/`WsChannelSink` socket contract, `RemoteStreamMux`, `ConnectionLoop` and
+  `TransportFailure` are common now; `OkHttpRpcTransport` and `WsChannel` are the JVM
+  implementations behind them. Three platform differences were replaced rather than ported:
+  `java.io.InputStream` became kotlinx-io's `Source` (and `java.io.IOException` its
+  `IOException`, a typealias of the same class on the JVM, so the app's `catch` blocks are
+  unchanged); `java.util.concurrent` atomics and `ConcurrentHashMap` became `kotlinx.atomicfu`
+  plus a small copy-on-write `AtomicRegistry`; and the part of failure classification that
+  inspects `java.net`/`javax.net.ssl` exceptions became an `expect`/`actual` pair whose iOS side
+  is deliberately conservative until a real iOS transport shows what it throws.
 - There is no iOS app yet. Compiling shared code is not an app, and nothing in this repo
   produces an `.ipa` today.
 
@@ -29,11 +39,20 @@ OkHttp implementation sits behind. An iOS implementation has to be written again
 interface — Ktor's Darwin engine or NSURLSession directly — covering the unary POST, the
 binary download and upload channels, and the `/api/remote.mux` WebSocket with its
 header/auth/cookie rules (see `RpcTransport.kt` and `RelayTls.kt` for the exact carrier
-contract). The JVM-only files that stayed behind (`ConnectionLoop`, `RemoteStreamMux`,
-`DshApiClient`, `TransportFailure` and friends) move to `commonMain` one at a time as the
-platform APIs they lean on — `java.io` streams, `java.time`, `java.util.concurrent` atomics —
+contract). The shared logic above the seam moves to `commonMain` one file at a time as the
+platform APIs it leans on — `java.io` streams, `java.time`, `java.util.concurrent` atomics —
 are replaced with common equivalents or `expect`/`actual` pairs. Each move is verifiable:
 the JVM tests that already exist keep running against the moved code.
+
+- **M2a (done):** the seam itself and the logic directly on top of it — see "Where this
+  stands". `HarnessLaunchLine` stayed behind because it calls `HarnessSession.tokenFrom`, and
+  `AutomationTiming` because its validation is `java.time`'s (`Instant.parse`, `ZoneId.of`,
+  `LocalTime.parse`); swapping in `kotlinx-datetime` needs a new dependency and a check of every
+  input the old code accepted, which is more than a mechanical move.
+- **M2b (next):** the Darwin-backed `RpcTransport` and `MuxSocket`, then the rest of the
+  JVM-only wire files (`DshApiClient`, `HarnessSession`, `RelayPairing`/`RelayTls` with
+  certificate pinning on iOS, `HarnessUrl`, `RpcMultipart` and their neighbours) follow it
+  into `commonMain`.
 
 **M3 — shared UI, decided by measurement.** The UI is ~49k lines of Compose with no XML
 layouts, which is the one fact that makes Compose Multiplatform plausible here. Before
