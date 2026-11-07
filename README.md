@@ -162,7 +162,7 @@ DSH Mobile is tested against **DeepSeek Harness 0.2.2-rc.1**. Older harness vers
 ```sh
 ./gradlew :app:assembleDebug      # debug APK
 ./gradlew :app:assembleRelease    # release APK, signed when the keystore environment is set
-./gradlew :core:test :app:testDebugUnitTest
+./gradlew :core:jvmTest :app:testDebugUnitTest
 ```
 
 To check the app against a real harness, build a harness checkout and run the conformance suite:

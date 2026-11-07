@@ -169,7 +169,7 @@ aplicación corresponde a cada versión del harness.
 ```sh
 ./gradlew :app:assembleDebug      # debug APK
 ./gradlew :app:assembleRelease    # release APK, signed when the keystore environment is set
-./gradlew :core:test :app:testDebugUnitTest
+./gradlew :core:jvmTest :app:testDebugUnitTest
 ```
 
 Para comprobar la aplicación con un harness real, compila una copia local del repositorio del

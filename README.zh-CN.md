@@ -122,7 +122,7 @@ DSH Mobile 针对 **DeepSeek Harness 0.2.2-rc.1** 测试。最早到 0.1.6 的�
 ```sh
 ./gradlew :app:assembleDebug      # debug APK
 ./gradlew :app:assembleRelease    # release APK, signed when the keystore environment is set
-./gradlew :core:test :app:testDebugUnitTest
+./gradlew :core:jvmTest :app:testDebugUnitTest
 ```
 
 要用真实的 harness 检验应用，先构建一份 harness 源码，再运行一致性测试套件：

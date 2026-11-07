@@ -3,7 +3,9 @@
 DSH Mobile is a four-module Gradle project (Kotlin 2.0, Compose, Hilt).
 
 ```
-core/           pure JVM — no Android imports
+core/           Kotlin Multiplatform — shared logic in commonMain, no Android
+                  imports; the JVM transport (OkHttp) and the commonmark
+                  renderer live in jvmMain behind the RpcTransport interface
   wire/         the DeepSeek Harness web-client protocol:
                   envelopes (client-request / server-response), the
                   lenient WireJson codec, RpcTransport (OkHttp: unary POST,

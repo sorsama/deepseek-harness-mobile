@@ -23,7 +23,7 @@ Say what you actually ran, not what should work. For example:
 
 ## Checklist
 
-- [ ] `./gradlew :core:test :mock-harness:test :app:testDebugUnitTest` passes
+- [ ] `./gradlew :core:jvmTest :mock-harness:test :app:testDebugUnitTest` passes
 - [ ] `./gradlew :app:lintDebug` is clean
 - [ ] Any new user-visible text is in `values/strings.xml` **and all ten translation
       directories** — `MissingTranslation` is a lint error, which is what keeps the

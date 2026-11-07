@@ -1,6 +1,6 @@
 package com.labteto.dshmobile.core.wire
 
-import java.util.UUID
+import kotlin.random.Random
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.json.Json
@@ -23,8 +23,34 @@ val WireJson: Json = Json {
     explicitNulls = false
 }
 
+/**
+ * A random RFC 4122 version 4 id, spelt the way `java.util.UUID.randomUUID()` used to spell it:
+ * lowercase hex, hyphens at 8-4-4-4-12.
+ *
+ * Common Kotlin has no `java.util.UUID`, and these ids only have to be unique within one client's
+ * conversation with one host — not unguessable in any security sense — so the standard library's
+ * [Random] is the right source. [newRpcId] and [newPromptRequestId] both go through here so a future
+ * swap (e.g. `kotlin.uuid.Uuid` once stable) is a one-line change.
+ */
+private fun randomUuid(): String {
+    val bytes = ByteArray(16)
+    Random.nextBytes(bytes)
+    bytes[6] = ((bytes[6].toInt() and 0x0f) or 0x40).toByte() // version 4
+    bytes[8] = ((bytes[8].toInt() and 0x3f) or 0x80).toByte() // RFC 4122 variant
+    val digits = "0123456789abcdef"
+    val hex = buildString(32) {
+        for (byte in bytes) {
+            val value = byte.toInt() and 0xff
+            append(digits[value ushr 4])
+            append(digits[value and 0xf])
+        }
+    }
+    return hex.substring(0, 8) + "-" + hex.substring(8, 12) + "-" + hex.substring(12, 16) +
+        "-" + hex.substring(16, 20) + "-" + hex.substring(20, 32)
+}
+
 /** Mint a fresh correlation id for a client-request (the initiator mints; responses echo). */
-fun newRpcId(): String = UUID.randomUUID().toString()
+fun newRpcId(): String = randomUuid()
 
 /**
  * Mint a fresh identity for one human prompt (`requestId` on a session or subagent prompt).
@@ -33,7 +59,7 @@ fun newRpcId(): String = UUID.randomUUID().toString()
  * persists it on the message the prompt is accepted as, so a retry of the same message must carry
  * the id it already had, and two different messages must never share one.
  */
-fun newPromptRequestId(): String = UUID.randomUUID().toString()
+fun newPromptRequestId(): String = randomUuid()
 
 /** Encode a client-request envelope (POST /api/<method> body). */
 fun encodeEnvelope(request: ClientRequest): String =

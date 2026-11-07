@@ -18,8 +18,10 @@ Thanks for your interest in DSH Mobile!
 
 ## Repository layout
 
-- `core/` — pure JVM: wire protocol (DTOs, RPC client, WebSocket downlinks,
-  reconnect loop), session event folding, notification classifier.
+- `core/` - Kotlin Multiplatform: the wire protocol (DTOs, RPC client, WebSocket
+  downlinks, reconnect loop), session event folding and notification classifier build
+  from `commonMain` for Android and iOS; the OkHttp transport and commonmark renderer
+  stay in `jvmMain`. iOS targets are compiled on CI, not on a Windows desktop.
 - `app/` — Android UI: Compose screens, connection/discovery, foreground
   service, notifications, i18n.
 - `mock-harness/` — Ktor mock of the harness `/api` server for tests.

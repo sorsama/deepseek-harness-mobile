@@ -1,5 +1,8 @@
 package com.labteto.dshmobile.core.markdown
 
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
+
 /**
  * Cleans the HTML of a rendered Markdown document before it goes into the preview's locked-down web
  * view.
@@ -14,6 +17,7 @@ package com.labteto.dshmobile.core.markdown
  * alt text, or, when the reader has asked for web images, a reference to a path under
  * [WEB_IMAGE_PATH] that the app fetches itself over HTTPS with a size limit.
  */
+@OptIn(ExperimentalEncodingApi::class)
 object HtmlSanitizer {
     /** Where an allowed web image is served from, relative to the preview origin. */
     const val WEB_IMAGE_PATH = "/__web/"
@@ -179,7 +183,7 @@ object HtmlSanitizer {
     }
 
     private fun base64Url(text: String): String =
-        java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(text.toByteArray(Charsets.UTF_8))
+        Base64.UrlSafe.withPadding(Base64.PaddingOption.ABSENT).encode(text.encodeToByteArray())
 
     /** Decodes the entities a browser would before it reads a URL scheme, so `java&#x73;cript:` is still caught. */
     internal fun decodeEntities(text: String): String {
@@ -195,6 +199,19 @@ object HtmlSanitizer {
         }
     }
 
-    private fun codePoint(value: Int): String? =
-        if (value in 0..0x10FFFF && value !in 0xD800..0xDFFF) String(Character.toChars(value)) else null
+    private fun codePoint(value: Int): String? {
+        // Same guard as Character.toChars: anything outside Unicode or inside the surrogate range
+        // is refused rather than re-encoded.
+        if (value !in 0..0x10FFFF || value in 0xD800..0xDFFF) return null
+        return buildString {
+            if (value < 0x10000) {
+                append(value.toChar())
+            } else {
+                // Encode as a surrogate pair, the way a four-byte code point must reach UTF-16.
+                val bits = value - 0x10000
+                append((0xD800 + (bits shr 10)).toChar())
+                append((0xDC00 + (bits and 0x3FF)).toChar())
+            }
+        }
+    }
 }
