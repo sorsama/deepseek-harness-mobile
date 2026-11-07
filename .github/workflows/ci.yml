@@ -113,11 +113,28 @@ jobs:
         env:
           DSH_HARNESS_SRC: ${{ github.workspace }}/build/harness-0.2.2-rc.1
         run: ./gradlew :core:jvmTest :conformance:test --stacktrace
+      # The same suite again with the Ktor transport (the iOS carrier, here on a JVM engine) in
+      # place of OkHttp, so the real harness referees both implementations of the transport seam.
+      # `dsh.transport` is a declared input of the test task, so this is a fresh run and not an
+      # up-to-date or build-cached result of the pass above. It reuses the compiled classes and the
+      # harness build, so it costs the test run alone.
+      - name: Keep the OkHttp pass's report
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p conformance/build/reports/tests/okhttp-pass
+          cp -r conformance/build/reports/tests/test/. conformance/build/reports/tests/okhttp-pass/ || true
+      # Runs even when the OkHttp pass failed, so one push says whether the Ktor transport fails
+      # the same way or not.
+      - name: Real harness conformance (Ktor transport)
+        if: ${{ !cancelled() }}
+        env:
+          DSH_HARNESS_SRC: ${{ github.workspace }}/build/harness-0.2.2-rc.1
+        run: ./gradlew :conformance:test -Pdsh.transport=ktor --stacktrace
       - name: Upload conformance results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: harness-conformance-results
           path: |
-            conformance/build/reports/tests/test
+            conformance/build/reports/tests
             conformance/build/conformance-logs
