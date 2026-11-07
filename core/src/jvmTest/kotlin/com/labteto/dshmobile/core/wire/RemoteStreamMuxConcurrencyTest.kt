@@ -4,6 +4,10 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
+import kotlin.random.Random
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.Assert.assertEquals
@@ -104,14 +108,64 @@ class RemoteStreamMuxConcurrencyTest {
             ender.join()
             closer.join()
 
-            // Whichever side wins, the consumer's first read is a terminal and never a hang. (A
-            // second terminal can queue behind it when an `end` races the sweep; nothing reads it,
-            // exactly as before this class moved to common code, so it is not asserted either way.)
+            // Whichever side wins, the consumer's first read is a terminal and never a hang. That
+            // each stream gets *only one* is the next test's business.
             for (stream in streams) {
                 val first = terminalOf(stream)
                 assertNotNull("every stream is settled one way or the other", first)
                 assertTrue(first, first == "ended" || first == "carrier-failure")
             }
+        }
+    }
+
+    /**
+     * A host `end` or `error` and the failure sweep both end a stream, and only the one that
+     * actually retires it may signal it.
+     *
+     * The race is a window of a few nanoseconds inside one `onMessage`, so a single run proves
+     * nothing: the sweep is released at a different point of a long run of host terminals each round,
+     * and every stream is then asked for a *second* terminal, which is queued (and returned at once)
+     * only if both sides signalled it. Before the host side let the remove decide, this failed on
+     * most runs of the whole test.
+     */
+    @Test
+    fun `a host terminal racing the sweep signals each stream exactly once`() = runBlocking {
+        val streamCount = 400
+        repeat(150) { round ->
+            val rig = Rig().ready()
+            val streams = List(streamCount) { rig.mux.open("session/follow") }
+            val delivered = AtomicInteger()
+            val sweepAt = Random(round).nextInt(streamCount / 4, streamCount)
+            val gate = CountDownLatch(1)
+            val host = thread {
+                gate.await()
+                for (id in 1..streamCount) {
+                    rig.sink.onMessage(
+                        if (id % 2 == 0) {
+                            """{"type":"end","streamId":"$id"}"""
+                        } else {
+                            """{"type":"error","streamId":"$id","error":{"code":"x","message":"m","details":{}}}"""
+                        },
+                    )
+                    delivered.incrementAndGet()
+                }
+            }
+            val sweeper = thread {
+                gate.await()
+                while (delivered.get() < sweepAt) Thread.onSpinWait()
+                rig.mux.close()
+            }
+            gate.countDown()
+            host.join()
+            sweeper.join()
+
+            for (stream in streams) assertNotNull("every stream is settled", terminalOf(stream))
+            // All the streams' second reads at once: a queued signal answers without suspending, so
+            // the 1 ms bound only ever expires for a stream that has nothing more.
+            val extra = coroutineScope {
+                streams.map { async { terminalOf(it, timeoutMs = 1) } }.awaitAll()
+            }
+            assertEquals("a stream was signalled twice", 0, extra.count { it != null })
         }
     }
 

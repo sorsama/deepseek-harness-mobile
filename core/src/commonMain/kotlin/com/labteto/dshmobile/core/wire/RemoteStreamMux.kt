@@ -92,12 +92,14 @@ interface RemoteStream {
  * against the socket thread that is delivering into the same mux. The invariants the code leans
  * on, and where each is enforced:
  *
- * - **The sweep signals only what it retired.** [failAll] fails the streams that
- *   [AtomicRegistry.removeAll] hands back, and a registration goes to exactly one caller, so a
- *   stream a cancel or a sweep already retired is not failed again. (A host `end` or `error` that
- *   looked a stream up just before a sweep can still queue its own terminal behind the sweep's;
- *   a consumer stops at the first terminal it reads, so the extra is never seen. That window is
- *   the same as it was with `ConcurrentHashMap`, and is deliberately left as it was.)
+ * - **A stream gets one terminal signal, from whoever retires it.** A host `end` or `error`, a
+ *   cancel and the failure sweep each retire a stream by removing it, and [AtomicRegistry.remove]
+ *   and [AtomicRegistry.removeAll] hand a registration to exactly one caller. Only that caller
+ *   signals, so a stream a cancel or a sweep already retired is not signalled again by a host
+ *   terminal that arrived at the same moment, and the other way round. (A host `end` or `error`
+ *   used to look the stream up and remove it as two steps and signal whether or not its remove had
+ *   won, so a sweep landing between them queued a second terminal behind the first. A consumer
+ *   stops at the first terminal it reads, so the extra was never seen, but it was there.)
  * - **A stream cannot be stranded by a concurrent closure.** [failAll] records [closedCause]
  *   before it sweeps, and [open] registers before it checks it, so either the sweep sees the new
  *   stream or the opener sees the closure.
@@ -180,20 +182,19 @@ class RemoteStreamMux(
                 failAll(e)
                 return
             }
-            // An item for a stream nobody is reading is ordinary: a cancel and an in-flight item
+            // A message for a stream nobody is reading is ordinary: a cancel and an in-flight item
             // cross on the wire every time a screen closes.
-            val stream = streams[message.streamId] ?: return
             when (message) {
                 is RemoteStreamServerMessage.Item ->
-                    stream.signals.trySend(Signal.Item(message.value ?: JsonObject(emptyMap())))
-                is RemoteStreamServerMessage.Error -> {
-                    streams.remove(message.streamId)
-                    stream.signals.trySend(Signal.Failed(message.error, carrier = false))
-                }
-                is RemoteStreamServerMessage.End -> {
-                    streams.remove(message.streamId)
-                    stream.signals.trySend(Signal.Ended)
-                }
+                    streams[message.streamId]?.signals?.trySend(Signal.Item(message.value ?: JsonObject(emptyMap())))
+                // A terminal is delivered by whoever *retires* the stream, and the remove decides
+                // who that is: a failure sweep or a cancel that got there first took the stream out,
+                // and then there is nothing left to signal. (Looking the stream up first and removing
+                // it afterwards let both sides signal it.)
+                is RemoteStreamServerMessage.Error ->
+                    streams.remove(message.streamId)?.signals?.trySend(Signal.Failed(message.error, carrier = false))
+                is RemoteStreamServerMessage.End ->
+                    streams.remove(message.streamId)?.signals?.trySend(Signal.Ended)
             }
         }
 
