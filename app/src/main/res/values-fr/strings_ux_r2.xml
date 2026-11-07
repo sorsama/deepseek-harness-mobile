@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">Impossible de la retirer de la file d’attente.</string>
     <string name="details_failed_goal">Impossible de mettre à jour l’objectif.</string>
     <string name="details_failed_plan">Impossible de changer le mode plan.</string>
-    <string name="details_failed_link">Impossible de créer un lien pour le moment. Vérifiez votre connexion.</string>
     <string name="details_fork_done_title">Copie prête</string>
     <string name="details_fork_done_body">Une copie de cette session a été créée. L’ouvrir maintenant ?</string>
     <string name="details_fork_open">Ouvrir la copie</string>

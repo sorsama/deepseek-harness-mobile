@@ -84,6 +84,13 @@ internal class ReorderState(
     private val edgePx: Float,
     private val maxStepPx: Float,
 ) {
+    /**
+     * One tick stream for the whole life of this state, so its throttle survives from one slot
+     * crossing to the next. A fast drag over several rows is then a quick roll of light ticks
+     * instead of a click per row, and letting go lands with a firmer one.
+     */
+    private val ticker = haptics.ticker()
+
     /** The unit being held (a session id, or a project key), or null when nothing is. */
     var draggedId: String? by mutableStateOf(null)
         private set
@@ -100,8 +107,14 @@ internal class ReorderState(
     var atBoundary: Boolean by mutableStateOf(false)
         private set
 
-    /** The lazy-list item key of a unit's first item (what the lifted unit is positioned by). */
-    var itemKeyOf: (String) -> String = { it }
+    /**
+     * The lazy-list item key of a unit's first item (what the lifted unit is positioned by), given the
+     * group the unit is held in and its id. The group is an argument, not read from [groupKey], because
+     * [start] has to find the unit *before* the drag has a group: a project header and a session row
+     * are keyed differently, and a lookup that reached for the old group looked a project up as if it
+     * were a session and never found it.
+     */
+    var itemKeyOf: (group: String?, id: String) -> String = { _, id -> id }
 
     /** Every lazy-list item key that belongs to a unit: the row and its open subagents, or a header and its rows. */
     var keysOf: (String) -> List<String> = { listOf(it) }
@@ -142,7 +155,7 @@ internal class ReorderState(
     fun translationOf(id: String): Float {
         if (id != draggedId) return 0f
         settleValue?.let { return it }
-        val info = liveInfo(itemKeyOf(id)) ?: return 0f
+        val info = liveInfo(itemKeyOf(groupKey, id)) ?: return 0f
         return drawnTop(info.size.toFloat(), spans()) - info.offset
     }
 
@@ -152,7 +165,7 @@ internal class ReorderState(
         val out = HashMap<String, UnitSpan>(order.size)
         for (id in order) {
             // The held unit's own extent is its one lifted item, wherever its children are.
-            val keys = if (id == draggedId) listOf(itemKeyOf(id)) else keysOf(id)
+            val keys = if (id == draggedId) listOf(itemKeyOf(groupKey, id)) else keysOf(id)
             val infos = keys.mapNotNull { byKey[it] }
             if (infos.isEmpty()) continue
             out[id] = UnitSpan(
@@ -164,17 +177,11 @@ internal class ReorderState(
     }
 
     /** Where the finger wants the unit, kept inside the block: the first slot's top to the last slot's bottom. */
-    private fun bounds(spans: Map<String, UnitSpan>, height: Float): Pair<Float, Float> {
-        val order = liveOrder.orEmpty()
-        val low = order.firstOrNull()?.let { spans[it]?.top } ?: Float.NEGATIVE_INFINITY
-        val high = order.lastOrNull()?.let { spans[it]?.bottom }?.minus(height) ?: Float.POSITIVE_INFINITY
-        return low to high
-    }
+    private fun bounds(spans: Map<String, UnitSpan>, height: Float): Pair<Float, Float> =
+        blockDrawBounds(liveOrder.orEmpty(), spans, height)
 
-    private fun drawnTop(height: Float, spans: Map<String, UnitSpan>): Float {
-        val (low, high) = bounds(spans, height)
-        return if (low <= high) fingerTop.coerceIn(low, high) else fingerTop
-    }
+    private fun drawnTop(height: Float, spans: Map<String, UnitSpan>): Float =
+        clampToBlock(fingerTop, height, liveOrder.orEmpty(), spans)
 
     /**
      * Lift [id]. [order] is its siblings' ids (itself included) as they stand; [group] is the block
@@ -182,7 +189,7 @@ internal class ReorderState(
      */
     fun start(id: String, group: String, order: List<String>) {
         if (active) return
-        val info = liveInfo(itemKeyOf(id)) ?: return
+        val info = liveInfo(itemKeyOf(group, id)) ?: return
         draggedId = id
         groupKey = group
         originalOrder = order
@@ -190,7 +197,8 @@ internal class ReorderState(
         fingerTop = info.offset.toFloat()
         atBoundary = false
         settleValue = null
-        haptics.longPress()
+        ticker.reset()
+        haptics.dragStart()
         loop = scope.launch {
             while (isActive && draggedId != null) {
                 withFrameNanos { }
@@ -208,7 +216,7 @@ internal class ReorderState(
     private suspend fun frame(): Boolean {
         val id = draggedId ?: return false
         val order = liveOrder ?: return false
-        val info = liveInfo(itemKeyOf(id)) ?: run { abort(); return false }
+        val info = liveInfo(itemKeyOf(groupKey, id)) ?: run { abort(); return false }
         val height = info.size.toFloat()
         val spans = spans()
         val at = order.indexOf(id)
@@ -226,14 +234,14 @@ internal class ReorderState(
         if ((step < 0f && at <= 0) || (step > 0f && at >= order.lastIndex)) step = 0f
         if (step != 0f) listState.scrollBy(step)
 
-        val top = drawnTop(height, spans)
-        val next = nextSlotIndex(order, id, top + height / 2f, spans)
+        // The slot follows the finger, not the clamped drawn position: see [slotForFinger].
+        val next = slotForFinger(order, id, fingerTop, height, spans)
         if (next >= 0 && next != at) {
             liveOrder = order.toMutableList().apply {
                 removeAt(at)
                 add(next, id)
             }
-            haptics.selection()
+            ticker.cross()
         }
 
         val (low, high) = bounds(spans, height)
@@ -261,7 +269,7 @@ internal class ReorderState(
             changed = order != originalOrder,
             releasedOutside = atBoundary,
         )
-        haptics.confirm()
+        ticker.settle()
         settle(translationOf(id))
         return result
     }

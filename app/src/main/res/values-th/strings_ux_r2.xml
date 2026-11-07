@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">นำออกจากคิวไม่ได้</string>
     <string name="details_failed_goal">อัปเดตเป้าหมายไม่ได้</string>
     <string name="details_failed_plan">เปลี่ยนโหมดวางแผนไม่ได้</string>
-    <string name="details_failed_link">สร้างลิงก์ไม่ได้ในตอนนี้ ลองตรวจสอบการเชื่อมต่อ</string>
     <string name="details_fork_done_title">ฟอร์กพร้อมแล้ว</string>
     <string name="details_fork_done_body">สร้างสำเนาของเซสชันนี้แล้ว เปิดตอนนี้เลยหรือไม่</string>
     <string name="details_fork_open">เปิดสำเนา</string>

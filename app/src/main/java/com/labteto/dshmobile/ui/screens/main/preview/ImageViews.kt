@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -42,7 +43,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.viewinterop.AndroidView
 import com.labteto.dshmobile.R
+import com.labteto.dshmobile.ui.components.DsHaptics
 import com.labteto.dshmobile.ui.components.FeatherIcons
+import com.labteto.dshmobile.ui.components.HapticTicker
+import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.media.sampleSizeFor
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsSpacing
@@ -171,6 +175,17 @@ internal class ZoomState(private val maxScale: Float = 8f) {
     var viewport by mutableStateOf(IntSize.Zero)
     var picture by mutableStateOf(IntSize.Zero)
 
+    /**
+     * Where the snaps are felt: a firmer tick when a pinch comes back to the fitted picture or hits
+     * the largest zoom, and when a double-tap lands. Set by the composable that draws the picture.
+     */
+    var haptics: DsHaptics? = null
+        set(value) {
+            if (field !== value) ticker = value?.ticker()
+            field = value
+        }
+    private var ticker: HapticTicker? = null
+
     private fun center() = Offset(viewport.width / 2f, viewport.height / 2f)
 
     private fun clamp(candidate: Offset, atScale: Float): Offset {
@@ -191,8 +206,11 @@ internal class ZoomState(private val maxScale: Float = 8f) {
             ZoomMath.zoomAbout(offset.x, focus.x, scale, next),
             ZoomMath.zoomAbout(offset.y, focus.y, scale, next),
         ) + pan
+        val before = scale
         scale = next
         offset = if (next <= 1f) Offset.Zero else clamp(moved, next)
+        // Snaps: back to the fitted picture, or up against the largest zoom. Once each, on arrival.
+        if ((before > 1f && next <= 1f) || (before < maxScale && next >= maxScale)) ticker?.settle()
     }
 
     /** Animates to [target] scale, keeping [at] (a point in the viewport; the centre if null) in place. */
@@ -218,9 +236,16 @@ internal class ZoomState(private val maxScale: Float = 8f) {
         }
     }
 
-    suspend fun doubleTap(at: Offset) = zoomTo(nextZoomStep(scale, maxScale), at)
+    suspend fun doubleTap(at: Offset) {
+        zoomTo(nextZoomStep(scale, maxScale), at)
+        ticker?.settle()
+    }
 
-    suspend fun zoomBy(factor: Float) = zoomTo(scale * factor)
+    /** Zoom by [factor]. The buttons already tap, so only an arrival at either end adds a tick. */
+    suspend fun zoomBy(factor: Float) {
+        zoomTo(scale * factor)
+        if (scale <= 1f || scale >= maxScale) ticker?.settle()
+    }
 
     fun toggleFill() {
         fill = !fill
@@ -258,6 +283,8 @@ internal fun ImageStage(
         }
     }
     val picture = decoded
+    val haptics = rememberDsHaptics()
+    SideEffect { zoom?.haptics = haptics }
     when {
         failed -> NoticeCard(
             icon = FeatherIcons.Image,

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preview_md_web_images">عرض الصور من الإنترنت</string>
+    <string name="preview_md_image_label">صورة</string>
+    <string name="preview_link_title">فتح هذا الرابط؟</string>
+    <string name="preview_link_open">فتح</string>
+    <string name="preview_link_body">سيُفتح في المتصفح.</string>
+</resources>

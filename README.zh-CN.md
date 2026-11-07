@@ -35,13 +35,18 @@ DeepSeek Harness 是一个运行在你电脑上的 AI 编程代理，自带网�
 
 | 连接 | 对话 | 轨迹 | 详情 |
 |:--:|:--:|:--:|:--:|
-| <img src="docs/images/home.png" width="200" alt="连接界面，地址栏里粘贴了一条 dsh web 链接"> | <img src="docs/images/chat.png" width="200" alt="回复正在流式输出，顶栏显示“运行中”，停止按钮可见"> | <img src="docs/images/trajectory.png" width="200" alt="轨迹标签页，列出第一个回合的每一次工具调用"> | <img src="docs/images/session-info.png" width="200" alt="详情面板，显示会话及其模型、上下文用量和活动"> |
+| <img src="docs/images/home.png" width="200" alt="连接界面，地址栏里填好了 harness 的地址"> | <img src="docs/images/chat.png" width="200" alt="回复正在流式输出，顶栏显示“运行中”，停止按钮可见"> | <img src="docs/images/trajectory.png" width="200" alt="轨迹标签页，列出第一个回合的每一次工具调用"> | <img src="docs/images/session-info.png" width="200" alt="详情面板，显示会话及其模型、上下文用量和活动"> |
 | 粘贴 harness 打印出的链接，就能连接并登录。 | 回复实时流式显示。工具调用折叠成一行，点开即可查看。 | 每一次工具调用，按回合排列。 | 会话的模型、上下文、目标、计划模式和后台任务。 |
 
-| 子代理 | 终端 | 深色主题 |
-|:--:|:--:|:--:|
-| <img src="docs/images/subagent.png" width="200" alt="子代理的对话记录，包含它的发现，下方是发送追问的输入框"> | <img src="docs/images/terminal.png" width="200" alt="harness 电脑上的终端，显示一次全部通过的测试运行"> | <img src="docs/images/dark.png" width="200" alt="深色主题下的对话"> |
-| 查看子代理做了什么，并给它发一条追问。 | harness 电脑上一个真正的 shell。 | 浅色、深色或跟随系统。 |
+| 子代理 | 终端 | 会话 | 预览 |
+|:--:|:--:|:--:|:--:|
+| <img src="docs/images/subagent.png" width="200" alt="子代理的对话记录，包含它的发现，下方是发送追问的输入框"> | <img src="docs/images/terminal.png" width="200" alt="harness 电脑上的终端，显示一次全部通过的测试运行"> | <img src="docs/images/sessions.png" width="200" alt="按项目分组的会话抽屉，每一行都有拖动手柄"> | <img src="docs/images/preview.png" width="200" alt="全屏预览中的 README，按 GitHub 的样子显示，里面有徽章、表格和代码块"> |
+| 查看子代理做了什么，并给它发一条追问。 | harness 电脑上一个真正的 shell。 | 按项目给会话分组，再拖成你想要的顺序。 | README 按 GitHub 的样子显示，独占整个屏幕。 |
+
+| 外观 | 颜色选择器 | 浅色主题 | 深色主题 |
+|:--:|:--:|:--:|:--:|
+| <img src="docs/images/appearance.png" width="200" alt="外观设置，显示自定义强调色、文字大小和触感反馈选项"> | <img src="docs/images/accent-picker.png" width="200" alt="自定义颜色选择器，有色相条、明度区域和十六进制输入框"> | <img src="docs/images/light.png" width="200" alt="浅色主题下的对话"> | <img src="docs/images/dark.png" width="200" alt="深色主题下的对话"> |
+| 七种强调色，或者任意颜色，还能试一试触感反馈。 | 用色带和色域选颜色，或直接输入十六进制代码。 | 浅色主题，带暖色纸张质感。 | 深色主题，或跟随系统。 |
 
 ## 能做什么
 

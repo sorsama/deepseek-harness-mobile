@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">Сила</string>
+    <string name="haptics_strength_light">Слабая</string>
+    <string name="haptics_strength_normal">Обычная</string>
+    <string name="haptics_strength_strong">Сильная</string>
+    <string name="haptics_try">Попробуйте</string>
+    <string name="haptics_try_tap">Касание</string>
+    <string name="haptics_try_switch">Переключатель</string>
+    <string name="haptics_try_confirm">Подтверждение</string>
+    <string name="haptics_try_reject">Отказ</string>
+    <string name="haptics_try_alert">Оповещение</string>
+    <string name="haptics_try_hold">Удержание</string>
+    <string name="haptics_wheel_hint">Крутите колесо, чтобы почувствовать каждый щелчок</string>
+    <string name="haptics_wheel_description">Тренировочное колесо</string>
+    <string name="haptics_status_rich">Ваш телефон умеет воспроизводить детальные тактильные эффекты.</string>
+    <string name="haptics_status_standard">Ваш телефон воспроизводит стандартные тактильные эффекты.</string>
+    <string name="haptics_status_basic">Ваш телефон поддерживает только простую вибрацию.</string>
+    <string name="haptics_status_none">В этом телефоне нет вибромотора, так что чувствовать нечего.</string>
+    <string name="haptics_system_off">Тактильный отклик выключен в настройках телефона, поэтому вибрации не будет. Включите его в настройках звука и вибрации.</string>
+    <string name="haptics_system_open">Открыть настройки</string>
+</resources>

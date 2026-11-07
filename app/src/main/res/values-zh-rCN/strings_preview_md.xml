@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preview_md_web_images">显示网络图片</string>
+    <string name="preview_md_image_label">图片</string>
+    <string name="preview_link_title">打开此链接？</string>
+    <string name="preview_link_open">打开</string>
+    <string name="preview_link_body">将在浏览器中打开。</string>
+</resources>

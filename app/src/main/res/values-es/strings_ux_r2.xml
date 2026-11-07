@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">No se pudo quitar de la cola.</string>
     <string name="details_failed_goal">No se pudo actualizar el objetivo.</string>
     <string name="details_failed_plan">No se pudo cambiar el modo plan.</string>
-    <string name="details_failed_link">No se pudo crear el enlace ahora. Revisa tu conexión.</string>
     <string name="details_fork_done_title">Bifurcación lista</string>
     <string name="details_fork_done_body">Se hizo una copia de esta sesión. ¿Abrirla ahora?</string>
     <string name="details_fork_open">Abrir copia</string>

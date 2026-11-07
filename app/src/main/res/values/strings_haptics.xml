@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">Strength</string>
+    <string name="haptics_strength_light">Light</string>
+    <string name="haptics_strength_normal">Normal</string>
+    <string name="haptics_strength_strong">Strong</string>
+    <string name="haptics_try">Try it</string>
+    <string name="haptics_try_tap">Tap</string>
+    <string name="haptics_try_switch">Switch</string>
+    <string name="haptics_try_confirm">Confirm</string>
+    <string name="haptics_try_reject">Reject</string>
+    <string name="haptics_try_alert">Alert</string>
+    <string name="haptics_try_hold">Hold</string>
+    <string name="haptics_wheel_hint">Scroll the wheel to feel each tick</string>
+    <string name="haptics_wheel_description">Practice wheel</string>
+    <string name="haptics_status_rich">Your phone can play detailed haptic effects.</string>
+    <string name="haptics_status_standard">Your phone plays the standard haptic effects.</string>
+    <string name="haptics_status_basic">Your phone supports basic haptics only.</string>
+    <string name="haptics_status_none">This phone has no vibration motor, so there is nothing to feel.</string>
+    <string name="haptics_system_off">Touch feedback is off on your phone, so nothing will vibrate. Turn it on in the sound and vibration settings.</string>
+    <string name="haptics_system_open">Open settings</string>
+</resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">ความแรง</string>
+    <string name="haptics_strength_light">เบา</string>
+    <string name="haptics_strength_normal">ปกติ</string>
+    <string name="haptics_strength_strong">แรง</string>
+    <string name="haptics_try">ลองดู</string>
+    <string name="haptics_try_tap">แตะ</string>
+    <string name="haptics_try_switch">สวิตช์</string>
+    <string name="haptics_try_confirm">ยืนยัน</string>
+    <string name="haptics_try_reject">ปฏิเสธ</string>
+    <string name="haptics_try_alert">แจ้งเตือน</string>
+    <string name="haptics_try_hold">กดค้าง</string>
+    <string name="haptics_wheel_hint">เลื่อนวงล้อเพื่อสัมผัสทุกจังหวะ</string>
+    <string name="haptics_wheel_description">วงล้อทดลอง</string>
+    <string name="haptics_status_rich">โทรศัพท์ของคุณเล่นเอฟเฟกต์สัมผัสแบบละเอียดได้</string>
+    <string name="haptics_status_standard">โทรศัพท์ของคุณเล่นเอฟเฟกต์สัมผัสมาตรฐาน</string>
+    <string name="haptics_status_basic">โทรศัพท์ของคุณรองรับการสั่นแบบพื้นฐานเท่านั้น</string>
+    <string name="haptics_status_none">โทรศัพท์เครื่องนี้ไม่มีมอเตอร์สั่น จึงไม่มีอะไรให้สัมผัส</string>
+    <string name="haptics_system_off">การตอบสนองแบบสัมผัสปิดอยู่ในโทรศัพท์ของคุณ จึงจะไม่สั่น เปิดได้ในการตั้งค่าเสียงและการสั่น</string>
+    <string name="haptics_system_open">เปิดการตั้งค่า</string>
+</resources>

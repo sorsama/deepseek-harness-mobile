@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preview_md_web_images">Показывать картинки из интернета</string>
+    <string name="preview_md_image_label">Картинка</string>
+    <string name="preview_link_title">Открыть эту ссылку?</string>
+    <string name="preview_link_open">Открыть</string>
+    <string name="preview_link_body">Она откроется в браузере.</string>
+</resources>

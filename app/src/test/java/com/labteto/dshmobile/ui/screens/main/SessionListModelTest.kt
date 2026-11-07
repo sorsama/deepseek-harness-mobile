@@ -104,6 +104,39 @@ class SessionListModelTest {
     // ---- live order while dragging ------------------------------------------------------------
 
     @Test
+    fun `no workspace payload and no saved order can make a listable session disappear`() {
+        // The reporter of #70 saw "All 3" over an empty list. The count and the rows are built from
+        // the same sessions, so whatever the registry and the saved order say, every listable
+        // top-level session must land in exactly one block.
+        val listable = listOf("a", "b", "c", "d").map(::session)
+        val nested = setOf("d")
+        val shapes: List<Pair<List<WorkspaceRow>, List<String>>> = listOf(
+            // a 0.2.1 host with no registry rows at all, and nothing saved
+            emptyList<WorkspaceRow>() to emptyList(),
+            // saved order naming only sessions that are long gone
+            emptyList<WorkspaceRow>() to listOf("gone-1", "gone-2"),
+            // a workspace that lists ids the drawer has never heard of, and a duplicate of its own
+            listOf(workspace("W", "ghost", "a", "a", "ghost-2")) to listOf("gone"),
+            // an empty workspace beside one that claims everything
+            listOf(workspace("E"), workspace("W", "a", "b", "c")) to emptyList(),
+            // saved order that is only a subset of the ungrouped sessions
+            listOf(workspace("W", "a")) to listOf("c"),
+        )
+        for ((workspaces, saved) in shapes) {
+            val blocks = buildSessionBlocks(listable, workspaces, nested, saved)
+            val shown = flattenBlocks(blocks).map { it.sessionId }
+            assertEquals("each session once for $workspaces / $saved", listOf("a", "b", "c"), shown.sorted())
+        }
+    }
+
+    @Test
+    fun `an empty saved order is an ordering and never a filter`() {
+        val listable = listOf("x", "y", "z").map(::session)
+        val blocks = buildSessionBlocks(listable, emptyList(), emptySet(), emptyList())
+        assertEquals(listOf("x", "y", "z"), ids(blocks.single().roots))
+    }
+
+    @Test
     fun `a live order rearranges only the dragged block`() {
         val listable = listOf("a1", "a2", "a3", "b1", "b2").map(::session)
         val blocks = buildSessionBlocks(listable, listOf(workspace("A", "a1", "a2", "a3"), workspace("B", "b1", "b2")), emptySet(), emptyList())
@@ -180,6 +213,97 @@ class SessionListModelTest {
         val after = listOf("tall", "b")
         val spansAfter = mapOf("tall" to UnitSpan(0f, 300f), "b" to UnitSpan(300f, 400f))
         assertEquals(1, nextSlotIndex(after, "b", crossing, spansAfter))
+    }
+
+    // ---- the held unit against the ends of its block (found on a device, issue #70 follow-up) ---
+
+    /** Rows of one height, which is what a list of plain sessions is made of. */
+    private fun evenSpans(order: List<String>, height: Float = 100f, top: Float = 0f): Map<String, UnitSpan> =
+        order.mapIndexed { i, id -> id to UnitSpan(top + i * height, top + (i + 1) * height) }.toMap()
+
+    @Test
+    fun `a unit drawn at the end of its block never reaches the last neighbour's middle`() {
+        // This is why the slot cannot be judged from the drawn position: a unit is drawn inside its
+        // block, so pressed against the end its centre can only equal the last slot's middle, and a
+        // swap needs the centre to pass it.
+        val two = listOf("a", "b")
+        val drawnTop = clampToBlock(fingerTop = 500f, height = 100f, order = two, spans = evenSpans(two))
+        assertEquals(100f, drawnTop, 0f)
+        assertEquals(0, nextSlotIndex(two, "a", drawnTop + 50f, evenSpans(two)))
+    }
+
+    @Test
+    fun `in a block of two a row can be dragged below the other`() {
+        val two = listOf("a", "b")
+        assertEquals(1, slotForFinger(two, "a", fingerTop = 500f, height = 100f, spans = evenSpans(two)))
+        assertEquals(0, slotForFinger(listOf("b", "a"), "a", fingerTop = -400f, height = 100f, spans = evenSpans(listOf("b", "a"))))
+    }
+
+    @Test
+    fun `a row pressed past the end of a block of three takes the last place`() {
+        var order = listOf("a", "b", "c")
+        // One step a frame, the layout catching up in between, until the finger's place is reached.
+        repeat(3) {
+            val next = slotForFinger(order, "a", fingerTop = 900f, height = 100f, spans = evenSpans(order))
+            order = order.toMutableList().apply { removeAt(indexOf("a")); add(next, "a") }
+        }
+        assertEquals(listOf("b", "c", "a"), order)
+    }
+
+    @Test
+    fun `a row pressed above the start of a block takes the first place`() {
+        var order = listOf("a", "b", "c")
+        repeat(3) {
+            val next = slotForFinger(order, "c", fingerTop = -900f, height = 100f, spans = evenSpans(order))
+            order = order.toMutableList().apply { removeAt(indexOf("c")); add(next, "c") }
+        }
+        assertEquals(listOf("c", "a", "b"), order)
+    }
+
+    @Test
+    fun `a finger that has not passed the neighbour's middle moves nothing`() {
+        val three = listOf("a", "b", "c")
+        // a's top at 49 puts its centre at 99, short of b's middle at 150.
+        assertEquals(0, slotForFinger(three, "a", fingerTop = 49f, height = 100f, spans = evenSpans(three)))
+        // Resting where it was lifted: no neighbour is any closer than half a unit away.
+        assertEquals(1, slotForFinger(three, "b", fingerTop = 100f, height = 100f, spans = evenSpans(three)))
+    }
+
+    @Test
+    fun `a swap does not flicker back for rows of one height`() {
+        // a is dragged until its centre is just past b's middle, and swaps. With the layout caught
+        // up, the finger is still where it was and a must stay put.
+        val before = listOf("a", "b")
+        val finger = 101f
+        assertEquals(1, slotForFinger(before, "a", finger, 100f, evenSpans(before)))
+        val after = listOf("b", "a")
+        assertEquals(1, slotForFinger(after, "a", finger, 100f, evenSpans(after)))
+    }
+
+    @Test
+    fun `the drawn position stays inside the block`() {
+        val three = listOf("a", "b", "c")
+        val spans = evenSpans(three, top = 40f)
+        assertEquals(140f, clampToBlock(140f, 100f, three, spans), 0f)
+        assertEquals(40f, clampToBlock(-30f, 100f, three, spans), 0f)
+        assertEquals(240f, clampToBlock(900f, 100f, three, spans), 0f)
+    }
+
+    @Test
+    fun `a block end that is not on screen leaves that side unbounded`() {
+        val three = listOf("a", "b", "c")
+        val noLast = mapOf("a" to UnitSpan(0f, 100f), "b" to UnitSpan(100f, 200f))
+        val (low, high) = blockDrawBounds(three, noLast, 100f)
+        assertEquals(0f, low, 0f)
+        assertEquals(Float.POSITIVE_INFINITY, high, 0f)
+        assertEquals(900f, clampToBlock(900f, 100f, three, noLast), 0f)
+    }
+
+    @Test
+    fun `a unit taller than its block is drawn where the finger is`() {
+        val two = listOf("a", "b")
+        // The range is empty (low above high), so there is nothing to clamp to.
+        assertEquals(77f, clampToBlock(77f, 500f, two, evenSpans(two)), 0f)
     }
 
     // ---- auto scroll --------------------------------------------------------------------------

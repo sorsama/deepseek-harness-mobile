@@ -30,8 +30,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.*
@@ -50,9 +48,10 @@ import java.time.ZoneId
  * The full-screen management page shared by Automations and Plugins.
  *
  * The design draws these as pushed screens with a back bar, not as bottom sheets, so this is a
- * dialog window that fills the screen: it keeps the window-level stacking the sheets had (every
- * nested dialog and picker still opens over the right layer) while reading as a page. The content
- * rises in once on mount and never animates again.
+ * [DsFullScreenDialog]: it keeps the window-level stacking the sheets had (every nested dialog and
+ * picker still opens over the right layer) while reading as a page, and it pads for the system
+ * bars, so the [footer] clears the gesture bar. The content rises in once on mount and never
+ * animates again.
  */
 @Composable
 internal fun FeaturePage(
@@ -66,80 +65,66 @@ internal fun FeaturePage(
     val colors = DsTheme.colors
     var shown by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { shown = true }
-    Dialog(
-        onDismissRequest = onClose,
-        // Draw edge to edge inside the dialog too: otherwise the dialog window keeps its own
-        // system-bar background, which is what produced a light strip behind the gesture bar on a
-        // dark theme while the page itself was dark.
-        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
-    ) {
-        androidx.compose.material3.Surface(Modifier.fillMaxSize(), color = colors.bgBase) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.safeDrawing),
-            ) {
-                Row(
-                    Modifier.fillMaxWidth().padding(
-                        start = DsSpacing.small,
-                        end = DsSpacing.small,
-                        top = DsSpacing.small,
-                        bottom = DsSpacing.xsmall,
-                    ),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    DsIconButton(
-                        icon = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.common_back),
-                        onClick = onClose,
+    DsFullScreenDialog(onDismissRequest = onClose) {
+        Row(
+            Modifier.fillMaxWidth().padding(
+                start = DsSpacing.small,
+                end = DsSpacing.small,
+                top = DsSpacing.small,
+                bottom = DsSpacing.xsmall,
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            DsIconButton(
+                icon = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.common_back),
+                onClick = onClose,
+            )
+            Column(Modifier.weight(1f).padding(horizontal = DsSpacing.xsmall)) {
+                Text(
+                    title,
+                    style = DsType.large20,
+                    color = colors.labelPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                subtitle?.let {
+                    Text(
+                        it,
+                        style = DsType.caption11,
+                        color = colors.labelTertiary,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    Column(Modifier.weight(1f).padding(horizontal = DsSpacing.xsmall)) {
-                        Text(
-                            title,
-                            style = DsType.large20,
-                            color = colors.labelPrimary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        subtitle?.let {
-                            Text(
-                                it,
-                                style = DsType.caption11,
-                                color = colors.labelTertiary,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
-                    if (onRefresh != null) {
-                        DsIconButton(
-                            icon = Icons.Filled.Refresh,
-                            contentDescription = stringResource(R.string.ux_a_refresh),
-                            onClick = onRefresh,
-                        )
-                    }
                 }
-                AnimatedVisibility(
-                    visible = shown,
-                    modifier = Modifier.weight(1f),
-                    enter = fadeIn(tween(180, easing = DsAnimations.inkDecelerate)) +
-                        slideInVertically(tween(240, easing = DsAnimations.inkDecelerate)) { it / 30 },
-                ) {
-                    Column(Modifier.fillMaxSize()) {
-                        Column(
-                            Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
-                                .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small),
-                            verticalArrangement = Arrangement.spacedBy(DsSpacing.medium),
-                            content = content,
-                        )
-                        footer?.let {
-                            Box(Modifier.fillMaxWidth().padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small)) {
-                                it()
-                            }
-                        }
+            }
+            if (onRefresh != null) {
+                DsIconButton(
+                    icon = Icons.Filled.Refresh,
+                    contentDescription = stringResource(R.string.ux_a_refresh),
+                    onClick = onRefresh,
+                )
+            }
+        }
+        AnimatedVisibility(
+            visible = shown,
+            modifier = Modifier.weight(1f),
+            enter = fadeIn(tween(180, easing = DsAnimations.inkDecelerate)) +
+                slideInVertically(tween(240, easing = DsAnimations.inkDecelerate)) { it / 30 },
+        ) {
+            Column(Modifier.fillMaxSize()) {
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small),
+                    verticalArrangement = Arrangement.spacedBy(DsSpacing.medium),
+                    content = content,
+                )
+                footer?.let {
+                    Box(Modifier.fillMaxWidth().padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small)) {
+                        it()
                     }
                 }
             }
@@ -330,11 +315,17 @@ internal fun AutomationScreen(sessionId: String? = null, onClose: () -> Unit, on
             FeatureDiagnostics(diagnostic)
         } }
         if (!busy && error == null) listModel.emptyState?.let { empty ->
-            EmptyHero(stringResource(when (empty) {
-                AutomationEmptyState.NO_TASKS -> R.string.harness_automation_empty
-                AutomationEmptyState.NO_MATCHES -> R.string.harness_automation_no_matches
-                AutomationEmptyState.NO_INACTIVE_TASKS -> R.string.harness_automation_empty_inactive
-            }), null, showPreview = false)
+            // The headline is a short phrase. The sentence about where tasks come from is the
+            // subtitle: set as the headline it filled the screen as a three-line hero.
+            EmptyHero(
+                headline = stringResource(when (empty) {
+                    AutomationEmptyState.NO_TASKS -> R.string.harness_automation_empty
+                    AutomationEmptyState.NO_MATCHES -> R.string.harness_automation_no_matches
+                    AutomationEmptyState.NO_INACTIVE_TASKS -> R.string.harness_automation_empty_inactive
+                }),
+                subtitle = if (empty == AutomationEmptyState.NO_TASKS) stringResource(R.string.harness_automation_empty_hint) else null,
+                showPreview = false,
+            )
         }
         listModel.tasks.forEach { task ->
             AutomationCard(task) { selected = task }

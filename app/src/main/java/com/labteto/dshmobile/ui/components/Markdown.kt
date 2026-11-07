@@ -73,6 +73,7 @@ import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.theme.Ds
 import com.labteto.dshmobile.core.markdown.safeHttpUrl
 import com.labteto.dshmobile.core.markdown.MdBlock
+import com.labteto.dshmobile.core.markdown.inlineHtmlToMarkdown
 import com.labteto.dshmobile.core.markdown.parseMarkdown
 import androidx.compose.ui.text.style.TextDecoration
 import kotlin.math.pow
@@ -111,7 +112,9 @@ fun MarkdownText(text: String, modifier: Modifier = Modifier, streamingCaret: Bo
     // The parser lives in :core (pure JVM) so it is unit-testable and survives a renderer rewrite.
     // List items arrive one per block, so runs of them are regrouped here: the renderer needs the
     // whole list at once to number an ordered list and to keep the markers in one column.
-    val blocks = remember(text) { groupListBlocks(parseMarkdown(text)) }
+    // An agent's reply sometimes carries a little HTML (`<b>`, `<br>`, `<a href>`, comments): turned into
+    // the Markdown below so its tags are not shown as text.
+    val blocks = remember(text) { groupListBlocks(parseMarkdown(inlineHtmlToMarkdown(text))) }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         blocks.forEach { render ->
             when (render) {

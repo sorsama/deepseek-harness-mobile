@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -65,7 +65,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -365,7 +369,7 @@ fun ChatListDrawer(
         }
     }
     SideEffect {
-        reorder.itemKeyOf = { id -> if (reorder.groupKey == PROJECTS_GROUP) projectKey(id) else rowKey(id) }
+        reorder.itemKeyOf = { group, id -> if (group == PROJECTS_GROUP) projectKey(id) else rowKey(id) }
         reorder.keysOf = { id -> unitKeys[id].orEmpty() }
         reorder.onDropped = { drop ->
             if (drop.releasedOutside) toast.second(staysInProjectText)
@@ -514,12 +518,27 @@ fun ChatListDrawer(
         // fades at its trailing edge so there is never a chip half-cut with no way to reach it.
         // Each chip is drawn 36dp tall inside a 48dp touch target, so the row is 48dp and needs no
         // spacer above it.
-        Box(Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+        // While a row is held, the chips (which cannot be used mid-drag anyway) give way to a pill
+        // that says what the held unit can and cannot do: the limit is the harness's (a session
+        // cannot change workspace), so it is named rather than left to be discovered by a row that
+        // will not go. It sits in the chips' own row, so it can never cover a session row.
+        val projectsHint = stringResource(R.string.chatlist_reorder_projects)
+        val scopeFormat = stringResource(R.string.chatlist_reorder_scope)
+        val hintNow = when (val group = reorder.groupKey) {
+            null -> ""
+            PROJECTS_GROUP -> projectsHint
+            else -> String.format(
+                scopeFormat,
+                blocks.firstOrNull { it.key == group }?.workspace?.let { it.title.ifBlank { basename(it.path) } }
+                    ?: otherName,
+            )
+        }
+        // Kept past the drop so the hint fades out with its words instead of emptying first.
+        var hintShown by remember { mutableStateOf("") }
+        if (hintNow.isNotEmpty()) hintShown = hintNow
+        val chipsAlpha by animateFloatAsState(if (reorder.active) 0f else 1f, tween(140), label = "chipsAlpha")
+        Box(contentAlignment = Alignment.Center) {
+            FadingChipRow(fadeColor = colors.sidebar, modifier = Modifier.alpha(chipsAlpha)) {
                 DsFilterChip(
                     label = stringResource(R.string.ink_chat_filter_all, listable.size),
                     selected = filter == DrawerFilter.All,
@@ -542,21 +561,7 @@ fun ChatListDrawer(
                     onClick = { filter = DrawerFilter.Archived },
                 )
             }
-            // A scroll affordance, not decoration: the last chip must never look chopped. The
-            // gradient runs toward the reading end, so it fades into the sidebar on both LTR and RTL.
-            val rtl = androidx.compose.ui.platform.LocalLayoutDirection.current ==
-                androidx.compose.ui.unit.LayoutDirection.Rtl
-            Box(
-                Modifier
-                    .align(Alignment.CenterEnd)
-                    .width(32.dp)
-                    .fillMaxHeight()
-                    .background(
-                        Brush.horizontalGradient(
-                            if (rtl) listOf(colors.sidebar, Color.Transparent) else listOf(Color.Transparent, colors.sidebar),
-                        ),
-                    ),
-            )
+            ReorderHint(visible = reorder.active, text = hintShown, pressing = reorder.atBoundary)
         }
 
         // ---- The one session that needs a person ----------------------------------------------
@@ -870,29 +875,6 @@ fun ChatListDrawer(
                 }
             }
 
-            // Says what the held unit can and cannot do, for as long as it is held: the limit is the
-            // harness's (a session cannot change workspace), so it is named rather than left to be
-            // discovered by a row that will not go.
-            val projectsHint = stringResource(R.string.chatlist_reorder_projects)
-            val scopeFormat = stringResource(R.string.chatlist_reorder_scope)
-            val hintNow = when (val group = reorder.groupKey) {
-                null -> ""
-                PROJECTS_GROUP -> projectsHint
-                else -> String.format(
-                    scopeFormat,
-                    blocks.firstOrNull { it.key == group }?.workspace?.let { it.title.ifBlank { basename(it.path) } }
-                        ?: otherName,
-                )
-            }
-            // Kept past the drop so the hint fades out with its words instead of emptying first.
-            var hintShown by remember { mutableStateOf("") }
-            if (hintNow.isNotEmpty()) hintShown = hintNow
-            ReorderHint(
-                visible = reorder.active,
-                text = hintShown,
-                pressing = reorder.atBoundary,
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = DsSpacing.xsmall),
-            )
             // A drop the harness refused, or an approval it did not take: said here, where the
             // person is looking, rather than on a chat banner behind the drawer.
             DsToastHost(toast, modifier = Modifier.align(Alignment.TopCenter), belowStatusBar = false)
@@ -993,6 +975,50 @@ private fun HarnessPill(name: String, phase: ConnectionPhase, onClick: () -> Uni
             modifier = Modifier.size(14.dp),
         )
     }
+}
+
+/**
+ * A row of chips that scrolls sideways and fades into [fadeColor] at its trailing edge, so the last
+ * chip never looks chopped with no way to reach it. The fade runs toward the reading end, so it works
+ * on both LTR and RTL.
+ *
+ * The fade is painted over the row, not laid out beside it. It used to be a second child of the [Box]
+ * with `fillMaxHeight()`, and inside a [Box] a `fillMaxHeight()` child counts toward the box's own
+ * size; a [Column] offers its unweighted children all the height that is left, so the "scroll
+ * affordance" grew to the whole drawer. The session list and the start bar below it were then
+ * measured at zero height and the drawer looked empty (issue #70). A draw-time overlay has no size
+ * of its own to add.
+ */
+@Composable
+internal fun FadingChipRow(
+    fadeColor: Color,
+    modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val rtl = androidx.compose.ui.platform.LocalLayoutDirection.current ==
+        androidx.compose.ui.unit.LayoutDirection.Rtl
+    val fadeWidth = with(LocalDensity.current) { 32.dp.toPx() }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .drawWithContent {
+                drawContent()
+                val start = if (rtl) 0f else size.width - fadeWidth
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        colors = if (rtl) listOf(fadeColor, Color.Transparent) else listOf(Color.Transparent, fadeColor),
+                        startX = start,
+                        endX = start + fadeWidth,
+                    ),
+                    topLeft = Offset(start, 0f),
+                    size = Size(fadeWidth, size.height),
+                )
+            }
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+        verticalAlignment = Alignment.CenterVertically,
+        content = content,
+    )
 }
 
 /**

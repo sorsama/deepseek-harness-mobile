@@ -479,7 +479,8 @@
     <string name="harness_dismiss_unknown">Masquer cet avis</string>
     <string name="harness_automation_search">Rechercher des tâches automatisées</string>
     <string name="harness_automation_all">Toutes</string>
-    <string name="harness_automation_empty">Aucune tâche pour le moment. Les tâches créées dans vos sessions apparaissent ici.</string>
+    <string name="harness_automation_empty">Aucune tâche pour le moment</string>
+    <string name="harness_automation_empty_hint">Les tâches créées dans vos sessions apparaissent ici.</string>
     <string name="harness_automation_no_matches">Aucune tâche correspondante</string>
     <string name="harness_automation_empty_inactive">Aucune tâche automatisée inactive</string>
     <string name="harness_automation_rules">Règles</string>

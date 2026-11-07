@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">तीव्रता</string>
+    <string name="haptics_strength_light">हल्का</string>
+    <string name="haptics_strength_normal">सामान्य</string>
+    <string name="haptics_strength_strong">तेज़</string>
+    <string name="haptics_try">आज़माएँ</string>
+    <string name="haptics_try_tap">टैप</string>
+    <string name="haptics_try_switch">स्विच</string>
+    <string name="haptics_try_confirm">पुष्टि</string>
+    <string name="haptics_try_reject">अस्वीकार</string>
+    <string name="haptics_try_alert">चेतावनी</string>
+    <string name="haptics_try_hold">दबाकर रखें</string>
+    <string name="haptics_wheel_hint">हर टिक महसूस करने के लिए पहिया घुमाएँ</string>
+    <string name="haptics_wheel_description">अभ्यास पहिया</string>
+    <string name="haptics_status_rich">आपका फ़ोन बारीक हैप्टिक इफ़ेक्ट चला सकता है।</string>
+    <string name="haptics_status_standard">आपका फ़ोन सामान्य हैप्टिक इफ़ेक्ट चलाता है।</string>
+    <string name="haptics_status_basic">आपका फ़ोन सिर्फ़ साधारण वाइब्रेशन सपोर्ट करता है।</string>
+    <string name="haptics_status_none">इस फ़ोन में वाइब्रेशन मोटर नहीं है, इसलिए महसूस करने को कुछ नहीं है।</string>
+    <string name="haptics_system_off">आपके फ़ोन में टच फ़ीडबैक बंद है, इसलिए कुछ भी वाइब्रेट नहीं होगा। इसे साउंड और वाइब्रेशन सेटिंग में चालू करें।</string>
+    <string name="haptics_system_open">सेटिंग खोलें</string>
+</resources>

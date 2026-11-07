@@ -45,6 +45,7 @@ class HostsStore @Inject constructor(
         val THEME_AMOLED = booleanPreferencesKey("theme_amoled")
         val FONT_SIZE = stringPreferencesKey("theme_font_size")
         val HAPTICS = booleanPreferencesKey("haptics_enabled")
+        val HAPTIC_STRENGTH = stringPreferencesKey("haptic_strength")
         val LOCALE = stringPreferencesKey("locale")
         val PORTS = stringPreferencesKey("ports_json")
         val LAST_SESSIONS = stringPreferencesKey("last_sessions_json")
@@ -89,6 +90,7 @@ class HostsStore @Inject constructor(
             amoledBlack = prefs[Keys.THEME_AMOLED] ?: false,
             fontSize = prefs[Keys.FONT_SIZE] ?: "default",
             hapticsEnabled = prefs[Keys.HAPTICS] ?: true,
+            hapticStrength = prefs[Keys.HAPTIC_STRENGTH] ?: "normal",
             localeOverride = prefs[Keys.LOCALE],
             knownPorts = ports,
             updateCheckEnabled = prefs[Keys.UPDATE_CHECK] ?: true,
@@ -293,6 +295,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.THEME_AMOLED] = next.amoledBlack
             prefs[Keys.FONT_SIZE] = next.fontSize
             prefs[Keys.HAPTICS] = next.hapticsEnabled
+            prefs[Keys.HAPTIC_STRENGTH] = next.hapticStrength
             prefs[Keys.UPDATE_CHECK] = next.updateCheckEnabled
             prefs[Keys.FOLLOW_STREAMING] = next.followStreamingReply
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)

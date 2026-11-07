@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">Couldn\'t remove it from the queue.</string>
     <string name="details_failed_goal">Couldn\'t update the goal.</string>
     <string name="details_failed_plan">Couldn\'t change plan mode.</string>
-    <string name="details_failed_link">Couldn\'t make a link right now. Check your connection.</string>
     <string name="details_fork_done_title">Fork ready</string>
     <string name="details_fork_done_body">A copy of this session was made. Open it now?</string>
     <string name="details_fork_open">Open copy</string>

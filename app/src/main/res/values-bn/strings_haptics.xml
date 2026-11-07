@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">তীব্রতা</string>
+    <string name="haptics_strength_light">হালকা</string>
+    <string name="haptics_strength_normal">স্বাভাবিক</string>
+    <string name="haptics_strength_strong">জোরালো</string>
+    <string name="haptics_try">পরখ করুন</string>
+    <string name="haptics_try_tap">ট্যাপ</string>
+    <string name="haptics_try_switch">সুইচ</string>
+    <string name="haptics_try_confirm">নিশ্চিত</string>
+    <string name="haptics_try_reject">প্রত্যাখ্যান</string>
+    <string name="haptics_try_alert">সতর্কতা</string>
+    <string name="haptics_try_hold">চেপে ধরা</string>
+    <string name="haptics_wheel_hint">চাকা ঘুরিয়ে প্রতিটি টিক অনুভব করুন</string>
+    <string name="haptics_wheel_description">অনুশীলনের চাকা</string>
+    <string name="haptics_status_rich">আপনার ফোন বিস্তারিত হ্যাপটিক ইফেক্ট চালাতে পারে।</string>
+    <string name="haptics_status_standard">আপনার ফোন স্ট্যান্ডার্ড হ্যাপটিক ইফেক্ট চালায়।</string>
+    <string name="haptics_status_basic">আপনার ফোন শুধু সাধারণ কম্পন সমর্থন করে।</string>
+    <string name="haptics_status_none">এই ফোনে কম্পন মোটর নেই, তাই অনুভব করার কিছু নেই।</string>
+    <string name="haptics_system_off">আপনার ফোনে টাচ ফিডব্যাক বন্ধ আছে, তাই কিছুই কাঁপবে না। সাউন্ড ও ভাইব্রেশন সেটিংসে এটি চালু করুন।</string>
+    <string name="haptics_system_open">সেটিংস খুলুন</string>
+</resources>

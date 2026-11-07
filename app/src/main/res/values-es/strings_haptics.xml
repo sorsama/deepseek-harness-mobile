@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">Intensidad</string>
+    <string name="haptics_strength_light">Suave</string>
+    <string name="haptics_strength_normal">Normal</string>
+    <string name="haptics_strength_strong">Fuerte</string>
+    <string name="haptics_try">Pruébalo</string>
+    <string name="haptics_try_tap">Toque</string>
+    <string name="haptics_try_switch">Interruptor</string>
+    <string name="haptics_try_confirm">Confirmar</string>
+    <string name="haptics_try_reject">Rechazar</string>
+    <string name="haptics_try_alert">Aviso</string>
+    <string name="haptics_try_hold">Mantener</string>
+    <string name="haptics_wheel_hint">Gira la rueda para sentir cada marca</string>
+    <string name="haptics_wheel_description">Rueda de prueba</string>
+    <string name="haptics_status_rich">Tu teléfono puede reproducir efectos hápticos detallados.</string>
+    <string name="haptics_status_standard">Tu teléfono reproduce los efectos hápticos estándar.</string>
+    <string name="haptics_status_basic">Tu teléfono solo admite vibración básica.</string>
+    <string name="haptics_status_none">Este teléfono no tiene motor de vibración, así que no hay nada que sentir.</string>
+    <string name="haptics_system_off">La respuesta táctil está desactivada en tu teléfono, así que no vibrará nada. Actívala en los ajustes de sonido y vibración.</string>
+    <string name="haptics_system_open">Abrir ajustes</string>
+</resources>

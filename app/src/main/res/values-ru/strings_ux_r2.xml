@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">Не удалось убрать из очереди.</string>
     <string name="details_failed_goal">Не удалось обновить цель.</string>
     <string name="details_failed_plan">Не удалось сменить режим плана.</string>
-    <string name="details_failed_link">Сейчас не получилось создать ссылку. Проверьте подключение.</string>
     <string name="details_fork_done_title">Ветка готова</string>
     <string name="details_fork_done_body">Копия сеанса создана. Открыть её сейчас?</string>
     <string name="details_fork_open">Открыть копию</string>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">الشدة</string>
+    <string name="haptics_strength_light">خفيفة</string>
+    <string name="haptics_strength_normal">عادية</string>
+    <string name="haptics_strength_strong">قوية</string>
+    <string name="haptics_try">جرّبها</string>
+    <string name="haptics_try_tap">نقرة</string>
+    <string name="haptics_try_switch">مفتاح</string>
+    <string name="haptics_try_confirm">تأكيد</string>
+    <string name="haptics_try_reject">رفض</string>
+    <string name="haptics_try_alert">تنبيه</string>
+    <string name="haptics_try_hold">ضغطة مطولة</string>
+    <string name="haptics_wheel_hint">حرّك العجلة لتشعر بكل نقرة</string>
+    <string name="haptics_wheel_description">عجلة تجريبية</string>
+    <string name="haptics_status_rich">يمكن لهاتفك تشغيل تأثيرات لمسية مفصّلة.</string>
+    <string name="haptics_status_standard">هاتفك يشغّل التأثيرات اللمسية القياسية.</string>
+    <string name="haptics_status_basic">هاتفك يدعم الاهتزاز الأساسي فقط.</string>
+    <string name="haptics_status_none">لا يحتوي هذا الهاتف على محرك اهتزاز، فلا شيء لتشعر به.</string>
+    <string name="haptics_system_off">الاستجابة اللمسية متوقفة في هاتفك، لذا لن يهتز شيء. شغّلها من إعدادات الصوت والاهتزاز.</string>
+    <string name="haptics_system_open">فتح الإعدادات</string>
+</resources>

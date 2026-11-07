@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">Intensité</string>
+    <string name="haptics_strength_light">Légère</string>
+    <string name="haptics_strength_normal">Normale</string>
+    <string name="haptics_strength_strong">Forte</string>
+    <string name="haptics_try">Essayer</string>
+    <string name="haptics_try_tap">Toucher</string>
+    <string name="haptics_try_switch">Interrupteur</string>
+    <string name="haptics_try_confirm">Confirmer</string>
+    <string name="haptics_try_reject">Refuser</string>
+    <string name="haptics_try_alert">Alerte</string>
+    <string name="haptics_try_hold">Appui long</string>
+    <string name="haptics_wheel_hint">Faites tourner la roue pour sentir chaque cran</string>
+    <string name="haptics_wheel_description">Roue d\'essai</string>
+    <string name="haptics_status_rich">Votre téléphone sait jouer des effets haptiques détaillés.</string>
+    <string name="haptics_status_standard">Votre téléphone joue les effets haptiques standard.</string>
+    <string name="haptics_status_basic">Votre téléphone ne gère que les vibrations simples.</string>
+    <string name="haptics_status_none">Ce téléphone n\'a pas de moteur de vibration, il n\'y a donc rien à ressentir.</string>
+    <string name="haptics_system_off">Le retour tactile est désactivé sur votre téléphone, rien ne vibrera. Réactivez-le dans les réglages du son et des vibrations.</string>
+    <string name="haptics_system_open">Ouvrir les réglages</string>
+</resources>

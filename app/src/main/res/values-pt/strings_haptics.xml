@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">Intensidade</string>
+    <string name="haptics_strength_light">Leve</string>
+    <string name="haptics_strength_normal">Normal</string>
+    <string name="haptics_strength_strong">Forte</string>
+    <string name="haptics_try">Experimentar</string>
+    <string name="haptics_try_tap">Toque</string>
+    <string name="haptics_try_switch">Interruptor</string>
+    <string name="haptics_try_confirm">Confirmar</string>
+    <string name="haptics_try_reject">Recusar</string>
+    <string name="haptics_try_alert">Alerta</string>
+    <string name="haptics_try_hold">Segurar</string>
+    <string name="haptics_wheel_hint">Gire a roda para sentir cada marca</string>
+    <string name="haptics_wheel_description">Roda de teste</string>
+    <string name="haptics_status_rich">Seu celular consegue tocar efeitos táteis detalhados.</string>
+    <string name="haptics_status_standard">Seu celular toca os efeitos táteis padrão.</string>
+    <string name="haptics_status_basic">Seu celular só aceita vibração básica.</string>
+    <string name="haptics_status_none">Este celular não tem motor de vibração, então não há nada para sentir.</string>
+    <string name="haptics_system_off">A resposta tátil está desligada no seu celular, então nada vai vibrar. Ligue nas configurações de som e vibração.</string>
+    <string name="haptics_system_open">Abrir configurações</string>
+</resources>

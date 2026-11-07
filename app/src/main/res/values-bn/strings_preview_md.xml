@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preview_md_web_images">ওয়েবের ছবি দেখান</string>
+    <string name="preview_md_image_label">ছবি</string>
+    <string name="preview_link_title">এই লিংক খুলবেন?</string>
+    <string name="preview_link_open">খুলুন</string>
+    <string name="preview_link_body">এটি আপনার ব্রাউজারে খুলবে।</string>
+</resources>

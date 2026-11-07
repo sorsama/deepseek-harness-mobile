@@ -51,3 +51,51 @@ there as `LICENSE.xterm` and `LICENSE.addon-fit`.
 - Sources: https://registry.npmjs.org/@xterm/xterm/-/xterm-5.5.0.tgz
   and https://registry.npmjs.org/@xterm/addon-fit/-/addon-fit-0.10.0.tgz
 - No remote scripts or CDN resources are loaded by the terminal screen.
+
+## commonmark-java
+
+The Markdown preview turns a file into HTML with commonmark-java **0.24.0** (the core library and
+the GFM tables, GFM strikethrough, autolink, task list items and heading anchor extensions, all the
+same version). It is a Gradle dependency of the `core` module, pinned in `gradle/libs.versions.toml`;
+it is not vendored.
+
+- Project: https://github.com/commonmark/commonmark-java
+- Artifacts: `org.commonmark:commonmark`, `commonmark-ext-gfm-tables`,
+  `commonmark-ext-gfm-strikethrough`, `commonmark-ext-autolink`, `commonmark-ext-task-list-items`,
+  `commonmark-ext-heading-anchor`
+- Licence: BSD-2-Clause
+
+```
+Copyright (c) 2015, Atlassian Pty Ltd
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+## autolink-java
+
+The autolink extension above brings in autolink-java **0.11.0** (`org.nibor.autolink:autolink`) by
+Robin Stocker, which finds web addresses and email addresses in plain text. It is resolved by
+Gradle as a dependency of `commonmark-ext-autolink` and is not vendored.
+
+- Project: https://github.com/robinst/autolink-java
+- Licence: MIT

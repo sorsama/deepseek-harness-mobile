@@ -135,18 +135,16 @@ internal fun CommandSheet(
                         onModeChange("queue")
                     },
                 )
-                // Steering splices into a turn that is already running; with an idle agent there is
-                // nothing to steer, so the option stays visible but inert rather than silently failing.
+                // Steering splices into a turn that is already running. With an idle agent it still
+                // selects: the caption below says there is nothing to steer yet, and a send in that
+                // state falls back to a queued prompt. The pill never collapses into a tag, because
+                // a control that is drawn smaller than its neighbour reads as broken.
                 DsPill(
                     text = stringResource(R.string.chat_composer_steer),
                     selected = mode == "steer",
-                    onClick = if (running) {
-                        {
-                            haptics.selection()
-                            onModeChange("steer")
-                        }
-                    } else {
-                        null
+                    onClick = {
+                        haptics.selection()
+                        onModeChange("steer")
                     },
                 )
             }

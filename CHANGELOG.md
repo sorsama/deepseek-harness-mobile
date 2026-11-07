@@ -3,6 +3,97 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [0.19.1] - 2026-11-07
+
+This update fixes full-screen pages that slipped under the gesture bar, brings back the sessions drawer
+and drag to reorder, and makes a README in Preview look the way it does on GitHub. Haptics now play
+through the phone's vibration motor and have a place in Appearance to try them.
+
+### Added
+
+- **Markdown files look the way they do on GitHub.** A README with `<p align="center">`, `<img>`,
+  `<h1>` and `<a>` used to show raw tags in Preview. Rendered mode now draws the page with its HTML,
+  tables, task lists, strikethrough, links and headings, in your theme, light or dark. Pictures next
+  to the file load from the workspace. Source, find in file and Full preview all still work.
+
+  | Before | After |
+  |:--:|:--:|
+  | <img src="docs/images/releases/0.19.1/readme-html-before.png" width="220" alt="A README in Preview before this update, with raw HTML tags showing"> | <img src="docs/images/releases/0.19.1/readme-html-after.png" width="220" alt="The same README after this update, drawn like it is on GitHub"> |
+
+- **Pictures from the web stay off until you ask.** Opening a README should not tell another server
+  that you did, so badges and other web pictures show their alt text as a small pill. A "Show pictures
+  from the web" switch above the page turns them on for that file only.
+- **Links in a Markdown file go where you expect.** A link to another file in the workspace opens it
+  in Preview, a `#heading` link scrolls the page, and a link to a web page asks "Open this link?"
+  before it leaves the app.
+- **Haptics are played through the phone's vibration motor.** Until now every buzz was a request for
+  one of Android's touch effects, which many phones, HyperOS among them, play faintly or skip. The
+  app now plays its own effects, picked for what each phone's motor can do, and a phone with no
+  vibration motor stays quiet. They should be easier to feel on phones that did nothing before. This
+  is checked on an emulator, where the vibration log shows what the app plays. How it feels in the
+  hand has not been confirmed on a real phone yet.
+- **Haptic strength, and a place to try it.** Appearance now has Light, Normal and Strong under the
+  haptics switch, a "Try it" row (Tap, Switch, Confirm, Reject, Alert, Hold) and a small wheel to feel
+  the ticks. If the phone's own Touch feedback is off, the page says so and opens the sound settings.
+
+  <img src="docs/images/releases/0.19.1/haptics-settings.png" width="220" alt="Appearance with the haptic strength choice and the Try it row">
+
+- **Ticks for movement, like a picker wheel.** One tick per step, lighter the faster you go and
+  firmer where you stop. You get them when you drag a session or a project, move through the accent
+  color's hue strip and color area, slide across the text size or another segmented control, pinch a
+  picture back to fit or out to its largest zoom, scroll a PDF through its pages, or seek in audio and
+  video.
+
+### Changed
+
+- Dragging a session now starts with a short lift and lands with a firm click. Rows you cross in
+  between tick lightly.
+- A hint like `Moving within <project>` replaces the filter chips while you drag a session, instead of
+  floating over the first row.
+- Chat replies that carry a little HTML, such as `<b>`, `<br>`, `<kbd>`, `<a href>`, `<details>` or a
+  comment, now show bold text, line breaks, code and links instead of the tags.
+- The app now declares the `VIBRATE` permission. It is a normal permission, so Android grants it at
+  install with no prompt.
+- Reset appearance also puts the haptic strength back to Normal.
+
+### Fixed
+
+- **Full-screen pages no longer slip under the gesture bar.** On a phone with gesture navigation, the
+  Automations "New automation" button and the Terminal key row (Tab, Esc, the arrows, Ctrl C) were cut
+  off at the bottom of the screen. With three-button navigation they were off screen. Every
+  full-screen page now goes through one shared window that covers the whole display and leaves room
+  for the status bar, the navigation bar, the camera cutout and the keyboard. That covers Automations,
+  Plugins, the Workspace (Files, Preview, Terminal), Full preview and the image viewer. On Android 10
+  to 14 these pages also stopped a little short of the screen edges, and that is fixed too. A unit
+  test now fails the build if anything opens a dialog window by hand.
+
+  | Automations before | Automations after | Terminal before | Terminal after |
+  |:--:|:--:|:--:|:--:|
+  | <img src="docs/images/releases/0.19.1/automations-footer-before.png" width="160" alt="The New automation button cut off under the gesture bar"> | <img src="docs/images/releases/0.19.1/automations-footer-after.png" width="160" alt="The New automation button fully on screen"> | <img src="docs/images/releases/0.19.1/terminal-keys-before.png" width="160" alt="The terminal key row cut off at the bottom of the screen"> | <img src="docs/images/releases/0.19.1/terminal-keys-after.png" width="160" alt="The terminal key row fully on screen"> |
+
+- **The sessions drawer is no longer blank (#70).** In 0.19.0 the row of filter chips grew to fill the
+  whole drawer, which left no room for the session list or the "Start a task" bar. The count said
+  "All 3" over an empty panel, and search showed nothing for the same reason. The chips now take only
+  their own height. Thanks to thanatosolo for reporting it.
+- **Reordering works again.** A row dragged next to its only neighbour never swapped with it, and in a
+  longer list it could not reach the first or last place. Dragging a whole project in Group by project
+  did nothing at all. Both move now, and the new order is saved.
+
+  <img src="docs/images/releases/0.19.1/drawer-drag-hint.png" width="220" alt="Dragging a session in the drawer, with the Moving within hint above the list">
+
+- **Steer is always there, and never fails silently.** In the + sheet, Steer could not be picked
+  while the agent was idle, and it drew as a small tag next to the full Queue pill. It is now the
+  same full pill and can always be picked. While nothing runs, a caption says "Steering needs a
+  running turn", and pressing send in that state goes out as an ordinary queued prompt instead of a
+  refusal. The queued prompt dock offers Steer only during a turn, and the subagent sheet follows the
+  same rule.
+- The empty Automations page no longer sets a whole sentence as a three-line headline. It says "No
+  tasks yet", with the rest underneath in smaller type.
+
+### Removed
+
+- Copy link is gone from Session details. Use Export to save the session file.
+
 ## [0.19.0] - 2026-11-07
 
 DSH Mobile gets a new look, a theme you can tune, a file viewer that opens far more kinds of files,

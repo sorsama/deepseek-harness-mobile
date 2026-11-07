@@ -17,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -59,8 +58,6 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -77,6 +74,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * long explanation, a list of approved builds or a keyboard could push the actions past the bottom
  * edge with nothing to scroll. The plate is therefore bounded to most of the safe area and its
  * content scrolls inside it; the system-bar and IME insets are applied in the dialog window itself.
+ *
+ * The window comes from [DsWindow], the only place that creates one: a hand-made Compose `Dialog`
+ * is laid out inside the system bars on Android 15 and newer, which pushed a dialog's buttons
+ * toward the gesture bar.
  */
 @Composable
 fun DsDialog(
@@ -85,14 +86,11 @@ fun DsDialog(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = DsTheme.colors
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
-    ) {
+    DsWindow(onDismissRequest = onDismiss, dimBehind = true) { insets ->
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .windowInsetsPadding(insets)
                 .padding(horizontal = 16.dp),
             contentAlignment = Alignment.Center,
         ) {

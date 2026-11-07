@@ -221,6 +221,9 @@ val LocalThemeCustomization = staticCompositionLocalOf { ThemeCustomization.Defa
 /** Whether the user wants touch feedback; read by [rememberDsHaptics]. */
 val LocalHapticsEnabled = staticCompositionLocalOf { true }
 
+/** How strong the user wants touch feedback; read by [rememberDsHaptics]. */
+val LocalHapticStrength = staticCompositionLocalOf { HapticStrength.Normal }
+
 object DsTheme {
     val colors: DsColors
         @Composable get() = LocalDsColors.current
@@ -325,6 +328,7 @@ fun DshTheme(
         LocalDsColors provides ds,
         LocalThemeCustomization provides customization,
         LocalHapticsEnabled provides customization.haptics,
+        LocalHapticStrength provides customization.hapticStrength,
         LocalDensity provides scaledDensity,
     ) {
         MaterialTheme(

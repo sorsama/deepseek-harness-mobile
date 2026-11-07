@@ -474,6 +474,7 @@ internal fun QueueDock(
     store: SessionStore,
     modifier: Modifier = Modifier,
     sessionId: String? = store.currentSessionId.value,
+    running: Boolean,
     blocked: Boolean = false,
     operationState: androidx.compose.runtime.MutableState<Boolean>? = null,
 ) {
@@ -510,17 +511,27 @@ internal fun QueueDock(
         onToggle = { expanded = !expanded },
         modifier = modifier,
     ) {
-        DsButton(
-            text = stringResource(R.string.chat_queue_steer),
-            enabled = !busy && !blocked,
-            onClick = {
-                busy = true
-                val ids = queue.map { it.id }
-                scope.launch { try { ids.forEach { store.updateQueue(it, "steer", sessionId = sessionId) } } finally { busy = false } }
-            },
-            variant = DsButtonVariant.Ghost,
-            size = DsButtonSize.Small,
-        )
+        // Steering is a verb on a live turn. With nothing running the host refuses it, so the
+        // button is not offered; the note below says why instead of leaving a dead control.
+        if (running) {
+            DsButton(
+                text = stringResource(R.string.chat_queue_steer),
+                enabled = !busy && !blocked,
+                onClick = {
+                    busy = true
+                    val ids = queue.map { it.id }
+                    scope.launch { try { ids.forEach { store.updateQueue(it, "steer", sessionId = sessionId) } } finally { busy = false } }
+                },
+                variant = DsButtonVariant.Ghost,
+                size = DsButtonSize.Small,
+            )
+        } else {
+            Text(
+                stringResource(R.string.chat_composer_steer_idle),
+                style = DsType.caption11,
+                color = colors.labelTertiary,
+            )
+        }
         queue.forEach { item ->
             Row(
                 modifier = Modifier
@@ -548,18 +559,26 @@ internal fun QueueDock(
                             modifier = Modifier.size(18.dp),
                         )
                     },
-                    items = listOf(
-                        MenuItem(stringResource(R.string.chat_queue_edit)) {
-                            editingId = item.id
-                            editText = fullText(item)
-                        },
-                        MenuItem(stringResource(R.string.chat_queue_remove), danger = true) {
-                            change(item.id, "remove")
-                        },
-                        MenuItem(stringResource(R.string.chat_queue_steer)) {
-                            change(item.id, "steer")
-                        },
-                    ),
+                    items = buildList {
+                        add(
+                            MenuItem(stringResource(R.string.chat_queue_edit)) {
+                                editingId = item.id
+                                editText = fullText(item)
+                            },
+                        )
+                        add(
+                            MenuItem(stringResource(R.string.chat_queue_remove), danger = true) {
+                                change(item.id, "remove")
+                            },
+                        )
+                        if (running) {
+                            add(
+                                MenuItem(stringResource(R.string.chat_queue_steer)) {
+                                    change(item.id, "steer")
+                                },
+                            )
+                        }
+                    },
                 )
             }
         }
@@ -580,7 +599,11 @@ internal fun QueueDock(
                         editingId = item.id
                         editText = text
                     })
-                    add(HoldAction(stringResource(R.string.chat_queue_steer), Icons.Outlined.Bolt) { change(item.id, "steer") })
+                    // Steering needs a live turn; edit and remove do not, so only the steer verb
+                    // follows the turn's state.
+                    if (running) {
+                        add(HoldAction(stringResource(R.string.chat_queue_steer), Icons.Outlined.Bolt) { change(item.id, "steer") })
+                    }
                     add(HoldAction(stringResource(R.string.chat_queue_remove), Icons.Outlined.Delete, danger = true) {
                         change(item.id, "remove")
                     })

@@ -479,7 +479,8 @@
     <string name="harness_dismiss_unknown">Fechar este aviso</string>
     <string name="harness_automation_search">Pesquisar tarefas de automação</string>
     <string name="harness_automation_all">Todas</string>
-    <string name="harness_automation_empty">Ainda não há tarefas. As tarefas criadas nas suas sessões aparecem aqui.</string>
+    <string name="harness_automation_empty">Ainda não há tarefas</string>
+    <string name="harness_automation_empty_hint">As tarefas criadas nas suas sessões aparecem aqui.</string>
     <string name="harness_automation_no_matches">Nenhuma tarefa correspondente</string>
     <string name="harness_automation_empty_inactive">Nenhuma tarefa de automação inativa</string>
     <string name="harness_automation_rules">Regras</string>

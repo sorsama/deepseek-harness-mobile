@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preview_md_web_images">ویب کی تصاویر دکھائیں</string>
+    <string name="preview_md_image_label">تصویر</string>
+    <string name="preview_link_title">یہ لنک کھولیں؟</string>
+    <string name="preview_link_open">کھولیں</string>
+    <string name="preview_link_body">یہ آپ کے براؤزر میں کھلے گا۔</string>
+</resources>

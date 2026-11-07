@@ -34,6 +34,26 @@ Thanks for your interest in DSH Mobile!
 - UI strings live in `values*/strings.xml` only — never hardcode.
 - Pull requests need CI green (unit tests + lint + assemble).
 
+## Windows and system bars
+
+The app draws edge to edge, so every window has to pad for the status bar, the gesture or
+navigation bar and the keyboard itself. Two windows got this wrong in 0.19.0 (the Automations
+footer and the Terminal key row sat under the gesture bar on a real phone), because a plain Compose
+`Dialog` is laid out *inside* the system bars on Android 15 and newer while its content is measured
+at the full display height.
+
+- A full-screen page or a viewer: **`DsFullScreenDialog`** (`ui/components/DsFullScreen.kt`).
+- A centred confirmation, a rename, a small form: **`DsDialog`**.
+- A picker or a list of choices from the bottom: **`DsBottomSheet`**.
+- Never call `Dialog(`, `DialogProperties(`, `AlertDialog(`, `Popup(` or `ModalBottomSheet(`
+  directly, and never write `decorFitsSystemWindows` anywhere else. `WindowRulesTest` scans
+  `app/src/main/java` and fails the build with the file, the line and the component to use.
+- Anything pinned to the bottom of a screen (a footer, a key row, a composer) must sit inside the
+  insets, not under them. Check it on the emulator with **both** gesture navigation
+  (`adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural`) and three-button
+  navigation (`...navbar.threebutton`), on an API 35 or newer image. Unit tests and lint cannot see
+  this kind of bug.
+
 ## Release
 
 Tag `v*` → the Release workflow builds and publishes a signed APK (when

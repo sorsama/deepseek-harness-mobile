@@ -479,7 +479,8 @@
     <string name="harness_dismiss_unknown">यह सूचना हटाएँ</string>
     <string name="harness_automation_search">ऑटोमेशन खोजें</string>
     <string name="harness_automation_all">सभी</string>
-    <string name="harness_automation_empty">अभी कोई काम नहीं है। आपके सेशन में बने काम यहाँ दिखेंगे।</string>
+    <string name="harness_automation_empty">अभी कोई काम नहीं है</string>
+    <string name="harness_automation_empty_hint">आपके सेशन में बने काम यहाँ दिखेंगे।</string>
     <string name="harness_automation_no_matches">कोई मेल खाता काम नहीं</string>
     <string name="harness_automation_empty_inactive">कोई बंद ऑटोमेशन नहीं</string>
     <string name="harness_automation_rules">नियम</string>

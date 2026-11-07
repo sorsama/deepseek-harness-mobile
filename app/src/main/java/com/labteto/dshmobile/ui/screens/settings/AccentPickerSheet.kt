@@ -62,12 +62,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
+import com.labteto.dshmobile.ui.components.DetentCounter
 import com.labteto.dshmobile.ui.components.DsBottomSheet
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonSize
 import com.labteto.dshmobile.ui.components.DsButtonVariant
+import com.labteto.dshmobile.ui.components.HapticTicker
 import com.labteto.dshmobile.ui.components.LocalDsSheetHide
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
+import com.labteto.dshmobile.ui.components.rememberHapticTicker
 import com.labteto.dshmobile.ui.screens.connect.InkTextField
 import com.labteto.dshmobile.ui.theme.AccentQuickPicks
 import com.labteto.dshmobile.ui.theme.AccentRamp
@@ -93,6 +96,12 @@ private val ThumbSize = 26.dp
 
 /** How far one accessibility action moves saturation or brightness. */
 private const val ACTION_STEP = 0.05f
+
+/** One detent per tenth of saturation or brightness. */
+private const val DETENT_STEP = 0.1f
+
+/** One detent per this many degrees of hue. */
+private const val HUE_DETENT_DEGREES = 10f
 
 /**
  * The custom accent picker.
@@ -131,6 +140,8 @@ private fun AccentPickerContent(
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
+    // One tick stream for both pickers: the area and the strip are never dragged together.
+    val ticker = rememberHapticTicker()
     val keyboard = LocalSoftwareKeyboardController.current
     // Read inside the sheet's content: the hide-then-act hook is provided to it, not around it.
     val hide = LocalDsSheetHide.current
@@ -162,8 +173,8 @@ private fun AccentPickerContent(
             AccentPreview(ramp = ramp, dark = false, modifier = Modifier.weight(1f))
         }
 
-        SaturationBrightnessArea(hsv = hsv, onChange = ::move, onTouch = { haptics.selection() })
-        HueStrip(hsv = hsv, onChange = ::move, onTouch = { haptics.selection() })
+        SaturationBrightnessArea(hsv = hsv, onChange = ::move, ticker = ticker)
+        HueStrip(hsv = hsv, onChange = ::move, ticker = ticker)
 
         InkTextField(
             value = hexText,
@@ -311,12 +322,15 @@ private fun AccentPreview(ramp: AccentRamp, dark: Boolean, modifier: Modifier = 
 private fun SaturationBrightnessArea(
     hsv: Hsv,
     onChange: (Hsv) -> Unit,
-    onTouch: () -> Unit,
+    ticker: HapticTicker,
 ) {
     val colors = DsTheme.colors
     val current by rememberUpdatedState(hsv)
     val change by rememberUpdatedState(onChange)
-    val touch by rememberUpdatedState(onTouch)
+    // A detent every tenth of saturation and of brightness: sliding across the area ticks off the
+    // columns and the rows, the way a wheel ticks off its notches.
+    val saturationDetents = remember { DetentCounter(DETENT_STEP) }
+    val brightnessDetents = remember { DetentCounter(DETENT_STEP) }
     var size by remember { mutableStateOf(IntSize.Zero) }
     val hue = remember(hsv.h) { hsvToColor(hsv.h, 1f, 1f) }
     val label = stringResource(R.string.appearance_custom_area)
@@ -332,12 +346,11 @@ private fun SaturationBrightnessArea(
 
     fun report(position: Offset) {
         if (size.width <= 0 || size.height <= 0) return
-        change(
-            current.copy(
-                s = (position.x / size.width).coerceIn(0f, 1f),
-                v = 1f - (position.y / size.height).coerceIn(0f, 1f),
-            ),
-        )
+        val saturation = (position.x / size.width).coerceIn(0f, 1f)
+        val brightness = 1f - (position.y / size.height).coerceIn(0f, 1f)
+        val passed = saturationDetents.crossed(saturation) + brightnessDetents.crossed(brightness)
+        if (passed > 0) ticker.cross()
+        change(current.copy(s = saturation, v = brightness))
     }
 
     Box(
@@ -355,12 +368,15 @@ private fun SaturationBrightnessArea(
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
                     down.consume()
-                    touch()
+                    ticker.reset()
+                    saturationDetents.reset()
+                    brightnessDetents.reset()
                     report(down.position)
                     drag(down.id) { moved ->
                         moved.consume()
                         report(moved.position)
                     }
+                    ticker.settle()
                 }
             }
             .semantics {
@@ -395,12 +411,13 @@ private fun SaturationBrightnessArea(
 private fun HueStrip(
     hsv: Hsv,
     onChange: (Hsv) -> Unit,
-    onTouch: () -> Unit,
+    ticker: HapticTicker,
 ) {
     val colors = DsTheme.colors
     val current by rememberUpdatedState(hsv)
     val change by rememberUpdatedState(onChange)
-    val touch by rememberUpdatedState(onTouch)
+    // A detent every 10 degrees: 36 notches around the wheel, laid out flat.
+    val hueDetents = remember { DetentCounter(HUE_DETENT_DEGREES) }
     var size by remember { mutableStateOf(IntSize.Zero) }
     val label = stringResource(R.string.appearance_custom_hue)
     val state = stringResource(R.string.appearance_custom_hue_state, hsv.h.roundToInt())
@@ -409,7 +426,9 @@ private fun HueStrip(
     fun report(x: Float) {
         if (size.width <= 0) return
         // 360 is red again, so the strip stops a hair short of it rather than wrapping to 0.
-        change(current.copy(h = ((x / size.width).coerceIn(0f, 1f) * 359.99f)))
+        val hue = (x / size.width).coerceIn(0f, 1f) * 359.99f
+        if (hueDetents.crossed(hue) > 0) ticker.cross()
+        change(current.copy(h = hue))
     }
 
     // The 48dp row is the touch target; the strip drawn inside it is slimmer.
@@ -422,12 +441,14 @@ private fun HueStrip(
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
                     down.consume()
-                    touch()
+                    ticker.reset()
+                    hueDetents.reset()
                     report(down.position.x)
                     drag(down.id) { moved ->
                         moved.consume()
                         report(moved.position.x)
                     }
+                    ticker.settle()
                 }
             }
             .semantics(mergeDescendants = true) {

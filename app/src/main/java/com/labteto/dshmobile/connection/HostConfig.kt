@@ -165,6 +165,8 @@ data class AppSettings(
     val fontSize: String = "default",
     /** Touch feedback for controls and decisions. */
     val hapticsEnabled: Boolean = true,
+    /** How hard the haptic effects hit: `light`, `normal` or `strong`. Unknown keys read as normal. */
+    val hapticStrength: String = "normal",
     val localeOverride: String? = null, // null = system
     val knownPorts: List<Int> = listOf(3080),
     /**

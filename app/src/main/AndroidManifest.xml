@@ -18,6 +18,13 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!--
+        Haptic feedback. A normal permission, granted at install with no prompt. Without it the app
+        could only ask the system to play a stock touch effect; with it the app plays its own, chosen
+        for what the phone's motor can do (see HapticEngine). Vibration is always played as touch
+        feedback, so it follows the phone's Touch feedback setting.
+    -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!--
         Defined by Termux, not by Android: it lets this app run a command inside Termux, which is
         how "this phone" mode starts and stops a harness on the device. Termux declares it
         `dangerous`, so the system asks the user, and the app only asks at the moment Start,

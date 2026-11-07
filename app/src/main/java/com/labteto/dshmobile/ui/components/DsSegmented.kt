@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,10 +41,15 @@ import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import com.labteto.dshmobile.ui.theme.DshTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 /** One choice in a [DsSegmented] track. */
 data class DsSegment(val key: String, val label: String)
+
+/** Time between the ticks of a thumb sliding over several segments. Slower than the throttle's fast zone. */
+private const val SEGMENT_STEP_MS = 60L
 
 /**
  * A compact segmented control, restyled to the Ink kit's `.seg`.
@@ -56,6 +62,8 @@ data class DsSegment(val key: String, val label: String)
  *   [Role.RadioButton] for a setting.
  * @param stretch divide the track equally between the segments instead of letting each hug its
  *   label. Turn it on when the track is given a width of its own.
+ * @param feedback play the selection haptics (a tick, or a run of ticks when the thumb passes
+ *   several segments). Turn it off when the caller plays its own.
  */
 @Composable
 fun DsSegmented(
@@ -68,9 +76,12 @@ fun DsSegmented(
     stretch: Boolean = false,
     minSegmentHeight: Dp? = null,
     maxLabelLines: Int = 1,
+    feedback: Boolean = true,
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
+    val ticker = remember(haptics) { haptics.ticker() }
+    val scope = rememberCoroutineScope()
     val bounds = remember { mutableStateMapOf<String, Rect>() }
     val target = selectedKey?.let { bounds[it] }
     val thumbX = remember { Animatable(0f) }
@@ -112,7 +123,22 @@ fun DsSegmented(
                 role = role,
                 onClick = {
                     if (segment.key == selectedKey) return@DsSegmentItem
-                    haptics.selection()
+                    val from = segments.indexOfFirst { it.key == selectedKey }
+                    val distance = if (from < 0) 1 else abs(segments.indexOf(segment) - from)
+                    if (feedback && distance < 2) {
+                        haptics.selection()
+                    } else if (feedback) {
+                        // The thumb is about to slide over the segments between: one tick for
+                        // each, spaced like the slide, and a firmer one where it lands.
+                        scope.launch {
+                            ticker.reset()
+                            repeat(distance) {
+                                ticker.cross()
+                                delay(SEGMENT_STEP_MS)
+                            }
+                            ticker.settle()
+                        }
+                    }
                     onSelect(segment.key)
                 },
                 // Item + 2 x 3dp track padding + 2 x 1dp border: a stretched rail comes to the 48dp field

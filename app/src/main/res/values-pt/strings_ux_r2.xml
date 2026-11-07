@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">Não foi possível tirar da fila.</string>
     <string name="details_failed_goal">Não foi possível atualizar o objetivo.</string>
     <string name="details_failed_plan">Não foi possível mudar o modo de plano.</string>
-    <string name="details_failed_link">Não foi possível criar o link agora. Verifique sua conexão.</string>
     <string name="details_fork_done_title">Bifurcação pronta</string>
     <string name="details_fork_done_body">Foi feita uma cópia desta sessão. Abrir agora?</string>
     <string name="details_fork_open">Abrir cópia</string>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">شدت</string>
+    <string name="haptics_strength_light">ہلکی</string>
+    <string name="haptics_strength_normal">عام</string>
+    <string name="haptics_strength_strong">تیز</string>
+    <string name="haptics_try">آزما کر دیکھیں</string>
+    <string name="haptics_try_tap">ٹیپ</string>
+    <string name="haptics_try_switch">سوئچ</string>
+    <string name="haptics_try_confirm">تصدیق</string>
+    <string name="haptics_try_reject">مسترد</string>
+    <string name="haptics_try_alert">الرٹ</string>
+    <string name="haptics_try_hold">دبائے رکھیں</string>
+    <string name="haptics_wheel_hint">ہر ٹک محسوس کرنے کے لیے پہیہ گھمائیں</string>
+    <string name="haptics_wheel_description">مشق کا پہیہ</string>
+    <string name="haptics_status_rich">آپ کا فون تفصیلی ہیپٹک اثرات چلا سکتا ہے۔</string>
+    <string name="haptics_status_standard">آپ کا فون معیاری ہیپٹک اثرات چلاتا ہے۔</string>
+    <string name="haptics_status_basic">آپ کا فون صرف سادہ کمپن کو سپورٹ کرتا ہے۔</string>
+    <string name="haptics_status_none">اس فون میں وائبریشن موٹر نہیں ہے، اس لیے محسوس کرنے کو کچھ نہیں۔</string>
+    <string name="haptics_system_off">آپ کے فون میں ٹچ فیڈبیک بند ہے، اس لیے کچھ نہیں ہلے گا۔ اسے ساؤنڈ اور وائبریشن کی سیٹنگز میں چالو کریں۔</string>
+    <string name="haptics_system_open">سیٹنگز کھولیں</string>
+</resources>

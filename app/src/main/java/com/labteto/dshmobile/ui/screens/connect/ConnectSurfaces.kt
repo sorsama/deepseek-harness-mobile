@@ -484,13 +484,6 @@ internal fun ConnectLostSurface(
                             variant = ConnectButtonVariant.Danger,
                         )
                     }
-                    if (onForget != null && tried != null) {
-                        DsConnectButton(
-                            text = stringResource(R.string.connect_forget_harness),
-                            onClick = { onForget(tried) },
-                            variant = ConnectButtonVariant.Danger,
-                        )
-                    }
                 }
             }
         }

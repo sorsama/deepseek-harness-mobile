@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">কিউ থেকে সরানো যায়নি।</string>
     <string name="details_failed_goal">লক্ষ্য আপডেট করা যায়নি।</string>
     <string name="details_failed_plan">প্ল্যান মোড বদলানো যায়নি।</string>
-    <string name="details_failed_link">এখন লিংক তৈরি করা যাচ্ছে না। সংযোগ দেখুন।</string>
     <string name="details_fork_done_title">ফর্ক তৈরি হয়েছে</string>
     <string name="details_fork_done_body">এই সেশনের একটি কপি তৈরি হয়েছে। এখনই খুলবেন?</string>
     <string name="details_fork_open">কপি খুলুন</string>

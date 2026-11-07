@@ -486,7 +486,8 @@
     <string name="harness_dismiss_unknown">Dismiss this notice</string>
     <string name="harness_automation_search">Search automation tasks</string>
     <string name="harness_automation_all">All</string>
-    <string name="harness_automation_empty">No tasks yet. Tasks created in your sessions appear here.</string>
+    <string name="harness_automation_empty">No tasks yet</string>
+    <string name="harness_automation_empty_hint">Tasks created in your sessions appear here.</string>
     <string name="harness_automation_no_matches">No matching tasks</string>
     <string name="harness_automation_empty_inactive">No inactive automation tasks</string>
     <string name="harness_automation_rules">Rules</string>

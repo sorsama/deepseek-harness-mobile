@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">इसे कतार से हटाया नहीं जा सका।</string>
     <string name="details_failed_goal">लक्ष्य अपडेट नहीं हो सका।</string>
     <string name="details_failed_plan">प्लान मोड बदला नहीं जा सका।</string>
-    <string name="details_failed_link">अभी लिंक नहीं बन सका। अपना कनेक्शन जाँचें।</string>
     <string name="details_fork_done_title">फ़ोर्क तैयार है</string>
     <string name="details_fork_done_body">इस सेशन की एक कॉपी बन गई है। अभी खोलें?</string>
     <string name="details_fork_open">कॉपी खोलें</string>

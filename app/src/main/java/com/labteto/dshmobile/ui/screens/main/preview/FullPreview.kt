@@ -9,17 +9,13 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -30,10 +26,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.data.SessionStore
+import com.labteto.dshmobile.ui.components.DsFullScreenDialog
 import com.labteto.dshmobile.ui.components.DsIconButton
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.screens.main.ComposerKey
@@ -58,7 +53,7 @@ internal class ViewerState(tab: PreviewTab) {
 }
 
 /**
- * The file on its own screen: an edge-to-edge dialog with a top bar (back, who the file is, save,
+ * The file on its own screen: a [DsFullScreenDialog] with a top bar (back, who the file is, save,
  * overflow), a row of tools that fit the kind of file, the mode toggle, and the file filling the
  * rest. Back closes find first, then the viewer.
  *
@@ -80,59 +75,51 @@ internal fun FullPreview(
     val back = {
         if (viewer.findOpen) viewer.closeFind() else onDismiss()
     }
-    Dialog(
-        onDismissRequest = back,
-        // Edge to edge, with the bars' insets applied below: the same arrangement as the workspace dialog.
-        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
-    ) {
-        Surface(Modifier.fillMaxSize(), color = colors.bgBase) {
-            Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-                Row(
-                    Modifier.fillMaxWidth().padding(horizontal = DsSpacing.small, vertical = DsSpacing.tiny),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    DsIconButton(
-                        icon = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.common_back),
-                        onClick = back,
-                    )
-                    FileIdentity(tab, Modifier.weight(1f).padding(horizontal = DsSpacing.xsmall), showFolder = false)
-                    DsIconButton(
-                        icon = PreviewIcons.Download,
-                        contentDescription = stringResource(R.string.preview_save_copy),
-                        onClick = actions.onSave,
-                        enabled = actions.canSave && !actions.saving,
-                    )
-                    FileMenu(commands, includeClose = false, tint = colors.labelSecondary)
-                }
-                val type = tab.type
-                if (type != null) {
-                    ViewerTools(tab, type, viewer, commands.onCopy)
-                    val codeFace = type.isText && tab.text != null && usesCodeView(type.kind, tab.mode)
-                    AnimatedVisibility(
-                        visible = viewer.findOpen && codeFace,
-                        enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
-                        exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
-                    ) {
-                        FindBar(
-                            viewer.find,
-                            partial = !tab.eof,
-                            modifier = Modifier.padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.tiny),
-                        )
-                    }
-                }
-                PreviewBody(
-                    store = store,
-                    key = key,
-                    tab = tab,
-                    loader = loader,
-                    surface = PreviewSurface.Full,
-                    actions = actions.copy(onOpenFull = null),
-                    viewer = viewer,
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
+    DsFullScreenDialog(onDismissRequest = back) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = DsSpacing.small, vertical = DsSpacing.tiny),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            DsIconButton(
+                icon = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.common_back),
+                onClick = back,
+            )
+            FileIdentity(tab, Modifier.weight(1f).padding(horizontal = DsSpacing.xsmall), showFolder = false)
+            DsIconButton(
+                icon = PreviewIcons.Download,
+                contentDescription = stringResource(R.string.preview_save_copy),
+                onClick = actions.onSave,
+                enabled = actions.canSave && !actions.saving,
+            )
+            FileMenu(commands, includeClose = false, tint = colors.labelSecondary)
+        }
+        val type = tab.type
+        if (type != null) {
+            ViewerTools(tab, type, viewer, commands.onCopy)
+            val codeFace = type.isText && tab.text != null && usesCodeView(type.kind, tab.mode)
+            AnimatedVisibility(
+                visible = viewer.findOpen && codeFace,
+                enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
+                exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
+            ) {
+                FindBar(
+                    viewer.find,
+                    partial = !tab.eof,
+                    modifier = Modifier.padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.tiny),
                 )
             }
         }
+        PreviewBody(
+            store = store,
+            key = key,
+            tab = tab,
+            loader = loader,
+            surface = PreviewSurface.Full,
+            actions = actions.copy(onOpenFull = null),
+            viewer = viewer,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+        )
     }
 }
 

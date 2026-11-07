@@ -171,6 +171,22 @@ enum class FontSizeOption(val key: String, val label: String, val scale: Float) 
 }
 
 /**
+ * How hard the app's haptic effects hit. It scales the effects the phone can scale, and on phones
+ * that cannot it moves each effect up or down one step of the system's own ladder (tick, click,
+ * heavy click). [scale] is the multiplier for the first kind.
+ */
+enum class HapticStrength(val key: String, val scale: Float) {
+    Light("light", 0.6f),
+    Normal("normal", 1f),
+    Strong("strong", 1.4f),
+    ;
+
+    companion object {
+        fun of(key: String?): HapticStrength = entries.firstOrNull { it.key == key } ?: Normal
+    }
+}
+
+/**
  * The full appearance configuration: what the Appearance section writes and what [DshTheme] reads.
  *
  * Kept as one value class rather than five loose settings so previews and tests can describe a
@@ -188,6 +204,7 @@ data class ThemeCustomization(
     val amoled: Boolean = false,
     val fontSize: FontSizeOption = FontSizeOption.Default,
     val haptics: Boolean = true,
+    val hapticStrength: HapticStrength = HapticStrength.Normal,
 ) {
     /**
      * The ramp [DshTheme] paints with, resolved once here so the theme does not care whether it

@@ -69,6 +69,7 @@ import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import com.labteto.dshmobile.ui.theme.DshTheme
 import com.labteto.dshmobile.ui.theme.FontSizeOption
+import com.labteto.dshmobile.ui.theme.HapticStrength
 import com.labteto.dshmobile.ui.theme.ThemeCustomization
 import com.labteto.dshmobile.ui.theme.ThemePreference
 import com.labteto.dshmobile.ui.theme.resolveCustomAccent
@@ -89,6 +90,7 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
         settings.amoledBlack,
         settings.fontSize,
         settings.hapticsEnabled,
+        settings.hapticStrength,
     ) {
         ThemeCustomization(
             preference = ThemePreference.of(settings.themePreference),
@@ -97,6 +99,7 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
             amoled = settings.amoledBlack,
             fontSize = FontSizeOption.of(settings.fontSize),
             haptics = settings.hapticsEnabled,
+            hapticStrength = HapticStrength.of(settings.hapticStrength),
         )
     }
 

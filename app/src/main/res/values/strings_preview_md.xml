@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preview_md_web_images">Show pictures from the web</string>
+    <string name="preview_md_image_label">Picture</string>
+    <string name="preview_link_title">Open this link?</string>
+    <string name="preview_link_open">Open</string>
+    <string name="preview_link_body">It opens in your browser.</string>
+</resources>

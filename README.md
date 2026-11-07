@@ -40,13 +40,18 @@ The [project site](https://dshm.zyphite.com) has a one-page overview, and the
 
 | Connect | Chat | Trajectory | Details |
 |:--:|:--:|:--:|:--:|
-| <img src="docs/images/home.png" width="200" alt="Connect screen with a pasted dsh web link in the address field"> | <img src="docs/images/chat.png" width="200" alt="A reply streaming in while the top bar says Working and the stop button is showing"> | <img src="docs/images/trajectory.png" width="200" alt="Trajectory tab listing every tool call of the first turn"> | <img src="docs/images/session-info.png" width="200" alt="Details panel with the session, its model, context use and activity"> |
+| <img src="docs/images/home.png" width="200" alt="Connect screen with the harness address filled in"> | <img src="docs/images/chat.png" width="200" alt="A reply streaming in while the top bar says Working and the stop button is showing"> | <img src="docs/images/trajectory.png" width="200" alt="Trajectory tab listing every tool call of the first turn"> | <img src="docs/images/session-info.png" width="200" alt="Details panel with the session, its model, context use and activity"> |
 | Paste the link the harness prints, and you are connected and signed in. | Replies stream in. Tool calls fold into one row you can open. | Every tool call, turn by turn. | The session's model, context, goal, plan mode and jobs. |
 
-| Subagents | Terminal | Dark theme |
-|:--:|:--:|:--:|
-| <img src="docs/images/subagent.png" width="200" alt="A subagent's transcript with its findings and a box for a follow-up message"> | <img src="docs/images/terminal.png" width="200" alt="A terminal on the harness computer showing a passing test run"> | <img src="docs/images/dark.png" width="200" alt="The chat in the dark theme"> |
-| Read what a subagent did and send it a follow-up. | A real shell on the harness computer. | Light, dark, or follow the system. |
+| Subagents | Terminal | Sessions | Preview |
+|:--:|:--:|:--:|:--:|
+| <img src="docs/images/subagent.png" width="200" alt="A subagent's transcript with its findings and a box for a follow-up message"> | <img src="docs/images/terminal.png" width="200" alt="A terminal on the harness computer showing a passing test run"> | <img src="docs/images/sessions.png" width="200" alt="The sessions drawer grouped by project, with a drag handle on every row"> | <img src="docs/images/preview.png" width="200" alt="A README in full-screen preview, drawn like GitHub draws it, with badges, a table and a code block"> |
+| Read what a subagent did and send it a follow-up. | A real shell on the harness computer. | Group sessions by project and drag them into your own order. | A README drawn the way GitHub draws it, on its own screen. |
+
+| Appearance | Color picker | Light theme | Dark theme |
+|:--:|:--:|:--:|:--:|
+| <img src="docs/images/appearance.png" width="200" alt="Appearance settings with a custom accent color, text size and the haptics options"> | <img src="docs/images/accent-picker.png" width="200" alt="The custom color picker with a hue strip, a brightness area and a hex field"> | <img src="docs/images/light.png" width="200" alt="The chat in the light theme"> | <img src="docs/images/dark.png" width="200" alt="The chat in the dark theme"> |
+| Seven accent colors or any color you like, and haptics you can try. | Pick a color with the strip and the area, or type a hex code. | Light, with a warm paper look. | Dark, or follow the system. |
 
 ## What you can do
 

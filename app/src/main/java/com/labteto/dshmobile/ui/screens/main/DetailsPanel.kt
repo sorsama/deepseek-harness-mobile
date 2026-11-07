@@ -64,11 +64,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -167,7 +165,6 @@ fun DetailsPanel(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val toast = rememberDsToast()
-    val clipboard = LocalClipboardManager.current
 
     val conversation by store.currentConversation.collectAsState()
     val jobs by store.jobs.collectAsState()
@@ -213,7 +210,6 @@ fun DetailsPanel(
 
     val savedLabel = stringResource(R.string.chat_export_saved)
     val failedLabel = stringResource(R.string.chat_export_failed)
-    val copiedLabel = stringResource(R.string.common_copied)
     val renameFailedLabel = stringResource(R.string.details_failed_rename)
     val forkFailedLabel = stringResource(R.string.details_failed_fork)
     val archiveFailedLabel = stringResource(R.string.details_failed_archive)
@@ -222,7 +218,6 @@ fun DetailsPanel(
     val queueFailedLabel = stringResource(R.string.details_failed_queue_remove)
     val goalFailedLabel = stringResource(R.string.details_failed_goal)
     val planFailedLabel = stringResource(R.string.details_failed_plan)
-    val linkFailedLabel = stringResource(R.string.details_failed_link)
 
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/zip"),
@@ -402,17 +397,6 @@ fun DetailsPanel(
                                     },
                                     onArchive = { archiveConfirm = true },
                                     onExport = { exportLauncher.launch("dsh-session-${currentSessionId.orEmpty()}.zip") },
-                                    onCopyLink = {
-                                        scope.launch {
-                                            val url = store.exportSessionUrl()
-                                            if (url == null) {
-                                                toast.second(linkFailedLabel)
-                                            } else {
-                                                clipboard.setText(AnnotatedString(url))
-                                                toast.second(copiedLabel)
-                                            }
-                                        }
-                                    },
                                 )
 
                                 val conv = conversation
@@ -741,7 +725,6 @@ private fun SessionCard(
     onFork: () -> Unit,
     onArchive: () -> Unit,
     onExport: () -> Unit,
-    onCopyLink: () -> Unit,
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
@@ -827,8 +810,9 @@ private fun SessionCard(
                 }
             }
         }
-        // Actions: the three that change the session, then the two that take it elsewhere. A flow
-        // row, so a narrow panel wraps a button rather than squeezing it to its icon.
+        // Actions: the three that change the session, then Export, which saves it to the phone. One
+        // flow row of equal buttons, so a narrow panel wraps a button rather than squeezing it to
+        // its icon, and Export never sits alone on a line of its own.
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
             verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
@@ -859,24 +843,12 @@ private fun SessionCard(
                 onClick = onArchive,
                 variant = DsButtonVariant.Outline,
             )
-        }
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
-            verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
-        ) {
             DsButton(
                 text = stringResource(R.string.chat_export),
                 icon = Icons.Filled.Download,
                 onClick = onExport,
-                variant = DsButtonVariant.Ghost,
-                size = DsButtonSize.Small,
+                variant = DsButtonVariant.Outline,
                 enabled = !exportBusy,
-            )
-            DsButton(
-                text = stringResource(R.string.details_copy_link),
-                onClick = onCopyLink,
-                variant = DsButtonVariant.Ghost,
-                size = DsButtonSize.Small,
             )
         }
     }

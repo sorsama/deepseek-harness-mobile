@@ -43,8 +43,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.labteto.dshmobile.R
+import com.labteto.dshmobile.ui.components.DetentCounter
 import com.labteto.dshmobile.ui.components.DsIconButton
-import com.labteto.dshmobile.ui.components.rememberDsHaptics
+import com.labteto.dshmobile.ui.components.rememberHapticTicker
 import com.labteto.dshmobile.ui.screens.main.PreviewTab
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
@@ -278,7 +279,9 @@ private class AudioFocus(context: Context, private val onLost: () -> Unit) {
 @Composable
 private fun PlayerControls(state: PlayerState) {
     val colors = DsTheme.colors
-    val haptics = rememberDsHaptics()
+    // The seek bar ticks every 5% of the length while it is dragged, and settles on release.
+    val ticker = rememberHapticTicker()
+    val seekDetents = remember { DetentCounter(0.05f) }
     LaunchedEffect(state.playing) {
         while (state.playing) {
             state.position = state.handle?.position?.toLong() ?: state.position
@@ -312,10 +315,17 @@ private fun PlayerControls(state: PlayerState) {
         val seekLabel = stringResource(R.string.preview_seek)
         Slider(
             value = dragging ?: (state.position.toFloat() / total).coerceIn(0f, 1f),
-            onValueChange = { dragging = it },
+            onValueChange = { fraction ->
+                if (dragging == null) {
+                    ticker.reset()
+                    seekDetents.reset()
+                }
+                if (seekDetents.crossed(fraction) > 0) ticker.cross()
+                dragging = fraction
+            },
             onValueChangeFinished = {
                 dragging?.let { fraction ->
-                    haptics.selection()
+                    ticker.settle()
                     val target = (fraction * total).toLong()
                     state.handle?.seekTo(target.toInt())
                     state.position = target

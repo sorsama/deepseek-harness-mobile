@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -111,6 +112,7 @@ import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import com.labteto.dshmobile.ui.theme.FontSizeOption
+import com.labteto.dshmobile.ui.theme.HapticStrength
 import com.labteto.dshmobile.ui.theme.ThemeCustomization
 import com.labteto.dshmobile.ui.theme.ThemePreference
 import com.labteto.dshmobile.ui.theme.deriveAccentRamp
@@ -991,6 +993,13 @@ private fun AppearanceCard(
                 onSet { it.copy(hapticsEnabled = !it.hapticsEnabled) }
             },
         )
+        // Strength, the try-it buttons and the practice wheel: only while haptics are on.
+        AnimatedVisibility(visible = settings.hapticsEnabled) {
+            HapticsPanel(
+                strength = HapticStrength.of(settings.hapticStrength),
+                onStrength = { strength -> onSet { it.copy(hapticStrength = strength.key) } },
+            )
+        }
 
         // Reset to the ink defaults, keeping the light/dark choice: resetting appearance should not
         // also undo the scheme the user is comfortable in.
@@ -1012,6 +1021,7 @@ private fun AppearanceCard(
                             amoledBlack = false,
                             fontSize = FontSizeOption.Default.key,
                             hapticsEnabled = true,
+                            hapticStrength = HapticStrength.Normal.key,
                         )
                     }
                 }

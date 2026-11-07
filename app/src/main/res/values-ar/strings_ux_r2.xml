@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">تعذّرت إزالتها من قائمة الانتظار.</string>
     <string name="details_failed_goal">تعذّر تحديث الهدف.</string>
     <string name="details_failed_plan">تعذّر تغيير وضع التخطيط.</string>
-    <string name="details_failed_link">تعذّر إنشاء رابط الآن. تحقّق من الاتصال.</string>
     <string name="details_fork_done_title">النسخة جاهزة</string>
     <string name="details_fork_done_body">تم إنشاء نسخة من هذه الجلسة. هل تريد فتحها الآن؟</string>
     <string name="details_fork_open">افتح النسخة</string>

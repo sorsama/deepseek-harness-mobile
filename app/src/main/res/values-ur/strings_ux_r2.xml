@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">اسے قطار سے ہٹایا نہیں جا سکا۔</string>
     <string name="details_failed_goal">ہدف اپ ڈیٹ نہیں ہو سکا۔</string>
     <string name="details_failed_plan">پلان موڈ تبدیل نہیں ہو سکا۔</string>
-    <string name="details_failed_link">ابھی لنک نہیں بن سکا۔ اپنا کنکشن دیکھیں۔</string>
     <string name="details_fork_done_title">فورک تیار ہے</string>
     <string name="details_fork_done_body">اس سیشن کی ایک کاپی بن گئی ہے۔ ابھی کھولیں؟</string>
     <string name="details_fork_open">کاپی کھولیں</string>

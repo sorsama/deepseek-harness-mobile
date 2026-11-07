@@ -2978,12 +2978,6 @@ class SessionStore @Inject constructor(
         }
     }
 
-    suspend fun exportSessionUrl(): String? {
-        val sid = currentSessionId.value ?: return null
-        val host = connectionManager.state.value.host ?: return null
-        return "${host.baseUrl}/api/session.export?sessionId=$sid"
-    }
-
     /** True while [sessionId] is the session currently open in the foreground. */
     fun isSessionOpen(sessionId: String): Boolean = currentSessionId.value == sessionId
 

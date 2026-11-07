@@ -148,6 +148,42 @@ internal fun nextSlotIndex(
 }
 
 /**
+ * The vertical range a held unit of [height] may be *drawn* in: from the top of its block's first
+ * slot to the bottom of its last, so its own top runs from the first slot's top to the last slot's
+ * bottom minus [height]. A block with no measured end (scrolled out of the composed window) is
+ * unbounded on that side.
+ */
+internal fun blockDrawBounds(order: List<String>, spans: Map<String, UnitSpan>, height: Float): Pair<Float, Float> {
+    val low = order.firstOrNull()?.let { spans[it]?.top } ?: Float.NEGATIVE_INFINITY
+    val high = order.lastOrNull()?.let { spans[it]?.bottom }?.minus(height) ?: Float.POSITIVE_INFINITY
+    return low to high
+}
+
+/** Where a held unit is drawn: the finger's position, kept inside its block. */
+internal fun clampToBlock(fingerTop: Float, height: Float, order: List<String>, spans: Map<String, UnitSpan>): Float {
+    val (low, high) = blockDrawBounds(order, spans, height)
+    return if (low <= high) fingerTop.coerceIn(low, high) else fingerTop
+}
+
+/**
+ * The slot a held unit takes this frame, judged from where the *finger* is, not from where the unit
+ * is drawn.
+ *
+ * The drawn position is clamped to the block ([clampToBlock]), and a unit clamped against the end of
+ * its block can only get its centre as far as the last slot's own middle, which is the very point a
+ * neighbour of the same height has to be crossed past to swap. Judged from the clamped position a
+ * unit could therefore never take the first or the last place, and in a block of two it could never
+ * move at all. The finger has no such limit, so pressing past the end swaps all the way to it.
+ */
+internal fun slotForFinger(
+    order: List<String>,
+    draggedId: String,
+    fingerTop: Float,
+    height: Float,
+    spans: Map<String, UnitSpan>,
+): Int = nextSlotIndex(order, draggedId, fingerTop + height / 2f, spans)
+
+/**
  * How far to scroll this frame while a unit is held near an edge of the list, in pixels.
  *
  * Zero in the middle; ramps up the closer the lifted unit's edge gets to the viewport edge and tops

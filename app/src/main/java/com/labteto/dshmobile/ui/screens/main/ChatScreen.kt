@@ -413,7 +413,9 @@ fun ChatScreen(
         if (composer.preparing || composer.submitting) { draft = text; return }
         sentTick++
         if (attachments.isEmpty() && dispatchDecorated(text)) return
-        val delivery = deliveryOverride ?: mode
+        // Steering an idle session is refused by the host, so a Steer chosen while nothing runs
+        // (or chosen mid-turn that has since ended) goes out as a normal queued prompt.
+        val delivery = promptDelivery(deliveryOverride ?: mode, conversation?.running == true)
         val targetId = composer.key.sessionId
         val targetHost = composer.key.host
         val pending = attachments.toList()
@@ -677,7 +679,12 @@ fun ChatScreen(
                         // only for a live continuable child; a read-only agent's dock states what
                         // is pending without offering verbs that can only be refused.
                         AnimatedPresence(conv.queue.takeIf { it.isNotEmpty() }) {
-                            QueueDock(it, store, blocked = currentSubagent?.continuable == false)
+                            QueueDock(
+                                it,
+                                store,
+                                running = conv.running,
+                                blocked = currentSubagent?.continuable == false,
+                            )
                         }
                     }
                 }

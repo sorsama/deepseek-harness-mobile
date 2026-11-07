@@ -158,14 +158,7 @@ private fun Rendered(
                     CodeSurface(text, "md", tab, surface, "md-source", modifier, find = find, onNearEnd = nearEnd)
                 } else {
                     PreviewFrame(modifier, framed = !full) {
-                        SelectionContainer(
-                            Modifier
-                                .fillMaxSize()
-                                .verticalScroll(if (full) tab.scrollState("Full:md") else tab.scroll)
-                                .padding(DsSpacing.medium),
-                        ) {
-                            DocumentMarkdown(text)
-                        }
+                        MarkdownPageView(store, key, tab, text, full)
                     }
                 }
                 PreviewKind.Html -> if (mode == PreviewModes.Source) {

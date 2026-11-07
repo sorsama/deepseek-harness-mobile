@@ -116,6 +116,9 @@ internal fun SubagentsSheet(
     var sending by remember(childId) { mutableStateOf(false) }
     var delivery by remember(childId) { mutableStateOf("queue") }
     val queueOperation = remember(childId) { androidx.compose.runtime.mutableStateOf(false) }
+    val childRunning = entries
+        .firstOrNull { subagentId(it) == childId }
+        ?.let { subagentRunning(it) } == true
     fun sendChild() {
         val text = draft
         val id = childId
@@ -123,16 +126,15 @@ internal fun SubagentsSheet(
         sending = true
         scope.launch {
             try {
-                if (store.promptSubagent(id, text, delivery) && draft == text) draft = ""
+                // The same rule as the main composer: a Steer chosen while the child is idle is
+                // sent as a queued follow-up, because the host refuses to steer an idle child.
+                if (store.promptSubagent(id, text, promptDelivery(delivery, childRunning)) && draft == text) draft = ""
             } finally {
                 sending = false
             }
         }
     }
     val queues by store.sessionQueues.collectAsStateWithLifecycle()
-    val childRunning = entries
-        .firstOrNull { subagentId(it) == childId }
-        ?.let { subagentRunning(it) } == true
     val selectedInList = entries.any { subagentId(it) == childId }
 
     DsBottomSheet(
@@ -411,11 +413,21 @@ private fun ChildBody(
                 size = DsButtonSize.Small,
             )
         }
+        // Steer stays selectable with the child idle, like the + sheet's pill; this says why the
+        // next send will be queued instead of steering.
+        if (mode == "continuable" && delivery == "steer" && !running) {
+            Text(
+                stringResource(R.string.chat_composer_steer_idle),
+                style = DsType.caption11,
+                color = colors.labelTertiary,
+            )
+        }
         if (mode == "continuable") {
             QueueDock(
                 queues,
                 store,
                 sessionId = childId,
+                running = running,
                 blocked = sending,
                 operationState = queueOperation,
             )

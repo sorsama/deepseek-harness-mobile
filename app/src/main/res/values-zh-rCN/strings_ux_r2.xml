@@ -8,7 +8,6 @@
     <string name="details_failed_queue_remove">无法从队列中移除。</string>
     <string name="details_failed_goal">无法更新目标。</string>
     <string name="details_failed_plan">无法切换计划模式。</string>
-    <string name="details_failed_link">暂时无法生成链接，请检查网络连接。</string>
     <string name="details_fork_done_title">分叉已就绪</string>
     <string name="details_fork_done_body">已创建此会话的副本，现在打开吗？</string>
     <string name="details_fork_open">打开副本</string>

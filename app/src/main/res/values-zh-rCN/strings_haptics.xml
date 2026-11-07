@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="haptics_strength">强度</string>
+    <string name="haptics_strength_light">轻</string>
+    <string name="haptics_strength_normal">标准</string>
+    <string name="haptics_strength_strong">强</string>
+    <string name="haptics_try">试一试</string>
+    <string name="haptics_try_tap">点按</string>
+    <string name="haptics_try_switch">开关</string>
+    <string name="haptics_try_confirm">确认</string>
+    <string name="haptics_try_reject">拒绝</string>
+    <string name="haptics_try_alert">提醒</string>
+    <string name="haptics_try_hold">长按</string>
+    <string name="haptics_wheel_hint">滚动转轮，感受每一格的触感</string>
+    <string name="haptics_wheel_description">练习转轮</string>
+    <string name="haptics_status_rich">你的手机可以播放细腻的触感效果。</string>
+    <string name="haptics_status_standard">你的手机会播放标准触感效果。</string>
+    <string name="haptics_status_basic">你的手机只支持基础振动。</string>
+    <string name="haptics_status_none">这部手机没有振动马达，所以没有什么可感受的。</string>
+    <string name="haptics_system_off">你手机上的触感反馈已关闭，所以不会有振动。请在声音和振动设置中打开。</string>
+    <string name="haptics_system_open">打开设置</string>
+</resources>

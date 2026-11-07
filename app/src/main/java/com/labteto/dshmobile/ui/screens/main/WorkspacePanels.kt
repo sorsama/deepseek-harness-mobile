@@ -22,10 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -57,8 +54,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.RpcResult
@@ -74,6 +69,7 @@ import com.labteto.dshmobile.ui.components.DsPill
 import com.labteto.dshmobile.ui.components.DsSearchField
 import com.labteto.dshmobile.ui.components.DsSegment
 import com.labteto.dshmobile.ui.components.DsSegmented
+import com.labteto.dshmobile.ui.components.DsFullScreenDialog
 import com.labteto.dshmobile.ui.components.EmptyHero
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.clickableWithHold
@@ -98,11 +94,11 @@ internal fun <T> RpcResult<T>.requireValue(): T = when (this) {
  * The workspace, full screen: an Ink top bar (back, title, working directory, search) above the
  * Files / Preview / Terminal tabs.
  *
- * The window is still a platform [Dialog] because the chat surface underneath is a separate
- * composition with its own overlays; keeping it a dialog means every sheet and dialog the panels
+ * The window is a [DsFullScreenDialog] because the chat surface underneath is a separate
+ * composition with its own overlays; keeping it a window means every sheet and dialog the panels
  * open still lands above the right layer. The content fades and rises in on mount so the panel
- * arrives instead of snapping into place. Insets are consumed here, since the chat screen's own
- * padding does not reach into the dialog window.
+ * arrives instead of snapping into place. The window pads for the system bars itself, which is what
+ * keeps the terminal key row above the gesture bar.
  */
 @Composable
 internal fun WorkspacePanels(
@@ -140,47 +136,34 @@ internal fun WorkspacePanels(
             onDismiss()
         }
     }
-    Dialog(
-        onDismissRequest = back,
-        // Edge to edge inside the dialog window as well: its own system-bar insets are otherwise
-        // never applied, which put the terminal key row (and the panel's bottom edge) behind the
-        // phone's gesture/navigation bar where it could not be seen or tapped.
-        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
-    ) {
-        androidx.compose.material3.Surface(Modifier.fillMaxSize(), color = colors.bgBase) {
-            AnimatedVisibility(
-                visible = shown,
-                enter = fadeIn(tween(180, easing = DsAnimations.inkDecelerate)) +
-                    slideInVertically(tween(260, easing = DsAnimations.inkDecelerate)) { it / 28 },
-                exit = fadeOut(tween(120)),
-            ) {
-                Column(
-                    Modifier
-                        .fillMaxSize()
-                        .windowInsetsPadding(WindowInsets.safeDrawing),
-                ) {
-                    WorkspaceTopBar(
-                        title = stringResource(R.string.panel_workspace),
-                        subtitle = cwd,
-                        onBack = back,
-                        searchVisible = state.section == 0,
-                        searchOpen = searchOpen,
-                        onSearch = {
-                            searchOpen = !searchOpen
-                            if (!searchOpen) query = ""
-                        },
-                    )
-                    WorkspacePanelBody(
-                        store = store,
-                        state = state,
-                        modifier = Modifier.fillMaxSize(),
-                        onMention = onMention,
-                        searchOpen = searchOpen,
-                        query = query,
-                        onQuery = { query = it },
-                    )
-                }
-            }
+    DsFullScreenDialog(onDismissRequest = back) {
+        WorkspaceTopBar(
+            title = stringResource(R.string.panel_workspace),
+            subtitle = cwd,
+            onBack = back,
+            searchVisible = state.section == 0,
+            searchOpen = searchOpen,
+            onSearch = {
+                searchOpen = !searchOpen
+                if (!searchOpen) query = ""
+            },
+        )
+        AnimatedVisibility(
+            visible = shown,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            enter = fadeIn(tween(180, easing = DsAnimations.inkDecelerate)) +
+                slideInVertically(tween(260, easing = DsAnimations.inkDecelerate)) { it / 28 },
+            exit = fadeOut(tween(120)),
+        ) {
+            WorkspacePanelBody(
+                store = store,
+                state = state,
+                modifier = Modifier.fillMaxSize(),
+                onMention = onMention,
+                searchOpen = searchOpen,
+                query = query,
+                onQuery = { query = it },
+            )
         }
     }
 }

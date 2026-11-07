@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -38,6 +39,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,6 +58,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
+import com.labteto.dshmobile.ui.components.HapticTicker
+import com.labteto.dshmobile.ui.components.rememberHapticTicker
 import com.labteto.dshmobile.ui.components.skeleton
 import com.labteto.dshmobile.ui.screens.main.PreviewTab
 import com.labteto.dshmobile.ui.theme.DsShapes
@@ -71,6 +75,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.roundToInt
+
+/** The largest zoom the buttons and the pinch reach. */
+private const val MAX_ZOOM = 4f
 
 /** Widest a page is rendered, in pixels, however far the reader has zoomed. */
 private const val MAX_PAGE_PX = 3000
@@ -175,6 +182,9 @@ internal class PdfViewState(val list: LazyListState) {
     var zoom by mutableFloatStateOf(1f)
     var pages by mutableIntStateOf(0)
 
+    /** The tick stream for page changes and zoom snaps, set by the surface that shows the pages. */
+    var ticker: HapticTicker? = null
+
     /** The page that fills most of the window (the first, until the list has been laid out). */
     val page: Int by derivedStateOf {
         val info = list.layoutInfo
@@ -184,7 +194,16 @@ internal class PdfViewState(val list: LazyListState) {
     }
 
     fun zoomBy(factor: Float) {
-        zoom = (zoom * factor).coerceIn(1f, 4f)
+        val before = zoom
+        zoom = (zoom * factor).coerceIn(1f, MAX_ZOOM)
+        // Arriving at either end of the zoom range is a snap: one firmer tick, once.
+        if (zoom != before && (zoom <= 1f || zoom >= MAX_ZOOM)) ticker?.settle()
+    }
+
+    /** The double-tap: back to fit when zoomed in, otherwise to 2x. */
+    fun toggleZoom() {
+        zoom = if (zoom > 1.2f) 1f else 2f
+        ticker?.settle()
     }
 }
 
@@ -270,6 +289,30 @@ private fun PdfPages(
     }
     val full = surface == PreviewSurface.Full
     val horizontal = rememberScrollState()
+    // One tick for each page the reading position passes, and a firmer one when the scroll stops
+    // on a different page than it started on. The ticker is remembered so its throttle holds
+    // through a fast fling over many pages.
+    val ticker = rememberHapticTicker()
+    SideEffect { state.ticker = ticker }
+    LaunchedEffect(state, ticker) {
+        var lastPage = state.page
+        var changedWhileScrolling = false
+        launch {
+            snapshotFlow { state.page }.collect { page ->
+                if (page != lastPage) {
+                    lastPage = page
+                    changedWhileScrolling = true
+                    ticker.cross()
+                }
+            }
+        }
+        snapshotFlow { state.list.isScrollInProgress }.collect { scrolling ->
+            if (!scrolling && changedWhileScrolling) {
+                changedWhileScrolling = false
+                ticker.settle()
+            }
+        }
+    }
     // Render at a width rounded to 64px so a pinch does not ask for a new bitmap every frame.
     val renderWidth = ((viewport.width - with(density) { (DsSpacing.small * 2).roundToPx() }) * state.zoom / 64f)
         .roundToInt().times(64).coerceAtLeast(64)
@@ -280,7 +323,7 @@ private fun PdfPages(
             .then(if (full) Modifier.pinch { state.zoomBy(it) } else Modifier)
             .pointerInput(full) {
                 detectTapGestures(
-                    onDoubleTap = { if (full) state.zoom = if (state.zoom > 1.2f) 1f else 2f },
+                    onDoubleTap = { if (full) state.toggleZoom() },
                     onTap = { if (!full) actions.onOpenFull?.invoke() },
                 )
             },

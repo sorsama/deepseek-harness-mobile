@@ -479,7 +479,8 @@
     <string name="harness_dismiss_unknown">ปิดข้อความนี้</string>
     <string name="harness_automation_search">ค้นหางานอัตโนมัติ</string>
     <string name="harness_automation_all">ทั้งหมด</string>
-    <string name="harness_automation_empty">ยังไม่มีงาน งานที่สร้างในเซสชันของคุณจะแสดงที่นี่</string>
+    <string name="harness_automation_empty">ยังไม่มีงาน</string>
+    <string name="harness_automation_empty_hint">งานที่สร้างในเซสชันของคุณจะแสดงที่นี่</string>
     <string name="harness_automation_no_matches">ไม่พบงานที่ตรงกัน</string>
     <string name="harness_automation_empty_inactive">ไม่มีงานอัตโนมัติที่หยุดทำงาน</string>
     <string name="harness_automation_rules">กฎ</string>

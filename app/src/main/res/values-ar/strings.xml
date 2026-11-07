@@ -479,7 +479,8 @@
     <string name="harness_dismiss_unknown">إخفاء هذا التنبيه</string>
     <string name="harness_automation_search">البحث في مهام الأتمتة</string>
     <string name="harness_automation_all">الكل</string>
-    <string name="harness_automation_empty">لا توجد مهام بعد. تظهر هنا المهام التي تنشئها في جلساتك.</string>
+    <string name="harness_automation_empty">لا توجد مهام بعد</string>
+    <string name="harness_automation_empty_hint">تظهر هنا المهام التي تنشئها في جلساتك.</string>
     <string name="harness_automation_no_matches">لا توجد مهام مطابقة</string>
     <string name="harness_automation_empty_inactive">لا توجد مهام أتمتة غير نشطة</string>
     <string name="harness_automation_rules">القواعد</string>
