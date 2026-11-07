@@ -50,7 +50,7 @@ class TerminalInputLedger(
     /** Accept keyboard input. False means the input would overflow a budget and was refused. */
     fun write(data: String): Boolean {
         if (data.isEmpty()) return true
-        val bytes = data.toByteArray(Charsets.UTF_8).size
+        val bytes = data.encodeToByteArray().size
         if (inputBytes + bytes > maxInputBytes) return false
         return admit(command("write") { put("data", JsonPrimitive(data)) }, bytes)
     }
@@ -102,7 +102,7 @@ class TerminalInputLedger(
     }
 
     private fun admit(command: JsonObject, rawBytes: Int): Boolean {
-        val frameBytes = command.toString().toByteArray(Charsets.UTF_8).size + (window?.frameOverheadBytes ?: 0)
+        val frameBytes = command.toString().encodeToByteArray().size + (window?.frameOverheadBytes ?: 0)
         val windowLimit = window?.maxBytes
         if (windowLimit != null && frameBytes > windowLimit) return false
         if (maxBufferedBytes != null && bufferedBytes + frameBytes > maxBufferedBytes) return false

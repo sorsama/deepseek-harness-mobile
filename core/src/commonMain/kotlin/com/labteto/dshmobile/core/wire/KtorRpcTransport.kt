@@ -26,7 +26,6 @@ import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.writeFully
 import kotlin.coroutines.cancellation.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.runBlocking
@@ -135,7 +134,7 @@ class KtorRpcTransport(
         // What `consume` itself throws is the caller's business and must come out as it went in;
         // only the carrier's own failures become transport exceptions.
         var consumerFailure: Throwable? = null
-        return withContext(Dispatchers.IO) {
+        return withContext(blockingDispatcher) {
             carrier(passThrough = { it === consumerFailure }) {
                 client.prepareGet { carrierRequest(target, connectTimeout, DOWNLOAD_IDLE_MS) }.execute { response ->
                     val status = response.status.value
@@ -213,7 +212,7 @@ class KtorRpcTransport(
     /**
      * The request body of an upload: [source] streamed to the connection as it is written.
      *
-     * Reads are blocking (a kotlinx-io `Source` is), so each runs on [Dispatchers.IO] rather than
+     * Reads are blocking (a kotlinx-io `Source` is), so each runs on the [blockingDispatcher] rather than
      * on the engine's own thread. Progress is reported on the cadence `OkHttpRpcTransport` keeps —
      * every 64 KiB plus a final total — because kotlinx-io hands back at most one 8 KiB segment per
      * read and reporting each would multiply the app's progress callbacks (each one a Compose state
@@ -232,7 +231,7 @@ class KtorRpcTransport(
             var sent = 0L
             var reported = 0L
             while (true) {
-                val read = withContext(Dispatchers.IO) { source.readAtMostTo(buffer) }
+                val read = withContext(blockingDispatcher) { source.readAtMostTo(buffer) }
                 if (read < 0) break
                 channel.writeFully(buffer, 0, read)
                 sent += read
