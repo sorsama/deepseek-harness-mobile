@@ -15,6 +15,9 @@ serializationJson = "1.7.3"
 # the iOS transport that will sit on Ktor's Darwin engine shares one set of Source/Sink types with
 # the common transport seam instead of two versions of them.
 kotlinxIo = "0.5.4"
+# The Gradle plugin and the runtime library share this one version. It has to be bumped together
+# with `kotlin`: the plugin rewrites compiled classes, so a Kotlin upgrade is where it breaks.
+atomicfu = "0.26.0"
 okhttp = "4.12.0"
 zxingEmbedded = "4.3.0"
 datastore = "1.1.1"
@@ -84,5 +87,6 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlinx-atomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "atomicfu" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

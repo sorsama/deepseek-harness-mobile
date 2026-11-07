@@ -1,6 +1,10 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
+    // Common atomics for the mux and the connection loop, which are touched from OkHttp's socket
+    // threads and from coroutines at once. The plugin rewrites `atomic(...)` into plain field
+    // updaters on the JVM (no wrapper objects) and into Kotlin/Native atomic intrinsics on iOS.
+    alias(libs.plugins.kotlinx.atomicfu)
 }
 
 kotlin {
