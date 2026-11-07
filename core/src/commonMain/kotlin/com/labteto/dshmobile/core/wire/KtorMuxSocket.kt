@@ -60,7 +60,7 @@ import kotlinx.io.IOException
  * ping interval is set, which is what the CIO engine uses; the Darwin engine delegates the whole
  * protocol to `NSURLSessionWebSocketTask`, which answers pings below Ktor (Ktor's Darwin session
  * surfaces only data and string messages). So there is no application-level heartbeat here either.
- * `KtorMuxSocketContractTest` proves the CIO case against a server that disconnects a client that
+ * `MuxSocketContractTest` proves the CIO case against a server that disconnects a client that
  * does not pong.
  *
  * The [client] must have [WebSockets] installed (see [dshCarrier]). [url] may be `http(s)://` as
