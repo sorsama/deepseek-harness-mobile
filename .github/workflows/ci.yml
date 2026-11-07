@@ -25,18 +25,6 @@ jobs:
       # :app was missing here, so nothing under app/src/test ever ran on CI.
       - name: Unit tests
         run: ./gradlew :core:jvmTest :mock-harness:test :app:testDebugUnitTest --stacktrace
-      # :core's iOS targets keep the shared code honestly shared: Kotlin/Native cannot build
-      # them on a Windows desktop, so this is the only place the compile is enforced. Linux
-      # cross-compiles all three targets; no macOS runner is needed until there is an app to sign.
-      - name: Restore Kotlin/Native toolchain
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.konan
-            ~/.local/share/konan
-          key: konan-${{ runner.os }}-kotlin-2.0.21
-      - name: Compile shared code for iOS
-        run: ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :core:compileKotlinIosX64 --stacktrace
       - name: Lint
         run: ./gradlew :app:lintDebug --stacktrace
       - name: Assemble debug APK
@@ -46,6 +34,45 @@ jobs:
         with:
           name: dsh-mobile-debug
           path: app/build/outputs/apk/debug/*.apk
+
+  # The one place the iOS targets are really compiled.
+  #
+  # Kotlin/Native builds Apple targets only on macOS. On Linux and Windows Gradle prints "the
+  # following Kotlin/Native targets cannot be built on this machine and are disabled" and marks
+  # every iOS task SKIPPED, so a `compileKotlinIosArm64` step on an ubuntu runner reports BUILD
+  # SUCCESSFUL in a second having compiled nothing. (This job used to be a step of `build`, where
+  # that is exactly what it did.) Klib cross-compilation does not rescue it either: the Linux
+  # toolchain ships no Apple platform libraries, so `platform.Foundation` and even `posix` do not
+  # resolve. macOS minutes are free for a public repository.
+  ios-compile:
+    runs-on: macos-14
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      # The Gradle build configures :app too, which needs an Android SDK even though only :core
+      # is built here.
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore Kotlin/Native toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-kotlin-2.0.21
+      - name: Compile shared code for iOS
+        run: ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :core:compileKotlinIosX64 --stacktrace
+      # A skipped task is a green build, so assert the klibs exist rather than trusting the exit code.
+      - name: Check the iOS klibs were produced
+        run: |
+          for target in iosArm64 iosSimulatorArm64 iosX64; do
+            klib="core/build/classes/kotlin/$target/main/klib/core.klib"
+            test -s "$klib" || { echo "::error::$klib was not produced; the iOS compile was skipped"; exit 1; }
+          done
 
   harness-conformance:
     runs-on: ubuntu-latest
