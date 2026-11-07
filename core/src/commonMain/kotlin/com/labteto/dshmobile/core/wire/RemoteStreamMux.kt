@@ -4,9 +4,8 @@ import com.labteto.dshmobile.core.wire.dto.RemoteStreamClientMessage
 import com.labteto.dshmobile.core.wire.dto.RemoteStreamClientMessageSerializer
 import com.labteto.dshmobile.core.wire.dto.RemoteStreamServerMessage
 import com.labteto.dshmobile.core.wire.dto.RemoteStreamServerMessageSerializer
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
+import kotlin.concurrent.Volatile
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -81,6 +80,29 @@ interface RemoteStream {
  *
  * Items are delivered in arrival order per stream. No ordering is promised *between* streams —
  * the host interleaves them freely.
+ *
+ * ## Threading
+ *
+ * The socket's callbacks arrive on the carrier's own thread (OkHttp's reader thread on Android)
+ * while streams are opened, sent on and cancelled from coroutines, so every piece of shared state
+ * here is either a `@Volatile` field, a kotlinx.atomicfu atomic, or the [AtomicRegistry] of live
+ * streams. That is the same set of guarantees the `java.util.concurrent` types gave before this
+ * class moved to common code, and they were chosen over a lock deliberately: nothing here ever
+ * holds a lock while it calls out, so a `trySend` or a send on the socket can never deadlock
+ * against the socket thread that is delivering into the same mux. The invariants the code leans
+ * on, and where each is enforced:
+ *
+ * - **The sweep signals only what it retired.** [failAll] fails the streams that
+ *   [AtomicRegistry.removeAll] hands back, and a registration goes to exactly one caller, so a
+ *   stream a cancel or a sweep already retired is not failed again. (A host `end` or `error` that
+ *   looked a stream up just before a sweep can still queue its own terminal behind the sweep's;
+ *   a consumer stops at the first terminal it reads, so the extra is never seen. That window is
+ *   the same as it was with `ConcurrentHashMap`, and is deliberately left as it was.)
+ * - **A stream cannot be stranded by a concurrent closure.** [failAll] records [closedCause]
+ *   before it sweeps, and [open] registers before it checks it, so either the sweep sees the new
+ *   stream or the opener sees the closure.
+ * - **Stream ids are never reused:** one atomic counter.
+ * - **`start` builds one socket,** by a compare-and-set on [started].
  */
 class RemoteStreamMux(
     private val channelFactory: MuxSocketFactory,
@@ -95,27 +117,27 @@ class RemoteStreamMux(
 
     private inner class Stream(private val streamId: String) : RemoteStream {
         val signals: Channel<Signal> = Channel(Channel.UNLIMITED)
-        private val done = AtomicBoolean(false)
+        private val done = atomic(false)
 
         override suspend fun receive(): JsonElement? = when (val signal = signals.receive()) {
             is Signal.Item -> signal.value
             is Signal.Failed -> {
-                done.set(true)
+                done.value = true
                 throw RemoteStreamException(signal.error, signal.carrier)
             }
             Signal.Ended -> {
-                done.set(true)
+                done.value = true
                 null
             }
         }
 
         override fun send(value: JsonElement): Boolean {
-            if (done.get() || closedCause != null || !streams.containsKey(streamId)) return false
+            if (done.value || closedCause != null || !streams.containsKey(streamId)) return false
             return this@RemoteStreamMux.send(RemoteStreamClientMessage.Item(streamId = streamId, value = value))
         }
 
         override fun endUplink() {
-            if (done.get() || closedCause != null || !streams.containsKey(streamId)) return
+            if (done.value || closedCause != null || !streams.containsKey(streamId)) return
             this@RemoteStreamMux.send(RemoteStreamClientMessage.End(streamId = streamId))
         }
 
@@ -129,9 +151,9 @@ class RemoteStreamMux(
         }
     }
 
-    private val streams = ConcurrentHashMap<String, Stream>()
-    private val nextStreamId = AtomicLong(1)
-    private val started = AtomicBoolean(false)
+    private val streams = AtomicRegistry<String, Stream>()
+    private val nextStreamId = atomic(1L)
+    private val started = atomic(false)
     private val opened = CompletableDeferred<Unit>()
 
     @Volatile
@@ -282,9 +304,10 @@ class RemoteStreamMux(
         // Unblocks awaitOpen for a socket that failed its upgrade and never opened at all.
         opened.complete(Unit)
         val error = carrierError(closure)
-        streams.keys.toList().forEach { streamId ->
-            streams.remove(streamId)?.signals?.trySend(Signal.Failed(error, carrier = true))
-        }
+        // One atomic sweep rather than a snapshot of the keys with a remove per key: a stream
+        // retired by a racing `end`, `error` or cancel is simply not in what comes back, so it is
+        // never signalled twice, and a stream registered after the sweep sees `closedCause`.
+        streams.removeAll().forEach { it.signals.trySend(Signal.Failed(error, carrier = true)) }
     }
 
     private fun carrierFailure(cause: Throwable?): RemoteStreamException =
