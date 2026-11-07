@@ -45,7 +45,10 @@ jobs:
   # toolchain ships no Apple platform libraries, so `platform.Foundation` and even `posix` do not
   # resolve. macOS minutes are free for a public repository.
   ios-compile:
-    runs-on: macos-14
+    # `macos-latest`, not a pinned image: `macos-14` is no longer a supported configuration and the
+    # job was cancelled before its first step ("The configuration 'macos-14-arm64-us-default' is
+    # not supported").
+    runs-on: macos-latest
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
