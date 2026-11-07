@@ -3,16 +3,16 @@ package com.labteto.dshmobile.data
 import com.labteto.dshmobile.core.wire.*
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswer
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.Source
 import org.junit.Assert.*
 import org.junit.Test
-import java.io.InputStream
 
 class FeatureAvailabilityTest {
     private class FailingTransport(val status: Int) : RpcTransport {
         override suspend fun post(path: String, body: String): RpcHttpResponse =
             throw RpcTransportException(status, "failure $status")
-        override suspend fun <T> download(path: String, consume: (String?, String?, InputStream) -> T): T = error("unused")
-        override suspend fun upload(path: String, contentType: String, contentLength: Long, body: InputStream, onProgress: ((Long) -> Unit)?): RpcHttpResponse = error("unused")
+        override suspend fun <T> download(path: String, consume: (String?, String?, Source) -> T): T = error("unused")
+        override suspend fun upload(path: String, contentType: String, contentLength: Long, body: Source, onProgress: ((Long) -> Unit)?): RpcHttpResponse = error("unused")
     }
 
     private suspend fun probe(api: DshApiClient, feature: HarnessFeature): RpcResult<*> = when (feature) {

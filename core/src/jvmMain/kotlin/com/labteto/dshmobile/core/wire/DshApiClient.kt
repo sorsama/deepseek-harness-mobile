@@ -69,9 +69,9 @@ import com.labteto.dshmobile.core.wire.dto.WorkspaceRenameRequest
 import com.labteto.dshmobile.core.wire.dto.WorkspaceValue
 import com.labteto.dshmobile.core.wire.dto.*
 import java.io.IOException
-import java.io.InputStream
 import java.net.URLEncoder
 import kotlinx.coroutines.CancellationException
+import kotlinx.io.Source
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
@@ -850,7 +850,7 @@ class DshApiClient(
         sessionId: String,
         name: String?,
         contentLength: Long,
-        body: InputStream,
+        body: Source,
         onProgress: ((sent: Long) -> Unit)? = null,
     ): RpcResult<FileUploadValue> {
         val query = "sessionId=${encodeQueryComponent(sessionId)}" +
@@ -964,7 +964,7 @@ class DshApiClient(
     suspend fun <T> sessionExport(
         sessionId: String,
         includeDescendants: Boolean = false,
-        consume: (contentType: String?, contentDisposition: String?, body: InputStream) -> T,
+        consume: (contentType: String?, contentDisposition: String?, body: Source) -> T,
     ): RpcResult<T> = try {
         val query = "sessionId=${encodeQueryComponent(sessionId)}" +
             if (includeDescendants) "&includeDescendants=true" else ""

@@ -131,6 +131,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.asInputStream
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -2122,7 +2125,7 @@ class SessionStore @Inject constructor(
             ?: return@withContext RpcResult.Err(RpcError("internal", "not connected"))
         val stream = open()
             ?: return@withContext RpcResult.Err(RpcError("internal", "could not read the file"))
-        val streamed = stream.use { api.uploadFileBinary(sid, name, size, it, onProgress) }
+        val streamed = stream.use { api.uploadFileBinary(sid, name, size, it.asSource().buffered(), onProgress) }
         if (streamed !is RpcResult.Err || streamed.error.code != "capability-unavailable") return@withContext streamed
         if (size !in 0..MAX_ENCODED_UPLOAD_BYTES) return@withContext streamed
         log("upload route unavailable; falling back to fileUploads/upload for ${size}B")
@@ -2968,7 +2971,7 @@ class SessionStore @Inject constructor(
     suspend fun exportSessionTo(sink: OutputStream, includeDescendants: Boolean = false, report: Boolean = true): ActionOutcome<Unit> {
         val sid = currentSessionId.value ?: return ActionOutcome.Failed()
         val api = apiOrNull() ?: return ActionOutcome.Failed()
-        val result = api.sessionExport(sid, includeDescendants) { _, _, body -> body.copyTo(sink) }
+        val result = api.sessionExport(sid, includeDescendants) { _, _, body -> body.asInputStream().copyTo(sink) }
         return when (result) {
             is RpcResult.Ok -> ActionOutcome.Done(Unit)
             is RpcResult.Err -> {

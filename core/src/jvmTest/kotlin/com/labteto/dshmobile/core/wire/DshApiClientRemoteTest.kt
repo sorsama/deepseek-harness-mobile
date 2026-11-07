@@ -1,7 +1,6 @@
 package com.labteto.dshmobile.core.wire
 
 import java.io.ByteArrayInputStream
-import java.io.InputStream
 import kotlinx.coroutines.test.runTest
 import com.labteto.dshmobile.core.wire.dto.CommandSubmitAttachment
 import com.labteto.dshmobile.core.wire.dto.EncodedFileUploadRequest
@@ -12,6 +11,10 @@ import com.labteto.dshmobile.core.wire.dto.PromptContentPart
 import com.labteto.dshmobile.core.wire.dto.SessionAttachmentRequest
 import com.labteto.dshmobile.core.wire.dto.SessionPromptRequest
 import com.labteto.dshmobile.core.wire.dto.SubagentPromptRequest
+import kotlinx.io.Source
+import kotlinx.io.asSource
+import kotlinx.io.buffered
+import kotlinx.io.readByteArray
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
@@ -52,23 +55,23 @@ class DshApiClientRemoteTest {
 
         override suspend fun <T> download(
             path: String,
-            consume: (String?, String?, InputStream) -> T,
+            consume: (String?, String?, Source) -> T,
         ): T {
             lastDownloadPath = path
-            return consume("application/zip", "attachment; filename=\"x.zip\"", ByteArrayInputStream(downloadBytes))
+            return consume("application/zip", "attachment; filename=\"x.zip\"", ByteArrayInputStream(downloadBytes).asSource().buffered())
         }
 
         override suspend fun upload(
             path: String,
             contentType: String,
             contentLength: Long,
-            body: InputStream,
+            body: Source,
             onProgress: ((Long) -> Unit)?,
         ): RpcHttpResponse {
             lastUploadPath = path
             lastUploadContentType = contentType
             lastUploadLength = contentLength
-            lastUploadBytes = body.readBytes()
+            lastUploadBytes = body.readByteArray()
             onProgress?.invoke(lastUploadBytes.size.toLong())
             return uploadResponder?.invoke() ?: error("no upload responder")
         }
@@ -282,7 +285,7 @@ class DshApiClientRemoteTest {
         transport.downloadBytes = "PK-zip-bytes".toByteArray()
 
         val result = client(transport).sessionExport("session-6", includeDescendants = true) { _, _, body ->
-            body.readBytes().decodeToString()
+            body.readByteArray().decodeToString()
         }
 
         assertEquals(
@@ -309,7 +312,7 @@ class DshApiClientRemoteTest {
             sessionId = "session-8",
             name = "my notes.txt",
             contentLength = 5,
-            body = ByteArrayInputStream("hello".toByteArray()),
+            body = ByteArrayInputStream("hello".toByteArray()).asSource().buffered(),
             onProgress = { progressed = it },
         )
 
@@ -332,7 +335,7 @@ class DshApiClientRemoteTest {
                 """{"ok":false,"error":{"code":"session/attachment-invalid","message":"too big","details":{"reason":"FILE_TOO_LARGE"}}}""",
             )
         }
-        val result = client(transport).uploadFileBinary("session-8", null, 1, ByteArrayInputStream(ByteArray(1)))
+        val result = client(transport).uploadFileBinary("session-8", null, 1, ByteArrayInputStream(ByteArray(1)).asSource().buffered())
         assertEquals("session/attachment-invalid", (result as RpcResult.Err).error.code)
         assertEquals("/api/session/uploadFileBinary?sessionId=session-8", transport.lastUploadPath)
     }
@@ -343,7 +346,7 @@ class DshApiClientRemoteTest {
         // file-upload service, answers 404 — the caller's cue to fall back to the Remote form.
         val transport = RecordingTransport { _, _ -> error("not used") }
         transport.uploadResponder = { throw RpcTransportException(404, "carrier returned HTTP 404") }
-        val result = client(transport).uploadFileBinary("session-8", null, 1, ByteArrayInputStream(ByteArray(1)))
+        val result = client(transport).uploadFileBinary("session-8", null, 1, ByteArrayInputStream(ByteArray(1)).asSource().buffered())
         assertEquals("capability-unavailable", (result as RpcResult.Err).error.code)
     }
 

@@ -25,6 +25,10 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
+            // `api`, not `implementation`: `RpcTransport` exposes kotlinx-io's `Source` and
+            // `IOException` in its signatures, so every module that implements or calls it (the
+            // app, the conformance suite) has to see them on its own compile classpath.
+            api(libs.kotlinx.io.core)
         }
         jvmMain.dependencies {
             // The HTTP/WebSocket transport and the commonmark Markdown renderer are JVM-only and
