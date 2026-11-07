@@ -37,6 +37,17 @@ enum class TransportKind {
         KTOR -> KtorRpcTransport(baseUrl, ktor, connectTimeoutMs, readTimeoutMs, authorization, cookie)
     }
 
+    /** A mux socket to [url] reporting to [sink]. */
+    fun socket(
+        url: String,
+        sink: WsChannelSink,
+        authorization: String? = null,
+        cookie: String? = null,
+    ): MuxSocket = when (this) {
+        OKHTTP -> WsChannel(url, okHttp, sink, authorization, cookie)
+        KTOR -> KtorMuxSocket(url, ktor, sink, authorization, cookie)
+    }
+
     companion object {
         /** JUnit `Parameterized` source: one run per implementation. */
         @JvmStatic
