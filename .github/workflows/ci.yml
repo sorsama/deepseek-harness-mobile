@@ -25,6 +25,18 @@ jobs:
       # :app was missing here, so nothing under app/src/test ever ran on CI.
       - name: Unit tests
         run: ./gradlew :core:test :mock-harness:test :app:testDebugUnitTest --stacktrace
+      # :core's iOS targets keep the shared code honestly shared: Kotlin/Native cannot build
+      # them on a Windows desktop, so this is the only place the compile is enforced. Linux
+      # cross-compiles all three targets; no macOS runner is needed until there is an app to sign.
+      - name: Restore Kotlin/Native toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.konan
+            ~/.local/share/konan
+          key: konan-${{ runner.os }}-kotlin-2.0.21
+      - name: Compile shared code for iOS
+        run: ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :core:compileKotlinIosX64 --stacktrace
       - name: Lint
         run: ./gradlew :app:lintDebug --stacktrace
       - name: Assemble debug APK

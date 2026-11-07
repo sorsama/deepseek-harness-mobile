@@ -3,6 +3,17 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [Unreleased]
+
+### Added
+
+- **Groundwork for an iOS app.** The `core` module is now Kotlin Multiplatform: the wire
+  protocol, session logic and Markdown sanitizer that never needed the JVM build from
+  `commonMain` for iOS device and simulator targets too, and CI compiles them on every
+  push so shared code cannot quietly grow a JVM-only dependency. Nothing changed for the
+  Android app — same classes, same packages. There is no iOS app yet; `docs/IOS.md` is
+  the plan.
+
 ## [0.19.1] - 2026-11-07
 
 This update fixes full-screen pages that slipped under the gesture bar, brings back the sessions drawer
