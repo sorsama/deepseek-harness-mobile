@@ -6,6 +6,7 @@ import java.net.NoRouteToHostException
 import java.net.PortUnreachableException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.nio.channels.UnresolvedAddressException
 import javax.net.ssl.SSLException
 
 /** How far [hasPinMismatch] follows a cause chain before giving up. */
@@ -38,6 +39,9 @@ internal actual fun hasPinMismatch(t: Throwable): Boolean {
 internal actual fun classifyPlatformFailure(t: Throwable): TransportFailure = when (t) {
     is SocketTimeoutException -> TransportFailure.TIMEOUT
     is UnknownHostException -> TransportFailure.DNS
+    // Ktor's CIO engine resolves with NIO, which reports an unresolvable name this way rather than
+    // as an `UnknownHostException`. OkHttp never throws it.
+    is UnresolvedAddressException -> TransportFailure.DNS
     is NoRouteToHostException, is PortUnreachableException -> TransportFailure.UNREACHABLE
     is ConnectException -> TransportFailure.REFUSED
     // Before the IOException arm: SSLException is an IOException, and its message would

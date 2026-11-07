@@ -8,8 +8,17 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-class ProxyTransportTest {
+@RunWith(Parameterized::class)
+class ProxyTransportTest(private val kind: TransportKind) {
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun kinds(): List<TransportKind> = TransportKind.parameters()
+    }
+
     @Test fun `token and slow plugin requests use the same prefixed root`() = runBlocking {
         val paths = java.util.concurrent.CopyOnWriteArrayList<String>()
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
@@ -35,7 +44,9 @@ class ProxyTransportTest {
             val base = "http://127.0.0.1:${server.address.port}/proxy"
             val session = HarnessSession.exchange(base, "fixture", okhttp3.OkHttpClient())
             assertTrue("$session", session is SessionExchange.Granted)
-            val api = DshApiClient(OkHttpRpcTransport(base, readTimeoutMs = 30))
+            // The 30ms read budget is shorter than the 150ms the install handler sleeps: it only
+            // passes because package operations are exempt from the ordinary read deadline.
+            val api = DshApiClient(kind.rpc(base, readTimeoutMs = 30))
             assertEquals("applied", api.installPlugin("fixture", PluginInstallOptions(requestId = "request")).featureValue().application)
             assertEquals(listOf("/proxy/", "/proxy/api/pluginManager/installBundle"), paths)
         } finally { server.stop(0); executor.shutdownNow() }
