@@ -36,13 +36,18 @@ import platform.posix.ENETUNREACH
 import platform.posix.ETIMEDOUT
 
 /**
- * iOS actual: no failure is a pin mismatch yet, because certificate pinning is not implemented on
- * iOS. [darwinHttpClient] refuses a pin outright rather than connect without checking it, so there
- * is no connection on which a mismatch could be observed. When pinning arrives, its handler is the
- * place that records a mismatch and this is where the marker is read back, the way the JVM trust
- * manager throws `PinMismatchException`.
+ * iOS actual: whether [t] or anything it wraps is an [IosPinMismatchException].
+ *
+ * The pin check lives in the Darwin challenge handler ([pinnedChallengeHandler]); the engine reports
+ * a refused challenge only as a cancellation, and [darwinHttpClient] turns that into this marker when
+ * the handler has just recorded a mismatch. Read back here the way the JVM walks its cause chain for
+ * `PinMismatchException`, with the same bound: nothing legitimate nests this deep and a cyclic chain
+ * must not hang.
  */
-internal actual fun hasPinMismatch(t: Throwable): Boolean = false
+internal actual fun hasPinMismatch(t: Throwable): Boolean =
+    generateSequence(t) { it.cause }.take(MAX_PIN_CAUSE_DEPTH).any { it is IosPinMismatchException }
+
+private const val MAX_PIN_CAUSE_DEPTH = 8
 
 /**
  * iOS actual: classify by what the Darwin engine actually throws.
@@ -115,7 +120,7 @@ internal fun classifyNSError(error: NSError): TransportFailure {
 /** Refine `CannotConnectToHost` with the POSIX error CFNetwork attaches as the underlying cause. */
 private fun classifyConnectFailure(error: NSError): TransportFailure {
     val underlying = error.userInfo[NSUnderlyingErrorKey] as? NSError
-    if (underlying?.domain == NSPOSIXErrorDomain) {
+    if (underlying != null && underlying.domain == NSPOSIXErrorDomain) {
         when (underlying.code.toInt()) {
             ECONNREFUSED -> return TransportFailure.REFUSED
             EHOSTUNREACH, ENETUNREACH, ENETDOWN, EHOSTDOWN -> return TransportFailure.UNREACHABLE
