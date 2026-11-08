@@ -1,5 +1,6 @@
 package com.labteto.dshmobile.ios
 
+import com.labteto.dshmobile.core.wire.darwinHttpClient
 import io.ktor.client.HttpClient
 
 /**
@@ -9,4 +10,4 @@ import io.ktor.client.HttpClient
  * No pinning and no trust-on-first-use yet: this step connects to a harness directly, and the relay
  * pairing flow that needs those arrives with the full Connect screen.
  */
-internal expect fun newHarnessHttpClient(): HttpClient
+internal fun newHarnessHttpClient(): HttpClient = darwinHttpClient()

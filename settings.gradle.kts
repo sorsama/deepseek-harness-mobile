@@ -31,4 +31,4 @@ if (!providers.gradleProperty("dsh.iosOnly").isPresent) {
 include(":core")
 include(":mock-harness")
 include(":conformance")
-include(":iosShared")
+include(":sharedUi")

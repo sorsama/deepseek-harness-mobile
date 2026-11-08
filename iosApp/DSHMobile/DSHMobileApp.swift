@@ -1,7 +1,7 @@
 import SwiftUI
 import DshShared
 
-/// The iOS app: a SwiftUI shell around the Compose Multiplatform UI in `:iosShared`.
+/// The iOS app: a SwiftUI shell around the Compose Multiplatform UI in `:sharedUi`.
 ///
 /// Everything the user sees is Kotlin. This file only owns the app lifecycle and hands the shared
 /// view controller to SwiftUI.

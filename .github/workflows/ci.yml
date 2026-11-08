@@ -195,7 +195,7 @@ jobs:
       # The first execution of the Darwin transport. `HarnessContractTest` is the same file that runs
       # on the JVM in the `build` job, against the same fixtures.
       - name: Kotlin/Native tests on the simulator
-        run: ./gradlew -Pdsh.iosOnly=true -Pdsh.iosSimulator="$SIM_UDID" :core:iosSimulatorArm64Test :iosShared:iosSimulatorArm64Test --continue --stacktrace
+        run: ./gradlew -Pdsh.iosOnly=true -Pdsh.iosSimulator="$SIM_UDID" :core:iosSimulatorArm64Test :sharedUi:iosSimulatorArm64Test --continue --stacktrace
       - name: Check the iOS tests really ran
         if: ${{ !cancelled() }}
         run: |
@@ -209,12 +209,12 @@ jobs:
           test "$total" -ge 40 || { echo "::error::expected at least 40 Kotlin/Native tests to have run in :core, found $total"; exit 1; }
           shopt -s nullglob
           shared=0
-          for f in iosShared/build/test-results/iosSimulatorArm64Test/*.xml; do
+          for f in sharedUi/build/test-results/iosSimulatorArm64Test/*.xml; do
             n="$(grep -o '<testcase ' "$f" | wc -l | tr -d ' ')"
             shared=$((shared + n))
           done
-          echo "iosShared iOS tests executed: $shared"
-          test "$shared" -ge 1 || { echo "::error::no Kotlin/Native tests ran in :iosShared"; exit 1; }
+          echo "sharedUi iOS tests executed: $shared"
+          test "$shared" -ge 1 || { echo "::error::no Kotlin/Native tests ran in :sharedUi"; exit 1; }
       # What the mux socket was measured doing, in the run's own log: the one-line results the tests
       # print (`MUX_401`, `MUX_REFUSED`, `MUX_CHALLENGE`, `MUX_REDIRECT`, `MUX_LARGE`, `MUX_CLOSE`,
       # `MUX_DROP`, `MUX_PING`) and every delegate event of every socket (`MUX_TRACE`), which says which
@@ -259,9 +259,9 @@ jobs:
           path: |
             build/ios-reports
             core/build/reports/tests
-            iosShared/build/reports/tests
+            sharedUi/build/reports/tests
             core/build/test-results/iosSimulatorArm64Test
-            iosShared/build/test-results/iosSimulatorArm64Test
+            sharedUi/build/test-results/iosSimulatorArm64Test
           if-no-files-found: warn
 
   # The unsigned device .ipa, in its own job because the Release link of the Kotlin framework (an

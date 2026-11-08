@@ -112,6 +112,12 @@ dependencies {
         // `:core`'s NoKtorOnTheAppPathTest fails if any class outside the Ktor island can reach one.
         exclude(group = "io.ktor")
     }
+    // The Compose UI both apps share. Same Ktor rule as `:core` above, for the same reason: this
+    // module's `iosMain` carries the Ktor wiring, the Android variant carries none of it, and what
+    // reaches Ktor through `:core` must not ride in on this edge either.
+    implementation(project(":sharedUi")) {
+        exclude(group = "io.ktor")
+    }
     implementation("org.yaml:snakeyaml:2.5")
 
     implementation(libs.androidx.core.ktx)
