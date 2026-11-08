@@ -38,6 +38,12 @@ The port has started at the bottom, where the sharing is real:
   `TransportFailure.ios.kt` classifies what the Darwin engine really throws, by `NSURLErrorDomain`
   code, and relay certificate pinning is implemented on the Darwin challenge handler (see
   "Relay pinning on iOS").
+- **M2c moved the rest of the wire layer into `commonMain`.** `DshApiClient`, `Harness021Api`,
+  `ReasoningTranslation`, `RpcMultipart`, `HarnessSession`, `RelayPairing` and `HarnessLaunchLine` are
+  common now, so everything the iOS app needs to talk to a harness compiles for iOS. What they used to
+  take from OkHttp or the JDK went behind four small seams, each with the Android implementation
+  unchanged and an iOS one held equal to it by a test that runs both (see "The connect flow on iOS").
+  The Android app still reaches no Ktor class, and a test now fails the build if it could.
 - There is no iOS app yet. Compiling shared code is not an app, and nothing in this repo
   produces an `.ipa` today.
 
@@ -136,9 +142,79 @@ The pin value must be the number the JVM computes. Apple's Security framework on
 bytes, and rebuilding the SubjectPublicKeyInfo header from a table of key types and sizes is how a pin
 silently stops matching, so `SpkiPin` reads the SubjectPublicKeyInfo out of the certificate's DER for
 any key type, and `SpkiPinTest` holds it equal to `RelayTls.spkiPin` over RSA and EC certificates.
-Trust-on-first-use pairing (`RelayTls.trustOnFirstUseClient`) is OkHttp-typed and moves with
-`RelayPairing` in M2c; nothing on iOS connects to a relay without either a pin or an explicit absence
-of one.
+Trust-on-first-use pairing (`RelayTls.trustOnFirstUseClient`) is `darwinHttpClient(observedKey = …)` on
+iOS: it accepts the key the relay presents and records it in an `ObservedKey`, fails closed on a
+certificate it cannot read, and cannot be combined with a pin. It is the same compromise as on the JVM
+(whoever answers during passcode pairing ends up holding the enrolment), is unverified on a device like
+the pinned handler, and the UI has to say so. Nothing on iOS connects to a relay without either a pin or
+an explicit absence of one.
+
+## The connect flow on iOS
+
+`HarnessSession` (the launch-token exchange) and `RelayPairing` (health, origin discovery, claim) were
+the last pieces of the connect flow tied to OkHttp. They are common code over two small seams, and
+`DshApiClient` and `RpcMultipart` over two more. In each the JVM actual is what the Android app has
+always run, so none of it changed on Android; the iOS side is held to it by a test that runs both.
+
+- **`PlainHttp`** (`PlainHttp.kt`): one GET or POST with headers, an optional UTF-8 body and per-request
+  deadlines. It never follows a redirect (the exchange reads its cookie off a 303 and discovery reads a
+  `Location`), returns any status as an answer, and fails with an `IOException` that
+  `TransportFailures.classify` can read. `OkHttpPlainHttp` wraps the app's shared client, and a pinned or
+  trust-on-first-use client is just such a client; `KtorPlainHttp` is the multiplatform one, on the
+  Darwin client on iOS. `PlainHttpContractTest` runs ten behaviours against both. Two things differ
+  from before on Android, both improvements: a body that dies mid-read now fails the call (the relay
+  code threw inside OkHttp's callback, which logs it and leaves the caller waiting), and cancelling the
+  caller now aborts the launch-token exchange (it ran to its deadline on an IO thread). Darwin folds
+  repeated `Set-Cookie` headers into one value joined by `", "`, so the exchange also looks for the
+  session cookie after such a join; OkHttp never produces one.
+- **`WireUrl`** (`WireUrl.kt`): is this an `http(s)` address, what are its host, port and path, where
+  does this `Location` point, what is this route under this base, and the base with `?token=` added.
+  On the JVM each is `HttpUrl`, carried through as the same object. On iOS it is `PortableUrls`, and
+  `PortableUrlsTest` runs it and OkHttp over ~60 addresses, 36 refusals, 8 bases by 46 references and
+  15 bases by 15 harness routes. They agree apart from: **internationalised and percent-encoded host
+  names are refused** (OkHttp converts them to punycode; type them as punycode, as for
+  `HarnessEndpoint`); **unusual IPv6 and IPv4-mapped spellings are kept as typed** rather than
+  canonicalised (`[0:0:0:0:0:0:0:1]`, `[::ffff:192.168.1.5]`); and **fragments and user info are left
+  out of the text** (`hasCredentials` still says they were there).
+- **`readMultipartParts`** (`MultipartParts.kt`): harness 0.1.7's multipart answers. The JVM actual is
+  OkHttp's `MultipartReader`; iOS uses `PortableMultipart`. `PortableMultipartTest` compares them over
+  tables of media types and bodies, every truncation of a body, 4,000 generated messages with delimiter
+  look-alikes in the payload and 6,000 randomly damaged ones. A body OkHttp refuses is refused, though
+  not with the same exception type (an I/O error on the JVM, `IllegalArgumentException` here).
+- **`encodeQueryComponent` and `decodeBase64`** (`WireText.kt`): the two things `DshApiClient` took from
+  `java.net` and `java.util`, written out and held equal to the JDK (and, for the query value, to
+  OkHttp's `addQueryParameter`). A lone surrogate is written as `?` on every platform; the JDK is not
+  consistent about it and nothing a harness or the OS hands out contains one.
+
+### No Ktor on the Android path
+
+`app/build.gradle.kts` excludes `io.ktor` from the app's dependency on `:core` and release minification
+is off, so a `:core` class that reaches a Ktor type compiles, passes every unit test (the app's tests put
+Ktor back) and crashes the shipped APK with `NoClassDefFoundError` the first time it loads. The rule is
+an island: only `KtorRpcTransport`, `KtorMuxSocket`, `KtorPlainHttp`, `HarnessEndpoint` and
+`PortableUrls` (and their helpers in those files) may mention Ktor, and nothing outside the island may
+mention them. `NoKtorOnTheAppPathTest` reads the compiled `:core` classes (constant pools, so a type
+that appears only in a signature counts) and the sources, and fails naming the offender. The
+`expect`/`actual` seams above are how common code reaches the JVM-only implementations without
+naming either.
+
+### What stayed in `jvmMain`, and why
+
+- `HarnessUrl.kt` (`resolveHarnessUrl`): returns OkHttp's `HttpUrl`, which `OkHttpRpcTransport` builds its
+  requests from and the app calls; common code reaches it through `resolveHarnessWireUrl`.
+- `RelayTls.kt`: an `X509TrustManager` and an `SSLContext` on OkHttp; the iOS equivalents are
+  `pinnedChallengeHandler` and `learningChallengeHandler`. (`ObservedKey`, its one piece of plain
+  logic, moved.)
+- `AutomationTiming.kt`: its validation is `java.time`'s (`Instant.parse`, `ZoneId.of`,
+  `LocalTime.parse`). `kotlinx-datetime` would be a new dependency and a different set of accepted
+  inputs; it needs checking against the old code input by input, and the Automations screen is not
+  needed until the UI is.
+- `session/BoundedImageRead.kt`: reads an Android `ContentResolver` `InputStream`, and its contract
+  (consume at most one byte past the limit) is a property of that stream type. iOS hands over
+  already-bounded `Data`.
+- `session/PreviewLinks.kt`: sorts a tapped link by `java.net.URI`, whose strict RFC 2396 parse and
+  decoded `path` decide what is `Ignored`. A portable version needs the same kind of proof as
+  `PortableUrls` over those rules, which belongs with the Markdown preview on iOS.
 
 ## The path
 
@@ -155,18 +231,14 @@ are replaced with common equivalents or `expect`/`actual` pairs. Each move is ve
 the JVM tests that already exist keep running against the moved code.
 
 - **M2a (done):** the seam itself and the logic directly on top of it — see "Where this
-  stands". `HarnessLaunchLine` stayed behind because it calls `HarnessSession.tokenFrom`, and
-  `AutomationTiming` because its validation is `java.time`'s (`Instant.parse`, `ZoneId.of`,
-  `LocalTime.parse`); swapping in `kotlinx-datetime` needs a new dependency and a check of every
-  input the old code accepted, which is more than a mechanical move.
+  stands".
 - **M2b (done):** the Ktor-backed `RpcTransport` and `MuxSocket`, the Darwin client, the iOS failure
   classification, relay pinning, and the macOS compile gate — see "Where this stands".
-- **M2c (next):** the rest of the JVM-only wire files (`DshApiClient`, `Harness021Api`,
-  `ReasoningTranslation`, `HarnessSession`, `RelayPairing`/`RelayTls`, `HarnessUrl`, `RpcMultipart`
-  and their neighbours) follow it into `commonMain`. Each one currently leans on OkHttp types
-  (`HttpUrl`, `MultipartReader`, `OkHttpClient`) or `java.*`; `HarnessEndpoint` and `SpkiPin` are
-  the common replacements for the URL and pinning parts, and `HarnessSession`'s launch-token
-  exchange is the other piece of the connect flow that still needs a transport-seam form.
+- **M2c (done):** the rest of the wire layer — `DshApiClient`, `Harness021Api`, `ReasoningTranslation`,
+  `RpcMultipart`, `HarnessSession`, `RelayPairing`, `HarnessLaunchLine` — and trust on first use on
+  the Darwin client; see "The connect flow on iOS" for the seams and for what stayed in `jvmMain` and
+  why. Also fixed: a host `end` or `error` and the mux's failure sweep could both signal one stream
+  (the remove now decides, `RemoteStreamMuxConcurrencyTest` races it).
 
 **M3 — shared UI, decided by measurement.** The UI is ~49k lines of Compose with no XML
 layouts, which is the one fact that makes Compose Multiplatform plausible here. Before
@@ -200,6 +272,24 @@ the app, so live connection becomes notifications plus push rather than a held s
 - **App Store review** applies only if that route is taken; connecting to a user's own
   server is well-trodden territory (Tailscale, Working Copy), but the Termux-free feature
   set and the relay's TLS profile need a pass for ATS/local-network privacy prompts.
+
+## Follow-ups
+
+Open items the port knows about and has deliberately not done, so they are not rediscovered:
+
+- **`WsChannel` never reports a host-initiated clean close.** It has no `onClosing` handler, so OkHttp
+  never reaches `onClosed` until something fails, while `KtorMuxSocket` reports the close. M2b noted it
+  and M2c left Android's behaviour exactly as it was; it is worth its own look, with a test, on the
+  Android side.
+- **Nothing on the Darwin side has run on a device or simulator.** That now includes
+  `KtorPlainHttp` against `NSURLSession` (does `Host` reach the wire, does a 303 arrive unfollowed with
+  its `Set-Cookie`, how repeated headers are folded), `learningChallengeHandler`, and the pinned
+  handler. The first thing to do on a simulator is run `PlainHttpContractTest`'s cases and the
+  conformance suite over `darwinHttpClient()`.
+- **The iOS app has to build its own carriers.** Nothing constructs a `KtorPlainHttp` or a
+  `darwinHttpClient` yet; M3 wires one client per relay (pinned, trust-on-first-use or neither) the
+  way the Android app keeps one `OkHttpClient` per pin.
+- **A mux upgrade rejected with 403 reads as "not a harness" on iOS** (see "Transport parity").
 
 ## Working rules for the port
 

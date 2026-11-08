@@ -108,7 +108,8 @@ dependencies {
         // Android app keeps using OkHttp and never loads those classes, and release minification is
         // off, so leaving Ktor on the runtime classpath would ship its client, utils and HTTP
         // modules in every APK for nothing. The classes in `:core` that mention Ktor are never
-        // touched by the app, so the missing jars are never looked up.
+        // touched by the app, so the missing jars are never looked up. That is not left to care:
+        // `:core`'s NoKtorOnTheAppPathTest fails if any class outside the Ktor island can reach one.
         exclude(group = "io.ktor")
     }
     implementation("org.yaml:snakeyaml:2.5")
