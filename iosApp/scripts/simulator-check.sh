@@ -89,6 +89,19 @@ expect_pair() {
 # Connect screen is the same Compose code the Android app runs; what is different here is only what the
 # platform offers (one mode, no sweep, no Settings; see "The shared UI" in docs/IOS.md).
 
+# 0. A warm-up, not asserted. The first network call a freshly installed app makes on a cold runner can take longer than
+#    the connect probe's few seconds (CI saw a TIMEOUT on the very first connect once, and the same command passed
+#    moments later), which is the runner's network stack starting up and not something a scenario is about. This launch
+#    takes that hit, and its line and time are in the log so a slow start is visible.
+launch -DshReset YES -DshConnectAddress "http://127.0.0.1:3181" -DshAutoConnect YES
+warm_start=$(date +%s)
+for _ in $(seq 1 45); do
+  [ -s "$result" ] && break
+  sleep 1
+done
+echo "[warm-up] $(cat "$result" 2>/dev/null || echo '<no result within 45 s>') after $(( $(date +%s) - warm_start )) s" | cut -c1-300
+sleep 2
+
 # 1. Address filled in, nothing sent yet: what a person sees on first launch before they tap Connect.
 launch -DshReset YES -DshConnectAddress "http://127.0.0.1:3181"
 sleep 8

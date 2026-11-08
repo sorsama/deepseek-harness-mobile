@@ -214,7 +214,7 @@ jobs:
             total=$((total + n))
           done
           echo "core iOS tests executed: $total"
-          test "$total" -ge 40 || { echo "::error::expected at least 40 Kotlin/Native tests to have run in :core, found $total"; exit 1; }
+          test "$total" -ge 45 || { echo "::error::expected at least 45 Kotlin/Native tests to have run in :core, found $total"; exit 1; }
           shopt -s nullglob
           shared=0
           for f in sharedUi/build/test-results/iosSimulatorArm64Test/*.xml; do
@@ -222,7 +222,7 @@ jobs:
             shared=$((shared + n))
           done
           echo "sharedUi iOS tests executed: $shared"
-          test "$shared" -ge 60 || { echo "::error::expected at least 60 Kotlin/Native tests to have run in :sharedUi, found $shared"; exit 1; }
+          test "$shared" -ge 110 || { echo "::error::expected at least 110 Kotlin/Native tests to have run in :sharedUi, found $shared"; exit 1; }
       # What the mux socket was measured doing, in the run's own log: the one-line results the tests
       # print (`MUX_401`, `MUX_REFUSED`, `MUX_CHALLENGE`, `MUX_REDIRECT`, `MUX_LARGE`, `MUX_CLOSE`,
       # `MUX_DROP`, `MUX_PING`) and every delegate event of every socket (`MUX_TRACE`), which says which
