@@ -170,8 +170,8 @@ always run, so none of it changed on Android; the iOS side is held to it by a te
 - **`WireUrl`** (`WireUrl.kt`): is this an `http(s)` address, what are its host, port and path, where
   does this `Location` point, what is this route under this base, and the base with `?token=` added.
   On the JVM each is `HttpUrl`, carried through as the same object. On iOS it is `PortableUrls`, and
-  `PortableUrlsTest` runs it and OkHttp over ~60 addresses, 36 refusals, 8 bases by 46 references and
-  15 bases by 15 harness routes. They agree apart from: **internationalised and percent-encoded host
+  `PortableUrlsTest` runs it and OkHttp over about 60 addresses, about 35 refusals, 8 bases by about 45
+  references and 15 bases by 15 harness routes. They agree apart from: **internationalised and percent-encoded host
   names are refused** (OkHttp converts them to punycode; type them as punycode, as for
   `HarnessEndpoint`); **unusual IPv6 and IPv4-mapped spellings are kept as typed** rather than
   canonicalised (`[0:0:0:0:0:0:0:1]`, `[::ffff:192.168.1.5]`); and **fragments and user info are left
