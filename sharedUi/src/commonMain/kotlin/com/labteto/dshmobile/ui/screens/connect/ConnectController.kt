@@ -51,6 +51,12 @@ class ConnectController(
     private val link: ConnectionLink,
     private val sessions: HarnessSignIn,
     private val loopbackHarness: LoopbackHarness,
+    /**
+     * Whether an address like `127.0.0.1` is the "This phone" harness. Where there is no such mode (iOS)
+     * it is a harness like any other, remembered and listed with the rest; filing it under a mode the
+     * person cannot open would hide it from the Recent list and from "reconnect to the last harness".
+     */
+    private val loopbackIsThisPhone: Boolean = true,
 ) {
 
     private val _state = MutableStateFlow(ConnectUiState())
@@ -605,7 +611,7 @@ class ConnectController(
         // itself never serves there, and plaintext to a TLS port yields an answer no one can read.
         val useTls = input.useTls ?: (portInt == 443)
         val authority = com.labteto.dshmobile.connection.endpointKey(input.host, portInt, useTls, input.basePath)
-        val isLoopback = input.host == LOOPBACK || input.host == "localhost"
+        val isLoopback = loopbackIsThisPhone && (input.host == LOOPBACK || input.host == "localhost")
 
         localStage = ConnectStage.Validating
         _state.update { it.copy(stage = ConnectStage.Validating, failure = null, attempted = authority, attempts = 0) }

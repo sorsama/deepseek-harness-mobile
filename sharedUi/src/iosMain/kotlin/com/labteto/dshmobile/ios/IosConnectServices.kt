@@ -252,5 +252,7 @@ internal class IosApp(scope: CoroutineScope) {
         link = link,
         sessions = IosHarnessSignIn(client, sessions),
         loopbackHarness = NoLoopbackHarness,
+        // No "This phone" mode here: 127.0.0.1 is just an address (the simulator, a port forward).
+        loopbackIsThisPhone = false,
     )
 }
