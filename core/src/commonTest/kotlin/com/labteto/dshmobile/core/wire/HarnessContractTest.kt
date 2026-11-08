@@ -21,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.Buffer
 import kotlinx.io.IOException
 import kotlinx.io.readByteArray
@@ -395,30 +396,29 @@ class HarnessContractTest {
     @Test
     fun aMuxUpgradeRefusedWith401IsReportedOrItIsNot() = test { client ->
         // The socket on its own, with a connect deadline far longer than the loop's, to see how a
-        // refused upgrade ends: reported at once (JVM), or left to a timeout (Darwin).
-        val closed = CompletableDeferred<Throwable?>()
+        // refused upgrade ends: reported at once (JVM), or never (Darwin, where it stays silent).
+        val closed = CompletableDeferred<Throwable>()
         val sink = object : WsChannelSink {
             override fun onOpen() = Unit
             override fun onMessage(text: String) = Unit
             override fun onClosed(cause: Throwable?) {
-                closed.complete(cause)
+                closed.complete(cause ?: IllegalStateException("closed cleanly"))
             }
         }
         val socket = KtorMuxSocket("${rig.sessionUrl}/api/remote.mux", client, sink, connectTimeoutMs = 8_000)
         val started = TimeSource.Monotonic.markNow()
         socket.start()
         val outcome = try {
-            withTimeout(20_000) { closed.await() }
+            withTimeoutOrNull(12_000) { closed.await() }
         } finally {
             socket.close()
         }
         val elapsed = started.elapsedNow().inWholeMilliseconds
-        println("MUX_401: the socket ended after ${elapsed}ms with ${outcome?.let { it::class.simpleName + ": " + it.message }}")
-        val status = (outcome as? RpcTransportException)?.status
+        println("MUX_401: after ${elapsed}ms the socket had reported ${outcome?.let { it::class.simpleName + ": " + it.message } ?: "nothing"}")
         if (rig.muxUnauthorizedIsReported) {
-            assertEquals(401, status, "the refusal's status should reach the sink, was $outcome")
+            assertEquals(401, (outcome as? RpcTransportException)?.status, "the refusal's status should reach the sink, was $outcome")
         } else {
-            assertTrue(status != 401, "this platform does not report a refused 401 upgrade, but did after ${elapsed}ms: $outcome")
+            assertNull(outcome, "this platform is known not to report a refused 401 upgrade, but did after ${elapsed}ms: $outcome")
         }
     }
 

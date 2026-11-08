@@ -288,4 +288,5 @@ jobs:
             core/build/reports/tests
             iosShared/build/reports/tests
             core/build/test-results/iosSimulatorArm64Test
+            iosShared/build/test-results/iosSimulatorArm64Test
           if-no-files-found: warn
