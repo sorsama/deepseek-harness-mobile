@@ -1,11 +1,14 @@
 package com.labteto.dshmobile.mockharness
 
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
 
 /**
  * CLI entry point for the mock harness.
  *
- * Usage: `mock-harness [--port N] [--trusted-host HOST ...] [--viewer-fixtures]`
+ * Usage: `mock-harness [--port N] [--trusted-host HOST ...] [--viewer-fixtures]`, or
+ * `mock-harness --ci-fixtures` for the three fixed-port fixture harnesses the iOS simulator job runs
+ * its tests against (see [CiFixtures]); that mode serves until the process is killed.
  *
  * `--viewer-fixtures` serves sample files (CSV, JSON, a notebook, a patch, an SVG, a PNG, a zip,
  * binary data) through the workspace file contract, to try the app's file viewer by hand.
@@ -16,6 +19,7 @@ import kotlinx.coroutines.runBlocking
 fun main(args: Array<String>) {
     var port = 0
     var viewerFixtures = false
+    var ciFixtures = false
     val trustedHosts = mutableListOf<String>()
     var index = 0
     while (index < args.size) {
@@ -29,6 +33,10 @@ fun main(args: Array<String>) {
                 trustedHosts += args.getOrNull(index + 1) ?: error("--trusted-host requires a value")
                 index += 2
             }
+            "--ci-fixtures" -> {
+                ciFixtures = true
+                index += 1
+            }
             "--viewer-fixtures" -> {
                 viewerFixtures = true
                 index += 1
@@ -38,6 +46,16 @@ fun main(args: Array<String>) {
                 index += 1
             }
         }
+    }
+    if (ciFixtures) {
+        // The standalone fixture run the CI simulator job talks to. It has no terminal to wait on,
+        // so it serves until the process is killed.
+        runBlocking {
+            val servers = CiFixtures.start(CiFixtures.PLAIN_PORT, CiFixtures.SESSION_PORT, CiFixtures.RELAY_PORT)
+            println("ci fixtures listening: plain=${servers.plainUrl} session=${servers.sessionUrl} relay=${servers.relayUrl}")
+            awaitCancellation()
+        }
+        return
     }
     runBlocking {
         val harness = MockHarness(trustedHosts = trustedHosts, port = port)
