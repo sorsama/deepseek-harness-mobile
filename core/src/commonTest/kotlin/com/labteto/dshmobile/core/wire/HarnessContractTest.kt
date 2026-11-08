@@ -6,6 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -16,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -384,41 +386,122 @@ class HarnessContractTest {
     fun theMuxUpgradeNeedsTheSessionCookieAndSendsIt() = test { client ->
         val url = "${rig.sessionUrl}/api/remote.mux"
         val without = assertFailed(handshake(client, url))
-        if (rig.muxUnauthorizedIsReported) {
-            assertEquals(TransportFailure.UNAUTHENTICATED, (without as? GenerationFailure.MuxFailed)?.kind, without.toString())
-        } else {
-            // Darwin never completes the refused upgrade, so the handshake runs into its own deadline.
-            assertTrue(without is GenerationFailure.MuxTimedOut, "a 401 upgrade on this platform ends at the deadline, was $without")
-        }
+        assertEquals(TransportFailure.UNAUTHENTICATED, (without as? GenerationFailure.MuxFailed)?.kind, without.toString())
         assertReady(handshake(client, url, cookie = ContractFixtures.SESSION_COOKIE))
     }
 
     @Test
-    fun aMuxUpgradeRefusedWith401IsReportedOrItIsNot() = test { client ->
-        // The socket on its own, with a connect deadline far longer than the loop's, to see how a
-        // refused upgrade ends: reported at once (JVM), or never (Darwin, where it stays silent).
-        val closed = CompletableDeferred<Throwable>()
-        val sink = object : WsChannelSink {
-            override fun onOpen() = Unit
-            override fun onMessage(text: String) = Unit
-            override fun onClosed(cause: Throwable?) {
-                closed.complete(cause ?: IllegalStateException("closed cleanly"))
-            }
-        }
-        val socket = KtorMuxSocket("${rig.sessionUrl}/api/remote.mux", client, sink, connectTimeoutMs = 8_000)
+    fun aMuxUpgradeRefusedWith401IsReportedPromptlyWithItsStatus() = test { client ->
+        // The socket on its own, with a connect deadline far longer than the one this must beat: a
+        // refusal is reported when it arrives, not when a deadline passes. (On Darwin through Ktor's
+        // WebSocket it was never reported at all: nothing reached the sink in 12 s.)
+        val sink = EventSink()
+        val socket = rig.newMuxSocket(client, "${rig.sessionUrl}/api/remote.mux", sink, connectTimeoutMs = 8_000)
         val started = TimeSource.Monotonic.markNow()
         socket.start()
-        val outcome = try {
-            withTimeoutOrNull(12_000) { closed.await() }
+        val event = try {
+            sink.next(12_000)
         } finally {
             socket.close()
         }
         val elapsed = started.elapsedNow().inWholeMilliseconds
-        println("MUX_401: after ${elapsed}ms the socket had reported ${outcome?.let { it::class.simpleName + ": " + it.message } ?: "nothing"}")
-        if (rig.muxUnauthorizedIsReported) {
-            assertEquals(401, (outcome as? RpcTransportException)?.status, "the refusal's status should reach the sink, was $outcome")
-        } else {
-            assertNull(outcome, "this platform is known not to report a refused 401 upgrade, but did after ${elapsed}ms: $outcome")
+        println("MUX_401: after ${elapsed}ms the socket reported ${event?.describe() ?: "nothing"}")
+        val failure = (event as? SocketEvent.Closed)?.cause ?: fail("the refused upgrade should be reported as a failure, was ${event?.describe()}")
+        val refusal = failure as? RpcTransportException ?: fail("expected an RpcTransportException carrying the status, was $failure")
+        assertEquals(401, refusal.status)
+        assertEquals(TransportFailure.UNAUTHENTICATED, TransportFailures.classify(refusal))
+        assertTrue(elapsed < 4_000, "a refused upgrade was reported after ${elapsed}ms; it should not wait for the 8 s connect deadline")
+    }
+
+    @Test
+    fun aMuxUpgradeKeeps401AndTheTrustFence403Apart() = test { client ->
+        // 401 is "this device has no browser session, re-pair"; 403 is "the Host/Origin fence refused
+        // this address, reconfigure". Sending a person to the wrong one is the failure this guards.
+        val refused = listOf(
+            "${rig.sessionUrl}/api/remote.mux" to (401 to TransportFailure.UNAUTHENTICATED),
+            "${rig.relayUrl}/api/remote.mux" to (403 to TransportFailure.TRUST_FENCE),
+        )
+        for ((url, expected) in refused) {
+            val sink = EventSink()
+            val socket = rig.newMuxSocket(client, url, sink, connectTimeoutMs = 8_000)
+            socket.start()
+            val event = try {
+                sink.next(12_000)
+            } finally {
+                socket.close()
+            }
+            println("MUX_REFUSED: $url ${event?.describe() ?: "reported nothing"}")
+            val failure = (event as? SocketEvent.Closed)?.cause as? RpcTransportException
+                ?: fail("$url: expected a refusal carrying its status, was ${event?.describe()}")
+            assertEquals(expected.first, failure.status, url)
+            assertEquals(expected.second, TransportFailures.classify(failure), url)
+            assertEquals(carrierMessage(expected.first), failure.message, url)
+        }
+    }
+
+    @Test
+    fun aMuxUpgradeRefusedWith401ThatAsksForCredentialsStillReportsItsStatus() = test { client ->
+        // A 401 with `WWW-Authenticate` is an HTTP authentication challenge to `NSURLSession`, a different
+        // path through the delegate from a bare 401. The socket has no credential to give and must still say
+        // 401, not "cancelled".
+        val sink = EventSink()
+        val socket = rig.newMuxSocket(client, "${rig.plainUrl}/ci/ws-challenge", sink, connectTimeoutMs = 8_000)
+        val started = TimeSource.Monotonic.markNow()
+        socket.start()
+        val event = try {
+            sink.next(12_000)
+        } finally {
+            socket.close()
+        }
+        val elapsed = started.elapsedNow().inWholeMilliseconds
+        println("MUX_CHALLENGE: after ${elapsed}ms the socket reported ${event?.describe() ?: "nothing"}")
+        val refusal = (event as? SocketEvent.Closed)?.cause as? RpcTransportException
+            ?: fail("expected a refusal carrying its status, was ${event?.describe()}")
+        assertEquals(401, refusal.status)
+        assertEquals(TransportFailure.UNAUTHENTICATED, TransportFailures.classify(refusal))
+        assertTrue(elapsed < 4_000, "reported after ${elapsed}ms")
+    }
+
+    @Test
+    fun aMuxUpgradeThatIsRedirectedIsRefusedAndNotFollowed() = test { client ->
+        // A credential must not be replayed at another address, so the redirect is the answer. If it were
+        // followed, `/ci/echo-request` would answer 200 and the status below would not be 302.
+        val sink = EventSink()
+        val socket = rig.newMuxSocket(
+            client,
+            "${rig.plainUrl}/ci/redirect",
+            sink,
+            authorization = "Bearer must-not-travel",
+            connectTimeoutMs = 8_000,
+        )
+        socket.start()
+        val event = try {
+            sink.next(12_000)
+        } finally {
+            socket.close()
+        }
+        println("MUX_REDIRECT: the socket reported ${event?.describe() ?: "nothing"}")
+        val refusal = (event as? SocketEvent.Closed)?.cause as? RpcTransportException
+            ?: fail("expected the redirect to be reported as the answer, was ${event?.describe()}")
+        assertEquals(302, refusal.status)
+    }
+
+    @Test
+    fun aConnectionThatDropsAfterTheHandshakeIsAFailureNotACleanClose() = test { client ->
+        // The host never sends a Close frame; the link just ends. "The host closed the stream" and "the
+        // link died" explain the same reconnect differently, and a Close frame is the only clean close.
+        val sink = EventSink()
+        val socket = rig.newMuxSocket(client, "${rig.dropUrl}/api/remote.mux", sink)
+        socket.start()
+        try {
+            assertEquals(SocketEvent.Opened, sink.next())
+            val closed = sink.next()
+            println("MUX_DROP: after the link dropped the sink heard ${closed?.describe()}")
+            val failure = (closed as? SocketEvent.Closed)?.cause
+            assertNotNull(failure, "an abrupt drop must be reported as a failure, was ${closed?.describe()}")
+            assertNull(sink.next(500), "nothing may follow the close")
+        } finally {
+            socket.close()
         }
     }
 
@@ -426,7 +509,7 @@ class HarnessContractTest {
     fun theMuxUpgradeNeedsTheRelayTokenAndSendsIt() = test { client ->
         val url = "${rig.relayUrl}/api/remote.mux"
         val without = assertFailed(handshake(client, url))
-        assertEquals(rig.muxFenceVerdict, (without as? GenerationFailure.MuxFailed)?.kind, without.toString())
+        assertEquals(TransportFailure.TRUST_FENCE, (without as? GenerationFailure.MuxFailed)?.kind, without.toString())
         assertReady(handshake(client, url, authorization = "Bearer ${ContractFixtures.RELAY_TOKEN}"))
     }
 
@@ -438,29 +521,79 @@ class HarnessContractTest {
 
     @Test
     fun aStreamCarriesTextUnicodeAndAFrameBiggerThanOneMebibyte() = test { client ->
-        val mux = RemoteStreamMux { sink -> KtorMuxSocket("${rig.plainUrl}/api/remote.mux", client, sink) }
+        val mux = RemoteStreamMux { sink -> rig.newMuxSocket(client, "${rig.plainUrl}/api/remote.mux", sink) }
         mux.start()
         try {
             mux.awaitOpen()
             val stream = mux.open("ci/stream")
             assertEquals("alpha", stream.receive()?.jsonPrimitive?.content)
             assertEquals(ContractFixtures.STREAM_UNICODE, stream.receive()?.jsonPrimitive?.content)
-            val third = runCatching { stream.receive() }
-            if (rig.muxAcceptsLargeMessages) {
-                val large = third.getOrThrow()?.jsonPrimitive?.content
-                assertEquals(ContractFixtures.STREAM_LARGE_CHARS, large?.length)
-                assertTrue(large!!.all { it == 'x' })
-            } else {
-                // Darwin: the 3 MiB message is over the 1 MiB `NSURLSession` started with, and the
-                // stream fails with the OS's own refusal ("Message too long").
-                val failure = third.exceptionOrNull()
-                println("MUX_LARGE: a 3 MiB message failed with ${failure?.let { it::class.simpleName + ": " + it.message }}")
-                assertTrue(failure is RemoteStreamException, "expected the stream to fail on a message over 1 MiB, got $third")
-            }
+            // 3 MiB is three times what `NSURLSession` accepts unless `maximumMessageSize` is raised
+            // before the task starts, and a long session's opening snapshot can be that big.
+            val large = stream.receive()?.jsonPrimitive?.content
+            println("MUX_LARGE: a 3 MiB message arrived with ${large?.length} characters")
+            assertEquals(ContractFixtures.STREAM_LARGE_CHARS, large?.length)
+            assertTrue(large!!.all { it == 'x' })
             stream.cancel()
         } finally {
             mux.close()
         }
+    }
+
+    @Test
+    fun aHostThatClosesTheSocketIsReportedAsACleanCloseExactlyOnce() = test { client ->
+        // One message, then a Close frame with the normal code. The sink must hear open, the message,
+        // and a close with no cause: not a failure ("the host ended the stream" and "the link died"
+        // explain a reconnect differently), and not twice.
+        val sink = EventSink()
+        val socket = rig.newMuxSocket(client, "${rig.plainUrl}/ci/ws-close", sink)
+        socket.start()
+        try {
+            assertEquals(SocketEvent.Opened, sink.next())
+            assertEquals(SocketEvent.Message(ContractFixtures.WS_CLOSE_GREETING), sink.next())
+            val closed = sink.next()
+            println("MUX_CLOSE: after the host's Close frame the sink heard ${closed?.describe()}")
+            assertEquals(SocketEvent.Closed(null), closed)
+            assertNull(sink.next(500), "nothing may follow the close")
+            assertFalse(socket.send("late"), "a socket the host closed takes no more messages")
+        } finally {
+            socket.close()
+        }
+    }
+
+    @Test
+    fun anIdleSocketAnswersTheHostsPingsSoTheHostDoesNotDropIt() = test { client ->
+        // This server pings every 100 ms and disconnects a client that has not answered within 500 ms,
+        // then speaks after 1.5 s. A client that receives that was answering all along, which no
+        // application code does: the platform's WebSocket stack answers below the API.
+        val sink = EventSink()
+        val socket = rig.newMuxSocket(client, "${rig.keepAliveUrl}/ci/ws-keepalive", sink)
+        socket.start()
+        try {
+            assertEquals(SocketEvent.Opened, sink.next())
+            val alive = sink.next(10_000)
+            println("MUX_PING: after more than a dozen pings the sink heard ${alive?.describe()}")
+            assertEquals(SocketEvent.Message(ContractFixtures.WS_ALIVE), alive, "the host dropped a client that did not pong")
+        } finally {
+            socket.close()
+        }
+    }
+
+    @Test
+    fun startAndCloseAreIdempotentAndASocketTheCallerClosedGoesQuiet() = test { client ->
+        val sink = EventSink()
+        val socket = rig.newMuxSocket(client, "${rig.plainUrl}/api/remote.mux", sink)
+        assertFalse(socket.send("early"), "a socket that was not started takes nothing")
+        socket.start()
+        socket.start()
+        assertEquals(SocketEvent.Opened, sink.next())
+        assertNull(sink.next(300), "a second start must not open a second socket")
+        socket.close()
+        socket.close()
+        assertFalse(socket.send("late"), "a closed socket takes nothing")
+        socket.start()
+        // The caller closed it on purpose, so the mux already knows; nothing more may be reported.
+        assertNull(sink.next(500), "a socket the caller closed reports nothing")
     }
 
     // ------------------------------------------------------------------ helpers
@@ -474,6 +607,42 @@ class HarnessContractTest {
     private fun hostOf(url: String): String = url.substringAfter("://")
 
     private fun ByteArray.toHex(): String = joinToString("") { (it.toInt() and 0xFF).toString(16).padStart(2, '0') }
+
+    /** What a mux socket tells its sink, in order. */
+    private sealed interface SocketEvent {
+        data object Opened : SocketEvent
+        data class Message(val text: String) : SocketEvent
+        data class Closed(val cause: Throwable?) : SocketEvent
+
+        fun describe(): String = when (this) {
+            Opened -> "open"
+            is Message -> "a message of ${text.length} characters"
+            is Closed -> if (cause == null) "a clean close" else "a failure: ${cause::class.simpleName}: ${cause.message}"
+        }
+    }
+
+    /**
+     * A sink that queues every callback as an event. The callbacks arrive on the carrier's own thread, so
+     * the queue is a channel; the test takes events in the order they happened.
+     */
+    private class EventSink : WsChannelSink {
+        private val events = Channel<SocketEvent>(Channel.UNLIMITED)
+
+        override fun onOpen() {
+            events.trySend(SocketEvent.Opened)
+        }
+
+        override fun onMessage(text: String) {
+            events.trySend(SocketEvent.Message(text))
+        }
+
+        override fun onClosed(cause: Throwable?) {
+            events.trySend(SocketEvent.Closed(cause))
+        }
+
+        /** The next event, or null if none comes within [timeoutMs]. */
+        suspend fun next(timeoutMs: Long = 10_000): SocketEvent? = withTimeoutOrNull(timeoutMs) { events.receive() }
+    }
 
     private sealed interface Handshake {
         data class Ready(val home: String, val clientId: String) : Handshake
@@ -505,7 +674,7 @@ class HarnessContractTest {
             }
         }
         val loop = ConnectionLoop(
-            muxFactory = { RemoteStreamMux { sink -> KtorMuxSocket(muxUrl, client, sink, authorization, cookie) } },
+            muxFactory = { RemoteStreamMux { sink -> rig.newMuxSocket(client, muxUrl, sink, authorization, cookie) } },
             sinks = sinks,
         )
         loop.start()

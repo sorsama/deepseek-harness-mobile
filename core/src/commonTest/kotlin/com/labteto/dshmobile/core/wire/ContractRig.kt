@@ -9,7 +9,8 @@ import io.ktor.client.HttpClient
  * engine) and on an iOS simulator (against the same fixtures run as a separate `mock-harness
  * --ci-fixtures` process, over the Darwin engine). That is what makes a difference between the two
  * a finding rather than a guess: the JVM run says what the contract is, and the iOS run says
- * whether `NSURLSession` keeps it. The fixtures themselves are `CiFixtures` in `:mock-harness`, and
+ * whether `NSURLSession` keeps it. (There is no platform exemption left: M3a pinned two Darwin mux
+ * differences, and the Darwin mux socket fixed them.) The fixtures themselves are `CiFixtures` in `:mock-harness`, and
  * the constants below must match it (the JVM rig checks).
  */
 internal interface ContractRig {
@@ -25,24 +26,35 @@ internal interface ContractRig {
     /** An address nothing listens on. */
     val deadUrl: String
 
-    /** What a mux upgrade refused with HTTP 403 is classified as on this platform. */
-    val muxFenceVerdict: TransportFailure
-
     /**
-     * Whether a mux upgrade refused with HTTP 401 is reported as a refusal. On Darwin it is not:
-     * `NSURLSessionWebSocketTask` never completes the task, so the socket only fails at the deadline
-     * (see "Transport parity" in `docs/IOS.md`).
+     * A WebSocket server that pings every 100 ms and disconnects a client that has not answered within
+     * 500 ms (`/ci/ws-keepalive`: it says `alive` after 1.5 s). It is a separate server because the
+     * harness fixtures never ping.
      */
-    val muxUnauthorizedIsReported: Boolean
+    val keepAliveUrl: String
 
-    /**
-     * Whether the mux receives a message bigger than 1 MiB. On Darwin it does not: Ktor sets
-     * `maximumMessageSize` after the task has started, and `NSURLSession` keeps the 1 MiB it started with.
-     */
-    val muxAcceptsLargeMessages: Boolean
+    /** A server that completes a WebSocket handshake and then drops the connection, with no Close frame, 300 ms later. */
+    val dropUrl: String
 
     /** A fresh client of the platform's engine, built the way the app builds one. Close it after use. */
     fun newClient(): HttpClient
+
+    /**
+     * The mux socket this platform's app rides on, for the contract the mux assumes of every socket:
+     * `DarwinMuxSocket` on iOS, and on the JVM the Ktor reference ([KtorMuxSocket] over [client]; the
+     * Android app's own socket is `WsChannel`, which the JVM-only `MuxSocketContractTest` holds to the
+     * same contract). A refused 401 or 403 upgrade carries its real status, a 3 MiB message arrives
+     * whole and a host-initiated close is a clean one on both, which is the point of running one set of
+     * assertions against both.
+     */
+    fun newMuxSocket(
+        client: HttpClient,
+        url: String,
+        sink: WsChannelSink,
+        authorization: String? = null,
+        cookie: String? = null,
+        connectTimeoutMs: Long = 30_000,
+    ): MuxSocket
 }
 
 internal object ContractFixtures {
@@ -55,6 +67,10 @@ internal object ContractFixtures {
     const val BLOB_SIZE = 40 * 1024
     const val STREAM_LARGE_CHARS = 3 shl 20
     const val STREAM_UNICODE = "w\u00f6rld \uD83D\uDC0B \u65E5\u672C\u8A9E"
+
+    /** What `/ci/ws-close` says before it closes the socket normally, and what `/ci/ws-keepalive` says once it has been pinged enough. */
+    const val WS_CLOSE_GREETING = "goodbye"
+    const val WS_ALIVE = "alive"
 
     fun exportBytes(): ByteArray = ByteArray(EXPORT_SIZE) { ((it * 31 + 7) and 0xFF).toByte() }
 

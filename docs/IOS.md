@@ -52,9 +52,16 @@ The port has started at the bottom, where the sharing is real:
   builds the app, installs and drives it in a simulator and screenshots seven scenarios; the `ios-ipa` job
   produces an **unsigned device `.ipa`** as a workflow artifact. The first run found two real differences
   between the Darwin and JVM transports (a mux upgrade refused with 401 never reports, and messages over 1 MiB
-  fail the stream), which are pinned in the tests and in "The Darwin engine on a simulator" and are the
-  first thing M3b fixes. See also "The iOS app", "ATS and the local network" and "Installing on an iPhone".
+  fail the stream). See also "The iOS app", "ATS and the local network" and "Installing on an iPhone".
   Nothing is released from it yet.
+- **M3b-1 replaced the iOS mux socket.** Both of those differences were in Ktor's WebSocket wrapper on the
+  Darwin engine, not in `NSURLSession`. `DarwinMuxSocket` (in `iosMain`) is a `MuxSocket` written directly on
+  `NSURLSessionWebSocketTask`: it sets `maximumMessageSize` to 128 MiB before `resume()`, reads the HTTP status of
+  a refused upgrade off the task's response, and reports a host-initiated close as a clean one. The app layer
+  asks for it through `platformMuxSocketFactory` (common; the JVM actual is the `WsChannel` on OkHttp that
+  Android has always run, and the Android app does not call it). `KtorMuxSocket` stays as the JVM-tested
+  multiplatform reference. The contract tests that M3a pinned as Darwin exceptions are unconditional now, and
+  run on the simulator against the real socket. See "The Darwin mux socket".
 
 ## The iOS compile gate
 
@@ -106,26 +113,23 @@ What does not match, and why:
 - **Compression.** OkHttp negotiates gzip; Ktor on CIO does not (tests only). `NSURLSession` does.
 - **IDN hostnames** must be given as punycode; OkHttp converts them, `HarnessEndpoint` refuses
   non-ASCII hosts.
-- **Frame limit.** On the JVM the Ktor mux accepts messages up to 128 MiB (OkHttp has none). **On Darwin
-  the limit is 1 MiB and the 128 MiB is not in force**: Ktor's `WebSockets` plugin sets the task's
-  `maximumMessageSize` after the upgrade has completed, and `NSURLSession` keeps the limit it started with,
-  so a 3 MiB text frame fails the stream with `NSPOSIXErrorDomain 40 "Message too long"`. Found by the first
-  simulator run and pinned by `HarnessContractTest`. It matters: a long session's `session/follow` opening
-  snapshot can exceed 1 MiB. See "The Darwin engine on a simulator" for the way out.
+- **Frame limit.** On the JVM the Ktor mux accepts messages up to 128 MiB (OkHttp has none), and so does
+  `DarwinMuxSocket`, which sets the task's `maximumMessageSize` before `resume()`. A mux through **Ktor's**
+  WebSocket on the Darwin engine does not: the `WebSockets` plugin sets the limit after the upgrade has
+  completed, `NSURLSession` keeps the 1 MiB it started with, and a 3 MiB text frame fails the stream with
+  `NSPOSIXErrorDomain 40 "Message too long"` (found by the first simulator run). That is why the iOS app does
+  not use it; a long session's `session/follow` opening snapshot can exceed 1 MiB.
 - **Download memory on iOS.** `NSURLSession` pushes data as it arrives and Ktor's Darwin engine
   queues it in an unbounded channel, so a consumer slower than the network does not slow the download
   and the unread part is held in memory. The `Source` the consumer reads is live and nothing is
   copied a second time, but the "bytes are pulled from the connection as `consume` reads them"
   guarantee of the OkHttp path is not available on Darwin. A session export is a file written to
   disk, which is normally faster than the link.
-- **A rejected mux upgrade on iOS loses its status.** Observed on the simulator: a `403` arrives as
-  `NSURLErrorBadServerResponse` and classifies as "not a harness" (as expected), and a **`401` is never
-  reported at all**: the WebSocket task does not complete, nothing reaches the sink even after 20 s (well past
-  the 8 s connect deadline, which does not apply to WebSocket tasks), and only the connection loop's own 3 s
-  open deadline ends the attempt, as `MuxTimedOut`. The unary calls carry their status and are unaffected, so
-  the connect flow, which probes with a unary call before it opens the mux, still says "no browser session
-  for this device" correctly (scenario 5 of the simulator check). A mux refused with a 401 or a 403 and
-  nothing else would read wrongly on iOS until the status can be recovered from the task.
+- **A rejected mux upgrade through Ktor's Darwin WebSocket loses its status** (the iOS app does not use it).
+  Observed on the simulator in M3a: a `403` arrived as `NSURLErrorBadServerResponse` and classified as "not a
+  harness", and a `401` was never reported at all: nothing reached the sink even after 20 s. `DarwinMuxSocket`
+  reports a refused upgrade as an `RpcTransportException` with the real status, so 401 and 403 are apart on
+  iOS as they are on the JVM; see "The Darwin mux socket" for how it finds the status.
 - **`WsChannel` never reports a host-initiated clean close** (it has no `onClosing` handler, so OkHttp
   never reaches `onClosed` until something fails). `KtorMuxSocket` reports it. Android's behaviour
   is deliberately untouched; it is worth a look separately.
@@ -134,15 +138,15 @@ What does not match, and why:
 - Ktor adds `Accept`, `Accept-Charset` and a `User-Agent`; OkHttp adds `Accept-Encoding` and its own
   `User-Agent`. Neither side reads them.
 
-Until M3a none of this had run on Darwin; `HarnessContractTest` now runs the same 33 cases on the JVM and on
+Until M3a none of this had run on Darwin; `HarnessContractTest` now runs the same 40 cases on the JVM and on
 an iOS simulator, against the same fixture harnesses, and "The Darwin engine on a simulator" below says what
-it found. Still not exercised: a physical device, the WebSocket ping/pong at the protocol layer (the harness
-sends RFC 6455 pings; `NSURLSession` answers below Ktor, so the contract test cannot see it), the pinned and
-trust-on-first-use challenge handlers, and TLS of any kind.
+it found. Still not exercised: a physical device, the pinned and trust-on-first-use challenge handlers, and TLS of
+any kind. (The WebSocket ping/pong used to be on this list; the mux socket's keep-alive case now proves the
+simulator answers a host's pings.)
 
 ## The Darwin engine on a simulator
 
-`HarnessContractTest` (33 cases in `commonTest`) runs on the JVM over Ktor's CIO engine against in-process
+`HarnessContractTest` (40 cases in `commonTest`; 33 when M3a wrote it) runs on the JVM over Ktor's CIO engine against in-process
 fixture harnesses, and on an iOS simulator over `darwinHttpClient()` against the same fixtures as a separate
 process (`mock-harness --ci-fixtures`, see `CiFixtures`). First run: iOS 26.5 simulator on an iPhone 17 Pro,
 Xcode 26.6, Kotlin/Native 2.0.21, Ktor 3.0.3. **30 of the 32 cases first written held on Darwin as written, with
@@ -174,11 +178,12 @@ proves the contract), and a 33rd case records the silent 401 with its timing.**
   the relay's bearer token on the upgrade, and fails as `REFUSED` against a closed port. A 403 upgrade
   classifies as "not a harness", as documented.
 
-*Where Darwin differs, both pinned in the tests:*
+*Where Darwin differed, both through Ktor's WebSocket and both fixed by `DarwinMuxSocket` (see "The Darwin mux
+socket"):*
 
-1. **A mux upgrade refused with 401 never reports** (see "Transport parity"). On the JVM the sink hears the 401 in
+1. **A mux upgrade refused with 401 never reported** (see "Transport parity"). On the JVM the sink hears the 401 in
    about 30 ms.
-2. **The mux receives at most 1 MiB per message** (see "Frame limit" above).
+2. **The mux received at most 1 MiB per message** (see "Frame limit" above).
 
 *Other observations:*
 
@@ -188,12 +193,100 @@ proves the contract), and a 33rd case records the silent 401 with its timing.**
 - A WebSocket task ignores the request's connect timeout; a mux attempt is bounded only by the loop's 3 s open
   deadline.
 
-*The way out of the two differences* is the same piece of work and is a follow-up (M3b): a Darwin `MuxSocket`
-in `iosMain` written directly on `NSURLSessionWebSocketTask`, which can set `maximumMessageSize` before
-`resume()` and read the status of a refused upgrade from `task.response` in its delegate, instead of going
-through Ktor's wrapper. It would have to carry the pinning challenge handler across (`pinnedChallengeHandler`
-is already a function of the delegate's signature). The contract tests above are what such a socket is held to:
-flip `muxUnauthorizedIsReported` and `muxAcceptsLargeMessages` in the iOS rig and the same cases prove it.
+*The way out of the two differences* was one piece of work, done in M3b-1: a Darwin `MuxSocket` written directly
+on `NSURLSessionWebSocketTask` (next section). The contract tests above are what it is held to: the three rig
+flags that pinned the exceptions (`muxFenceVerdict`, `muxUnauthorizedIsReported`, `muxAcceptsLargeMessages`) are
+gone, because every mux assertion holds on both platforms.
+
+## The Darwin mux socket
+
+`DarwinMuxSocket` (`core/src/iosMain`) is what the iOS app's mux rides on. `platformMuxSocketFactory(url,
+authorization, cookie, connectTimeoutMs, pinnedSpkiSha256, observedKey)` (common) returns the `MuxSocketFactory`
+the connection loop wants: `DarwinMuxSocket` on iOS, `WsChannel` over OkHttp on the JVM (the Android app builds
+its own sockets from its shared client and does not call it). `KtorMuxSocket` was kept: it is the multiplatform
+reference that the JVM contract test and the real-harness conformance suite (`-Pdsh.transport=ktor`) run, which
+no longer says anything about iOS but still says that the contract is implementable on a second library, and
+removing it would leave `WsChannel` the only socket the JVM tests hold to the shared assertions.
+
+**Design.**
+
+- One `NSURLSession` per socket, created in `start()`, on a serial `NSOperationQueue`, with a delegate that only
+  forwards to the socket. Every sink callback runs on that queue, one at a time and in order, never on the
+  caller's thread (the `RemoteStreamMux` contract), and nothing holds a lock while calling out. `send` and
+  `close` touch atomics only.
+- The request carries `Authorization`, `Cookie` and a hand-spelled `Host` (the target is the one `KtorMuxSocket`
+  builds, `muxTargetOf`, so a reverse-proxy prefix, IPv6 and default ports agree); redirects are refused and the
+  session has no cookie storage, as for the unary client.
+- `maximumMessageSize` is 128 MiB and is set before `resume()`. The session's idle and total timeouts are
+  widened, and the request's too, so nothing but the handshake clock can end an idle mux.
+- A receive loop re-arms after each text message. The host's Close frame ends it with an error, in either order
+  with `didCloseWithCode`, so the socket decides at the end of the loop (after what was already buffered is
+  delivered) and uses `didCloseWithCode` / `task.closeCode` only to say *clean or failure*. `onClosed(null)` for a
+  close, `onClosed(cause)` otherwise.
+- A rejected upgrade is `RpcTransportException(status, carrierMessage(status))`, with the status read from
+  `task.response` (and from a challenge's `failureResponse` or a refused redirect, if either arrives before the
+  task's own completion), so 401 and 403 stay apart. A failure with no response is a `DarwinSocketException` whose verdict comes from
+  `classifyNSError`, so refused, DNS, timeout and TLS read the same as through the unary client.
+- `connectTimeoutMs` is the socket's own clock, because `NSURLSession` ignores the request timeout for a WebSocket
+  task; it only fires for a handshake that never finishes. A refusal does not wait for it: `didCompleteWithError`
+  arrives at once (about 10 ms against the fixtures) with the status on `task.response`.
+- **No leak.** `NSURLSession` retains its delegate until it is invalidated and the delegate reaches the socket,
+  which reaches the session. `finish` (every failure and clean close), `close()` and the deadline all call
+  `invalidateAndCancel()`, and a socket that is never started never creates a session. After a local `close()` the
+  socket reports nothing, like `KtorMuxSocket`; `WsChannel` reports a "Canceled" failure.
+
+**Pinning and trust on first use** are the unary client's own handlers, `pinnedChallengeHandler` and
+`learningChallengeHandler`, called from the session delegate's `didReceiveChallenge` for server-trust challenges
+only, so a pinned relay's mux is pinned exactly like its unary calls: the leaf key must match, there is no fallback
+to system validation, anything unreadable cancels the challenge. A refused key surfaces as the same
+`IosPinMismatchException` (`hasPinMismatch`, `CERTIFICATE_PIN`): the socket keeps its own `PinMismatchLog` and
+checks it when the task ends with `NSURLErrorCancelled`. A pinned socket must be `wss://`
+(`platformMuxSocketFactory` refuses a pin on a plaintext address, because a pin cannot be enforced on a connection
+with no TLS and connecting in the clear would turn a typo into a downgrade), a pin and an `ObservedKey` cannot
+be combined, and a blank pin is refused, all where the factory is called. Any other challenge (HTTP
+authentication, a proxy) is cancelled: the socket has no credential to give, and its identity is in the headers.
+**Not exercised:** no fixture speaks TLS, so neither handler has run on the socket (nor on the unary client);
+what is proven is that a pinned or learning socket built without TLS in play behaves like any other, and the
+construction rules.
+
+**Ping.** `NSURLSessionWebSocketTask` answers a host's RFC 6455 ping with a pong on its own, and the socket
+therefore has no heartbeat code. This is established by behaviour, not by a citation, because there is nothing
+authoritative to cite: Apple's documentation describes only the client's own ping (`sendPing(pongReceiveHandler:)`,
+<https://developer.apple.com/documentation/foundation/urlsessionwebsockettask/sendping(pongreceivehandler:)>) and
+says nothing about answering the server's, and a server's ping is not delivered to the app, so the app cannot answer
+it. `HarnessContractTest` (`anIdleSocketAnswersTheHostsPings…`) connects to a server that pings every 100 ms and
+disconnects a client that has not answered within 500 ms, and requires the message that server sends after 1.5 s,
+which a client that did not pong would not live to hear. **Result on the iOS 26.5 simulator: the message arrived**,
+after more than a dozen pings (`MUX_PING` in the run's log). The same test passes on the JVM over Ktor's CIO engine,
+where the library answers. Verified on one OS version and a simulator only; a device and older iOS releases are not.
+
+**What the simulator measured** (iOS 26.5, Xcode 26.6; `HarnessContractTest`, 40 of 40, run
+[42449210553](https://github.com/sorsama/deepseek-harness-mobile/actions/runs/42449210553), the `MUX_` lines and the
+socket's own `MUX_TRACE` events are in that job's log). Each outcome and the `NSURLSession` event that decided it:
+
+| Case | Result | Decided by |
+|---|---|---|
+| Upgrade refused with 401 (browser session posture) | `RpcTransportException(401)`, `UNAUTHENTICATED`, **4 to 9 ms** (the M3a run saw nothing in 12 s) | `didCompleteWithError(-1011)`, `task.response` = 401 |
+| Upgrade refused with 403 (the relay without its token) | `RpcTransportException(403)`, `TRUST_FENCE`, apart from the 401 | the same, `task.response` = 403 |
+| 401 that carries `WWW-Authenticate` | `RpcTransportException(401)`, 21 ms | an HTTP-auth challenge: `didReceiveChallenge` says 401 in `failureResponse`, the socket cancels it, and **`task.response` is `null` afterwards** (`didCompleteWithError(-999)`), so the status exists only because the challenge's was recorded first |
+| Upgrade answered with a 302 | `RpcTransportException(302)`, not followed | `willPerformHTTPRedirection` refused, then `didCompleteWithError(-1011)` with the 302 |
+| A 3 MiB text message (3,145,728 characters) | arrives intact, after two smaller messages on the same stream (the M3a run failed it with POSIX 40) | `maximumMessageSize` set before `resume()` |
+| Host sends a message and a Close frame (code 1000) | open, the message, **one** `onClosed(null)`, nothing after, `send` false | see below |
+| Link dropped after the handshake, no Close frame | `onClosed(DarwinSocketException)`, not a clean close | `receive` and `didCompleteWithError` both end with `NSPOSIXErrorDomain 57` |
+| Port with no listener | `REFUSED` (`NSURLErrorCannotConnectToHost`, POSIX 61 underneath) | `didCompleteWithError`, `task.response` = null |
+| Host pings every 100 ms, drops a client that does not pong | the 1.5 s message arrives | the system answers the pings |
+
+Two things in the trace are why the socket is built the way it is. First, **a clean close reaches the receive loop
+before it reaches the delegate**: the receive completion fails with `NSPOSIXErrorDomain 57 "Socket is not
+connected"` first (with `closeSeen=false`), and `didCloseWithCode` (1000) follows a moment later. Deciding at the
+receive error would have reported every polite close as a failure, and the *same* error 57 is what a dead link
+produces, so only the Close frame (`didCloseWithCode`, or `task.closeCode`) tells the two apart; the socket waits
+for it, with a 300 ms fallback if neither the close nor the task's completion ever arrives. Second, the 401 defect
+was **in Ktor's WebSocket wrapper and not in `NSURLSession`**: a raw task reports a refused upgrade promptly and
+with its status, so the socket does not poll `task.response` while the handshake is pending (a first version did, in
+case a refusal produced no callback; the trace showed it never decided anything). The one place the response is
+*not* there is the challenge case in the table, which is why the status is also taken from the challenge and from a
+refused redirect.
 
 ## Relay pinning on iOS
 
@@ -216,7 +309,9 @@ iOS: it accepts the key the relay presents and records it in an `ObservedKey`, f
 certificate it cannot read, and cannot be combined with a pin. It is the same compromise as on the JVM
 (whoever answers during passcode pairing ends up holding the enrolment), is unverified on a device like
 the pinned handler, and the UI has to say so. Nothing on iOS connects to a relay without either a pin or
-an explicit absence of one.
+an explicit absence of one. The mux WebSocket is pinned the same way: `DarwinMuxSocket` runs these two handlers
+from its own session delegate (see "The Darwin mux socket"), so a pinned relay's mux is pinned exactly like its
+unary calls and reports the same `CERTIFICATE_PIN` on a mismatch.
 
 ## The connect flow on iOS
 
@@ -411,9 +506,12 @@ the steps after the tests run even if the tests fail, so one push says everythin
 
 **`ios-app`** (about 15 minutes):
 
-- `HarnessContractTest` (33 cases, the same file the JVM runs, against the same fixtures) and
-  `HarnessAddressTest` on an iOS simulator, over the Darwin engine; a step counts the executed test cases so a
-  skipped task cannot pass;
+- `HarnessContractTest` (40 cases, the same file the JVM runs, against the same fixtures) and
+  `HarnessAddressTest` on an iOS simulator, over the Darwin engine and the Darwin mux socket (the fixtures are
+  four servers: three harnesses, a keep-alive WebSocket server, and one that drops a connection with no Close
+  frame); a step counts the executed test cases so a skipped task cannot pass, and the next step prints the mux
+  results and every delegate event the sockets saw (`MUX_…` lines), so the log says which `NSURLSession` callback
+  decided each outcome;
 - the Xcode project is generated, the app built for the simulator, installed and driven through seven
   scenarios: address filled in but not sent, connected, connected in the dark scheme, a closed port, a harness
   that wants a session (401), a relay that wants its token (403), and the closed port again on a device set to
@@ -472,12 +570,14 @@ shared core, and that decision is better made on evidence than on enthusiasm.
   light and dark schemes, the 11 locales resolve from the device language (a French device shows French),
   insets are right on a Dynamic Island iPhone, and the app starts on a 120 Hz display once the plist says so.
   That is a floor, not a verdict: the feel questions below are not answered by one screen on a simulator.
+- **M3b-1 (done):** the **Darwin `MuxSocket`** (`DarwinMuxSocket`), which fixed the 1 MiB message limit and the
+  silent 401, and the common `platformMuxSocketFactory` the iOS Connect flow uses. See "The Darwin mux socket".
 - **M3b (next):** the full Connect screen. The remembered-hosts store, the subnet scan (Local Network
   permission and `NSBonjourServices` decisions belong here), the relay pairing flow with one Darwin client per
-  pin (pinned, trust-on-first-use, or neither), the launch-token sign-in, and the connection that outlives the
-  attempt (`ConnectionLoop` kept running, the session list behind it). Two things first, because the screen
-  depends on a live mux: the **Darwin `MuxSocket`** that fixes the 1 MiB message limit and the silent 401 (see
-  "The Darwin engine on a simulator"), and a decision on where the iOS app keeps its settings. And the part of
+  pin (pinned, trust-on-first-use, or neither; the mux socket takes the same pin or observed key through
+  `platformMuxSocketFactory`), the launch-token sign-in, and the connection that outlives the
+  attempt (`ConnectionLoop` kept running, the session list behind it). First, because the screen depends on
+  where settings live, a decision on where the iOS app keeps its settings. And the part of
   M3 that is a measurement and not a build: run the full screen on a real iPhone, not only a simulator, and
   write down text input (IME, autofill, paste), scrolling and overscroll, haptics, VoiceOver and how
   Compose Multiplatform exposes `testTag`s to XCUITest, against the Android screen. That write-up is what
@@ -517,15 +617,12 @@ Open items the port knows about and has deliberately not done, so they are not r
   never reaches `onClosed` until something fails, while `KtorMuxSocket` reports the close. M2b noted it
   and M2c left Android's behaviour exactly as it was; it is worth its own look, with a test, on the
   Android side.
-- **The Darwin mux has two known defects**, pinned by `HarnessContractTest` (`muxUnauthorizedIsReported` and
-  `muxAcceptsLargeMessages` are false in the iOS rig): a refused 401 upgrade never reports, and messages
-  over 1 MiB fail the stream. Both want a `MuxSocket` on `NSURLSessionWebSocketTask` directly (see "The
-  Darwin engine on a simulator"). Until then a long session's opening snapshot can kill the iOS mux.
 - **Nothing on the Darwin side has run on a physical device.** The simulator shares the Mac's network and
   its loopback is exempt from the local-network prompt, so what a *denied* local-network permission looks
   like through `TransportFailure.ios.kt` is unknown. Also unexercised anywhere: TLS of any kind, the pinned
-  handler and `learningChallengeHandler`, the WebSocket ping/pong, gzip, and a body that ends short of its
-  `Content-Length` (the JVM's CIO check is off on Darwin).
+  handler and `learningChallengeHandler` (on the unary client and on `DarwinMuxSocket` alike: a fixture that
+  speaks TLS with a known key would prove both), gzip, and a body that ends short of its
+  `Content-Length` (the JVM's CIO check is off on Darwin). The ping answering is proven on the simulator only.
 - **The iOS app builds one anonymous Darwin client per connect attempt.** The pinned and
   trust-on-first-use clients (one per relay, the way the Android app keeps one `OkHttpClient` per pin) arrive
   with relay pairing in M3b.
@@ -536,7 +633,6 @@ Open items the port knows about and has deliberately not done, so they are not r
   version, the `kotlinx-atomicfu` plugin and the Xcode compatibility have to be looked at together.
 - **The `ios-ipa` job takes 10 to 25 minutes** (the Release link, cold or cached). It runs on every push; if that becomes a
   cost, restrict it to changes under `iosApp/`, `iosShared/` and `core/`, or to main and tags.
-- **A mux upgrade rejected with 403 reads as "not a harness" on iOS** (see "Transport parity").
 
 ## Working rules for the port
 

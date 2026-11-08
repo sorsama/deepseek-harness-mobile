@@ -30,9 +30,35 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.IOException
 
 /**
+ * Where a mux socket's upgrade request goes: the hand-spelled `Host` header and the `ws(s)://` URL.
+ *
+ * Shared by every carrier that is not OkHttp ([KtorMuxSocket], and the iOS `DarwinMuxSocket`), so
+ * they cannot disagree about it: a reverse-proxy prefix stays in the path, the default port is
+ * dropped from `Host`, an IPv6 literal is bracketed, credentials in the URL are refused.
+ */
+internal class MuxTarget(val hostHeader: String, val target: String)
+
+/**
+ * Parse a mux address, `http(s)://` as `resolveHarnessUrl` produces or `ws(s)://`.
+ *
+ * @throws IllegalArgumentException when it is not an address a harness could be at.
+ */
+internal fun muxTargetOf(url: String): MuxTarget {
+    val secure = url.startsWith("https://", ignoreCase = true) || url.startsWith("wss://", ignoreCase = true)
+    val httpForm = (if (secure) "https://" else "http://") + url.substringAfter("://")
+    val endpoint = HarnessEndpoint.of(httpForm)
+    return MuxTarget(
+        hostHeader = endpoint.hostHeader,
+        target = (if (secure) "wss://" else "ws://") + endpoint.hostHeader + Url(httpForm).encodedPathAndQuery,
+    )
+}
+
+/**
  * A bidirectional WebSocket to `/api/remote.mux` on Ktor: the multiplatform implementation of
- * [MuxSocket], and what the iOS app rides on (through the Darwin engine; `NSURLSessionWebSocketTask`).
- * `WsChannel` is its OkHttp counterpart and the contract is the same:
+ * [MuxSocket]. It is the JVM-tested reference (it runs on CIO in the contract tests and the conformance
+ * suite) and it is **not** what the iOS app rides on: on the Darwin engine Ktor's WebSocket loses the
+ * status of a refused 401 upgrade and caps messages at 1 MiB, so iOS uses `DarwinMuxSocket`, written
+ * directly on `NSURLSessionWebSocketTask`. `WsChannel` is the OkHttp counterpart and the contract is the same:
  *
  * - [authorization] and [cookie] ride on the upgrade request itself, which is the whole credential
  *   for this socket; `dsh-relay` refuses an upgrade without the token at the handshake, and a
@@ -83,11 +109,9 @@ class KtorMuxSocket(
         require(client.pluginOrNull(WebSockets) != null) {
             "the HttpClient has no WebSockets plugin; build it with dshCarrier() applied"
         }
-        val secure = url.startsWith("https://", ignoreCase = true) || url.startsWith("wss://", ignoreCase = true)
-        val httpForm = (if (secure) "https://" else "http://") + url.substringAfter("://")
-        val endpoint = HarnessEndpoint.of(httpForm)
-        hostHeader = endpoint.hostHeader
-        target = (if (secure) "wss://" else "ws://") + endpoint.hostHeader + Url(httpForm).encodedPathAndQuery
+        val muxTarget = muxTargetOf(url)
+        hostHeader = muxTarget.hostHeader
+        target = muxTarget.target
     }
 
     private val started = atomic(false)

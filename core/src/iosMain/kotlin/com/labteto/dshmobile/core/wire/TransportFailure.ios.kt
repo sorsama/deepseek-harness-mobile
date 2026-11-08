@@ -50,6 +50,20 @@ internal actual fun hasPinMismatch(t: Throwable): Boolean =
 private const val MAX_PIN_CAUSE_DEPTH = 8
 
 /**
+ * A mux socket on `NSURLSessionWebSocketTask` that failed without an HTTP answer to explain it
+ * (refused, unreachable, dropped, no route, its own handshake deadline, ...).
+ *
+ * [verdict] is decided where the `NSError` is read, by [classifyNSError], so classification here is
+ * a lookup and not a second guess. [origin] is the operating system's own error, kept for logs and
+ * for tests; its description is localised by the device language and is never classified on.
+ */
+internal class DarwinSocketException(
+    val verdict: TransportFailure,
+    message: String,
+    val origin: NSError? = null,
+) : IOException(message)
+
+/**
  * iOS actual: classify by what the Darwin engine actually throws.
  *
  * Ktor's Darwin engine hands back one of three things for a failed `NSURLSession` task:
@@ -65,6 +79,8 @@ private const val MAX_PIN_CAUSE_DEPTH = 8
  * platform: a wrong verdict sends a person to reconfigure the wrong thing.
  */
 internal actual fun classifyPlatformFailure(t: Throwable): TransportFailure = when (t) {
+    // `DarwinMuxSocket` has already read the `NSError` (or its own deadline) and says what it was.
+    is DarwinSocketException -> t.verdict
     is SocketTimeoutException, is ConnectTimeoutException, is HttpRequestTimeoutException -> TransportFailure.TIMEOUT
     is DarwinHttpRequestException -> classifyNSError(t.origin)
     is IOException -> classifyByMessage(t)
@@ -87,8 +103,10 @@ internal actual fun classifyPlatformFailure(t: Throwable): TransportFailure = wh
  *   connection: the TCP connection opened and TLS did not survive it.
  * - `BadServerResponse` / `CannotParseResponse`: something answered and it was not valid HTTP — or,
  *   for a WebSocket upgrade, was not `101`. (`NSURLSessionWebSocketTask` reports a rejected upgrade
- *   only as this code; Ktor keeps the HTTP status for a `401` alone, so a `403` on the mux reads
- *   here as "not a harness". The unary calls, which do carry their status, are unaffected.)
+ *   only as this code. `DarwinMuxSocket` therefore reads the HTTP status off the task's response and
+ *   reports a rejected upgrade as an `RpcTransportException`, which is classified by its status
+ *   before this function is asked; only a Ktor WebSocket on the Darwin engine ends up here with the
+ *   bare code.)
  * - `NetworkConnectionLost` (-1005) and `Cancelled` (-999) say nothing about *why*: [TransportFailure.OTHER].
  */
 @OptIn(UnsafeNumber::class)

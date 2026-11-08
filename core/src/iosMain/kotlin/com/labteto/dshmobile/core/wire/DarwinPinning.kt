@@ -130,9 +130,11 @@ internal class PinMismatchLog {
         latest.value = Entry(host.lowercase(), TimeSource.Monotonic.markNow())
     }
 
+    fun explains(host: String, error: DarwinHttpRequestException): Boolean = explains(host, error.origin)
+
     @OptIn(UnsafeNumber::class)
-    fun explains(host: String, error: DarwinHttpRequestException): Boolean {
-        if (error.origin.code != NSURLErrorCancelled) return false
+    fun explains(host: String, error: NSError): Boolean {
+        if (error.code != NSURLErrorCancelled) return false
         val entry = latest.value ?: return false
         return entry.host == host.lowercase() && entry.at.elapsedNow() < WINDOW
     }

@@ -6,7 +6,6 @@ import com.labteto.dshmobile.core.wire.ConnectionState
 import com.labteto.dshmobile.core.wire.DshApiClient
 import com.labteto.dshmobile.core.wire.GenerationFailure
 import com.labteto.dshmobile.core.wire.HostGeneration
-import com.labteto.dshmobile.core.wire.KtorMuxSocket
 import com.labteto.dshmobile.core.wire.KtorRpcTransport
 import com.labteto.dshmobile.core.wire.LoopSinks
 import com.labteto.dshmobile.core.wire.RemoteStreamMux
@@ -14,6 +13,7 @@ import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.core.wire.TransportFailure
 import com.labteto.dshmobile.core.wire.TransportFailures
 import com.labteto.dshmobile.core.wire.dto.RemoteEventFrame
+import com.labteto.dshmobile.core.wire.platformMuxSocketFactory
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.TimeoutCancellationException
@@ -92,8 +92,10 @@ private const val ATTEMPT_DEADLINE_MS = 12_000L
  * carry HTTP-level detail, so a refusal, a fence (403), a missing session (401) and "not a harness"
  * all arrive as distinct, classified answers. Then the real readiness handshake: open the
  * `/api/remote.mux` WebSocket and read the `$events` ready frame through [ConnectionLoop], which is
- * what makes the Android app say Connected. Both ride [newClient]'s client, the Darwin engine on
- * iOS, so a success here is a unary call and a WebSocket both working over `NSURLSession`.
+ * what makes the Android app say Connected. The unary call rides [newClient]'s client, the Darwin
+ * engine on iOS, and the WebSocket is the platform's own mux socket (`DarwinMuxSocket`, straight on
+ * `NSURLSessionWebSocketTask`, through [platformMuxSocketFactory]), so a success here is a unary
+ * call and a WebSocket both working over `NSURLSession`, and a refused upgrade reports its status.
  *
  * Nothing is kept: the client is closed when the attempt ends. A connection that lives on (the loop
  * that reconnects, the session list) is the next step of the port.
@@ -119,7 +121,7 @@ internal suspend fun connectToHarness(
             return failed(failureOf(TransportFailures.of(probe.error)), probe.error.message)
         }
         return try {
-            withTimeout(ATTEMPT_DEADLINE_MS) { handshake(address, client) }
+            withTimeout(ATTEMPT_DEADLINE_MS) { handshake(address) }
         } catch (e: TimeoutCancellationException) {
             failed(ConnectFailure.TIMEOUT, "the harness did not finish its handshake")
         }
@@ -129,7 +131,7 @@ internal suspend fun connectToHarness(
 }
 
 /** The mux half of a connect: open the socket, read `ready`, report either, and let go. */
-private suspend fun handshake(address: HarnessAddress, client: HttpClient): ConnectOutcome {
+private suspend fun handshake(address: HarnessAddress): ConnectOutcome {
     val result = CompletableDeferred<ConnectOutcome>()
     val sinks = object : LoopSinks {
         override fun onEventFrame(frame: RemoteEventFrame) = Unit
@@ -151,10 +153,10 @@ private suspend fun handshake(address: HarnessAddress, client: HttpClient): Conn
             result.complete(ConnectOutcome.Failed(kind, address.authority, address.port, detail))
         }
     }
+    // Checked once here, where the address is known; the loop builds a socket from it for every generation.
+    val socketFactory = platformMuxSocketFactory(address.muxUrl, connectTimeoutMs = CONNECT_TIMEOUT_MS)
     val loop = ConnectionLoop(
-        muxFactory = {
-            RemoteStreamMux { sink -> KtorMuxSocket(address.muxUrl, client, sink, connectTimeoutMs = CONNECT_TIMEOUT_MS) }
-        },
+        muxFactory = { RemoteStreamMux(socketFactory) },
         sinks = sinks,
     )
     loop.start()
