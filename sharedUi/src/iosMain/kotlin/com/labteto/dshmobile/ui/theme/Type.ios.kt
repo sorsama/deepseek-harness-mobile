@@ -9,6 +9,7 @@ import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import platform.Foundation.NSData
 import platform.Foundation.NSURL
 import platform.Foundation.dataWithContentsOfURL
@@ -47,7 +48,7 @@ private fun family(vararg faces: Pair<String, FontWeight>): FontFamily {
     return if (fonts.isEmpty()) FontFamily.Default else FontFamily(fonts)
 }
 
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class, ExperimentalResourceApi::class)
 private fun readBundledFont(name: String): ByteArray? = runCatching {
     val url = NSURL.URLWithString(Res.getUri("font/$name.ttf")) ?: return null
     val data = NSData.dataWithContentsOfURL(url) ?: return null
