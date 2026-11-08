@@ -9,16 +9,23 @@
 # address and tapping Connect. Each scenario waits for the one result line the app writes to
 # Documents/dsh-connect-result.txt (a file, so nothing depends on how the console is buffered),
 # asserts on it, and takes a screenshot into the output directory.
-set -euo pipefail
+#
+# Every scenario runs even if an earlier one failed, so one run reports everything; the script exits
+# non-zero at the end if any did. The app's console output (`println`, uncaught Kotlin exceptions) is
+# kept in <output dir>/console.log, and the crash reports of this app, if the Mac wrote any, are
+# copied next to it.
+set -uo pipefail
 
 udid="$1"
 app="$2"
 out="$3"
 bundle="com.labteto.dshmobile"
+failures=0
 
 mkdir -p "$out"
+: > "$out/console.log"
 xcrun simctl boot "$udid" 2>/dev/null || true
-xcrun simctl bootstatus "$udid" -b
+xcrun simctl bootstatus "$udid" -b > /dev/null
 xcrun simctl ui "$udid" appearance light
 xcrun simctl uninstall "$udid" "$bundle" 2>/dev/null || true
 xcrun simctl install "$udid" "$app"
@@ -26,29 +33,30 @@ data="$(xcrun simctl get_app_container "$udid" "$bundle" data)"
 result="$data/Documents/dsh-connect-result.txt"
 
 shot() {
-  xcrun simctl io "$udid" screenshot "$out/$1.png"
-  echo "screenshot: $out/$1.png"
+  xcrun simctl io "$udid" screenshot "$out/$1.png" 2>&1 | tail -n 1
 }
 
+# Starts the app with the given arguments; its console output goes to console.log, tagged.
 launch() {
   rm -f "$result"
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
-  xcrun simctl launch "$udid" "$bundle" "$@"
+  echo "=== launch: $*" >> "$out/console.log"
+  xcrun simctl launch --console "$udid" "$bundle" "$@" >> "$out/console.log" 2>&1 &
+  sleep 2
 }
 
-# Waits for the result line, asserts it matches the pattern, and gives the screen a moment to draw it.
+# Waits for the result line, checks it against the pattern, and gives the screen a moment to draw it.
 expect() {
-  local label="$1" pattern="$2"
-  for _ in $(seq 1 60); do
+  local label="$1" pattern="$2" line
+  for _ in $(seq 1 45); do
     [ -s "$result" ] && break
     sleep 1
   done
-  local line
-  line="$(cat "$result" 2>/dev/null || echo '<no result within 60 s>')"
-  echo "[$label] $line"
+  line="$(cat "$result" 2>/dev/null || echo '<no result within 45 s>')"
+  echo "[$label] $line" | cut -c1-400
   if ! grep -q -- "$pattern" <<<"$line"; then
     echo "::error::[$label] expected a result matching: $pattern"
-    exit 1
+    failures=$((failures + 1))
   fi
   sleep 3
 }
@@ -59,7 +67,7 @@ sleep 8
 shot "01-before-connect"
 if [ -e "$result" ]; then
   echo "::error::the app connected without being asked to"
-  exit 1
+  failures=$((failures + 1))
 fi
 
 # 2. The same address, connected: a unary probe and the WebSocket handshake, both over NSURLSession.
@@ -95,4 +103,18 @@ expect refused-fr "DSH_CONNECT_RESULT failed kind=REFUSED"
 shot "07-refused-french"
 
 xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
+wait 2>/dev/null || true
+
+# Whatever the Mac recorded about this app dying.
+mkdir -p "$out/crash-reports"
+find "$HOME/Library/Logs/DiagnosticReports" -maxdepth 1 \( -iname 'DSH*' -o -iname 'DshMobile*' \) -exec cp {} "$out/crash-reports/" \; 2>/dev/null || true
+ls -la "$out/crash-reports" || true
+
+echo "--- app console (first 80 lines)"
+head -n 80 "$out/console.log" | cut -c1-300
+
+if [ "$failures" -ne 0 ]; then
+  echo "::error::the simulator check failed $failures time(s)"
+  exit 1
+fi
 echo "simulator check passed"

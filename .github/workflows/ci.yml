@@ -195,7 +195,7 @@ jobs:
       # The first execution of the Darwin transport. `HarnessContractTest` is the same file that runs
       # on the JVM in the `build` job, against the same fixtures.
       - name: Kotlin/Native tests on the simulator
-        run: ./gradlew -Pdsh.iosOnly=true -Pdsh.iosSimulator="$SIM_UDID" :core:iosSimulatorArm64Test :iosShared:iosSimulatorArm64Test --stacktrace
+        run: ./gradlew -Pdsh.iosOnly=true -Pdsh.iosSimulator="$SIM_UDID" :core:iosSimulatorArm64Test :iosShared:iosSimulatorArm64Test --continue --stacktrace
       - name: Check the iOS tests really ran
         if: ${{ !cancelled() }}
         run: |
@@ -269,7 +269,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-simulator-screenshots
-          path: build/ios-screenshots/*.png
+          path: build/ios-screenshots
           if-no-files-found: warn
       - name: Upload the unsigned .ipa
         if: ${{ !cancelled() }}

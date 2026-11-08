@@ -48,6 +48,9 @@ targets:
         # and picks the right one. zh-Hans is how iOS names Simplified Chinese.
         CFBundleLocalizations: [en, ar, bn, es, fr, hi, pt, ru, th, ur, zh-Hans]
         LSRequiresIPhoneOS: true
+        # Compose Multiplatform refuses to start on an iPhone with a 120 Hz display (every Pro model)
+        # without this key, and the CI simulator is one: the app dies on its first frame.
+        CADisableMinimumFrameDurationOnPhone: true
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false

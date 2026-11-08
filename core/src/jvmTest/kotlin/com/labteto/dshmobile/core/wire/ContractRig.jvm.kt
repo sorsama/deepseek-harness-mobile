@@ -26,6 +26,8 @@ internal actual suspend fun openContractRig(): ContractRig {
         override val relayUrl = servers.relayUrl
         override val deadUrl = "http://127.0.0.1:$closedPort"
         override val muxFenceVerdict = TransportFailure.TRUST_FENCE
+        override val muxUnauthorizedIsReported = true
+        override val muxAcceptsLargeMessages = true
         override fun newClient(): HttpClient = HttpClient(CIO) { dshCarrier() }
     }
 }

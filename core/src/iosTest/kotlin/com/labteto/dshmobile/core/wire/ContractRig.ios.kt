@@ -19,5 +19,7 @@ internal actual suspend fun openContractRig(): ContractRig = object : ContractRi
     override val relayUrl = "http://127.0.0.1:3183"
     override val deadUrl = "http://127.0.0.1:3189"
     override val muxFenceVerdict = TransportFailure.NOT_A_HARNESS
+    override val muxUnauthorizedIsReported = false
+    override val muxAcceptsLargeMessages = false
     override fun newClient(): HttpClient = darwinHttpClient()
 }

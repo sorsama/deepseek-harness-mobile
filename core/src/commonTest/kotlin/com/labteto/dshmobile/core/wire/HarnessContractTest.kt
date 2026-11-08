@@ -10,6 +10,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlin.time.TimeSource
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -382,8 +383,43 @@ class HarnessContractTest {
     fun theMuxUpgradeNeedsTheSessionCookieAndSendsIt() = test { client ->
         val url = "${rig.sessionUrl}/api/remote.mux"
         val without = assertFailed(handshake(client, url))
-        assertEquals(TransportFailure.UNAUTHENTICATED, (without as? GenerationFailure.MuxFailed)?.kind, without.toString())
+        if (rig.muxUnauthorizedIsReported) {
+            assertEquals(TransportFailure.UNAUTHENTICATED, (without as? GenerationFailure.MuxFailed)?.kind, without.toString())
+        } else {
+            // Darwin never completes the refused upgrade, so the handshake runs into its own deadline.
+            assertTrue(without is GenerationFailure.MuxTimedOut, "a 401 upgrade on this platform ends at the deadline, was $without")
+        }
         assertReady(handshake(client, url, cookie = ContractFixtures.SESSION_COOKIE))
+    }
+
+    @Test
+    fun aMuxUpgradeRefusedWith401IsReportedOrItIsNot() = test { client ->
+        // The socket on its own, with a connect deadline far longer than the loop's, to see how a
+        // refused upgrade ends: reported at once (JVM), or left to a timeout (Darwin).
+        val closed = CompletableDeferred<Throwable?>()
+        val sink = object : WsChannelSink {
+            override fun onOpen() = Unit
+            override fun onMessage(text: String) = Unit
+            override fun onClosed(cause: Throwable?) {
+                closed.complete(cause)
+            }
+        }
+        val socket = KtorMuxSocket("${rig.sessionUrl}/api/remote.mux", client, sink, connectTimeoutMs = 8_000)
+        val started = TimeSource.Monotonic.markNow()
+        socket.start()
+        val outcome = try {
+            withTimeout(20_000) { closed.await() }
+        } finally {
+            socket.close()
+        }
+        val elapsed = started.elapsedNow().inWholeMilliseconds
+        println("MUX_401: the socket ended after ${elapsed}ms with ${outcome?.let { it::class.simpleName + ": " + it.message }}")
+        val status = (outcome as? RpcTransportException)?.status
+        if (rig.muxUnauthorizedIsReported) {
+            assertEquals(401, status, "the refusal's status should reach the sink, was $outcome")
+        } else {
+            assertTrue(status != 401, "this platform does not report a refused 401 upgrade, but did after ${elapsed}ms: $outcome")
+        }
     }
 
     @Test
@@ -409,9 +445,18 @@ class HarnessContractTest {
             val stream = mux.open("ci/stream")
             assertEquals("alpha", stream.receive()?.jsonPrimitive?.content)
             assertEquals(ContractFixtures.STREAM_UNICODE, stream.receive()?.jsonPrimitive?.content)
-            val large = stream.receive()?.jsonPrimitive?.content
-            assertEquals(ContractFixtures.STREAM_LARGE_CHARS, large?.length)
-            assertTrue(large!!.all { it == 'x' })
+            val third = runCatching { stream.receive() }
+            if (rig.muxAcceptsLargeMessages) {
+                val large = third.getOrThrow()?.jsonPrimitive?.content
+                assertEquals(ContractFixtures.STREAM_LARGE_CHARS, large?.length)
+                assertTrue(large!!.all { it == 'x' })
+            } else {
+                // Darwin: the 3 MiB message is over the 1 MiB `NSURLSession` started with, and the
+                // stream fails with the OS's own refusal ("Message too long").
+                val failure = third.exceptionOrNull()
+                println("MUX_LARGE: a 3 MiB message failed with ${failure?.let { it::class.simpleName + ": " + it.message }}")
+                assertTrue(failure is RemoteStreamException, "expected the stream to fail on a message over 1 MiB, got $third")
+            }
             stream.cancel()
         } finally {
             mux.close()

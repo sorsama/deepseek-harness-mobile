@@ -28,6 +28,19 @@ internal interface ContractRig {
     /** What a mux upgrade refused with HTTP 403 is classified as on this platform. */
     val muxFenceVerdict: TransportFailure
 
+    /**
+     * Whether a mux upgrade refused with HTTP 401 is reported as a refusal. On Darwin it is not:
+     * `NSURLSessionWebSocketTask` never completes the task, so the socket only fails at the deadline
+     * (see "Transport parity" in `docs/IOS.md`).
+     */
+    val muxUnauthorizedIsReported: Boolean
+
+    /**
+     * Whether the mux receives a message bigger than 1 MiB. On Darwin it does not: Ktor sets
+     * `maximumMessageSize` after the task has started, and `NSURLSession` keeps the 1 MiB it started with.
+     */
+    val muxAcceptsLargeMessages: Boolean
+
     /** A fresh client of the platform's engine, built the way the app builds one. Close it after use. */
     fun newClient(): HttpClient
 }
