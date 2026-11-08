@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chatlist_sessions_more">और दिखाएँ (%1$d शेष)</string>
+    <string name="chatlist_sessions_collapse">समेटें</string>
+    <string name="chatlist_sessions_reorder_hint">क्रम बदलने के लिए सभी सत्र दिखाएँ।</string>
+</resources>

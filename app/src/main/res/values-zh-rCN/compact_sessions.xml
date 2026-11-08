@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chatlist_sessions_more">显示更多（剩余 %1$d 个）</string>
+    <string name="chatlist_sessions_collapse">收起</string>
+    <string name="chatlist_sessions_reorder_hint">显示所有会话以调整顺序。</string>
+</resources>

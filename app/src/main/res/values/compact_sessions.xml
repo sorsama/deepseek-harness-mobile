@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chatlist_sessions_more">Show more (%1$d remaining)</string>
+    <string name="chatlist_sessions_collapse">Collapse</string>
+    <string name="chatlist_sessions_reorder_hint">Show all sessions to reorder.</string>
+</resources>
