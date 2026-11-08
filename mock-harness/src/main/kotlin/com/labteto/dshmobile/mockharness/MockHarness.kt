@@ -18,6 +18,7 @@ import io.ktor.server.request.receiveText
 import io.ktor.server.response.header
 import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -86,6 +87,11 @@ class MockHarness(
     private val relay: RelayMode? = null,
     private val relayRedirectTo: String? = null,
     private val session: SessionMode? = null,
+    /**
+     * More routes on the same server, for what a standalone run needs beyond the harness protocol
+     * (see [CiFixtures]). Installed before the protocol's own, so a path both define answers here.
+     */
+    private val extraRoutes: (Route.() -> Unit)? = null,
 ) {
     /** Consumed once the pairing code is claimed, so a replayed code is refused as the relay does. */
     @Volatile
@@ -298,6 +304,7 @@ class MockHarness(
                 }
             }
             routing {
+                extraRoutes?.invoke(this)
                 // The index route is the one place the launch token is honoured. A matching token
                 // answers 303 to the clean `/` with the cookie on *that* response; a session that
                 // already exists is let through; anything else is told to reopen the startup URL.

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connect_title">连接到 harness</string>
+    <string name="connect_host_label">主机地址</string>
+    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="connect_button">连接</string>
+    <string name="connect_checking">正在检查…</string>
+    <string name="common_connected">已连接</string>
+    <string name="connect_harness_home">主目录 %1$s</string>
+    <string name="connect_protocol_baseline">协议 %1$s</string>
+    <string name="connect_failed">无法连接 %1$s 上的 harness</string>
+    <string name="connect_failed_fence">请用电脑的 IP 地址代替主机名来连接，或在启动 harness 时加上 --trusted-host。</string>
+    <string name="connect_fail_invalid">请输入电脑的 IP 地址，以及 1 到 65535 之间的端口。</string>
+    <string name="connect_fail_timeout">%1$s 没有任何响应。通常是电脑的防火墙拦截了端口 %2$d 的入站连接，请放行后重试。另外，部分路由器会阻止 Wi-Fi 设备访问有线设备。</string>
+    <string name="connect_fail_refused">%1$s 拒绝了连接。未启用 LAN 模式时，harness 只在电脑本机监听，请启用后重启 harness。如果改过端口，请确认两边一致。</string>
+    <string name="connect_fail_fence_title">harness 拒绝了该地址</string>
+    <string name="connect_fail_dns">该网络上找不到名为“%1$s”的设备。请改用电脑的 IP 地址，可以在 Windows 上用 ipconfig、Linux 上用 ip addr、macOS 上用 ifconfig 查看。</string>
+    <string name="connect_fail_not_harness">%1$s 有响应，但它不是 DeepSeek Harness。请对照 harness 启动时显示的端口。</string>
+    <string name="connect_fail_tls">%1$s 有响应，但安全（HTTPS）连接失败。如果你的代理使用自建的证书颁发机构，请在这部手机上安装它的 CA 证书；如果该地址其实不支持 HTTPS，请去掉 https:// 再连接。</string>
+    <string name="connect_fail_other">无法连接到 %1$s。%2$s</string>
+    <string name="connect_fail_unauthenticated">%1$s 是一个 harness，但尚未为本机登录。请在本设备上打开一次 harness 的启动链接，然后重新连接。</string>
+</resources>

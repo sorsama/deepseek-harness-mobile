@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connect_title">الاتصال بـ harness</string>
+    <string name="connect_host_label">عنوان المضيف</string>
+    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="connect_button">اتصال</string>
+    <string name="connect_checking">جارٍ التحقق…</string>
+    <string name="common_connected">متصل</string>
+    <string name="connect_harness_home">المجلد الرئيسي %1$s</string>
+    <string name="connect_protocol_baseline">البروتوكول %1$s</string>
+    <string name="connect_failed">تعذر الوصول إلى harness على %1$s</string>
+    <string name="connect_failed_fence">اتصل باستخدام عنوان IP للكمبيوتر بدلًا من اسمه، أو شغّل الـ harness مع --trusted-host.</string>
+    <string name="connect_fail_invalid">أدخل عنوان IP للكمبيوتر ومنفذًا بين 1 و 65535.</string>
+    <string name="connect_fail_timeout">لا يوجد رد من %1$s. غالبًا يحجب جدار الحماية في الكمبيوتر الاتصالات الواردة على المنفذ %2$d. اسمح بها ثم أعد المحاولة. وبعض الراوترات تمنع أجهزة Wi-Fi من الوصول إلى الأجهزة المتصلة بالسلك.</string>
+    <string name="connect_fail_refused">رفض %1$s الاتصال. لا يستقبل الـ harness اتصالات إلا من الكمبيوتر نفسه ما لم يكن وضع الشبكة المحلية مفعّلًا. فعّله ثم أعد تشغيل الـ harness. وإن غيّرت المنفذ، فتأكد أنه مطابق.</string>
+    <string name="connect_fail_fence_title">رفض الـ harness هذا العنوان</string>
+    <string name="connect_fail_dns">لا يوجد جهاز على هذه الشبكة يستجيب لـ “%1$s”. استخدم عنوان IP للكمبيوتر بدلًا منه. تجده بالأمر ipconfig على ويندوز، أو ip addr على لينكس، أو ifconfig على macOS.</string>
+    <string name="connect_fail_not_harness">ردّ شيء على %1$s، لكنه ليس DeepSeek Harness. تحقق من المنفذ الذي طبعه عند بدء التشغيل.</string>
+    <string name="connect_fail_tls">ردّ %1$s، لكن الاتصال الآمن (HTTPS) فشل. إذا كان البروكسي لديك يستخدم جهة إصدار شهادات محلية، فثبّت شهادتها على هذا الهاتف. وإذا كان العنوان لا يدعم HTTPS أصلًا، فاتصل بدون https://.</string>
+    <string name="connect_fail_other">تعذّر الاتصال بـ %1$s. %2$s</string>
+    <string name="connect_fail_unauthenticated">‏%1$s خادم، لكنه لم يسجّل دخول هذا الهاتف. افتح رابط بدء تشغيل الخادم على هذا الجهاز مرة واحدة، ثم أعد الاتصال.</string>
+</resources>

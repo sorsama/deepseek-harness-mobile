@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connect_title">Harness से कनेक्ट करें</string>
+    <string name="connect_host_label">होस्ट का पता</string>
+    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="connect_button">कनेक्ट करें</string>
+    <string name="connect_checking">जाँच हो रही है…</string>
+    <string name="common_connected">कनेक्टेड</string>
+    <string name="connect_harness_home">होम %1$s</string>
+    <string name="connect_protocol_baseline">प्रोटोकॉल %1$s</string>
+    <string name="connect_failed">%1$s पर कोई harness नहीं मिला</string>
+    <string name="connect_failed_fence">नाम के बजाय कंप्यूटर के IP पते से कनेक्ट करें, या harness को --trusted-host के साथ शुरू करें।</string>
+    <string name="connect_fail_invalid">कंप्यूटर का IP पता और 1 से 65535 के बीच का पोर्ट दर्ज करें।</string>
+    <string name="connect_fail_timeout">%1$s पर कोई जवाब नहीं मिला। अक्सर कंप्यूटर का फ़ायरवॉल पोर्ट %2$d पर आने वाले कनेक्शन रोक देता है। उसे अनुमति दें और फिर कोशिश करें। कुछ राउटर Wi-Fi डिवाइस को तार से जुड़े डिवाइस तक पहुँचने भी नहीं देते।</string>
+    <string name="connect_fail_refused">%1$s ने कनेक्शन नहीं लिया। LAN मोड चालू न हो तो harness सिर्फ़ उसी कंप्यूटर से जुड़ता है। LAN मोड चालू करें और harness दोबारा शुरू करें। पोर्ट बदला हो तो वह भी मिलाकर देखें।</string>
+    <string name="connect_fail_fence_title">harness ने यह पता नहीं माना</string>
+    <string name="connect_fail_dns">इस नेटवर्क पर “%1$s” नाम का कोई डिवाइस जवाब नहीं देता। इसकी जगह कंप्यूटर का IP पता डालें। वह Windows पर ipconfig, Linux पर ip addr और macOS पर ifconfig से मिल जाता है।</string>
+    <string name="connect_fail_not_harness">%1$s पर कुछ जवाब तो आया, पर वह DeepSeek Harness नहीं है। harness ने शुरू होते समय जो पोर्ट बताया था, वही देखें।</string>
+    <string name="connect_fail_tls">%1$s ने जवाब दिया, पर सुरक्षित (HTTPS) कनेक्शन नहीं बन सका। अगर आपका प्रॉक्सी लोकल सर्टिफिकेट अथॉरिटी इस्तेमाल करता है, तो उसका CA सर्टिफिकेट इस फ़ोन पर इंस्टॉल करें। अगर यह पता HTTPS पर चलता ही नहीं, तो https:// हटाकर कनेक्ट करें।</string>
+    <string name="connect_fail_other">%1$s से कनेक्ट नहीं हो सका। %2$s</string>
+    <string name="connect_fail_unauthenticated">%1$s एक harness है, पर उसने इस फ़ोन को अभी साइन इन नहीं किया है। इस डिवाइस पर harness का स्टार्टअप लिंक एक बार खोलें, फिर दोबारा कनेक्ट करें।</string>
+</resources>

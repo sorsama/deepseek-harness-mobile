@@ -1,6 +1,12 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
+    // For `installDist`: the iOS simulator job starts the mock harness as its own process.
+    application
+}
+
+application {
+    mainClass.set("com.labteto.dshmobile.mockharness.MainKt")
 }
 
 java {
