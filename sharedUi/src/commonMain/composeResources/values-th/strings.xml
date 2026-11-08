@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connect_title">เชื่อมต่อกับ harness</string>
-    <string name="connect_host_label">ที่อยู่โฮสต์</string>
-    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="common_connected">เชื่อมต่อแล้ว</string>
     <string name="connect_button">เชื่อมต่อ</string>
     <string name="connect_checking">กำลังตรวจสอบ…</string>
-    <string name="common_connected">เชื่อมต่อแล้ว</string>
-    <string name="connect_harness_home">โฮม %1$s</string>
-    <string name="connect_protocol_baseline">โปรโตคอล %1$s</string>
+    <string name="connect_fail_dns">ไม่พบอุปกรณ์ที่ชื่อ “%1$s” ในเครือข่ายนี้ ให้ใช้ที่อยู่ IP ของคอมพิวเตอร์แทน (ดูได้ด้วย ipconfig บน Windows, ip addr บน Linux หรือ ifconfig บน macOS)</string>
+    <string name="connect_fail_fence_title">harness ปฏิเสธที่อยู่นี้</string>
+    <string name="connect_fail_invalid">กรอกที่อยู่ IP ของคอมพิวเตอร์ และพอร์ตระหว่าง 1 ถึง 65535</string>
+    <string name="connect_fail_not_harness">%1$s ตอบกลับ แต่ไม่ใช่ DeepSeek Harness ลองตรวจพอร์ตที่ harness แสดงตอนเริ่มทำงาน</string>
+    <string name="connect_fail_other">เชื่อมต่อ %1$s ไม่สำเร็จ %2$s</string>
+    <string name="connect_fail_refused">%1$s ปฏิเสธการเชื่อมต่อ ถ้าไม่เปิดโหมด LAN harness จะรับการเชื่อมต่อจากคอมพิวเตอร์เครื่องนั้นเองเท่านั้น ให้เปิดโหมด LAN แล้วรีสตาร์ท harness ถ้าเคยเปลี่ยนพอร์ต ให้ตรวจว่าตรงกัน</string>
+    <string name="connect_fail_timeout">ไม่มีการตอบกลับจาก %1$s ส่วนใหญ่เกิดจากไฟร์วอลล์ของคอมพิวเตอร์บล็อกการเชื่อมต่อขาเข้าที่พอร์ต %2$d ให้อนุญาตแล้วลองใหม่ นอกจากนี้ เราเตอร์บางรุ่นยังกั้นไม่ให้อุปกรณ์ Wi-Fi เข้าถึงอุปกรณ์แบบมีสาย</string>
+    <string name="connect_fail_tls">%1$s ตอบกลับ แต่เชื่อมต่อแบบปลอดภัย (HTTPS) ไม่สำเร็จ ถ้าพร็อกซีของคุณใช้ certificate authority (CA) ของตัวเอง ให้ติดตั้งใบรับรอง CA นั้นบนโทรศัพท์เครื่องนี้ แต่ถ้าที่อยู่นี้ไม่ได้ใช้ HTTPS จริง ให้เชื่อมต่อโดยไม่ใส่ https://</string>
+    <string name="connect_fail_unauthenticated">%1$s เป็น harness แต่ยังไม่ได้ลงชื่อเข้าใช้ให้โทรศัพท์เครื่องนี้ เปิดลิงก์ตอนเริ่มทำงานของ harness บนอุปกรณ์นี้หนึ่งครั้ง แล้วเชื่อมต่ออีกครั้ง</string>
     <string name="connect_failed">เชื่อมต่อ harness ที่ %1$s ไม่ได้</string>
     <string name="connect_failed_fence">เชื่อมต่อด้วยที่อยู่ IP ของคอมพิวเตอร์แทนชื่อ หรือเริ่ม harness ด้วย --trusted-host</string>
-    <string name="connect_fail_invalid">กรอกที่อยู่ IP ของคอมพิวเตอร์ และพอร์ตระหว่าง 1 ถึง 65535</string>
-    <string name="connect_fail_timeout">ไม่มีการตอบกลับจาก %1$s ส่วนใหญ่เกิดจากไฟร์วอลล์ของคอมพิวเตอร์บล็อกการเชื่อมต่อขาเข้าที่พอร์ต %2$d ให้อนุญาตแล้วลองใหม่ นอกจากนี้ เราเตอร์บางรุ่นยังกั้นไม่ให้อุปกรณ์ Wi-Fi เข้าถึงอุปกรณ์แบบมีสาย</string>
-    <string name="connect_fail_refused">%1$s ปฏิเสธการเชื่อมต่อ ถ้าไม่เปิดโหมด LAN harness จะรับการเชื่อมต่อจากคอมพิวเตอร์เครื่องนั้นเองเท่านั้น ให้เปิดโหมด LAN แล้วรีสตาร์ท harness ถ้าเคยเปลี่ยนพอร์ต ให้ตรวจว่าตรงกัน</string>
-    <string name="connect_fail_fence_title">harness ปฏิเสธที่อยู่นี้</string>
-    <string name="connect_fail_dns">ไม่พบอุปกรณ์ที่ชื่อ “%1$s” ในเครือข่ายนี้ ให้ใช้ที่อยู่ IP ของคอมพิวเตอร์แทน (ดูได้ด้วย ipconfig บน Windows, ip addr บน Linux หรือ ifconfig บน macOS)</string>
-    <string name="connect_fail_not_harness">%1$s ตอบกลับ แต่ไม่ใช่ DeepSeek Harness ลองตรวจพอร์ตที่ harness แสดงตอนเริ่มทำงาน</string>
-    <string name="connect_fail_tls">%1$s ตอบกลับ แต่เชื่อมต่อแบบปลอดภัย (HTTPS) ไม่สำเร็จ ถ้าพร็อกซีของคุณใช้ certificate authority (CA) ของตัวเอง ให้ติดตั้งใบรับรอง CA นั้นบนโทรศัพท์เครื่องนี้ แต่ถ้าที่อยู่นี้ไม่ได้ใช้ HTTPS จริง ให้เชื่อมต่อโดยไม่ใส่ https://</string>
-    <string name="connect_fail_other">เชื่อมต่อ %1$s ไม่สำเร็จ %2$s</string>
-    <string name="connect_fail_unauthenticated">%1$s เป็น harness แต่ยังไม่ได้ลงชื่อเข้าใช้ให้โทรศัพท์เครื่องนี้ เปิดลิงก์ตอนเริ่มทำงานของ harness บนอุปกรณ์นี้หนึ่งครั้ง แล้วเชื่อมต่ออีกครั้ง</string>
+    <string name="connect_harness_home">โฮม %1$s</string>
+    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="connect_host_label">ที่อยู่โฮสต์</string>
+    <string name="connect_paste">วาง</string>
+    <string name="connect_protocol_baseline">โปรโตคอล %1$s</string>
+    <string name="connect_title">เชื่อมต่อกับ harness</string>
 </resources>

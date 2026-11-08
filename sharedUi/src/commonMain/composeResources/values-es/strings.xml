@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connect_title">Conectar con harness</string>
-    <string name="connect_host_label">Dirección del host</string>
-    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="common_connected">Conectado</string>
     <string name="connect_button">Conectar</string>
     <string name="connect_checking">Comprobando…</string>
-    <string name="common_connected">Conectado</string>
-    <string name="connect_harness_home">Inicio %1$s</string>
-    <string name="connect_protocol_baseline">Protocolo %1$s</string>
+    <string name="connect_fail_dns">Ningún dispositivo de esta red responde a “%1$s”. Usa la dirección IP del ordenador. La encuentras con ipconfig en Windows, ip addr en Linux o ifconfig en macOS.</string>
+    <string name="connect_fail_fence_title">El harness rechazó esta dirección</string>
+    <string name="connect_fail_invalid">Introduce la dirección IP del ordenador y un puerto entre 1 y 65535.</string>
+    <string name="connect_fail_not_harness">Algo respondió en %1$s, pero no es un DeepSeek Harness. Comprueba el puerto que mostró el harness al arrancar.</string>
+    <string name="connect_fail_other">No se pudo conectar con %1$s. %2$s</string>
+    <string name="connect_fail_refused">%1$s rechazó la conexión. Si el modo LAN no está activado, el harness solo escucha en el propio ordenador. Actívalo y reinicia el harness. Si cambiaste el puerto, comprueba que sea el mismo.</string>
+    <string name="connect_fail_timeout">Nada respondió en %1$s. Lo más probable es que el firewall del ordenador esté bloqueando las conexiones entrantes en el puerto %2$d. Permítelas y vuelve a intentarlo. Algunos routers también impiden que los dispositivos Wi-Fi lleguen a los de cable.</string>
+    <string name="connect_fail_tls">%1$s respondió, pero falló la conexión segura (HTTPS). Si tu proxy usa una autoridad certificadora local, instala su certificado CA en este teléfono. Si la dirección no admite HTTPS, conéctate sin https://.</string>
+    <string name="connect_fail_unauthenticated">%1$s es un harness, pero este teléfono aún no ha iniciado sesión en él. Abre una vez el enlace de arranque del harness en este dispositivo y vuelve a conectar.</string>
     <string name="connect_failed">No se pudo conectar con un harness en %1$s</string>
     <string name="connect_failed_fence">Conéctate usando la dirección IP del ordenador en lugar de su nombre, o inicia el harness con --trusted-host.</string>
-    <string name="connect_fail_invalid">Introduce la dirección IP del ordenador y un puerto entre 1 y 65535.</string>
-    <string name="connect_fail_timeout">Nada respondió en %1$s. Lo más probable es que el firewall del ordenador esté bloqueando las conexiones entrantes en el puerto %2$d. Permítelas y vuelve a intentarlo. Algunos routers también impiden que los dispositivos Wi-Fi lleguen a los de cable.</string>
-    <string name="connect_fail_refused">%1$s rechazó la conexión. Si el modo LAN no está activado, el harness solo escucha en el propio ordenador. Actívalo y reinicia el harness. Si cambiaste el puerto, comprueba que sea el mismo.</string>
-    <string name="connect_fail_fence_title">El harness rechazó esta dirección</string>
-    <string name="connect_fail_dns">Ningún dispositivo de esta red responde a “%1$s”. Usa la dirección IP del ordenador. La encuentras con ipconfig en Windows, ip addr en Linux o ifconfig en macOS.</string>
-    <string name="connect_fail_not_harness">Algo respondió en %1$s, pero no es un DeepSeek Harness. Comprueba el puerto que mostró el harness al arrancar.</string>
-    <string name="connect_fail_tls">%1$s respondió, pero falló la conexión segura (HTTPS). Si tu proxy usa una autoridad certificadora local, instala su certificado CA en este teléfono. Si la dirección no admite HTTPS, conéctate sin https://.</string>
-    <string name="connect_fail_other">No se pudo conectar con %1$s. %2$s</string>
-    <string name="connect_fail_unauthenticated">%1$s es un harness, pero este teléfono aún no ha iniciado sesión en él. Abre una vez el enlace de arranque del harness en este dispositivo y vuelve a conectar.</string>
+    <string name="connect_harness_home">Inicio %1$s</string>
+    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="connect_host_label">Dirección del host</string>
+    <string name="connect_paste">Pegar</string>
+    <string name="connect_protocol_baseline">Protocolo %1$s</string>
+    <string name="connect_title">Conectar con harness</string>
 </resources>

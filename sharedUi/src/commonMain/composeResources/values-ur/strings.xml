@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connect_title">Harness سے منسلک ہوں</string>
-    <string name="connect_host_label">میزبان کا پتہ</string>
-    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="common_connected">منسلک</string>
     <string name="connect_button">منسلک ہوں</string>
     <string name="connect_checking">جانچ ہو رہی ہے…</string>
-    <string name="common_connected">منسلک</string>
-    <string name="connect_harness_home">ہوم %1$s</string>
-    <string name="connect_protocol_baseline">پروٹوکول %1$s</string>
+    <string name="connect_fail_dns">اس نیٹ ورک پر کوئی آلہ “%1$s” کا جواب نہیں دیتا۔ اس کے بجائے کمپیوٹر کا IP پتہ استعمال کریں۔ یہ ونڈوز پر ipconfig، لینکس پر ip addr اور macOS پر ifconfig سے مل جاتا ہے۔</string>
+    <string name="connect_fail_fence_title">harness نے یہ پتہ مسترد کر دیا</string>
+    <string name="connect_fail_invalid">کمپیوٹر کا IP پتہ اور 1 سے 65535 کے درمیان پورٹ درج کریں۔</string>
+    <string name="connect_fail_not_harness">%1$s پر کسی چیز نے جواب دیا، مگر وہ DeepSeek Harness نہیں۔ وہ پورٹ دیکھیں جو harness نے شروع ہوتے وقت دکھایا تھا۔</string>
+    <string name="connect_fail_other">%1$s سے جڑنا ممکن نہیں ہوا۔ %2$s</string>
+    <string name="connect_fail_refused">%1$s نے کنکشن مسترد کر دیا۔ LAN موڈ فعال کیے بغیر harness صرف کمپیوٹر کے اندر سے آنے والے کنکشن لیتا ہے۔ اسے فعال کر کے harness دوبارہ چلائیں۔ اگر پورٹ بدلا ہے تو وہ بھی دیکھ لیں۔</string>
+    <string name="connect_fail_timeout">%1$s سے کوئی جواب نہیں آیا۔ عام طور پر کمپیوٹر کا فائر وال پورٹ %2$d پر آنے والے کنکشن روک دیتا ہے۔ اسے اجازت دے کر دوبارہ کوشش کریں۔ کچھ راؤٹر وائی فائی آلات کو تار والے آلات تک پہنچنے سے بھی روکتے ہیں۔</string>
+    <string name="connect_fail_tls">%1$s نے جواب دیا، مگر محفوظ (HTTPS) کنکشن قائم نہ ہو سکا۔ اگر آپ کا پراکسی مقامی سرٹیفکیٹ اتھارٹی استعمال کرتا ہے تو اس کا CA سرٹیفکیٹ اس فون پر انسٹال کریں۔ اور اگر وہ پتہ اصل میں HTTPS نہیں دیتا تو https:// کے بغیر جڑیں۔</string>
+    <string name="connect_fail_unauthenticated">%1$s ایک harness ہے، لیکن اس نے اس فون کو سائن ان نہیں کیا۔ اس ڈیوائس پر harness کا اسٹارٹ اپ لنک ایک بار کھولیں، پھر دوبارہ منسلک ہوں۔</string>
     <string name="connect_failed">%1$s پر کسی harness تک رسائی ممکن نہیں ہو سکی</string>
     <string name="connect_failed_fence">نام کے بجائے کمپیوٹر کے IP پتے سے جڑیں، یا harness کو --trusted-host کے ساتھ چلائیں۔</string>
-    <string name="connect_fail_invalid">کمپیوٹر کا IP پتہ اور 1 سے 65535 کے درمیان پورٹ درج کریں۔</string>
-    <string name="connect_fail_timeout">%1$s سے کوئی جواب نہیں آیا۔ عام طور پر کمپیوٹر کا فائر وال پورٹ %2$d پر آنے والے کنکشن روک دیتا ہے۔ اسے اجازت دے کر دوبارہ کوشش کریں۔ کچھ راؤٹر وائی فائی آلات کو تار والے آلات تک پہنچنے سے بھی روکتے ہیں۔</string>
-    <string name="connect_fail_refused">%1$s نے کنکشن مسترد کر دیا۔ LAN موڈ فعال کیے بغیر harness صرف کمپیوٹر کے اندر سے آنے والے کنکشن لیتا ہے۔ اسے فعال کر کے harness دوبارہ چلائیں۔ اگر پورٹ بدلا ہے تو وہ بھی دیکھ لیں۔</string>
-    <string name="connect_fail_fence_title">harness نے یہ پتہ مسترد کر دیا</string>
-    <string name="connect_fail_dns">اس نیٹ ورک پر کوئی آلہ “%1$s” کا جواب نہیں دیتا۔ اس کے بجائے کمپیوٹر کا IP پتہ استعمال کریں۔ یہ ونڈوز پر ipconfig، لینکس پر ip addr اور macOS پر ifconfig سے مل جاتا ہے۔</string>
-    <string name="connect_fail_not_harness">%1$s پر کسی چیز نے جواب دیا، مگر وہ DeepSeek Harness نہیں۔ وہ پورٹ دیکھیں جو harness نے شروع ہوتے وقت دکھایا تھا۔</string>
-    <string name="connect_fail_tls">%1$s نے جواب دیا، مگر محفوظ (HTTPS) کنکشن قائم نہ ہو سکا۔ اگر آپ کا پراکسی مقامی سرٹیفکیٹ اتھارٹی استعمال کرتا ہے تو اس کا CA سرٹیفکیٹ اس فون پر انسٹال کریں۔ اور اگر وہ پتہ اصل میں HTTPS نہیں دیتا تو https:// کے بغیر جڑیں۔</string>
-    <string name="connect_fail_other">%1$s سے جڑنا ممکن نہیں ہوا۔ %2$s</string>
-    <string name="connect_fail_unauthenticated">%1$s ایک harness ہے، لیکن اس نے اس فون کو سائن ان نہیں کیا۔ اس ڈیوائس پر harness کا اسٹارٹ اپ لنک ایک بار کھولیں، پھر دوبارہ منسلک ہوں۔</string>
+    <string name="connect_harness_home">ہوم %1$s</string>
+    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="connect_host_label">میزبان کا پتہ</string>
+    <string name="connect_paste">چسپاں کریں</string>
+    <string name="connect_protocol_baseline">پروٹوکول %1$s</string>
+    <string name="connect_title">Harness سے منسلک ہوں</string>
 </resources>

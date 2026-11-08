@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connect_title">Harness-এ সংযুক্ত হোন</string>
-    <string name="connect_host_label">হোস্টের ঠিকানা</string>
-    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="common_connected">সংযুক্ত</string>
     <string name="connect_button">সংযুক্ত হোন</string>
     <string name="connect_checking">দেখা হচ্ছে…</string>
-    <string name="common_connected">সংযুক্ত</string>
-    <string name="connect_harness_home">হোম %1$s</string>
-    <string name="connect_protocol_baseline">প্রোটোকল %1$s</string>
+    <string name="connect_fail_dns">এই নেটওয়ার্কে “%1$s” নামে কোনো ডিভাইস সাড়া দেয় না। এর বদলে কম্পিউটারের IP ঠিকানা ব্যবহার করুন। সেটি Windows-এ ipconfig, Linux-এ ip addr আর macOS-এ ifconfig দিয়ে জানা যায়।</string>
+    <string name="connect_fail_fence_title">harness এই ঠিকানা মানেনি</string>
+    <string name="connect_fail_invalid">কম্পিউটারের IP ঠিকানা এবং 1 থেকে 65535-এর মধ্যে একটি পোর্ট দিন।</string>
+    <string name="connect_fail_not_harness">%1$s-এ কেউ সাড়া দিয়েছে, কিন্তু সেটি DeepSeek Harness নয়। harness চালু হওয়ার সময় যে পোর্ট দেখিয়েছিল, সেটি মিলিয়ে নিন।</string>
+    <string name="connect_fail_other">%1$s-এ সংযোগ করা যায়নি। %2$s</string>
+    <string name="connect_fail_refused">%1$s সংযোগ নেয়নি। LAN মোড চালু না থাকলে harness শুধু কম্পিউটারের নিজের মধ্যেই সংযোগ নেয়। LAN মোড চালু করে harness আবার চালু করুন। পোর্ট বদলে থাকলে সেটিও মিলিয়ে দেখুন।</string>
+    <string name="connect_fail_timeout">%1$s-এ কেউ সাড়া দেয়নি। সাধারণত কম্পিউটারের ফায়ারওয়াল %2$d পোর্টে আসা সংযোগ আটকে দেয়। সেটির অনুমতি দিয়ে আবার চেষ্টা করুন। কিছু রাউটার ওয়াই-ফাই ডিভাইসকে তারে লাগানো ডিভাইসে পৌঁছাতেও দেয় না।</string>
+    <string name="connect_fail_tls">%1$s সাড়া দিয়েছে, কিন্তু নিরাপদ (HTTPS) সংযোগ হয়নি। আপনার প্রক্সি লোকাল সার্টিফিকেট অথরিটি ব্যবহার করলে তার CA সার্টিফিকেট এই ফোনে ইনস্টল করুন। আর ঠিকানাটি আসলে HTTPS-এ না চললে https:// বাদ দিয়ে সংযোগ করুন।</string>
+    <string name="connect_fail_unauthenticated">%1$s একটি harness, কিন্তু সে এখনও এই ফোনকে সাইন ইন করায়নি। এই ডিভাইসে harness-এর স্টার্টআপ লিংকটি একবার খুলুন, তারপর আবার সংযোগ করুন।</string>
     <string name="connect_failed">%1$s-এ কোনো harness পাওয়া যায়নি</string>
     <string name="connect_failed_fence">নামের বদলে কম্পিউটারের IP ঠিকানা দিয়ে সংযোগ করুন, অথবা --trusted-host দিয়ে harness চালু করুন।</string>
-    <string name="connect_fail_invalid">কম্পিউটারের IP ঠিকানা এবং 1 থেকে 65535-এর মধ্যে একটি পোর্ট দিন।</string>
-    <string name="connect_fail_timeout">%1$s-এ কেউ সাড়া দেয়নি। সাধারণত কম্পিউটারের ফায়ারওয়াল %2$d পোর্টে আসা সংযোগ আটকে দেয়। সেটির অনুমতি দিয়ে আবার চেষ্টা করুন। কিছু রাউটার ওয়াই-ফাই ডিভাইসকে তারে লাগানো ডিভাইসে পৌঁছাতেও দেয় না।</string>
-    <string name="connect_fail_refused">%1$s সংযোগ নেয়নি। LAN মোড চালু না থাকলে harness শুধু কম্পিউটারের নিজের মধ্যেই সংযোগ নেয়। LAN মোড চালু করে harness আবার চালু করুন। পোর্ট বদলে থাকলে সেটিও মিলিয়ে দেখুন।</string>
-    <string name="connect_fail_fence_title">harness এই ঠিকানা মানেনি</string>
-    <string name="connect_fail_dns">এই নেটওয়ার্কে “%1$s” নামে কোনো ডিভাইস সাড়া দেয় না। এর বদলে কম্পিউটারের IP ঠিকানা ব্যবহার করুন। সেটি Windows-এ ipconfig, Linux-এ ip addr আর macOS-এ ifconfig দিয়ে জানা যায়।</string>
-    <string name="connect_fail_not_harness">%1$s-এ কেউ সাড়া দিয়েছে, কিন্তু সেটি DeepSeek Harness নয়। harness চালু হওয়ার সময় যে পোর্ট দেখিয়েছিল, সেটি মিলিয়ে নিন।</string>
-    <string name="connect_fail_tls">%1$s সাড়া দিয়েছে, কিন্তু নিরাপদ (HTTPS) সংযোগ হয়নি। আপনার প্রক্সি লোকাল সার্টিফিকেট অথরিটি ব্যবহার করলে তার CA সার্টিফিকেট এই ফোনে ইনস্টল করুন। আর ঠিকানাটি আসলে HTTPS-এ না চললে https:// বাদ দিয়ে সংযোগ করুন।</string>
-    <string name="connect_fail_other">%1$s-এ সংযোগ করা যায়নি। %2$s</string>
-    <string name="connect_fail_unauthenticated">%1$s একটি harness, কিন্তু সে এখনও এই ফোনকে সাইন ইন করায়নি। এই ডিভাইসে harness-এর স্টার্টআপ লিংকটি একবার খুলুন, তারপর আবার সংযোগ করুন।</string>
+    <string name="connect_harness_home">হোম %1$s</string>
+    <string name="connect_host_hint">192.168.1.20</string>
+    <string name="connect_host_label">হোস্টের ঠিকানা</string>
+    <string name="connect_paste">পেস্ট</string>
+    <string name="connect_protocol_baseline">প্রোটোকল %1$s</string>
+    <string name="connect_title">Harness-এ সংযুক্ত হোন</string>
 </resources>

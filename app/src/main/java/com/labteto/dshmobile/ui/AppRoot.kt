@@ -50,6 +50,7 @@ import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.termux.HarnessControl
 import com.labteto.dshmobile.termux.HarnessControlFailure
 import com.labteto.dshmobile.termux.TermuxPaths
+import com.labteto.dshmobile.ui.components.AndroidHapticPlatform
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsDialog
@@ -108,7 +109,8 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
     // whether enough time has passed to ask GitHub again.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.checkForUpdate(BuildConfig.VERSION_NAME) }
 
-    DshTheme(customization = customization) {
+    // `AndroidHapticPlatform` is the Android half of the shared haptic vocabulary (AndroidHaptics.kt).
+    DshTheme(customization = customization, hapticPlatform = AndroidHapticPlatform) {
         val toast = rememberDsToast()
         // Hidden, not dismissed: an install that was handed to Termux should not also record
         // the release as declined, or a failed download would never be offered again.
