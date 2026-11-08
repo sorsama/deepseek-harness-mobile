@@ -231,36 +231,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           iosApp/scripts/simulator-check.sh "$SIM_UDID" "build/ios-derived/Build/Products/Debug-iphonesimulator/DSH Mobile.app" build/ios-screenshots
-      # Unsigned on purpose: there is no Apple Developer account. Sideloadly or AltStore re-sign it
-      # with the installer's own Apple ID (docs/IOS.md, "Installing on an iPhone").
-      - name: Build the unsigned device .ipa
-        if: ${{ !cancelled() }}
-        run: |
-          set -o pipefail
-          eval "$(iosApp/scripts/version.sh)"
-          mkdir -p "$SIM_REPORTS"
-          xcodebuild archive -project iosApp/DSHMobile.xcodeproj -scheme DSHMobile -configuration Release \
-            -destination 'generic/platform=iOS' -archivePath build/ios-archive/DSHMobile.xcarchive \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            2>&1 | tee "$SIM_REPORTS/xcodebuild-archive.log"
-          app="build/ios-archive/DSHMobile.xcarchive/Products/Applications/DSH Mobile.app"
-          test -d "$app" || { echo "::error::the archive has no DSH Mobile.app"; exit 1; }
-          rm -rf build/ipa && mkdir -p build/ipa/Payload
-          cp -R "$app" build/ipa/Payload/
-          ipa="DSH-Mobile-$DSH_VERSION_NAME-unsigned.ipa"
-          (cd build/ipa && zip -qry "$ipa" Payload)
-          echo "IPA_NAME=$ipa" >> "$GITHUB_ENV"
-          ls -l "build/ipa/$ipa"
-          echo "--- what is in it"
-          unzip -l "build/ipa/$ipa" | tail -n 20
-          echo "--- architectures"
-          lipo -archs "$app/DSH Mobile"
-          echo "--- signature (expected: not signed)"
-          codesign -dv "$app" 2>&1 || true
-          test ! -e "$app/_CodeSignature" || { echo "::error::the .ipa is signed; it was meant to be unsigned"; exit 1; }
-          echo "--- Info.plist"
-          plutil -p "$app/Info.plist" | grep -E 'CFBundle(Identifier|DisplayName|ShortVersionString|Version)|MinimumOSVersion|NSLocalNetwork|NSAllows|DTPlatformName|UIDeviceFamily' || true
-          test "$(lipo -archs "$app/DSH Mobile")" = "arm64" || { echo "::error::expected an arm64-only device build"; exit 1; }
       - name: Stop the fixture harnesses
         if: always()
         run: kill "$(cat "$RUNNER_TEMP/fixtures.pid")" 2>/dev/null || true
@@ -271,13 +241,6 @@ jobs:
           name: ios-simulator-screenshots
           path: build/ios-screenshots
           if-no-files-found: warn
-      - name: Upload the unsigned .ipa
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: dsh-mobile-ios-unsigned-ipa
-          path: build/ipa/*.ipa
-          if-no-files-found: error
       - name: Upload iOS reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -289,4 +252,44 @@ jobs:
             iosShared/build/reports/tests
             core/build/test-results/iosSimulatorArm64Test
             iosShared/build/test-results/iosSimulatorArm64Test
+          if-no-files-found: warn
+
+  # The unsigned device .ipa, in its own job because the Release link of the Kotlin framework (an
+  # optimised Kotlin/Native build of Compose Multiplatform) takes about 25 minutes, and running it
+  # beside the simulator checks would double the wall time of both.
+  #
+  # Unsigned on purpose: there is no Apple Developer account. Sideloadly or AltStore re-sign it with the
+  # installer's own Apple ID (docs/IOS.md, "Installing on an iPhone"). The release workflow does not
+  # build it yet.
+  ios-ipa:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore Kotlin/Native toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-kotlin-2.0.21
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Build the unsigned device .ipa
+        run: iosApp/scripts/build-unsigned-ipa.sh
+      - name: Upload the unsigned .ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-mobile-ios-unsigned-ipa
+          path: build/ipa/*.ipa
+          if-no-files-found: error
+      - name: Upload the build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa-reports
+          path: build/ios-reports
           if-no-files-found: warn

@@ -44,6 +44,10 @@ targets:
       properties:
         CFBundleDisplayName: DSH Mobile
         CFBundleDevelopmentRegion: en
+        # XcodeGen's own plist defaults are the literals 1.0 and 1, which win over the build settings
+        # unless the plist says otherwise.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         # The 11 languages the Android app ships, so iOS offers them in the app's language setting
         # and picks the right one. zh-Hans is how iOS names Simplified Chinese.
         CFBundleLocalizations: [en, ar, bn, es, fr, hi, pt, ru, th, ur, zh-Hans]
