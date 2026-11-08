@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chatlist_sessions_more">আরও দেখুন (%1$d বাকি)</string>
+    <string name="chatlist_sessions_collapse">সংকুচিত করুন</string>
+    <string name="chatlist_sessions_reorder_hint">ক্রম বদলাতে সব সেশন দেখান।</string>
+</resources>

@@ -137,10 +137,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * How many top-level sessions a workspace shows before it folds the rest behind "Show all".
- *
- * Kept because the session-list helpers are unit-tested against it; the drawer itself now groups
- * by day and shows the whole list, which a phone-height scroll handles without a fold.
+ * Base nonblank prefix and Show more step for a compact workspace in the project view.
  */
 internal const val WORKSPACE_PREVIEW_LIMIT = 5
 
@@ -232,9 +229,8 @@ fun ChatListDrawer(
     var newWorkspaceOpen by remember { mutableStateOf(false) }
     var newSessionOpen by remember { mutableStateOf(false) }
     var workspacesOpen by remember { mutableStateOf(false) }
-    // Sessions you asked to see in full. Separate from `collapsed`: one says whether the subagents
-    // under a session are open at all, the other whether the newest rows have been widened.
-    val collapsed = remember { mutableStateMapOf<String, Boolean>() }
+    // Subagent disclosure is independent of compact workspace expansion and keyed by host.
+    val collapsed = remember(hostKey) { mutableStateMapOf<String, Boolean>() }
     val hapticsTap = { haptics.tap() }
 
     LaunchedEffect(query) {
@@ -269,12 +265,17 @@ fun ChatListDrawer(
     }
     // Every session between the open one and the root, so its ancestors default to open.
     val openPath = remember(currentSessionId, sessionsById) {
-        buildSet {
-            var cursor = currentSessionId?.let { sessionsById[it] }
-            while (cursor != null && add(cursor.sessionId)) {
-                cursor = cursor.parentSessionId?.let { sessionsById[it] }
-            }
-        }
+        sessionOpenPath(currentSessionId, sessionsById)
+    }
+    val workspaceExpansion = rememberWorkspaceExpansion()
+    // A newly opened target (including a search hit) reveals its lineage once. A subsequent manual
+    // fold is respected; do not force a project open on every recomposition.
+    val targetProjects = remember(workspaces, openPath) {
+        workspaces.filter { workspace -> workspace.sessionIds.any { it in openPath } }.map { it.workspaceId }
+    }
+    LaunchedEffect(hostKey, currentSessionId, openPath, targetProjects) {
+        openPath.forEach { collapsed.remove(it) }
+        targetProjects.forEach { collapsedNow[it] = false }
     }
     fun isExpanded(sessionId: String): Boolean = collapsed[sessionId]?.not() ?: (sessionId in openPath)
     fun toggleChildren(sessionId: String) {
@@ -291,6 +292,13 @@ fun ChatListDrawer(
     val roots = remember(blocks, sortByRecency) {
         val ordered = flattenBlocks(blocks)
         if (sortByRecency) ordered.sortedByDescending(SessionRow::updatedAt) else ordered
+    }
+    SideEffect {
+        if (byProject && filter == DrawerFilter.All && query.isBlank()) blocks.filterNot { it.isOther }.forEach { block ->
+            workspaceExpansion.observeAttention(
+                hostKey, block.key, workspaceAttentionBaseline(block.roots, childrenByParent), block.roots.size,
+            )
+        }
     }
     // While a unit is held, the blocks show its live order; the rest of the screen keeps `blocks`.
     val liveBlocks = when {
@@ -309,7 +317,9 @@ fun ChatListDrawer(
     /** Depth-first expansion of one top-level session, honouring each row's collapse state. */
     fun subtree(root: SessionRow): List<Pair<SessionRow, Int>> {
         val out = mutableListOf<Pair<SessionRow, Int>>()
+        val visited = HashSet<String>()
         fun walk(row: SessionRow, depth: Int) {
+            if (!visited.add(row.sessionId)) return
             out += row to depth
             val children = childrenByParent[row.sessionId].orEmpty()
             // A lifted session carries its subagents with it, but draws as one row: the children are
@@ -364,8 +374,9 @@ fun ChatListDrawer(
                 rowKeys += own
             }
             // A folded project shows only its header, so that is all its unit is.
-            keys[block.key] = listOf(projectKey(block.key)) +
-                if (byProject && !isProjectCollapsed(block.key)) rowKeys else emptyList()
+            keys[block.key] = projectUnitKeys(
+                projectKey(block.key), rowKeys, block.key, byProject && !isProjectCollapsed(block.key),
+            )
         }
     }
     SideEffect {
@@ -706,15 +717,26 @@ fun ChatListDrawer(
                 val visibleRoots = renderRoots.filter(::passes)
                 val projectsDraggable = reorderEnabled && byProject && liveBlocks.count { !it.isOther } > 1
 
-                /** The drag hooks of one root row, or null where it cannot be moved. */
+                val compactWindows = liveBlocks.filter { usesCompactWorkspace(byProject, filter == DrawerFilter.All, it.isOther) }
+                    .associate { block ->
+                        block.key to compactWorkspaceWindow(
+                            block.roots, workspaceExpansion.requested(hostKey, block.key), openPath, childrenByParent,
+                            retainedAttention = workspaceExpansion.attention(hostKey, block.key),
+                        )
+                    }
+
+                /** A partial prefix must never supply hidden neighbours to a reorder operation. */
                 fun dragFor(block: SessionBlock, root: SessionRow, onPickUp: () -> Unit = {}): RowDrag? {
-                    if (!reorderEnabled || sortByRecency || block.roots.size < 2) return null
+                    if (!canReorderWorkspace(reorderEnabled, compactWindows[block.key]) || sortByRecency || block.roots.size < 2) return null
                     val order = block.roots.map { it.sessionId }
                     val at = order.indexOf(root.sessionId)
                     if (at < 0) return null
                     return RowDrag(
                         onPickUp = {
                             onPickUp()
+                            if (compactWindows[block.key] != null) {
+                                workspaceExpansion.retainForDrag(hostKey, block.key, block.roots.size)
+                            }
                             reorder.start(root.sessionId, block.key, order)
                         },
                         canMoveUp = at > 0,
@@ -826,7 +848,18 @@ fun ChatListDrawer(
                             )
                         }
                         if (!collapsed && !heldProject) {
-                            rows.forEach { root -> rowIndex = rootRows(root, block, rowIndex) }
+                            val window = compactWindows[block.key]
+                            if (window == null) {
+                                rows.forEach { root -> rowIndex = rootRows(root, block, rowIndex) }
+                            } else {
+                                workspaceSessionItems(
+                                    key = block.key,
+                                    window = window,
+                                    onMore = { workspaceExpansion.showMore(hostKey, block.key, window.rows.size) },
+                                    onCollapse = { workspaceExpansion.collapse(hostKey, block.key) },
+                                    controlsEnabled = !reorder.active,
+                                ) { root -> rowIndex = rootRows(root, block, rowIndex) }
+                            }
                         }
                     }
                 } else {

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chatlist_sessions_more">مزید دکھائیں (%1$d باقی)</string>
+    <string name="chatlist_sessions_collapse">سمیٹیں</string>
+    <string name="chatlist_sessions_reorder_hint">ترتیب بدلنے کے لیے تمام سیشن دکھائیں۔</string>
+</resources>

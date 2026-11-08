@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chatlist_sessions_more">Afficher plus (%1$d de plus)</string>
+    <string name="chatlist_sessions_collapse">Réduire</string>
+    <string name="chatlist_sessions_reorder_hint">Affichez toutes les sessions pour les réorganiser.</string>
+</resources>
