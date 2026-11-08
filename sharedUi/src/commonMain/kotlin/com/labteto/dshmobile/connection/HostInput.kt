@@ -1,7 +1,7 @@
 package com.labteto.dshmobile.connection
 
 import com.labteto.dshmobile.core.wire.authorityOf
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import com.labteto.dshmobile.core.wire.canonicalProxyPath
 
 /**
  * What the connect form's host field actually said.
@@ -30,7 +30,7 @@ data class HostInput(
  * than the separate port field (it was typed as part of an address, not left over from a previous
  * harness), so callers let it win. Any other scheme is refused rather than guessed at.
  */
-internal fun parseHostInput(raw: String): HostInput? {
+fun parseHostInput(raw: String): HostInput? {
     val trimmed = raw.trim()
     if (trimmed.isBlank()) return null
 
@@ -48,10 +48,8 @@ internal fun parseHostInput(raw: String): HostInput? {
 
     val path = rest.substringBefore('?').substringBefore('#').substringAfter('/', "")
     if (rest.substringBefore('/').contains('@') || rest.contains('\\') || rest.any { it.isWhitespace() }) return null
-    val basePath = if (path.isEmpty()) "" else {
-        val url = ("https://placeholder/" + path).toHttpUrlOrNull() ?: return null
-        url.encodedPath.trimEnd('/')
-    }
+    // Canonicalised by the platform's URL parser, which is OkHttp's on Android (see canonicalProxyPath).
+    val basePath = if (path.isEmpty()) "" else canonicalProxyPath(path) ?: return null
     rest = rest.takeWhile { it != '/' && it != '?' && it != '#' }
     if (rest.isBlank()) return null
 
@@ -89,11 +87,11 @@ private fun String.toValidPort(): Int? = toIntOrNull()?.takeIf { it in 1..65535 
  * `host:port` as a URL requires it — an IPv6 literal goes back into brackets. The display
  * authority everywhere else stays bare; this form is only for building URLs.
  */
-internal fun urlAuthority(host: String, port: Int): String = authorityOf(host, port)
+fun urlAuthority(host: String, port: Int): String = authorityOf(host, port)
 
 /** The scheme-qualified base URL for one harness endpoint. */
-internal fun harnessBaseUrl(host: String, port: Int, useTls: Boolean, basePath: String = ""): String =
+fun harnessBaseUrl(host: String, port: Int, useTls: Boolean, basePath: String = ""): String =
     (if (useTls) "https://" else "http://") + urlAuthority(host, port) + basePath
 
-internal fun endpointKey(host: String, port: Int, useTls: Boolean, basePath: String = ""): String =
+fun endpointKey(host: String, port: Int, useTls: Boolean, basePath: String = ""): String =
     (if (useTls) "https://" else "") + urlAuthority(host, port) + basePath

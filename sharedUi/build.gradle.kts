@@ -88,6 +88,12 @@ kotlin {
             // implementation classpath. iOS only: see the note above about the Android path.
             implementation(libs.ktor.client.core)
         }
+        if (!iosOnly) {
+            androidMain.dependencies {
+                // BackHandler, for the Android half of PlatformBackHandler. The app resolves the same version.
+                implementation(libs.androidx.activity.compose)
+            }
+        }
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)

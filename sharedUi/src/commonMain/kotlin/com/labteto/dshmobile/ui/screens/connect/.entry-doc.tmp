@@ -1,0 +1,16 @@
+/**
+ * Choose how to reach a harness, then reach one.
+ *
+ * The screen is one of three surfaces, picked from the connection state rather than from a local
+ * flag, so the view model keeps owning the truth:
+ *  - [ConnectSurface.Form] — the design's 02: mode switch, mode notice, Recent, Discovered, manual
+ *    entry and a pinned primary action with the "reconnect to last used harness" switch.
+ *  - [ConnectSurface.Connecting] — the design's 03: a real takeover with the stage checklist.
+ *  - [ConnectSurface.Lost] — the design's 06: a warning card for the harness that stopped answering
+ *    and a bottom plate offering Retry now / Choose another harness.
+ *
+ * One rule shapes the layout: at most one paragraph of prose before something you can act on. The
+ * first cut of relay mode opened with six lines of explanation across two blocks, then three empty
+ * sections each saying a version of "you have no relay", and only then the button that was the
+ * entire point of the screen.
+ */

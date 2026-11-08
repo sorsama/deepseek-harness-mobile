@@ -1,6 +1,5 @@
 package com.labteto.dshmobile.ui.screens.connect
 
-import android.os.SystemClock
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -29,14 +28,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -54,14 +52,52 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.connection.ConnectStage
 import com.labteto.dshmobile.connection.HostConfig
 import com.labteto.dshmobile.connection.parseHostInput
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.common_cancel
+import com.labteto.dshmobile.shared.resources.connect_connecting_to
+import com.labteto.dshmobile.shared.resources.connect_fail_certificate
+import com.labteto.dshmobile.shared.resources.connect_fail_certificate_title
+import com.labteto.dshmobile.shared.resources.connect_fail_dns
+import com.labteto.dshmobile.shared.resources.connect_fail_fence_title
+import com.labteto.dshmobile.shared.resources.connect_fail_invalid
+import com.labteto.dshmobile.shared.resources.connect_fail_not_harness
+import com.labteto.dshmobile.shared.resources.connect_fail_other
+import com.labteto.dshmobile.shared.resources.connect_fail_pairing
+import com.labteto.dshmobile.shared.resources.connect_fail_pairing_title
+import com.labteto.dshmobile.shared.resources.connect_fail_refused
+import com.labteto.dshmobile.shared.resources.connect_fail_relay_session
+import com.labteto.dshmobile.shared.resources.connect_fail_relay_session_title
+import com.labteto.dshmobile.shared.resources.connect_fail_streams
+import com.labteto.dshmobile.shared.resources.connect_fail_subnet
+import com.labteto.dshmobile.shared.resources.connect_fail_timeout
+import com.labteto.dshmobile.shared.resources.connect_fail_tls
+import com.labteto.dshmobile.shared.resources.connect_fail_unauthenticated
+import com.labteto.dshmobile.shared.resources.connect_failed
+import com.labteto.dshmobile.shared.resources.connect_failed_fence
+import com.labteto.dshmobile.shared.resources.connect_forget_harness
+import com.labteto.dshmobile.shared.resources.connect_lost_attempt
+import com.labteto.dshmobile.shared.resources.connect_lost_body
+import com.labteto.dshmobile.shared.resources.connect_lost_choose
+import com.labteto.dshmobile.shared.resources.connect_lost_reconnecting
+import com.labteto.dshmobile.shared.resources.connect_lost_retry_now
+import com.labteto.dshmobile.shared.resources.connect_lost_tag
+import com.labteto.dshmobile.shared.resources.connect_pair_again
+import com.labteto.dshmobile.shared.resources.connect_sign_in
+import com.labteto.dshmobile.shared.resources.connect_step_address
+import com.labteto.dshmobile.shared.resources.connect_step_reaching
+import com.labteto.dshmobile.shared.resources.connect_step_streams
+import com.labteto.dshmobile.shared.resources.connect_step_verify
+import com.labteto.dshmobile.shared.resources.connect_title
+import com.labteto.dshmobile.shared.resources.connect_try_again
+import com.labteto.dshmobile.shared.resources.connect_unreachable
+import com.labteto.dshmobile.ui.components.DsIcons
+import com.labteto.dshmobile.ui.components.localizedCount
 import com.labteto.dshmobile.ui.components.MascotMark
 import com.labteto.dshmobile.ui.components.MascotState
 import com.labteto.dshmobile.ui.components.formatDurationMs
@@ -70,6 +106,7 @@ import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import org.jetbrains.compose.resources.stringResource
 
 /** Tones for a compact status tag; each maps onto one of the Ink semantic families. */
 internal enum class TagTone { Neutral, Success, Warn, Error }
@@ -179,9 +216,9 @@ internal fun ConnectConnectingSurface(
     val seen = remember { mutableStateListOf<ConnectStage>() }
     val durations = remember { mutableStateMapOf<ConnectStage, Long>() }
     var tracked by remember { mutableStateOf(stage) }
-    var trackedSince by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
+    var trackedSince by remember { mutableLongStateOf(nowMs()) }
     LaunchedEffect(stage) {
-        val now = SystemClock.elapsedRealtime()
+        val now = nowMs()
         if (stage != tracked) {
             durations[tracked] = (now - trackedSince).coerceAtLeast(0L)
             tracked = stage
@@ -204,7 +241,7 @@ internal fun ConnectConnectingSurface(
         MascotMark(size = 132.dp, state = MascotState.Connecting)
         Spacer(Modifier.height(DsSpacing.large))
         Text(
-            if (name != null) stringResource(R.string.connect_connecting_to, name) else stringResource(R.string.connect_title),
+            if (name != null) stringResource(Res.string.connect_connecting_to, name) else stringResource(Res.string.connect_title),
             style = DsType.large20,
             color = colors.labelPrimary,
             textAlign = TextAlign.Center,
@@ -236,10 +273,10 @@ internal fun ConnectConnectingSurface(
                 }
                 ConnectChecklistRow(
                     label = when (row) {
-                        ConnectStage.Validating -> stringResource(R.string.connect_step_address)
-                        ConnectStage.Reaching -> stringResource(R.string.connect_step_reaching, host)
-                        ConnectStage.OpeningStreams -> stringResource(R.string.connect_step_streams)
-                        else -> stringResource(R.string.connect_step_verify)
+                        ConnectStage.Validating -> stringResource(Res.string.connect_step_address)
+                        ConnectStage.Reaching -> stringResource(Res.string.connect_step_reaching, host)
+                        ConnectStage.OpeningStreams -> stringResource(Res.string.connect_step_streams)
+                        else -> stringResource(Res.string.connect_step_verify)
                     },
                     state = state,
                     durationMs = durations[row].takeIf { state == ChecklistState.Done },
@@ -252,13 +289,13 @@ internal fun ConnectConnectingSurface(
             horizontalArrangement = Arrangement.spacedBy(DsSpacing.medium),
         ) {
             DsConnectButton(
-                text = stringResource(R.string.common_cancel),
+                text = stringResource(Res.string.common_cancel),
                 onClick = onCancel,
                 variant = ConnectButtonVariant.Outline,
             )
             if (onRetry != null) {
                 DsConnectButton(
-                    text = stringResource(R.string.connect_try_again),
+                    text = stringResource(Res.string.connect_try_again),
                     onClick = onRetry,
                     variant = ConnectButtonVariant.Primary,
                     modifier = Modifier.weight(1f),
@@ -310,7 +347,7 @@ private fun ConnectChecklistRow(label: String, state: ChecklistState, durationMs
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
-                            Icons.Filled.Check,
+                            DsIcons.Check,
                             contentDescription = null,
                             tint = colors.success,
                             modifier = Modifier.size(15.dp),
@@ -379,9 +416,9 @@ internal fun ConnectLostSurface(
         attempted?.let { authority -> remembered.firstOrNull { h -> h.authority == authority } }
     }
     val title = when {
-        retrying && name != null -> stringResource(R.string.connect_lost_reconnecting, name)
+        retrying && name != null -> stringResource(Res.string.connect_lost_reconnecting, name)
         else -> failureTitle(failure, address)
-            ?: stringResource(R.string.connect_failed, address)
+            ?: stringResource(Res.string.connect_failed, address)
     }
     val body = failureBody(failure, address)
 
@@ -441,7 +478,7 @@ internal fun ConnectLostSurface(
                     )
                     if (retrying) {
                         Text(
-                            stringResource(R.string.connect_lost_body),
+                            stringResource(Res.string.connect_lost_body),
                             style = DsType.small13,
                             color = colors.labelTertiary,
                             textAlign = TextAlign.Center,
@@ -454,12 +491,12 @@ internal fun ConnectLostSurface(
                     // does not know this phone, pair again for a relay that revoked it, and only
                     // then "choose another harness".
                     val leading: Pair<String, () -> Unit> = when {
-                        onRetry != null -> stringResource(R.string.connect_lost_retry_now) to onRetry
+                        onRetry != null -> stringResource(Res.string.connect_lost_retry_now) to onRetry
                         failure is ConnectFailure.Unauthenticated ->
-                            stringResource(R.string.connect_sign_in) to onSignIn
+                            stringResource(Res.string.connect_sign_in) to onSignIn
                         failure is ConnectFailure.PairingRequired || failure is ConnectFailure.CertificateChanged ->
-                            stringResource(R.string.connect_pair_again) to onPairAgain
-                        else -> stringResource(R.string.connect_lost_choose) to onChooseAnother
+                            stringResource(Res.string.connect_pair_again) to onPairAgain
+                        else -> stringResource(Res.string.connect_lost_choose) to onChooseAnother
                     }
                     DsConnectButton(
                         text = leading.first,
@@ -470,7 +507,7 @@ internal fun ConnectLostSurface(
                     )
                     if (leading.second !== onChooseAnother) {
                         DsConnectButton(
-                            text = stringResource(R.string.connect_lost_choose),
+                            text = stringResource(Res.string.connect_lost_choose),
                             onClick = onChooseAnother,
                             variant = ConnectButtonVariant.Outline,
                             large = true,
@@ -479,7 +516,7 @@ internal fun ConnectLostSurface(
                     }
                     if (onForget != null && tried != null) {
                         DsConnectButton(
-                            text = stringResource(R.string.connect_forget_harness),
+                            text = stringResource(Res.string.connect_forget_harness),
                             onClick = { onForget(tried) },
                             variant = ConnectButtonVariant.Danger,
                         )
@@ -535,7 +572,7 @@ private fun HarnessWarningCard(
                 if (attempts > 0) {
                     Text("·", style = DsType.mono12, color = colors.labelCaption)
                     Text(
-                        stringResource(R.string.connect_lost_attempt, attempts),
+                        stringResource(Res.string.connect_lost_attempt, localizedCount(attempts)),
                         style = DsType.mono12,
                         color = colors.labelTertiary,
                         maxLines = 1,
@@ -544,7 +581,7 @@ private fun HarnessWarningCard(
             }
         }
         ConnectStatusTag(
-            text = if (retrying) stringResource(R.string.connect_lost_tag) else stringResource(R.string.connect_unreachable),
+            text = if (retrying) stringResource(Res.string.connect_lost_tag) else stringResource(Res.string.connect_unreachable),
             tone = if (retrying) TagTone.Warn else TagTone.Error,
         )
     }
@@ -612,11 +649,11 @@ internal fun DashedSkeletonCard(content: @Composable () -> Unit) {
 // every call site; this thin wrapper keeps that distinction readable while the press feedback,
 // haptics and disabled treatment stay in the Lead-owned shared `DsButton`.
 
-internal enum class ConnectButtonVariant { Primary, Outline, Ghost, Danger }
+enum class ConnectButtonVariant { Primary, Outline, Ghost, Danger }
 
 /** Token-driven Ink button; [large] is the design's `.btn.lg` (52dp, 15sp semibold). */
 @Composable
-internal fun DsConnectButton(
+fun DsConnectButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -651,12 +688,12 @@ internal fun DsConnectButton(
 /** Headline for a failure, or null when the body is the whole message. */
 @Composable
 internal fun failureTitle(failure: ConnectFailure, authority: String): String? = when {
-    failure is ConnectFailure.TrustFence -> stringResource(R.string.connect_fail_fence_title)
-    failure is ConnectFailure.PairingRequired -> stringResource(R.string.connect_fail_pairing_title)
-    failure is ConnectFailure.RelayUnauthenticated -> stringResource(R.string.connect_fail_relay_session_title)
-    failure is ConnectFailure.CertificateChanged -> stringResource(R.string.connect_fail_certificate_title)
+    failure is ConnectFailure.TrustFence -> stringResource(Res.string.connect_fail_fence_title)
+    failure is ConnectFailure.PairingRequired -> stringResource(Res.string.connect_fail_pairing_title)
+    failure is ConnectFailure.RelayUnauthenticated -> stringResource(Res.string.connect_fail_relay_session_title)
+    failure is ConnectFailure.CertificateChanged -> stringResource(Res.string.connect_fail_certificate_title)
     authority.isBlank() -> null
-    else -> stringResource(R.string.connect_failed, authority)
+    else -> stringResource(Res.string.connect_failed, authority)
 }
 
 /** Why it failed and (where the app can know it) what fixes it. */
@@ -665,24 +702,24 @@ internal fun failureBody(failure: ConnectFailure, authority: String): String {
     val address = parseHostInput(authority)
     val port = address?.port ?: if (address?.useTls == true) 443 else 80
     return when (failure) {
-        ConnectFailure.InvalidInput -> stringResource(R.string.connect_fail_invalid)
+        ConnectFailure.InvalidInput -> stringResource(Res.string.connect_fail_invalid)
         is ConnectFailure.DifferentSubnet -> stringResource(
-            R.string.connect_fail_subnet,
+            Res.string.connect_fail_subnet,
             authority,
-            failure.localPrefix ?: stringResource(R.string.connect_unreachable),
+            failure.localPrefix ?: stringResource(Res.string.connect_unreachable),
         )
-        ConnectFailure.Timeout -> stringResource(R.string.connect_fail_timeout, authority, port)
-        ConnectFailure.Refused -> stringResource(R.string.connect_fail_refused, authority)
-        ConnectFailure.TrustFence -> stringResource(R.string.connect_failed_fence)
-        ConnectFailure.Unauthenticated -> stringResource(R.string.connect_fail_unauthenticated, authority)
-        ConnectFailure.PairingRequired -> stringResource(R.string.connect_fail_pairing)
-        ConnectFailure.RelayUnauthenticated -> stringResource(R.string.connect_fail_relay_session, authority)
-        ConnectFailure.CertificateChanged -> stringResource(R.string.connect_fail_certificate, authority)
-        ConnectFailure.DnsFailure -> stringResource(R.string.connect_fail_dns, authority)
-        ConnectFailure.NotAHarness -> stringResource(R.string.connect_fail_not_harness, authority)
-        ConnectFailure.TlsFailure -> stringResource(R.string.connect_fail_tls, authority)
-        ConnectFailure.StreamsBlocked -> stringResource(R.string.connect_fail_streams, authority)
-        is ConnectFailure.Other -> stringResource(R.string.connect_fail_other, authority, failure.detail)
+        ConnectFailure.Timeout -> stringResource(Res.string.connect_fail_timeout, authority, localizedCount(port))
+        ConnectFailure.Refused -> stringResource(Res.string.connect_fail_refused, authority)
+        ConnectFailure.TrustFence -> stringResource(Res.string.connect_failed_fence)
+        ConnectFailure.Unauthenticated -> stringResource(Res.string.connect_fail_unauthenticated, authority)
+        ConnectFailure.PairingRequired -> stringResource(Res.string.connect_fail_pairing)
+        ConnectFailure.RelayUnauthenticated -> stringResource(Res.string.connect_fail_relay_session, authority)
+        ConnectFailure.CertificateChanged -> stringResource(Res.string.connect_fail_certificate, authority)
+        ConnectFailure.DnsFailure -> stringResource(Res.string.connect_fail_dns, authority)
+        ConnectFailure.NotAHarness -> stringResource(Res.string.connect_fail_not_harness, authority)
+        ConnectFailure.TlsFailure -> stringResource(Res.string.connect_fail_tls, authority)
+        ConnectFailure.StreamsBlocked -> stringResource(Res.string.connect_fail_streams, authority)
+        is ConnectFailure.Other -> stringResource(Res.string.connect_fail_other, authority, failure.detail)
     }
 }
 
@@ -696,3 +733,8 @@ internal fun ConnectFailure.isRetryable(): Boolean = when (this) {
     -> false
     else -> true
 }
+
+/** Milliseconds on a monotonic clock; only differences are used (stage durations). */
+private fun nowMs(): Long = SurfaceClockOrigin.elapsedNow().inWholeMilliseconds
+
+private val SurfaceClockOrigin = kotlin.time.TimeSource.Monotonic.markNow()

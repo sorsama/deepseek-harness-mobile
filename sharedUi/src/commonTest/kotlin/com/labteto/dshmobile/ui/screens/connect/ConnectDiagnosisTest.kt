@@ -6,8 +6,8 @@ import com.labteto.dshmobile.core.wire.RpcError
 import com.labteto.dshmobile.core.wire.TransportFailure
 import com.labteto.dshmobile.core.wire.TransportFailures
 import kotlinx.serialization.json.JsonObject
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import kotlin.test.Test
 
 /**
  * The whole point of the probe keeping its reason is that these two lead to opposite advice:

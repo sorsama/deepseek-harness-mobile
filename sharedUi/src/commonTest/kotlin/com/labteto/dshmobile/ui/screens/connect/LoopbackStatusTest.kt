@@ -2,8 +2,8 @@ package com.labteto.dshmobile.ui.screens.connect
 
 import com.labteto.dshmobile.connection.ProbeOutcome
 import com.labteto.dshmobile.core.wire.dto.HostDescription
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import kotlin.test.Test
 
 /**
  * The card offers one action per state, so the mapping decides which button someone sees: a
