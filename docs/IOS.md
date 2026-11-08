@@ -823,6 +823,11 @@ Open items the port knows about and has deliberately not done, so they are not r
   the end-to-end sign-in works, which is what CI can say.
 - **iOS has no Settings screen**, so there is no way to change appearance or language inside the app; it follows
   the device (and iOS's per-app language setting). The next screens in "The path" include it.
+- **A harness that cannot list directories reads as unreachable.** The Recent card and "reconnect to the last harness"
+  decide a named host is up by the home directory it reports, which comes from one `directoryPicker/list` call after the
+  probe, so a deployment whose picker answers an error is shown "Unreachable" and is not reconnected to by itself. That is
+  how the Android app has always behaved and iOS inherited it; the mock harness answers the call now so the simulator job
+  can show a reachable host.
 - **The Connected page on iOS is a placeholder.** It reports what the screen has to give and has nothing behind it.
 - **`ios-ipa` and `ios-app` build Compose Multiplatform for iOS twice.** The shared module is bigger than the
   M3a one; if the cost of the pair matters, the Release link is the part to look at first.

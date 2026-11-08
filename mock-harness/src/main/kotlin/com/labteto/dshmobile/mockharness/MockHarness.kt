@@ -159,6 +159,18 @@ class MockHarness(
         // The probe every reachability check makes: no arguments, and every deployment composes
         // the Session Controller that serves it.
         on("session/canOpenWorkspacePath") { JsonPrimitive(true) }
+        // The one thing a host publishes that a probe cannot read from the ready frame: its home. A client that
+        // names a host (a Recent card) asks for it with one directory listing, and a harness that does not answer
+        // leaves the host reachable with its home unknown, which is a path worth the mock being able to take both ways.
+        on("directoryPicker/list") {
+            buildJsonObject {
+                put("path", "C:\\Users\\demo")
+                put("home", "C:\\Users\\demo")
+                putJsonArray("crumbs") {}
+                putJsonArray("entries") {}
+                put("truncated", false)
+            }
+        }
         on("pluginInventory/list") { pluginInventoryValue() }
         // Registered here rather than left to each test, because the point of holding these two to
         // the host's required fields is to catch a client that stopped sending one — and a check
