@@ -35,6 +35,7 @@ import platform.Foundation.NSURLSessionWebSocketMessage
 import platform.Foundation.NSURLSessionWebSocketMessageTypeString
 import platform.Foundation.NSURLSessionWebSocketTask
 import platform.Foundation.NSData
+import platform.Foundation.setValue
 import platform.darwin.NSObject
 
 /**
