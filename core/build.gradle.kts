@@ -7,6 +7,13 @@ plugins {
     alias(libs.plugins.kotlinx.atomicfu)
 }
 
+// Kotlin/Native runs `:core:iosSimulatorArm64Test` in an iOS simulator. The default device name is one
+// a recent Xcode no longer ships, so CI passes whichever iPhone the runner has
+// (`-Pdsh.iosSimulator=<name or UDID>`; `xcrun simctl list devices available` shows what exists).
+tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest>().configureEach {
+    providers.gradleProperty("dsh.iosSimulator").orNull?.let { device.set(it) }
+}
+
 kotlin {
     // The JVM target is what the Android app, the conformance suite and local tooling consume
     // today: the exact same classes, in the same packages, that `kotlin("jvm")` used to build.
@@ -57,6 +64,11 @@ kotlin {
             implementation(libs.commonmark.ext.autolink)
             implementation(libs.commonmark.ext.task.list.items)
             implementation(libs.commonmark.ext.heading.anchor)
+        }
+        // `HarnessContractTest` runs on the JVM and on an iOS simulator, against the same fixture
+        // harnesses (`CiFixtures` in `:mock-harness`).
+        commonTest.dependencies {
+            implementation(kotlin("test"))
         }
         jvmTest.dependencies {
             implementation(libs.junit)
