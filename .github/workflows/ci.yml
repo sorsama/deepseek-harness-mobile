@@ -138,3 +138,154 @@ jobs:
           path: |
             conformance/build/reports/tests
             conformance/build/conformance-logs
+
+  # The first place the iOS app actually runs: the shared Kotlin tests on an iOS simulator, the
+  # SwiftUI + Compose Multiplatform app built, installed and driven in one, and an unsigned device
+  # .ipa produced. Everything here needs macOS and Xcode, and every step is a check: a step that
+  # does not run, or runs nothing, fails the job (the lesson of `ios-compile`'s history), and the
+  # steps after the tests run even when the tests fail, so one push says everything that is wrong.
+  #
+  # `-Pdsh.iosOnly=true` leaves the Android app out of the Gradle build, so this job needs no Android
+  # SDK; the Android half of CI is the `build` job.
+  ios-app:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    env:
+      SIM_REPORTS: build/ios-reports
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore Kotlin/Native toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-kotlin-2.0.21
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Toolchain and simulator
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available
+          picked="$(xcrun simctl list devices available -j | jq -r '[.devices | to_entries | sort_by(.key) | reverse | .[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0] | "\(.udid)|\(.name)"')"
+          test -n "$picked" && test "$picked" != "null" || { echo "::error::no iPhone simulator on this runner"; exit 1; }
+          echo "SIM_UDID=${picked%%|*}" >> "$GITHUB_ENV"
+          echo "SIM_NAME=${picked#*|}" >> "$GITHUB_ENV"
+          echo "Using simulator $picked"
+      # Three harnesses and some test-only routes, as their own process: the simulator shares the
+      # Mac's network, so the Kotlin/Native tests and the app reach them on 127.0.0.1.
+      - name: Start the fixture harnesses
+        run: |
+          ./gradlew -Pdsh.iosOnly=true :mock-harness:installDist --stacktrace
+          mkdir -p "$SIM_REPORTS"
+          nohup mock-harness/build/install/mock-harness/bin/mock-harness --ci-fixtures > "$SIM_REPORTS/fixtures.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/fixtures.pid"
+          for _ in $(seq 1 60); do
+            grep -q "ci fixtures listening" "$SIM_REPORTS/fixtures.log" && break
+            sleep 1
+          done
+          cat "$SIM_REPORTS/fixtures.log"
+          grep -q "ci fixtures listening" "$SIM_REPORTS/fixtures.log"
+          for port in 3181 3182 3183; do
+            curl -sS -o /dev/null -w "port $port answers %{http_code}\n" "http://127.0.0.1:$port/ci/status/418"
+          done
+      # The first execution of the Darwin transport. `HarnessContractTest` is the same file that runs
+      # on the JVM in the `build` job, against the same fixtures.
+      - name: Kotlin/Native tests on the simulator
+        run: ./gradlew -Pdsh.iosOnly=true -Pdsh.iosSimulator="$SIM_UDID" :core:iosSimulatorArm64Test :iosShared:iosSimulatorArm64Test --stacktrace
+      - name: Check the iOS tests really ran
+        if: ${{ !cancelled() }}
+        run: |
+          total=0
+          for f in core/build/test-results/iosSimulatorArm64Test/*.xml; do
+            n="$(grep -o '<testcase ' "$f" | wc -l | tr -d ' ')"
+            echo "$f: $n tests"
+            total=$((total + n))
+          done
+          echo "core iOS tests executed: $total"
+          test "$total" -ge 30 || { echo "::error::expected at least 30 Kotlin/Native tests to have run in :core, found $total"; exit 1; }
+          shopt -s nullglob
+          shared=0
+          for f in iosShared/build/test-results/iosSimulatorArm64Test/*.xml; do
+            n="$(grep -o '<testcase ' "$f" | wc -l | tr -d ' ')"
+            shared=$((shared + n))
+          done
+          echo "iosShared iOS tests executed: $shared"
+          test "$shared" -ge 1 || { echo "::error::no Kotlin/Native tests ran in :iosShared"; exit 1; }
+      - name: Generate the Xcode project
+        if: ${{ !cancelled() }}
+        run: iosApp/generate.sh
+      - name: Build the app for the simulator
+        if: ${{ !cancelled() }}
+        run: |
+          set -o pipefail
+          mkdir -p "$SIM_REPORTS"
+          xcodebuild -project iosApp/DSHMobile.xcodeproj -scheme DSHMobile -configuration Debug \
+            -sdk iphonesimulator -destination "id=$SIM_UDID" -derivedDataPath build/ios-derived \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee "$SIM_REPORTS/xcodebuild-simulator.log"
+      - name: Run the app in the simulator
+        if: ${{ !cancelled() }}
+        run: |
+          iosApp/scripts/simulator-check.sh "$SIM_UDID" "build/ios-derived/Build/Products/Debug-iphonesimulator/DSH Mobile.app" build/ios-screenshots
+      # Unsigned on purpose: there is no Apple Developer account. Sideloadly or AltStore re-sign it
+      # with the installer's own Apple ID (docs/IOS.md, "Installing on an iPhone").
+      - name: Build the unsigned device .ipa
+        if: ${{ !cancelled() }}
+        run: |
+          set -o pipefail
+          eval "$(iosApp/scripts/version.sh)"
+          mkdir -p "$SIM_REPORTS"
+          xcodebuild archive -project iosApp/DSHMobile.xcodeproj -scheme DSHMobile -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/ios-archive/DSHMobile.xcarchive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            2>&1 | tee "$SIM_REPORTS/xcodebuild-archive.log"
+          app="build/ios-archive/DSHMobile.xcarchive/Products/Applications/DSH Mobile.app"
+          test -d "$app" || { echo "::error::the archive has no DSH Mobile.app"; exit 1; }
+          rm -rf build/ipa && mkdir -p build/ipa/Payload
+          cp -R "$app" build/ipa/Payload/
+          ipa="DSH-Mobile-$DSH_VERSION_NAME-unsigned.ipa"
+          (cd build/ipa && zip -qry "$ipa" Payload)
+          echo "IPA_NAME=$ipa" >> "$GITHUB_ENV"
+          ls -l "build/ipa/$ipa"
+          echo "--- what is in it"
+          unzip -l "build/ipa/$ipa" | tail -n 20
+          echo "--- architectures"
+          lipo -archs "$app/DSH Mobile"
+          echo "--- signature (expected: not signed)"
+          codesign -dv "$app" 2>&1 || true
+          test ! -e "$app/_CodeSignature" || { echo "::error::the .ipa is signed; it was meant to be unsigned"; exit 1; }
+          echo "--- Info.plist"
+          plutil -p "$app/Info.plist" | grep -E 'CFBundle(Identifier|DisplayName|ShortVersionString|Version)|MinimumOSVersion|NSLocalNetwork|NSAllows|DTPlatformName|UIDeviceFamily' || true
+          test "$(lipo -archs "$app/DSH Mobile")" = "arm64" || { echo "::error::expected an arm64-only device build"; exit 1; }
+      - name: Stop the fixture harnesses
+        if: always()
+        run: kill "$(cat "$RUNNER_TEMP/fixtures.pid")" 2>/dev/null || true
+      - name: Upload simulator screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-screenshots
+          path: build/ios-screenshots/*.png
+          if-no-files-found: warn
+      - name: Upload the unsigned .ipa
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-mobile-ios-unsigned-ipa
+          path: build/ipa/*.ipa
+          if-no-files-found: error
+      - name: Upload iOS reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app-reports
+          path: |
+            build/ios-reports
+            core/build/reports/tests
+            iosShared/build/reports/tests
+            core/build/test-results/iosSimulatorArm64Test
+          if-no-files-found: warn
