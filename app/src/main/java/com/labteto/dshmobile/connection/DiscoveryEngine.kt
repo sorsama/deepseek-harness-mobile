@@ -5,6 +5,7 @@ import com.labteto.dshmobile.core.wire.ObservedKey
 import com.labteto.dshmobile.core.wire.RelayOrigin
 import com.labteto.dshmobile.core.wire.RelayPairing
 import com.labteto.dshmobile.core.wire.RelayTls
+import com.labteto.dshmobile.core.wire.locate
 import com.labteto.dshmobile.core.wire.dto.HostDescription
 import com.labteto.dshmobile.core.wire.DshApiClient
 import com.labteto.dshmobile.core.wire.RpcResult

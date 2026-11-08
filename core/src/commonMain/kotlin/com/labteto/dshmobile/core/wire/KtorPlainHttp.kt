@@ -21,7 +21,8 @@ import io.ktor.util.toMap
  * Like [KtorRpcTransport], the caller injects the [HttpClient] and builds it with [dshCarrier]
  * applied, which switches redirects off (the contract of [PlainHttp]) and installs the timeout
  * plugin this class sets per request. A relay pinned by key needs its own client
- * (`darwinHttpClient(pinnedSpkiSha256 = …)`), as a pinned OkHttp client is its own.
+ * (`darwinHttpClient(pinnedSpkiSha256 = …)`) and so does one trusted on first use
+ * (`darwinHttpClient(observedKey = …)`), as a pinned or trust-on-first-use OkHttp client is its own.
  *
  * `Host` is written by hand with [hostHeaderFor]'s rule, as [KtorRpcTransport] does, so a relay or
  * harness behind a fence reads the same value whichever carrier asked. Every failure to get an

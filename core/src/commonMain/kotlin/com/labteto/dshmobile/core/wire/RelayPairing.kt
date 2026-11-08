@@ -1,19 +1,8 @@
 package com.labteto.dshmobile.core.wire
 
-import java.io.IOException
-import java.util.concurrent.TimeUnit
-import kotlin.coroutines.resume
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 
 /**
  * Device enrolment against a `dsh-relay` listener.
@@ -27,6 +16,11 @@ import okhttp3.Response
  * lenient — unknown events, frames and tool cards fall through to passthroughs — but a pairing
  * payload is a credential exchange, and a `v` this build does not understand may carry a field it
  * must not silently skip.
+ *
+ * The HTTP is a [PlainHttp] and the URL work is [WireUrl]'s, so this is common code. The Android
+ * app calls [claim], [health] and [locate] with its `OkHttpClient` through the extensions in
+ * `RelayPairingOkHttp.kt` (a pinned or trust-on-first-use client from `RelayTls` is just such a
+ * client); iOS hands them a [KtorPlainHttp] over a Darwin client.
  */
 object RelayPairing {
 
@@ -55,7 +49,8 @@ object RelayPairing {
      */
     const val DEFAULT_RETRY_AFTER_SECONDS: Long = 60
 
-    private val JSON = "application/json; charset=utf-8".toMediaType()
+    /** The claim body's `Content-Type`, spelled as OkHttp writes it. */
+    private const val JSON_CONTENT_TYPE = "application/json; charset=utf-8"
 
     /**
      * Deadlines for the two relay calls.
@@ -81,7 +76,7 @@ object RelayPairing {
         }
         if (payload.kind != PAYLOAD_KIND) return PairingPayloadResult.NotAPairingCode
         if (payload.v > PAYLOAD_VERSION) return PairingPayloadResult.TooNew(payload.v)
-        if (payload.url.toHttpUrlOrNull() == null) return PairingPayloadResult.NotAPairingCode
+        if (parseWireUrl(payload.url) == null) return PairingPayloadResult.NotAPairingCode
         return PairingPayloadResult.Valid(payload)
     }
 
@@ -104,7 +99,7 @@ object RelayPairing {
         fun add(raw: String?) {
             val text = raw?.trim().orEmpty()
             if (text.isEmpty()) return
-            val url = text.toHttpUrlOrNull() ?: return
+            val url = parseWireUrl(text) ?: return
             if (url.scheme != "http" && url.scheme != "https") return
             val key = "${url.host}:${url.port}${url.encodedPath.trimEnd('/')}"
             if (seen.add(key)) ordered += text
@@ -128,21 +123,24 @@ object RelayPairing {
         baseUrl: String,
         code: String,
         name: String,
-        client: OkHttpClient,
+        http: PlainHttp,
     ): RelayPairOutcome {
         val target = relayUrl(baseUrl, PAIR_PATH)
             ?: return RelayPairOutcome.Unreachable(TransportFailure.DNS, "not a usable relay address")
         val body = WireJson.encodeToString(RelayPairRequest.serializer(), RelayPairRequest(code, name))
-        val request = Request.Builder()
-            .url(target)
-            .header("Content-Type", "application/json")
-            .header("Accept", "application/json")
-            .post(body.toRequestBody(JSON))
-            .build()
+        val request = PlainHttpRequest(
+            method = "POST",
+            url = target.text,
+            headers = listOf("Accept" to "application/json"),
+            body = body,
+            bodyContentType = JSON_CONTENT_TYPE,
+            connectTimeoutMs = CONNECT_MS,
+            readTimeoutMs = READ_MS,
+        )
         // No redirect chasing here either. A 302 rewrites the POST to a GET, so the claim would
         // arrive as a page view and answer with the claim *form* — HTML, status 200 — which reads
         // as a relay that refused for no stated reason. [locate] resolves the origin first instead.
-        return when (val outcome = execute(request, client, followRedirects = false)) {
+        return when (val outcome = execute(http, request)) {
             is HttpOutcome.Failed -> RelayPairOutcome.Unreachable(
                 TransportFailures.classify(outcome.cause),
                 outcome.cause.message,
@@ -156,8 +154,8 @@ object RelayPairing {
      *
      * A redirect does not count here — see [locate], which is the call that reports one.
      */
-    suspend fun health(baseUrl: String, client: OkHttpClient): Boolean =
-        locate(baseUrl, client) is RelayOrigin.Here
+    suspend fun health(baseUrl: String, http: PlainHttp): Boolean =
+        locate(baseUrl, http) is RelayOrigin.Here
 
     /**
      * Find the relay at, or named by, [baseUrl].
@@ -174,16 +172,22 @@ object RelayPairing {
      * be addressed to the wrong listener. Worse for the claim: a 302 turns a POST into a GET, so
      * the request would arrive as a page view and answer with markup instead of a token.
      */
-    suspend fun locate(baseUrl: String, client: OkHttpClient): RelayOrigin {
+    suspend fun locate(baseUrl: String, http: PlainHttp): RelayOrigin {
         val target = relayUrl(baseUrl, HEALTH_PATH) ?: return RelayOrigin.None
-        val request = Request.Builder().url(target).header("Accept", "application/json").get().build()
-        val answered = execute(request, client, followRedirects = false) as? HttpOutcome.Answered
+        val request = PlainHttpRequest(
+            method = "GET",
+            url = target.text,
+            headers = listOf("Accept" to "application/json"),
+            connectTimeoutMs = CONNECT_MS,
+            readTimeoutMs = READ_MS,
+        )
+        val answered = execute(http, request) as? HttpOutcome.Answered
             ?: return RelayOrigin.None
         if (answered.status in 300..399) {
-            val moved = answered.location?.let { target.resolve(it) } ?: return RelayOrigin.None
+            val moved = answered.location?.let { target.resolveReference(it) } ?: return RelayOrigin.None
             // Only a redirect that still points at this path is the plugin handing us its listener.
             // Anything else is some other server's routing, and following it would be guesswork.
-            if (!moved.encodedPath.endsWith(HEALTH_PATH) || moved.username.isNotEmpty() || moved.password.isNotEmpty()) return RelayOrigin.None
+            if (!moved.encodedPath.endsWith(HEALTH_PATH) || moved.hasCredentials) return RelayOrigin.None
             return RelayOrigin.Redirected(originOf(moved), moved.scheme == "https")
         }
         // A relay that refuses the `Host` it was reached by is still a relay, and saying "nothing
@@ -206,12 +210,12 @@ object RelayPairing {
      * Through [authorityOf], because `HttpUrl.host` is unbracketed: an IPv6 origin spelled straight
      * would not parse back as a URL, and every consumer of a [RelayOrigin] parses it again.
      */
-    private fun originOf(url: okhttp3.HttpUrl): String =
+    private fun originOf(url: WireUrl): String =
         "${url.scheme}://" + authorityOf(url.host, url.port) + url.encodedPath.removeSuffix(HEALTH_PATH).trimEnd('/')
 
     /** Resolve [path] against a relay origin, or null when the origin is not a usable URL. */
-    private fun relayUrl(baseUrl: String, path: String) =
-        runCatching { resolveHarnessUrl(baseUrl.trim(), path) }.getOrNull()
+    private fun relayUrl(baseUrl: String, path: String): WireUrl? =
+        runCatching { resolveHarnessWireUrl(baseUrl.trim(), path) }.getOrNull()
 
     private fun readClaim(response: HttpOutcome.Answered): RelayPairOutcome = when (response.status) {
         200 -> runCatching {
@@ -247,37 +251,19 @@ object RelayPairing {
         data class Failed(val cause: IOException) : HttpOutcome
     }
 
-    private suspend fun execute(
-        request: Request,
-        client: OkHttpClient,
-        followRedirects: Boolean = true,
-    ): HttpOutcome =
-        suspendCancellableCoroutine { continuation ->
-            val call = client.newBuilder()
-                .connectTimeout(CONNECT_MS, TimeUnit.MILLISECONDS)
-                .readTimeout(READ_MS, TimeUnit.MILLISECONDS)
-                .followRedirects(followRedirects)
-                .followSslRedirects(followRedirects)
-                .build()
-                .newCall(request)
-            continuation.invokeOnCancellation { call.cancel() }
-            call.enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    if (continuation.isActive) continuation.resume(HttpOutcome.Failed(e))
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    response.use { resp ->
-                        val answered = HttpOutcome.Answered(
-                            status = resp.code,
-                            body = resp.body?.string().orEmpty(),
-                            retryAfter = resp.header("Retry-After"),
-                            location = resp.header("Location"),
-                        )
-                        if (continuation.isActive) continuation.resume(answered)
-                    }
-                }
-            })
+    /** Redirects are never followed: [PlainHttp] does not, which is what [claim] and [locate] rely on. */
+    private suspend fun execute(http: PlainHttp, request: PlainHttpRequest): HttpOutcome =
+        try {
+            val response = http.execute(request)
+            HttpOutcome.Answered(
+                status = response.status,
+                body = response.body,
+                // The last value, as `Response.header` reads it.
+                retryAfter = response.headers("Retry-After").lastOrNull(),
+                location = response.headers("Location").lastOrNull(),
+            )
+        } catch (e: IOException) {
+            HttpOutcome.Failed(e)
         }
 }
 

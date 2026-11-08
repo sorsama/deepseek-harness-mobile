@@ -13,6 +13,9 @@ import com.labteto.dshmobile.core.wire.TransportFailures
 import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.core.wire.WsChannel
 import com.labteto.dshmobile.core.wire.WsChannelSink
+import com.labteto.dshmobile.core.wire.claim
+import com.labteto.dshmobile.core.wire.health
+import com.labteto.dshmobile.core.wire.locate
 import com.labteto.dshmobile.mockharness.MockHarness
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable

@@ -3,6 +3,9 @@ package com.labteto.dshmobile.connection
 import com.labteto.dshmobile.core.wire.RelayOrigin
 import com.labteto.dshmobile.core.wire.RelayPairOutcome
 import com.labteto.dshmobile.core.wire.RelayPairing
+import com.labteto.dshmobile.core.wire.claim
+import com.labteto.dshmobile.core.wire.health
+import com.labteto.dshmobile.core.wire.locate
 import com.labteto.dshmobile.mockharness.MockHarness
 import com.labteto.dshmobile.mockharness.RelayMode
 import kotlinx.coroutines.runBlocking

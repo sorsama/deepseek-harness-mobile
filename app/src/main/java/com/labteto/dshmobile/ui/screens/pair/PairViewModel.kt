@@ -17,6 +17,8 @@ import com.labteto.dshmobile.core.wire.RelayPairing
 import com.labteto.dshmobile.core.wire.RelayPairingPayload
 import com.labteto.dshmobile.core.wire.RelayTls
 import com.labteto.dshmobile.core.wire.TransportFailure
+import com.labteto.dshmobile.core.wire.claim
+import com.labteto.dshmobile.core.wire.locate
 import com.labteto.dshmobile.core.wire.worthAnotherOrigin
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

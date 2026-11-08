@@ -41,18 +41,30 @@ import io.ktor.client.plugins.plugin
  * certificate the system already trusts) the system's own evaluation applies, as with the shared
  * OkHttp client.
  *
+ * **Trust on first use.** [observedKey] is for the flows that cannot pin in advance (passcode
+ * pairing, probing an address before pairing): the client accepts whatever key the server presents
+ * and records it in the [ObservedKey], as `RelayTls.trustOnFirstUseClient` does on the JVM. See
+ * [learningChallengeHandler] for what that costs. It is a separate client from a pinned one, and
+ * the two cannot be combined.
+ *
  * @param pinnedSpkiSha256 the pin to enforce, or null for none.
+ * @param observedKey where to record the key the server presented, or null to leave trust to the
+ *   system (or to the pin).
  * @throws IllegalArgumentException when the pin is blank, which could never match and so would turn
- *   a typo into a relay that is unreachable for no visible reason.
+ *   a typo into a relay that is unreachable for no visible reason, or when both a pin and an
+ *   [observedKey] are given.
  */
-fun darwinHttpClient(pinnedSpkiSha256: String? = null): HttpClient {
+fun darwinHttpClient(pinnedSpkiSha256: String? = null, observedKey: ObservedKey? = null): HttpClient {
     require(pinnedSpkiSha256 == null || pinnedSpkiSha256.isNotBlank()) { "a certificate pin cannot be blank" }
+    require(pinnedSpkiSha256 == null || observedKey == null) { "a client either enforces a pin or learns a key, not both" }
     val mismatches = PinMismatchLog()
     val client = HttpClient(Darwin) {
         dshCarrier()
         engine {
             if (pinnedSpkiSha256 != null) {
                 handleChallenge(pinnedChallengeHandler(pinnedSpkiSha256, mismatches))
+            } else if (observedKey != null) {
+                handleChallenge(learningChallengeHandler(observedKey))
             }
         }
     }
