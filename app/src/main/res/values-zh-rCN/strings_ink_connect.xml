@@ -1,8 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pair_hero_title">扫描配对二维码</string>
-    <string name="pair_step_run">在电脑上运行 %1$s</string>
-    <string name="pair_step_scan">将相机对准显示的二维码。随后你会设置设备密码。</string>
-    <string name="pair_code_hint">8 位数字</string>
-    <string name="pair_scanned">正在与 %1$s 配对</string>
 </resources>

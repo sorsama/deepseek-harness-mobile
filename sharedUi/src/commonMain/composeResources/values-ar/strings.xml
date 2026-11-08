@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="common_back">رجوع</string>
     <string name="common_cancel">إلغاء</string>
     <string name="common_connected">متصل</string>
+    <string name="common_retry">إعادة المحاولة</string>
     <string name="connect_auto_lan">الاتصال تلقائيًا بـ harness المكتشف عبر Wi-Fi</string>
     <string name="connect_auto_last">إعادة الاتصال بآخر harness مستخدم</string>
     <string name="connect_auto_loopback">الاتصال تلقائيًا بـ harness على هذا الجهاز</string>
@@ -95,6 +97,45 @@
     <string name="connect_title">الاتصال بـ harness</string>
     <string name="connect_try_again">حاول مرة أخرى</string>
     <string name="connect_unreachable">غير قابل للوصول</string>
+    <string name="pair_code_hint">8 أرقام</string>
+    <string name="pair_code_label">رمز الاقتران</string>
+    <string name="pair_fail_certificate">المفتاح على %1$s ليس المفتاح الذي يذكره هذا الرمز. لا تُجرِ الاقتران، فقد يكون جهاز آخر يردّ على ذلك العنوان.</string>
+    <string name="pair_fail_code">اكتب الرمز الظاهر في صفحة اقتران المُرحِّل.</string>
+    <string name="pair_fail_expired">انتهت صلاحية هذا الرمز. أعد تحميل صفحة اقتران المُرحِّل للحصول على رمز جديد.</string>
+    <string name="pair_fail_host_refused">‏%1$s مُرحِّل فعلًا، لكنه يرفض الطلبات الموجَّهة بهذا العنوان، ولم يقرأ الرمز أصلًا. أضف هذا العنوان إلى publicHostnames في ملف cordis.patch.yml الخاص بالمُرحِّل وأعد التشغيل، أو صِل إليه بعنوان يعرفه.</string>
+    <string name="pair_fail_not_a_code">هذا ليس رمز اقتران مُرحِّل.</string>
+    <string name="pair_fail_not_a_relay">استجاب %1$s لكنه لا يقبل الاقتران. استخدم العنوان الذي طبعه المُرحِّل عند بدء التشغيل، لا عنوان harness نفسه.</string>
+    <string name="pair_fail_rate_limited">محاولات كثيرة جدًا. انتظر %1$d ثانية ثم أعد المحاولة.</string>
+    <string name="pair_fail_rejected">رفض المُرحِّل هذا الرمز. تُستخدم الرموز مرة واحدة وتنتهي خلال دقائق. أعد تحميل صفحة الاقتران وجرّب الرمز الجديد.</string>
+    <string name="pair_fail_too_new">هذا الرمز صادر عن مُرحِّل أحدث (الإصدار %1$d) مما يفهمه هذا التطبيق. حدّث DSH Mobile.</string>
+    <string name="pair_fail_unreachable">تعذّر الوصول إلى %1$s. تحقق من العنوان ومن أن المُرحِّل يعمل ويمكن الوصول إليه من هذا الهاتف.</string>
+    <string name="pair_fail_url">اكتب عنوان المُرحِّل، متضمنًا ‎https://‎</string>
+    <string name="pair_hero_title">امسح رمز الاقتران</string>
+    <string name="pair_key_first_use">العنوان الذي تكتبه يدويًا لا يحمل مفتاحًا، فنثق بأول جهاز يردّ عليه. امسح رمز QR إن أردت التحقق من المفتاح.</string>
+    <string name="pair_key_plaintext">هذا العنوان غير مُشفَّر، لذا ينتقل الرمز وكل ما ترسله بنص واضح.</string>
+    <string name="pair_key_verified">يحمل الرمز الممسوح مفتاح هذا المُرحِّل، لذا نتحقق منه قبل إرسال أي شيء.</string>
+    <string name="pair_manual_title">أو اكتب الرمز</string>
+    <string name="pair_name_label">اسم هذا الجهاز</string>
+    <string name="pair_scan">مسح رمز QR</string>
+    <string name="pair_scanned">الاقتران مع %1$s</string>
+    <string name="pair_step_run">على حاسوبك، شغّل %1$s</string>
+    <string name="pair_step_scan">وجّه الكاميرا إلى رمز QR المعروض. ستضبط كلمة مرور الجهاز بعد ذلك.</string>
+    <string name="pair_submit">اقتران</string>
+    <string name="pair_subtitle">على الكمبيوتر الذي يشغّل harness، افتح ‎/relay/pair‎. سيعرض رمز QR ورمزًا من ثمانية أرقام، ويكفي أحدهما. وكلاهما ينتهي خلال دقائق.</string>
+    <string name="pair_title">اقتران بمُرحِّل</string>
+    <string name="pair_url_hint">https://192.168.1.5:3443</string>
+    <string name="pair_url_label">عنوان المُرحِّل</string>
+    <string name="pair_working">جارٍ الاقتران…</string>
+    <string name="scan_camera_allow">السماح بالكاميرا</string>
+    <string name="scan_camera_body">يحتاج DSH Mobile إلى الكاميرا لقراءة رمز اقتران المُرحِّل. يمكنك أيضًا كتابة الرمز المكوّن من ثمانية أرقام، فهو الرمز نفسه.</string>
+    <string name="scan_camera_denied">الوصول إلى الكاميرا محظور. اسمح به من الإعدادات، أو اكتب الرمز بدلًا من ذلك.</string>
+    <string name="scan_camera_failed">تعذّر تشغيل الكاميرا، فربما يستخدمها تطبيق آخر. أغلق ذلك التطبيق وأعد المحاولة، أو اكتب الرمز بدلًا من ذلك.</string>
+    <string name="scan_camera_missing">لا توجد كاميرا على هذا الجهاز. اكتب الرمز بدلًا من ذلك.</string>
+    <string name="scan_camera_settings">فتح الإعدادات</string>
+    <string name="scan_camera_title">الكاميرا غير مفعّلة</string>
+    <string name="scan_detected">تمت قراءة الرمز</string>
+    <string name="scan_hint">وجّه الكاميرا إلى الرمز في صفحة اقتران المُرحِّل</string>
+    <string name="scan_type_instead">اكتب الرمز بدلًا من ذلك</string>
     <string name="settings_connection_disconnect">قطع الاتصال</string>
     <string name="settings_title">الإعدادات</string>
 </resources>

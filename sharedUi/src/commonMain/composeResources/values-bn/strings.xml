@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="common_back">পিছনে</string>
     <string name="common_cancel">বাতিল</string>
     <string name="common_connected">সংযুক্ত</string>
+    <string name="common_retry">আবার চেষ্টা করুন</string>
     <string name="connect_auto_lan">Wi-Fi-তে পাওয়া harness-এ নিজে থেকে সংযুক্ত হোন</string>
     <string name="connect_auto_last">শেষবার যে harness ব্যবহার করেছিলেন, তাতে আবার সংযুক্ত হোন</string>
     <string name="connect_auto_loopback">এই ডিভাইসের harness-এ নিজে থেকে সংযুক্ত হোন</string>
@@ -95,6 +97,45 @@
     <string name="connect_title">Harness-এ সংযুক্ত হোন</string>
     <string name="connect_try_again">আবার চেষ্টা করুন</string>
     <string name="connect_unreachable">পৌঁছানো যাচ্ছে না</string>
+    <string name="pair_code_hint">8 সংখ্যা</string>
+    <string name="pair_code_label">পেয়ারিং কোড</string>
+    <string name="pair_fail_certificate">%1$s-এর কী এই কোডে লেখা কী নয়। পেয়ার করবেন না। ওই ঠিকানায় অন্য কেউ সাড়া দিতে পারে।</string>
+    <string name="pair_fail_code">রিলের পেয়ারিং পেজে দেখানো কোডটি লিখুন।</string>
+    <string name="pair_fail_expired">এই কোডের মেয়াদ শেষ। নতুন কোড পেতে রিলের পেয়ারিং পেজ আবার লোড করুন।</string>
+    <string name="pair_fail_host_refused">%1$s একটি রিলেই, কিন্তু এই ঠিকানায় পাঠানো অনুরোধ সে মানে না, তাই কোডটি পড়াই হয়নি। ওই ঠিকানাটি রিলের cordis.patch.yml-এর publicHostnames-এ যোগ করে রিলে আবার চালু করুন, অথবা রিলের চেনা কোনো ঠিকানা দিয়ে পৌঁছান।</string>
+    <string name="pair_fail_not_a_code">এটি রিলের পেয়ারিং কোড নয়।</string>
+    <string name="pair_fail_not_a_relay">%1$s সাড়া দিয়েছে, কিন্তু সেটি পেয়ারিং নেয় না। রিলে চালু হওয়ার সময় যে ঠিকানা দেখিয়েছিল সেটিই ব্যবহার করুন, harness-এর নিজের ঠিকানা নয়।</string>
+    <string name="pair_fail_rate_limited">অনেকবার চেষ্টা হয়েছে। %1$d সেকেন্ড অপেক্ষা করে আবার চেষ্টা করুন।</string>
+    <string name="pair_fail_rejected">রিলে এই কোডটি নেয়নি। কোড একবারই কাজ করে আর কয়েক মিনিট পরে মেয়াদ শেষ হয়ে যায়। পেয়ারিং পেজ আবার লোড করে নতুন কোডটি দিন।</string>
+    <string name="pair_fail_too_new">এই কোডটি এমন একটি নতুন রিলের (ভার্সন %1$d), যেটি এই অ্যাপ বোঝে না। DSH Mobile আপডেট করুন।</string>
+    <string name="pair_fail_unreachable">%1$s-এ পৌঁছানো গেল না। ঠিকানাটি দেখে নিন, আর রিলে চালু আছে কি না এবং এই ফোন থেকে পৌঁছানো যায় কি না তা-ও দেখুন।</string>
+    <string name="pair_fail_url">রিলের ঠিকানা https:// সহ লিখুন</string>
+    <string name="pair_hero_title">পেয়ারিং কোড স্ক্যান করুন</string>
+    <string name="pair_key_first_use">টাইপ করা ঠিকানায় কোনো কী থাকে না, তাই প্রথমবার যে সাড়া দেয়, তাকেই বিশ্বাস করা হয়। QR কোড স্ক্যান করলে কী যাচাই করা যায়।</string>
+    <string name="pair_key_plaintext">এই ঠিকানা এনক্রিপ্টেড নয়, তাই টোকেন আর আপনার পাঠানো সবকিছু খোলা অবস্থায় যায়।</string>
+    <string name="pair_key_verified">স্ক্যান করা কোডে এই রিলের কী আছে, তাই কিছু পাঠানোর আগেই তা যাচাই হয়ে যায়।</string>
+    <string name="pair_manual_title">অথবা কোড টাইপ করুন</string>
+    <string name="pair_name_label">এই ডিভাইসের নাম</string>
+    <string name="pair_scan">QR কোড স্ক্যান করুন</string>
+    <string name="pair_scanned">%1$s-এর সঙ্গে পেয়ার হচ্ছে</string>
+    <string name="pair_step_run">আপনার কম্পিউটারে চালান %1$s</string>
+    <string name="pair_step_scan">দেখানো QR কোডের দিকে ক্যামেরা ধরুন। এরপর ডিভাইসের পাসওয়ার্ড দেবেন।</string>
+    <string name="pair_submit">পেয়ার করুন</string>
+    <string name="pair_subtitle">harness চালানো কম্পিউটারে /relay/pair খুলুন। সেখানে একটি QR কোড আর আট অঙ্কের একটি কোড দেখাবে। যেকোনো একটিই চলবে, আর দুটিরই মেয়াদ কয়েক মিনিটে শেষ হয়ে যায়।</string>
+    <string name="pair_title">রিলে পেয়ার করুন</string>
+    <string name="pair_url_hint">https://192.168.1.5:3443</string>
+    <string name="pair_url_label">রিলের ঠিকানা</string>
+    <string name="pair_working">পেয়ার হচ্ছে…</string>
+    <string name="scan_camera_allow">ক্যামেরার অনুমতি দিন</string>
+    <string name="scan_camera_body">রিলের পেয়ারিং কোড পড়তে DSH Mobile-এর ক্যামেরা দরকার। আট অঙ্কের কোডটি টাইপ করলেও চলবে, ওটা একই কোড।</string>
+    <string name="scan_camera_denied">ক্যামেরার অনুমতি বন্ধ আছে। সেটিংসে গিয়ে অনুমতি দিন, অথবা কোডটি টাইপ করুন।</string>
+    <string name="scan_camera_failed">ক্যামেরা চালু করা যায়নি। হয়তো অন্য কোনো অ্যাপ সেটি ব্যবহার করছে। ওই অ্যাপ বন্ধ করে আবার চেষ্টা করুন, অথবা কোডটি টাইপ করুন।</string>
+    <string name="scan_camera_missing">এই ডিভাইসে ক্যামেরা নেই। কোডটি টাইপ করুন।</string>
+    <string name="scan_camera_settings">সেটিংস খুলুন</string>
+    <string name="scan_camera_title">ক্যামেরা বন্ধ আছে</string>
+    <string name="scan_detected">কোড পড়া হয়েছে</string>
+    <string name="scan_hint">রিলের পেয়ারিং পেজে দেখানো কোডের দিকে ক্যামেরা ধরুন</string>
+    <string name="scan_type_instead">এর বদলে কোডটি টাইপ করুন</string>
     <string name="settings_connection_disconnect">সংযোগ বিচ্ছিন্ন করুন</string>
     <string name="settings_title">সেটিংস</string>
 </resources>

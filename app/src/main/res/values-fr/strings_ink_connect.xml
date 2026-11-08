@@ -1,8 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pair_hero_title">Scannez le code d\'appairage</string>
-    <string name="pair_step_run">Sur votre ordinateur, lancez %1$s</string>
-    <string name="pair_step_scan">Pointez la caméra vers le QR code affiché. Vous définirez ensuite un mot de passe d\'appareil.</string>
-    <string name="pair_code_hint">8 chiffres</string>
-    <string name="pair_scanned">Appairage avec %1$s</string>
 </resources>

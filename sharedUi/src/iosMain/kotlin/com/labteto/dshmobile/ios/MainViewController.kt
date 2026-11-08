@@ -22,7 +22,8 @@ import platform.posix.fputs
  *
  * The parameters are the debug-build launch arguments the host forwards (see [LaunchRequest]); a normal
  * launch passes `null` and `false` for all of them. When [autoConnect] or [report] is on, the one result
- * line the attempt produces is also written to a file (see [reportOutcome]) so CI can read it back.
+ * line the attempt produces is also written to a file (see [reportOutcome]) so CI can read it back; the
+ * pairing arguments do the same for pairing (see [reportPairOutcome]).
  */
 fun MainViewController(
     prefillAddress: String?,
@@ -32,16 +33,33 @@ fun MainViewController(
     reset: Boolean,
     report: Boolean,
     autoReconnect: String?,
+    connectMode: String?,
+    openPair: Boolean,
+    pairUrl: String?,
+    pairCode: String?,
+    pairSubmit: Boolean,
+    pairPayload: String?,
+    pairScanner: Boolean,
 ): UIViewController =
     ComposeUIViewController {
         val request = remember {
+            val pairing = openPair || pairUrl != null || pairCode != null || pairSubmit || pairPayload != null || pairScanner
             LaunchRequest(
                 address = prefillAddress,
                 autoConnect = autoConnect,
                 openSignIn = openSignIn,
                 signInToken = signInToken,
                 reset = reset,
-                onOutcome = if (autoConnect || report) ::reportOutcome else null,
+                connectMode = connectMode?.lowercase(),
+                openPair = openPair,
+                pairUrl = pairUrl,
+                pairCode = pairCode,
+                pairSubmit = pairSubmit,
+                pairPayload = pairPayload,
+                pairScanner = pairScanner,
+                // A pairing launch also reports the connection that follows it, so a script can wait for the relay.
+                onOutcome = if (autoConnect || report || pairing) ::reportOutcome else null,
+                onPairOutcome = if (pairing) ::reportPairOutcome else null,
             )
         }
         // One controller for the life of the process, on the main thread where Compose runs. The reset,
@@ -52,20 +70,24 @@ fun MainViewController(
                 "NO" -> UserDefaultsConnectStore.setAutoConnectLast(false)
                 "YES" -> UserDefaultsConnectStore.setAutoConnectLast(true)
             }
-            IosApp(CoroutineScope(SupervisorJob() + Dispatchers.Main))
+            IosApp(CoroutineScope(SupervisorJob() + Dispatchers.Main), reportPair = request.onPairOutcome)
         }
         DshApp(app, request)
     }
 
-/** Forget what the app remembered: the harnesses and settings in NSUserDefaults, the sessions in the Keychain. */
+/** Forget what the app remembered: the harnesses and settings in NSUserDefaults, the sessions and relay tokens in the Keychain. */
 private fun resetStorage() {
     val defaults = NSUserDefaults.standardUserDefaults
     NSBundle.mainBundle.bundleIdentifier?.let { defaults.removePersistentDomainForName(it) }
     KeychainSessionStore().wipe()
+    KeychainRelayTokens().wipe()
 }
 
 /** Where [reportOutcome] writes, inside the app's own Documents directory. */
 private const val OUTCOME_FILE = "dsh-connect-result.txt"
+
+/** Where [reportPairOutcome] writes: its own file, so a pairing result is not overwritten by the connection it starts. */
+private const val PAIR_OUTCOME_FILE = "dsh-pair-result.txt"
 
 /**
  * Say what the last connect attempt did, to the two places a script can look: the process's output
@@ -73,12 +95,17 @@ private const val OUTCOME_FILE = "dsh-connect-result.txt"
  * (`xcrun simctl get_app_container <device> <bundle id> data`, then `Documents/dsh-connect-result.txt`).
  * The file is the one to trust: it does not depend on how the console is buffered.
  */
+private fun reportOutcome(line: String) = writeReport(OUTCOME_FILE, line)
+
+/** [reportOutcome] for the pairing screen (`Documents/dsh-pair-result.txt`). */
+private fun reportPairOutcome(line: String) = writeReport(PAIR_OUTCOME_FILE, line)
+
 @OptIn(ExperimentalForeignApi::class)
-private fun reportOutcome(line: String) {
+private fun writeReport(fileName: String, line: String) {
     println(line)
     val documents = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)
         .firstOrNull() as? String ?: return
-    val file = fopen("$documents/$OUTCOME_FILE", "w") ?: return
+    val file = fopen("$documents/$fileName", "w") ?: return
     fputs(line, file)
     fclose(file)
 }

@@ -2,6 +2,7 @@ package com.labteto.dshmobile.ios
 
 import com.labteto.dshmobile.connection.ConnectMode
 import com.labteto.dshmobile.connection.HostConfig
+import com.labteto.dshmobile.connection.RelayIdentity
 import com.labteto.dshmobile.connection.harnessBaseUrl
 import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.core.wire.dto.HostDescription
@@ -32,6 +33,8 @@ import platform.Foundation.timeIntervalSince1970
  */
 internal class UserDefaultsConnectStore(
     private val sessions: KeychainSessionStore,
+    /** The bearer tokens of paired relays; forgetting a host forgets its token too. */
+    private val relayTokens: KeychainRelayTokens = KeychainRelayTokens(),
     private val defaults: NSUserDefaults = NSUserDefaults.standardUserDefaults,
 ) : ConnectStore {
     private val mutex = Mutex()
@@ -91,6 +94,34 @@ internal class UserDefaultsConnectStore(
         config
     }
 
+    /**
+     * Remember a relay that has just been paired (the iOS counterpart of `HostsStore.rememberHost(relay = …)`).
+     *
+     * A fresh pairing decides the transport, so [relay]'s scheme outranks anything the caller assumed, and the
+     * record is found by that scheme's base URL: pairing again with a relay this device already knows reuses its
+     * id (and so its place in Recent) and replaces the device id and expiry, which belong to the new enrolment.
+     * The token is not here; it is in the Keychain, against the id this returns.
+     */
+    suspend fun rememberRelay(host: String, port: Int, basePath: String, relay: RelayIdentity): HostConfig = mutex.withLock {
+        val existing = hostsState.value.firstOrNull { it.baseUrl == harnessBaseUrl(host, port, relay.useTls, basePath) }
+        val config = HostConfig(
+            id = existing?.id ?: NSUUID().UUIDString,
+            name = host,
+            host = host,
+            port = port,
+            basePath = basePath,
+            isLoopback = false,
+            lastConnectedAt = nowMillis(),
+            lastHome = existing?.lastHome,
+            useTls = relay.useTls,
+            relayFingerprint = relay.fingerprint ?: existing?.relayFingerprint,
+            relayDeviceId = relay.deviceId,
+            relayTokenExpiresAt = relay.tokenExpiresAt,
+        )
+        persist(listOf(config) + hostsState.value.filterNot { it.id == config.id || it.baseUrl == config.baseUrl })
+        config
+    }
+
     /** Remember [config] as the most recent, replacing its earlier record. */
     suspend fun upsertHost(config: HostConfig) = mutex.withLock {
         persist(listOf(config) + hostsState.value.filterNot { it.id == config.id || it.baseUrl == config.baseUrl })
@@ -109,6 +140,7 @@ internal class UserDefaultsConnectStore(
     override suspend fun removeHost(id: String) {
         mutex.withLock { persist(hostsState.value.filterNot { it.id == id }) }
         sessions.remove(id)
+        relayTokens.remove(id)
     }
 
     override suspend fun addKnownPort(port: Int) = mutex.withLock {

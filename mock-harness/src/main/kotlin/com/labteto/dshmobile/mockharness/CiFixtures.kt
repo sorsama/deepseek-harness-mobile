@@ -63,11 +63,32 @@ object CiFixtures {
     /** The server that completes a WebSocket handshake and then drops the connection with no Close frame. */
     const val DROP_PORT: Int = 3185
 
+    /**
+     * A relay to pair with, over plain HTTP (`tls: off`). Its code, [RelayMode.pairingCode], works
+     * every time, so a script can pair through it once per screenshot; [RATE_LIMITED_CODE] is always
+     * answered 429; any other code is refused. Behind the bearer it hands out it is a harness.
+     */
+    const val PAIR_PORT: Int = 3186
+
+    /**
+     * The same relay over TLS with a self-signed certificate, which is the relay's default posture and
+     * the only thing the pinned and trust-on-first-use code can be shown against. Its key is
+     * [CiFixtureServers.pairTlsFingerprint]; the standalone run prints it. Only started on request
+     * (it needs the JDK's `keytool`), so the in-process JVM runs do not depend on it.
+     */
+    const val PAIR_TLS_PORT: Int = 3187
+
     /** A port nothing listens on, for the connection-refused case. */
     const val DEAD_PORT: Int = 3189
 
+    /** The code the pairing relays always answer with a lockout. */
+    const val RATE_LIMITED_CODE: String = "42900000"
+
     val sessionMode: SessionMode = SessionMode()
     val relayMode: RelayMode = RelayMode()
+
+    /** The pairing relays' behaviour: [RelayMode.pairingCode] reusable, one code that is rate limited. */
+    val pairRelayMode: RelayMode = RelayMode(reusableCode = true, rateLimitedCode = RATE_LIMITED_CODE)
 
     /** The body of `GET /api/session.export`: 300 KiB of a pattern a truncation or a reorder would break. */
     fun exportBytes(): ByteArray = ByteArray(EXPORT_SIZE) { ((it * 31 + 7) and 0xFF).toByte() }
@@ -93,25 +114,40 @@ object CiFixtures {
         relayPort: Int = 0,
         keepAlivePort: Int = 0,
         dropPort: Int = 0,
+        pairPort: Int = 0,
+        pairTlsPort: Int = 0,
+        withPairTls: Boolean = false,
     ): CiFixtureServers {
         val plain = harness(plainPort)
         val session = harness(sessionPort, session = sessionMode)
         val relay = harness(relayPort, relay = relayMode)
+        val pair = harness(pairPort, relay = pairRelayMode)
+        val identity = if (withPairTls) TlsIdentity.generate() else null
+        val pairTls = identity?.let {
+            harness(0, relay = pairRelayMode.copy(fingerprint = it.spkiPin), tls = it, tlsPort = pairTlsPort)
+        }
         val keepAlive = keepAliveServer(keepAlivePort)
         val plainBound = plain.start()
         val sessionBound = session.start()
         val relayBound = relay.start()
+        val pairBound = pair.start()
+        pairTls?.start()
         keepAlive.start(wait = false)
         val dropping = DroppingServer(dropPort)
         return CiFixtureServers(
             plain = plain,
             session = session,
             relay = relay,
+            pair = pair,
+            pairTls = pairTls,
             keepAlive = keepAlive,
             dropping = dropping,
             plainPort = plainBound,
             sessionPort = sessionBound,
             relayPort = relayBound,
+            pairPort = pairBound,
+            pairTlsPort = pairTls?.boundTlsPort,
+            pairTlsFingerprint = identity?.spkiPin,
             keepAlivePort = keepAlive.engine.resolvedConnectors().first().port,
             dropPort = dropping.port,
         )
@@ -138,8 +174,15 @@ object CiFixtures {
             }
         }
 
-    private fun harness(port: Int, session: SessionMode? = null, relay: RelayMode? = null): MockHarness =
-        MockHarness(port = port, session = session, relay = relay, extraRoutes = { ciRoutes() }).also(::configure)
+    private fun harness(
+        port: Int,
+        session: SessionMode? = null,
+        relay: RelayMode? = null,
+        tls: TlsIdentity? = null,
+        tlsPort: Int = 0,
+    ): MockHarness =
+        MockHarness(port = port, session = session, relay = relay, extraRoutes = { ciRoutes() }, tls = tls, tlsPort = tlsPort)
+            .also(::configure)
 
     private fun configure(harness: MockHarness) {
         harness.sessionExportBytes = exportBytes()
@@ -289,17 +332,26 @@ class CiFixtureServers internal constructor(
     private val plain: MockHarness,
     private val session: MockHarness,
     private val relay: MockHarness,
+    private val pair: MockHarness,
+    private val pairTls: MockHarness?,
     private val keepAlive: KeepAliveServer,
     private val dropping: DroppingServer,
     val plainPort: Int,
     val sessionPort: Int,
     val relayPort: Int,
+    val pairPort: Int,
+    /** The TLS pairing relay's port, or null when it was not asked for. */
+    val pairTlsPort: Int?,
+    /** `base64(sha256(SubjectPublicKeyInfo))` of the TLS pairing relay's certificate, or null without one. */
+    val pairTlsFingerprint: String?,
     val keepAlivePort: Int,
     val dropPort: Int,
 ) {
     val plainUrl: String get() = "http://127.0.0.1:$plainPort"
     val sessionUrl: String get() = "http://127.0.0.1:$sessionPort"
     val relayUrl: String get() = "http://127.0.0.1:$relayPort"
+    val pairUrl: String get() = "http://127.0.0.1:$pairPort"
+    val pairTlsUrl: String? get() = pairTlsPort?.let { "https://127.0.0.1:$it" }
     val keepAliveUrl: String get() = "http://127.0.0.1:$keepAlivePort"
     val dropUrl: String get() = "http://127.0.0.1:$dropPort"
 
@@ -307,6 +359,8 @@ class CiFixtureServers internal constructor(
         plain.stop()
         session.stop()
         relay.stop()
+        pair.stop()
+        pairTls?.stop()
         keepAlive.stop(gracePeriodMillis = 0, timeoutMillis = 0)
         dropping.stop()
     }

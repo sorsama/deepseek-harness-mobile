@@ -1,8 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pair_hero_title">امسح رمز الاقتران</string>
-    <string name="pair_step_run">على حاسوبك، شغّل %1$s</string>
-    <string name="pair_step_scan">وجّه الكاميرا إلى رمز QR المعروض. ستضبط كلمة مرور الجهاز بعد ذلك.</string>
-    <string name="pair_code_hint">8 أرقام</string>
-    <string name="pair_scanned">الاقتران مع %1$s</string>
 </resources>

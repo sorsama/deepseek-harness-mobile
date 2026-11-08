@@ -9,9 +9,4 @@
     <!-- Sign in (design 04) -->
 
     <!-- Pairing (design 05) -->
-    <string name="pair_hero_title">Scan the pairing code</string>
-    <string name="pair_step_run">On your computer, run %1$s</string>
-    <string name="pair_step_scan">Point the camera at the QR code it shows. You\'ll set a device password next.</string>
-    <string name="pair_code_hint">8 digits</string>
-    <string name="pair_scanned">Pairing with %1$s</string>
 </resources>

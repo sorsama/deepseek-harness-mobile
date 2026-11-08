@@ -1,8 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pair_hero_title">Escanea el código de emparejamiento</string>
-    <string name="pair_step_run">En tu ordenador, ejecuta %1$s</string>
-    <string name="pair_step_scan">Apunta la cámara al código QR que muestra. Después elegirás una contraseña para el dispositivo.</string>
-    <string name="pair_code_hint">8 dígitos</string>
-    <string name="pair_scanned">Emparejando con %1$s</string>
 </resources>

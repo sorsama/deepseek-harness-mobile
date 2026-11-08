@@ -27,7 +27,14 @@ struct ComposeView: UIViewControllerRepresentable {
             signInToken: launch.signInToken,
             reset: launch.reset,
             report: launch.report,
-            autoReconnect: launch.autoReconnect
+            autoReconnect: launch.autoReconnect,
+            connectMode: launch.connectMode,
+            openPair: launch.openPair,
+            pairUrl: launch.pairUrl,
+            pairCode: launch.pairCode,
+            pairSubmit: launch.pairSubmit,
+            pairPayload: launch.pairPayload,
+            pairScanner: launch.pairScanner
         )
     }
 
@@ -45,6 +52,11 @@ struct ComposeView: UIViewControllerRepresentable {
 /// - `-DshReset YES` forgets everything the app remembered before the screen is built.
 /// - `-DshReport YES` writes the result line (connected, or why not) without a Connect tap.
 /// - `-DshAutoReconnect NO` turns off "reconnect to the last harness" (the Recent list shows), `YES` turns it on again.
+/// - `-DshConnectMode relay` (or `lan`) switches the Connect screen's mode before it is drawn.
+/// - The pairing arguments open the Pair screen and drive it as a person would: `-DshOpenPair YES` opens it,
+///   `-DshPairUrl <address>` and `-DshPairCode <digits>` fill the form, `-DshPairSubmit YES` taps Pair,
+///   `-DshPairPayload <json>` hands it the text a QR scan would have decoded (a simulator has no camera),
+///   `-DshPairScanner YES` opens the camera sheet. The result is written to `Documents/dsh-pair-result.txt`.
 ///
 /// Debug builds only. A release build ignores them, so the shipped app has no way to be told which
 /// address to connect to, or what to forget, from outside.
@@ -56,6 +68,13 @@ struct LaunchOptions {
     let reset: Bool
     let report: Bool
     let autoReconnect: String?
+    let connectMode: String?
+    let openPair: Bool
+    let pairUrl: String?
+    let pairCode: String?
+    let pairSubmit: Bool
+    let pairPayload: String?
+    let pairScanner: Bool
 
     static func fromProcess() -> LaunchOptions {
         #if DEBUG
@@ -69,10 +88,21 @@ struct LaunchOptions {
             signInToken: defaults.string(forKey: "DshSignInToken"),
             reset: defaults.bool(forKey: "DshReset"),
             report: defaults.bool(forKey: "DshReport"),
-            autoReconnect: defaults.string(forKey: "DshAutoReconnect")
+            autoReconnect: defaults.string(forKey: "DshAutoReconnect"),
+            connectMode: defaults.string(forKey: "DshConnectMode"),
+            openPair: defaults.bool(forKey: "DshOpenPair"),
+            pairUrl: defaults.string(forKey: "DshPairUrl"),
+            pairCode: defaults.string(forKey: "DshPairCode"),
+            pairSubmit: defaults.bool(forKey: "DshPairSubmit"),
+            pairPayload: defaults.string(forKey: "DshPairPayload"),
+            pairScanner: defaults.bool(forKey: "DshPairScanner")
         )
         #else
-        return LaunchOptions(address: nil, autoConnect: false, openSignIn: false, signInToken: nil, reset: false, report: false, autoReconnect: nil)
+        return LaunchOptions(
+            address: nil, autoConnect: false, openSignIn: false, signInToken: nil, reset: false, report: false,
+            autoReconnect: nil, connectMode: nil, openPair: false, pairUrl: nil, pairCode: nil, pairSubmit: false,
+            pairPayload: nil, pairScanner: false
+        )
         #endif
     }
 }

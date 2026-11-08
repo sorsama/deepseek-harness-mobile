@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="common_back">Назад</string>
     <string name="common_cancel">Отмена</string>
     <string name="common_connected">Подключено</string>
+    <string name="common_retry">Повторить</string>
     <string name="connect_auto_lan">Автоподключение к обнаруженному harness по Wi-Fi</string>
     <string name="connect_auto_last">Переподключаться к последнему использованному harness</string>
     <string name="connect_auto_loopback">Автоподключение к harness на этом устройстве</string>
@@ -95,6 +97,45 @@
     <string name="connect_title">Подключиться к harness</string>
     <string name="connect_try_again">Повторить попытку</string>
     <string name="connect_unreachable">Недоступен</string>
+    <string name="pair_code_hint">8 цифр</string>
+    <string name="pair_code_label">Код сопряжения</string>
+    <string name="pair_fail_certificate">Ключ по адресу %1$s не совпадает с указанным в коде. Не сопрягайтесь: по этому адресу может отвечать что-то другое.</string>
+    <string name="pair_fail_code">Введите код со страницы сопряжения реле.</string>
+    <string name="pair_fail_expired">Срок действия кода истёк. Обновите страницу сопряжения реле, чтобы получить новый.</string>
+    <string name="pair_fail_host_refused">По адресу %1$s работает реле, но оно отклоняет запросы, отправленные на такой адрес, и код даже не был прочитан. Добавьте этот адрес в publicHostnames в cordis.patch.yml реле и перезапустите его или обратитесь к реле по адресу, который оно уже знает.</string>
+    <string name="pair_fail_not_a_code">Это не код сопряжения с реле.</string>
+    <string name="pair_fail_not_a_relay">%1$s ответил, но не принимает сопряжение. Используйте адрес, который реле показало при запуске, а не адрес самого harness.</string>
+    <string name="pair_fail_rate_limited">Слишком много попыток. Подождите %1$d с и повторите.</string>
+    <string name="pair_fail_rejected">Реле отклонило этот код. Коды одноразовые и действуют несколько минут. Обновите страницу сопряжения и введите новый.</string>
+    <string name="pair_fail_too_new">Этот код выдало реле более новой версии (%1$d), чем поддерживает приложение. Обновите DSH Mobile.</string>
+    <string name="pair_fail_unreachable">Не удалось связаться с %1$s. Проверьте адрес и то, что реле запущено и доступно с этого телефона.</string>
+    <string name="pair_fail_url">Введите адрес реле, включая https://</string>
+    <string name="pair_hero_title">Отсканируйте код сопряжения</string>
+    <string name="pair_key_first_use">В адресе, введённом вручную, ключа нет, поэтому принимается ключ того, кто ответит первым. Чтобы проверить ключ, отсканируйте QR-код.</string>
+    <string name="pair_key_plaintext">Этот адрес не шифруется, поэтому токен и всё отправляемое передаются открытым текстом.</string>
+    <string name="pair_key_verified">Код содержит ключ этого реле, поэтому ключ проверяется до отправки любых данных.</string>
+    <string name="pair_manual_title">Или введите код</string>
+    <string name="pair_name_label">Имя этого устройства</string>
+    <string name="pair_scan">Сканировать QR-код</string>
+    <string name="pair_scanned">Сопряжение с %1$s</string>
+    <string name="pair_step_run">На компьютере выполните %1$s</string>
+    <string name="pair_step_scan">Наведите камеру на показанный QR-код. Затем зададите пароль устройства.</string>
+    <string name="pair_submit">Сопрячь</string>
+    <string name="pair_subtitle">На компьютере с harness откройте /relay/pair. Появятся QR-код и восьмизначный код. Подойдёт любой из них, оба действуют несколько минут.</string>
+    <string name="pair_title">Сопряжение с реле</string>
+    <string name="pair_url_hint">https://192.168.1.5:3443</string>
+    <string name="pair_url_label">Адрес реле</string>
+    <string name="pair_working">Сопряжение…</string>
+    <string name="scan_camera_allow">Разрешить камеру</string>
+    <string name="scan_camera_body">Чтобы прочитать код сопряжения реле, DSH Mobile нужна камера. Можно и ввести восьмизначный код: это тот же код.</string>
+    <string name="scan_camera_denied">Доступ к камере заблокирован. Разрешите его в настройках или введите код вручную.</string>
+    <string name="scan_camera_failed">Не удалось запустить камеру. Возможно, её использует другое приложение. Закройте его и повторите попытку или введите код вручную.</string>
+    <string name="scan_camera_missing">На этом устройстве нет камеры. Введите код вручную.</string>
+    <string name="scan_camera_settings">Открыть настройки</string>
+    <string name="scan_camera_title">Камера выключена</string>
+    <string name="scan_detected">Код прочитан</string>
+    <string name="scan_hint">Наведите камеру на код на странице сопряжения реле</string>
+    <string name="scan_type_instead">Ввести код вручную</string>
     <string name="settings_connection_disconnect">Отключиться</string>
     <string name="settings_title">Настройки</string>
 </resources>

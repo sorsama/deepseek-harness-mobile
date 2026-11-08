@@ -81,6 +81,17 @@ object RelayPairing {
     }
 
     /**
+     * [text] as the absolute `http(s)` address it is, or null when it is not one.
+     *
+     * The parts the pairing flow decides on (is it TLS, which authority does a failure name, which
+     * path does the relay live under) without handing the caller a platform URL type. It is the very
+     * parser the rest of this object uses, so the Android app (OkHttp's `HttpUrl`) and the iOS app
+     * (`PortableUrls`) read an address as they always have.
+     */
+    fun address(text: String): RelayAddress? =
+        parseWireUrl(text)?.let { RelayAddress(it.scheme, it.host, it.port, it.encodedPath) }
+
+    /**
      * The origins an invitation names, in the order a client should try them.
      *
      * A relay on a laptop with both Ethernet and Wi-Fi cannot tell which network the phone is on,
@@ -265,6 +276,21 @@ object RelayPairing {
         } catch (e: IOException) {
             HttpOutcome.Failed(e)
         }
+}
+
+/**
+ * An absolute `http(s)` address, in OkHttp's vocabulary: [host] is bare (an IPv6 literal unbracketed),
+ * [port] is always filled in (the scheme's default when the text gave none), and [encodedPath] is the
+ * canonical path (`/` for none).
+ */
+data class RelayAddress(
+    val scheme: String,
+    val host: String,
+    val port: Int,
+    val encodedPath: String,
+) {
+    /** Whether this address is served over TLS. */
+    val secure: Boolean get() = scheme == "https"
 }
 
 /** What a pairing QR carries. Mirrors `PairingPayload` in the plugin's `src/auth/pairing.ts`. */

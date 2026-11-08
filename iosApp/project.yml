@@ -70,6 +70,8 @@ targets:
         # The first connection to a computer on the Wi-Fi makes iOS ask for this permission, and this
         # text is what it shows. Translations are in DSHMobile/<language>.lproj/InfoPlist.strings.
         NSLocalNetworkUsageDescription: DSH Mobile connects to the DeepSeek Harness running on your own computer. It only talks to the address you enter and does not look at anything else on your network.
+        # Asked for the first time the Pair screen's scanner opens. Translated the same way.
+        NSCameraUsageDescription: DSH Mobile uses the camera only to read the QR code on your relay’s pairing page. It does not take photos or record video.
         # The harness is plain HTTP by design, at an address the person types: usually
         # http://192.168.x.x:3080, sometimes a name on their own network or tailnet. ATS blocks plain
         # HTTP to anything but its local-network exemption, and a name that is not .local or an
@@ -90,14 +92,16 @@ targets:
         # configuration and SDK.
         FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../sharedUi/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
         # A static Kotlin framework does not carry the system frameworks it calls into with it; Xcode
-        # has to link them. Security is the one nothing else in the app pulls in (certificate
-        # pinning reads keys through it).
+        # has to link them. Security and AVFoundation are the ones nothing else in the app pulls in
+        # (certificate pinning reads keys through the first; the Pair screen's QR scanner is the second).
         OTHER_LDFLAGS:
           - "$(inherited)"
           - "-framework"
           - "DshShared"
           - "-framework"
           - "Security"
+          - "-framework"
+          - "AVFoundation"
     preBuildScripts:
       - name: Build the Kotlin framework
         basedOnDependencyAnalysis: false

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="common_back">واپس</string>
     <string name="common_cancel">منسوخ کریں</string>
     <string name="common_connected">منسلک</string>
+    <string name="common_retry">دوبارہ کوشش کریں</string>
     <string name="connect_auto_lan">Wi-Fi پر دریافت شدہ harness سے خودکار طور پر منسلک ہوں</string>
     <string name="connect_auto_last">آخری استعمال شدہ harness سے دوبارہ منسلک ہوں</string>
     <string name="connect_auto_loopback">اس ڈیوائس پر موجود harness سے خودکار طور پر منسلک ہوں</string>
@@ -95,6 +97,45 @@
     <string name="connect_title">Harness سے منسلک ہوں</string>
     <string name="connect_try_again">دوبارہ کوشش کریں</string>
     <string name="connect_unreachable">ناقابل رسائی</string>
+    <string name="pair_code_hint">8 ہندسے</string>
+    <string name="pair_code_label">پیئرنگ کوڈ</string>
+    <string name="pair_fail_certificate">‎%1$s‎ کی کلید وہ نہیں جو اس کوڈ میں بتائی گئی ہے۔ پیئر نہ کریں۔ ہو سکتا ہے اُس پتے پر کوئی اور جواب دے رہا ہو۔</string>
+    <string name="pair_fail_code">ریلے کے پیئرنگ صفحے پر دکھایا گیا کوڈ لکھیں۔</string>
+    <string name="pair_fail_expired">اس کوڈ کی میعاد ختم ہو چکی ہے۔ نیا کوڈ لینے کے لیے ریلے کا پیئرنگ صفحہ دوبارہ لوڈ کریں۔</string>
+    <string name="pair_fail_host_refused">‎%1$s‎ ریلے ہی ہے، مگر اس پتے سے آنے والی درخواستیں وہ مسترد کرتا ہے، اور اس نے کوڈ پڑھا ہی نہیں۔ اُس پتے کو ریلے کی cordis.patch.yml میں publicHostnames میں شامل کر کے دوبارہ چلائیں، یا ریلے تک ایسے پتے سے پہنچیں جسے وہ پہلے سے جانتا ہے۔</string>
+    <string name="pair_fail_not_a_code">یہ ریلے کا پیئرنگ کوڈ نہیں ہے۔</string>
+    <string name="pair_fail_not_a_relay">‎%1$s‎ نے جواب دیا، مگر یہ پیئرنگ قبول نہیں کرتا۔ وہی پتہ استعمال کریں جو ریلے نے شروع ہوتے وقت چھاپا تھا، harness کا اپنا پتہ نہیں۔</string>
+    <string name="pair_fail_rate_limited">بہت زیادہ کوششیں۔ ‎%1$d‎ سیکنڈ انتظار کر کے دوبارہ کوشش کریں۔</string>
+    <string name="pair_fail_rejected">ریلے نے یہ کوڈ مسترد کر دیا۔ کوڈ ایک ہی بار چلتے ہیں اور چند منٹ میں ختم ہو جاتے ہیں۔ پیئرنگ صفحہ دوبارہ لوڈ کر کے نیا کوڈ آزمائیں۔</string>
+    <string name="pair_fail_too_new">یہ کوڈ ایک ایسے نئے ریلے (ورژن ‎%1$d‎) کا ہے جسے یہ ایپ نہیں سمجھتی۔ DSH Mobile اپ ڈیٹ کریں۔</string>
+    <string name="pair_fail_unreachable">‎%1$s‎ تک نہیں پہنچا جا سکا۔ پتہ جانچیں، اور یہ بھی کہ ریلے چل رہا ہے اور اس فون سے قابلِ رسائی ہے۔</string>
+    <string name="pair_fail_url">ریلے کا پتہ ‎https://‎ سمیت لکھیں</string>
+    <string name="pair_hero_title">پیئرنگ کوڈ اسکین کریں</string>
+    <string name="pair_key_first_use">ہاتھ سے لکھے پتے میں کوئی کلید نہیں ہوتی، اس لیے پہلی بار جو جواب دے اُسی پر بھروسا کیا جاتا ہے۔ QR کوڈ اسکین کرنے سے کلید کی جانچ ہو جاتی ہے۔</string>
+    <string name="pair_key_plaintext">یہ پتہ مشفّر نہیں ہے، اس لیے ٹوکن اور آپ کی بھیجی ہوئی ہر چیز کھلی حالت میں سفر کرتی ہے۔</string>
+    <string name="pair_key_verified">اسکین کیے گئے کوڈ میں اس ریلے کی کلید موجود ہے، اس لیے کچھ بھیجنے سے پہلے ہی اس کی جانچ ہو جاتی ہے۔</string>
+    <string name="pair_manual_title">یا کوڈ ٹائپ کریں</string>
+    <string name="pair_name_label">اس ڈیوائس کا نام</string>
+    <string name="pair_scan">QR کوڈ اسکین کریں</string>
+    <string name="pair_scanned">%1$s کے ساتھ پیئر ہو رہا ہے</string>
+    <string name="pair_step_run">اپنے کمپیوٹر پر چلائیں %1$s</string>
+    <string name="pair_step_scan">کیمرہ دکھائے گئے QR کوڈ پر رکھیں۔ اس کے بعد ڈیوائس پاس ورڈ مقرر کریں گے۔</string>
+    <string name="pair_submit">پیئر کریں</string>
+    <string name="pair_subtitle">harness چلانے والے کمپیوٹر پر ‎/relay/pair‎ کھولیں۔ وہاں ایک QR کوڈ اور آٹھ ہندسوں کا کوڈ دکھائی دے گا؛ دونوں میں سے کوئی بھی چلے گا، اور دونوں چند منٹ میں ختم ہو جاتے ہیں۔</string>
+    <string name="pair_title">ریلے سے پیئر کریں</string>
+    <string name="pair_url_hint">https://192.168.1.5:3443</string>
+    <string name="pair_url_label">ریلے کا پتہ</string>
+    <string name="pair_working">پیئر ہو رہا ہے…</string>
+    <string name="scan_camera_allow">کیمرے کی اجازت دیں</string>
+    <string name="scan_camera_body">ریلے کا پیئرنگ کوڈ پڑھنے کے لیے DSH Mobile کو کیمرے کی ضرورت ہے۔ آپ آٹھ ہندسوں کا کوڈ ٹائپ بھی کر سکتے ہیں، یہ وہی کوڈ ہے۔</string>
+    <string name="scan_camera_denied">کیمرے تک رسائی مسدود ہے۔ سیٹنگز میں اس کی اجازت دیں، یا اس کے بجائے کوڈ ٹائپ کریں۔</string>
+    <string name="scan_camera_failed">کیمرہ شروع نہیں ہو سکا۔ شاید کوئی دوسری ایپ اسے استعمال کر رہی ہے۔ وہ ایپ بند کر کے دوبارہ کوشش کریں، یا اس کے بجائے کوڈ ٹائپ کریں۔</string>
+    <string name="scan_camera_missing">اس ڈیوائس میں کوئی کیمرہ نہیں ہے۔ اس کے بجائے کوڈ ٹائپ کریں۔</string>
+    <string name="scan_camera_settings">سیٹنگز کھولیں</string>
+    <string name="scan_camera_title">کیمرہ بند ہے</string>
+    <string name="scan_detected">کوڈ پڑھ لیا گیا</string>
+    <string name="scan_hint">کیمرہ ریلے کے پیئرنگ صفحے پر موجود کوڈ کی طرف رکھیں</string>
+    <string name="scan_type_instead">اس کے بجائے کوڈ ٹائپ کریں</string>
     <string name="settings_connection_disconnect">کنکشن ختم کریں</string>
     <string name="settings_title">سیٹنگز</string>
 </resources>

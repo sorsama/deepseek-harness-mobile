@@ -1,8 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pair_hero_title">Отсканируйте код сопряжения</string>
-    <string name="pair_step_run">На компьютере выполните %1$s</string>
-    <string name="pair_step_scan">Наведите камеру на показанный QR-код. Затем зададите пароль устройства.</string>
-    <string name="pair_code_hint">8 цифр</string>
-    <string name="pair_scanned">Сопряжение с %1$s</string>
 </resources>
