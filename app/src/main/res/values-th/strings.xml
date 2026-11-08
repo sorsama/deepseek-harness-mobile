@@ -533,4 +533,25 @@
     <string name="hold_replace_draft_title">แทนที่ฉบับร่างหรือไม่</string>
     <string name="hold_replace_draft_body">ช่องพิมพ์มีข้อความอยู่แล้ว การแก้ไขข้อความนี้จะแทนที่ข้อความนั้น</string>
     <string name="hold_replace_draft_confirm">แทนที่</string>
+
+    <!-- Provider usage -->
+    <string name="quota_title">ขีดจำกัดและยอดคงเหลือ</string>
+    <string name="quota_short">5 ชม.</string>
+    <string name="quota_week">สัปดาห์</string>
+    <string name="quota_unknown">ไม่มีข้อมูลขีดจำกัด</string>
+    <string name="quota_refresh">ตรวจสอบอีกครั้ง</string>
+    <string name="quota_checked">ตรวจสอบแล้ว: %1$s</string>
+    <string name="quota_all">ผู้ให้บริการทั้งหมด</string>
+    <string name="quota_current">ผู้ให้บริการปัจจุบัน</string>
+    <string name="quota_updated">อัปเดต: %1$s</string>
+    <string name="quota_stale">ข้อมูลล้าสมัย</string>
+    <string name="quota_reset">รีเซ็ต: %1$s</string>
+    <string name="quota_checking">กำลังตรวจสอบ…</string>
+    <string name="quota_compact_session">5ชม</string>
+    <string name="quota_compact_week">สัปดาห์</string>
+    <string name="quota_compact_day">วัน</string>
+    <string name="quota_compact_hour">ชม</string>
+    <string name="quota_compact_minute">นาที</string>
+    <string name="quota_other">ขีดจำกัดอื่น</string>
+    <string name="quota_remaining_percent">คงเหลือ: %1$s</string>
 </resources>

@@ -533,4 +533,25 @@
     <string name="hold_replace_draft_title">ड्राफ़्ट बदलें?</string>
     <string name="hold_replace_draft_body">कंपोज़र में पहले से टेक्स्ट है। इस संदेश को एडिट करने पर वह बदल जाएगा।</string>
     <string name="hold_replace_draft_confirm">बदलें</string>
+
+    <!-- Provider usage -->
+    <string name="quota_title">सीमाएं और शेष राशि</string>
+    <string name="quota_short">5 घंटे</string>
+    <string name="quota_week">सप्ताह</string>
+    <string name="quota_unknown">सीमा की जानकारी नहीं है</string>
+    <string name="quota_refresh">फिर जांचें</string>
+    <string name="quota_checked">जांच की गई: %1$s</string>
+    <string name="quota_all">सभी प्रदाता</string>
+    <string name="quota_current">वर्तमान प्रदाता</string>
+    <string name="quota_updated">अपडेट किया गया: %1$s</string>
+    <string name="quota_stale">पुरानी जानकारी</string>
+    <string name="quota_reset">रीसेट: %1$s</string>
+    <string name="quota_checking">जांच रहे हैं…</string>
+    <string name="quota_compact_session">5घं</string>
+    <string name="quota_compact_week">सप्ताह</string>
+    <string name="quota_compact_day">दि</string>
+    <string name="quota_compact_hour">घं</string>
+    <string name="quota_compact_minute">मि</string>
+    <string name="quota_other">अन्य सीमा</string>
+    <string name="quota_remaining_percent">शेष: %1$s</string>
 </resources>

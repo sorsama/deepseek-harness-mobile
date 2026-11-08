@@ -533,4 +533,25 @@
     <string name="hold_replace_draft_title">ڈرافٹ بدلیں؟</string>
     <string name="hold_replace_draft_body">کمپوزر میں پہلے سے متن موجود ہے۔ اس پیغام میں ترمیم اسے بدل دے گی۔</string>
     <string name="hold_replace_draft_confirm">بدلیں</string>
+
+    <!-- Provider usage -->
+    <string name="quota_title">حدود اور بیلنس</string>
+    <string name="quota_short">5 گھنٹے</string>
+    <string name="quota_week">ہفتہ</string>
+    <string name="quota_unknown">حدود کی معلومات دستیاب نہیں</string>
+    <string name="quota_refresh">دوبارہ جانچیں</string>
+    <string name="quota_checked">جانچ کی گئی: %1$s</string>
+    <string name="quota_all">تمام فراہم کنندگان</string>
+    <string name="quota_current">موجودہ فراہم کنندہ</string>
+    <string name="quota_updated">تازہ کاری: %1$s</string>
+    <string name="quota_stale">پرانی معلومات</string>
+    <string name="quota_reset">ری سیٹ: %1$s</string>
+    <string name="quota_checking">جانچ جاری ہے…</string>
+    <string name="quota_compact_session">5گھ</string>
+    <string name="quota_compact_week">ہفتہ</string>
+    <string name="quota_compact_day">دن</string>
+    <string name="quota_compact_hour">گھ</string>
+    <string name="quota_compact_minute">منٹ</string>
+    <string name="quota_other">دیگر حد</string>
+    <string name="quota_remaining_percent">باقی: %1$s</string>
 </resources>

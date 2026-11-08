@@ -533,4 +533,25 @@
     <string name="hold_replace_draft_title">Remplacer le brouillon ?</string>
     <string name="hold_replace_draft_body">La zone de saisie contient déjà du texte. Modifier ce message le remplace.</string>
     <string name="hold_replace_draft_confirm">Remplacer</string>
+
+    <!-- Provider usage -->
+    <string name="quota_title">Limites et solde</string>
+    <string name="quota_short">5 h</string>
+    <string name="quota_week">Semaine</string>
+    <string name="quota_unknown">Aucune donnée sur les limites</string>
+    <string name="quota_refresh">Vérifier</string>
+    <string name="quota_checked">Vérifié : %1$s</string>
+    <string name="quota_all">Tous les fournisseurs</string>
+    <string name="quota_current">Fournisseur actuel</string>
+    <string name="quota_updated">Mis à jour : %1$s</string>
+    <string name="quota_stale">Données obsolètes</string>
+    <string name="quota_reset">Réinitialisation : %1$s</string>
+    <string name="quota_checking">Vérification…</string>
+    <string name="quota_compact_session">5h</string>
+    <string name="quota_compact_week">sem</string>
+    <string name="quota_compact_day">j</string>
+    <string name="quota_compact_hour">h</string>
+    <string name="quota_compact_minute">min</string>
+    <string name="quota_other">Autre limite</string>
+    <string name="quota_remaining_percent">Reste : %1$s</string>
 </resources>

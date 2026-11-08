@@ -533,4 +533,25 @@
     <string name="hold_replace_draft_title">استبدال المسودة؟</string>
     <string name="hold_replace_draft_body">يحتوي مربع الكتابة على نص بالفعل. تعديل هذه الرسالة سيستبدله.</string>
     <string name="hold_replace_draft_confirm">استبدال</string>
+
+    <!-- Provider usage -->
+    <string name="quota_title">الحدود والرصيد</string>
+    <string name="quota_short">٥ س</string>
+    <string name="quota_week">الأسبوع</string>
+    <string name="quota_unknown">لا توجد بيانات عن الحدود</string>
+    <string name="quota_refresh">إعادة التحقق</string>
+    <string name="quota_checked">تم التحقق: %1$s</string>
+    <string name="quota_all">كل المزوّدين</string>
+    <string name="quota_current">المزوّد الحالي</string>
+    <string name="quota_updated">آخر تحديث: %1$s</string>
+    <string name="quota_stale">بيانات قديمة</string>
+    <string name="quota_reset">إعادة التعيين: %1$s</string>
+    <string name="quota_checking">جارٍ التحقق…</string>
+    <string name="quota_compact_session">٥س</string>
+    <string name="quota_compact_week">أسب</string>
+    <string name="quota_compact_day">ي</string>
+    <string name="quota_compact_hour">س</string>
+    <string name="quota_compact_minute">د</string>
+    <string name="quota_other">حد آخر</string>
+    <string name="quota_remaining_percent">المتبقي: %1$s</string>
 </resources>

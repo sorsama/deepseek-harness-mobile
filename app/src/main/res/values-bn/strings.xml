@@ -533,4 +533,25 @@
     <string name="hold_replace_draft_title">খসড়া বদলাবেন?</string>
     <string name="hold_replace_draft_body">কম্পোজারে আগে থেকেই লেখা আছে। এই বার্তা এডিট করলে সেটি বদলে যাবে।</string>
     <string name="hold_replace_draft_confirm">বদলান</string>
+
+    <!-- Provider usage -->
+    <string name="quota_title">সীমা ও ব্যালেন্স</string>
+    <string name="quota_short">৫ ঘণ্টা</string>
+    <string name="quota_week">সপ্তাহ</string>
+    <string name="quota_unknown">সীমার তথ্য নেই</string>
+    <string name="quota_refresh">আবার যাচাই করুন</string>
+    <string name="quota_checked">যাচাই করা হয়েছে: %1$s</string>
+    <string name="quota_all">সব প্রদানকারী</string>
+    <string name="quota_current">বর্তমান প্রদানকারী</string>
+    <string name="quota_updated">আপডেট হয়েছে: %1$s</string>
+    <string name="quota_stale">পুরোনো তথ্য</string>
+    <string name="quota_reset">রিসেট: %1$s</string>
+    <string name="quota_checking">যাচাই করা হচ্ছে…</string>
+    <string name="quota_compact_session">৫ঘ</string>
+    <string name="quota_compact_week">সপ্তাহ</string>
+    <string name="quota_compact_day">দি</string>
+    <string name="quota_compact_hour">ঘ</string>
+    <string name="quota_compact_minute">মি</string>
+    <string name="quota_other">অন্য সীমা</string>
+    <string name="quota_remaining_percent">অবশিষ্ট: %1$s</string>
 </resources>
