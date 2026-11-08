@@ -189,7 +189,7 @@ jobs:
           done
           cat "$SIM_REPORTS/fixtures.log"
           grep -q "ci fixtures listening" "$SIM_REPORTS/fixtures.log"
-          for port in 3181 3182 3183; do
+          for port in 3181 3182 3183 3184; do
             curl -sS -o /dev/null -w "port $port answers %{http_code}\n" "http://127.0.0.1:$port/ci/status/418"
           done
       # The first execution of the Darwin transport. `HarnessContractTest` is the same file that runs
@@ -206,7 +206,7 @@ jobs:
             total=$((total + n))
           done
           echo "core iOS tests executed: $total"
-          test "$total" -ge 30 || { echo "::error::expected at least 30 Kotlin/Native tests to have run in :core, found $total"; exit 1; }
+          test "$total" -ge 37 || { echo "::error::expected at least 37 Kotlin/Native tests to have run in :core, found $total"; exit 1; }
           shopt -s nullglob
           shared=0
           for f in iosShared/build/test-results/iosSimulatorArm64Test/*.xml; do
@@ -215,6 +215,15 @@ jobs:
           done
           echo "iosShared iOS tests executed: $shared"
           test "$shared" -ge 1 || { echo "::error::no Kotlin/Native tests ran in :iosShared"; exit 1; }
+      # What the mux socket was measured doing, in the run's own log: the one-line results the tests
+      # print (`MUX_401`, `MUX_REFUSED`, `MUX_LARGE`, `MUX_CLOSE`, `MUX_PING`) and every delegate event
+      # of every socket (`MUX_TRACE`), which says which `NSURLSession` callback decided each outcome.
+      - name: Show what the Darwin mux socket did
+        if: ${{ !cancelled() }}
+        run: |
+          shopt -s nullglob
+          grep -h -E 'MUX_(401|REFUSED|LARGE|CLOSE|PING|TRACE)' core/build/test-results/iosSimulatorArm64Test/*.xml \
+            | sed -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&amp;/\&/g' | cut -c1-300 || echo "no MUX_ lines found in the test reports"
       - name: Generate the Xcode project
         if: ${{ !cancelled() }}
         run: iosApp/generate.sh

@@ -32,7 +32,8 @@ interface WsChannelSink {
  * it, tear it down. Nothing else about a WebSocket reaches the shared code.
  *
  * This is the seam between the mux and the platform. On Android it is `WsChannel`, an OkHttp
- * WebSocket; the iOS carrier will implement the same three calls over Ktor's Darwin engine. The
+ * WebSocket; on iOS it is `DarwinMuxSocket`, written on `NSURLSessionWebSocketTask`; `KtorMuxSocket`
+ * is the multiplatform reference both are held to ([platformMuxSocketFactory] picks the platform's). The
  * handshake rules — the `Authorization` header, the browser-session cookie, how a rejected
  * upgrade is reported — belong to the implementation and are fixed at construction, which is why
  * none of them appear here. A socket reports back through the [WsChannelSink] it was created with

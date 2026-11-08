@@ -7,8 +7,9 @@ import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.plugin
 
 /**
- * The Ktor client the iOS app builds [KtorRpcTransport] and [KtorMuxSocket] on: the Darwin engine,
- * which is `NSURLSession` and `NSURLSessionWebSocketTask`, configured for DSH traffic.
+ * The Ktor client the iOS app builds [KtorRpcTransport] on: the Darwin engine, which is `NSURLSession`,
+ * configured for DSH traffic. (The mux WebSocket is not Ktor's on iOS: [DarwinMuxSocket] runs its own
+ * `NSURLSession` with the same pinning handlers, see [platformMuxSocketFactory].)
  *
  * Share one client across the transports for a connection the way the Android app shares its OkHttp
  * client: it owns the session, its connections and its threads. Per-call settings (the connect and

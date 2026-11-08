@@ -18,6 +18,9 @@ internal actual suspend fun openContractRig(): ContractRig {
     check(CiFixtures.STREAM_UNICODE == ContractFixtures.STREAM_UNICODE && CiFixtures.STREAM_LARGE_CHARS == ContractFixtures.STREAM_LARGE_CHARS) {
         "ContractFixtures drifted from CiFixtures"
     }
+    check(CiFixtures.WS_CLOSE_GREETING == ContractFixtures.WS_CLOSE_GREETING && CiFixtures.WS_ALIVE == ContractFixtures.WS_ALIVE) {
+        "ContractFixtures drifted from CiFixtures"
+    }
     val servers = CiFixtures.start()
     val closedPort = ServerSocket(0).use { it.localPort }
     return object : ContractRig {
@@ -25,9 +28,16 @@ internal actual suspend fun openContractRig(): ContractRig {
         override val sessionUrl = servers.sessionUrl
         override val relayUrl = servers.relayUrl
         override val deadUrl = "http://127.0.0.1:$closedPort"
-        override val muxFenceVerdict = TransportFailure.TRUST_FENCE
-        override val muxUnauthorizedIsReported = true
-        override val muxAcceptsLargeMessages = true
+        override val keepAliveUrl = servers.keepAliveUrl
         override fun newClient(): HttpClient = HttpClient(CIO) { dshCarrier() }
+
+        override fun newMuxSocket(
+            client: HttpClient,
+            url: String,
+            sink: WsChannelSink,
+            authorization: String?,
+            cookie: String?,
+            connectTimeoutMs: Long,
+        ): MuxSocket = KtorMuxSocket(url, client, sink, authorization, cookie, connectTimeoutMs)
     }
 }
