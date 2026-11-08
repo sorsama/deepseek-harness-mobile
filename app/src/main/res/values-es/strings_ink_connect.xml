@@ -1,29 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connect_hero_subtitle">Refleja el harness que se ejecuta en tu ordenador.</string>
-    <string name="connect_loopback_notice">Ejecuta el harness en Termux en este teléfono. DSH puede iniciarlo, detenerlo e iniciar sesión por ti.</string>
-    <string name="connect_lan_notice">Sin cifrar. Usa Red local solo en una red Wi-Fi de confianza.</string>
-    <string name="connect_relay_notice">Cifrado y protegido con contraseña. Escanea el QR de emparejamiento de dsh-relay.</string>
-    <string name="connect_section_discovered">Detectados</string>
-    <string name="connect_section_discovered_relay">Relays detectados</string>
-    <string name="connect_scan_progress_short">Escaneando %1$d de %2$d</string>
-    <string name="connect_harness_actions">Acciones del harness</string>
-    <string name="connect_forget_harness">Olvidar este harness</string>
-    <string name="connect_connecting_to">Conectando con %1$s</string>
-    <string name="connect_step_address">Comprobando la dirección</string>
-    <string name="connect_step_reaching">Contactando con %1$s</string>
-    <string name="connect_step_streams">Abriendo flujos de eventos</string>
-    <string name="connect_step_verify">Verificando el harness</string>
-    <string name="connect_lost_reconnecting">Reconectando con %1$s</string>
-    <string name="connect_lost_body">El agente sigue trabajando en el ordenador. Tu borrador y tu posición en cada chat están guardados.</string>
-    <string name="connect_lost_retry_now">Reintentar ahora</string>
-    <string name="connect_lost_choose">Elegir otro harness</string>
-    <string name="connect_lost_attempt">Intento %1$d</string>
-    <string name="connect_lost_tag">Reconectando</string>
-    <string name="connect_sign_in_to">Iniciar sesión en %1$s</string>
-    <string name="connect_sign_in_subtitle">Este harness aún no ha autorizado este teléfono.</string>
-    <string name="connect_sign_in_link_body">El harness imprime un enlace al arrancar. Pega ese enlace, o solo el token tras ?token=.</string>
-    <string name="connect_sign_in_token_hint">El token cambia cada vez que se reinicia el harness.</string>
     <string name="pair_hero_title">Escanea el código de emparejamiento</string>
     <string name="pair_step_run">En tu ordenador, ejecuta %1$s</string>
     <string name="pair_step_scan">Apunta la cámara al código QR que muestra. Después elegirás una contraseña para el dispositivo.</string>

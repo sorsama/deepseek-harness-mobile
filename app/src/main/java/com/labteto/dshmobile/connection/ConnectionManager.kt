@@ -12,6 +12,7 @@ import com.labteto.dshmobile.core.wire.GenerationFailure
 import com.labteto.dshmobile.core.wire.HandshakeStep
 import com.labteto.dshmobile.core.wire.LoopSinks
 import com.labteto.dshmobile.ui.screens.connect.ConnectFailure
+import com.labteto.dshmobile.ui.screens.connect.ConnectionLink
 import com.labteto.dshmobile.core.wire.HostGeneration
 import com.labteto.dshmobile.core.wire.RemoteStreamMux
 import com.labteto.dshmobile.core.wire.dto.RemoteEventFrame
@@ -28,36 +29,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** UI-facing connection state. */
-enum class ConnectionPhase { DISCONNECTED, CONNECTING, CONNECTED, RECONNECTING }
-
-/**
- * How far the readiness handshake has got, so the connect screen can say what it is doing.
- *
- * `OpeningStreams` is now one socket rather than two, and `Verifying` is waiting for the
- * host's ready frame rather than a `host.describe` answer. The names are kept because what
- * they mean to someone watching the screen has not changed.
- */
-enum class ConnectStage { Idle, Validating, Reaching, OpeningStreams, Verifying, Connected }
-
-data class ConnectionUiState(
-    val phase: ConnectionPhase = ConnectionPhase.DISCONNECTED,
-    val host: HostConfig? = null,
-    val description: HostDescription? = null,
-    val stage: ConnectStage = ConnectStage.Idle,
-    /**
-     * Why the most recent generation failed, or null.
-     *
-     * Survives the backoff ticks between attempts on purpose: the loop keeps retrying, and wiping
-     * this on every state change would blank the only explanation the user gets.
-     */
-    val failure: ConnectFailure? = null,
-    /** Consecutive failed handshake attempts; 0 while none has failed. */
-    val attempts: Int = 0,
-    /** True once at least one generation completed the readiness handshake. */
-    val hasConnected: Boolean = false,
-)
-
 /**
  * Owns the live connection to one harness: the ConnectionLoop (readiness
  * handshake + reconnect/backoff), the foreground service binding for
@@ -68,11 +39,11 @@ class ConnectionManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val clientFactory: HarnessClientFactory,
     private val hostsStore: HostsStore,
-) {
+) : ConnectionLink {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val _state = MutableStateFlow(ConnectionUiState())
-    val state: StateFlow<ConnectionUiState> = _state.asStateFlow()
+    override val state: StateFlow<ConnectionUiState> = _state.asStateFlow()
 
     private var loop: ConnectionLoop? = null
     private var api: DshApiClient? = null
@@ -165,7 +136,7 @@ class ConnectionManager @Inject constructor(
      * forever with nothing on screen. The loop now reports each failed generation directly, which
      * is both sooner and specific.
      */
-    suspend fun connect(config: HostConfig) {
+    override suspend fun connect(config: HostConfig) {
         disconnect()
         activeHost = config
         _state.value = ConnectionUiState(
@@ -180,7 +151,7 @@ class ConnectionManager @Inject constructor(
         hostsStore.upsertHost(config)
     }
 
-    fun disconnect() {
+    override fun disconnect() {
         loop?.stop()
         loop = null
         api = null

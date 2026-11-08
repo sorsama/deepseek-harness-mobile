@@ -76,7 +76,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
@@ -116,6 +115,7 @@ import com.labteto.dshmobile.ui.components.StateDot
 import com.labteto.dshmobile.ui.components.StateDotState
 import com.labteto.dshmobile.ui.components.clickableWithHold
 import com.labteto.dshmobile.ui.components.rememberCopier
+import com.labteto.dshmobile.ui.components.mascotPainter
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.components.relativeTime
@@ -1582,7 +1582,7 @@ private fun SessionRowItem(
 @Composable
 private fun SessionAvatar(tint: Color, size: androidx.compose.ui.unit.Dp) {
     Image(
-        painter = painterResource(R.drawable.mascot_mark),
+        painter = mascotPainter(),
         contentDescription = null,
         colorFilter = ColorFilter.tint(tint),
         modifier = Modifier.size(size),

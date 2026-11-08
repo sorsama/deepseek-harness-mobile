@@ -3,7 +3,7 @@
 # to this file. Everything the project says lives here, so a reviewer reads one file and a merge
 # never conflicts on a pbxproj.
 #
-# The app is a SwiftUI shell around the Compose Multiplatform UI in `:iosShared`. A build phase runs
+# The app is a SwiftUI shell around the Compose Multiplatform UI in `:sharedUi`. A build phase runs
 # Gradle to build that module's static framework for the SDK Xcode is building for, and Xcode links it.
 #
 # Version numbers come from the environment (`generate.sh` sets them from `app/build.gradle.kts`, the
@@ -88,7 +88,7 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # Where `embedAndSignAppleFrameworkForXcode` leaves `DshShared.framework` for this build's
         # configuration and SDK.
-        FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../iosShared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
+        FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../sharedUi/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
         # A static Kotlin framework does not carry the system frameworks it calls into with it; Xcode
         # has to link them. Security is the one nothing else in the app pulls in (certificate
         # pinning reads keys through it).
@@ -110,7 +110,7 @@ targets:
             export JAVA_HOME
           fi
           # -Pdsh.iosOnly leaves the Android app out of the Gradle build, so no Android SDK is needed.
-          ./gradlew -Pdsh.iosOnly=true :iosShared:embedAndSignAppleFrameworkForXcode
+          ./gradlew -Pdsh.iosOnly=true :sharedUi:embedAndSignAppleFrameworkForXcode
 
 schemes:
   DSHMobile:

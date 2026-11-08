@@ -16,6 +16,10 @@ import java.io.File
  *
  * It reads the sources, not the compiled classes, because the mistake is made while typing and a
  * failing build with the file, the line and the component to use is the cheapest place to catch it.
+ *
+ * The shared components moved to `:sharedUi` when the Connect screen did, so it reads both source
+ * trees: the app's and the shared module's. The paths below are relative to a tree, and both trees
+ * use the same package directories.
  */
 class WindowRulesTest {
 
@@ -77,9 +81,10 @@ class WindowRulesTest {
 
     @Test
     fun noWindowIsBuiltOutsideTheSharedComponents() {
-        val root = javaRoot()
         val offences = mutableListOf<String>()
-        root.walkTopDown().filter { it.isFile && it.extension == "kt" }.forEach { file ->
+        val files = sourceRoots().flatMap { root -> root.walkTopDown().filter { it.isFile && it.extension == "kt" }.map { root to it }.toList() }
+        assertTrue("no sources found to scan", files.isNotEmpty())
+        files.forEach { (root, file) ->
             val relative = file.relativeTo(root).invariantSeparatorsPath
             val code = stripCommentsAndStrings(file.readText())
             for (rule in rules) {
@@ -104,13 +109,12 @@ class WindowRulesTest {
     /** The allowlist must not go stale: if a shared component moves, the rule above would pass for the wrong reason. */
     @Test
     fun theSharedComponentsStillOwnTheirWindows() {
-        val root = javaRoot()
-        val window = stripCommentsAndStrings(File(root, windowFile).also { assertTrue("$windowFile is missing", it.isFile) }.readText())
-        val sheet = stripCommentsAndStrings(File(root, sheetFile).also { assertTrue("$sheetFile is missing", it.isFile) }.readText())
+        val window = stripCommentsAndStrings(sourceFile(windowFile).readText())
+        val sheet = stripCommentsAndStrings(sourceFile(sheetFile).readText())
         assertTrue("DsFullScreen.kt no longer creates the dialog window", Regex("""(?<![A-Za-z0-9_])Dialog\s*\(""").containsMatchIn(window))
         assertTrue("DsFullScreen.kt no longer sets decorFitsSystemWindows", window.contains("decorFitsSystemWindows"))
         assertTrue("DsBottomSheet.kt no longer creates the sheet window", Regex("""ModalBottomSheet\s*\(""").containsMatchIn(sheet))
-        val overlays = stripCommentsAndStrings(File(root, "com/labteto/dshmobile/ui/components/Overlays.kt").readText())
+        val overlays = stripCommentsAndStrings(sourceFile("com/labteto/dshmobile/ui/components/Overlays.kt").readText())
         assertTrue("DsDialog must open its window through DsWindow", overlays.contains("DsWindow("))
     }
 
@@ -144,16 +148,23 @@ class WindowRulesTest {
         assertTrue("DsDialog( is not mistaken for Dialog(", Regex("""(?<![A-Za-z0-9_])Dialog\s*\(""").findAll(code).count() == 1)
     }
 
-    private fun javaRoot(): File {
+    /** The app's sources and every source set of the shared module that the Android app compiles or ships. */
+    private fun sourceRoots(): List<File> {
         var dir: File? = File(System.getProperty("user.dir")).absoluteFile
         while (dir != null) {
-            listOf(File(dir, "src/main/java"), File(dir, "app/src/main/java")).firstOrNull {
-                File(it, "com/labteto/dshmobile").isDirectory
-            }?.let { return it }
+            if (File(dir, "settings.gradle.kts").isFile) {
+                return listOf("app/src/main/java", "sharedUi/src/commonMain/kotlin", "sharedUi/src/androidMain/kotlin", "sharedUi/src/iosMain/kotlin")
+                    .map { File(dir, it) }
+                    .filter { File(it, "com/labteto/dshmobile").isDirectory }
+                    .also { assertTrue("app/src/main/java is missing from $dir", it.any { r -> r.path.replace("\\", "/").endsWith("app/src/main/java") }) }
+            }
             dir = dir.parentFile
         }
-        error("app/src/main/java not found from ${System.getProperty("user.dir")}; the window rules cannot run")
+        error("the repository root was not found from ${System.getProperty("user.dir")}; the window rules cannot run")
     }
+
+    private fun sourceFile(relative: String): File =
+        sourceRoots().map { File(it, relative) }.firstOrNull { it.isFile } ?: error("$relative is in none of the source trees")
 
     /**
      * The source with comments and the insides of string and character literals blanked, newlines

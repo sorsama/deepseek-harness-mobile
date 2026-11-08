@@ -1,29 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connect_hero_subtitle">แสดง harness ของคอมพิวเตอร์คุณบนมือถือ</string>
-    <string name="connect_loopback_notice">รัน harness ใน Termux บนโทรศัพท์นี้ DSH เริ่ม หยุด และลงชื่อเข้าใช้ให้คุณได้</string>
-    <string name="connect_lan_notice">ไม่เข้ารหัส ใช้โหมดเครือข่ายภายในเฉพาะบน Wi-Fi ที่คุณไว้ใจ</string>
-    <string name="connect_relay_notice">เข้ารหัสและป้องกันด้วยรหัสผ่าน สแกนคิวอาร์โค้ดจับคู่จาก dsh-relay</string>
-    <string name="connect_section_discovered">ที่พบ</string>
-    <string name="connect_section_discovered_relay">รีเลย์ที่พบ</string>
-    <string name="connect_scan_progress_short">กำลังสแกน %1$d จาก %2$d</string>
-    <string name="connect_harness_actions">ตัวเลือกของ harness</string>
-    <string name="connect_forget_harness">ลืม harness นี้</string>
-    <string name="connect_connecting_to">กำลังเชื่อมต่อกับ %1$s</string>
-    <string name="connect_step_address">กำลังตรวจที่อยู่</string>
-    <string name="connect_step_reaching">กำลังเข้าถึง %1$s</string>
-    <string name="connect_step_streams">กำลังเปิดสตรีมเหตุการณ์</string>
-    <string name="connect_step_verify">กำลังตรวจสอบ harness</string>
-    <string name="connect_lost_reconnecting">กำลังเชื่อมต่อใหม่กับ %1$s</string>
-    <string name="connect_lost_body">เอเจนต์ยังทำงานต่อบนคอมพิวเตอร์ ฉบับร่างและตำแหน่งที่อ่านค้างไว้ในแต่ละแชทถูกบันทึกไว้แล้ว</string>
-    <string name="connect_lost_retry_now">ลองใหม่เลย</string>
-    <string name="connect_lost_choose">เลือก harness อื่น</string>
-    <string name="connect_lost_attempt">ครั้งที่ %1$d</string>
-    <string name="connect_lost_tag">กำลังเชื่อมต่อใหม่</string>
-    <string name="connect_sign_in_to">ลงชื่อเข้าใช้ %1$s</string>
-    <string name="connect_sign_in_subtitle">harness นี้ยังไม่ได้ลงชื่อเข้าใช้ให้โทรศัพท์เครื่องนี้</string>
-    <string name="connect_sign_in_link_body">harness จะพิมพ์ลิงก์ตอนเริ่มทำงาน วางลิงก์นั้น หรือเฉพาะโทเคนหลัง ?token=</string>
-    <string name="connect_sign_in_token_hint">โทเคนเปลี่ยนทุกครั้งที่ harness เริ่มใหม่</string>
     <string name="pair_hero_title">สแกนรหัสจับคู่</string>
     <string name="pair_step_run">บนคอมพิวเตอร์ของคุณ รัน %1$s</string>
     <string name="pair_step_scan">หันกล้องไปที่คิวอาร์โค้ดที่แสดง จากนั้นคุณจะตั้งรหัสผ่านอุปกรณ์</string>

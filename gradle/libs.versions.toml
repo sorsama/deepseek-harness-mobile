@@ -31,7 +31,7 @@ espresso = "3.6.1"
 kotlinxCoroutinesTest = "1.9.0"
 androidxTestRunner = "1.6.2"
 commonmark = "0.24.0"
-# Compose Multiplatform for the iOS UI (`:iosShared`). 1.7.1 is the release built for Kotlin 2.0.21,
+# Compose Multiplatform for the UI both apps share (`:sharedUi`). 1.7.1 is the release built for Kotlin 2.0.21,
 # the compiler this repo is on; 1.7.3 and later are built for Kotlin 2.1+ and their klibs would not
 # read on 2.0.21. It moves together with `kotlin`, and the Gradle plugin is the only thing the
 # catalog needs: the plugin's own `compose.*` accessors pick the matching library versions.
@@ -93,6 +93,7 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

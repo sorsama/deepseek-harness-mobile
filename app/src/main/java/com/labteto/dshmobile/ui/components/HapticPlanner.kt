@@ -31,44 +31,7 @@ import kotlin.math.roundToInt
  * is not implemented. On those phones the primitives tier runs instead.
  */
 
-/** What the app means, whichever phone it runs on. */
-enum class HapticEvent {
-    /** A control took the press. */
-    Tap,
-
-    /** A switch turned on. */
-    ToggleOn,
-
-    /** A switch turned off. */
-    ToggleOff,
-
-    /** A discrete choice moved (segment, chip, radio row). */
-    Selection,
-
-    /** An affirmative decision landed. */
-    Confirm,
-
-    /** A negative decision landed. */
-    Reject,
-
-    /** The agent needs a person. */
-    Attention,
-
-    /** A hold gesture was recognised. */
-    LongPress,
-
-    /** A soft tick for a threshold or an edge. */
-    Tick,
-
-    /** Something was picked up to be moved. */
-    DragStart,
-
-    /** A held thing crossed one detent (a slot, a hue step, a page). */
-    DragCross,
-
-    /** A held thing was let go, or a continuous control settled. */
-    DragDrop,
-}
+// [HapticEvent], the vocabulary this file plans for, lives with the shared UI (Haptics.kt in :sharedUi).
 
 /** The vibration primitives of API 30+. Spin is left out: nothing in the app needs it. */
 enum class HapticPrimitive(val minSdk: Int) {

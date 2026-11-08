@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,6 +38,7 @@ import com.labteto.dshmobile.ui.components.DsIconButton
 import com.labteto.dshmobile.ui.components.DsSearchField
 import com.labteto.dshmobile.ui.components.EmptyHero
 import com.labteto.dshmobile.ui.components.relativeTime
+import com.labteto.dshmobile.ui.components.mascotPainter
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -230,7 +230,7 @@ private fun archiveGroups(
 private fun StaticMascot(size: androidx.compose.ui.unit.Dp) {
     val colors = DsTheme.colors
     Image(
-        painter = painterResource(R.drawable.mascot_mark),
+        painter = mascotPainter(),
         contentDescription = null,
         colorFilter = ColorFilter.tint(colors.labelDimmed),
         modifier = Modifier.size(size * 0.82f).alpha(0.8f),

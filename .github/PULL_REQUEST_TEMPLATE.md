@@ -25,7 +25,8 @@ Say what you actually ran, not what should work. For example:
 
 - [ ] `./gradlew :core:jvmTest :mock-harness:test :app:testDebugUnitTest` passes
 - [ ] `./gradlew :app:lintDebug` is clean
-- [ ] Any new user-visible text is in `values/strings.xml` **and all ten translation
+- [ ] Any new user-visible text is in `values/strings.xml` (or, for a screen in `:sharedUi`, its
+      `composeResources/values/strings.xml`) **and all ten translation
       directories** — `MissingTranslation` is a lint error, which is what keeps the
       eleven-language claim true
 - [ ] No hardcoded UI strings

@@ -10,9 +10,6 @@
     <string name="chat_status_running">En cours</string>
     <string name="chat_status_idle">Inactif</string>
     <string name="chatlist_session_copy_id">Copier l’ID de session</string>
-    <string name="connect_paste">Coller</string>
-    <string name="connect_try_again">Réessayer</string>
-    <string name="connect_manual_paste_hint">Collez le lien affiché par dsh web, jeton compris, et vous serez aussi connecté.</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="one">%d nouveau</item>
         <item quantity="many">%d nouveaux</item>

@@ -29,16 +29,7 @@ fun relativeTime(timestampMs: Long, nowMs: Long = System.currentTimeMillis()): S
     }
 }
 
-/** Compact duration for job and turn timings: `4.2s`, `1:03`, `12:45`. */
-fun formatDurationMs(ms: Long): String = when {
-    ms < 1_000 -> "${ms}ms"
-    ms < 60_000 -> String.format(java.util.Locale.US, "%.1fs", ms / 1000.0)
-    ms >= 3_600_000 -> String.format(java.util.Locale.US, "%d:%02d:%02d", ms / 3_600_000, ms / 60_000 % 60, ms / 1000 % 60)
-    else -> {
-        val totalSeconds = ms / 1000
-        String.format(java.util.Locale.US, "%d:%02d", totalSeconds / 60, totalSeconds % 60)
-    }
-}
+// formatDurationMs moved to :sharedUi (Durations.kt) with the connect screen.
 
 /** Token counts read better abbreviated once they pass a thousand. */
 fun formatTokens(value: Long): String = when {

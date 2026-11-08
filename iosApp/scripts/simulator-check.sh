@@ -5,8 +5,8 @@
 #
 # The fixtures are `mock-harness --ci-fixtures` (see CiFixtures in :mock-harness), listening on
 # 127.0.0.1, which a simulator shares with the Mac. The app is driven by the debug-build launch
-# arguments (`-DshConnectAddress`, `-DshAutoConnect`), which go down the same path as typing the
-# address and tapping Connect. Each scenario waits for the one result line the app writes to
+# arguments (`-DshConnectAddress`, `-DshAutoConnect`, `-DshSignInToken`, ...; see DSHMobileApp.swift), which
+# go down the same path as typing the address and tapping. Each scenario waits for the one result line the app writes to
 # Documents/dsh-connect-result.txt (a file, so nothing depends on how the console is buffered),
 # asserts on it, and takes a screenshot into the output directory.
 #
@@ -61,8 +61,13 @@ expect() {
   sleep 3
 }
 
-# 1. Address filled in, nothing sent yet: what a person sees before they tap Connect.
-launch -DshConnectAddress "http://127.0.0.1:3181"
+# Every scenario but the two about what is remembered starts from `-DshReset YES`, which forgets the
+# remembered harnesses, the settings and the Keychain, so none depends on the one before it. The shared
+# Connect screen is the same Compose code the Android app runs; what is different here is only what the
+# platform offers (one mode, no sweep, no Settings; see "The shared UI" in docs/IOS.md).
+
+# 1. Address filled in, nothing sent yet: what a person sees on first launch before they tap Connect.
+launch -DshReset YES -DshConnectAddress "http://127.0.0.1:3181"
 sleep 8
 shot "01-before-connect"
 if [ -e "$result" ]; then
@@ -71,36 +76,91 @@ if [ -e "$result" ]; then
 fi
 
 # 2. The same address, connected: a unary probe and the WebSocket handshake, both over NSURLSession.
-launch -DshConnectAddress "http://127.0.0.1:3181" -DshAutoConnect YES
+launch -DshReset YES -DshConnectAddress "http://127.0.0.1:3181" -DshAutoConnect YES
 expect connected "DSH_CONNECT_RESULT connected authority=127.0.0.1:3181 home=C:.Users.demo protocol="
 shot "02-connected"
 
-# 3. The same screen in the dark scheme.
+# 3. The harness it just connected to, remembered (NSUserDefaults), shown in the Recent list with its
+#    live status. "Reconnect to the last harness" is off for this launch so the list is what is on screen.
+launch -DshAutoReconnect NO
+sleep 9
+shot "03-recent"
+if [ -e "$result" ]; then
+  echo "::error::the app connected without being asked to"
+  failures=$((failures + 1))
+fi
+
+# 4. And with it on, which is the default: the app comes back to the harness it remembers by itself.
+launch -DshAutoReconnect YES -DshReport YES
+expect reconnected-last "DSH_CONNECT_RESULT connected authority=127.0.0.1:3181"
+shot "04-reconnected-last"
+
+# 5. The same screen in the dark scheme.
 xcrun simctl ui "$udid" appearance dark
-launch -DshConnectAddress "http://127.0.0.1:3181" -DshAutoConnect YES
+launch -DshReset YES -DshConnectAddress "http://127.0.0.1:3181" -DshAutoConnect YES
 expect connected-dark "DSH_CONNECT_RESULT connected"
-shot "03-connected-dark"
+shot "05-connected-dark"
+
+# 6. A port nothing listens on: the honest failure, classified by what NSURLSession reported, in the dark.
+launch -DshReset YES -DshConnectAddress "127.0.0.1:3189" -DshAutoConnect YES
+expect refused-dark "DSH_CONNECT_RESULT failed kind=REFUSED"
+shot "06-refused-dark"
 xcrun simctl ui "$udid" appearance light
 
-# 4. A port nothing listens on: the honest failure, classified by what NSURLSession reported.
-launch -DshConnectAddress "127.0.0.1:3189" -DshAutoConnect YES
+# 7. The same refusal in the light scheme.
+launch -DshReset YES -DshConnectAddress "127.0.0.1:3189" -DshAutoConnect YES
 expect refused "DSH_CONNECT_RESULT failed kind=REFUSED"
-shot "04-refused"
+shot "07-refused"
 
-# 5. A harness that wants a browser session this device does not have (HTTP 401).
-launch -DshConnectAddress "127.0.0.1:3182" -DshAutoConnect YES
+# 8. A harness that wants a browser session this device does not have (HTTP 401): the lost surface offers Sign in.
+launch -DshReset YES -DshConnectAddress "127.0.0.1:3182" -DshAutoConnect YES
 expect unauthenticated "DSH_CONNECT_RESULT failed kind=UNAUTHENTICATED"
-shot "05-unauthenticated"
+shot "08-unauthenticated"
 
-# 6. Something that answers 403 before the harness does (a relay without its token).
-launch -DshConnectAddress "127.0.0.1:3183" -DshAutoConnect YES
+# 9. Sign in opens the launch-token sheet.
+launch -DshReset YES -DshConnectAddress "127.0.0.1:3182" -DshAutoConnect YES -DshOpenSignIn YES
+expect signin-sheet "DSH_CONNECT_RESULT failed kind=UNAUTHENTICATED"
+shot "09-signin-sheet"
+
+# 10. And signing in with the fixture's token: the exchange runs over NSURLSession, the session goes to the
+#     Keychain, and the connection that follows carries it, so the harness that said 401 now says ready.
+launch -DshReset YES -DshConnectAddress "127.0.0.1:3182" -DshAutoConnect YES -DshSignInToken launch-token-test
+for _ in $(seq 1 45); do
+  grep -q "connected authority=127.0.0.1:3182" "$result" 2>/dev/null && break
+  sleep 1
+done
+echo "[signed-in] $(cat "$result" 2>/dev/null | cut -c1-300)"
+if ! grep -q "connected authority=127.0.0.1:3182" "$result" 2>/dev/null; then
+  echo "::error::[signed-in] expected the harness that wanted a session to connect after the token was submitted"
+  failures=$((failures + 1))
+fi
+sleep 3
+shot "10-signed-in"
+
+# 10b. A new launch, nothing passed: the harness that wanted a session is the last one used, and the app
+#     reconnects to it with the session it kept in the Keychain. Without one it would be told 401 again.
+launch -DshAutoReconnect YES -DshReport YES
+expect keychain-session "DSH_CONNECT_RESULT connected authority=127.0.0.1:3182"
+shot "10b-signed-in-after-relaunch"
+
+# 11. Something that answers 403 before the harness does (a relay without its token).
+launch -DshReset YES -DshConnectAddress "127.0.0.1:3183" -DshAutoConnect YES
 expect fence "DSH_CONNECT_RESULT failed kind=TRUST_FENCE"
-shot "06-fence"
+shot "11-fence"
 
-# 7. The same refusal in French, to see the shared string resources pick the device language.
-launch -DshConnectAddress "127.0.0.1:3189" -DshAutoConnect YES -AppleLanguages "(fr)" -AppleLocale fr_FR
+# 12. The same refusal in French and in Arabic (right to left), to see the shared string resources pick the
+#     device language and the screen mirror.
+launch -DshReset YES -DshConnectAddress "127.0.0.1:3189" -DshAutoConnect YES -AppleLanguages "(fr)" -AppleLocale fr_FR
 expect refused-fr "DSH_CONNECT_RESULT failed kind=REFUSED"
-shot "07-refused-french"
+shot "12-refused-french"
+launch -DshReset YES -DshConnectAddress "127.0.0.1:3189" -DshAutoConnect YES -AppleLanguages "(ar)" -AppleLocale ar_SA
+expect refused-ar "DSH_CONNECT_RESULT failed kind=REFUSED"
+shot "13-refused-arabic"
+
+# 13. The form in French, in the light scheme, with the address typed (the labels, the notice, the switch).
+launch -DshReset YES -DshConnectAddress "http://127.0.0.1:3181" -AppleLanguages "(fr)" -AppleLocale fr_FR
+sleep 8
+shot "14-form-french"
 
 xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
 wait 2>/dev/null || true
