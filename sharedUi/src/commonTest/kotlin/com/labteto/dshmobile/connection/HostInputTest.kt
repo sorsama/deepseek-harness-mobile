@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.connection
 
 import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNotEquals
 import com.labteto.dshmobile.testing.assertNull
 import kotlin.test.Test
 
@@ -44,9 +45,9 @@ class HostInputTest {
     fun `prefixed relay identity is distinct from its root and other prefixes`() {
         val root = HostConfig("root-id", "relay", "relay.test", 443, useTls = true, relayDeviceId = "root-device")
         val prefixed = root.copy(id = "prefix-id", basePath = "/team", relayDeviceId = "team-device")
-        org.junit.Assert.assertNotEquals(root.baseUrl, prefixed.baseUrl)
-        org.junit.Assert.assertNotEquals(root.authority, prefixed.authority)
-        org.junit.Assert.assertNotEquals(prefixed.baseUrl, prefixed.copy(basePath = "/other").baseUrl)
+        assertNotEquals(root.baseUrl, prefixed.baseUrl)
+        assertNotEquals(root.authority, prefixed.authority)
+        assertNotEquals(prefixed.baseUrl, prefixed.copy(basePath = "/other").baseUrl)
         assertEquals("https://relay.test:443/team", prefixed.baseUrl)
     }
 

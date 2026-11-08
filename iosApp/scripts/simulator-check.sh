@@ -91,7 +91,7 @@ if [ -e "$result" ]; then
 fi
 
 # 4. And with it on, which is the default: the app comes back to the harness it remembers by itself.
-launch -DshReport YES
+launch -DshAutoReconnect YES -DshReport YES
 expect reconnected-last "DSH_CONNECT_RESULT connected authority=127.0.0.1:3181"
 shot "04-reconnected-last"
 
@@ -136,6 +136,12 @@ if ! grep -q "connected authority=127.0.0.1:3182" "$result" 2>/dev/null; then
 fi
 sleep 3
 shot "10-signed-in"
+
+# 10b. A new launch, nothing passed: the harness that wanted a session is the last one used, and the app
+#     reconnects to it with the session it kept in the Keychain. Without one it would be told 401 again.
+launch -DshAutoReconnect YES -DshReport YES
+expect keychain-session "DSH_CONNECT_RESULT connected authority=127.0.0.1:3182"
+shot "10b-signed-in-after-relaunch"
 
 # 11. Something that answers 403 before the harness does (a relay without its token).
 launch -DshReset YES -DshConnectAddress "127.0.0.1:3183" -DshAutoConnect YES

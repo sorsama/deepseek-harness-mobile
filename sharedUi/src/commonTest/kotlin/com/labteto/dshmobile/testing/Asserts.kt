@@ -42,3 +42,5 @@ fun assertNotNull(message: String, actual: Any?) = kotlin.test.assertNotNull(act
 fun assertNull(actual: Any?) = kotlin.test.assertNull(actual)
 
 fun assertNull(message: String, actual: Any?) = kotlin.test.assertNull(actual, message)
+
+fun <T> assertNotEquals(unexpected: T, actual: T) = kotlin.test.assertNotEquals(unexpected, actual)

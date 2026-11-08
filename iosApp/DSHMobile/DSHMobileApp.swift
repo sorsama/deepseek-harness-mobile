@@ -44,7 +44,7 @@ struct ComposeView: UIViewControllerRepresentable {
 ///   `-DshSignInToken <token>` opens it and submits the token, as pasting it would.
 /// - `-DshReset YES` forgets everything the app remembered before the screen is built.
 /// - `-DshReport YES` writes the result line (connected, or why not) without a Connect tap.
-/// - `-DshAutoReconnect NO` turns off "reconnect to the last harness", which shows the Recent list.
+/// - `-DshAutoReconnect NO` turns off "reconnect to the last harness" (the Recent list shows), `YES` turns it on again.
 ///
 /// Debug builds only. A release build ignores them, so the shipped app has no way to be told which
 /// address to connect to, or what to forget, from outside.
@@ -55,7 +55,7 @@ struct LaunchOptions {
     let signInToken: String?
     let reset: Bool
     let report: Bool
-    let autoReconnect: Bool
+    let autoReconnect: String?
 
     static func fromProcess() -> LaunchOptions {
         #if DEBUG
@@ -69,10 +69,10 @@ struct LaunchOptions {
             signInToken: defaults.string(forKey: "DshSignInToken"),
             reset: defaults.bool(forKey: "DshReset"),
             report: defaults.bool(forKey: "DshReport"),
-            autoReconnect: defaults.object(forKey: "DshAutoReconnect") == nil || defaults.bool(forKey: "DshAutoReconnect")
+            autoReconnect: defaults.string(forKey: "DshAutoReconnect")
         )
         #else
-        return LaunchOptions(address: nil, autoConnect: false, openSignIn: false, signInToken: nil, reset: false, report: false, autoReconnect: true)
+        return LaunchOptions(address: nil, autoConnect: false, openSignIn: false, signInToken: nil, reset: false, report: false, autoReconnect: nil)
         #endif
     }
 }

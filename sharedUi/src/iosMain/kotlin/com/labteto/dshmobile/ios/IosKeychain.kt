@@ -78,7 +78,13 @@ internal class KeychainItem(private val service: String, private val account: St
                     kSecValueData to retainedData,
                     kSecAttrAccessible to kSecAttrAccessibleAfterFirstUnlock,
                 ),
-            ) { attributes -> SecItemAdd(attributes, null) == errSecSuccess }
+            ) { attributes ->
+                val status = SecItemAdd(attributes, null)
+                // Printed, not thrown: the console of a simulator run is where an unsigned build (no application
+                // identifier, so errSecMissingEntitlement) shows up.
+                if (status != errSecSuccess) println("DSH_KEYCHAIN add failed, OSStatus=$status")
+                status == errSecSuccess
+            }
         } finally {
             CFRelease(retainedData)
         }
@@ -136,6 +142,14 @@ internal class KeychainSessionStore(
     private val mutex = Mutex()
     private val serializer = MapSerializer(String.serializer(), String.serializer())
 
+    /**
+     * What this process holds: the Keychain's contents the first time they are asked for, and every change
+     * after. A Keychain that refuses a write (an app that is not signed has no application identifier, so
+     * the system will not give it a Keychain) therefore costs the person their session at the next launch,
+     * not the sign-in they have just made.
+     */
+    private var memory: Map<String, String>? = null
+
     suspend fun cookie(hostId: String): String? = mutex.withLock { read()[hostId] }
 
     suspend fun put(hostId: String, cookie: String) = mutex.withLock { write(read() + (hostId to cookie)) }
@@ -145,17 +159,23 @@ internal class KeychainSessionStore(
         if (hostId in current) write(current - hostId)
     }
 
-    suspend fun clear() = mutex.withLock { item.delete() }
+    suspend fun clear() = mutex.withLock { wipe() }
 
     /** [clear] for a caller that is not a coroutine: the debug launch argument that resets the app. */
-    fun wipe() = item.delete()
+    fun wipe() {
+        memory = emptyMap()
+        item.delete()
+    }
 
-    private fun read(): Map<String, String> {
+    private fun read(): Map<String, String> = memory ?: load().also { memory = it }
+
+    private fun load(): Map<String, String> {
         val raw = item.read() ?: return emptyMap()
         return runCatching { WireJson.decodeFromString(serializer, raw) }.getOrDefault(emptyMap())
     }
 
     private fun write(next: Map<String, String>) {
+        memory = next
         item.write(WireJson.encodeToString(serializer, next))
     }
 }

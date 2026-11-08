@@ -562,7 +562,12 @@ own sequence, over the Darwin client:
 A harness that answers 401 is remembered, and the connection-lost surface offers **Sign in**: the launch token (or the
 whole startup line the harness prints) is exchanged on its index route over `NSURLSession`, the browser session that
 comes back is stored in the **Keychain** (one item holding a map from the harness's id to its cookie, as Android's
-`HarnessSessionStore` holds one in app storage), and the connection that follows carries it. Harnesses are
+`HarnessSessionStore` holds one in app storage), and the connection that follows carries it. The Keychain is only
+available to a signed app (an unsigned one has no application identifier, and the system answers
+`errSecMissingEntitlement`), so the simulator build in CI is signed ad hoc, and the unsigned device `.ipa` gets its
+identifier when Sideloadly or AltStore signs it. If a write is ever refused the app keeps the session in memory for the
+launch (and prints `DSH_KEYCHAIN add failed, OSStatus=…`): the person loses it at the next launch, not the sign-in they
+have just made. Harnesses are
 remembered in `NSUserDefaults` and shown in Recent with their live status, and the app reconnects to the last one at
 launch unless that switch is off. The result is a "Connected" page with the address, the host's home directory and
 this client's protocol baseline. It shows no harness name or version because the wire has none: 0.1.2 removed
@@ -682,7 +687,8 @@ the steps after the tests run even if the tests fail, so one push says everythin
   screen's states: before Connect is tapped, connected, the remembered harness in the Recent list, the app coming back
   to it by itself, connected and refused in the dark scheme, refused, a harness that wants a session (401) with
   the sign-in sheet over it, a sign-in that works end to end (the token is exchanged over `NSURLSession`, the session goes to the
-  Keychain and the harness that said 401 then connects), a relay that wants its token (403), the refusal in French and
+  Keychain and the harness that said 401 then connects) and the app coming back to that harness after a relaunch with only
+  the Keychain's session to go on, a relay that wants its token (403), the refusal in French and
   in Arabic, and the form in French. Each waits for the result line the app writes, asserts it, and uploads a screenshot;
   the app's console output and any crash report are kept beside them.
 - `ios-compile` also compiles `:sharedUi` for the two iOS targets and checks that the klibs exist.

@@ -232,6 +232,10 @@ jobs:
       - name: Generate the Xcode project
         if: ${{ !cancelled() }}
         run: iosApp/generate.sh
+      # Signed ad hoc, which is what Xcode does for a simulator build on a developer's Mac, and not left
+      # unsigned: the Keychain (where the harness session is kept) is only available to an app with an
+      # application identifier, and an unsigned one has none. The device .ipa stays unsigned on purpose (see
+      # `ios-ipa`); the tool that sideloads it gives it the identifier when it signs it.
       - name: Build the app for the simulator
         if: ${{ !cancelled() }}
         run: |
@@ -239,7 +243,7 @@ jobs:
           mkdir -p "$SIM_REPORTS"
           xcodebuild -project iosApp/DSHMobile.xcodeproj -scheme DSHMobile -configuration Debug \
             -sdk iphonesimulator -destination "id=$SIM_UDID" -derivedDataPath build/ios-derived \
-            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=YES \
             build 2>&1 | tee "$SIM_REPORTS/xcodebuild-simulator.log"
       - name: Run the app in the simulator
         if: ${{ !cancelled() }}

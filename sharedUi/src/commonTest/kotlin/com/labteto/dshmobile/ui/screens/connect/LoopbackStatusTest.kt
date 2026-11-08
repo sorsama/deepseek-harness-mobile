@@ -13,7 +13,7 @@ import kotlin.test.Test
 class LoopbackStatusTest {
 
     @Test
-    fun `a harness that answered is ready, with whatever it said about itself`() {
+    fun `a harness that answered is ready with whatever it said about itself`() {
         val home = HostDescription(home = "/data/data/com.termux/files/home")
         assertEquals(LoopbackStatus.Ready(home), ProbeOutcome.Reachable(home).toLoopbackStatus())
         assertEquals(LoopbackStatus.Ready(null), ProbeOutcome.Reachable(null).toLoopbackStatus())
@@ -26,7 +26,7 @@ class LoopbackStatusTest {
 
     /** On loopback nothing drops packets, so a timeout and a refusal are the same "down". */
     @Test
-    fun `nothing answering is down, whichever way it did not answer`() {
+    fun `nothing answering is down whichever way it did not answer`() {
         for (outcome in listOf(ProbeOutcome.Refused, ProbeOutcome.Timeout, ProbeOutcome.Unreachable, ProbeOutcome.DnsFailure)) {
             assertEquals(LoopbackStatus.Down(outcome), outcome.toLoopbackStatus())
         }

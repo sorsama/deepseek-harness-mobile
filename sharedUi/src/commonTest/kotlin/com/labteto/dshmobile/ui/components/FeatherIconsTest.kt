@@ -45,7 +45,7 @@ class FeatherIconsTest {
     }
 
     @Test
-    fun `every glyph is stroked in Feather's own weight, never filled`() {
+    fun `every glyph is stroked in Feather's own weight and never filled`() {
         glyphs.forEach { (name, vector) ->
             val path = vector.root.first() as VectorPath
             assertEquals("$name stroke width", 2f, path.strokeLineWidth, 0f)
@@ -56,7 +56,7 @@ class FeatherIconsTest {
     }
 
     @Test
-    fun `the set is memoized, so a scrolling transcript rebuilds nothing`() {
+    fun `the set is memoized so a scrolling transcript rebuilds nothing`() {
         assertTrue(FeatherIcons.Terminal === FeatherIcons.Terminal)
     }
 }

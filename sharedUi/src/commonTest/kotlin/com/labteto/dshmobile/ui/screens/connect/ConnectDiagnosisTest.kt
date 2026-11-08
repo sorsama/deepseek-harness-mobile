@@ -40,7 +40,7 @@ class ConnectDiagnosisTest {
     }
 
     @Test
-    fun `streams that never open are reported as blocked, not as a dead host`() {
+    fun `streams that never open are reported as blocked not as a dead host`() {
         assertEquals(
             ConnectFailure.StreamsBlocked,
             ConnectFailure.from(GenerationFailure.MuxTimedOut(3_000)),
@@ -109,7 +109,7 @@ class ConnectDiagnosisTest {
      * not.
      */
     @Test
-    fun `a 403 from a paired relay means pair again, not add a trusted host`() {
+    fun `a 403 from a paired relay means pair again not add a trusted host`() {
         assertEquals(
             ConnectFailure.PairingRequired,
             ConnectFailure.from(ProbeOutcome.TrustFence, relay = true),
@@ -149,7 +149,7 @@ class ConnectDiagnosisTest {
      * the problem, and the person is sent to a pairing page that will keep succeeding.
      */
     @Test
-    fun `a 401 through a relay is the relay's own session, not this device's token`() {
+    fun `a 401 through a relay is the relay's own session not this device's token`() {
         assertEquals(
             ConnectFailure.RelayUnauthenticated,
             ConnectFailure.from(ProbeOutcome.RelayUnauthenticated),

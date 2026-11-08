@@ -31,7 +31,7 @@ fun MainViewController(
     signInToken: String?,
     reset: Boolean,
     report: Boolean,
-    autoReconnect: Boolean,
+    autoReconnect: String?,
 ): UIViewController =
     ComposeUIViewController {
         val request = remember {
@@ -48,7 +48,10 @@ fun MainViewController(
         // when asked for, happens first so that nothing remembered reaches the screen.
         val app = remember {
             if (request.reset) resetStorage()
-            if (!autoReconnect) UserDefaultsConnectStore.disableAutoConnectLast()
+            when (autoReconnect?.uppercase()) {
+                "NO" -> UserDefaultsConnectStore.setAutoConnectLast(false)
+                "YES" -> UserDefaultsConnectStore.setAutoConnectLast(true)
+            }
             IosApp(CoroutineScope(SupervisorJob() + Dispatchers.Main))
         }
         DshApp(app, request)

@@ -162,9 +162,9 @@ internal class UserDefaultsConnectStore(
     private fun nowMillis(): Long = (NSDate().timeIntervalSince1970 * 1000).toLong()
 
     internal companion object {
-        /** Debug launches only: show the Recent list instead of reconnecting to the last harness. */
-        fun disableAutoConnectLast(defaults: NSUserDefaults = NSUserDefaults.standardUserDefaults) {
-            defaults.setBool(false, forKey = KEY_AUTO_LAST)
+        /** Debug launches only: turn "reconnect to the last harness" off (the Recent list shows) or back on. */
+        fun setAutoConnectLast(on: Boolean, defaults: NSUserDefaults = NSUserDefaults.standardUserDefaults) {
+            defaults.setBool(on, forKey = KEY_AUTO_LAST)
         }
 
         const val KEY_HOSTS = "dsh.hosts"
