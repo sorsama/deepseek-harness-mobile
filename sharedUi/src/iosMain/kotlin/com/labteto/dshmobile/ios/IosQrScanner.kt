@@ -89,6 +89,7 @@ import platform.AVFoundation.AVMetadataMachineReadableCodeObject
 import platform.AVFoundation.AVMetadataObjectTypeQRCode
 import platform.AVFoundation.authorizationStatusForMediaType
 import platform.AVFoundation.requestAccessForMediaType
+import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSURL
 import platform.QuartzCore.CATransaction
 import platform.UIKit.UIApplication
@@ -458,7 +459,7 @@ private fun QrCameraView(modifier: Modifier, onCode: (String) -> Unit, onFailed:
  * implicit animation a layer's frame change would get.
  */
 @OptIn(ExperimentalForeignApi::class)
-private class PreviewView : UIView() {
+private class PreviewView : UIView(frame = CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     var previewLayer: AVCaptureVideoPreviewLayer? = null
 
     override fun layoutSubviews() {

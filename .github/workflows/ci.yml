@@ -193,9 +193,13 @@ jobs:
           done
           cat "$SIM_REPORTS/fixtures.log"
           grep -q "ci fixtures listening" "$SIM_REPORTS/fixtures.log"
-          for port in 3181 3182 3183 3184; do
+          for port in 3181 3182 3183 3184 3186; do
             curl -sS -o /dev/null -w "port $port answers %{http_code}\n" "http://127.0.0.1:$port/ci/status/418"
           done
+          # The TLS pairing relay has a self-signed certificate, so -k: the point here is only that it is up.
+          # (The key it presents is pinned by the app, which is what the simulator scenarios exercise.)
+          curl -sSk -o /dev/null -w "port 3187 answers %{http_code} over TLS\n" "https://127.0.0.1:3187/ci/status/418"
+          grep "^ci pairing:" "$SIM_REPORTS/fixtures.log"
       # The first execution of the Darwin transport. `HarnessContractTest` is the same file that runs
       # on the JVM in the `build` job, against the same fixtures.
       - name: Kotlin/Native tests on the simulator
