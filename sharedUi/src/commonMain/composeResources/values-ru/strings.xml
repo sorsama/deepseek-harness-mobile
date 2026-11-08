@@ -95,5 +95,6 @@
     <string name="connect_title">Подключиться к harness</string>
     <string name="connect_try_again">Повторить попытку</string>
     <string name="connect_unreachable">Недоступен</string>
+    <string name="settings_connection_disconnect">Отключиться</string>
     <string name="settings_title">Настройки</string>
 </resources>

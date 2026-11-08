@@ -5,6 +5,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.platform.Font
 import com.labteto.dshmobile.shared.resources.Res
+import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
@@ -45,6 +47,7 @@ private fun family(vararg faces: Pair<String, FontWeight>): FontFamily {
     return if (fonts.isEmpty()) FontFamily.Default else FontFamily(fonts)
 }
 
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 private fun readBundledFont(name: String): ByteArray? = runCatching {
     val url = NSURL.URLWithString(Res.getUri("font/$name.ttf")) ?: return null
     val data = NSData.dataWithContentsOfURL(url) ?: return null

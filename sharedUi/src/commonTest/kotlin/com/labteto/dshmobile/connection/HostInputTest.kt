@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.connection
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNull
+import kotlin.test.Test
 
 /**
  * The host field takes what people actually have, which is usually a pasted URL: the line the

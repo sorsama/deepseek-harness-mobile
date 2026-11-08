@@ -95,5 +95,6 @@
     <string name="connect_title">Harness-এ সংযুক্ত হোন</string>
     <string name="connect_try_again">আবার চেষ্টা করুন</string>
     <string name="connect_unreachable">পৌঁছানো যাচ্ছে না</string>
+    <string name="settings_connection_disconnect">সংযোগ বিচ্ছিন্ন করুন</string>
     <string name="settings_title">সেটিংস</string>
 </resources>

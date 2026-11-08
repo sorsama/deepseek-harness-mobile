@@ -175,11 +175,12 @@ fun ConnectContent(
     onOpenSettings: () -> Unit,
     onPair: (prefillUrl: String?) -> Unit,
     loopbackCard: @Composable (recordAttempt: (() -> Unit) -> Unit) -> Unit = {},
+    initialHost: String = "",
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     // Saveable: a rotation mid-connect used to wipe a hand-typed address.
-    var host by rememberSaveable { mutableStateOf("") }
+    var host by rememberSaveable { mutableStateOf(initialHost) }
     // Whatever was tapped last, so a failure can offer to do it again. A failure used to end in a
     // block of advice and nothing to press; the only way to retry was to find the card again.
     var lastAttempt by remember { mutableStateOf<(() -> Unit)?>(null) }

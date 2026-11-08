@@ -95,5 +95,6 @@
     <string name="connect_title">Harness से कनेक्ट करें</string>
     <string name="connect_try_again">फिर से कोशिश करें</string>
     <string name="connect_unreachable">पहुँच से बाहर</string>
+    <string name="settings_connection_disconnect">डिस्कनेक्ट करें</string>
     <string name="settings_title">सेटिंग्स</string>
 </resources>

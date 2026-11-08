@@ -1,16 +1,11 @@
 package com.labteto.dshmobile.ui.components
 
 import androidx.compose.runtime.Composable
-import platform.Foundation.NSNumber
-import platform.Foundation.NSNumberFormatter
-import platform.Foundation.NSNumberFormatterDecimalStyle
 
-/** The number in the device's language and numerals, without a grouping separator. */
+/**
+ * Western digits. Android localizes the digits of a count (see the `expect`) because its `getString`
+ * does; on iOS the text was never localized that way, and a count in a failure message reads
+ * correctly in every one of the 11 languages with plain digits.
+ */
 @Composable
-actual fun localizedCount(value: Int): String {
-    val formatter = NSNumberFormatter().apply {
-        numberStyle = NSNumberFormatterDecimalStyle
-        usesGroupingSeparator = false
-    }
-    return formatter.stringFromNumber(NSNumber.numberWithInt(value)) ?: value.toString()
-}
+actual fun localizedCount(value: Int): String = value.toString()

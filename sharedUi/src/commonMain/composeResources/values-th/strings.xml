@@ -95,5 +95,6 @@
     <string name="connect_title">เชื่อมต่อกับ harness</string>
     <string name="connect_try_again">ลองอีกครั้ง</string>
     <string name="connect_unreachable">เข้าถึงไม่ได้</string>
+    <string name="settings_connection_disconnect">ตัดการเชื่อมต่อ</string>
     <string name="settings_title">การตั้งค่า</string>
 </resources>

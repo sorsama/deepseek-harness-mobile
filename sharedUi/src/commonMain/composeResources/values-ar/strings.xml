@@ -95,5 +95,6 @@
     <string name="connect_title">الاتصال بـ harness</string>
     <string name="connect_try_again">حاول مرة أخرى</string>
     <string name="connect_unreachable">غير قابل للوصول</string>
+    <string name="settings_connection_disconnect">قطع الاتصال</string>
     <string name="settings_title">الإعدادات</string>
 </resources>

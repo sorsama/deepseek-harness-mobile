@@ -24,7 +24,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       # :app was missing here, so nothing under app/src/test ever ran on CI.
       - name: Unit tests
-        run: ./gradlew :core:jvmTest :mock-harness:test :app:testDebugUnitTest --stacktrace
+        run: ./gradlew :core:jvmTest :mock-harness:test :sharedUi:testDebugUnitTest :app:testDebugUnitTest --stacktrace
       - name: Lint
         run: ./gradlew :app:lintDebug --stacktrace
       - name: Assemble debug APK
@@ -68,13 +68,17 @@ jobs:
           path: ~/.konan
           key: konan-${{ runner.os }}-kotlin-2.0.21
       - name: Compile shared code for iOS
-        run: ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :core:compileKotlinIosX64 --stacktrace
+        run: ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :core:compileKotlinIosX64 :sharedUi:compileKotlinIosArm64 :sharedUi:compileKotlinIosSimulatorArm64 --stacktrace
       # A skipped task is a green build, so assert the klibs exist rather than trusting the exit code.
       - name: Check the iOS klibs were produced
         run: |
           for target in iosArm64 iosSimulatorArm64 iosX64; do
             klib="core/build/classes/kotlin/$target/main/klib/core.klib"
             test -s "$klib" || { echo "::error::$klib was not produced; the iOS compile was skipped"; exit 1; }
+          done
+          for target in iosArm64 iosSimulatorArm64; do
+            klib="sharedUi/build/classes/kotlin/$target/main/klib/sharedUi.klib"
+            test -s "$klib" || { echo "::error::$klib was not produced; the shared UI was not compiled for iOS"; exit 1; }
           done
 
   harness-conformance:
@@ -214,7 +218,7 @@ jobs:
             shared=$((shared + n))
           done
           echo "sharedUi iOS tests executed: $shared"
-          test "$shared" -ge 1 || { echo "::error::no Kotlin/Native tests ran in :sharedUi"; exit 1; }
+          test "$shared" -ge 60 || { echo "::error::expected at least 60 Kotlin/Native tests to have run in :sharedUi, found $shared"; exit 1; }
       # What the mux socket was measured doing, in the run's own log: the one-line results the tests
       # print (`MUX_401`, `MUX_REFUSED`, `MUX_CHALLENGE`, `MUX_REDIRECT`, `MUX_LARGE`, `MUX_CLOSE`,
       # `MUX_DROP`, `MUX_PING`) and every delegate event of every socket (`MUX_TRACE`), which says which

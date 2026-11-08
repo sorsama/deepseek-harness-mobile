@@ -1,9 +1,15 @@
 package com.labteto.dshmobile.ios
 
+import androidx.compose.runtime.remember
 import androidx.compose.ui.window.ComposeUIViewController
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import platform.Foundation.NSBundle
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
+import platform.Foundation.NSUserDefaults
 import platform.Foundation.NSUserDomainMask
 import platform.UIKit.UIViewController
 import platform.posix.fclose
@@ -12,22 +18,48 @@ import platform.posix.fputs
 
 /**
  * The view controller the SwiftUI host shows (`iosApp/DSHMobile/DSHMobileApp.swift`). Swift sees it as
- * `MainViewControllerKt.MainViewController(prefillAddress:autoConnect:)` in the `DshShared` framework.
+ * `MainViewControllerKt.MainViewController(...)` in the `DshShared` framework.
  *
- * [prefillAddress] and [autoConnect] are the debug-build launch arguments the host forwards; a normal
- * launch passes `null` and `false`. When [autoConnect] is on, the one result line the attempt
- * produces is also written to a file (see [reportOutcome]) so CI can read it back.
+ * The parameters are the debug-build launch arguments the host forwards (see [LaunchRequest]); a normal
+ * launch passes `null` and `false` for all of them. When [autoConnect] or [report] is on, the one result
+ * line the attempt produces is also written to a file (see [reportOutcome]) so CI can read it back.
  */
-fun MainViewController(prefillAddress: String?, autoConnect: Boolean): UIViewController =
+fun MainViewController(
+    prefillAddress: String?,
+    autoConnect: Boolean,
+    openSignIn: Boolean,
+    signInToken: String?,
+    reset: Boolean,
+    report: Boolean,
+    autoReconnect: Boolean,
+): UIViewController =
     ComposeUIViewController {
-        DshApp(
+        val request = remember {
             LaunchRequest(
                 address = prefillAddress,
                 autoConnect = autoConnect,
-                onOutcome = if (autoConnect) ::reportOutcome else null,
-            ),
-        )
+                openSignIn = openSignIn,
+                signInToken = signInToken,
+                reset = reset,
+                onOutcome = if (autoConnect || report) ::reportOutcome else null,
+            )
+        }
+        // One controller for the life of the process, on the main thread where Compose runs. The reset,
+        // when asked for, happens first so that nothing remembered reaches the screen.
+        val app = remember {
+            if (request.reset) resetStorage()
+            if (!autoReconnect) UserDefaultsConnectStore.disableAutoConnectLast()
+            IosApp(CoroutineScope(SupervisorJob() + Dispatchers.Main))
+        }
+        DshApp(app, request)
     }
+
+/** Forget what the app remembered: the harnesses and settings in NSUserDefaults, the sessions in the Keychain. */
+private fun resetStorage() {
+    val defaults = NSUserDefaults.standardUserDefaults
+    NSBundle.mainBundle.bundleIdentifier?.let { defaults.removePersistentDomainForName(it) }
+    KeychainSessionStore().wipe()
+}
 
 /** Where [reportOutcome] writes, inside the app's own Documents directory. */
 private const val OUTCOME_FILE = "dsh-connect-result.txt"

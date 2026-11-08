@@ -7,8 +7,11 @@
 //                                                 only the shared UI uses (see docs/IOS.md, "Strings")
 //
 // Which strings the shared UI needs is read from its sources: every `Res.string.<key>` under
-// `sharedUi/src`. Their text comes from the Android resources, so the wording is the one the
-// translators already wrote, in the same 11 locales, and there is nothing to translate twice.
+// `sharedUi/src`. A string new to the shared UI takes its text from the Android resources, so the
+// wording is the one the translators already wrote, in the same 11 locales, and there is nothing to
+// translate twice. Once a string has moved (--prune took it out of the Android resources, or the
+// shared file already has it) the shared file is its home and the tool keeps what it says there. A
+// string the shared code no longer reads is dropped from the shared files.
 //
 // The only change made to a string is the one that is not wording: Android's resource compiler
 // reads `\'` as an apostrophe, and Compose Multiplatform does not, so the backslash is dropped.
@@ -63,34 +66,42 @@ const unescape = (text) => text.replace(/\\'/g, "'");
 const locales = readdirSync(androidRes).filter((n) => n === 'values' || /^values-[a-z]{2}(-r[A-Z]{2})?$/.test(n)).sort();
 let failed = false;
 
+const pending = [];
 for (const locale of locales) {
   const dir = join(androidRes, locale);
   if (!existsSync(join(dir, 'strings.xml'))) continue;
   const strings = androidStrings(dir);
+  const out = join(sharedRes, locale, 'strings.xml');
+  // What the shared file says now, for a string that has already left the Android resources.
+  const shared = new Map();
+  if (existsSync(out)) for (const m of read(out).matchAll(stringPattern)) shared.set(m[1], m[2]);
   const lines = ['<?xml version="1.0" encoding="utf-8"?>', '<resources>'];
   for (const key of [...keys].sort()) {
-    if (!strings.has(key)) {
-      console.error(`${locale}: the Android resources have no "${key}"`);
+    if (strings.has(key)) lines.push(`    <string name="${key}">${unescape(strings.get(key))}</string>`);
+    else if (shared.has(key)) lines.push(`    <string name="${key}">${shared.get(key)}</string>`);
+    else {
+      console.error(`${locale}: neither the Android resources nor the shared ones have "${key}"`);
       failed = true;
-      continue;
     }
-    lines.push(`    <string name="${key}">${unescape(strings.get(key))}</string>`);
   }
   lines.push('</resources>', '');
-  const out = join(sharedRes, locale, 'strings.xml');
-  const text = lines.join('\n');
+  pending.push({ out, text: lines.join('\n') });
+}
+
+// Nothing is written unless every string was found: a partial file is worse than a stale one.
+for (const { out, text } of pending) {
   if (check) {
     if (!existsSync(out) || read(out) !== text) {
       console.error(`${relative(root, out)} is out of date; run: node tools/shared-strings/sync.mjs`);
       failed = true;
     }
-  } else {
+  } else if (!failed) {
     mkdirSync(dirname(out), { recursive: true });
     writeFileSync(out, text);
   }
 }
 
-if (prune && !check) {
+if (prune && !check && !failed) {
   // A string is the shared UI's alone when nothing under app/ names it any more.
   const appFiles = walk(appSrc, (p) => /\.(kt|xml|java)$/.test(p) && !/[\\/]res[\\/]values[^\\/]*[\\/]strings[^\\/]*\.xml$/.test(p));
   const appText = appFiles.map(read).join('\n');

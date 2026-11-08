@@ -95,5 +95,6 @@
     <string name="connect_title">Connect to your harness</string>
     <string name="connect_try_again">Try again</string>
     <string name="connect_unreachable">Unreachable</string>
+    <string name="settings_connection_disconnect">Disconnect</string>
     <string name="settings_title">Settings</string>
 </resources>
