@@ -283,8 +283,10 @@ receive error would have reported every polite close as a failure, and the *same
 produces, so only the Close frame (`didCloseWithCode`, or `task.closeCode`) tells the two apart; the socket waits
 for it, with a 300 ms fallback if neither the close nor the task's completion ever arrives. Second, the 401 defect
 was **in Ktor's WebSocket wrapper and not in `NSURLSession`**: a raw task reports a refused upgrade promptly and
-with its status. An earlier draft also polled `task.response` while the handshake was pending, in case a refusal
-produced no callback; the trace showed it never decided anything, so it was removed.
+with its status, so the socket does not poll `task.response` while the handshake is pending (a first version did, in
+case a refusal produced no callback; the trace showed it never decided anything). The one place the response is
+*not* there is the challenge case in the table, which is why the status is also taken from the challenge and from a
+refused redirect.
 
 ## Relay pinning on iOS
 
