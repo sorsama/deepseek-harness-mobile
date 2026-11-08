@@ -50,7 +50,10 @@ import java.util.Date
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(store, lifecycle, identity, includeAll) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            while (true) { now = System.currentTimeMillis(); store.refreshQuota(includeAll); delay(60_000) }
+            // Read the clock after the refresh, not before: a wallet row stamps itself with the
+            // time the fetch completed, so a clock sampled first would be a few milliseconds
+            // older than that stamp and usageFooter would reject the row as a future sample.
+            while (true) { store.refreshQuota(includeAll); now = System.currentTimeMillis(); delay(60_000) }
         }
     }
     return now
