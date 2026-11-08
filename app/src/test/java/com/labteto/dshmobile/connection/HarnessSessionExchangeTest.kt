@@ -10,7 +10,6 @@ import com.labteto.dshmobile.core.wire.TransportFailures
 import com.labteto.dshmobile.mockharness.MockHarness
 import com.labteto.dshmobile.mockharness.SessionMode
 import kotlinx.coroutines.runBlocking
-import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -37,8 +36,8 @@ class HarnessSessionExchangeTest(private val kind: TransportKind) {
     private lateinit var harness: MockHarness
     private var port: Int = -1
 
-    /** The launch-token exchange is not part of the transport seam yet, so it stays on OkHttp. */
-    private val http = OkHttpClient()
+    /** The launch-token exchange rides the same implementation as the calls it unlocks. */
+    private val http get() = kind.plain()
 
     private val baseUrl get() = "http://127.0.0.1:$port"
 
