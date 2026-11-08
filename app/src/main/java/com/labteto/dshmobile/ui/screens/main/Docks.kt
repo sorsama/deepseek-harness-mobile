@@ -661,6 +661,7 @@ internal fun StatsFooter(
     stats: SessionStatsView?,
     usage: TokenUsageView?,
     modifier: Modifier = Modifier,
+    quotaText: String = "",
 ) {
     if (stats == null && usage == null) return
     val colors = DsTheme.colors
@@ -717,7 +718,7 @@ internal fun StatsFooter(
                         R.string.chat_stats_tokens,
                         formatTokens(it.inputTokens),
                         formatTokens(it.outputTokens),
-                    ),
+                    ) + quotaText.takeIf { text -> text.isNotBlank() }?.let { text -> " · $text" }.orEmpty(),
                 )
             }
         }

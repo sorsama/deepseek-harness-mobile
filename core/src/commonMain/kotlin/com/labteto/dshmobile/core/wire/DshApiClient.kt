@@ -124,6 +124,18 @@ class DshApiClient(
     private val transport: RpcTransport,
 ) {
 
+    /** Exact Fetch routes share the envelope, but do NOT use Remote's args wrapper. */
+    suspend fun subscriptionStatus(): RpcResult<SubscriptionRoster> =
+        unary("subscriptions-auth.status", JsonObject(emptyMap()), SubscriptionRoster.serializer())
+
+    suspend fun subscriptionUsage(provider: String, account: String): RpcResult<ProviderQuota> =
+        unary("subscriptions-auth.usage", args {
+            put("provider", JsonPrimitive(provider)); put("account", JsonPrimitive(account)); put("force", JsonPrimitive(false))
+        }, ProviderQuota.serializer())
+
+    suspend fun accountBalance(client: AccountUiMetadata): RpcResult<AccountWallet?> =
+        call("account/getBalance", args { put("client", encodeToJsonElement(AccountUiMetadata.serializer(), client)) })
+
     // ------------------------------------------------------------------ unary machinery
 
     /** POST one unary call with a raw [JsonElement] payload and decode the typed value. */

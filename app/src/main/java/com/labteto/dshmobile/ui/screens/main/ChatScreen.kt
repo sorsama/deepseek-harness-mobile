@@ -135,6 +135,10 @@ fun ChatScreen(
     val contextBreakdown by store.contextBreakdown.collectAsStateWithLifecycle()
     val contextPressure by store.contextPressure.collectAsStateWithLifecycle()
     val imageLimits by store.imageLimits.collectAsStateWithLifecycle()
+    val quota by store.quotaStatus.collectAsStateWithLifecycle()
+    val quotaSelection by store.modelSelection.collectAsStateWithLifecycle()
+    val quotaProvider = store.quotaProvider()
+    val quotaNow = rememberQuotaClock(store, Triple(currentSessionId, quotaProvider, quotaSelection))
 
     val currentSession = sessions.firstOrNull { it.sessionId == currentSessionId }
     val workingDirectory = com.labteto.dshmobile.core.session.effectiveWorkingDirectory(conversation?.projections, currentSession?.cwd)
@@ -860,7 +864,13 @@ fun ChatScreen(
                     focusTick = composerFocusTick,
                 )
 
-                StatsFooter(stats = sessionStats, usage = tokenUsage)
+                StatsFooter(
+                    stats = sessionStats, usage = tokenUsage,
+                    quotaText = com.labteto.dshmobile.core.usage.usageFooter(
+                        quota.rows.firstOrNull { it.provider == quotaProvider }, quotaNow,
+                        false, quotaLabels(),
+                    ),
+                )
                 }
             }
         }

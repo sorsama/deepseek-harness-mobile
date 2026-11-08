@@ -585,4 +585,25 @@
     <string name="hold_replace_draft_title">替换草稿？</string>
     <string name="hold_replace_draft_body">输入框里已有内容，编辑这条消息会替换掉它。</string>
     <string name="hold_replace_draft_confirm">替换</string>
+
+    <!-- Provider usage -->
+    <string name="quota_title">限额与余额</string>
+    <string name="quota_short">5小时</string>
+    <string name="quota_week">每周</string>
+    <string name="quota_unknown">暂无限额数据</string>
+    <string name="quota_refresh">重新检查</string>
+    <string name="quota_checked">已检查：%1$s</string>
+    <string name="quota_all">所有提供商</string>
+    <string name="quota_current">当前提供商</string>
+    <string name="quota_updated">已更新：%1$s</string>
+    <string name="quota_stale">数据已过期</string>
+    <string name="quota_reset">重置：%1$s</string>
+    <string name="quota_checking">正在检查…</string>
+    <string name="quota_compact_session">5小时</string>
+    <string name="quota_compact_week">周</string>
+    <string name="quota_compact_day">天</string>
+    <string name="quota_compact_hour">小时</string>
+    <string name="quota_compact_minute">分</string>
+    <string name="quota_other">其他限额</string>
+    <string name="quota_remaining_percent">剩余：%1$s</string>
 </resources>

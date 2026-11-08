@@ -181,6 +181,11 @@ fun DetailsPanel(
     val agentPresets by store.agentPresets.collectAsState()
     val currentSubagent by store.currentSubagent.collectAsState()
     val connection by store.connectionState.collectAsStateWithLifecycle()
+    val quota by store.quotaStatus.collectAsStateWithLifecycle()
+    val quotaSelection by store.modelSelection.collectAsStateWithLifecycle()
+    val quotaProvider = store.quotaProvider()
+    var quotaExpanded by remember { mutableStateOf(false) }
+    val quotaNow = rememberQuotaClock(store, Triple(currentSessionId, quotaProvider, quotaSelection), quotaExpanded)
     val permissions by store.permissions.collectAsStateWithLifecycle()
     val pendingPermission by store.pendingPermission.collectAsStateWithLifecycle()
     val current = sessions.firstOrNull { it.sessionId == currentSessionId }
@@ -403,6 +408,7 @@ fun DetailsPanel(
                                 if (conv != null) {
                                     ContextCard(breakdown, pressure, usage, stats)
 
+                                    UsageCard(quota, quotaProvider, quotaNow, onExpanded = { quotaExpanded = it }, onRefresh = { scope.launch { store.refreshQuota(quotaExpanded, recheck = true) } })
                                     PanelSection(stringResource(R.string.ink_panel_model_permission))
                                     ModelPermissionCard(
                                         models = models,
