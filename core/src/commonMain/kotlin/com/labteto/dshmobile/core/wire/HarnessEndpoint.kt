@@ -43,14 +43,14 @@ internal class HarnessEndpoint private constructor(
         val withoutFragment = route.substring(1).substringBefore('#')
         val pathPart = withoutFragment.substringBefore('?')
         val query = if ('?' in withoutFragment) withoutFragment.substringAfter('?') else null
-        val path = removeDotSegments(prefix + canonicalize(pathPart, PATH_ENCODE_SET))
+        val path = UrlText.removeDotSegments(prefix + UrlText.canonicalize(pathPart, UrlText.PATH_ENCODE_SET))
         require(path.startsWith(prefix)) { "route escapes the harness root" }
         return buildString {
             append(origin)
             append(path)
             if (query != null) {
                 append('?')
-                append(canonicalize(query, QUERY_ENCODE_SET))
+                append(UrlText.canonicalize(query, UrlText.QUERY_ENCODE_SET))
             }
         }
     }
@@ -79,70 +79,11 @@ internal class HarnessEndpoint private constructor(
             // Ktor may keep the brackets of an IPv6 literal; the bare form is what the Host rule
             // and the URL writer both start from.
             val host = url.host.removePrefix("[").removeSuffix("]").lowercase()
-            require(host.isNotEmpty() && host.all(::isHostChar)) { "Expected a host: $baseUrl" }
-            val basePath = removeDotSegments(canonicalize(url.encodedPath.ifEmpty { "/" }, PATH_ENCODE_SET))
+            require(host.isNotEmpty() && host.all(UrlText::isHostChar)) { "Expected a host: $baseUrl" }
+            val basePath = UrlText.removeDotSegments(
+                UrlText.canonicalize(url.encodedPath.ifEmpty { "/" }, UrlText.PATH_ENCODE_SET),
+            )
             return HarnessEndpoint(scheme, host, url.port, basePath.trimEnd('/') + "/")
-        }
-
-        /** Characters a path segment must not carry raw (OkHttp's `PATH_SEGMENT_ENCODE_SET`, minus `/`). */
-        private const val PATH_ENCODE_SET = " \"<>^`{}|\\?#"
-
-        /** Characters a query must not carry raw (OkHttp's `QUERY_ENCODE_SET`). */
-        private const val QUERY_ENCODE_SET = " \"'<>#"
-
-        private val HEX = "0123456789ABCDEF"
-
-        /**
-         * Percent-encode what a request line cannot carry, and nothing else.
-         *
-         * Existing `%XX` escapes pass through untouched (callers encode their own values, and
-         * encoding twice would turn `%20` into `%2520`); a lone `%` is left as it is, as OkHttp's
-         * non-strict canonicalization does. Controls, DEL, space-class characters in [encodeSet]
-         * and every non-ASCII byte are encoded from their UTF-8 form.
-         */
-        private fun canonicalize(input: String, encodeSet: String): String {
-            val bytes = input.encodeToByteArray()
-            val out = StringBuilder(bytes.size)
-            for (byte in bytes) {
-                val b = byte.toInt() and 0xff
-                val c = b.toChar()
-                if (b < 0x20 || b == 0x7f || b >= 0x80 || c in encodeSet) {
-                    out.append('%').append(HEX[b shr 4]).append(HEX[b and 0x0f])
-                } else {
-                    out.append(c)
-                }
-            }
-            return out.toString()
-        }
-
-        /** A character a host name, IPv4 address or (unbracketed) IPv6 literal may contain. */
-        private fun isHostChar(c: Char): Boolean =
-            c in 'a'..'z' || c in '0'..'9' || c == '.' || c == '-' || c == '_' || c == ':' || c == '%'
-
-        private fun isDot(segment: String): Boolean = segment == "." || segment.equals("%2e", ignoreCase = true)
-
-        private fun isDotDot(segment: String): Boolean =
-            segment == ".." ||
-                segment.equals("%2e.", ignoreCase = true) ||
-                segment.equals(".%2e", ignoreCase = true) ||
-                segment.equals("%2e%2e", ignoreCase = true)
-
-        /** RFC 3986 §5.2.4 on an absolute [path], keeping a trailing slash where one is implied. */
-        private fun removeDotSegments(path: String): String {
-            val segments = path.split('/').drop(1)
-            val out = ArrayList<String>(segments.size)
-            for ((index, segment) in segments.withIndex()) {
-                val last = index == segments.lastIndex
-                when {
-                    isDotDot(segment) -> {
-                        if (out.isNotEmpty()) out.removeAt(out.lastIndex)
-                        if (last) out.add("")
-                    }
-                    isDot(segment) -> if (last) out.add("")
-                    else -> out.add(segment)
-                }
-            }
-            return "/" + out.joinToString("/")
         }
     }
 }

@@ -37,6 +37,12 @@ enum class TransportKind {
         KTOR -> KtorRpcTransport(baseUrl, ktor, connectTimeoutMs, readTimeoutMs, authorization, cookie)
     }
 
+    /** The carrier of the launch-token exchange and the relay calls. */
+    fun plain(): PlainHttp = when (this) {
+        OKHTTP -> OkHttpPlainHttp(okHttp)
+        KTOR -> KtorPlainHttp(ktor)
+    }
+
     /** A mux socket to [url] reporting to [sink]. */
     fun socket(
         url: String,

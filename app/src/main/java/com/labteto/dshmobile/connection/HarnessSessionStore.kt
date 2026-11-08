@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.labteto.dshmobile.core.wire.HarnessSession
 import com.labteto.dshmobile.core.wire.SessionExchange
 import com.labteto.dshmobile.core.wire.WireJson
+import com.labteto.dshmobile.core.wire.exchange
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer

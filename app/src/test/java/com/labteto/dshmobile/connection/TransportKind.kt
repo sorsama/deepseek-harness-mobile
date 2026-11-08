@@ -1,9 +1,12 @@
 package com.labteto.dshmobile.connection
 
 import com.labteto.dshmobile.core.wire.KtorMuxSocket
+import com.labteto.dshmobile.core.wire.KtorPlainHttp
 import com.labteto.dshmobile.core.wire.KtorRpcTransport
 import com.labteto.dshmobile.core.wire.MuxSocket
+import com.labteto.dshmobile.core.wire.OkHttpPlainHttp
 import com.labteto.dshmobile.core.wire.OkHttpRpcTransport
+import com.labteto.dshmobile.core.wire.PlainHttp
 import com.labteto.dshmobile.core.wire.RpcTransport
 import com.labteto.dshmobile.core.wire.WsChannel
 import com.labteto.dshmobile.core.wire.WsChannelSink
@@ -48,6 +51,12 @@ enum class TransportKind {
             cookie = cookie,
         )
         KTOR -> KtorRpcTransport(baseUrl, ktor, connectTimeoutMs, readTimeoutMs, authorization, cookie)
+    }
+
+    /** The carrier of the launch-token exchange and the relay calls. */
+    fun plain(): PlainHttp = when (this) {
+        OKHTTP -> OkHttpPlainHttp(okHttp)
+        KTOR -> KtorPlainHttp(ktor)
     }
 
     /** A mux socket to [url] reporting to [sink]. */

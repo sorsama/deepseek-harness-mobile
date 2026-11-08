@@ -1,11 +1,6 @@
 package com.labteto.dshmobile.core.wire
 
-import java.io.IOException
-import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import kotlinx.io.IOException
 
 /** What a launch-token exchange produced, or why it did not. */
 sealed class SessionExchange {
@@ -51,35 +46,49 @@ object HarnessSession {
      *
      * Redirects are not followed: a successful exchange answers 3xx to the clean `/`, and the
      * cookie is on *that* response. Letting the HTTP layer chase it would discard the header this
-     * whole call exists to read.
+     * whole call exists to read. [http] is a [PlainHttp], which never follows one. On the JVM the
+     * same call takes an `OkHttpClient` (`HarnessSession.exchange(baseUrl, token, client)` in
+     * `HarnessSessionOkHttp.kt`), so the Android app keeps handing over the client it has.
      */
     suspend fun exchange(
         baseUrl: String,
         token: String,
-        client: OkHttpClient,
+        http: PlainHttp,
         timeoutMs: Long = 10_000,
-    ): SessionExchange = withContext(Dispatchers.IO) {
-        val exchanger = client.newBuilder()
-            .followRedirects(false)
-            .followSslRedirects(false)
-            .connectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-            .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-            .build()
-        val url = resolveHarnessUrl(baseUrl, "/").newBuilder().addQueryParameter("token", token).build()
-        val request = Request.Builder().url(url).get().build()
-        try {
-            exchanger.newCall(request).execute().use { response ->
-                val cookie = response.headers("Set-Cookie")
-                    .firstOrNull { it.startsWith(COOKIE_PREFIX) }
-                    // Only the name=value pair travels back; `Path`, `HttpOnly` and `SameSite`
-                    // are instructions to a browser, and repeating them on a request would be
-                    // sending the server its own directives.
-                    ?.substringBefore(';')
-                if (cookie != null) SessionExchange.Granted(cookie) else SessionExchange.Refused(response.code)
-            }
+    ): SessionExchange {
+        val url = resolveHarnessWireUrl(baseUrl, "/").withQueryParameter("token", token)
+        // The body is never read: the answer is in the status and the headers.
+        val request = PlainHttpRequest(
+            method = "GET",
+            url = url.text,
+            connectTimeoutMs = timeoutMs,
+            readTimeoutMs = timeoutMs,
+            readBody = false,
+        )
+        return try {
+            val response = http.execute(request)
+            val cookie = cookieOf(response.headers("Set-Cookie"))
+            if (cookie != null) SessionExchange.Granted(cookie) else SessionExchange.Refused(response.status)
         } catch (e: IOException) {
             SessionExchange.Unreachable(TransportFailures.classify(e), e.message)
         }
+    }
+
+    /**
+     * The `name=value` of the harness's session cookie among [setCookies].
+     *
+     * Only that pair travels back; `Path`, `HttpOnly` and `SameSite` are instructions to a browser,
+     * and repeating them on a request would be sending the server its own directives. Where a
+     * carrier folds repeated `Set-Cookie` headers into one value joined by `", "` (Darwin does), the
+     * session cookie is looked for after each such join when no value starts with it.
+     */
+    private fun cookieOf(setCookies: List<String>): String? {
+        setCookies.firstOrNull { it.startsWith(COOKIE_PREFIX) }?.let { return it.substringBefore(';') }
+        for (value in setCookies) {
+            val joined = value.indexOf(", $COOKIE_PREFIX")
+            if (joined >= 0) return value.substring(joined + 2).substringBefore(';')
+        }
+        return null
     }
 
     /**

@@ -68,9 +68,8 @@ import com.labteto.dshmobile.core.wire.dto.WorkspaceOrderValue
 import com.labteto.dshmobile.core.wire.dto.WorkspaceRenameRequest
 import com.labteto.dshmobile.core.wire.dto.WorkspaceValue
 import com.labteto.dshmobile.core.wire.dto.*
-import java.io.IOException
-import java.net.URLEncoder
 import kotlinx.coroutines.CancellationException
+import kotlinx.io.IOException
 import kotlinx.io.Source
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
@@ -86,10 +85,6 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.serializer
-
-/** Percent-encode one query-string value (session ids are opaque host-minted strings). */
-private fun encodeQueryComponent(value: String): String =
-    URLEncoder.encode(value, "UTF-8").replace("+", "%20")
 
 /** The gateway's refusal of an argument object that does not match the host method's parameters. */
 private const val ARGUMENTS_INVALID = "gateway/arguments-invalid"
@@ -772,7 +767,7 @@ class DshApiClient(
         val meta = decodeFromJsonElement(WorkspaceFileBytesMeta.serializer(), value)
         val data = attachments[listOf("data")]
             ?: ((value as? JsonObject)?.get("data") as? JsonPrimitive)?.takeIf { it.isString }
-                ?.let { java.util.Base64.getDecoder().decode(it.content) }
+                ?.let { decodeBase64(it.content) }
             ?: ByteArray(0)
         return WorkspaceFileContent(meta.absolutePath, meta.version, meta.bytes, meta.offset, meta.eof, data)
     }

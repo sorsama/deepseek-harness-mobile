@@ -3,9 +3,12 @@ package com.labteto.dshmobile.conformance
 import com.labteto.dshmobile.core.wire.DshApiClient
 import com.labteto.dshmobile.core.wire.HarnessSession
 import com.labteto.dshmobile.core.wire.KtorMuxSocket
+import com.labteto.dshmobile.core.wire.KtorPlainHttp
 import com.labteto.dshmobile.core.wire.KtorRpcTransport
 import com.labteto.dshmobile.core.wire.MuxSocket
+import com.labteto.dshmobile.core.wire.OkHttpPlainHttp
 import com.labteto.dshmobile.core.wire.OkHttpRpcTransport
+import com.labteto.dshmobile.core.wire.PlainHttp
 import com.labteto.dshmobile.core.wire.RemoteStreamMux
 import com.labteto.dshmobile.core.wire.RpcTransport
 import com.labteto.dshmobile.core.wire.SessionExchange
@@ -53,9 +56,8 @@ enum class TransportChoice {
  * itself worth exercising, because `:mock-harness` implements no `GET /?token=` at all, so the
  * direct-connection authentication tier every non-relay user is on has never had an end-to-end test.
  *
- * The unary calls and the mux ride whichever transport [TransportChoice.selected] names. The launch
- * token exchange (`HarnessSession`) is not part of the transport seam yet and stays on OkHttp for
- * both runs.
+ * The unary calls, the mux and the launch-token exchange (`HarnessSession`) all ride whichever
+ * transport [TransportChoice.selected] names.
  */
 class HarnessClient(harness: HarnessProcess, existingCookie: String? = null) : AutoCloseable {
 
@@ -97,9 +99,15 @@ class HarnessClient(harness: HarnessProcess, existingCookie: String? = null) : A
         null
     }
 
+    /** The carrier of the launch-token exchange: the same implementation as the calls it unlocks. */
+    private val plain: PlainHttp = when (choice) {
+        TransportChoice.OKHTTP -> OkHttpPlainHttp(http)
+        TransportChoice.KTOR -> KtorPlainHttp(ktor!!)
+    }
+
     /** The browser-session cookie this client exchanged its launch token for. */
     val cookie: String = existingCookie ?: runBlocking {
-        when (val result = HarnessSession.exchange(harness.baseUrl, harness.launchToken, http)) {
+        when (val result = HarnessSession.exchange(harness.baseUrl, harness.launchToken, plain)) {
             is SessionExchange.Granted -> result.cookie
             else -> error("the harness refused the launch token: $result")
         }

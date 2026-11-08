@@ -6,9 +6,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartReader
-import okio.Buffer
 
 /**
  * A unary answer whose value carries raw bytes, harness 0.1.7's multipart response.
@@ -56,20 +53,14 @@ object RpcMultipart {
      * reports that as "not a harness" like any other unreadable answer.
      */
     fun decode(contentType: String, body: ByteArray): Decoded {
-        val boundary = contentType.toMediaTypeOrNull()?.parameter("boundary")
-            ?: throw IllegalArgumentException("multipart response carries no boundary")
         val parts = linkedMapOf<String, ByteArray>()
-        MultipartReader(Buffer().write(body), boundary).use { reader ->
-            while (true) {
-                val part = reader.nextPart() ?: break
-                val name = partName(part.headers["Content-Disposition"])
-                val bytes = part.body.readByteArray()
-                if (name != null) parts[name] = bytes
-            }
+        for (part in readMultipartParts(contentType, body)) {
+            val name = partName(part.contentDisposition)
+            if (name != null) parts[name] = part.body
         }
         val metadata = parts["metadata"]
             ?: throw IllegalArgumentException("multipart response has no metadata part")
-        val envelope = WireJson.parseToJsonElement(metadata.toString(Charsets.UTF_8)) as? JsonObject
+        val envelope = WireJson.parseToJsonElement(metadata.decodeToString()) as? JsonObject
             ?: throw IllegalArgumentException("multipart metadata is not an object")
         val attachments = (envelope["attachments"] as? JsonArray).orEmpty().associate { raw ->
             val attachment = raw as? JsonObject

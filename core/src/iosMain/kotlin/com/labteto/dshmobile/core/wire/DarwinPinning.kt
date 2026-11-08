@@ -60,6 +60,37 @@ internal fun pinnedChallengeHandler(expectedPin: String, mismatches: PinMismatch
         }
     }
 
+/**
+ * Trust on first use, the iOS counterpart of `RelayTls.trustOnFirstUseClient`: accept whatever key the
+ * server presents and record it in [observed].
+ *
+ * It exists for the two flows that cannot pin in advance (passcode pairing, where the fingerprint
+ * only arrives with the claim, and probing an address before the device has any relationship with
+ * it). Neither sends a credential, and the claim that follows is a single-use code; but whoever
+ * answers on that address during pairing does end up holding the enrolment, which is why this is
+ * not a substitute for [pinnedChallengeHandler] and why the UI has to say so. Like the JVM
+ * version, the hostname is not checked and system trust is not consulted. Unlike the JVM version it
+ * still fails closed on a certificate it cannot read: no server trust, no certificate or an
+ * unreadable one cancels the challenge, so [observed] is only ever set to a real pin.
+ */
+@OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
+internal fun learningChallengeHandler(observed: ObservedKey): ChallengeHandler =
+    { _, _, challenge, completionHandler ->
+        val space = challenge.protectionSpace
+        if (space.authenticationMethod != NSURLAuthenticationMethodServerTrust) {
+            completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, null)
+        } else {
+            val trust = space.serverTrust
+            val presented = if (trust == null) null else leafPin(trust)
+            if (trust != null && presented != null) {
+                observed.pin = presented
+                completionHandler(NSURLSessionAuthChallengeUseCredential, NSURLCredential.credentialForTrust(trust))
+            } else {
+                completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, null)
+            }
+        }
+    }
+
 /** The pin of the server's leaf certificate, or null when there is none or it cannot be read. */
 @OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
 private fun leafPin(trust: SecTrustRef): String? {
