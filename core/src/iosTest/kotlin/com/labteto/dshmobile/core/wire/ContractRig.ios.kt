@@ -19,6 +19,7 @@ internal actual suspend fun openContractRig(): ContractRig = object : ContractRi
     override val relayUrl = "http://127.0.0.1:3183"
     override val deadUrl = "http://127.0.0.1:3189"
     override val keepAliveUrl = "http://127.0.0.1:3184"
+    override val dropUrl = "http://127.0.0.1:3185"
     override fun newClient(): HttpClient = darwinHttpClient()
 
     /** Tests run one at a time, so a plain counter does for numbering the trace. */

@@ -206,7 +206,7 @@ jobs:
             total=$((total + n))
           done
           echo "core iOS tests executed: $total"
-          test "$total" -ge 37 || { echo "::error::expected at least 37 Kotlin/Native tests to have run in :core, found $total"; exit 1; }
+          test "$total" -ge 40 || { echo "::error::expected at least 40 Kotlin/Native tests to have run in :core, found $total"; exit 1; }
           shopt -s nullglob
           shared=0
           for f in iosShared/build/test-results/iosSimulatorArm64Test/*.xml; do
@@ -216,13 +216,14 @@ jobs:
           echo "iosShared iOS tests executed: $shared"
           test "$shared" -ge 1 || { echo "::error::no Kotlin/Native tests ran in :iosShared"; exit 1; }
       # What the mux socket was measured doing, in the run's own log: the one-line results the tests
-      # print (`MUX_401`, `MUX_REFUSED`, `MUX_LARGE`, `MUX_CLOSE`, `MUX_PING`) and every delegate event
-      # of every socket (`MUX_TRACE`), which says which `NSURLSession` callback decided each outcome.
+      # print (`MUX_401`, `MUX_REFUSED`, `MUX_CHALLENGE`, `MUX_REDIRECT`, `MUX_LARGE`, `MUX_CLOSE`,
+      # `MUX_DROP`, `MUX_PING`) and every delegate event of every socket (`MUX_TRACE`), which says which
+      # `NSURLSession` callback decided each outcome.
       - name: Show what the Darwin mux socket did
         if: ${{ !cancelled() }}
         run: |
           shopt -s nullglob
-          grep -h -E 'MUX_(401|REFUSED|LARGE|CLOSE|PING|TRACE)' core/build/test-results/iosSimulatorArm64Test/*.xml \
+          grep -h -E 'MUX_(401|REFUSED|CHALLENGE|REDIRECT|LARGE|CLOSE|DROP|PING|TRACE)' core/build/test-results/iosSimulatorArm64Test/*.xml \
             | sed -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&amp;/\&/g' | cut -c1-300 || echo "no MUX_ lines found in the test reports"
       - name: Generate the Xcode project
         if: ${{ !cancelled() }}

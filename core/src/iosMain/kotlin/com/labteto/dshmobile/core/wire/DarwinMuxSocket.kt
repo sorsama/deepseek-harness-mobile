@@ -2,8 +2,6 @@ package com.labteto.dshmobile.core.wire
 
 import io.ktor.client.engine.darwin.ChallengeHandler
 import kotlin.concurrent.Volatile
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.TimeSource
 import kotlinx.atomicfu.atomic
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.UnsafeNumber
@@ -66,8 +64,8 @@ import platform.darwin.NSObject
  *   401 (no browser session: re-pair) and 403 (the Host/Origin fence: reconfigure) stay apart.
  * - **Message size:** up to 128 MiB, the limit the other carriers allow, set before `resume()`.
  * - **Deadline:** [connectTimeoutMs] bounds the handshake. `NSURLSession` ignores the request timeout
- *   for a WebSocket task, so the socket keeps its own clock, and it also looks at the task's response
- *   while it waits, so a refusal is reported when it arrives and not when the deadline passes. There is
+ *   for a WebSocket task, so the socket keeps its own clock. A refusal is reported when it arrives
+ *   (`didCompleteWithError`, with the status on `task.response`), not when the deadline passes. There is
  *   no read deadline once open: the host pings and the system answers.
  * - [send] returns false before [start] and once the socket is gone, accepts messages while the
  *   handshake is in flight, and refuses once more than 16 MiB are waiting, as OkHttp does. [start] and
@@ -315,8 +313,10 @@ class DarwinMuxSocket(
             // The host closed the socket politely.
             closeSeen.value || (task != null && task.closeCode != NSURLSessionWebSocketCloseCodeInvalid) -> null
             error != null -> failure(error)
+            // Ended with no error and no Close frame. A clean close is only the host's Close frame, so a
+            // connection that just stops is a failure, as OkHttp and `KtorMuxSocket` report it.
             !opened.value -> DarwinSocketException(TransportFailure.OTHER, "the WebSocket closed before it opened")
-            else -> null
+            else -> DarwinSocketException(TransportFailure.OTHER, "the WebSocket ended without a close frame")
         }
         finish(cause, via)
     }
@@ -371,33 +371,22 @@ class DarwinMuxSocket(
     // ---------------------------------------------------------------- the handshake clock
 
     /**
-     * Bounds the handshake by [connectTimeoutMs] and watches the task's response meanwhile.
-     *
-     * Every decision is made on the delegate queue, so it is ordered with the delegate's own events.
+     * Bounds the handshake by [connectTimeoutMs]: `NSURLSession` ignores the request's timeout for a
+     * WebSocket task, so a handshake that never finishes (a black-holed address) is ended here.
+     * The decision is made on the delegate queue, so it is ordered with the delegate's own events.
      */
     private suspend fun watchHandshake(current: Live) {
-        val started = TimeSource.Monotonic.markNow()
-        while (state.value == RUNNING && !opened.value) {
-            delay(HANDSHAKE_POLL_MS)
-            val expired = connectTimeoutMs > 0 && started.elapsedNow() >= connectTimeoutMs.milliseconds
-            current.queue.addOperationWithBlock { checkHandshake(expired) }
-            if (expired) return
-        }
+        if (connectTimeoutMs <= 0) return
+        delay(connectTimeoutMs)
+        current.queue.addOperationWithBlock { handshakeDeadline() }
     }
 
-    private fun checkHandshake(expired: Boolean) {
+    private fun handshakeDeadline() {
         if (state.value != RUNNING || opened.value) return
-        val status = statusOfResponse()
-        if (status != null && status != HTTP_SWITCHING_PROTOCOLS) {
-            settle("handshake response")
-            return
-        }
-        if (expired) {
-            finish(
-                DarwinSocketException(TransportFailure.TIMEOUT, "the WebSocket handshake did not complete within $connectTimeoutMs ms"),
-                "handshake deadline",
-            )
-        }
+        finish(
+            DarwinSocketException(TransportFailure.TIMEOUT, "the WebSocket handshake did not complete within $connectTimeoutMs ms"),
+            "handshake deadline",
+        )
     }
 
     /** The HTTP status the task's response carries, or null while it has none. */
@@ -421,7 +410,6 @@ class DarwinMuxSocket(
         /** `NSURLRequest.timeoutInterval` is an idle timeout; a mux is idle whenever the host is quiet. */
         const val NO_READ_DEADLINE_SECONDS = 30.0 * 24 * 3600
 
-        const val HANDSHAKE_POLL_MS = 100L
         const val RECEIVE_ERROR_WAIT_MS = 300L
         const val CLOSE_DRAIN_MS = 2_000L
     }

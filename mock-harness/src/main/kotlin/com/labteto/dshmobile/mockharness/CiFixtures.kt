@@ -21,6 +21,11 @@ import io.ktor.server.websocket.webSocket
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
+import java.net.InetAddress
+import java.net.ServerSocket
+import java.net.Socket
+import java.security.MessageDigest
+import java.util.Base64
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -42,6 +47,7 @@ import kotlinx.serialization.json.put
  * - **relay**: a `dsh-relay`: everything outside the `/relay` prefix answers 403 without the bearer token.
  * - **keep-alive**: a bare WebSocket server that pings every 100 ms and drops a client that does not
  *   answer, which is how a test sees that a platform answers pings. The harnesses never ping.
+ * - **dropping**: completes a WebSocket handshake and drops the connection with no Close frame.
  *
  * The ports are fixed for the standalone run, because a Kotlin/Native test process has no way to be
  * told where to look except by being compiled to expect it.
@@ -53,6 +59,9 @@ object CiFixtures {
 
     /** The WebSocket server that pings and drops a client that does not pong. */
     const val KEEPALIVE_PORT: Int = 3184
+
+    /** The server that completes a WebSocket handshake and then drops the connection with no Close frame. */
+    const val DROP_PORT: Int = 3185
 
     /** A port nothing listens on, for the connection-refused case. */
     const val DEAD_PORT: Int = 3189
@@ -83,6 +92,7 @@ object CiFixtures {
         sessionPort: Int = 0,
         relayPort: Int = 0,
         keepAlivePort: Int = 0,
+        dropPort: Int = 0,
     ): CiFixtureServers {
         val plain = harness(plainPort)
         val session = harness(sessionPort, session = sessionMode)
@@ -92,15 +102,18 @@ object CiFixtures {
         val sessionBound = session.start()
         val relayBound = relay.start()
         keepAlive.start(wait = false)
+        val dropping = DroppingServer(dropPort)
         return CiFixtureServers(
             plain = plain,
             session = session,
             relay = relay,
             keepAlive = keepAlive,
+            dropping = dropping,
             plainPort = plainBound,
             sessionPort = sessionBound,
             relayPort = relayBound,
             keepAlivePort = keepAlive.engine.resolvedConnectors().first().port,
+            dropPort = dropping.port,
         )
     }
 
@@ -203,6 +216,15 @@ object CiFixtures {
         post("/api/ci/html") {
             call.respondText("<html><body>not a harness</body></html>", ContentType.Text.Html)
         }
+        // A 401 that asks for credentials, as an HTTP-authenticating server does. `NSURLSession` turns such
+        // an answer into an authentication challenge for the delegate, a different path from a bare 401
+        // (which is what the harness fixtures send), and the status must survive it.
+        route("/ci/ws-challenge") {
+            handle {
+                call.response.header("WWW-Authenticate", "Basic realm=\"dsh\"")
+                call.respondText("unauthorized", status = HttpStatusCode.Unauthorized)
+            }
+        }
         // A host that closes the mux socket politely: one message, then a Close frame with the normal
         // code. This is the case an OkHttp WebSocket without an `onClosing` handler never notices.
         webSocket("/ci/ws-close") {
@@ -214,26 +236,78 @@ object CiFixtures {
 
 internal typealias KeepAliveServer = EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>
 
-/** The four running fixture servers (three harnesses and the keep-alive WebSocket server) and where they listen. */
+/**
+ * Completes the WebSocket handshake by hand and drops the TCP connection 300 ms later with no Close
+ * frame: a link that dies, as opposed to a host that ends the socket. Ktor's server cannot do this (it
+ * always closes a session politely), so it is a bare socket. Any path is accepted.
+ */
+internal class DroppingServer(port: Int) {
+    private val server = ServerSocket(port, 50, InetAddress.getByName("127.0.0.1"))
+    val port: Int get() = server.localPort
+
+    init {
+        Thread {
+            while (!server.isClosed) {
+                val client = runCatching { server.accept() }.getOrNull() ?: break
+                Thread { runCatching { drop(client) } }.apply { isDaemon = true }.start()
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    private fun drop(socket: Socket) {
+        socket.use {
+            val reader = socket.getInputStream().bufferedReader(Charsets.ISO_8859_1)
+            var key: String? = null
+            while (true) {
+                val line = reader.readLine() ?: return
+                if (line.isEmpty()) break
+                if (line.startsWith("Sec-WebSocket-Key:", ignoreCase = true)) key = line.substringAfter(':').trim()
+            }
+            val accept = Base64.getEncoder().encodeToString(
+                MessageDigest.getInstance("SHA-1").digest("${key}258EAFA5-E914-47DA-95CA-C5AB0DC85B11".toByteArray()),
+            )
+            socket.getOutputStream().apply {
+                write(
+                    (
+                        "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n" +
+                            "Sec-WebSocket-Accept: $accept\r\n\r\n"
+                        ).toByteArray(),
+                )
+                flush()
+            }
+            Thread.sleep(300)
+        }
+    }
+
+    fun stop() {
+        runCatching { server.close() }
+    }
+}
+
+/** The running fixture servers (three harnesses, the keep-alive WebSocket server, the dropping one) and where they listen. */
 class CiFixtureServers internal constructor(
     private val plain: MockHarness,
     private val session: MockHarness,
     private val relay: MockHarness,
     private val keepAlive: KeepAliveServer,
+    private val dropping: DroppingServer,
     val plainPort: Int,
     val sessionPort: Int,
     val relayPort: Int,
     val keepAlivePort: Int,
+    val dropPort: Int,
 ) {
     val plainUrl: String get() = "http://127.0.0.1:$plainPort"
     val sessionUrl: String get() = "http://127.0.0.1:$sessionPort"
     val relayUrl: String get() = "http://127.0.0.1:$relayPort"
     val keepAliveUrl: String get() = "http://127.0.0.1:$keepAlivePort"
+    val dropUrl: String get() = "http://127.0.0.1:$dropPort"
 
     suspend fun stop() {
         plain.stop()
         session.stop()
         relay.stop()
         keepAlive.stop(gracePeriodMillis = 0, timeoutMillis = 0)
+        dropping.stop()
     }
 }

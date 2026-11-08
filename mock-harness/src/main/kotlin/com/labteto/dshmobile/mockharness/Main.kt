@@ -57,10 +57,11 @@ fun main(args: Array<String>) {
                 CiFixtures.SESSION_PORT,
                 CiFixtures.RELAY_PORT,
                 CiFixtures.KEEPALIVE_PORT,
+                CiFixtures.DROP_PORT,
             )
             println(
                 "ci fixtures listening: plain=${servers.plainUrl} session=${servers.sessionUrl} " +
-                    "relay=${servers.relayUrl} keepalive=${servers.keepAliveUrl}",
+                    "relay=${servers.relayUrl} keepalive=${servers.keepAliveUrl} drop=${servers.dropUrl}",
             )
             awaitCancellation()
         }

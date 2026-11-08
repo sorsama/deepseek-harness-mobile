@@ -440,6 +440,72 @@ class HarnessContractTest {
     }
 
     @Test
+    fun aMuxUpgradeRefusedWith401ThatAsksForCredentialsStillReportsItsStatus() = test { client ->
+        // A 401 with `WWW-Authenticate` is an HTTP authentication challenge to `NSURLSession`, a different
+        // path through the delegate from a bare 401. The socket has no credential to give and must still say
+        // 401, not "cancelled".
+        val sink = EventSink()
+        val socket = rig.newMuxSocket(client, "${rig.plainUrl}/ci/ws-challenge", sink, connectTimeoutMs = 8_000)
+        val started = TimeSource.Monotonic.markNow()
+        socket.start()
+        val event = try {
+            sink.next(12_000)
+        } finally {
+            socket.close()
+        }
+        val elapsed = started.elapsedNow().inWholeMilliseconds
+        println("MUX_CHALLENGE: after ${elapsed}ms the socket reported ${event?.describe() ?: "nothing"}")
+        val refusal = (event as? SocketEvent.Closed)?.cause as? RpcTransportException
+            ?: fail("expected a refusal carrying its status, was ${event?.describe()}")
+        assertEquals(401, refusal.status)
+        assertEquals(TransportFailure.UNAUTHENTICATED, TransportFailures.classify(refusal))
+        assertTrue(elapsed < 4_000, "reported after ${elapsed}ms")
+    }
+
+    @Test
+    fun aMuxUpgradeThatIsRedirectedIsRefusedAndNotFollowed() = test { client ->
+        // A credential must not be replayed at another address, so the redirect is the answer. If it were
+        // followed, `/ci/echo-request` would answer 200 and the status below would not be 302.
+        val sink = EventSink()
+        val socket = rig.newMuxSocket(
+            client,
+            "${rig.plainUrl}/ci/redirect",
+            sink,
+            authorization = "Bearer must-not-travel",
+            connectTimeoutMs = 8_000,
+        )
+        socket.start()
+        val event = try {
+            sink.next(12_000)
+        } finally {
+            socket.close()
+        }
+        println("MUX_REDIRECT: the socket reported ${event?.describe() ?: "nothing"}")
+        val refusal = (event as? SocketEvent.Closed)?.cause as? RpcTransportException
+            ?: fail("expected the redirect to be reported as the answer, was ${event?.describe()}")
+        assertEquals(302, refusal.status)
+    }
+
+    @Test
+    fun aConnectionThatDropsAfterTheHandshakeIsAFailureNotACleanClose() = test { client ->
+        // The host never sends a Close frame; the link just ends. "The host closed the stream" and "the
+        // link died" explain the same reconnect differently, and a Close frame is the only clean close.
+        val sink = EventSink()
+        val socket = rig.newMuxSocket(client, "${rig.dropUrl}/api/remote.mux", sink)
+        socket.start()
+        try {
+            assertEquals(SocketEvent.Opened, sink.next())
+            val closed = sink.next()
+            println("MUX_DROP: after the link dropped the sink heard ${closed?.describe()}")
+            val failure = (closed as? SocketEvent.Closed)?.cause
+            assertNotNull(failure, "an abrupt drop must be reported as a failure, was ${closed?.describe()}")
+            assertNull(sink.next(500), "nothing may follow the close")
+        } finally {
+            socket.close()
+        }
+    }
+
+    @Test
     fun theMuxUpgradeNeedsTheRelayTokenAndSendsIt() = test { client ->
         val url = "${rig.relayUrl}/api/remote.mux"
         val without = assertFailed(handshake(client, url))

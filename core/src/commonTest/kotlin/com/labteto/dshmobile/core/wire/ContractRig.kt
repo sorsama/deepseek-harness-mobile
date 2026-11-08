@@ -33,6 +33,9 @@ internal interface ContractRig {
      */
     val keepAliveUrl: String
 
+    /** A server that completes a WebSocket handshake and then drops the connection, with no Close frame, 300 ms later. */
+    val dropUrl: String
+
     /** A fresh client of the platform's engine, built the way the app builds one. Close it after use. */
     fun newClient(): HttpClient
 
