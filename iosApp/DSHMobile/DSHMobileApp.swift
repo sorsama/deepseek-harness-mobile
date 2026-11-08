@@ -55,7 +55,7 @@ struct ComposeView: UIViewControllerRepresentable {
 /// - `-DshConnectMode relay` (or `lan`) switches the Connect screen's mode before it is drawn.
 /// - The pairing arguments open the Pair screen and drive it as a person would: `-DshOpenPair YES` opens it,
 ///   `-DshPairUrl <address>` and `-DshPairCode <digits>` fill the form, `-DshPairSubmit YES` taps Pair,
-///   `-DshPairPayload <json>` hands it the text a QR scan would have decoded (a simulator has no camera),
+///   `-DshPairPayload <hex of the json>` hands it the text a QR scan would have decoded (a simulator has no camera),
 ///   `-DshPairScanner YES` opens the camera sheet. The result is written to `Documents/dsh-pair-result.txt`.
 ///
 /// Debug builds only. A release build ignores them, so the shipped app has no way to be told which
@@ -76,6 +76,21 @@ struct LaunchOptions {
     let pairPayload: String?
     let pairScanner: Bool
 
+    /// A launch argument's value is parsed as a property list before the app sees it, which mangles JSON, so a
+    /// pairing payload is passed hex-encoded (`xxd -p`). A value that is not hex is returned as it was given.
+    static func decodeHex(_ value: String?) -> String? {
+        guard let value = value, !value.isEmpty, value.count % 2 == 0 else { return value }
+        var bytes = [UInt8]()
+        var index = value.startIndex
+        while index < value.endIndex {
+            let next = value.index(index, offsetBy: 2)
+            guard let byte = UInt8(value[index..<next], radix: 16) else { return value }
+            bytes.append(byte)
+            index = next
+        }
+        return String(decoding: bytes, as: UTF8.self)
+    }
+
     static func fromProcess() -> LaunchOptions {
         #if DEBUG
         // `-Key value` launch arguments land in UserDefaults' argument domain.
@@ -94,7 +109,7 @@ struct LaunchOptions {
             pairUrl: defaults.string(forKey: "DshPairUrl"),
             pairCode: defaults.string(forKey: "DshPairCode"),
             pairSubmit: defaults.bool(forKey: "DshPairSubmit"),
-            pairPayload: defaults.string(forKey: "DshPairPayload"),
+            pairPayload: decodeHex(defaults.string(forKey: "DshPairPayload")),
             pairScanner: defaults.bool(forKey: "DshPairScanner")
         )
         #else

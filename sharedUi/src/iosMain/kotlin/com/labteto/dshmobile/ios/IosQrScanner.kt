@@ -191,6 +191,7 @@ private fun ScannerSurface(onClose: () -> Unit, onDecoded: (String) -> Unit, onT
     }
 
     val cameraLive = access == CameraAccess.Granted && !cameraFailed
+    val askAgain: () -> Unit = { scope.launch { access = requestCameraAccess() } }
 
     Column(Modifier.fillMaxSize().background(colors.bgBase)) {
         ScannerTopBar(title = stringResource(Res.string.pair_title), onClose = onClose)
@@ -221,7 +222,7 @@ private fun ScannerSurface(onClose: () -> Unit, onDecoded: (String) -> Unit, onT
                         cameraFailed -> ({ cameraFailed = false })
                         access == CameraAccess.Denied -> ::openAppSettings
                         // Still undecided: the prompt was dismissed without an answer, so ask again.
-                        else -> ({ scope.launch { access = requestCameraAccess() } })
+                        else -> askAgain
                     },
                     secondaryLabel = stringResource(Res.string.scan_type_instead),
                     onSecondary = onTypeCode,
@@ -444,10 +445,6 @@ private fun QrCameraView(modifier: Modifier, onCode: (String) -> Unit, onFailed:
             camera.view
         },
         modifier = modifier,
-        onResize = { view, rect ->
-            view.setFrame(rect)
-            camera.fitPreview()
-        },
         onRelease = { camera.stop() },
     )
     LaunchedEffect(camera) {
@@ -455,17 +452,35 @@ private fun QrCameraView(modifier: Modifier, onCode: (String) -> Unit, onFailed:
     }
 }
 
+/**
+ * The view the preview layer lives in. Compose sets the view's frame as the layout changes (CMP 1.7 has no
+ * resize callback), and a layer's frame does not follow its view, so the layer is fitted here, without the
+ * implicit animation a layer's frame change would get.
+ */
+@OptIn(ExperimentalForeignApi::class)
+private class PreviewView : UIView() {
+    var previewLayer: AVCaptureVideoPreviewLayer? = null
+
+    override fun layoutSubviews() {
+        super.layoutSubviews()
+        val layer = previewLayer ?: return
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        layer.frame = bounds
+        CATransaction.commit()
+    }
+}
+
 /** One capture session and the view that shows it. */
 @OptIn(ExperimentalForeignApi::class)
 private class QrCamera(onCode: (String) -> Unit) {
-    val view: UIView = UIView()
+    val view = PreviewView()
 
     /** Whether [start] managed to build a session. */
     var started: Boolean = false
         private set
 
     private var session: AVCaptureSession? = null
-    private var preview: AVCaptureVideoPreviewLayer? = null
 
     // Held here because the metadata output keeps its delegate weakly.
     private val delegate = QrDelegate(onCode)
@@ -488,26 +503,17 @@ private class QrCamera(onCode: (String) -> Unit) {
         layer.videoGravity = AVLayerVideoGravityResizeAspectFill
         layer.frame = view.bounds
         view.layer.addSublayer(layer)
+        view.previewLayer = layer
         session = captureSession
-        preview = layer
         started = true
         dispatch_async(dispatch_get_global_queue(0L, 0UL)) { captureSession.startRunning() }
-    }
-
-    /** Keep the preview the size of the view, without the implicit animation a layer's frame change gets. */
-    fun fitPreview() {
-        val layer = preview ?: return
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        layer.frame = view.bounds
-        CATransaction.commit()
     }
 
     fun stop() {
         val running = session ?: return
         session = null
-        preview?.removeFromSuperlayer()
-        preview = null
+        view.previewLayer?.removeFromSuperlayer()
+        view.previewLayer = null
         dispatch_async(dispatch_get_global_queue(0L, 0UL)) { running.stopRunning() }
     }
 }

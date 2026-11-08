@@ -96,10 +96,14 @@ import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
 /** The command the pairing steps name; a literal, never translated. */
 private const val PAIR_COMMAND = "dsh relay pair"
+
+/** How long to wait for a new failure card to be laid out before scrolling to it. */
+private const val FAILURE_SCROLL_DELAY_MS = 120L
 
 /**
  * Enrol this device with a relay, by QR or by typed code (design 05).
@@ -122,6 +126,14 @@ fun PairContent(
     prefillUrl: String? = null,
     /** Open with the scanner already up; a debug launch uses it to show the camera sheet without a tap. */
     initiallyScanning: Boolean = false,
+    /**
+     * Scroll the failure card into view when one appears.
+     *
+     * The card is the last thing on a long form, so on a short screen it can arrive below the fold and the
+     * person sees a Pair button that did nothing. The Android screen has never scrolled to it and keeps it
+     * that way (pixel for pixel); iOS asks for it.
+     */
+    scrollToFailure: Boolean = false,
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
@@ -152,6 +164,13 @@ fun PairContent(
     val codeFocus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     val scrollState = rememberScrollState()
+    LaunchedEffect(state.failure, scrollToFailure) {
+        if (scrollToFailure && state.failure != null) {
+            // Let the card be measured first: until then the scroll range does not include it.
+            delay(FAILURE_SCROLL_DELAY_MS)
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
+    }
     LaunchedEffect(focusCode) {
         if (focusCode) {
             // Coming back from the scanner: the typed form is below the fold, so bring the code

@@ -172,6 +172,7 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                 scanner = { close, decoded, typeCode -> IosQrScanner(close, decoded, typeCode) },
                 prefillUrl = pairPrefill,
                 initiallyScanning = scanFirst,
+                scrollToFailure = true,
             )
         } else if (connected) {
             ConnectedPage(
