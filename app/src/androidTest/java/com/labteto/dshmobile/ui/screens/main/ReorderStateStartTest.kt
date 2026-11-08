@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
+import com.labteto.dshmobile.ui.components.AndroidHapticPlayer
 import com.labteto.dshmobile.ui.components.DsHaptics
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -45,7 +46,7 @@ class ReorderStateStartTest {
             val scope = rememberCoroutineScope()
             val view = LocalView.current
             val state = remember {
-                ReorderState(listState, scope, DsHaptics(view, enabled = false), edgePx = 50f, maxStepPx = 10f)
+                ReorderState(listState, scope, DsHaptics(AndroidHapticPlayer(view), enabled = false), edgePx = 50f, maxStepPx = 10f)
             }
             state.itemKeyOf = { g, unit -> if (g == PROJECTS_GROUP) "project-$unit" else "row-$unit" }
             state.keysOf = { unit -> listOf("project-$unit", "row-$unit") }
