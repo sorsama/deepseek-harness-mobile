@@ -208,10 +208,13 @@ private fun ResultCard(tag: String, container: androidx.compose.ui.graphics.Colo
     }
 }
 
-/** The headline of a failure: "Couldn't reach a harness at …", or the fence's own. Null when the body says it all. */
+/**
+ * The headline of a failure: "Couldn't reach a harness at …", or the fence's own. Null when the body says
+ * it all. A harness that answered and wants a session is not "couldn't reach", so its body stands alone.
+ */
 @Composable
 private fun failureTitle(failed: ConnectOutcome.Failed): String? = when (failed.failure) {
-    ConnectFailure.INVALID_ADDRESS -> null
+    ConnectFailure.INVALID_ADDRESS, ConnectFailure.UNAUTHENTICATED -> null
     ConnectFailure.TRUST_FENCE -> stringResource(Res.string.connect_fail_fence_title)
     else -> stringResource(Res.string.connect_failed, failed.authority)
 }
