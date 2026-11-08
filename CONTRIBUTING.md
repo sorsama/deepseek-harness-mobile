@@ -33,7 +33,9 @@ Thanks for your interest in DSH Mobile!
 - Kotlin official code style; one file per screen/component where sensible.
 - The wire layer parses leniently (unknown keys/events/tool cards must fall
   back, never crash).
-- UI strings live in `values*/strings.xml` only — never hardcode.
+- UI strings live in `values*/strings.xml` only — never hardcode. A screen that has moved to `:sharedUi` (the
+  Connect screen so far) reads its strings from `sharedUi/src/commonMain/composeResources/values*/strings.xml`
+  instead, in the same 11 languages; `docs/IOS.md` ("Strings") has the rule and `tools/shared-strings/sync.mjs`.
 - Pull requests need CI green (unit tests + lint + assemble).
 
 ## Windows and system bars
