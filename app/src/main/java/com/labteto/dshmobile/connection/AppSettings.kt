@@ -77,4 +77,6 @@ data class AppSettings(
      * viewport and the jump pill reports them instead of pulling the page down.
      */
     val followStreamingReply: Boolean = true,
+    /** Default delivery for prompts sent while a turn is running: `queue` or `steer`. */
+    val defaultDeliveryMode: String = "queue",
 )

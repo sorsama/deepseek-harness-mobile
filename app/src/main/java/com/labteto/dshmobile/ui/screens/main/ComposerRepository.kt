@@ -51,10 +51,22 @@ internal class ComposerDraft(val key: ComposerKey, saved: SavedComposer = SavedC
         selection = referenceStart + mention.length + 1
         persist()
     }
-    var mode by mutableStateOf("queue")
+    var mode by mutableStateOf(DELIVERY_QUEUE)
+        private set
+    private var modeManuallySelected by mutableStateOf(false)
     var preparing by mutableStateOf(false)
     var submitting by mutableStateOf(false)
     val attachments = mutableStateListOf<PendingAttachment>()
+
+    /** Apply the app default until this composer has an explicit per-session choice. */
+    fun applyDefaultMode(defaultMode: String) {
+        if (!modeManuallySelected) mode = normalizeDeliveryMode(defaultMode)
+    }
+
+    fun selectMode(selectedMode: String) {
+        mode = normalizeDeliveryMode(selectedMode)
+        modeManuallySelected = true
+    }
 
     fun restoreRejected(submittedText: String, submitted: List<PendingAttachment>) {
         if (text.isBlank()) text = submittedText

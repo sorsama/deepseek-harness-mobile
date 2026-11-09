@@ -201,6 +201,10 @@
     <string name="settings_chat">Chat</string>
     <string name="settings_follow_streaming">Follow streaming replies</string>
     <string name="settings_follow_streaming_hint">Keeps the newest message in view while a reply is written. Scroll up to read at your own pace. Following starts again when you return to the bottom.</string>
+    <string name="settings_default_delivery_mode">Default send mode</string>
+    <string name="settings_default_delivery_mode_hint">Used when sending while a turn is running. You can still choose a different mode for each message.</string>
+    <string name="settings_default_delivery_mode_queue">Queue</string>
+    <string name="settings_default_delivery_mode_steer">Steer</string>
     <string name="settings_plugins">Plugins</string>
     <string name="settings_plugins_inventory">Plugin inventory</string>
     <string name="settings_language">Language</string>

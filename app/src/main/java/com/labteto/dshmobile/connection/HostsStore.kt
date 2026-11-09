@@ -55,6 +55,7 @@ class HostsStore @Inject constructor(
         val UPDATE_CHECK = booleanPreferencesKey("update_check")
         val DISMISSED_UPDATE = stringPreferencesKey("dismissed_update")
         val FOLLOW_STREAMING = booleanPreferencesKey("follow_streaming")
+        val DEFAULT_DELIVERY_MODE = stringPreferencesKey("default_delivery_mode")
     }
 
     private val hostsSerializer = ListSerializer(HostConfig.serializer())
@@ -96,6 +97,7 @@ class HostsStore @Inject constructor(
             updateCheckEnabled = prefs[Keys.UPDATE_CHECK] ?: true,
             dismissedUpdate = prefs[Keys.DISMISSED_UPDATE],
             followStreamingReply = prefs[Keys.FOLLOW_STREAMING] ?: true,
+            defaultDeliveryMode = if (prefs[Keys.DEFAULT_DELIVERY_MODE] == "steer") "steer" else "queue",
         )
     }
 
@@ -298,6 +300,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.HAPTIC_STRENGTH] = next.hapticStrength
             prefs[Keys.UPDATE_CHECK] = next.updateCheckEnabled
             prefs[Keys.FOLLOW_STREAMING] = next.followStreamingReply
+            prefs[Keys.DEFAULT_DELIVERY_MODE] = if (next.defaultDeliveryMode == "steer") "steer" else "queue"
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)
         }
     }

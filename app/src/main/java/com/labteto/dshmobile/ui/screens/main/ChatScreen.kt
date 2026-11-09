@@ -154,7 +154,10 @@ fun ChatScreen(
     var referencePicker by remember(composer.key) { mutableStateOf<AtQuery?>(null) }
     var draft by composer::text
     var sentTick by remember { mutableIntStateOf(0) }
-    var mode by composer::mode
+    val mode by composer::mode
+    LaunchedEffect(composer, appSettings.defaultDeliveryMode) {
+        composer.applyDefaultMode(appSettings.defaultDeliveryMode)
+    }
     var tab by rememberSaveable { mutableStateOf(ChatTab.Chat) }
     val attachments = composer.attachments
 
@@ -936,7 +939,7 @@ fun ChatScreen(
             // ride `subagents/prompt` normally. The sheet states the reason instead of offering a
             // row that can only fail.
             fileAttachEnabled = currentSubagent == null,
-            onModeChange = { mode = it },
+            onModeChange = { composer.selectMode(it) },
             onAttach = {
                 if (!composer.preparing && store.composers.imagePickTarget == null) {
                     store.composers.imagePickTarget = composer to (imageLimits ?: ImageLimitsView())

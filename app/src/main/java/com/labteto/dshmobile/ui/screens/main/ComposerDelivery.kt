@@ -1,5 +1,11 @@
 package com.labteto.dshmobile.ui.screens.main
 
+internal const val DELIVERY_QUEUE = "queue"
+internal const val DELIVERY_STEER = "steer"
+
+internal fun normalizeDeliveryMode(mode: String): String =
+    if (mode == DELIVERY_STEER) DELIVERY_STEER else DELIVERY_QUEUE
+
 /**
  * The delivery a prompt actually asks the host for.
  *
@@ -10,4 +16,4 @@ package com.labteto.dshmobile.ui.screens.main
  * when the turn ended before send was pressed.
  */
 internal fun promptDelivery(requested: String, running: Boolean): String =
-    if (requested == "steer" && !running) "queue" else requested
+    if (requested == DELIVERY_STEER && !running) DELIVERY_QUEUE else requested

@@ -151,6 +151,10 @@
     <string name="settings_chat">聊天</string>
     <string name="settings_follow_streaming">跟随流式回复</string>
     <string name="settings_follow_streaming_hint">回复生成时，始终显示最新的消息。向上滚动可以慢慢阅读，回到底部后会继续跟随。</string>
+    <string name="settings_default_delivery_mode">默认发送方式</string>
+    <string name="settings_default_delivery_mode_hint">回合进行中发送消息时使用。每条消息仍可单独选择其他方式。</string>
+    <string name="settings_default_delivery_mode_queue">排队</string>
+    <string name="settings_default_delivery_mode_steer">引导</string>
     <string name="settings_plugins">插件</string>
     <string name="settings_plugins_inventory">插件清单</string>
     <string name="settings_language">语言</string>
