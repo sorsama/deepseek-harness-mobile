@@ -37,6 +37,8 @@ import com.labteto.dshmobile.ui.screens.connect.ConnectContent
 import com.labteto.dshmobile.ui.screens.connect.ConnectFailure
 import com.labteto.dshmobile.ui.screens.connect.DsConnectButton
 import com.labteto.dshmobile.ui.screens.pair.PairContent
+import com.labteto.dshmobile.ui.screens.settings.SettingsContent
+import com.labteto.dshmobile.ui.screens.settings.SettingsFeatures
 import com.labteto.dshmobile.ui.screens.pair.PairFailure
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -77,6 +79,8 @@ internal class LaunchRequest(
     val pairSubmit: Boolean = false,
     val pairPayload: String? = null,
     val pairScanner: Boolean = false,
+    /** Start on the Settings page instead of the Connect screen. */
+    val openSettings: Boolean = false,
     val onOutcome: ((String) -> Unit)? = null,
     val onPairOutcome: ((String) -> Unit)? = null,
 ) {
@@ -102,6 +106,7 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
         val state by app.controller.state.collectAsState()
         val link by app.link.state.collectAsState()
         val pairState by app.pair.state.collectAsState()
+        val settings by app.settings.state.collectAsState()
         val connected = link.phase == ConnectionPhase.CONNECTED ||
             (link.phase == ConnectionPhase.RECONNECTING && link.hasConnected)
         // The Pair screen is a destination of the app, like the Android root's `showPair`.
@@ -109,6 +114,8 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
         var pairPrefill by remember { mutableStateOf<String?>(null) }
         // The debug launch that asks for the camera sheet gets it once, not each time Pair is reopened.
         var scanFirst by remember { mutableStateOf(request.pairScanner) }
+        // Settings is a destination like Pair: reached from the Connect header, or by a debug launch.
+        var settingsOpen by remember { mutableStateOf(request.openSettings) }
 
         // Debug-launch behaviours, once. A tap on Connect is `connectManual`, so this is one.
         LaunchedEffect(Unit) {
@@ -160,7 +167,14 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
             }
         }
 
-        if (pairing) {
+        if (settingsOpen) {
+            SettingsContent(
+                state = settings,
+                onSet = app.settings::set,
+                onClose = { settingsOpen = false },
+                features = IosSettingsFeatures,
+            )
+        } else if (pairing) {
             PairContent(
                 state = pairState,
                 controller = app.pair,
@@ -186,7 +200,7 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                 state = state,
                 controller = app.controller,
                 features = IosConnectFeatures,
-                onOpenSettings = {},
+                onOpenSettings = { settingsOpen = true },
                 onPair = { url ->
                     pairPrefill = url
                     pairing = true

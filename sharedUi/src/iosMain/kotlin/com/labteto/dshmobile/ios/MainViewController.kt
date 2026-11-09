@@ -40,6 +40,7 @@ fun MainViewController(
     pairSubmit: Boolean,
     pairPayload: String?,
     pairScanner: Boolean,
+    openSettings: Boolean,
 ): UIViewController =
     ComposeUIViewController {
         val request = remember {
@@ -57,6 +58,7 @@ fun MainViewController(
                 pairSubmit = pairSubmit,
                 pairPayload = pairPayload,
                 pairScanner = pairScanner,
+                openSettings = openSettings,
                 // A pairing launch also reports the connection that follows it, so a script can wait for the relay.
                 onOutcome = if (autoConnect || report || pairing) ::reportOutcome else null,
                 onPairOutcome = if (pairing) ::reportPairOutcome else null,

@@ -34,7 +34,8 @@ struct ComposeView: UIViewControllerRepresentable {
             pairCode: launch.pairCode,
             pairSubmit: launch.pairSubmit,
             pairPayload: launch.pairPayload,
-            pairScanner: launch.pairScanner
+            pairScanner: launch.pairScanner,
+            openSettings: launch.openSettings
         )
     }
 
@@ -75,6 +76,7 @@ struct LaunchOptions {
     let pairSubmit: Bool
     let pairPayload: String?
     let pairScanner: Bool
+    let openSettings: Bool
 
     /// A launch argument's value is parsed as a property list before the app sees it, which mangles JSON, so a
     /// pairing payload is passed hex-encoded (`xxd -p`). A value that is not hex is returned as it was given.
@@ -110,13 +112,14 @@ struct LaunchOptions {
             pairCode: defaults.string(forKey: "DshPairCode"),
             pairSubmit: defaults.bool(forKey: "DshPairSubmit"),
             pairPayload: decodeHex(defaults.string(forKey: "DshPairPayload")),
-            pairScanner: defaults.bool(forKey: "DshPairScanner")
+            pairScanner: defaults.bool(forKey: "DshPairScanner"),
+            openSettings: defaults.bool(forKey: "DshOpenSettings")
         )
         #else
         return LaunchOptions(
             address: nil, autoConnect: false, openSignIn: false, signInToken: nil, reset: false, report: false,
             autoReconnect: nil, connectMode: nil, openPair: false, pairUrl: nil, pairCode: nil, pairSubmit: false,
-            pairPayload: nil, pairScanner: false
+            pairPayload: nil, pairScanner: false, openSettings: false
         )
         #endif
     }

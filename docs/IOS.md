@@ -465,7 +465,9 @@ Moved: the theme and type scale, the buttons, segmented control, bottom sheet, h
 mascot, shimmer, Feather icons and the ink text field; the Connect screen's composables (form, connecting takeover,
 connection-lost surface, sign-in sheet); `ConnectController` and the types it exposes (`ConnectUiState`,
 `ConnectFailure`, `LoopbackStatus`); `HostConfig`, `DiscoveredHost`, `ConnectMode`, `ProbeOutcome`,
-`ConnectionUiState` and the host-input parser; and their tests. M4b added the Pair screen (`PairContent`, `PairController`,
+`ConnectionUiState` and the host-input parser; and their tests. M4c added the Settings appearance block
+(`AppearanceCard`, `AccentSwatch`, `CustomAccentSwatch`, `AccentPickerSheet`), the language row and its dropdown,
+the `SettingsCard` helper and `DsMenu`. M4b added the Pair screen (`PairContent`, `PairController`,
 `PairUiState`, `PairFailure`, `KeyProvenance`), `RelayIdentity`, the back arrow icon, and the tests of the controller.
 
 Not moved, on purpose: the "This phone" card and the Termux controller (Termux is Android), the Hilt view models
@@ -645,6 +647,28 @@ Keychain, the connection) is the real thing against the mock harness's pairing r
 over TLS with a certificate that `keytool` makes when the fixtures start, whose key the fixtures print (`ci pairing:`) for the
 script to put in a QR. The code of both relays works every time (a real relay's works once) and `42900000` is always locked out.
 
+## Settings on iOS
+
+The page is shared (`SettingsContent`), reached from the Connect screen's header gear — which was hidden on iOS
+until now. It draws the language row (hidden on iOS, see the follow-up) and the appearance card, the same
+Composables the Android page uses.
+
+**What moved.** `AppearanceCard`, the accent swatches, `AccentPickerSheet`, `LanguageRow` and `SettingsCard` left
+`app/src/main/java/.../ui/screens/settings/SettingsScreen.kt` for `sharedUi/src/commonMain/.../ui/screens/settings/`,
+keeping their package. `DsMenu` moved with them (`Overlays.kt` keeps the dialogs and the toast); `SectionHeader`
+moved too. Values are the new `AppearanceSettings` slice — nine fields, the same ones `AppSettings` has for
+appearance and language — and a change goes back through a setter the caller supplies. Android projects the slice
+from `AppSettings` and writes through `HostsStore.setSetting`, so no stored data moved and nothing needed a
+migration; the Android page is pixel-identical to what it was.
+
+**iOS.** `SettingsController` holds the slice over a `SettingsStore`; `UserDefaultsSettingsStore` keeps the values
+in `NSUserDefaults` under `dsh.appearance.*` (the nullable custom accent and locale are removed rather than stored
+empty, and a missing boolean falls back to its default: haptics start on). `DshApp` routes to `SettingsContent`
+and the Connect header opens it; `-DshOpenSettings YES` does the same for a simulator scenario.
+
+**What iOS cannot do yet.** The haptics panel needs `Vibrator`/`VibrationEffect` and a system-settings intent, so it
+is a slot Android fills and iOS leaves empty. The language row is hidden: see "Follow-ups".
+
 ## The iOS app
 
 Two pieces:
@@ -805,6 +829,7 @@ the steps after the tests run even if the tests fail, so one push says everythin
   frame); a step counts the executed test cases so a skipped task cannot pass, and the next step prints the mux
   results and every delegate event the sockets saw (`MUX_…` lines), so the log says which `NSURLSession` callback
   decided each outcome;
+  then the shared Settings page (M4c) with appearance changes applied, captured in the screenshots;
 - the Xcode project is generated, the app built for the simulator, installed and driven through the shared Connect
   screen's states: before Connect is tapped, connected, the remembered harness in the Recent list, the app coming back
   to it by itself, connected and refused in the dark scheme, refused, a harness that wants a session (401) with
@@ -892,8 +917,17 @@ shared core, and that decision is better made on evidence than on enthusiasm.
 - **M4a (done):** the shared UI foundation and the Connect screen, see "The shared UI".
 - **M4b (done):** the Pair screen, shared, and Relay mode on iOS, see "Pairing on iOS" and "How M4b was verified on Android". It
   was the first native-view wall (the AVFoundation scanner inside Compose) and the first time the pinned and
-  trust-on-first-use Darwin clients had a screen. **The next screen is Settings** (appearance and language, which the Connect
-  screen's header reaches), then the session list.
+  trust-on-first-use Darwin clients had a screen.
+- **M4c shares the Settings appearance block and the language row.** The appearance card (scheme, accent and the
+  custom-accent picker, true black, text size, touch feedback) and the language dropdown are `AppearanceCard` and
+  `LanguageRow` in `:sharedUi` now, over a small `AppearanceSettings` slice with a `SettingsStore` port. Android's
+  page keeps its own view model and calls them in place; the iOS app gains a Settings page reached from the Connect
+  header, with the values in `NSUserDefaults`. The language row is hidden on iOS for now: Compose Multiplatform
+  1.7.1 resolves resources from the cached system locale, so an in-app switch would not repaint; that is a tracked
+  follow-up. See "Settings on iOS". **The next screen is the session list.**
+
+**M4c (done):** the Settings page's appearance block and language row, shared with Android; see "Settings on iOS".
+The session list is next.
 
 **M4 — the iOS app, one shared screen at a time (M4a above).** Xcode project, app lifecycle, and the platform walls: notifications
 (UNUserNotificationCenter), background handling, QR scanning (AVFoundation), file preview,
@@ -961,8 +995,13 @@ Open items the port knows about and has deliberately not done, so they are not r
 - **Haptics and the Keychain are verified on a simulator only.** The simulator has no Taptic Engine, and a
   Keychain item written there has not been read back across a device reboot or a device lock; the calls are made and
   the end-to-end sign-in works, which is what CI can say.
-- **iOS has no Settings screen**, so there is no way to change appearance or language inside the app; it follows
-  the device (and iOS's per-app language setting). The next screens in "The path" include it.
+- **Settings on iOS has appearance but no in-app language switch yet.** The appearance card works (the theme,
+  accent and text size apply at once and persist in `NSUserDefaults`), and the language row is hidden behind
+  `SettingsFeatures.language` until Compose Multiplatform can switch resource locale at runtime: 1.7.1 resolves
+  resources from `Locale.current`, which on iOS is Foundation-cached, so the row would do nothing. The documented
+  workaround (a `LocalAppLocale` expect/actual with `AppEnvironment` and `key(locale)`) is the first thing to try,
+  gated on a simulator scenario that asserts the on-screen text changed. Until then the app follows the device and
+  iOS's per-app language setting. The haptics panel is Android-only too (a `Vibrator`): iOS leaves the slot empty.
 - **A harness that cannot list directories reads as unreachable.** The Recent card and "reconnect to the last harness"
   decide a named host is up by the home directory it reports, which comes from one `directoryPicker/list` call after the
   probe, so a deployment whose picker answers an error is shown "Unreachable" and is not reconnected to by itself. That is

@@ -87,7 +87,7 @@ expect_pair() {
 # Every scenario but the two about what is remembered starts from `-DshReset YES`, which forgets the
 # remembered harnesses, the settings and the Keychain, so none depends on the one before it. The shared
 # Connect screen is the same Compose code the Android app runs; what is different here is only what the
-# platform offers (one mode, no sweep, no Settings; see "The shared UI" in docs/IOS.md).
+# platform offers (one mode, no sweep, no in-app language switch yet; see "The shared UI" in docs/IOS.md).
 
 # 0. A warm-up, not asserted. The first network call a freshly installed app makes on a cold runner can take longer than
 #    the connect probe's few seconds (CI saw a TIMEOUT on the very first connect once, and the same command passed
@@ -327,6 +327,11 @@ else
   expect connected-first-use "DSH_CONNECT_RESULT connected authority=.*127.0.0.1:3187"
   shot "33-paired-trust-on-first-use"
 fi
+
+# 34. The Settings page (M4c), open on arrival: the shared appearance card, over the same code Android draws.
+launch -DshReset YES -DshOpenSettings YES
+sleep 8
+shot "34-settings"
 
 xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
 wait 2>/dev/null || true

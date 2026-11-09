@@ -38,6 +38,7 @@ import com.labteto.dshmobile.ui.screens.connect.ConnectionLink
 import com.labteto.dshmobile.ui.screens.connect.HarnessSignIn
 import com.labteto.dshmobile.ui.screens.connect.NoLoopbackHarness
 import com.labteto.dshmobile.ui.screens.pair.PairController
+import com.labteto.dshmobile.ui.screens.settings.SettingsController
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -323,4 +324,14 @@ internal class IosApp(scope: CoroutineScope, reportPair: ((String) -> Unit)? = n
         loopbackIsThisPhone = false,
     )
     val pair = PairController(scope = scope, ports = IosPairPorts(store, relayTokens, link, reportPair))
+    /** The Settings page's state: appearance and language, in NSUserDefaults. */
+    val settings = SettingsController(UserDefaultsSettingsStore(), scope)
 }
+
+/** What the shared Settings page offers on iOS today; see [SettingsFeatures]. */
+internal val IosSettingsFeatures = SettingsFeatures(
+    // No runtime locale override yet: Compose Multiplatform 1.7.1 resolves resources from
+    // Locale.current, which is Foundation-cached; the language row would do nothing. Tracked in
+    // docs/IOS.md, "Follow-ups".
+    language = false,
+)
