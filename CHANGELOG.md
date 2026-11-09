@@ -3,7 +3,7 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
-## [Unreleased]
+## [0.20.0] - 2026-11-09
 
 ### Added
 
