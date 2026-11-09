@@ -39,6 +39,7 @@ import com.labteto.dshmobile.ui.screens.connect.HarnessSignIn
 import com.labteto.dshmobile.ui.screens.connect.NoLoopbackHarness
 import com.labteto.dshmobile.ui.screens.pair.PairController
 import com.labteto.dshmobile.ui.screens.settings.SettingsController
+import com.labteto.dshmobile.ui.screens.settings.SettingsFeatures
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -85,7 +86,8 @@ internal class IosConnectNetwork(
      * One unary call, `session/canOpenWorkspacePath`, which is what the Android probe asks too: no arguments, served
      * by every harness, and its failures arrive classified (refused, timeout, DNS, 403 for the `Host` fence, 401 for
      * no browser session, not a harness, TLS). [preflight] is Android's raw-socket check that separates a drop from a
-     * refusal; `NSURLSession` reports the two apart by itself, so it is not made here.
+     * refusal; 
+SURLSession` reports the two apart by itself, so it is not made here.
      */
     override suspend fun probeOutcome(
         host: String,
@@ -335,3 +337,4 @@ internal val IosSettingsFeatures = SettingsFeatures(
     // docs/IOS.md, "Follow-ups".
     language = false,
 )
+
