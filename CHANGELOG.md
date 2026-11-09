@@ -3,6 +3,17 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [Unreleased]
+
+### Added
+
+- **A default send mode for prompts sent while a turn is running.** Settings → Chat now offers
+  **Default send mode**, Queue or Steer, so a reader who always wants one of them no longer flips
+  the toggle in the composer's `+` sheet for every message. The choice applies to a session's
+  composer until a mode is picked there, and that per-session pick survives a later change to the
+  default; holding send still chooses the mode for one message alone. Upgrades keep Queue, so
+  nothing changes until the choice is made.
+
 ## [0.20.0] - 2026-11-09
 
 ### Added

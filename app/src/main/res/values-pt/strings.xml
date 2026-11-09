@@ -153,8 +153,6 @@
     <string name="settings_follow_streaming_hint">Mantém a mensagem mais recente visível enquanto a resposta chega. Role para cima para ler no seu ritmo. O acompanhamento volta quando você chega ao fim.</string>
     <string name="settings_default_delivery_mode">Modo de envio padrão</string>
     <string name="settings_default_delivery_mode_hint">Usado ao enviar enquanto um turno está em andamento. Ainda é possível escolher outro modo para cada mensagem.</string>
-    <string name="settings_default_delivery_mode_queue">Fila</string>
-    <string name="settings_default_delivery_mode_steer">Orientar</string>
     <string name="settings_plugins">Plugins</string>
     <string name="settings_plugins_inventory">Inventário de plugins</string>
     <string name="settings_language">Idioma</string>

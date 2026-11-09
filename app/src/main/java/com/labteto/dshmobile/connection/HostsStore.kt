@@ -97,7 +97,7 @@ class HostsStore @Inject constructor(
             updateCheckEnabled = prefs[Keys.UPDATE_CHECK] ?: true,
             dismissedUpdate = prefs[Keys.DISMISSED_UPDATE],
             followStreamingReply = prefs[Keys.FOLLOW_STREAMING] ?: true,
-            defaultDeliveryMode = if (prefs[Keys.DEFAULT_DELIVERY_MODE] == "steer") "steer" else "queue",
+            defaultDeliveryMode = normalizeDeliveryMode(prefs[Keys.DEFAULT_DELIVERY_MODE] ?: DELIVERY_QUEUE),
         )
     }
 
@@ -300,7 +300,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.HAPTIC_STRENGTH] = next.hapticStrength
             prefs[Keys.UPDATE_CHECK] = next.updateCheckEnabled
             prefs[Keys.FOLLOW_STREAMING] = next.followStreamingReply
-            prefs[Keys.DEFAULT_DELIVERY_MODE] = if (next.defaultDeliveryMode == "steer") "steer" else "queue"
+            prefs[Keys.DEFAULT_DELIVERY_MODE] = normalizeDeliveryMode(next.defaultDeliveryMode)
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)
         }
     }

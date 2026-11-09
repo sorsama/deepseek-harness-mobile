@@ -35,6 +35,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
+import com.labteto.dshmobile.connection.DELIVERY_QUEUE
+import com.labteto.dshmobile.connection.DELIVERY_STEER
 import com.labteto.dshmobile.core.wire.dto.CommandDescriptor
 import com.labteto.dshmobile.core.wire.dto.SkillEntry
 import com.labteto.dshmobile.ui.components.DsBottomSheet
@@ -59,9 +61,6 @@ private enum class SheetCatalog(val key: String) {
         fun of(key: String): SheetCatalog = entries.firstOrNull { it.key == key } ?: Commands
     }
 }
-
-private const val MODE_QUEUE = "queue"
-private const val MODE_STEER = "steer"
 
 /**
  * The `+` sheet: everything you can add to a message that is not the message.
@@ -264,10 +263,10 @@ internal fun CommandSheet(
                 // state falls back to a queued prompt.
                 DsSegmented(
                     segments = listOf(
-                        DsSegment(MODE_QUEUE, stringResource(R.string.chat_composer_queue)),
-                        DsSegment(MODE_STEER, stringResource(R.string.chat_composer_steer)),
+                        DsSegment(DELIVERY_QUEUE, stringResource(R.string.chat_composer_queue)),
+                        DsSegment(DELIVERY_STEER, stringResource(R.string.chat_composer_steer)),
                     ),
-                    selectedKey = if (mode == MODE_STEER) MODE_STEER else MODE_QUEUE,
+                    selectedKey = if (mode == DELIVERY_STEER) DELIVERY_STEER else DELIVERY_QUEUE,
                     onSelect = onModeChange,
                 )
             }
@@ -289,8 +288,8 @@ internal fun CommandSheet(
             Text(
                 stringResource(
                     when {
-                        !running && mode == MODE_STEER -> R.string.chat_composer_steer_idle
-                        mode == MODE_STEER -> R.string.chat_composer_mode_steer_hint
+                        !running && mode == DELIVERY_STEER -> R.string.chat_composer_steer_idle
+                        mode == DELIVERY_STEER -> R.string.chat_composer_mode_steer_hint
                         else -> R.string.chat_composer_mode_queue_hint
                     },
                 ),

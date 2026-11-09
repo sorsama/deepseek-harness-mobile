@@ -3,6 +3,8 @@ package com.labteto.dshmobile.ui.screens.main
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
 import android.content.SharedPreferences
+import com.labteto.dshmobile.connection.DELIVERY_QUEUE
+import com.labteto.dshmobile.connection.normalizeDeliveryMode
 import com.labteto.dshmobile.core.wire.WireJson
 import kotlinx.serialization.Serializable
 

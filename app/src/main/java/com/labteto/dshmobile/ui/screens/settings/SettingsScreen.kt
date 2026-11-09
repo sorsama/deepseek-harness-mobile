@@ -74,6 +74,9 @@ import com.labteto.dshmobile.R
 import com.labteto.dshmobile.connection.AppSettings
 import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.connection.ConnectionUiState
+import com.labteto.dshmobile.connection.DELIVERY_QUEUE
+import com.labteto.dshmobile.connection.DELIVERY_STEER
+import com.labteto.dshmobile.connection.normalizeDeliveryMode
 import com.labteto.dshmobile.core.DshCore
 import com.labteto.dshmobile.core.wire.dto.PluginFiberPhase
 import com.labteto.dshmobile.core.wire.dto.PluginInventoryEntry
@@ -248,13 +251,16 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         color = colors.labelTertiary,
                         modifier = Modifier.padding(top = DsSpacing.small),
                     )
+                    // The composer's own labels, not copies: the same two modes must not be named
+                    // differently in the sheet and here, in any of the eleven languages.
                     DsSegmented(
                         segments = listOf(
-                            DsSegment("queue", stringResource(R.string.settings_default_delivery_mode_queue)),
-                            DsSegment("steer", stringResource(R.string.settings_default_delivery_mode_steer)),
+                            DsSegment(DELIVERY_QUEUE, stringResource(R.string.chat_composer_queue)),
+                            DsSegment(DELIVERY_STEER, stringResource(R.string.chat_composer_steer)),
                         ),
-                        selectedKey = if (settings.defaultDeliveryMode == "steer") "steer" else "queue",
+                        selectedKey = normalizeDeliveryMode(settings.defaultDeliveryMode),
                         onSelect = { mode -> viewModel.set { it.copy(defaultDeliveryMode = mode) } },
+                        stretch = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Text(

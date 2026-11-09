@@ -153,8 +153,6 @@
     <string name="settings_follow_streaming_hint">Последнее сообщение остаётся на виду, пока пишется ответ. Прокрутите вверх, чтобы читать в своём темпе. Когда вернётесь вниз, прокрутка за ответом продолжится.</string>
     <string name="settings_default_delivery_mode">Режим отправки по умолчанию</string>
     <string name="settings_default_delivery_mode_hint">Используется при отправке во время текущего хода. Для каждого сообщения по-прежнему можно выбрать другой режим.</string>
-    <string name="settings_default_delivery_mode_queue">В очередь</string>
-    <string name="settings_default_delivery_mode_steer">Направить</string>
     <string name="settings_plugins">Плагины</string>
     <string name="settings_plugins_inventory">Каталог плагинов</string>
     <string name="settings_language">Язык</string>

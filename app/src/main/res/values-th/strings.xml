@@ -153,8 +153,6 @@
     <string name="settings_follow_streaming_hint">เลื่อนตามข้อความล่าสุดขณะกำลังเขียนคำตอบ เลื่อนขึ้นเพื่ออ่านตามสบาย พอกลับลงมาล่างสุดก็จะเลื่อนตามอีกครั้ง</string>
     <string name="settings_default_delivery_mode">โหมดส่งเริ่มต้น</string>
     <string name="settings_default_delivery_mode_hint">ใช้เมื่อส่งข้อความขณะที่เทิร์นกำลังทำงาน คุณยังเลือกโหมดอื่นสำหรับแต่ละข้อความได้</string>
-    <string name="settings_default_delivery_mode_queue">เข้าคิว</string>
-    <string name="settings_default_delivery_mode_steer">แทรกคำสั่ง</string>
     <string name="settings_plugins">ปลั๊กอิน</string>
     <string name="settings_plugins_inventory">รายการปลั๊กอิน</string>
     <string name="settings_language">ภาษา</string>

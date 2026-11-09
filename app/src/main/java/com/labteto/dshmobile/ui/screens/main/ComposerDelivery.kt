@@ -1,10 +1,7 @@
 package com.labteto.dshmobile.ui.screens.main
 
-internal const val DELIVERY_QUEUE = "queue"
-internal const val DELIVERY_STEER = "steer"
-
-internal fun normalizeDeliveryMode(mode: String): String =
-    if (mode == DELIVERY_STEER) DELIVERY_STEER else DELIVERY_QUEUE
+import com.labteto.dshmobile.connection.DELIVERY_QUEUE
+import com.labteto.dshmobile.connection.DELIVERY_STEER
 
 /**
  * The delivery a prompt actually asks the host for.

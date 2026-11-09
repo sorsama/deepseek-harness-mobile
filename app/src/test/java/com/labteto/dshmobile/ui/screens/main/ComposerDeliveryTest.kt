@@ -1,5 +1,7 @@
 package com.labteto.dshmobile.ui.screens.main
 
+import com.labteto.dshmobile.connection.DELIVERY_QUEUE
+import com.labteto.dshmobile.connection.DELIVERY_STEER
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

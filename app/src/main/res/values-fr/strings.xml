@@ -153,8 +153,6 @@
     <string name="settings_follow_streaming_hint">Garde le message le plus récent visible pendant qu\'une réponse s\'écrit. Remontez pour lire à votre rythme. Le suivi reprend quand vous revenez en bas.</string>
     <string name="settings_default_delivery_mode">Mode d’envoi par défaut</string>
     <string name="settings_default_delivery_mode_hint">Utilisé lors d’un envoi pendant un tour en cours. Vous pouvez toujours choisir un autre mode pour chaque message.</string>
-    <string name="settings_default_delivery_mode_queue">File d’attente</string>
-    <string name="settings_default_delivery_mode_steer">Diriger</string>
     <string name="settings_plugins">Plugins</string>
     <string name="settings_plugins_inventory">Inventaire des plugins</string>
     <string name="settings_language">Langue</string>
