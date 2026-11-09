@@ -8,11 +8,9 @@ import com.labteto.dshmobile.core.wire.HandshakeStep
 import com.labteto.dshmobile.core.wire.HostGeneration
 import com.labteto.dshmobile.core.wire.LoopConfig
 import com.labteto.dshmobile.core.wire.LoopSinks
-import com.labteto.dshmobile.core.wire.OkHttpRpcTransport
 import com.labteto.dshmobile.core.wire.RemoteStreamMux
 import com.labteto.dshmobile.core.wire.RemoteStreamException
 import com.labteto.dshmobile.core.wire.RpcResult
-import com.labteto.dshmobile.core.wire.WsChannel
 import com.labteto.dshmobile.core.wire.dto.APPROVAL_REQUEST_EVENT
 import com.labteto.dshmobile.core.wire.dto.ApprovalOutcome
 import com.labteto.dshmobile.core.wire.dto.REMOTE_STREAM_MUX_PATH
@@ -45,6 +43,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.add
@@ -56,13 +56,14 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
-import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
@@ -78,11 +79,17 @@ import java.util.concurrent.CopyOnWriteArrayList
  * source, so a misreading would be baked into both sides. What it does catch is the two halves of
  * *this* repo disagreeing, which is what a rewrite this size gets wrong.
  */
-class ProtocolEndToEndTest {
+@RunWith(Parameterized::class)
+class ProtocolEndToEndTest(private val kind: TransportKind) {
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun kinds(): List<TransportKind> = TransportKind.parameters()
+    }
 
     private lateinit var harness: MockHarness
     private var port: Int = -1
-    private val http = OkHttpClient()
 
     private val baseUrl get() = "http://127.0.0.1:$port"
 
@@ -95,9 +102,9 @@ class ProtocolEndToEndTest {
     @After
     fun tearDown() = runBlocking { harness.stop() }
 
-    private fun mux() = RemoteStreamMux { sink -> WsChannel("$baseUrl$REMOTE_STREAM_MUX_PATH", http, sink) }
+    private fun mux() = RemoteStreamMux { sink -> kind.socket("$baseUrl$REMOTE_STREAM_MUX_PATH", sink) }
 
-    private fun client() = DshApiClient(OkHttpRpcTransport(baseUrl, http, 5_000, 5_000))
+    private fun client() = DshApiClient(kind.rpc(baseUrl, 5_000, 5_000))
 
     private class Recorder : LoopSinks {
         val connected = CopyOnWriteArrayList<HostGeneration>()
@@ -400,7 +407,7 @@ class ProtocolEndToEndTest {
             sessionId = "s1",
             name = "notes.txt",
             contentLength = 5,
-            body = ByteArrayInputStream("hello".toByteArray()),
+            body = ByteArrayInputStream("hello".toByteArray()).asSource().buffered(),
         )
         val receipt = (uploaded as? RpcResult.Ok)?.value ?: error("upload failed: $uploaded")
         assertEquals("notes.txt", receipt.file.name)
@@ -427,7 +434,7 @@ class ProtocolEndToEndTest {
         // missing capability rather than a broken link, and the encoded Remote still stages the
         // file — which is the whole reason it exists beside the route.
         harness.refuseBinaryUploads = true
-        val streamed = client().uploadFileBinary("s1", "a.bin", 3, ByteArrayInputStream("abc".toByteArray()))
+        val streamed = client().uploadFileBinary("s1", "a.bin", 3, ByteArrayInputStream("abc".toByteArray()).asSource().buffered())
         assertEquals("capability-unavailable", (streamed as RpcResult.Err).error.code)
 
         val encoded = client().fileUploadEncoded(
@@ -595,7 +602,7 @@ class ProtocolEndToEndTest {
                 }
             }
         }
-        val response = OkHttpRpcTransport(baseUrl, http, 5_000, 5_000)
+        val response = kind.rpc(baseUrl, 5_000, 5_000)
             .post("/api/\$events/result", bare.toString())
 
         assertEquals(200, response.status)

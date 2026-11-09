@@ -1,0 +1,127 @@
+# The Xcode project for DSH Mobile on iOS, as an XcodeGen spec. There is no checked-in
+# `.xcodeproj`: `iosApp/generate.sh` (or CI) runs `xcodegen generate` and the project appears next
+# to this file. Everything the project says lives here, so a reviewer reads one file and a merge
+# never conflicts on a pbxproj.
+#
+# The app is a SwiftUI shell around the Compose Multiplatform UI in `:sharedUi`. A build phase runs
+# Gradle to build that module's static framework for the SDK Xcode is building for, and Xcode links it.
+#
+# Version numbers come from the environment (`generate.sh` sets them from `app/build.gradle.kts`, the
+# repo's single source of the version, so the iOS and Android apps cannot disagree).
+name: DSHMobile
+
+options:
+  bundleIdPrefix: com.labteto
+  developmentLanguage: en
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "15.0"
+
+configs:
+  Debug: debug
+  Release: release
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: ${DSH_MARKETING_VERSION}
+    CURRENT_PROJECT_VERSION: ${DSH_BUILD_NUMBER}
+    # The Gradle build phase writes outside the sandbox Xcode 15 and later apply to script phases.
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+  configs:
+    Debug:
+      # The launch arguments that let a script drive the app are compiled in for Debug only.
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+
+targets:
+  DSHMobile:
+    type: application
+    platform: iOS
+    sources:
+      - path: DSHMobile
+    info:
+      path: Generated/Info.plist
+      properties:
+        CFBundleDisplayName: DSH Mobile
+        CFBundleDevelopmentRegion: en
+        # XcodeGen's own plist defaults are the literals 1.0 and 1, which win over the build settings
+        # unless the plist says otherwise.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # The 11 languages the Android app ships, so iOS offers them in the app's language setting
+        # and picks the right one. zh-Hans is how iOS names Simplified Chinese.
+        CFBundleLocalizations: [en, ar, bn, es, fr, hi, pt, ru, th, ur, zh-Hans]
+        LSRequiresIPhoneOS: true
+        # Compose Multiplatform refuses to start on an iPhone with a 120 Hz display (every Pro model)
+        # without this key, and the CI simulator is one: the app dies on its first frame.
+        CADisableMinimumFrameDurationOnPhone: true
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # The first connection to a computer on the Wi-Fi makes iOS ask for this permission, and this
+        # text is what it shows. Translations are in DSHMobile/<language>.lproj/InfoPlist.strings.
+        NSLocalNetworkUsageDescription: DSH Mobile connects to the DeepSeek Harness running on your own computer. It only talks to the address you enter and does not look at anything else on your network.
+        # Asked for the first time the Pair screen's scanner opens. Translated the same way.
+        NSCameraUsageDescription: DSH Mobile uses the camera only to read the QR code on your relay’s pairing page. It does not take photos or record video.
+        # The harness is plain HTTP by design, at an address the person types: usually
+        # http://192.168.x.x:3080, sometimes a name on their own network or tailnet. ATS blocks plain
+        # HTTP to anything but its local-network exemption, and a name that is not .local or an
+        # unqualified host is not covered by it, so this build allows it. docs/IOS.md ("ATS and the
+        # local network") has what that means for an App Store submission.
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+        # The app only uses the system's own HTTPS and WebSocket stacks, which are exempt.
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.labteto.dshmobile
+        PRODUCT_NAME: DSH Mobile
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Where `embedAndSignAppleFrameworkForXcode` leaves `DshShared.framework` for this build's
+        # configuration and SDK.
+        FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../sharedUi/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
+        # A static Kotlin framework does not carry the system frameworks it calls into with it; Xcode
+        # has to link them. Security and AVFoundation are the ones nothing else in the app pulls in
+        # (certificate pinning reads keys through the first; the Pair screen's QR scanner is the second).
+        OTHER_LDFLAGS:
+          - "$(inherited)"
+          - "-framework"
+          - "DshShared"
+          - "-framework"
+          - "Security"
+          - "-framework"
+          - "AVFoundation"
+    preBuildScripts:
+      - name: Build the Kotlin framework
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          cd "$SRCROOT/.."
+          # Xcode run from the Dock does not have the shell's JAVA_HOME.
+          if [ -z "${JAVA_HOME:-}" ] && [ -x /usr/libexec/java_home ]; then
+            JAVA_HOME="$(/usr/libexec/java_home 2>/dev/null || true)"
+            export JAVA_HOME
+          fi
+          # -Pdsh.iosOnly leaves the Android app out of the Gradle build, so no Android SDK is needed.
+          ./gradlew -Pdsh.iosOnly=true :sharedUi:embedAndSignAppleFrameworkForXcode
+
+schemes:
+  DSHMobile:
+    build:
+      targets:
+        DSHMobile: all
+    run:
+      config: Debug
+    archive:
+      config: Release

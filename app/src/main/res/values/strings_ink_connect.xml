@@ -1,41 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Connect (design 02) -->
-    <string name="connect_hero_subtitle">Mirror the harness running on your computer.</string>
-    <string name="connect_loopback_notice">Runs the harness in Termux on this phone. DSH can start, stop and sign in for you.</string>
-    <string name="connect_lan_notice">Not encrypted. Use Local network only on Wi-Fi you trust.</string>
-    <string name="connect_relay_notice">Encrypted and password-protected. Scan the pairing QR from dsh-relay.</string>
-    <string name="connect_section_discovered">Discovered</string>
-    <string name="connect_section_discovered_relay">Discovered relays</string>
-    <string name="connect_scan_progress_short">Scanning %1$d of %2$d</string>
-    <string name="connect_harness_actions">Harness actions</string>
-    <string name="connect_forget_harness">Forget this harness</string>
 
     <!-- Connecting (design 03) -->
-    <string name="connect_connecting_to">Connecting to %1$s</string>
-    <string name="connect_step_address">Checking the address</string>
-    <string name="connect_step_reaching">Reaching %1$s</string>
-    <string name="connect_step_streams">Opening event streams</string>
-    <string name="connect_step_verify">Verifying the harness</string>
 
     <!-- Connection lost (design 06) -->
-    <string name="connect_lost_reconnecting">Reconnecting to %1$s</string>
-    <string name="connect_lost_body">The agent keeps working on the computer. Your draft and place in each chat are saved.</string>
-    <string name="connect_lost_retry_now">Retry now</string>
-    <string name="connect_lost_choose">Choose another harness</string>
-    <string name="connect_lost_attempt">Attempt %1$d</string>
-    <string name="connect_lost_tag">Reconnecting</string>
 
     <!-- Sign in (design 04) -->
-    <string name="connect_sign_in_to">Sign in to %1$s</string>
-    <string name="connect_sign_in_subtitle">This harness hasn\'t signed this phone in yet.</string>
-    <string name="connect_sign_in_link_body">The harness prints a link when it starts. Paste the link, or only the token after ?token=.</string>
-    <string name="connect_sign_in_token_hint">The token changes every time the harness restarts.</string>
 
     <!-- Pairing (design 05) -->
-    <string name="pair_hero_title">Scan the pairing code</string>
-    <string name="pair_step_run">On your computer, run %1$s</string>
-    <string name="pair_step_scan">Point the camera at the QR code it shows. You\'ll set a device password next.</string>
-    <string name="pair_code_hint">8 digits</string>
-    <string name="pair_scanned">Pairing with %1$s</string>
 </resources>

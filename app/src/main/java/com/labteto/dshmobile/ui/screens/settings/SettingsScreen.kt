@@ -791,10 +791,12 @@ private fun ConnectionSection(connectionState: ConnectionUiState, onDisconnect: 
         }
     }
 
-    if (isConnected && connectionState.host != null) {
+    // A local, because the state type lives in another module and a property of it cannot be smart cast.
+    val connectedHost = connectionState.host
+    if (isConnected && connectedHost != null) {
         LabelledValue(
             stringResource(R.string.settings_connection_host),
-            connectionState.host.authority,
+            connectedHost.authority,
         )
         DsButton(
             text = stringResource(R.string.settings_connection_disconnect),

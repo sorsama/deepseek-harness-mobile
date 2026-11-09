@@ -1,32 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connect_hero_subtitle">تابع harness الذي يعمل على حاسوبك من هاتفك.</string>
-    <string name="connect_loopback_notice">يشغّل الـ harness في Termux على هذا الهاتف. يمكن لـ DSH تشغيله وإيقافه وتسجيل الدخول نيابةً عنك.</string>
-    <string name="connect_lan_notice">غير مشفّر. استخدم «الشبكة المحلية» فقط على شبكة Wi-Fi تثق بها.</string>
-    <string name="connect_relay_notice">مشفّر ومحميّ بكلمة مرور. امسح رمز الاقتران من dsh-relay.</string>
-    <string name="connect_section_discovered">المكتشَف</string>
-    <string name="connect_section_discovered_relay">مُرحِّلات مكتشَفة</string>
-    <string name="connect_scan_progress_short">جارٍ الفحص %1$d من %2$d</string>
-    <string name="connect_harness_actions">إجراءات الـ harness</string>
-    <string name="connect_forget_harness">نسيان هذا الـ harness</string>
-    <string name="connect_connecting_to">جارٍ الاتصال بـ %1$s</string>
-    <string name="connect_step_address">التحقق من العنوان</string>
-    <string name="connect_step_reaching">الوصول إلى %1$s</string>
-    <string name="connect_step_streams">فتح تدفقات الأحداث</string>
-    <string name="connect_step_verify">التحقق من الـ harness</string>
-    <string name="connect_lost_reconnecting">جارٍ إعادة الاتصال بـ %1$s</string>
-    <string name="connect_lost_body">الوكيل يواصل عمله على الحاسوب. مسودتك ومكانك في كل محادثة محفوظان.</string>
-    <string name="connect_lost_retry_now">أعد المحاولة الآن</string>
-    <string name="connect_lost_choose">اختر harness آخر</string>
-    <string name="connect_lost_attempt">المحاولة %1$d</string>
-    <string name="connect_lost_tag">إعادة الاتصال</string>
-    <string name="connect_sign_in_to">تسجيل الدخول إلى %1$s</string>
-    <string name="connect_sign_in_subtitle">لم يسجّل هذا الـ harness دخول هذا الهاتف بعد.</string>
-    <string name="connect_sign_in_link_body">يطبع الـ harness رابطًا عند بدء التشغيل. الصق الرابط، أو الرمز فقط بعد ?token=.</string>
-    <string name="connect_sign_in_token_hint">يتغيّر الرمز في كل مرة يُعاد تشغيل الـ harness.</string>
-    <string name="pair_hero_title">امسح رمز الاقتران</string>
-    <string name="pair_step_run">على حاسوبك، شغّل %1$s</string>
-    <string name="pair_step_scan">وجّه الكاميرا إلى رمز QR المعروض. ستضبط كلمة مرور الجهاز بعد ذلك.</string>
-    <string name="pair_code_hint">8 أرقام</string>
-    <string name="pair_scanned">الاقتران مع %1$s</string>
 </resources>

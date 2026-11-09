@@ -4,17 +4,25 @@ import com.labteto.dshmobile.core.wire.*
 import com.labteto.dshmobile.core.wire.dto.*
 import com.labteto.dshmobile.mockharness.*
 import kotlinx.coroutines.runBlocking
-import okhttp3.OkHttpClient
 import org.junit.Test
 import org.junit.Assert.*
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-class PanelContractsEndToEndTest {
+@RunWith(Parameterized::class)
+class PanelContractsEndToEndTest(private val kind: TransportKind) {
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun kinds(): List<TransportKind> = TransportKind.parameters()
+    }
+
     @Test fun panelsUseRealHttpAndPreserveBusinessFailures() = runBlocking {
         val harness = MockHarness()
         val scenario = PanelScenario(harness)
         val port = harness.start()
         try {
-            val api = DshApiClient(OkHttpRpcTransport("http://127.0.0.1:$port", OkHttpClient(), 5000, 5000))
+            val api = DshApiClient(kind.rpc("http://127.0.0.1:$port", 5000, 5000))
             assertEquals("auto", (api.permissionCatalog() as RpcResult.Ok).value.options.last().value)
             assertTrue((api.workspaceUnarchiveSession("archived-demo") as RpcResult.Ok).value.archivedSessionIds.isEmpty())
             assertTrue(scenario.archived.isEmpty())

@@ -6,8 +6,10 @@ import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswer
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswerItem
 import com.labteto.dshmobile.core.wire.dto.QUESTION_CANCELLED
 import java.io.ByteArrayInputStream
-import java.io.InputStream
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.Source
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
@@ -41,14 +43,14 @@ class QuestionResponseEncodingTest {
 
         override suspend fun <T> download(
             path: String,
-            consume: (String?, String?, InputStream) -> T,
-        ): T = consume(null, null, ByteArrayInputStream(ByteArray(0)))
+            consume: (String?, String?, Source) -> T,
+        ): T = consume(null, null, ByteArrayInputStream(ByteArray(0)).asSource().buffered())
 
         override suspend fun upload(
             path: String,
             contentType: String,
             contentLength: Long,
-            body: InputStream,
+            body: Source,
             onProgress: ((Long) -> Unit)?,
         ): RpcHttpResponse = error("not used")
     }

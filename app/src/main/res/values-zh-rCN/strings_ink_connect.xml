@@ -1,32 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connect_hero_subtitle">在手机上显示电脑上运行的 harness。</string>
-    <string name="connect_loopback_notice">在本机的 Termux 中运行 harness。DSH 可以为你启动、停止并登录。</string>
-    <string name="connect_lan_notice">未加密。请只在你信任的 Wi-Fi 上使用“局域网”。</string>
-    <string name="connect_relay_notice">加密且受密码保护。扫描 dsh-relay 的配对二维码。</string>
-    <string name="connect_section_discovered">已发现</string>
-    <string name="connect_section_discovered_relay">已发现的中继</string>
-    <string name="connect_scan_progress_short">正在扫描 %1$d / %2$d</string>
-    <string name="connect_harness_actions">Harness 操作</string>
-    <string name="connect_forget_harness">忘记此 harness</string>
-    <string name="connect_connecting_to">正在连接到 %1$s</string>
-    <string name="connect_step_address">正在检查地址</string>
-    <string name="connect_step_reaching">正在连接 %1$s</string>
-    <string name="connect_step_streams">正在打开事件流</string>
-    <string name="connect_step_verify">正在验证 harness</string>
-    <string name="connect_lost_reconnecting">正在重新连接 %1$s</string>
-    <string name="connect_lost_body">智能体仍在电脑上继续工作。你的草稿和每个会话的阅读位置都已保存。</string>
-    <string name="connect_lost_retry_now">立即重试</string>
-    <string name="connect_lost_choose">选择其他 harness</string>
-    <string name="connect_lost_attempt">第 %1$d 次尝试</string>
-    <string name="connect_lost_tag">正在重连</string>
-    <string name="connect_sign_in_to">登录到 %1$s</string>
-    <string name="connect_sign_in_subtitle">harness 还没有为这部手机登录。</string>
-    <string name="connect_sign_in_link_body">harness 启动时会打印链接。粘贴该链接，或只粘贴 ?token= 后面的令牌。</string>
-    <string name="connect_sign_in_token_hint">每次 harness 重启后令牌都会改变。</string>
-    <string name="pair_hero_title">扫描配对二维码</string>
-    <string name="pair_step_run">在电脑上运行 %1$s</string>
-    <string name="pair_step_scan">将相机对准显示的二维码。随后你会设置设备密码。</string>
-    <string name="pair_code_hint">8 位数字</string>
-    <string name="pair_scanned">正在与 %1$s 配对</string>
 </resources>

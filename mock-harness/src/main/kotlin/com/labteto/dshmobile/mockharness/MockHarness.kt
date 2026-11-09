@@ -7,6 +7,7 @@ import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.install
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.sslConnector
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.request.ApplicationRequest
@@ -18,6 +19,7 @@ import io.ktor.server.request.receiveText
 import io.ktor.server.response.header
 import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -86,6 +88,20 @@ class MockHarness(
     private val relay: RelayMode? = null,
     private val relayRedirectTo: String? = null,
     private val session: SessionMode? = null,
+    /**
+     * More routes on the same server, for what a standalone run needs beyond the harness protocol
+     * (see [CiFixtures]). Installed before the protocol's own, so a path both define answers here.
+     */
+    private val extraRoutes: (Route.() -> Unit)? = null,
+    /**
+     * Also serve everything over TLS with this certificate, on [tlsPort] (0 lets the OS choose).
+     *
+     * A relay's default posture is a self-signed certificate that the client pins by key, so the
+     * pinned and trust-on-first-use code can only be exercised against a server that speaks TLS.
+     * [port] stays a plaintext listener beside it; a fixture that wants TLS only simply does not use it.
+     */
+    private val tls: TlsIdentity? = null,
+    private val tlsPort: Int = 0,
 ) {
     /** Consumed once the pairing code is claimed, so a replayed code is refused as the relay does. */
     @Volatile
@@ -153,6 +169,18 @@ class MockHarness(
         // The probe every reachability check makes: no arguments, and every deployment composes
         // the Session Controller that serves it.
         on("session/canOpenWorkspacePath") { JsonPrimitive(true) }
+        // The one thing a host publishes that a probe cannot read from the ready frame: its home. A client that
+        // names a host (a Recent card) asks for it with one directory listing, and a harness that does not answer
+        // leaves the host reachable with its home unknown, which is a path worth the mock being able to take both ways.
+        on("directoryPicker/list") {
+            buildJsonObject {
+                put("path", "C:\\Users\\demo")
+                put("home", "C:\\Users\\demo")
+                putJsonArray("crumbs") {}
+                putJsonArray("entries") {}
+                put("truncated", false)
+            }
+        }
         on("pluginInventory/list") { pluginInventoryValue() }
         // Registered here rather than left to each test, because the point of holding these two to
         // the host's required fields is to catch a client that stopped sending one — and a check
@@ -298,6 +326,7 @@ class MockHarness(
                 }
             }
             routing {
+                extraRoutes?.invoke(this)
                 // The index route is the one place the launch token is honoured. A matching token
                 // answers 303 to the clean `/` with the cookie on *that* response; a session that
                 // already exists is let through; anything else is told to reopen the startup URL.
@@ -376,10 +405,30 @@ class MockHarness(
                 }
             }
         }
+        if (tls != null) {
+            // A second, TLS listener beside the plaintext one, added before the engine starts.
+            newServer.engine.configuration.sslConnector(
+                keyStore = tls.keyStore,
+                keyAlias = tls.alias,
+                keyStorePassword = { tls.password() },
+                privateKeyPassword = { tls.password() },
+            ) {
+                host = "127.0.0.1"
+                this.port = tlsPort
+            }
+        }
         newServer.start(wait = false)
         server = newServer
-        return newServer.engine.resolvedConnectors().first().port
+        val connectors = newServer.engine.resolvedConnectors()
+        boundTlsPort = connectors.firstOrNull { it.type.name.equals("HTTPS", ignoreCase = true) }?.port
+        // The plaintext listener is the first one declared; a TLS-only user reads [boundTlsPort].
+        return connectors.first { it.type.name.equals("HTTP", ignoreCase = true) }.port
     }
+
+    /** The port the TLS listener bound to, once [start] has run on a harness built with a certificate. */
+    @Volatile
+    var boundTlsPort: Int? = null
+        private set
 
     /**
      * Stops the server. Safe to call even if [start] was never called.
@@ -798,7 +847,16 @@ class MockHarness(
         val body = runCatching { receiveText() }.getOrDefault("")
         val fields = runCatching { Json.parseToJsonElement(body) }.getOrNull() as? JsonObject
         val code = (fields?.get("code") as? JsonPrimitive)?.contentOrNull
-        if (code != mode.pairingCode || pairingClaimed) {
+        if (mode.rateLimitedCode != null && code == mode.rateLimitedCode) {
+            response.header("Retry-After", mode.retryAfterSeconds.toString())
+            respondText(
+                """{"error":"rate-limited"}""",
+                ContentType.Application.Json,
+                HttpStatusCode.TooManyRequests,
+            )
+            return
+        }
+        if (code != mode.pairingCode || (pairingClaimed && !mode.reusableCode)) {
             respondText(
                 """{"error":"pairing-failed","message":"That code is not valid."}""",
                 ContentType.Application.Json,
@@ -1223,6 +1281,16 @@ data class RelayMode(
     val tokenExpiresAt: Long = 1_900_000_000_000,
     /** What a rate-limited claim reports in `Retry-After`. */
     val retryAfterSeconds: Long = 30,
+    /**
+     * Accept [pairingCode] again after it has been claimed.
+     *
+     * A real relay's code works once. A fixture that a script drives through many pairings (one per
+     * screenshot) cannot be restarted between them, so it keeps the code alive; the single-use
+     * behaviour stays the default, and is what the existing tests rely on.
+     */
+    val reusableCode: Boolean = false,
+    /** A code that always answers 429, so the lockout can be shown without making 30 wrong attempts. */
+    val rateLimitedCode: String? = null,
     /**
      * Refuse every `/relay` request the way the fence does.
      *

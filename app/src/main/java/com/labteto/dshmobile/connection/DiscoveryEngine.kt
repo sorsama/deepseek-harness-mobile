@@ -5,6 +5,7 @@ import com.labteto.dshmobile.core.wire.ObservedKey
 import com.labteto.dshmobile.core.wire.RelayOrigin
 import com.labteto.dshmobile.core.wire.RelayPairing
 import com.labteto.dshmobile.core.wire.RelayTls
+import com.labteto.dshmobile.core.wire.locate
 import com.labteto.dshmobile.core.wire.dto.HostDescription
 import com.labteto.dshmobile.core.wire.DshApiClient
 import com.labteto.dshmobile.core.wire.RpcResult
@@ -51,46 +52,6 @@ internal fun sameSubnet(target: String, localIps: List<String>): Boolean {
     val targetPrefix = targetParts.take(3)
     return localIps.any { it.split('.').take(3) == targetPrefix }
 }
-
-/**
- * What a refused probe means, given whether the address is a relay this device paired with.
- *
- * Free function for the same reason as [sameSubnet]: the statuses are the part worth pinning, and
- * reaching them through [DiscoveryEngine] needs the credential stores. [detail] is the carrier's
- * own wording, kept for the outcomes that have nothing more specific to say.
- */
-internal fun probeOutcomeOf(kind: TransportFailure?, relay: Boolean, detail: String): ProbeOutcome =
-    when (kind) {
-        // The relay answers the same 403 whether it has never seen this device, the token expired,
-        // or the operator revoked it, so the status alone cannot separate "pair again" from the
-        // harness's own `Host` fence. What the app already knows about the address can. A harness
-        // reached directly now answers 401 for the same class of fact — no browser session — which
-        // is its own outcome rather than a fence.
-        TransportFailure.TRUST_FENCE ->
-            if (relay) ProbeOutcome.PairingRequired else ProbeOutcome.TrustFence
-        // The same 401 behind a relay is one hop further out: the relay accepted this device — it
-        // answers 403 when it does not — and the harness refused the relay's own request, so there
-        // is nothing here for this phone to pair again.
-        TransportFailure.UNAUTHENTICATED ->
-            if (relay) ProbeOutcome.RelayUnauthenticated else ProbeOutcome.Unauthenticated
-        TransportFailure.CERTIFICATE_PIN -> ProbeOutcome.CertificateChanged
-        TransportFailure.REFUSED -> ProbeOutcome.Refused
-        TransportFailure.TIMEOUT -> ProbeOutcome.Timeout
-        TransportFailure.DNS -> ProbeOutcome.DnsFailure
-        TransportFailure.UNREACHABLE -> ProbeOutcome.Unreachable
-        // The probe sends no arguments, so nothing it sends can be too large: a 413 here means
-        // whatever is listening is not the harness.
-        TransportFailure.NOT_FOUND, TransportFailure.NOT_A_HARNESS, TransportFailure.TOO_LARGE ->
-            ProbeOutcome.NotAHarness
-        TransportFailure.TLS -> ProbeOutcome.TlsFailure
-        // A throttle and a dead upstream both describe a real harness address — one asking us to
-        // wait, one with nothing behind it — so neither may read as "not a harness", which is the
-        // one verdict that sends someone to re-check the address. Their own carrier wording already
-        // says which, so it is what gets shown.
-        TransportFailure.RATE_LIMITED, TransportFailure.UPSTREAM_DOWN,
-        TransportFailure.OTHER, null,
-        -> ProbeOutcome.Other(detail)
-    }
 
 /**
  * Finds DeepSeek Harness instances on the local Wi-Fi.

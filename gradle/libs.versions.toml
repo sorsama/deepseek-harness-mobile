@@ -11,6 +11,13 @@ navigationCompose = "2.8.5"
 hiltNavigationCompose = "1.2.0"
 coroutines = "1.9.0"
 serializationJson = "1.7.3"
+# Pinned to the kotlinx-io that Ktor 3.0.3 resolves (checked with `:mock-harness:dependencies`), so
+# the iOS transport that will sit on Ktor's Darwin engine shares one set of Source/Sink types with
+# the common transport seam instead of two versions of them.
+kotlinxIo = "0.5.4"
+# The Gradle plugin and the runtime library share this one version. It has to be bumped together
+# with `kotlin`: the plugin rewrites compiled classes, so a Kotlin upgrade is where it breaks.
+atomicfu = "0.26.0"
 okhttp = "4.12.0"
 zxingEmbedded = "4.3.0"
 datastore = "1.1.1"
@@ -24,6 +31,11 @@ espresso = "3.6.1"
 kotlinxCoroutinesTest = "1.9.0"
 androidxTestRunner = "1.6.2"
 commonmark = "0.24.0"
+# Compose Multiplatform for the UI both apps share (`:sharedUi`). 1.7.1 is the release built for Kotlin 2.0.21,
+# the compiler this repo is on; 1.7.3 and later are built for Kotlin 2.1+ and their klibs would not
+# read on 2.0.21. It moves together with `kotlin`, and the Gradle plugin is the only thing the
+# catalog needs: the plugin's own `compose.*` accessors pick the matching library versions.
+composeMultiplatform = "1.7.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +63,7 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", v
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJson" }
+kotlinx-io-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-io-core", version.ref = "kotlinxIo" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 zxing-android-embedded = { group = "com.journeyapps", name = "zxing-android-embedded", version.ref = "zxingEmbedded" }
@@ -58,6 +71,12 @@ ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref =
 ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktor" }
 ktor-server-websockets = { group = "io.ktor", name = "ktor-server-websockets", version.ref = "ktor" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+# The engine behind the iOS transport. Resolves only for the iOS targets (it has no JVM variant).
+ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
+# A pure-Kotlin engine, used on the JVM only by tests and the conformance suite to run the Ktor
+# transport where no iOS device exists. It is deliberately not OkHttp, so the Ktor pass does not
+# share an HTTP stack with the OkHttp pass it is being compared against.
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
 commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "commonmark" }
 commonmark-ext-gfm-tables = { group = "org.commonmark", name = "commonmark-ext-gfm-tables", version.ref = "commonmark" }
 commonmark-ext-gfm-strikethrough = { group = "org.commonmark", name = "commonmark-ext-gfm-strikethrough", version.ref = "commonmark" }
@@ -74,10 +93,13 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlinx-atomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "atomicfu" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

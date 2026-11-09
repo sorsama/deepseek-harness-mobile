@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chatlist_sessions_more">Показать ещё (осталось %1$d)</string>
+    <string name="chatlist_sessions_collapse">Свернуть</string>
+    <string name="chatlist_sessions_reorder_hint">Покажите все сессии, чтобы изменить порядок.</string>
+</resources>

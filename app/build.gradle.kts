@@ -103,7 +103,21 @@ android {
 }
 
 dependencies {
-    implementation(project(":core"))
+    implementation(project(":core")) {
+        // `:core` carries Ktor for the iOS transport (`KtorRpcTransport`, `KtorMuxSocket`). The
+        // Android app keeps using OkHttp and never loads those classes, and release minification is
+        // off, so leaving Ktor on the runtime classpath would ship its client, utils and HTTP
+        // modules in every APK for nothing. The classes in `:core` that mention Ktor are never
+        // touched by the app, so the missing jars are never looked up. That is not left to care:
+        // `:core`'s NoKtorOnTheAppPathTest fails if any class outside the Ktor island can reach one.
+        exclude(group = "io.ktor")
+    }
+    // The Compose UI both apps share. Same Ktor rule as `:core` above, for the same reason: this
+    // module's `iosMain` carries the Ktor wiring, the Android variant carries none of it, and what
+    // reaches Ktor through `:core` must not ride in on this edge either.
+    implementation(project(":sharedUi")) {
+        exclude(group = "io.ktor")
+    }
     implementation("org.yaml:snakeyaml:2.5")
 
     implementation(libs.androidx.core.ktx)
@@ -144,6 +158,10 @@ dependencies {
     // conformance test runs the real encoder through it rather than through a copy, because a copy
     // is a second thing to keep in step and the failure it guards against is a silent one.
     testImplementation(project(":mock-harness"))
+    // The app's own build keeps Ktor out of `:core`'s runtime classpath (see above); the
+    // end-to-end tests run the Ktor transport against the mock harness too, so they bring it back.
+    testImplementation(libs.ktor.client.core)
+    testImplementation(libs.ktor.client.cio)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

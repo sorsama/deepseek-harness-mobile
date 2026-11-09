@@ -1,0 +1,2 @@
+"NSLocalNetworkUsageDescription" = "O DSH Mobile se conecta ao DeepSeek Harness que roda no seu próprio computador. Ele só se comunica com o endereço que você informa e não olha mais nada na sua rede.";
+"NSCameraUsageDescription" = "O DSH Mobile usa a câmera apenas para ler o QR code da página de pareamento do seu relay. Ele não tira fotos nem grava vídeo.";

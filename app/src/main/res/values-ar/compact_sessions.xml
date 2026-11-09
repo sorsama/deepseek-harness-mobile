@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chatlist_sessions_more">عرض المزيد (المتبقي %1$d)</string>
+    <string name="chatlist_sessions_collapse">طي</string>
+    <string name="chatlist_sessions_reorder_hint">اعرض كل الجلسات لإعادة ترتيبها.</string>
+</resources>

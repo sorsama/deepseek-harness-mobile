@@ -5,11 +5,11 @@ import com.labteto.dshmobile.core.wire.dto.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.*
+import kotlinx.io.Source
 import kotlinx.serialization.json.*
 import okhttp3.OkHttpClient
 import org.junit.Assert.*
 import org.junit.Test
-import java.io.InputStream
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class QuestionSessionsTest {
@@ -21,8 +21,8 @@ class QuestionSessionsTest {
             receipt?.await()
             return RpcHttpResponse(200, """{"type":"server-response","rpcId":${request["rpcId"]},"result":{"ok":true,"value":true}}""")
         }
-        override suspend fun <T> download(path: String, consume: (String?, String?, InputStream) -> T): T = error("unused")
-        override suspend fun upload(path: String, contentType: String, contentLength: Long, body: InputStream, onProgress: ((Long) -> Unit)?): RpcHttpResponse = error("unused")
+        override suspend fun <T> download(path: String, consume: (String?, String?, Source) -> T): T = error("unused")
+        override suspend fun upload(path: String, contentType: String, contentLength: Long, body: Source, onProgress: ((Long) -> Unit)?): RpcHttpResponse = error("unused")
     }
     private fun mux(duration: Long) = RemoteStreamMux { sink ->
         object : WsChannel("http://stub/api/remote.mux", OkHttpClient(), sink) {

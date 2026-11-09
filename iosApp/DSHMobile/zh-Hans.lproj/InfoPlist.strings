@@ -1,0 +1,2 @@
+"NSLocalNetworkUsageDescription" = "DSH Mobile 会连接到运行在你自己电脑上的 DeepSeek Harness。它只访问你输入的地址，不会查看网络上的其他任何内容。";
+"NSCameraUsageDescription" = "DSH Mobile 只会使用摄像头读取你的中继配对页面上的二维码，不会拍照，也不会录制视频。";

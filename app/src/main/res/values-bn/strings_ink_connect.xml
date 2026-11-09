@@ -1,32 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connect_hero_subtitle">আপনার কম্পিউটারে চলা harness ফোনে দেখুন।</string>
-    <string name="connect_loopback_notice">এই ফোনে Termux-এ harness চালায়। DSH এটি চালু, বন্ধ ও সাইন ইন করতে পারে।</string>
-    <string name="connect_lan_notice">এনক্রিপ্টেড নয়। শুধু ভরসার Wi-Fi-তে লোকাল নেটওয়ার্ক ব্যবহার করুন।</string>
-    <string name="connect_relay_notice">এনক্রিপ্টেড ও পাসওয়ার্ড-সুরক্ষিত। dsh-relay থেকে পেয়ারিং QR স্ক্যান করুন।</string>
-    <string name="connect_section_discovered">পাওয়া গেছে</string>
-    <string name="connect_section_discovered_relay">পাওয়া রিলে</string>
-    <string name="connect_scan_progress_short">স্ক্যান হচ্ছে %1$d / %2$d</string>
-    <string name="connect_harness_actions">harness-এর বিকল্প</string>
-    <string name="connect_forget_harness">এই harness ভুলে যান</string>
-    <string name="connect_connecting_to">%1$s-এ সংযোগ হচ্ছে</string>
-    <string name="connect_step_address">ঠিকানা যাচাই চলছে</string>
-    <string name="connect_step_reaching">%1$s-এ পৌঁছানো হচ্ছে</string>
-    <string name="connect_step_streams">ইভেন্ট স্ট্রিম খোলা হচ্ছে</string>
-    <string name="connect_step_verify">harness যাচাই চলছে</string>
-    <string name="connect_lost_reconnecting">%1$s-এ আবার সংযোগ হচ্ছে</string>
-    <string name="connect_lost_body">এজেন্ট কম্পিউটারে কাজ চালিয়ে যাচ্ছে। আপনার খসড়া ও প্রতিটি চ্যাটের অবস্থান সেভ করা আছে।</string>
-    <string name="connect_lost_retry_now">এখনই আবার চেষ্টা করুন</string>
-    <string name="connect_lost_choose">অন্য harness বেছে নিন</string>
-    <string name="connect_lost_attempt">চেষ্টা %1$d</string>
-    <string name="connect_lost_tag">আবার সংযোগ</string>
-    <string name="connect_sign_in_to">%1$s-এ সাইন ইন করুন</string>
-    <string name="connect_sign_in_subtitle">এই harness এখনও এই ফোনকে সাইন ইন করায়নি।</string>
-    <string name="connect_sign_in_link_body">harness চালু হলে একটি লিংক দেখায়। সেই লিংক পেস্ট করুন, অথবা ?token=-এর পরের টোকেন।</string>
-    <string name="connect_sign_in_token_hint">harness প্রতিবার চালু হলে টোকেন বদলায়।</string>
-    <string name="pair_hero_title">পেয়ারিং কোড স্ক্যান করুন</string>
-    <string name="pair_step_run">আপনার কম্পিউটারে চালান %1$s</string>
-    <string name="pair_step_scan">দেখানো QR কোডের দিকে ক্যামেরা ধরুন। এরপর ডিভাইসের পাসওয়ার্ড দেবেন।</string>
-    <string name="pair_code_hint">8 সংখ্যা</string>
-    <string name="pair_scanned">%1$s-এর সঙ্গে পেয়ার হচ্ছে</string>
 </resources>

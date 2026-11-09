@@ -1,0 +1,5 @@
+# Build products of iosApp/generate.sh and of Xcode.
+/DSHMobile.xcodeproj/
+/Generated/
+/build/
+xcuserdata/

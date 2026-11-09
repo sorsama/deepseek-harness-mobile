@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.labteto.dshmobile.R
+import com.labteto.dshmobile.ui.components.AndroidHapticPlayer
 import com.labteto.dshmobile.ui.components.DsHaptics
 import com.labteto.dshmobile.ui.components.DsSegment
 import com.labteto.dshmobile.ui.components.DsSegmented
@@ -105,7 +106,7 @@ internal fun HapticsPanel(
             onSelect = { key ->
                 val next = HapticStrength.of(key)
                 // The new strength, felt at once: the theme has not caught up with the change yet.
-                DsHaptics(view, enabled = true, strength = next).tap()
+                DsHaptics(AndroidHapticPlayer(view), enabled = true, strength = next).tap()
                 onStrength(next)
             },
             stretch = true,

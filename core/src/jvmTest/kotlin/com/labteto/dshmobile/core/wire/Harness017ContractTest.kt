@@ -2,10 +2,10 @@ package com.labteto.dshmobile.core.wire
 
 import com.labteto.dshmobile.core.wire.dto.*
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.Source
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
-import java.io.InputStream
 
 /**
  * Contract examples independently transcribed from the Remote signatures at `dsh-v0.1.7-rc.2`
@@ -28,8 +28,8 @@ class Harness017ContractTest {
             answer?.let { return it(path, request["rpcId"]) }
             return RpcHttpResponse(200, """{"type":"server-response","rpcId":${request["rpcId"]},"result":{"ok":true,"value":$value}}""")
         }
-        override suspend fun <T> download(path: String, consume: (String?, String?, InputStream) -> T): T = error("unused")
-        override suspend fun upload(path: String, contentType: String, contentLength: Long, body: InputStream, onProgress: ((Long) -> Unit)?): RpcHttpResponse = error("unused")
+        override suspend fun <T> download(path: String, consume: (String?, String?, Source) -> T): T = error("unused")
+        override suspend fun upload(path: String, contentType: String, contentLength: Long, body: Source, onProgress: ((Long) -> Unit)?): RpcHttpResponse = error("unused")
     }
 
     /** The body undici writes for `new Response(formData)`: blob parts carry a filename. */

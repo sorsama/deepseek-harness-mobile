@@ -7,6 +7,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.labteto.dshmobile.core.wire.HarnessSession
 import com.labteto.dshmobile.core.wire.SessionExchange
 import com.labteto.dshmobile.core.wire.WireJson
+import com.labteto.dshmobile.core.wire.exchange
+import com.labteto.dshmobile.ui.screens.connect.HarnessSignIn
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -36,7 +38,7 @@ import javax.inject.Singleton
 class HarnessSessionStore @Inject constructor(
     private val dataStore: DataStore<Preferences>,
     private val okHttpClient: OkHttpClient,
-) {
+) : HarnessSignIn {
     private val serializer = MapSerializer(String.serializer(), String.serializer())
 
     /** The `Cookie` value for [hostId], or null when this device has no session for it. */
@@ -48,7 +50,7 @@ class HarnessSessionStore @Inject constructor(
      * [tokenInput] may be the bare token, the whole `?token=…` URL, or the entire startup line the
      * harness printed — see [HarnessSession.tokenFrom].
      */
-    suspend fun pair(hostId: String, baseUrl: String, tokenInput: String): SessionExchange {
+    override suspend fun pair(hostId: String, baseUrl: String, tokenInput: String): SessionExchange {
         val token = HarnessSession.tokenFrom(tokenInput)
             ?: return SessionExchange.Refused(0)
         val outcome = HarnessSession.exchange(baseUrl, token, okHttpClient)

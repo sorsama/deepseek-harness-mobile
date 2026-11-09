@@ -63,6 +63,19 @@ class HandshakeConformanceTest {
         }
     }
 
+    /**
+     * The run drives the transport it was asked to: `-Pdsh.transport=ktor` has to mean Ktor for the
+     * unary calls and for the mux, or the second CI pass would be the first one run twice.
+     */
+    @Test
+    fun `the run uses the transport it was asked for`() = runBlocking {
+        val ktor = System.getProperty("dsh.transport")?.trim()?.lowercase() == "ktor"
+        assertEquals(if (ktor) "KtorRpcTransport" else "OkHttpRpcTransport", client.rpcTransportClass)
+        client.mux.start()
+        withTimeout(15_000) { client.mux.awaitOpen() }
+        assertEquals(if (ktor) "KtorMuxSocket" else "WsChannel", client.muxSocketClass)
+    }
+
     /** Without a session the harness answers 401, which the client reads as a missing session. */
     @Test
     fun `an unauthenticated call is unauthenticated, not a broken connection`() = runBlocking {

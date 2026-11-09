@@ -24,19 +24,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       # :app was missing here, so nothing under app/src/test ever ran on CI.
       - name: Unit tests
-        run: ./gradlew :core:jvmTest :mock-harness:test :app:testDebugUnitTest --stacktrace
-      # :core's iOS targets keep the shared code honestly shared: Kotlin/Native cannot build
-      # them on a Windows desktop, so this is the only place the compile is enforced. Linux
-      # cross-compiles all three targets; no macOS runner is needed until there is an app to sign.
-      - name: Restore Kotlin/Native toolchain
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.konan
-            ~/.local/share/konan
-          key: konan-${{ runner.os }}-kotlin-2.0.21
-      - name: Compile shared code for iOS
-        run: ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :core:compileKotlinIosX64 --stacktrace
+        run: ./gradlew :core:jvmTest :mock-harness:test :sharedUi:testDebugUnitTest :app:testDebugUnitTest --stacktrace
       - name: Lint
         run: ./gradlew :app:lintDebug --stacktrace
       - name: Assemble debug APK
@@ -46,6 +34,52 @@ jobs:
         with:
           name: dsh-mobile-debug
           path: app/build/outputs/apk/debug/*.apk
+
+  # The one place the iOS targets are really compiled.
+  #
+  # Kotlin/Native builds Apple targets only on macOS. On Linux and Windows Gradle prints "the
+  # following Kotlin/Native targets cannot be built on this machine and are disabled" and marks
+  # every iOS task SKIPPED, so a `compileKotlinIosArm64` step on an ubuntu runner reports BUILD
+  # SUCCESSFUL in a second having compiled nothing. (This job used to be a step of `build`, where
+  # that is exactly what it did.) Klib cross-compilation does not rescue it either: the Linux
+  # toolchain ships no Apple platform libraries, so `platform.Foundation` and even `posix` do not
+  # resolve. macOS minutes are free for a public repository.
+  ios-compile:
+    # `macos-latest`, not a pinned image: `macos-14` is no longer a supported configuration and the
+    # job was cancelled before its first step ("The configuration 'macos-14-arm64-us-default' is
+    # not supported").
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      # The Gradle build configures :app too, which needs an Android SDK even though only :core
+      # is built here.
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore Kotlin/Native toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-kotlin-2.0.21
+      - name: Compile shared code for iOS
+        run: ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :core:compileKotlinIosX64 :sharedUi:compileKotlinIosArm64 :sharedUi:compileKotlinIosSimulatorArm64 --stacktrace
+      # A skipped task is a green build, so assert the klibs exist rather than trusting the exit code.
+      - name: Check the iOS klibs were produced
+        run: |
+          for target in iosArm64 iosSimulatorArm64 iosX64; do
+            klib="core/build/classes/kotlin/$target/main/klib/core.klib"
+            test -s "$klib" || { echo "::error::$klib was not produced; the iOS compile was skipped"; exit 1; }
+          done
+          for target in iosArm64 iosSimulatorArm64; do
+            klib="sharedUi/build/classes/kotlin/$target/main/klib/sharedUi.klib"
+            test -s "$klib" || { echo "::error::$klib was not produced; the shared UI was not compiled for iOS"; exit 1; }
+          done
 
   harness-conformance:
     runs-on: ubuntu-latest
@@ -83,11 +117,201 @@ jobs:
         env:
           DSH_HARNESS_SRC: ${{ github.workspace }}/build/harness-0.2.2-rc.1
         run: ./gradlew :core:jvmTest :conformance:test --stacktrace
+      # The same suite again with the Ktor transport (the iOS carrier, here on a JVM engine) in
+      # place of OkHttp, so the real harness referees both implementations of the transport seam.
+      # `dsh.transport` is a declared input of the test task, so this is a fresh run and not an
+      # up-to-date or build-cached result of the pass above. It reuses the compiled classes and the
+      # harness build, so it costs the test run alone.
+      - name: Keep the OkHttp pass's report
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p conformance/build/reports/tests/okhttp-pass
+          cp -r conformance/build/reports/tests/test/. conformance/build/reports/tests/okhttp-pass/ || true
+      # Runs even when the OkHttp pass failed, so one push says whether the Ktor transport fails
+      # the same way or not.
+      - name: Real harness conformance (Ktor transport)
+        if: ${{ !cancelled() }}
+        env:
+          DSH_HARNESS_SRC: ${{ github.workspace }}/build/harness-0.2.2-rc.1
+        run: ./gradlew :conformance:test -Pdsh.transport=ktor --stacktrace
       - name: Upload conformance results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: harness-conformance-results
           path: |
-            conformance/build/reports/tests/test
+            conformance/build/reports/tests
             conformance/build/conformance-logs
+
+  # The first place the iOS app actually runs: the shared Kotlin tests on an iOS simulator, the
+  # SwiftUI + Compose Multiplatform app built, installed and driven in one, and an unsigned device
+  # .ipa produced. Everything here needs macOS and Xcode, and every step is a check: a step that
+  # does not run, or runs nothing, fails the job (the lesson of `ios-compile`'s history), and the
+  # steps after the tests run even when the tests fail, so one push says everything that is wrong.
+  #
+  # `-Pdsh.iosOnly=true` leaves the Android app out of the Gradle build, so this job needs no Android
+  # SDK; the Android half of CI is the `build` job.
+  ios-app:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    env:
+      SIM_REPORTS: build/ios-reports
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore Kotlin/Native toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-kotlin-2.0.21
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Toolchain and simulator
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available
+          picked="$(xcrun simctl list devices available -j | jq -r '[.devices | to_entries | sort_by(.key) | reverse | .[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0] | "\(.udid)|\(.name)"')"
+          test -n "$picked" && test "$picked" != "null" || { echo "::error::no iPhone simulator on this runner"; exit 1; }
+          echo "SIM_UDID=${picked%%|*}" >> "$GITHUB_ENV"
+          echo "SIM_NAME=${picked#*|}" >> "$GITHUB_ENV"
+          echo "Using simulator $picked"
+      # Three harnesses and some test-only routes, as their own process: the simulator shares the
+      # Mac's network, so the Kotlin/Native tests and the app reach them on 127.0.0.1.
+      - name: Start the fixture harnesses
+        run: |
+          ./gradlew -Pdsh.iosOnly=true :mock-harness:installDist --stacktrace
+          mkdir -p "$SIM_REPORTS"
+          nohup mock-harness/build/install/mock-harness/bin/mock-harness --ci-fixtures > "$SIM_REPORTS/fixtures.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/fixtures.pid"
+          for _ in $(seq 1 60); do
+            grep -q "ci fixtures listening" "$SIM_REPORTS/fixtures.log" && break
+            sleep 1
+          done
+          cat "$SIM_REPORTS/fixtures.log"
+          grep -q "ci fixtures listening" "$SIM_REPORTS/fixtures.log"
+          for port in 3181 3182 3183 3184 3186; do
+            curl -sS -o /dev/null -w "port $port answers %{http_code}\n" "http://127.0.0.1:$port/ci/status/418"
+          done
+          # The TLS pairing relay has a self-signed certificate, so -k: the point here is only that it is up.
+          # (The key it presents is pinned by the app, which is what the simulator scenarios exercise.)
+          curl -sSk -o /dev/null -w "port 3187 answers %{http_code} over TLS\n" "https://127.0.0.1:3187/ci/status/418"
+          grep "^ci pairing:" "$SIM_REPORTS/fixtures.log"
+      # The first execution of the Darwin transport. `HarnessContractTest` is the same file that runs
+      # on the JVM in the `build` job, against the same fixtures.
+      - name: Kotlin/Native tests on the simulator
+        run: ./gradlew -Pdsh.iosOnly=true -Pdsh.iosSimulator="$SIM_UDID" :core:iosSimulatorArm64Test :sharedUi:iosSimulatorArm64Test --continue --stacktrace
+      - name: Check the iOS tests really ran
+        if: ${{ !cancelled() }}
+        run: |
+          total=0
+          for f in core/build/test-results/iosSimulatorArm64Test/*.xml; do
+            n="$(grep -o '<testcase ' "$f" | wc -l | tr -d ' ')"
+            echo "$f: $n tests"
+            total=$((total + n))
+          done
+          echo "core iOS tests executed: $total"
+          test "$total" -ge 45 || { echo "::error::expected at least 45 Kotlin/Native tests to have run in :core, found $total"; exit 1; }
+          shopt -s nullglob
+          shared=0
+          for f in sharedUi/build/test-results/iosSimulatorArm64Test/*.xml; do
+            n="$(grep -o '<testcase ' "$f" | wc -l | tr -d ' ')"
+            shared=$((shared + n))
+          done
+          echo "sharedUi iOS tests executed: $shared"
+          test "$shared" -ge 110 || { echo "::error::expected at least 110 Kotlin/Native tests to have run in :sharedUi, found $shared"; exit 1; }
+      # What the mux socket was measured doing, in the run's own log: the one-line results the tests
+      # print (`MUX_401`, `MUX_REFUSED`, `MUX_CHALLENGE`, `MUX_REDIRECT`, `MUX_LARGE`, `MUX_CLOSE`,
+      # `MUX_DROP`, `MUX_PING`) and every delegate event of every socket (`MUX_TRACE`), which says which
+      # `NSURLSession` callback decided each outcome.
+      - name: Show what the Darwin mux socket did
+        if: ${{ !cancelled() }}
+        run: |
+          shopt -s nullglob
+          grep -h -E 'MUX_(401|REFUSED|CHALLENGE|REDIRECT|LARGE|CLOSE|DROP|PING|TRACE)' core/build/test-results/iosSimulatorArm64Test/*.xml \
+            | sed -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&amp;/\&/g' | cut -c1-300 || echo "no MUX_ lines found in the test reports"
+      - name: Generate the Xcode project
+        if: ${{ !cancelled() }}
+        run: iosApp/generate.sh
+      # Signed ad hoc, which is what Xcode does for a simulator build on a developer's Mac, and not left
+      # unsigned: the Keychain (where the harness session is kept) is only available to an app with an
+      # application identifier, and an unsigned one has none. The device .ipa stays unsigned on purpose (see
+      # `ios-ipa`); the tool that sideloads it gives it the identifier when it signs it.
+      - name: Build the app for the simulator
+        if: ${{ !cancelled() }}
+        run: |
+          set -o pipefail
+          mkdir -p "$SIM_REPORTS"
+          xcodebuild -project iosApp/DSHMobile.xcodeproj -scheme DSHMobile -configuration Debug \
+            -sdk iphonesimulator -destination "id=$SIM_UDID" -derivedDataPath build/ios-derived \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=YES \
+            build 2>&1 | tee "$SIM_REPORTS/xcodebuild-simulator.log"
+      - name: Run the app in the simulator
+        if: ${{ !cancelled() }}
+        run: |
+          iosApp/scripts/simulator-check.sh "$SIM_UDID" "build/ios-derived/Build/Products/Debug-iphonesimulator/DSH Mobile.app" build/ios-screenshots
+      - name: Stop the fixture harnesses
+        if: always()
+        run: kill "$(cat "$RUNNER_TEMP/fixtures.pid")" 2>/dev/null || true
+      - name: Upload simulator screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-screenshots
+          path: build/ios-screenshots
+          if-no-files-found: warn
+      - name: Upload iOS reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app-reports
+          path: |
+            build/ios-reports
+            core/build/reports/tests
+            sharedUi/build/reports/tests
+            core/build/test-results/iosSimulatorArm64Test
+            sharedUi/build/test-results/iosSimulatorArm64Test
+          if-no-files-found: warn
+
+  # The unsigned device .ipa, in its own job because the Release link of the Kotlin framework (an
+  # optimised Kotlin/Native build of Compose Multiplatform) takes about 25 minutes, and running it
+  # beside the simulator checks would double the wall time of both.
+  #
+  # Unsigned on purpose: there is no Apple Developer account. Sideloadly or AltStore re-sign it with the
+  # installer's own Apple ID (docs/IOS.md, "Installing on an iPhone"). The release workflow does not
+  # build it yet.
+  ios-ipa:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore Kotlin/Native toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-kotlin-2.0.21
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Build the unsigned device .ipa
+        run: iosApp/scripts/build-unsigned-ipa.sh
+      - name: Upload the unsigned .ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-mobile-ios-unsigned-ipa
+          path: build/ipa/*.ipa
+          if-no-files-found: error
+      - name: Upload the build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa-reports
+          path: build/ios-reports
+          if-no-files-found: warn

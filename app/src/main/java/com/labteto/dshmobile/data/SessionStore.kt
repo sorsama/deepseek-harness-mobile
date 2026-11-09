@@ -131,6 +131,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.asInputStream
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -549,6 +552,44 @@ class SessionStore @Inject constructor(
     val imageLimits: StateFlow<ImageLimitsView?> = projectionOf(ImageLimitsView.serializer(), "imageLimits")
     val planState: StateFlow<PlanStateView?> = projectionOf(PlanStateView.serializer(), "plan")
 
+    private val quotaRepository = com.labteto.dshmobile.core.usage.UsageRepository(System::currentTimeMillis)
+    val quotaStatus = quotaRepository.state
+
+    /** Do not use `models.current`: that view prefers a queued next choice while a turn runs. */
+    fun quotaProvider(): String? = modelSelection.value?.let {
+        if (currentConversation.value?.running == true) it.lastUsed?.provider else (it.next ?: it.lastUsed)?.provider
+    }
+
+    private fun quotaIdentity(): String? {
+        if (connectionManager.state.value.phase != ConnectionPhase.CONNECTED) return null
+        val generation = connectionManager.generation ?: return null
+        val host = connectionManager.state.value.host ?: return null
+        val sid = currentSessionId.value ?: return null
+        return "${host.id}|${host.baseUrl}|${generation.clientId}|$sid|${quotaProvider()}"
+    }
+
+    suspend fun refreshQuota(includeAll: Boolean = false, recheck: Boolean = false) = kotlinx.coroutines.withContext(Dispatchers.Main.immediate) {
+        val identity = quotaIdentity()
+        quotaRepository.bind(identity)
+        if (identity == null) return@withContext
+        val api = connectionManager.connectedApi ?: return@withContext
+        val metadata = com.labteto.dshmobile.core.wire.dto.AccountUiMetadata(
+            com.labteto.dshmobile.BuildConfig.VERSION_NAME, java.util.Locale.getDefault().toLanguageTag(),
+            java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000,
+        )
+        try {
+            kotlinx.coroutines.withTimeoutOrNull(60_000) {
+                quotaRepository.refresh(identity, object : com.labteto.dshmobile.core.usage.UsageSource {
+                    override suspend fun status() = (api.subscriptionStatus() as? RpcResult.Ok)?.value
+                    override suspend fun quota(provider: String, account: String) = (api.subscriptionUsage(provider, account) as? RpcResult.Ok)?.value
+                    override suspend fun wallet() = (api.accountBalance(metadata) as? RpcResult.Ok)?.value
+                }, quotaProvider(), includeAll, recheck)
+            }
+        } finally {
+            if (quotaIdentity() != identity) quotaRepository.bind(quotaIdentity())
+        }
+    }
+
     /** This session's durable model choice; the catalog alone no longer carries one. */
     val modelSelection: StateFlow<ModelSelectionProjection?> =
         projectionOf(ModelSelectionProjection.serializer(), "modelSelection")
@@ -697,6 +738,10 @@ class SessionStore @Inject constructor(
                     }
                 }
             }
+        }
+        scope.launch(Dispatchers.Main.immediate) {
+            combine(connectionManager.state, currentSessionId, modelSelection, currentConversation) { _, _, _, _ -> quotaIdentity() }
+                .collect { quotaRepository.bind(it) }
         }
         observeConnection()
         observeEvents()
@@ -2221,7 +2266,7 @@ class SessionStore @Inject constructor(
             ?: return@withContext RpcResult.Err(RpcError("internal", "not connected"))
         val stream = open()
             ?: return@withContext RpcResult.Err(RpcError("internal", "could not read the file"))
-        val streamed = stream.use { api.uploadFileBinary(sid, name, size, it, onProgress) }
+        val streamed = stream.use { api.uploadFileBinary(sid, name, size, it.asSource().buffered(), onProgress) }
         if (streamed !is RpcResult.Err || streamed.error.code != "capability-unavailable") return@withContext streamed
         if (size !in 0..MAX_ENCODED_UPLOAD_BYTES) return@withContext streamed
         log("upload route unavailable; falling back to fileUploads/upload for ${size}B")
@@ -3067,7 +3112,7 @@ class SessionStore @Inject constructor(
     suspend fun exportSessionTo(sink: OutputStream, includeDescendants: Boolean = false, report: Boolean = true): ActionOutcome<Unit> {
         val sid = currentSessionId.value ?: return ActionOutcome.Failed()
         val api = apiOrNull() ?: return ActionOutcome.Failed()
-        val result = api.sessionExport(sid, includeDescendants) { _, _, body -> body.copyTo(sink) }
+        val result = api.sessionExport(sid, includeDescendants) { _, _, body -> body.asInputStream().copyTo(sink) }
         return when (result) {
             is RpcResult.Ok -> ActionOutcome.Done(Unit)
             is RpcResult.Err -> {

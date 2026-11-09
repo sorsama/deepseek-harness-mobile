@@ -10,9 +10,6 @@
     <string name="chat_status_running">Trabalhando</string>
     <string name="chat_status_idle">Inativo</string>
     <string name="chatlist_session_copy_id">Copiar ID da sessão</string>
-    <string name="connect_paste">Colar</string>
-    <string name="connect_try_again">Tentar de novo</string>
-    <string name="connect_manual_paste_hint">Cole o link que o dsh web imprime, com o token incluído, e você também entra.</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="one">%d novo</item>
         <item quantity="many">%d novos</item>

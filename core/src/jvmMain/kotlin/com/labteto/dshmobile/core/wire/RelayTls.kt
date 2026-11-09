@@ -125,13 +125,6 @@ private class PinnedTrustManager(private val fingerprint: String) : X509TrustMan
     override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
 }
 
-/** Somewhere for [RelayTls.trustOnFirstUseClient] to report the key it was offered. */
-class ObservedKey {
-    @Volatile
-    var pin: String? = null
-        internal set
-}
-
 /** Accepts any server key and records it. See [RelayTls.trustOnFirstUseClient] for what that costs. */
 private class LearningTrustManager(private val observed: ObservedKey) : X509TrustManager {
 

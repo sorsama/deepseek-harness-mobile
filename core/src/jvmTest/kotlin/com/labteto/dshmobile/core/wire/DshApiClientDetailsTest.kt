@@ -1,9 +1,9 @@
 package com.labteto.dshmobile.core.wire
 
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.Source
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.io.InputStream
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 
@@ -19,26 +19,26 @@ class DshApiClientDetailsTest {
 
     private class ThrowingTransport(private val error: Throwable) : RpcTransport {
         override suspend fun post(path: String, body: String): RpcHttpResponse = throw error
-        override suspend fun <T> download(path: String, consume: (String?, String?, InputStream) -> T): T =
+        override suspend fun <T> download(path: String, consume: (String?, String?, Source) -> T): T =
             error("not used")
         override suspend fun upload(
             path: String,
             contentType: String,
             contentLength: Long,
-            body: InputStream,
+            body: Source,
             onProgress: ((Long) -> Unit)?,
         ): RpcHttpResponse = throw error
     }
 
     private class FixedTransport(private val response: RpcHttpResponse) : RpcTransport {
         override suspend fun post(path: String, body: String): RpcHttpResponse = response
-        override suspend fun <T> download(path: String, consume: (String?, String?, InputStream) -> T): T =
+        override suspend fun <T> download(path: String, consume: (String?, String?, Source) -> T): T =
             error("not used")
         override suspend fun upload(
             path: String,
             contentType: String,
             contentLength: Long,
-            body: InputStream,
+            body: Source,
             onProgress: ((Long) -> Unit)?,
         ): RpcHttpResponse = response
     }

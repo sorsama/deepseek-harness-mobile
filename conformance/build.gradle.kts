@@ -31,11 +31,20 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.serialization.json)
     testImplementation(libs.okhttp)
+    // The Ktor transport and the JVM engine it runs on here; see `TransportChoice`.
+    testImplementation(libs.ktor.client.core)
+    testImplementation(libs.ktor.client.cio)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }
 
 tasks.test {
+    // Which implementation of the transport seam drives the harness: `okhttp` (the default, what
+    // Android ships) or `ktor` (what iOS ships). It is a declared input, so a Ktor run after an
+    // OkHttp run is a fresh run and never an up-to-date or build-cached result of the other one.
+    val transport = providers.gradleProperty("dsh.transport").orElse("okhttp").get()
+    inputs.property("transport", transport)
+    systemProperty("dsh.transport", transport)
     inputs.property("harnessSource", System.getenv("DSH_HARNESS_SRC") ?: "auto")
     inputs.property("legacyConformance", System.getenv("DSH_LEGACY_CONFORMANCE") ?: "false")
     // A real harness boot plus a model turn is slower than a unit test, and the output of a failure

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chatlist_sessions_more">Mostrar más (%1$d más)</string>
+    <string name="chatlist_sessions_collapse">Contraer</string>
+    <string name="chatlist_sessions_reorder_hint">Muestra todas las sesiones para reordenarlas.</string>
+</resources>
