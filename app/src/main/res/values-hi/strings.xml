@@ -151,6 +151,10 @@
     <string name="settings_chat">चैट</string>
     <string name="settings_follow_streaming">जवाब आते समय साथ स्क्रॉल करें</string>
     <string name="settings_follow_streaming_hint">जवाब लिखे जाते समय सबसे नया संदेश स्क्रीन पर बना रहता है। अपनी रफ़्तार से पढ़ने के लिए ऊपर स्क्रॉल करें। नीचे लौटते ही यह फिर चालू हो जाता है।</string>
+    <string name="settings_default_delivery_mode">डिफ़ॉल्ट भेजने का तरीका</string>
+    <string name="settings_default_delivery_mode_hint">किसी टर्न के चलने के दौरान भेजते समय इसका उपयोग होगा। हर संदेश के लिए अलग तरीका चुनना फिर भी संभव है।</string>
+    <string name="settings_default_delivery_mode_queue">कतार</string>
+    <string name="settings_default_delivery_mode_steer">निर्देश</string>
     <string name="settings_plugins">प्लगइन</string>
     <string name="settings_plugins_inventory">प्लगइन सूची</string>
     <string name="settings_language">भाषा</string>

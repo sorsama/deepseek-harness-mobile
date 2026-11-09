@@ -26,4 +26,32 @@ class ComposerDeliveryTest {
     fun `an unknown delivery is left for the store to normalise`() {
         assertEquals("context", promptDelivery("context", running = false))
     }
+
+    @Test
+    fun `default mode updates a composer that has no manual choice`() {
+        val composer = ComposerDraft(ComposerKey("host", "session"))
+
+        composer.applyDefaultMode(DELIVERY_STEER)
+
+        assertEquals(DELIVERY_STEER, composer.mode)
+    }
+
+    @Test
+    fun `manual mode choice is not replaced by a later default`() {
+        val composer = ComposerDraft(ComposerKey("host", "session"))
+        composer.selectMode(DELIVERY_QUEUE)
+
+        composer.applyDefaultMode(DELIVERY_STEER)
+
+        assertEquals(DELIVERY_QUEUE, composer.mode)
+    }
+
+    @Test
+    fun `unknown default mode falls back to queue`() {
+        val composer = ComposerDraft(ComposerKey("host", "session"))
+
+        composer.applyDefaultMode("unknown")
+
+        assertEquals(DELIVERY_QUEUE, composer.mode)
+    }
 }

@@ -151,6 +151,10 @@
     <string name="settings_chat">الدردشة</string>
     <string name="settings_follow_streaming">متابعة الرد أثناء كتابته</string>
     <string name="settings_follow_streaming_hint">يُبقي أحدث رسالة ظاهرة أثناء كتابة الرد. مرّر لأعلى لتقرأ براحتك، وتعود المتابعة عندما تنزل إلى الأسفل.</string>
+    <string name="settings_default_delivery_mode">وضع الإرسال الافتراضي</string>
+    <string name="settings_default_delivery_mode_hint">يُستخدم عند الإرسال أثناء جولة جارية. يمكنك اختيار وضع مختلف لكل رسالة.</string>
+    <string name="settings_default_delivery_mode_queue">انتظار</string>
+    <string name="settings_default_delivery_mode_steer">توجيه</string>
     <string name="settings_plugins">الإضافات</string>
     <string name="settings_plugins_inventory">قائمة الإضافات</string>
     <string name="settings_language">اللغة</string>

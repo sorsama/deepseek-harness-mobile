@@ -151,6 +151,10 @@
     <string name="settings_chat">Chat</string>
     <string name="settings_follow_streaming">Seguir respuestas en streaming</string>
     <string name="settings_follow_streaming_hint">Mantiene visible el mensaje más reciente mientras llega la respuesta. Desplázate hacia arriba para leer a tu ritmo. El seguimiento se reanuda al volver abajo.</string>
+    <string name="settings_default_delivery_mode">Modo de envío predeterminado</string>
+    <string name="settings_default_delivery_mode_hint">Se usa al enviar mientras hay un turno en curso. Aún puedes elegir otro modo para cada mensaje.</string>
+    <string name="settings_default_delivery_mode_queue">Cola</string>
+    <string name="settings_default_delivery_mode_steer">Guiar</string>
     <string name="settings_plugins">Complementos</string>
     <string name="settings_plugins_inventory">Inventario de complementos</string>
     <string name="settings_language">Idioma</string>

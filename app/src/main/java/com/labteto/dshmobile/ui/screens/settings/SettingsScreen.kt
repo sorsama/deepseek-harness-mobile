@@ -242,6 +242,26 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         settings.followStreamingReply,
                         stringResource(R.string.settings_follow_streaming_hint),
                     ) { viewModel.set { it.copy(followStreamingReply = !it.followStreamingReply) } }
+                    Text(
+                        stringResource(R.string.settings_default_delivery_mode),
+                        style = DsType.label12,
+                        color = colors.labelTertiary,
+                        modifier = Modifier.padding(top = DsSpacing.small),
+                    )
+                    DsSegmented(
+                        segments = listOf(
+                            DsSegment("queue", stringResource(R.string.settings_default_delivery_mode_queue)),
+                            DsSegment("steer", stringResource(R.string.settings_default_delivery_mode_steer)),
+                        ),
+                        selectedKey = if (settings.defaultDeliveryMode == "steer") "steer" else "queue",
+                        onSelect = { mode -> viewModel.set { it.copy(defaultDeliveryMode = mode) } },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        stringResource(R.string.settings_default_delivery_mode_hint),
+                        style = DsType.caption11,
+                        color = colors.labelTertiary,
+                    )
                 }
 
                 SettingsCard(stringResource(R.string.settings_connection)) {
