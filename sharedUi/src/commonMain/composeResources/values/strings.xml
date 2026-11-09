@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="common_back">Back</string>
     <string name="common_cancel">Cancel</string>
     <string name="common_connected">Connected</string>
+    <string name="common_retry">Retry</string>
     <string name="connect_auto_lan">Auto-connect to a harness found on Wi-Fi</string>
     <string name="connect_auto_last">Reconnect to the last harness you used</string>
     <string name="connect_auto_loopback">Auto-connect to the harness on this device</string>
@@ -95,6 +97,45 @@
     <string name="connect_title">Connect to your harness</string>
     <string name="connect_try_again">Try again</string>
     <string name="connect_unreachable">Unreachable</string>
+    <string name="pair_code_hint">8 digits</string>
+    <string name="pair_code_label">Pairing code</string>
+    <string name="pair_fail_certificate">The key at %1$s isn't the one this code names. Don't pair. Something else may be answering at that address.</string>
+    <string name="pair_fail_code">Enter the code shown on the relay's pairing page.</string>
+    <string name="pair_fail_expired">That code has expired. Reload the relay's pairing page for a new one.</string>
+    <string name="pair_fail_host_refused">%1$s is a relay, but it refuses requests sent to this address, so the code was never read. Add that address to publicHostnames in the relay's cordis.patch.yml and restart, or use an address the relay already knows.</string>
+    <string name="pair_fail_not_a_code">That isn't a relay pairing code.</string>
+    <string name="pair_fail_not_a_relay">%1$s answered, but it doesn't accept pairing. Use the address the relay printed when it started, not the harness's own.</string>
+    <string name="pair_fail_rate_limited">Too many attempts. Wait %1$d seconds and try again.</string>
+    <string name="pair_fail_rejected">The relay refused that code. Each code works once and expires after a few minutes. Reload the pairing page and try the new one.</string>
+    <string name="pair_fail_too_new">That code is from a newer relay (version %1$d) than this app supports. Update DSH Mobile.</string>
+    <string name="pair_fail_unreachable">Couldn't reach %1$s. Check the address, and check that the relay is running and reachable from this phone.</string>
+    <string name="pair_fail_url">Enter the relay address, including https://</string>
+    <string name="pair_hero_title">Scan the pairing code</string>
+    <string name="pair_key_first_use">A typed address carries no key, so this trusts whatever answers the first time. Scanning the QR code checks it instead.</string>
+    <string name="pair_key_plaintext">This address is not encrypted, so the token and everything you send travel in the clear.</string>
+    <string name="pair_key_verified">The scanned code carries this relay's key, so it is checked before anything is sent.</string>
+    <string name="pair_manual_title">Or type the code</string>
+    <string name="pair_name_label">Name for this device</string>
+    <string name="pair_scan">Scan QR code</string>
+    <string name="pair_scanned">Pairing with %1$s</string>
+    <string name="pair_step_run">On your computer, run %1$s</string>
+    <string name="pair_step_scan">Point the camera at the QR code it shows. You'll set a device password next.</string>
+    <string name="pair_submit">Pair</string>
+    <string name="pair_subtitle">On the computer running the harness, open /relay/pair. It shows a QR code and an eight-digit code. Either one works, and both expire after a few minutes.</string>
+    <string name="pair_title">Pair a relay</string>
+    <string name="pair_url_hint">https://192.168.1.5:3443</string>
+    <string name="pair_url_label">Relay address</string>
+    <string name="pair_working">Pairing…</string>
+    <string name="scan_camera_allow">Allow camera</string>
+    <string name="scan_camera_body">To read the relay's pairing code, DSH Mobile needs the camera. You can type the eight-digit code instead. It's the same code.</string>
+    <string name="scan_camera_denied">Camera access is blocked. Allow it in Settings, or type the code instead.</string>
+    <string name="scan_camera_failed">The camera didn't start. Another app may be using it. Close that app and try again, or type the code instead.</string>
+    <string name="scan_camera_missing">This device has no camera. Type the code instead.</string>
+    <string name="scan_camera_settings">Open settings</string>
+    <string name="scan_camera_title">Camera is off</string>
+    <string name="scan_detected">Code read</string>
+    <string name="scan_hint">Point the camera at the code on the relay's pairing page</string>
+    <string name="scan_type_instead">Type the code instead</string>
     <string name="settings_connection_disconnect">Disconnect</string>
     <string name="settings_title">Settings</string>
 </resources>

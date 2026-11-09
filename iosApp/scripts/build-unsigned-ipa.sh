@@ -37,7 +37,7 @@ echo "$archs"
 echo "--- signature (expected: not signed)"
 codesign -dv "$app" 2>&1 || true
 echo "--- Info.plist"
-plutil -p "$app/Info.plist" | grep -E 'CFBundle(Identifier|DisplayName|ShortVersionString|Version)|MinimumOSVersion|NSLocalNetwork|NSAllows|DTPlatformName|UIDeviceFamily|CADisable' || true
+plutil -p "$app/Info.plist" | grep -E 'CFBundle(Identifier|DisplayName|ShortVersionString|Version)|MinimumOSVersion|NSLocalNetwork|NSCamera|NSAllows|DTPlatformName|UIDeviceFamily|CADisable' || true
 
 fail=0
 [ "$archs" = "arm64" ] || { echo "::error::expected an arm64-only device build, got: $archs"; fail=1; }
@@ -49,4 +49,10 @@ build="$(plutil -extract CFBundleVersion raw "$app/Info.plist")"
 [ "$(plutil -extract CFBundleIdentifier raw "$app/Info.plist")" = "com.labteto.dshmobile" ] || { echo "::error::wrong bundle identifier"; fail=1; }
 [ "$(plutil -extract CADisableMinimumFrameDurationOnPhone raw "$app/Info.plist")" = "true" ] || { echo "::error::CADisableMinimumFrameDurationOnPhone is not set"; fail=1; }
 [ -d "$app/compose-resources" ] || { echo "::error::the Compose resources are not in the app"; fail=1; }
+# The Pair screen's QR scanner asks for the camera; without this string iOS ends the app the moment it does.
+plutil -extract NSCameraUsageDescription raw "$app/Info.plist" > /dev/null 2>&1 || { echo "::error::NSCameraUsageDescription is not in the Info.plist"; fail=1; }
+for lang in en fr ar; do
+  # plutil reads a .strings file whether Xcode left it as text or converted it to a binary plist.
+  plutil -p "$app/$lang.lproj/InfoPlist.strings" 2>/dev/null | grep -q NSCameraUsageDescription || { echo "::error::the $lang camera permission text is not in the app"; fail=1; }
+done
 exit "$fail"

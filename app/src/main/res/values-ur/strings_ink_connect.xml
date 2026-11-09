@@ -1,8 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pair_hero_title">پیئرنگ کوڈ اسکین کریں</string>
-    <string name="pair_step_run">اپنے کمپیوٹر پر چلائیں %1$s</string>
-    <string name="pair_step_scan">کیمرہ دکھائے گئے QR کوڈ پر رکھیں۔ اس کے بعد ڈیوائس پاس ورڈ مقرر کریں گے۔</string>
-    <string name="pair_code_hint">8 ہندسے</string>
-    <string name="pair_scanned">%1$s کے ساتھ پیئر ہو رہا ہے</string>
 </resources>

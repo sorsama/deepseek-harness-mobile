@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="common_back">กลับ</string>
     <string name="common_cancel">ยกเลิก</string>
     <string name="common_connected">เชื่อมต่อแล้ว</string>
+    <string name="common_retry">ลองอีกครั้ง</string>
     <string name="connect_auto_lan">เชื่อมต่ออัตโนมัติกับ harness ที่พบผ่าน Wi-Fi</string>
     <string name="connect_auto_last">เชื่อมต่อใหม่กับ harness ที่ใช้ล่าสุด</string>
     <string name="connect_auto_loopback">เชื่อมต่ออัตโนมัติกับ harness บนอุปกรณ์นี้</string>
@@ -95,6 +97,45 @@
     <string name="connect_title">เชื่อมต่อกับ harness</string>
     <string name="connect_try_again">ลองอีกครั้ง</string>
     <string name="connect_unreachable">เข้าถึงไม่ได้</string>
+    <string name="pair_code_hint">8 หลัก</string>
+    <string name="pair_code_label">รหัสจับคู่</string>
+    <string name="pair_fail_certificate">กุญแจที่ %1$s ไม่ตรงกับที่รหัสนี้ระบุไว้ อย่าเพิ่งจับคู่ เพราะอาจมีเครื่องอื่นตอบแทนอยู่ที่ที่อยู่นั้น</string>
+    <string name="pair_fail_code">พิมพ์รหัสที่แสดงบนหน้าจับคู่ของรีเลย์</string>
+    <string name="pair_fail_expired">รหัสนี้หมดอายุแล้ว โหลดหน้าจับคู่ของรีเลย์ใหม่เพื่อรับรหัสใหม่</string>
+    <string name="pair_fail_host_refused">%1$s เป็นรีเลย์จริง แต่ปฏิเสธคำขอที่ส่งมาด้วยที่อยู่นี้ จึงยังไม่ได้อ่านรหัสเลย ให้เพิ่มที่อยู่นั้นลงใน publicHostnames ในไฟล์ cordis.patch.yml ของรีเลย์แล้วรีสตาร์ท หรือเข้าถึงรีเลย์ด้วยที่อยู่ที่รู้จักอยู่แล้ว</string>
+    <string name="pair_fail_not_a_code">นี่ไม่ใช่รหัสจับคู่รีเลย์</string>
+    <string name="pair_fail_not_a_relay">%1$s ตอบกลับ แต่ไม่รับการจับคู่ ให้ใช้ที่อยู่ที่รีเลย์แสดงตอนเริ่มทำงาน ไม่ใช่ที่อยู่ของ harness เอง</string>
+    <string name="pair_fail_rate_limited">ลองหลายครั้งเกินไป รอ %1$d วินาทีแล้วลองอีกครั้ง</string>
+    <string name="pair_fail_rejected">รีเลย์ไม่รับรหัสนี้ รหัสใช้ได้ครั้งเดียวและหมดอายุภายในไม่กี่นาที โหลดหน้าจับคู่ใหม่แล้วลองรหัสใหม่</string>
+    <string name="pair_fail_too_new">รหัสนี้มาจากรีเลย์เวอร์ชัน %1$d ซึ่งใหม่เกินกว่าที่แอปนี้รองรับ ให้อัปเดต DSH Mobile</string>
+    <string name="pair_fail_unreachable">ติดต่อ %1$s ไม่ได้ ตรวจดูว่าที่อยู่ถูกต้อง รีเลย์กำลังทำงาน และโทรศัพท์เครื่องนี้เข้าถึงได้</string>
+    <string name="pair_fail_url">พิมพ์ที่อยู่รีเลย์ให้ครบ รวมถึง https://</string>
+    <string name="pair_hero_title">สแกนรหัสจับคู่</string>
+    <string name="pair_key_first_use">ที่อยู่ที่พิมพ์เองไม่มีกุญแจติดมา จึงเชื่อสิ่งที่ตอบกลับมาครั้งแรกไปก่อน การสแกนคิวอาร์โค้ดจะตรวจกุญแจให้</string>
+    <string name="pair_key_plaintext">ที่อยู่นี้ไม่ได้เข้ารหัส โทเคนและทุกอย่างที่คุณส่งจึงถูกส่งไปแบบไม่เข้ารหัส</string>
+    <string name="pair_key_verified">รหัสที่สแกนมีกุญแจของรีเลย์นี้อยู่ด้วย จึงตรวจสอบได้ก่อนส่งข้อมูลใด ๆ</string>
+    <string name="pair_manual_title">หรือพิมพ์รหัส</string>
+    <string name="pair_name_label">ชื่ออุปกรณ์นี้</string>
+    <string name="pair_scan">สแกนคิวอาร์โค้ด</string>
+    <string name="pair_scanned">กำลังจับคู่กับ %1$s</string>
+    <string name="pair_step_run">บนคอมพิวเตอร์ของคุณ รัน %1$s</string>
+    <string name="pair_step_scan">หันกล้องไปที่คิวอาร์โค้ดที่แสดง จากนั้นคุณจะตั้งรหัสผ่านอุปกรณ์</string>
+    <string name="pair_submit">จับคู่</string>
+    <string name="pair_subtitle">บนคอมพิวเตอร์ที่รัน harness ให้เปิด /relay/pair หน้านั้นจะแสดงคิวอาร์โค้ดและรหัสแปดหลัก ใช้อย่างใดอย่างหนึ่งก็ได้ และทั้งคู่จะหมดอายุภายในไม่กี่นาที</string>
+    <string name="pair_title">จับคู่รีเลย์</string>
+    <string name="pair_url_hint">https://192.168.1.5:3443</string>
+    <string name="pair_url_label">ที่อยู่รีเลย์</string>
+    <string name="pair_working">กำลังจับคู่…</string>
+    <string name="scan_camera_allow">อนุญาตกล้อง</string>
+    <string name="scan_camera_body">DSH Mobile ต้องใช้กล้องเพื่ออ่านรหัสจับคู่ของรีเลย์ หรือจะพิมพ์รหัสแปดหลักแทนก็ได้ เป็นรหัสเดียวกัน</string>
+    <string name="scan_camera_denied">แอปยังเข้าถึงกล้องไม่ได้ อนุญาตได้ในการตั้งค่า หรือพิมพ์รหัสแทน</string>
+    <string name="scan_camera_failed">เปิดกล้องไม่ได้ อาจมีแอปอื่นใช้อยู่ ปิดแอปนั้นแล้วลองอีกครั้ง หรือพิมพ์รหัสแทน</string>
+    <string name="scan_camera_missing">อุปกรณ์นี้ไม่มีกล้อง ให้พิมพ์รหัสแทน</string>
+    <string name="scan_camera_settings">เปิดการตั้งค่า</string>
+    <string name="scan_camera_title">กล้องปิดอยู่</string>
+    <string name="scan_detected">อ่านรหัสแล้ว</string>
+    <string name="scan_hint">หันกล้องไปที่รหัสบนหน้าจับคู่ของรีเลย์</string>
+    <string name="scan_type_instead">พิมพ์รหัสแทน</string>
     <string name="settings_connection_disconnect">ตัดการเชื่อมต่อ</string>
     <string name="settings_title">การตั้งค่า</string>
 </resources>

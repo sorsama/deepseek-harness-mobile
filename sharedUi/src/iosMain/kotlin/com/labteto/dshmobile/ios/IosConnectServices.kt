@@ -23,6 +23,7 @@ import com.labteto.dshmobile.core.wire.LoopSinks
 import com.labteto.dshmobile.core.wire.RemoteStreamMux
 import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.core.wire.SessionExchange
+import com.labteto.dshmobile.core.wire.TransportFailure
 import com.labteto.dshmobile.core.wire.TransportFailures
 import com.labteto.dshmobile.core.wire.darwinHttpClient
 import com.labteto.dshmobile.core.wire.dto.HostDescription
@@ -36,6 +37,7 @@ import com.labteto.dshmobile.ui.screens.connect.ConnectNetwork
 import com.labteto.dshmobile.ui.screens.connect.ConnectionLink
 import com.labteto.dshmobile.ui.screens.connect.HarnessSignIn
 import com.labteto.dshmobile.ui.screens.connect.NoLoopbackHarness
+import com.labteto.dshmobile.ui.screens.pair.PairController
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,8 +60,10 @@ import kotlinx.coroutines.launch
 internal val IosConnectFeatures = ConnectFeatures(
     // iOS does not allow the background processes Termux relies on, so there is no harness on the device.
     thisPhone = false,
-    // Relay mode needs the pairing screen (QR scan with AVFoundation, passcode), which is not shared yet.
-    relay = false,
+    // Relay mode, with the Pair screen behind it (a QR read with AVFoundation, or a typed address and passcode).
+    // The relay's token is in the Keychain, its key is pinned on every connection, and there is no mDNS
+    // browse or port knock to find a relay, so Relay mode lists the ones this device has paired with.
+    relay = true,
     // The sweep needs this device's own addresses and the Local Network permission decisions (docs/IOS.md).
     discovery = false,
     // There is no Settings screen on iOS yet.
@@ -70,6 +74,7 @@ internal val IosConnectFeatures = ConnectFeatures(
 internal class IosConnectNetwork(
     private val client: HttpClient,
     private val sessions: KeychainSessionStore,
+    private val relayTokens: KeychainRelayTokens,
 ) : ConnectNetwork {
 
     override suspend fun probe(host: String, port: Int, timeouts: ProbeTimeouts, config: HostConfig?): HostDescription? =
@@ -91,22 +96,37 @@ internal class IosConnectNetwork(
         basePath: String,
     ): ProbeOutcome {
         val base = config?.baseUrl ?: harnessBaseUrl(host, port, useTls, basePath)
-        val api = try {
-            DshApiClient(
-                KtorRpcTransport(
-                    baseUrl = base,
-                    client = client,
-                    connectTimeoutMs = timeouts.connectMs,
-                    readTimeoutMs = timeouts.readMs,
-                    cookie = config?.let { sessions.cookie(it.id) },
-                ),
-            )
-        } catch (e: IllegalArgumentException) {
-            return ProbeOutcome.Other(e.message ?: "not an address")
-        }
-        return when (val result = api.sessionCanOpenWorkspacePath()) {
-            is RpcResult.Ok -> ProbeOutcome.Reachable(if (config == null) null else describeHome(api))
-            is RpcResult.Err -> probeOutcomeOf(TransportFailures.of(result.error), relay = false, detail = result.error.message)
+        val relay = config?.isRelay == true
+        // A paired relay is probed through its own record, which carries the transport, the pin and the
+        // credential together: a client that enforces the relay's key, and its bearer token. Without them a
+        // relay can only answer 403, which would grey out every relay card the moment it was drawn. A relay
+        // paired over TLS with no key on record gets the ordinary client, which refuses a self-signed
+        // certificate honestly instead of trusting it.
+        val pin = config?.takeIf { it.isRelay && it.useTls }?.relayFingerprint
+        val http = if (pin != null) darwinHttpClient(pinnedSpkiSha256 = pin) else client
+        try {
+            val api = try {
+                DshApiClient(
+                    KtorRpcTransport(
+                        baseUrl = base,
+                        client = http,
+                        connectTimeoutMs = timeouts.connectMs,
+                        readTimeoutMs = timeouts.readMs,
+                        authorization = if (relay) relayTokens.authorization(config!!.id) else null,
+                        // Behind a relay the relay holds the harness session and injects it upstream, so the
+                        // phone sends none (the relay strips the header anyway).
+                        cookie = if (relay) null else config?.let { sessions.cookie(it.id) },
+                    ),
+                )
+            } catch (e: IllegalArgumentException) {
+                return ProbeOutcome.Other(e.message ?: "not an address")
+            }
+            return when (val result = api.sessionCanOpenWorkspacePath()) {
+                is RpcResult.Ok -> ProbeOutcome.Reachable(if (config == null) null else describeHome(api))
+                is RpcResult.Err -> probeOutcomeOf(TransportFailures.of(result.error), relay = relay, detail = result.error.message)
+            }
+        } finally {
+            if (http !== client) http.close()
         }
     }
 
@@ -154,6 +174,7 @@ internal class IosHarnessSignIn(
 internal class IosConnectionLink(
     private val store: UserDefaultsConnectStore,
     private val sessions: KeychainSessionStore,
+    private val relayTokens: KeychainRelayTokens,
 ) : ConnectionLink {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val _state = MutableStateFlow(ConnectionUiState())
@@ -201,8 +222,40 @@ internal class IosConnectionLink(
         }
 
         override fun onGenerationFailed(attempt: Int, failure: GenerationFailure) {
-            _state.value = _state.value.copy(failure = ConnectFailure.from(failure, relay = false), attempts = attempt)
+            val host = activeHost
+            _state.value = _state.value.copy(
+                failure = ConnectFailure.from(failure, relay = host?.isRelay == true),
+                attempts = attempt,
+            )
+            if (host != null && isTerminalForRelay(host, failure)) stopRetrying()
         }
+    }
+
+    /**
+     * Whether this failure means retrying is pointless against [host] (`ConnectionManager`'s rule).
+     *
+     * A relay answers 403 for a missing, expired or revoked credential, and none of those come back on
+     * their own; a changed certificate is the same kind of fact, and so is the harness behind the relay
+     * refusing the relay's own request. The loop's default is to retry forever, which against a relay that
+     * revoked this device is a request every few seconds until the app is killed.
+     */
+    private fun isTerminalForRelay(host: HostConfig, failure: GenerationFailure): Boolean {
+        if (!host.isRelay) return false
+        val kind = when (failure) {
+            is GenerationFailure.MuxFailed -> failure.kind
+            is GenerationFailure.ReadyFailed -> TransportFailures.of(failure.error)
+            is GenerationFailure.MuxTimedOut -> null
+        }
+        return kind == TransportFailure.TRUST_FENCE ||
+            kind == TransportFailure.CERTIFICATE_PIN ||
+            kind == TransportFailure.UNAUTHENTICATED
+    }
+
+    /** Stop the loop but keep the failure on screen: pairing again is the fix, and the screen has to say so. */
+    private fun stopRetrying() {
+        loop?.stop()
+        loop = null
+        _state.value = _state.value.copy(phase = ConnectionPhase.DISCONNECTED, stage = ConnectStage.Idle, attempts = 0)
     }
 
     override suspend fun connect(config: HostConfig) {
@@ -213,12 +266,20 @@ internal class IosConnectionLink(
             host = config,
             stage = ConnectStage.OpeningStreams,
         )
-        // The session this device holds for the host, read for each attempt (a sign-in is a new attempt).
-        val cookie = sessions.cookie(config.id)
+        // The credential this device holds for the host, read for each attempt (a sign-in is a new attempt).
+        // A harness reached directly takes the browser session it issued; a relay takes the bearer token it
+        // minted at pairing, and holds the harness session itself, so none is sent (and the relay would strip
+        // it anyway). A relay on TLS is reached only with the key it was paired with: the socket verifies the
+        // leaf certificate against it, with no fallback to system validation.
+        val relay = config.isRelay
+        val cookie = if (relay) null else sessions.cookie(config.id)
+        val authorization = if (relay) relayTokens.authorization(config.id) else null
         val socketFactory = platformMuxSocketFactory(
             url = config.baseUrl + REMOTE_STREAM_MUX_PATH,
+            authorization = authorization,
             cookie = cookie,
             connectTimeoutMs = MUX_CONNECT_TIMEOUT_MS,
+            pinnedSpkiSha256 = config.relayFingerprint.takeIf { relay && config.useTls },
         )
         val next = ConnectionLoop(muxFactory = { RemoteStreamMux(socketFactory) }, sinks = sinks, config = LoopConfig())
         loop = next
@@ -239,20 +300,27 @@ internal class IosConnectionLink(
     }
 }
 
-/** The iOS app's one Connect controller and what it was built from. */
-internal class IosApp(scope: CoroutineScope) {
+/**
+ * The iOS app's Connect and Pair controllers and what they were built from.
+ *
+ * [reportPair] hears the lines a script reads for the pairing flow (`DSH_PAIR_RESULT …`); null outside a
+ * debug launch that asks for them.
+ */
+internal class IosApp(scope: CoroutineScope, reportPair: ((String) -> Unit)? = null) {
     private val sessions = KeychainSessionStore()
-    private val store = UserDefaultsConnectStore(sessions)
+    private val relayTokens = KeychainRelayTokens()
+    private val store = UserDefaultsConnectStore(sessions, relayTokens)
     private val client: HttpClient = darwinHttpClient()
-    val link = IosConnectionLink(store, sessions)
+    val link = IosConnectionLink(store, sessions, relayTokens)
     val controller = ConnectController(
         scope = scope,
         store = store,
-        network = IosConnectNetwork(client, sessions),
+        network = IosConnectNetwork(client, sessions, relayTokens),
         link = link,
         sessions = IosHarnessSignIn(client, sessions),
         loopbackHarness = NoLoopbackHarness,
         // No "This phone" mode here: 127.0.0.1 is just an address (the simulator, a port forward).
         loopbackIsThisPhone = false,
     )
+    val pair = PairController(scope = scope, ports = IosPairPorts(store, relayTokens, link, reportPair))
 }

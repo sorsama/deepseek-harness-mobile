@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="common_back">वापस</string>
     <string name="common_cancel">रद्द करें</string>
     <string name="common_connected">कनेक्टेड</string>
+    <string name="common_retry">फिर से कोशिश करें</string>
     <string name="connect_auto_lan">Wi-Fi पर मिले harness से अपने आप कनेक्ट करें</string>
     <string name="connect_auto_last">पिछली बार वाले harness से फिर कनेक्ट करें</string>
     <string name="connect_auto_loopback">इस डिवाइस के harness से अपने आप कनेक्ट करें</string>
@@ -95,6 +97,45 @@
     <string name="connect_title">Harness से कनेक्ट करें</string>
     <string name="connect_try_again">फिर से कोशिश करें</string>
     <string name="connect_unreachable">पहुँच से बाहर</string>
+    <string name="pair_code_hint">8 अंक</string>
+    <string name="pair_code_label">पेयरिंग कोड</string>
+    <string name="pair_fail_certificate">%1$s की कुंजी वह नहीं है जो इस कोड में बताई गई है। पेयर न करें। उस पते पर कोई और जवाब दे रहा हो सकता है।</string>
+    <string name="pair_fail_code">रिले के पेयरिंग पेज पर दिख रहा कोड लिखें।</string>
+    <string name="pair_fail_expired">इस कोड की मियाद खत्म हो चुकी है। नया कोड पाने के लिए रिले का पेयरिंग पेज दोबारा लोड करें।</string>
+    <string name="pair_fail_host_refused">%1$s रिले ही है, पर इस पते से आए अनुरोध वह नहीं मानता, इसलिए कोड पढ़ा ही नहीं गया। उस पते को रिले की cordis.patch.yml में publicHostnames में जोड़कर दोबारा चालू करें, या रिले तक ऐसे पते से पहुँचें जिसे वह पहले से जानता है।</string>
+    <string name="pair_fail_not_a_code">यह रिले पेयरिंग कोड नहीं है।</string>
+    <string name="pair_fail_not_a_relay">%1$s ने जवाब दिया, पर वह पेयरिंग नहीं लेता। रिले ने शुरू होते समय जो पता दिखाया था, वही इस्तेमाल करें, harness का अपना पता नहीं।</string>
+    <string name="pair_fail_rate_limited">बहुत ज़्यादा कोशिशें। %1$d सेकंड रुकें और फिर कोशिश करें।</string>
+    <string name="pair_fail_rejected">रिले ने यह कोड नहीं माना। कोड सिर्फ़ एक बार चलते हैं और कुछ मिनट में खत्म हो जाते हैं। पेयरिंग पेज दोबारा लोड करके नया कोड आज़माएँ।</string>
+    <string name="pair_fail_too_new">यह कोड एक नए रिले (वर्शन %1$d) का है, जिसे यह ऐप नहीं समझता। DSH Mobile अपडेट करें।</string>
+    <string name="pair_fail_unreachable">%1$s तक नहीं पहुँचा जा सका। पता जाँचें, और यह भी कि रिले चल रहा है और इस फ़ोन से पहुँच में है।</string>
+    <string name="pair_fail_url">रिले का पता https:// सहित लिखें</string>
+    <string name="pair_hero_title">पेयरिंग कोड स्कैन करें</string>
+    <string name="pair_key_first_use">टाइप किए गए पते में कोई कुंजी नहीं होती, इसलिए पहली बार जो जवाब दे उसी पर भरोसा किया जाता है। QR कोड स्कैन करने पर कुंजी की जाँच होती है।</string>
+    <string name="pair_key_plaintext">यह पता एन्क्रिप्टेड नहीं है, इसलिए टोकन और आपकी भेजी हर चीज़ खुले रूप में जाती है।</string>
+    <string name="pair_key_verified">स्कैन किए गए कोड में इस रिले की कुंजी है, इसलिए कुछ भी भेजने से पहले उसकी जाँच हो जाती है।</string>
+    <string name="pair_manual_title">या कोड टाइप करें</string>
+    <string name="pair_name_label">इस डिवाइस का नाम</string>
+    <string name="pair_scan">QR कोड स्कैन करें</string>
+    <string name="pair_scanned">%1$s से पेयर हो रहा है</string>
+    <string name="pair_step_run">अपने कंप्यूटर पर चलाएँ %1$s</string>
+    <string name="pair_step_scan">दिख रहे QR कोड की ओर कैमरा करें। इसके बाद आप डिवाइस का पासवर्ड सेट करेंगे।</string>
+    <string name="pair_submit">पेयर करें</string>
+    <string name="pair_subtitle">harness चला रहे कंप्यूटर पर /relay/pair खोलें। वहाँ एक QR कोड और आठ अंकों का कोड दिखेगा। दोनों में से कोई भी चलेगा, और दोनों कुछ मिनट में खत्म हो जाते हैं।</string>
+    <string name="pair_title">रिले पेयर करें</string>
+    <string name="pair_url_hint">https://192.168.1.5:3443</string>
+    <string name="pair_url_label">रिले का पता</string>
+    <string name="pair_working">पेयर हो रहा है…</string>
+    <string name="scan_camera_allow">कैमरे की अनुमति दें</string>
+    <string name="scan_camera_body">रिले का पेयरिंग कोड पढ़ने के लिए DSH Mobile को कैमरे की ज़रूरत है। आठ अंकों का कोड टाइप करके भी काम चल जाएगा। वह वही कोड है।</string>
+    <string name="scan_camera_denied">कैमरे की अनुमति नहीं है। इसे सेटिंग्स में दें, या कोड टाइप करें।</string>
+    <string name="scan_camera_failed">कैमरा शुरू नहीं हो सका। हो सकता है कोई दूसरा ऐप इसे इस्तेमाल कर रहा हो। उस ऐप को बंद करके फिर कोशिश करें, या कोड टाइप करें।</string>
+    <string name="scan_camera_missing">इस डिवाइस में कोई कैमरा नहीं है। कोड टाइप करें।</string>
+    <string name="scan_camera_settings">सेटिंग्स खोलें</string>
+    <string name="scan_camera_title">कैमरा बंद है</string>
+    <string name="scan_detected">कोड पढ़ लिया गया</string>
+    <string name="scan_hint">कैमरे को रिले के पेयरिंग पेज पर दिख रहे कोड की ओर करें</string>
+    <string name="scan_type_instead">इसके बजाय कोड टाइप करें</string>
     <string name="settings_connection_disconnect">डिस्कनेक्ट करें</string>
     <string name="settings_title">सेटिंग्स</string>
 </resources>

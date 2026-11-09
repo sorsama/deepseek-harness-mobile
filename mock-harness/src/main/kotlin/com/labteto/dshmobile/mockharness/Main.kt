@@ -7,9 +7,10 @@ import kotlinx.coroutines.runBlocking
  * CLI entry point for the mock harness.
  *
  * Usage: `mock-harness [--port N] [--trusted-host HOST ...] [--viewer-fixtures]`, or
- * `mock-harness --ci-fixtures` for the fixed-port fixture servers (three harnesses and a WebSocket
- * keep-alive server) the iOS simulator job runs
- * its tests against (see [CiFixtures]); that mode serves until the process is killed.
+ * `mock-harness --ci-fixtures` for the fixed-port fixture servers (three harnesses, two pairing
+ * relays one of which speaks TLS, and WebSocket servers for keep-alive and dropped links) the iOS
+ * simulator job runs its tests and scenarios against (see [CiFixtures]); that mode serves until the
+ * process is killed.
  *
  * `--viewer-fixtures` serves sample files (CSV, JSON, a notebook, a patch, an SVG, a PNG, a zip,
  * binary data) through the workspace file contract, to try the app's file viewer by hand.
@@ -53,15 +54,25 @@ fun main(args: Array<String>) {
         // so it serves until the process is killed.
         runBlocking {
             val servers = CiFixtures.start(
-                CiFixtures.PLAIN_PORT,
-                CiFixtures.SESSION_PORT,
-                CiFixtures.RELAY_PORT,
-                CiFixtures.KEEPALIVE_PORT,
-                CiFixtures.DROP_PORT,
+                plainPort = CiFixtures.PLAIN_PORT,
+                sessionPort = CiFixtures.SESSION_PORT,
+                relayPort = CiFixtures.RELAY_PORT,
+                keepAlivePort = CiFixtures.KEEPALIVE_PORT,
+                dropPort = CiFixtures.DROP_PORT,
+                pairPort = CiFixtures.PAIR_PORT,
+                pairTlsPort = CiFixtures.PAIR_TLS_PORT,
+                withPairTls = true,
             )
             println(
                 "ci fixtures listening: plain=${servers.plainUrl} session=${servers.sessionUrl} " +
-                    "relay=${servers.relayUrl} keepalive=${servers.keepAliveUrl} drop=${servers.dropUrl}",
+                    "relay=${servers.relayUrl} keepalive=${servers.keepAliveUrl} drop=${servers.dropUrl} " +
+                    "pair=${servers.pairUrl} pairTls=${servers.pairTlsUrl}",
+            )
+            // The pairing relays: what a script needs to build a pairing QR for them. The code is the one
+            // the operator would read off the relay's pairing page; the fingerprint is the TLS relay's key.
+            println(
+                "ci pairing: code=${CiFixtures.pairRelayMode.pairingCode} rateLimitedCode=${CiFixtures.RATE_LIMITED_CODE} " +
+                    "plain=${servers.pairUrl} tls=${servers.pairTlsUrl} fingerprint=${servers.pairTlsFingerprint}",
             )
             awaitCancellation()
         }

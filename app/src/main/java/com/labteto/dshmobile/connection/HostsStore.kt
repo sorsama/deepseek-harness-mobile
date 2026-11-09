@@ -359,17 +359,3 @@ class HostsStore @Inject constructor(
         const val LOOPBACK_HOST = "127.0.0.1"
     }
 }
-
-/**
- * What a successful relay pairing tells this app about an endpoint.
- *
- * Grouped rather than passed as four loose parameters because they are only ever meaningful
- * together: a fingerprint without a device id describes a relay this device cannot talk to, and a
- * device id without a scheme describes one it cannot address.
- */
-data class RelayIdentity(
-    val deviceId: String,
-    val useTls: Boolean,
-    val fingerprint: String?,
-    val tokenExpiresAt: Long,
-)

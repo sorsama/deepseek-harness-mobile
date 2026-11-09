@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="common_back">Retour</string>
     <string name="common_cancel">Annuler</string>
     <string name="common_connected">Connecté</string>
+    <string name="common_retry">Réessayer</string>
     <string name="connect_auto_lan">Connexion automatique au harness découvert sur le Wi-Fi</string>
     <string name="connect_auto_last">Se reconnecter au dernier harness utilisé</string>
     <string name="connect_auto_loopback">Connexion automatique au harness de cet appareil</string>
@@ -95,6 +97,45 @@
     <string name="connect_title">Se connecter à harness</string>
     <string name="connect_try_again">Réessayer</string>
     <string name="connect_unreachable">Injoignable</string>
+    <string name="pair_code_hint">8 chiffres</string>
+    <string name="pair_code_label">Code d'appairage</string>
+    <string name="pair_fail_certificate">La clé de %1$s n'est pas celle indiquée par ce code. N'appairez pas : autre chose répond peut-être à cette adresse.</string>
+    <string name="pair_fail_code">Saisissez le code affiché sur la page d'appairage du relais.</string>
+    <string name="pair_fail_expired">Ce code a expiré. Rechargez la page d'appairage du relais pour en obtenir un nouveau.</string>
+    <string name="pair_fail_host_refused">%1$s est bien un relais, mais il refuse les requêtes envoyées à cette adresse, et le code n'a jamais été lu. Ajoutez cette adresse à publicHostnames dans le cordis.patch.yml du relais et redémarrez, ou joignez le relais par une adresse qu'il connaît déjà.</string>
+    <string name="pair_fail_not_a_code">Ce n'est pas un code d'appairage de relais.</string>
+    <string name="pair_fail_not_a_relay">%1$s a répondu, mais n'accepte pas les appairages. Utilisez l'adresse affichée par le relais au démarrage, pas celle du harness.</string>
+    <string name="pair_fail_rate_limited">Trop de tentatives. Attendez %1$d secondes et réessayez.</string>
+    <string name="pair_fail_rejected">Le relais a refusé ce code. Les codes ne servent qu'une fois et expirent après quelques minutes. Rechargez la page d'appairage et essayez le nouveau.</string>
+    <string name="pair_fail_too_new">Ce code provient d'un relais plus récent (version %1$d) que ce que comprend cette application. Mettez DSH Mobile à jour.</string>
+    <string name="pair_fail_unreachable">Impossible de joindre %1$s. Vérifiez l'adresse, que le relais est lancé et qu'il est joignable depuis ce téléphone.</string>
+    <string name="pair_fail_url">Saisissez l'adresse du relais, https:// compris</string>
+    <string name="pair_hero_title">Scannez le code d'appairage</string>
+    <string name="pair_key_first_use">Une adresse saisie ne contient aucune clé : ce qui répond la première fois est accepté tel quel. Scanner le QR code permet de la vérifier.</string>
+    <string name="pair_key_plaintext">Cette adresse n'est pas chiffrée : le jeton et tout ce que vous envoyez circulent en clair.</string>
+    <string name="pair_key_verified">Le code scanné contient la clé de ce relais, qui est donc vérifiée avant tout envoi.</string>
+    <string name="pair_manual_title">Ou saisissez le code</string>
+    <string name="pair_name_label">Nom de cet appareil</string>
+    <string name="pair_scan">Scanner le QR code</string>
+    <string name="pair_scanned">Appairage avec %1$s</string>
+    <string name="pair_step_run">Sur votre ordinateur, lancez %1$s</string>
+    <string name="pair_step_scan">Pointez la caméra vers le QR code affiché. Vous définirez ensuite un mot de passe d'appareil.</string>
+    <string name="pair_submit">Appairer</string>
+    <string name="pair_subtitle">Sur l'ordinateur qui exécute le harness, ouvrez /relay/pair. Un QR code et un code à huit chiffres s'affichent. L'un ou l'autre convient, et les deux expirent au bout de quelques minutes.</string>
+    <string name="pair_title">Appairer un relais</string>
+    <string name="pair_url_hint">https://192.168.1.5:3443</string>
+    <string name="pair_url_label">Adresse du relais</string>
+    <string name="pair_working">Appairage…</string>
+    <string name="scan_camera_allow">Autoriser la caméra</string>
+    <string name="scan_camera_body">Pour lire le code d'appairage du relais, DSH Mobile a besoin de la caméra. Vous pouvez aussi saisir le code à huit chiffres : c'est le même.</string>
+    <string name="scan_camera_denied">L'accès à la caméra est bloqué. Autorisez-le dans les paramètres, ou saisissez le code à la place.</string>
+    <string name="scan_camera_failed">Impossible de démarrer la caméra. Une autre application l'utilise peut-être. Fermez-la et réessayez, ou saisissez le code à la place.</string>
+    <string name="scan_camera_missing">Cet appareil n'a pas de caméra. Saisissez le code à la place.</string>
+    <string name="scan_camera_settings">Ouvrir les paramètres</string>
+    <string name="scan_camera_title">La caméra est désactivée</string>
+    <string name="scan_detected">Code lu</string>
+    <string name="scan_hint">Pointez la caméra vers le code affiché sur la page d'appairage du relais</string>
+    <string name="scan_type_instead">Saisir le code à la place</string>
     <string name="settings_connection_disconnect">Se déconnecter</string>
     <string name="settings_title">Paramètres</string>
 </resources>

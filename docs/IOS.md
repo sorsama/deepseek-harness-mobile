@@ -68,6 +68,14 @@ The port has started at the bottom, where the sharing is real:
   `ConnectController` that the Android view model owns and the iOS entry point drives. The Android Connect
   screen is pixel-identical to what it was (see "The shared UI"), and the iOS one is no longer a stand-in: it is
   that screen, over the Darwin client, with what iOS cannot offer yet hidden. See "The shared UI".
+- **M4b moved the Pair screen and turned on relay mode.** The Pair screen (the QR scan, the typed address and passcode,
+  every failure) is `PairContent` in `:sharedUi` now, with its decisions in a plain `PairController` that the Android
+  view model owns and the iOS entry point drives. The Android Pair screen is pixel-identical to what it was (see "How M4b
+  was verified on Android"). On iOS, Relay mode is no longer hidden: a relay is paired through the same screen, its
+  bearer token is kept in the Keychain, its key is pinned on the unary calls and on the mux socket, and the QR scanner is
+  AVFoundation. A simulator has no camera, so CI pairs through the typed form and through a launch argument that hands the
+  controller what a scan would have decoded, against pairing relays in the mock harness, one of which speaks TLS with a
+  self-signed key. See "Pairing on iOS".
 
 ## The iOS compile gate
 
@@ -146,9 +154,9 @@ What does not match, and why:
 
 Until M3a none of this had run on Darwin; `HarnessContractTest` now runs the same 40 cases on the JVM and on
 an iOS simulator, against the same fixture harnesses, and "The Darwin engine on a simulator" below says what
-it found. Still not exercised: a physical device, the pinned and trust-on-first-use challenge handlers, and TLS of
-any kind. (The WebSocket ping/pong used to be on this list; the mux socket's keep-alive case now proves the
-simulator answers a host's pings.)
+it found. Still not exercised: a physical device, and TLS against a certificate a CA signs. (The WebSocket ping/pong
+used to be on this list; the mux socket's keep-alive case now proves the simulator answers a host's pings. TLS, the
+pinned handler and the trust-on-first-use handler came off it with M4b: see "Relay pinning on iOS".)
 
 ## The Darwin engine on a simulator
 
@@ -251,9 +259,12 @@ checks it when the task ends with `NSURLErrorCancelled`. A pinned socket must be
 with no TLS and connecting in the clear would turn a typo into a downgrade), a pin and an `ObservedKey` cannot
 be combined, and a blank pin is refused, all where the factory is called. Any other challenge (HTTP
 authentication, a proxy) is cancelled: the socket has no credential to give, and its identity is in the headers.
-**Not exercised:** no fixture speaks TLS, so neither handler has run on the socket (nor on the unary client);
-what is proven is that a pinned or learning socket built without TLS in play behaves like any other, and the
-construction rules.
+**Exercised since M4b:** the mock harness has a pairing relay that speaks TLS with a self-signed key, and the simulator
+pairs with it, so the pinned handler has run on the socket: a relay paired by a scanned QR is reconnected to over `wss://`
+pinned to its stored key, in a new launch, from the Keychain's token (see "Relay pinning on iOS"). **Not exercised:** a pinned
+socket whose stored key no longer matches the relay's (the unary client's mismatch is exercised; the socket's would report the
+same `CERTIFICATE_PIN` by the same `PinMismatchLog` path, but no scenario drives it), and the learning handler on the socket,
+which the app never asks for (it only learns a key on the unary pairing call).
 
 **Ping.** `NSURLSessionWebSocketTask` answers a host's RFC 6455 ping with a pong on its own, and the socket
 therefore has no heartbeat code. This is established by behaviour, not by a citation, because there is nothing
@@ -313,11 +324,27 @@ any key type, and `SpkiPinTest` holds it equal to `RelayTls.spkiPin` over RSA an
 Trust-on-first-use pairing (`RelayTls.trustOnFirstUseClient`) is `darwinHttpClient(observedKey = …)` on
 iOS: it accepts the key the relay presents and records it in an `ObservedKey`, fails closed on a
 certificate it cannot read, and cannot be combined with a pin. It is the same compromise as on the JVM
-(whoever answers during passcode pairing ends up holding the enrolment), is unverified on a device like
-the pinned handler, and the UI has to say so. Nothing on iOS connects to a relay without either a pin or
+(whoever answers during passcode pairing ends up holding the enrolment), and the UI says so (the Pair screen shows
+which of the three situations a pairing is in before it is made). Nothing on iOS connects to a relay without either a pin or
 an explicit absence of one. The mux WebSocket is pinned the same way: `DarwinMuxSocket` runs these two handlers
 from its own session delegate (see "The Darwin mux socket"), so a pinned relay's mux is pinned exactly like its
 unary calls and reports the same `CERTIFICATE_PIN` on a mismatch.
+
+**What the simulator has shown (M4b).** The pairing scenarios in `simulator-check.sh` run both handlers against the fixtures'
+TLS relay (a fresh self-signed EC key each run, `localhost` and `127.0.0.1` in its names, none of which the handlers look at):
+
+| Scenario | Handler | Result on the iOS 26.5 simulator |
+|---|---|---|
+| a scanned QR carrying the relay's key | pinned, on the unary claim | paired; the stored record has `useTls` and the key |
+| the connection that follows | pinned, on `DarwinMuxSocket` (`wss://`) | connected, with the bearer token |
+| a new launch, nothing passed | pinned, on the mux, key and token read back from `NSUserDefaults` and the Keychain | connected |
+| a scanned QR carrying a different key | pinned, on the unary claim | refused as `CERTIFICATE_PIN`; nothing stored |
+| a typed `https` address | learning, on the unary claim | paired; the relay repeated its key and that is what is pinned afterwards |
+
+What is **still unverified**: a physical device, and the system-trust path against a certificate a CA signs (every fixture is
+self-signed, so the "neither a pin nor a learning client" case is only run against plaintext). Neither handler checks the host
+name by design, so a relay reached by another name than its certificate's is not a case. A relay that rotates its key under a
+paired phone is not driven either.
 
 ## The connect flow on iOS
 
@@ -401,9 +428,9 @@ so that the iOS framework does not have to build the Android app to get at the s
 
 | Source set | Holds |
 |---|---|
-| `commonMain` | the design system (`ui/theme`), the components (`ui/components`), the screens that have moved and the state holders behind them (`ui/screens/connect`), the models they speak (`connection`), the Termux state types the Connect screen shows (`termux`), and the small interfaces a platform implements |
+| `commonMain` | the design system (`ui/theme`), the components (`ui/components`), the screens that have moved and the state holders behind them (`ui/screens/connect`, `ui/screens/pair`), the models they speak (`connection`), the Termux state types the Connect screen shows (`termux`), and the small interfaces a platform implements |
 | `androidMain` | the Android halves of those interfaces, and nothing the app does not also need: the font loader, the back handler, locale-aware counts |
-| `iosMain` | the iOS halves, the iOS app's wiring (stores, networking, the connection) and its entry point |
+| `iosMain` | the iOS halves, the iOS app's wiring (stores, networking, the connection, the QR scanner) and its entry point |
 | `commonTest` | the moved tests, which run on the JVM through the Android unit-test task and on an iOS simulator |
 
 Everything that moved kept its package, so the rest of the Android app compiles against it unchanged. `:app`
@@ -438,13 +465,16 @@ Moved: the theme and type scale, the buttons, segmented control, bottom sheet, h
 mascot, shimmer, Feather icons and the ink text field; the Connect screen's composables (form, connecting takeover,
 connection-lost surface, sign-in sheet); `ConnectController` and the types it exposes (`ConnectUiState`,
 `ConnectFailure`, `LoopbackStatus`); `HostConfig`, `DiscoveredHost`, `ConnectMode`, `ProbeOutcome`,
-`ConnectionUiState` and the host-input parser; and their tests.
+`ConnectionUiState` and the host-input parser; and their tests. M4b added the Pair screen (`PairContent`, `PairController`,
+`PairUiState`, `PairFailure`, `KeyProvenance`), `RelayIdentity`, the back arrow icon, and the tests of the controller.
 
-Not moved, on purpose: the "This phone" card and the Termux controller (Termux is Android), the Hilt view model
-(`ConnectViewModel` is now thin: it owns a `ConnectController` over `viewModelScope`), the stores and the
-discovery and connection classes (`HostsStore`, `DiscoveryEngine`, `ConnectionManager`, which implement or are
-adapted to the ports below, so no stored data moved and nothing needed a migration), the haptic engine and planner,
-and every other screen.
+Not moved, on purpose: the "This phone" card and the Termux controller (Termux is Android), the Hilt view models
+(`ConnectViewModel` and `PairViewModel` are thin: each owns a controller over `viewModelScope`), the stores and the
+discovery and connection classes (`HostsStore`, `RelayCredentialStore`, `HarnessClientFactory`, `DiscoveryEngine`,
+`ConnectionManager`, which implement or are adapted to the ports below, so no stored data moved and nothing needed a
+migration), the Android QR scanner (`QrScanSheet`: ZXing, the camera permission, the flashlight and the photo picker are
+Android through and through, and the Pair screen asks for a scanner through a slot, see "Pairing on iOS"), the haptic
+engine and planner, and every other screen.
 
 ### The ports, and what iOS does with each
 
@@ -458,15 +488,26 @@ and every other screen.
 | `HarnessSignIn`: launch token to browser session | `HarnessSessionStore` | `IosHarnessSignIn`: the exchange over `NSURLSession`; the session goes to the **Keychain** |
 | `LoopbackHarness`: the harness on this device | `TermuxLoopbackHarness` | none (`NoLoopbackHarness`) |
 
+`PairController` asks for one more (`PairPorts`), because pairing is one exchange and each part of it is the platform's:
+
+| Part | Android | iOS |
+|---|---|---|
+| `withHttp(fingerprint, observed)`: the client a claim is made over | `OkHttpPlainHttp` over the pinned client (`HarnessClientFactory`), `RelayTls.trustOnFirstUseClient`, or the app's client | `KtorPlainHttp` over `darwinHttpClient(pinnedSpkiSha256 = …)`, `darwinHttpClient(observedKey = …)` or `darwinHttpClient()`, one per call and closed after it |
+| `rememberRelay`: the relay's record | `HostsStore.rememberHost(relay = RelayIdentity(…))` | `UserDefaultsConnectStore.rememberRelay` (the same record, in `NSUserDefaults`) |
+| `storeToken`: the bearer token the relay shows once | `RelayCredentialStore` (AES-GCM under an `AndroidKeyStore` key) | `KeychainRelayTokens` (the Keychain, `AfterFirstUnlock`, one item holding a map from the relay's id to its token) |
+| `connect` | `ConnectionManager` | `IosConnectionLink`, which now sends the bearer, takes no browser cookie for a relay, and pins the mux socket to the relay's key |
+| `deviceName` | `Build.MANUFACTURER` and `Build.MODEL` | `UIDevice.name` (the system answers "iPhone" to an app without the user-assigned-name entitlement; the field is editable) |
+
 A `ConnectFeatures` value tells the screen what its platform offers, and a section that could never work is
 hidden, never shown broken. On iOS today: **no "This phone"** (iOS does not allow the background processes
-Termux relies on, so it cannot exist there, and no amount of code changes that), **no relay mode** (pairing needs
-QR scanning with AVFoundation and the pairing screen, which have not moved), **no subnet sweep** (it needs the
-device's own addresses and the Local Network permission decisions, M3b), **no Settings button**, and none of the
-auto-connect options that depend on those. What is left is the part that works: a typed address, the Recent list
-with live status, "reconnect to the last harness", the connecting takeover, every failure with its advice, and
-signing in with a launch token. After a connection the iOS app shows a plain "Connected" page (which harness, its
-home, this client's protocol baseline, Disconnect) until the session list moves.
+Termux relies on, so it cannot exist there, and no amount of code changes that), **no subnet sweep and no relay
+discovery** (they need the device's own addresses, mDNS and the Local Network permission decisions, M3b), **no Settings
+button**, and none of the auto-connect options that depend on those. What is there is the part that works: a typed
+address, the Recent list with live status, "reconnect to the last harness", the connecting takeover, every failure with
+its advice, signing in with a launch token, and, since M4b, **Relay mode**: the relays this device has paired with, with
+the live status of each, and the Pair screen to add one. (Relays are listed, not discovered: nothing browses for them,
+so a relay is found by pairing with it.) After a connection the iOS app shows a plain "Connected" page (which harness,
+its home, this client's protocol baseline, Disconnect) until the session list moves.
 
 ### Platform walls
 
@@ -534,6 +575,76 @@ with a reachable harness, the forget menu), and the same 12 in French and Arabic
 pixel for pixel, status bar included.** One French shot differed on its first run by a hover highlight round the
 Settings button; a second run of both builds was identical.
 
+### How M4b was verified on Android
+
+The Pair screen moved into `:sharedUi`, so the Android Pair screen had to stay exactly what it was: the same
+two builds and the same adb script, compared pixel for pixel. The build before is `main` at `271e19e`, the merge
+this branch is based on; the build after is this branch's `:app:assembleDebug`.
+
+Emulator DSH_Verify37 (API 37, 1080×2340), animations off, the status bar pinned with the demo-mode broadcast,
+and the on-screen keyboard disabled: an IME is system chrome, and a swipe meant to scroll the form would type
+into it. The same eight states came from both builds: the Pair screen at rest; a typed relay address; the camera
+sheet in its denied state (the system dialog is answered "Don't allow" — a live preview is not deterministic);
+the failure card for a form submitted with no code; the dark scheme; three-button navigation; French; and Arabic,
+right to left. One adb script (`.team/m4b-verify/drive.ps1`) drove both, and `.team/m4b-verify/compare.py`
+compared the screenshots.
+
+**Screen content is identical in all eight states: zero differing pixels below the status bar.** The
+full-frame comparison differs by 161 to 635 pixels in a 34×33 box at the top-right of the status bar, where the
+emulator's signal-strength icon changed between captures; the demo overlay pins the clock and the battery but not
+that icon across a whole capture set, and the two shots that were taken while it happened to match are identical
+to the pixel. Nothing else was tolerated: a difference anywhere in the screen would have been a regression.
+
+What this does not prove: the camera (the emulator has no camera, so only the denied state is driven), and
+anything that needs a relay on the other end — the exchange itself and every failure kind past the URL and code
+validation are covered by `PairControllerTest` and by the iOS simulator scenarios, not by these screenshots.
+
+## Pairing on iOS
+
+The Pair screen is shared (`PairContent`, `PairController`); this section is what is iOS about it.
+
+**The exchange.** `PairController.claim` tries each origin an invitation names, in order. For each: `RelayPairing.locate`
+(over the ordinary Darwin client) resolves a harness's own port to the relay's listener, because a 302 must be read and not
+followed; then `RelayPairing.claim` over the client the key situation calls for:
+
+| The address came from | Client | What it enforces |
+|---|---|---|
+| a scanned QR with a `fingerprint` | `darwinHttpClient(pinnedSpkiSha256 = fingerprint)` | the leaf certificate's key must equal the QR's, before a byte of the claim is sent; no fallback to system validation; a refusal is `CERTIFICATE_PIN` ("The key at … isn't the one this code names. Don't pair.") |
+| a typed `https` address | `darwinHttpClient(observedKey = …)` | nothing: it accepts the key it is shown and records it (trust on first use). The relay repeats its key in the claim answer, and that is what is stored |
+| a plain `http` address | `darwinHttpClient()` | the notice says so: the token and everything after it travel in the clear |
+
+A QR whose `fingerprint` is blank is not ignored and does not crash the app: it becomes a pin that can match nothing, so
+every TLS connection to it is refused as a pin mismatch (a plaintext address has no TLS to refuse, as on Android). A client
+is built per call and closed after it, because the three clients are three different `NSURLSession`s.
+
+**Enrolment** keeps the order the Android view model always had: the relay's record (`NSUserDefaults`, the same
+`HostConfig` JSON, with the relay's device id, TLS flag, key and token expiry), then the token (Keychain), then the state
+that closes the screen, then the connection. The connection is `IosConnectionLink`: for a relay it sends
+`Authorization: Bearer …` and no browser cookie (the relay holds the harness session), builds the mux socket with
+`pinnedSpkiSha256` when the relay is on TLS, and stops retrying on the failures that retrying cannot fix (a 403 from the relay,
+a changed key, the harness refusing the relay's own request), keeping the explanation on screen with "Pair again". Relay cards
+in Connect are probed the same way (pinned client, bearer), so they show real status and not a wall of 403.
+
+**The scanner** is `IosQrScanner` (`PairScanner`, the slot `PairContent` takes). It is AVFoundation: an `AVCaptureSession` with
+an `AVCaptureMetadataOutput` set to QR, a preview layer in a `UIView` that Compose hosts with `UIKitView`, started off the
+main thread. It asks for the camera on arrival, and its notices are Android's, with the same strings: no camera, permission
+not given, permission refused (with a button to Settings), the session failing to start, and always "Type the code instead".
+`NSCameraUsageDescription` is in the plist and in all 11 `InfoPlist.strings`; AVFoundation is linked by `project.yml`
+(a static Kotlin framework does not carry its system frameworks). The sheet is forced dark, as Android's is.
+
+**What iOS does not have yet, on purpose:** no flashlight, no "choose a photo" (a QR in a screenshot needs a `PHPicker` and a
+Core Image detector), and no sweeping laser on the frame. They are conveniences on Android; the typed code is the way round
+all three, and the scan is the only path that needs a camera. The Pair screen also scrolls a new failure card into view on iOS
+(`scrollToFailure`); the Android screen does not and keeps its layout.
+
+**What a simulator can and cannot show.** It has no camera, so the permission prompt, the live preview and the decode are not
+exercised anywhere but on a phone, and that stays **unverified** until someone runs it on one. What CI does instead is go down
+the same code a scan does: `-DshPairPayload` hands the controller the text a QR would have decoded (an invitation built by the
+script), and `-DshPairUrl`, `-DshPairCode` and `-DshPairSubmit` type. Everything after the decode (the claim, the pin, the
+Keychain, the connection) is the real thing against the mock harness's pairing relays: port 3186 over plain HTTP, and port 3187
+over TLS with a certificate that `keytool` makes when the fixtures start, whose key the fixtures print (`ci pairing:`) for the
+script to put in a QR. The code of both relays works every time (a real relay's works once) and `42900000` is always locked out.
+
 ## The iOS app
 
 Two pieces:
@@ -594,9 +705,18 @@ what the screen does. CI drives the app with them, and so can a person:
 | `-DshReset YES` | forgets the remembered harnesses, the settings and the Keychain before the screen is built |
 | `-DshAutoReconnect NO` | turns off "reconnect to the last harness", which shows the Recent list |
 | `-DshReport YES` | writes the result line without a Connect tap |
+| `-DshConnectMode relay` | switches the Connect screen to Relay mode (or `lan`) before it is drawn |
+| `-DshOpenPair YES` | opens the Pair screen |
+| `-DshPairUrl <address>`, `-DshPairCode <digits>` | fill the Pair form (and open it) |
+| `-DshPairSubmit YES` | taps Pair |
+| `-DshPairPayload <hex of the QR text>` | hands the Pair controller the text a scan would have decoded, so it pairs at once; hex because launch arguments are parsed as property lists, which mangles JSON |
+| `-DshPairScanner YES` | opens the camera sheet |
 
-With auto-connect or report on, the app writes one result line (`DSH_CONNECT_RESULT connected …` or `… failed kind=…`)
-to `Documents/dsh-connect-result.txt` in its container. A Release build ignores all of it.
+With auto-connect, report or a pairing argument on, the app writes one result line (`DSH_CONNECT_RESULT connected …` or
+`… failed kind=…`) to `Documents/dsh-connect-result.txt` in its container, and a pairing run also writes
+`DSH_PAIR_RESULT paired authority=… tls=… pinned=…` or `DSH_PAIR_RESULT failed kind=…` to
+`Documents/dsh-pair-result.txt` (its own file, so the connection a pairing starts does not overwrite it). A Release
+build ignores all of it.
 
 ## ATS and the local network
 
@@ -677,9 +797,11 @@ the steps after the tests run even if the tests fail, so one push says everythin
 
 **`ios-app`** (about 15 minutes):
 
-- `HarnessContractTest` (40 cases, the same file the JVM runs, against the same fixtures) and the shared module's own tests (the theme,
-  the accent maths, the host-input parser, the connect failure mapping, the haptic tick rules; 60 or more, counted) on an iOS simulator, over the Darwin engine and the Darwin mux socket (the fixtures are
-  four servers: three harnesses, a keep-alive WebSocket server, and one that drops a connection with no Close
+- `HarnessContractTest` (40 cases, the same file the JVM runs, against the same fixtures; 45 tests run in `:core` with the
+  address parser's) and the shared module's own tests (the theme, the accent maths, the host-input parser, the connect
+  failure mapping, the Connect and Pair controllers, the haptic tick rules; 116 ran at M4b, and the step wants 110) on an iOS
+  simulator, over the Darwin engine and the Darwin mux socket (the fixtures are seven listeners: three harnesses, a pairing
+  relay on plain HTTP and on TLS, a keep-alive WebSocket server, and one that drops a connection with no Close
   frame); a step counts the executed test cases so a skipped task cannot pass, and the next step prints the mux
   results and every delegate event the sockets saw (`MUX_…` lines), so the log says which `NSURLSession` callback
   decided each outcome;
@@ -691,6 +813,15 @@ the steps after the tests run even if the tests fail, so one push says everythin
   the Keychain's session to go on, a relay that wants its token (403), the refusal in French and
   in Arabic, and the form in French. Each waits for the result line the app writes, asserts it, and uploads a screenshot;
   the app's console output and any crash report are kept beside them.
+- then the same for pairing (M4b), against the fixtures' pairing relays: Relay mode with nothing paired; the Pair screen;
+  the camera sheet (on a simulator, the "no camera" notice); a typed pairing over plain HTTP that ends connected through
+  the relay's bearer, and the app coming back to that relay after a relaunch with only the Keychain's token to go on;
+  Relay mode with that relay paired; a scanned pairing; a wrong passcode (light, dark, and in Arabic, right to left); a
+  lockout; an expired code; a relay that is not there; an address that is a harness and not a relay; a QR that is not a
+  pairing code; and over TLS: a scanned pairing pinned to the QR's key (and the relaunch that follows, pinned from the
+  stored key), a scanned pairing with a key that is not the relay's (refused, nothing stored), and a typed pairing that
+  learns the key. Each asserts a `DSH_PAIR_RESULT` line, and a pairing that works also asserts the `connected` line of the
+  connection it starts. The fixtures are started with the TLS relay, whose certificate and pin are made fresh each run.
 - `ios-compile` also compiles `:sharedUi` for the two iOS targets and checks that the klibs exist.
 
 **`ios-ipa`** (10 to 25 minutes depending on whether Gradle's cache has the Release link of Compose Multiplatform, which dominates it, so a separate job in parallel):
@@ -751,20 +882,18 @@ shared core, and that decision is better made on evidence than on enthusiasm.
   remembered-hosts store (`NSUserDefaults`, with the session in the Keychain, which is also where iOS's settings
   now live for the Connect screen), the launch-token sign-in, and the connection that outlives the attempt
   (`ConnectionLoop` kept running; there is no session list behind it yet). Still open: the subnet scan (Local Network
-  permission and `NSBonjourServices` decisions belong here), the relay pairing flow with one Darwin client per pin
-  (pinned, trust-on-first-use, or neither; the mux socket takes the same pin or observed key through
-  `platformMuxSocketFactory`), and the part of M3 that is a measurement and not a build: run the full screen on a real
+  permission and `NSBonjourServices` decisions belong here; the relay pairing flow arrived with M4b), and the part of M3 that is a
+  measurement and not a build: run the full screen on a real
   iPhone, not only a simulator, and write down text input (IME, autofill, paste), scrolling and overscroll,
   haptics, VoiceOver and how Compose Multiplatform exposes `testTag`s to XCUITest, against the Android screen.
   That write-up is what decides between a Compose `composeApp` and a SwiftUI app over the shared core. What M4a
   settled is only the first half of it: Compose Multiplatform 1.7.1 draws the Android screen pixel for pixel when
   Android runs it, and draws a good iPhone screen when iOS does.
-- **M4a (done):** the shared UI foundation and the Connect screen, see "The shared UI". **The next screen is Pair**
-  (relay pairing: the QR scan and the passcode). It is the other half of the Connect screen, whose Relay mode is
-  hidden on iOS for lack of it; it reuses what has moved (the ink fields, the sheets, the state dot) and its
-  decisions are one view model; the Darwin pinned and trust-on-first-use clients it needs exist in `:core` and are
-  waiting for a screen; and its one new wall is the QR scanner (AVFoundation), the first real native-view wall.
-  After it, Settings (appearance and language, which the Connect screen's header reaches), then the session list.
+- **M4a (done):** the shared UI foundation and the Connect screen, see "The shared UI".
+- **M4b (done):** the Pair screen, shared, and Relay mode on iOS, see "Pairing on iOS" and "How M4b was verified on Android". It
+  was the first native-view wall (the AVFoundation scanner inside Compose) and the first time the pinned and
+  trust-on-first-use Darwin clients had a screen. **The next screen is Settings** (appearance and language, which the Connect
+  screen's header reaches), then the session list.
 
 **M4 — the iOS app, one shared screen at a time (M4a above).** Xcode project, app lifecycle, and the platform walls: notifications
 (UNUserNotificationCenter), background handling, QR scanning (AVFoundation), file preview,
@@ -802,13 +931,24 @@ Open items the port knows about and has deliberately not done, so they are not r
   Android side.
 - **Nothing on the Darwin side has run on a physical device.** The simulator shares the Mac's network and
   its loopback is exempt from the local-network prompt, so what a *denied* local-network permission looks
-  like through `TransportFailure.ios.kt` is unknown. Also unexercised anywhere: TLS of any kind, the pinned
-  handler and `learningChallengeHandler` (on the unary client and on `DarwinMuxSocket` alike: a fixture that
-  speaks TLS with a known key would prove both), gzip, and a body that ends short of its
+  like through `TransportFailure.ios.kt` is unknown. Also unexercised anywhere: TLS against a certificate a CA signs (the
+  pinned handler and `learningChallengeHandler` ran against a self-signed fixture in M4b, see "Relay pinning on iOS"), a
+  pinned socket whose stored key no longer matches, gzip, and a body that ends short of its
   `Content-Length` (the JVM's CIO check is off on Darwin). The ping answering is proven on the simulator only.
-- **The iOS app builds one anonymous Darwin client per connect attempt.** The pinned and
-  trust-on-first-use clients (one per relay, the way the Android app keeps one `OkHttpClient` per pin) arrive
-  with relay pairing in M3b.
+- **The QR scanner has never run on a camera.** The simulator has none, so the permission prompt, the preview, the decode
+  and the Settings button of the denied state are unverified until someone scans a real pairing QR on an iPhone. Everything after
+  the decode (the claim, the pin, the Keychain, the connection) is exercised through `-DshPairPayload`. Also missing next to
+  Android's scanner: the flashlight, the photo picker and the sweeping laser.
+- **A relay is found by pairing, not discovered.** iOS has no mDNS browse or port knock (the Local Network permission
+  decisions of M3b), so Relay mode lists the relays this device has paired with and the Pair screen adds one; Android
+  also offers the relays it finds on the network.
+- **The device name is "iPhone".** Since iOS 16 `UIDevice.name` is that for any app without the user-assigned-device-name
+  entitlement, so the relay's device list says "iPhone" unless the person edits the field. Enough to tell kinds of device
+  apart, not two iPhones.
+- **The iOS app builds a Darwin client per call, not one per relay.** The shared anonymous client serves the probes of
+  harnesses; each pairing call and each probe of a pinned relay builds its own (pinned or learning) client and closes it,
+  where the Android app keeps one `OkHttpClient` per pin. That is correct and a little wasteful (a new `NSURLSession` per probe
+  of a pinned relay); caching one per pin is the change if it ever shows.
 - **The permission text and display name are translated, but the app has no language setting of its own**:
   it follows the device (and iOS's per-app language setting, which `CFBundleLocalizations` enables).
 - **Compose Multiplatform 1.7.1 is pinned to Kotlin 2.0.21** and moves with it. Kotlin/Native 2.0.21 builds

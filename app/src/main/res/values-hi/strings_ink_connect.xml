@@ -1,8 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pair_hero_title">पेयरिंग कोड स्कैन करें</string>
-    <string name="pair_step_run">अपने कंप्यूटर पर चलाएँ %1$s</string>
-    <string name="pair_step_scan">दिख रहे QR कोड की ओर कैमरा करें। इसके बाद आप डिवाइस का पासवर्ड सेट करेंगे।</string>
-    <string name="pair_code_hint">8 अंक</string>
-    <string name="pair_scanned">%1$s से पेयर हो रहा है</string>
 </resources>

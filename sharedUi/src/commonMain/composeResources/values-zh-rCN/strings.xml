@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="common_back">返回</string>
     <string name="common_cancel">取消</string>
     <string name="common_connected">已连接</string>
+    <string name="common_retry">重试</string>
     <string name="connect_auto_lan">在 Wi-Fi 下自动连接已发现的 harness</string>
     <string name="connect_auto_last">重新连接上次使用的 harness</string>
     <string name="connect_auto_loopback">自动连接本设备上的 harness</string>
@@ -95,6 +97,45 @@
     <string name="connect_title">连接到 harness</string>
     <string name="connect_try_again">重试连接</string>
     <string name="connect_unreachable">无法连接</string>
+    <string name="pair_code_hint">8 位数字</string>
+    <string name="pair_code_label">配对码</string>
+    <string name="pair_fail_certificate">%1$s 的密钥与该配对码指明的不一致。请不要配对，该地址上可能是别的设备在应答。</string>
+    <string name="pair_fail_code">请输入中继配对页面上显示的配对码。</string>
+    <string name="pair_fail_expired">该配对码已失效。请刷新中继的配对页面获取新的配对码。</string>
+    <string name="pair_fail_host_refused">%1$s 是中继，但它拒绝以该地址发来的请求，配对码根本没有被读取。请把该地址加入中继 cordis.patch.yml 的 publicHostnames 并重启，或改用它已知的地址访问中继。</string>
+    <string name="pair_fail_not_a_code">这不是中继配对码。</string>
+    <string name="pair_fail_not_a_relay">%1$s 有响应，但不接受配对。请使用中继启动时显示的地址，而不是 harness 自己的地址。</string>
+    <string name="pair_fail_rate_limited">尝试次数过多。请等待 %1$d 秒后重试。</string>
+    <string name="pair_fail_rejected">中继拒绝了该配对码。配对码只能使用一次，并会在几分钟后失效，请刷新配对页面并使用新的配对码。</string>
+    <string name="pair_fail_too_new">该配对码来自较新的中继（版本 %1$d），本应用还不支持。请更新 DSH Mobile。</string>
+    <string name="pair_fail_unreachable">无法连接 %1$s。请检查地址，并确认中继正在运行且本手机可以访问它。</string>
+    <string name="pair_fail_url">请输入完整的中继地址，包括 https://</string>
+    <string name="pair_hero_title">扫描配对二维码</string>
+    <string name="pair_key_first_use">手动输入的地址不带密钥，因此会直接信任第一次应答的一方。扫描二维码才能核对密钥。</string>
+    <string name="pair_key_plaintext">该地址未加密，令牌和你发送的一切都会以明文传输。</string>
+    <string name="pair_key_verified">扫描到的二维码带有该中继的密钥，因此在发送任何数据之前就会核对。</string>
+    <string name="pair_manual_title">或输入配对码</string>
+    <string name="pair_name_label">本设备名称</string>
+    <string name="pair_scan">扫描二维码</string>
+    <string name="pair_scanned">正在与 %1$s 配对</string>
+    <string name="pair_step_run">在电脑上运行 %1$s</string>
+    <string name="pair_step_scan">将相机对准显示的二维码。随后你会设置设备密码。</string>
+    <string name="pair_submit">配对</string>
+    <string name="pair_subtitle">在运行 harness 的电脑上打开 /relay/pair。页面会显示一个二维码和一个八位数字码，任选其一即可，两者都会在几分钟后失效。</string>
+    <string name="pair_title">配对中继</string>
+    <string name="pair_url_hint">https://192.168.1.5:3443</string>
+    <string name="pair_url_label">中继地址</string>
+    <string name="pair_working">正在配对…</string>
+    <string name="scan_camera_allow">允许使用摄像头</string>
+    <string name="scan_camera_body">要读取中继的配对码，DSH Mobile 需要使用摄像头。你也可以直接输入八位数字码，两者是同一个码。</string>
+    <string name="scan_camera_denied">摄像头权限被禁止了。请在设置中开启，或改为输入配对码。</string>
+    <string name="scan_camera_failed">无法启动摄像头，可能有其他应用正在使用它。请关闭那个应用后重试，或改为输入配对码。</string>
+    <string name="scan_camera_missing">此设备没有摄像头。请改为输入代码。</string>
+    <string name="scan_camera_settings">打开设置</string>
+    <string name="scan_camera_title">摄像头已关闭</string>
+    <string name="scan_detected">已读取配对码</string>
+    <string name="scan_hint">将摄像头对准中继配对页面上的二维码</string>
+    <string name="scan_type_instead">改为输入配对码</string>
     <string name="settings_connection_disconnect">断开连接</string>
     <string name="settings_title">设置</string>
 </resources>

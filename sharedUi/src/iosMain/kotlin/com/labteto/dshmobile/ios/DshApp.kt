@@ -15,6 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +36,8 @@ import com.labteto.dshmobile.ui.screens.connect.ConnectButtonVariant
 import com.labteto.dshmobile.ui.screens.connect.ConnectContent
 import com.labteto.dshmobile.ui.screens.connect.ConnectFailure
 import com.labteto.dshmobile.ui.screens.connect.DsConnectButton
+import com.labteto.dshmobile.ui.screens.pair.PairContent
+import com.labteto.dshmobile.ui.screens.pair.PairFailure
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -53,6 +58,11 @@ import org.jetbrains.compose.resources.stringResource
  * - [reset] forgets everything the app remembered (the hosts, the settings, the Keychain) before
  *   the screen is built, so a scenario does not depend on the one before it.
  * - [onOutcome] hears the one result line (see [DshApp]) so a script can read what happened.
+ * - [connectMode] switches the Connect screen to `lan` or `relay` before anything is drawn.
+ * - The pairing arguments open the Pair screen ([openPair], or any of the others, which imply it) and drive it
+ *   as a person would: [pairUrl] and [pairCode] fill the form and [pairSubmit] taps Pair; [pairPayload] hands the
+ *   controller the text a QR scan would have decoded (a simulator has no camera); [pairScanner] opens the camera
+ *   sheet. [onPairOutcome] hears the pairing result line (`DSH_PAIR_RESULT …`).
  */
 internal class LaunchRequest(
     val address: String? = null,
@@ -60,14 +70,27 @@ internal class LaunchRequest(
     val openSignIn: Boolean = false,
     val signInToken: String? = null,
     val reset: Boolean = false,
+    val connectMode: String? = null,
+    val openPair: Boolean = false,
+    val pairUrl: String? = null,
+    val pairCode: String? = null,
+    val pairSubmit: Boolean = false,
+    val pairPayload: String? = null,
+    val pairScanner: Boolean = false,
     val onOutcome: ((String) -> Unit)? = null,
-)
+    val onPairOutcome: ((String) -> Unit)? = null,
+) {
+    /** Whether the app starts on the Pair screen. */
+    val startsPairing: Boolean
+        get() = openPair || pairUrl != null || pairCode != null || pairSubmit || pairPayload != null || pairScanner
+}
 
 /** The port a bare host is given, as the Android Connect screen gives it. */
 private const val DEFAULT_PORT = "3080"
 
 /**
  * The iOS app: the shared Connect screen until a harness answers, then a plain "Connected" page.
+ * Pairing with a relay is the shared Pair screen, opened from the Connect screen's Relay mode.
  *
  * Nothing sits behind a connection yet (the session list and the chat are later steps of the
  * port), so what a person sees on success is the result the screen has to give: which harness, its
@@ -78,13 +101,34 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
     DshTheme(hapticPlatform = IosHapticPlatform) {
         val state by app.controller.state.collectAsState()
         val link by app.link.state.collectAsState()
+        val pairState by app.pair.state.collectAsState()
         val connected = link.phase == ConnectionPhase.CONNECTED ||
             (link.phase == ConnectionPhase.RECONNECTING && link.hasConnected)
+        // The Pair screen is a destination of the app, like the Android root's `showPair`.
+        var pairing by remember { mutableStateOf(request.startsPairing) }
+        var pairPrefill by remember { mutableStateOf<String?>(null) }
+        // The debug launch that asks for the camera sheet gets it once, not each time Pair is reopened.
+        var scanFirst by remember { mutableStateOf(request.pairScanner) }
 
         // Debug-launch behaviours, once. A tap on Connect is `connectManual`, so this is one.
         LaunchedEffect(Unit) {
+            request.connectMode?.let(app.controller::setMode)
             val address = request.address
             if (request.autoConnect && address != null) app.controller.connectManual(address, DEFAULT_PORT)
+            if (request.startsPairing) {
+                request.pairUrl?.let(app.pair::setUrl)
+                request.pairCode?.let(app.pair::setCode)
+                val payload = request.pairPayload
+                // A payload is a scan: the controller claims at once, as it does for a decoded QR. Otherwise
+                // the Pair button is tapped.
+                if (payload != null) app.pair.onScanned(payload) else if (request.pairSubmit) app.pair.submit()
+            }
+        }
+        // The pairing result line a script reads (a success is reported by the ports, when the relay has answered).
+        request.onPairOutcome?.let { report ->
+            LaunchedEffect(pairState.failure) {
+                pairState.failure?.let { report("DSH_PAIR_RESULT failed kind=${it.kind()}") }
+            }
         }
         LaunchedEffect(state.failure) {
             if (state.failure is ConnectFailure.Unauthenticated) {
@@ -116,7 +160,21 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
             }
         }
 
-        if (connected) {
+        if (pairing) {
+            PairContent(
+                state = pairState,
+                controller = app.pair,
+                onClose = {
+                    pairing = false
+                    pairPrefill = null
+                    scanFirst = false
+                },
+                scanner = { close, decoded, typeCode -> IosQrScanner(close, decoded, typeCode) },
+                prefillUrl = pairPrefill,
+                initiallyScanning = scanFirst,
+                scrollToFailure = true,
+            )
+        } else if (connected) {
             ConnectedPage(
                 authority = link.host?.authority.orEmpty(),
                 name = link.host?.name,
@@ -129,11 +187,29 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                 controller = app.controller,
                 features = IosConnectFeatures,
                 onOpenSettings = {},
-                onPair = {},
+                onPair = { url ->
+                    pairPrefill = url
+                    pairing = true
+                },
                 initialHost = request.address.orEmpty(),
             )
         }
     }
+}
+
+/** The verdicts a script greps for in `DSH_PAIR_RESULT failed kind=…`. */
+private fun PairFailure.kind(): String = when (this) {
+    PairFailure.NotAPairingCode -> "NOT_A_PAIRING_CODE"
+    is PairFailure.TooNew -> "TOO_NEW"
+    PairFailure.Expired -> "EXPIRED"
+    PairFailure.Rejected -> "REJECTED"
+    is PairFailure.RateLimited -> "RATE_LIMITED"
+    is PairFailure.NotARelay -> "NOT_A_RELAY"
+    is PairFailure.HostRefused -> "HOST_REFUSED"
+    is PairFailure.Unreachable -> "UNREACHABLE"
+    is PairFailure.CertificateMismatch -> "CERTIFICATE_PIN"
+    PairFailure.InvalidUrl -> "INVALID_URL"
+    PairFailure.InvalidCode -> "INVALID_CODE"
 }
 
 /** Long enough for the sheet to be on screen (and in a screenshot) before the token is submitted. */

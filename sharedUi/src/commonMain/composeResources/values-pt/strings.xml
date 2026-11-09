@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="common_back">Voltar</string>
     <string name="common_cancel">Cancelar</string>
     <string name="common_connected">Conectado</string>
+    <string name="common_retry">Tentar novamente</string>
     <string name="connect_auto_lan">Conectar automaticamente ao harness descoberto no Wi-Fi</string>
     <string name="connect_auto_last">Reconectar ao último harness usado</string>
     <string name="connect_auto_loopback">Conectar automaticamente ao harness deste dispositivo</string>
@@ -95,6 +97,45 @@
     <string name="connect_title">Conectar ao harness</string>
     <string name="connect_try_again">Tentar de novo</string>
     <string name="connect_unreachable">Inacessível</string>
+    <string name="pair_code_hint">8 dígitos</string>
+    <string name="pair_code_label">Código de pareamento</string>
+    <string name="pair_fail_certificate">A chave em %1$s não é a indicada por este código. Não pareie. Outra coisa pode estar respondendo nesse endereço.</string>
+    <string name="pair_fail_code">Digite o código exibido na página de pareamento do relay.</string>
+    <string name="pair_fail_expired">Esse código expirou. Recarregue a página de pareamento do relay para obter um novo.</string>
+    <string name="pair_fail_host_refused">%1$s é um relay, mas recusa requisições feitas por esse endereço, então nunca leu o código. Adicione esse endereço a publicHostnames no cordis.patch.yml do relay e reinicie, ou acesse o relay por um endereço que ele já conheça.</string>
+    <string name="pair_fail_not_a_code">Isso não é um código de pareamento de relay.</string>
+    <string name="pair_fail_not_a_relay">%1$s respondeu, mas não aceita pareamento. Use o endereço que o relay imprimiu ao iniciar, não o do próprio harness.</string>
+    <string name="pair_fail_rate_limited">Tentativas demais. Espere %1$d segundos e tente de novo.</string>
+    <string name="pair_fail_rejected">O relay recusou esse código. Cada código vale uma vez só e expira em alguns minutos. Recarregue a página de pareamento e use o novo.</string>
+    <string name="pair_fail_too_new">Esse código vem de um relay mais novo (versão %1$d) do que este app reconhece. Atualize o DSH Mobile.</string>
+    <string name="pair_fail_unreachable">Não foi possível acessar %1$s. Confira o endereço e veja se o relay está em execução e acessível a partir deste telefone.</string>
+    <string name="pair_fail_url">Digite o endereço do relay, incluindo https://</string>
+    <string name="pair_hero_title">Escaneie o código de pareamento</string>
+    <string name="pair_key_first_use">Um endereço digitado não traz chave alguma, então o que responder primeiro é aceito como está. Escanear o QR code confere a chave.</string>
+    <string name="pair_key_plaintext">Este endereço não usa criptografia, então o token e tudo o que você enviar trafegam sem proteção.</string>
+    <string name="pair_key_verified">O código escaneado traz a chave deste relay, então ela é conferida antes de qualquer envio.</string>
+    <string name="pair_manual_title">Ou digite o código</string>
+    <string name="pair_name_label">Nome deste dispositivo</string>
+    <string name="pair_scan">Escanear QR code</string>
+    <string name="pair_scanned">Pareando com %1$s</string>
+    <string name="pair_step_run">No seu computador, execute %1$s</string>
+    <string name="pair_step_scan">Aponte a câmera para o QR code exibido. Depois, você define uma senha para o dispositivo.</string>
+    <string name="pair_submit">Parear</string>
+    <string name="pair_subtitle">No computador que executa o harness, abra /relay/pair. Ele mostra um QR code e um código de oito dígitos. Qualquer um serve, e os dois expiram em alguns minutos.</string>
+    <string name="pair_title">Parear um relay</string>
+    <string name="pair_url_hint">https://192.168.1.5:3443</string>
+    <string name="pair_url_label">Endereço do relay</string>
+    <string name="pair_working">Pareando…</string>
+    <string name="scan_camera_allow">Permitir câmera</string>
+    <string name="scan_camera_body">Para ler o código de pareamento do relay, o DSH Mobile precisa da câmera. Você também pode digitar o código de oito dígitos, que é o mesmo.</string>
+    <string name="scan_camera_denied">O acesso à câmera está bloqueado. Permita nas configurações ou digite o código.</string>
+    <string name="scan_camera_failed">Não foi possível iniciar a câmera. Talvez outro app esteja usando. Feche-o e tente de novo, ou digite o código.</string>
+    <string name="scan_camera_missing">Este dispositivo não tem câmera. Digite o código.</string>
+    <string name="scan_camera_settings">Abrir configurações</string>
+    <string name="scan_camera_title">A câmera está desligada</string>
+    <string name="scan_detected">Código lido</string>
+    <string name="scan_hint">Aponte a câmera para o código na página de pareamento do relay</string>
+    <string name="scan_type_instead">Digitar o código</string>
     <string name="settings_connection_disconnect">Desconectar</string>
     <string name="settings_title">Configurações</string>
 </resources>
