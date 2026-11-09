@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -87,40 +90,63 @@ fun DsDialog(
 ) {
     val colors = DsTheme.colors
     DsWindow(onDismissRequest = onDismiss, dimBehind = true) { insets ->
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(insets)
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            // Leave a sliver of the page visible around the plate, and never more than the safe
-            // area allows — the scroll region below then does the rest.
-            val plateMaxHeight = maxHeight * 0.88f
-            Surface(
+        Box(Modifier.fillMaxSize()) {
+            // Tap-outside-to-dismiss, handled here instead of by the platform.
+            //
+            // `DialogProperties.dismissOnClickOutside` is on by default, but it is decided by
+            // `Dialog.onTouchEvent` -> `Window.shouldCloseOnTouch`, which compares the touch with the
+            // *decor view's* bounds. [DsWindow] makes the window cover the whole display (it has to:
+            // a dialog window that fits inside the bars clips its own footer), so no touch can ever
+            // land outside that view and the platform never reports one. Tapping the scrim of any
+            // dialog in the app therefore did nothing — the new-session picker was just where it was
+            // noticed. A layer under the plate restores the gesture; it is a sibling of the plate
+            // rather than its parent, so the plate's own content is never dismissed by it.
+            val dismiss by rememberUpdatedState(onDismiss)
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) { detectTapGestures { dismiss() } },
+            )
+            BoxWithConstraints(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = 520.dp)
-                    .heightIn(max = plateMaxHeight),
-                shape = DsShapes.dialog,
-                color = colors.bgLayer2,
-                border = BorderStroke(1.dp, colors.borderL1),
-                shadowElevation = 8.dp,
+                    .fillMaxSize()
+                    .windowInsetsPadding(insets)
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                Column(
-                    Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                // Leave a sliver of the page visible around the plate, and never more than the safe
+                // area allows — the scroll region below then does the rest.
+                val plateMaxHeight = maxHeight * 0.88f
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = 520.dp)
+                        .heightIn(max = plateMaxHeight)
+                        // The plate swallows taps so only the scrim around it dismisses. Without a
+                        // pointer handler of its own the plate's blank padding would fall through to
+                        // the scrim below and a tap on the card itself would close it. Child
+                        // controls (rows, fields, scrolling) still win: they are hit first.
+                        .pointerInput(Unit) { detectTapGestures { } },
+                    shape = DsShapes.dialog,
+                    color = colors.bgLayer2,
+                    border = BorderStroke(1.dp, colors.borderL1),
+                    shadowElevation = 8.dp,
                 ) {
-                    title?.let {
-                        Text(it, style = DsType.large20, color = colors.labelPrimary)
-                    }
                     Column(
-                        modifier = Modifier
-                            .weight(1f, fill = false)
-                            .verticalScroll(rememberScrollState()),
+                        Modifier.padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
-                        content = content,
-                    )
+                    ) {
+                        title?.let {
+                            Text(it, style = DsType.large20, color = colors.labelPrimary)
+                        }
+                        Column(
+                            modifier = Modifier
+                                .weight(1f, fill = false)
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            content = content,
+                        )
+                    }
                 }
             }
         }

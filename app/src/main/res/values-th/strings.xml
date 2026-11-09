@@ -439,6 +439,8 @@
     <string name="chatlist_pinned">ปักหมุดแล้ว</string>
     <string name="chatlist_session_pin">ปักหมุดเซสชัน</string>
     <string name="chatlist_session_unpin">เลิกปักหมุดเซสชัน</string>
+    <string name="chatlist_refresh">รีเฟรชเซสชัน</string>
+    <string name="chatlist_refresh_failed">รีเฟรชรายการเซสชันไม่สำเร็จ</string>
 
     <string name="harness_questions">คำถาม</string>
     <string name="harness_reply_queued">คำตอบอยู่ในคิวแล้ว</string>

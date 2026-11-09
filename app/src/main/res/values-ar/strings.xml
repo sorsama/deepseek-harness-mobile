@@ -439,6 +439,8 @@
     <string name="chatlist_pinned">المثبّتة</string>
     <string name="chatlist_session_pin">تثبيت الجلسة</string>
     <string name="chatlist_session_unpin">إلغاء تثبيت الجلسة</string>
+    <string name="chatlist_refresh">تحديث الجلسات</string>
+    <string name="chatlist_refresh_failed">تعذّر تحديث قائمة الجلسات.</string>
 
     <string name="harness_questions">الأسئلة</string>
     <string name="harness_reply_queued">الرد في قائمة الانتظار</string>

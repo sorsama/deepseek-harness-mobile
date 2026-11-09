@@ -439,6 +439,8 @@
     <string name="chatlist_pinned">Закреплённые</string>
     <string name="chatlist_session_pin">Закрепить сеанс</string>
     <string name="chatlist_session_unpin">Открепить сеанс</string>
+    <string name="chatlist_refresh">Обновить сеансы</string>
+    <string name="chatlist_refresh_failed">Не удалось обновить список сеансов.</string>
 
     <string name="harness_questions">Вопросы</string>
     <string name="harness_reply_queued">Ответ в очереди</string>

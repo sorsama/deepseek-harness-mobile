@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -42,7 +42,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -102,6 +104,18 @@ private const val DETENT_STEP = 0.1f
 
 /** One detent per this many degrees of hue. */
 private const val HUE_DETENT_DEGREES = 10f
+
+/**
+ * Where the centre of a thumb of diameter [thumbPx] sits on an axis of [sizePx] at [fraction].
+ *
+ * The thumb is inset by its own radius at both ends, so the ring is drawn whole and cannot spill
+ * past the control — which, in a sheet, means it cannot spill off the screen either. A control too
+ * narrow for the whole thumb centres it instead of producing a negative travel.
+ */
+internal fun thumbCentre(fraction: Float, sizePx: Float, thumbPx: Float): Float {
+    if (sizePx <= thumbPx) return sizePx / 2f
+    return thumbPx / 2f + fraction.coerceIn(0f, 1f) * (sizePx - thumbPx)
+}
 
 /**
  * The custom accent picker.
@@ -353,17 +367,13 @@ private fun SaturationBrightnessArea(
         change(current.copy(s = saturation, v = brightness))
     }
 
+    val thumbPx = with(LocalDensity.current) { ThumbSize.toPx() }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(AreaHeight)
-            .clip(DsShapes.code)
             .onSizeChanged { size = it }
-            .drawBehind {
-                drawRect(Brush.horizontalGradient(listOf(Color.White, hue)))
-                drawRect(Brush.verticalGradient(listOf(Color.Transparent, Color.Black)))
-            }
-            .border(1.dp, colors.borderL2, DsShapes.code)
             .pointerInput(Unit) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
@@ -398,9 +408,21 @@ private fun SaturationBrightnessArea(
                 )
             },
     ) {
+        // The painted area is its own clipped layer: clipping the box that also holds the thumb
+        // sliced the ring in half wherever the pick sat on an edge.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(DsShapes.code)
+                .drawBehind {
+                    drawRect(Brush.horizontalGradient(listOf(Color.White, hue)))
+                    drawRect(Brush.verticalGradient(listOf(Color.Transparent, Color.Black)))
+                }
+                .border(1.dp, colors.borderL2, DsShapes.code),
+        )
         PickerThumb(
-            x = hsv.s * size.width,
-            y = (1f - hsv.v) * size.height,
+            x = thumbCentre(hsv.s, size.width.toFloat(), thumbPx),
+            y = thumbCentre(1f - hsv.v, size.height.toFloat(), thumbPx),
             fill = hsvToColor(hsv.h, hsv.s, hsv.v),
         )
     }
@@ -422,6 +444,7 @@ private fun HueStrip(
     val label = stringResource(R.string.appearance_custom_hue)
     val state = stringResource(R.string.appearance_custom_hue_state, hsv.h.roundToInt())
     val stops = remember { (0..6).map { Color.hsv(it * 60f, 1f, 1f) } }
+    val thumbPx = with(LocalDensity.current) { ThumbSize.toPx() }
 
     fun report(x: Float) {
         if (size.width <= 0) return
@@ -471,28 +494,44 @@ private fun HueStrip(
                 .border(1.dp, colors.borderL2, DsShapes.pillFull),
         )
         PickerThumb(
-            x = hsv.h / 359.99f * size.width,
+            x = thumbCentre(hsv.h / 359.99f, size.width.toFloat(), thumbPx),
             y = size.height / 2f,
             fill = hsvToColor(hsv.h, 1f, 1f),
         )
     }
 }
 
-/** A ring thumb centred on ([x], [y]) in its parent's pixel space; absolute, so RTL never mirrors it. */
+/**
+ * A ring thumb centred on ([x], [y]) in its parent's pixel space.
+ *
+ * Positioned by a [Layout] rather than `Modifier.absoluteOffset`: an offset is applied on top of
+ * wherever the parent's alignment already put the child, so in the hue strip — whose row is
+ * centre-aligned — the thumb was displaced by half the row and slid off the screen, and it never
+ * tracked the finger. Laying the node out at the parent's full size makes that alignment a no-op,
+ * and placing the ring at absolute coordinates keeps it out of RTL mirroring.
+ */
 @Composable
 private fun PickerThumb(x: Float, y: Float, fill: Color) {
     val colors = DsTheme.colors
-    val half = with(androidx.compose.ui.platform.LocalDensity.current) { ThumbSize.toPx() / 2f }
-    Box(
-        modifier = Modifier
-            .absoluteOffset { androidx.compose.ui.unit.IntOffset((x - half).roundToInt(), (y - half).roundToInt()) }
-            .size(ThumbSize)
-            .clip(CircleShape)
-            .background(fill)
-            // Two rings, light over dark, so the thumb is visible on any colour under it.
-            .border(3.dp, Color.White, CircleShape)
-            .border(1.dp, colors.bgBase.copy(alpha = 0.5f), CircleShape),
-    )
+    val half = with(LocalDensity.current) { ThumbSize.toPx() / 2f }
+    Layout(
+        content = {
+            Box(
+                modifier = Modifier
+                    .size(ThumbSize)
+                    .clip(CircleShape)
+                    .background(fill)
+                    // Two rings, light over dark, so the thumb is visible on any colour under it.
+                    .border(3.dp, Color.White, CircleShape)
+                    .border(1.dp, colors.bgBase.copy(alpha = 0.5f), CircleShape),
+            )
+        },
+    ) { measurables, constraints ->
+        val thumb = measurables.first().measure(constraints)
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            thumb.place((x - half).roundToInt(), (y - half).roundToInt())
+        }
+    }
 }
 
 /** One quick-pick disc. 32dp of colour inside a 48dp target, with the selection a ring and a check. */

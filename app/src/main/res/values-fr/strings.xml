@@ -439,6 +439,8 @@
     <string name="chatlist_pinned">Épinglées</string>
     <string name="chatlist_session_pin">Épingler la session</string>
     <string name="chatlist_session_unpin">Désépingler la session</string>
+    <string name="chatlist_refresh">Actualiser les sessions</string>
+    <string name="chatlist_refresh_failed">Impossible d\'actualiser la liste des sessions.</string>
 
     <string name="harness_questions">Questions</string>
     <string name="harness_reply_queued">Réponse en attente</string>

@@ -86,6 +86,10 @@ internal fun PermissionMenu(
             Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState()),
+            // The cards used to sit at zero offset from one another: three 24dp-radius plates butted
+            // together read as one cramped slab, and the selected card's accent border ran straight
+            // into its neighbours. A gap of its own gives each preset an edge to be seen against.
+            verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
         ) {
             select.selectable.forEach { option ->
                 PermissionCard(

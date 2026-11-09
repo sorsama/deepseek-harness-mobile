@@ -439,6 +439,8 @@
     <string name="chatlist_pinned">পিন করা</string>
     <string name="chatlist_session_pin">সেশন পিন করুন</string>
     <string name="chatlist_session_unpin">সেশন আনপিন করুন</string>
+    <string name="chatlist_refresh">সেশন রিফ্রেশ করুন</string>
+    <string name="chatlist_refresh_failed">সেশন তালিকা রিফ্রেশ করা যায়নি।</string>
 
     <string name="harness_questions">প্রশ্ন</string>
     <string name="harness_reply_queued">উত্তর কিউতে আছে</string>

@@ -308,6 +308,12 @@ private const val AGENT_PRESET_PROJECTION = "agentPreset"
 /** Projection key carrying a parent's direct subagents; `subagents/list` was removed in 0.1.7. */
 private const val SUBAGENT_CATALOG_PROJECTION = "subagentCatalog"
 
+/** Projection key saying whether a session has had a prompt; the drawer hides sessions that have not. */
+private const val SESSION_LIST_METADATA_PROJECTION = "sessionListMetadata"
+
+/** The projection keys that change a list row, in the order [SessionStore.foldListProjectionLocked] reads them. */
+private val listProjectionKeys = listOf(SESSION_LIST_METADATA_PROJECTION, "title")
+
 /**
  * What became of an archive request.
  *
@@ -584,6 +590,15 @@ class SessionStore @Inject constructor(
     private val sessionRows = LinkedHashMap<String, SessionRow>()
     private val runningBySession = HashMap<String, Boolean>()
     private val titleBySession = HashMap<String, String>()
+
+    /**
+     * Sessions seen to have had a prompt, learned from pushes about sessions nobody here follows.
+     * A list row built from an older hint must not hide them again; see [effectiveBlank].
+     */
+    private val engagedSessions = HashSet<String>()
+
+    /** Spaces out the fallback list reads that [refreshSessionsIfStale] makes. */
+    private val sessionSyncThrottle = RefreshThrottle(SESSION_SYNC_MIN_INTERVAL_MS)
 
     /** The newest agent preset seen per session, from either the list or the control stream. */
     private val presetBySession = HashMap<String, AgentPresetState>()
@@ -1026,6 +1041,13 @@ class SessionStore @Inject constructor(
                         (block["values"] as? JsonObject)?.get("inbox")?.let { questionSessions.inbox(sessionId, it) }
                         val value = (block["values"] as? JsonObject)?.get(AGENT_PRESET_PROJECTION)
                         if (foldAgentPresetLocked(sessionId, asOf, value)) changed = true
+                        // A cached or migration-required block holds hints, not the host's word.
+                        if (block["kind"]?.jsonPrimitive?.contentOrNull !in setOf("cached", "migration-required")) {
+                            val values = block["values"] as? JsonObject
+                            for (key in listProjectionKeys) {
+                                if (foldListProjectionLocked(sessionId, key, values?.get(key))) changed = true
+                            }
+                        }
                     }
                     if (changed) emitSessionsLocked()
                 }
@@ -1059,6 +1081,11 @@ class SessionStore @Inject constructor(
                         if (change.key == AGENT_PRESET_PROJECTION &&
                             foldAgentPresetLocked(frame.sessionId, frame.seq, change.value)
                         ) {
+                            presetChanged = true
+                        }
+                        // The first prompt and a rename made elsewhere reach a session nobody here
+                        // follows only through this frame; the drawer hides it until they land.
+                        if (foldListProjectionLocked(frame.sessionId, change.key, change.value)) {
                             presetChanged = true
                         }
                     }
@@ -1307,7 +1334,7 @@ class SessionStore @Inject constructor(
             ) ?: existing?.subagent
             val row = existing?.copy(
                 title = title ?: existing.title,
-                blank = item.blank,
+                blank = effectiveBlank(item.blank, item.sessionId in engagedSessions),
                 parentSessionId = item.parentSessionId,
                 origin = item.origin,
                 cwd = item.cwd,
@@ -1318,7 +1345,7 @@ class SessionStore @Inject constructor(
                 sessionId = item.sessionId,
                 title = title,
                 running = runningBySession[item.sessionId] ?: item.running,
-                blank = item.blank,
+                blank = effectiveBlank(item.blank, item.sessionId in engagedSessions),
                 parentSessionId = item.parentSessionId,
                 origin = item.origin,
                 cwd = item.cwd,
@@ -1348,6 +1375,7 @@ class SessionStore @Inject constructor(
             sessionRows.remove(sessionId)
             pendingKinds.remove(sessionId)
             runningBySession.remove(sessionId)
+            engagedSessions.remove(sessionId)
             presetBySession.remove(sessionId)
             questionEvents.discard(sessionId)
             emitSessionsLocked()
@@ -1358,6 +1386,8 @@ class SessionStore @Inject constructor(
         synchronized(lock) {
             runningBySession[sessionId] = running
             sessionRows[sessionId]?.let { if (it.running != running) sessionRows[sessionId] = it.copy(running = running) }
+            // A session that is running has been prompted, whether or not the prompt was ours.
+            if (running) markEngagedLocked(sessionId)
             if (sessionId == currentId) rebuildCurrentLocked()
             // A child's own status is what says whether it is running; the catalog only lists it.
             else publishCatalogSubagentsLocked()
@@ -1368,14 +1398,19 @@ class SessionStore @Inject constructor(
     /** Reorder one session on a durable user message, without touching anything else about it. */
     private fun setUpdatedAt(sessionId: String, updatedAt: Long) {
         synchronized(lock) {
+            // The host stamps activity only for a user's durable message, so it also means the
+            // session is no longer blank. Without this a session created on the desktop stayed
+            // hidden here after its first message, because only the open session ever heard that.
+            engagedSessions.add(sessionId)
             val row = sessionRows[sessionId] ?: return@synchronized
-            sessionRows[sessionId] = row.copy(updatedAt = updatedAt)
+            sessionRows[sessionId] = row.copy(updatedAt = updatedAt).engaged()
             emitSessionsLocked()
         }
     }
 
     private fun setBlank(sessionId: String, blank: Boolean) {
         synchronized(lock) {
+            if (!blank) engagedSessions.add(sessionId)
             sessionRows[sessionId]?.let { if (it.blank != blank) sessionRows[sessionId] = it.copy(blank = blank) }
             if (sessionId == currentId) currentBlank = blank
             emitSessionsLocked()
@@ -1583,32 +1618,72 @@ class SessionStore @Inject constructor(
         if (pendingKinds[sessionId].isNullOrEmpty()) pendingKinds.remove(sessionId)
     }
 
-    private fun extractTitle(block: SessionProjectionsBlock?): String? {
-        val value = block?.values?.get("title") ?: return null
-        return when (value) {
-            is JsonPrimitive -> value.contentOrNull
-            is JsonObject -> value["title"]?.jsonPrimitive?.contentOrNull
-            else -> null
+    private fun extractTitle(block: SessionProjectionsBlock?): String? = titleOf(block?.values?.get("title"))
+
+    /**
+     * Fold what a projection value says about a session's list row: it has had a prompt, or it was
+     * renamed. Applies to any session, not just the open one, because the control stream carries
+     * these for every live session and the drawer shows all of them.
+     */
+    private fun foldListProjectionLocked(sessionId: String, key: String, value: JsonElement?): Boolean {
+        when (key) {
+            SESSION_LIST_METADATA_PROJECTION -> {
+                if (listMetadataBlank(value) == false) return markEngagedLocked(sessionId)
+            }
+            "title" -> {
+                val title = titleOf(value)?.takeIf { it.isNotBlank() } ?: return false
+                if (titleBySession[sessionId] == title) return false
+                titleBySession[sessionId] = title
+                val row = sessionRows[sessionId] ?: return false
+                if (row.title == title) return false
+                sessionRows[sessionId] = row.copy(title = title)
+                return true
+            }
         }
+        return false
+    }
+
+    /** The session is known to have had a prompt: remember it and show its row. Returns whether the row changed. */
+    private fun markEngagedLocked(sessionId: String): Boolean {
+        engagedSessions.add(sessionId)
+        val row = sessionRows[sessionId] ?: return false
+        if (!row.blank) return false
+        sessionRows[sessionId] = row.engaged()
+        return true
     }
 
     // ------------------------------------------------------------------ public RPC surface
-    suspend fun refreshSessions() {
-        val api = apiOrNull() ?: return
-        when (val r = api.sessionList(null)) {
+    /**
+     * Read the session list from the host and replace the mirror with it.
+     *
+     * [quiet] is for reads nobody asked for, the fallback in [refreshSessionsIfStale]: a failure is
+     * logged instead of shown, because a red banner over a chat for a poll the reader never made
+     * is worse than a drawer that is a few seconds behind.
+     *
+     * The result is returned for the surfaces that asked in person — the drawer's pull-to-refresh —
+     * so they can say what happened instead of leaving the banner behind them to do it.
+     */
+    suspend fun refreshSessions(quiet: Boolean = false): SessionListRefresh {
+        val api = apiOrNull() ?: return SessionListRefresh.Failed()
+        return when (val r = api.sessionList(null)) {
             is RpcResult.Ok -> {
                 clearConnectionError()
                 synchronized(lock) {
                     sessionRows.clear()
                     for (item in r.value.items) {
-                        val title = titleBySession[item.sessionId]
-                            ?: extractTitle(item.projections)?.also { titleBySession[item.sessionId] = it }
+                        // A sequenced list row is the host's current title, so a rename made on
+                        // the desktop replaces the one held here; a cached hint never does.
+                        val title = listedTitle(
+                            held = titleBySession[item.sessionId],
+                            listed = extractTitle(item.projections),
+                            listedIsCurrent = item.projections?.kind != "cached",
+                        )?.also { titleBySession[item.sessionId] = it }
                         runningBySession.putIfAbsent(item.sessionId, item.running)
                         sessionRows[item.sessionId] = SessionRow(
                             sessionId = item.sessionId,
                             title = title,
                             running = runningBySession[item.sessionId] ?: item.running,
-                            blank = item.blank,
+                            blank = effectiveBlank(item.blank, item.sessionId in engagedSessions),
                             parentSessionId = item.parentSessionId,
                             origin = item.origin,
                             cwd = item.cwd,
@@ -1623,10 +1698,34 @@ class SessionStore @Inject constructor(
                             ),
                         )
                     }
+                    // A session the host no longer lists has nothing left to remember.
+                    engagedSessions.retainAll(sessionRows.keys)
                     emitSessionsLocked()
                 }
+                SessionListRefresh.Done
             }
-            is RpcResult.Err -> setConnectionError(r.error.message)
+            is RpcResult.Err -> {
+                if (quiet) log("background session list failed: ${r.error.message}") else setConnectionError(r.error.message)
+                SessionListRefresh.Failed(r.error.message)
+            }
+        }
+    }
+
+    /**
+     * The fallback that keeps the drawer honest: re-read the session list unless one was read a
+     * moment ago or is still running.
+     *
+     * The pushes ([handleNotification], [handleControlFrame]) carry most of what changes, but a
+     * push is never replayed after a gap and a few changes have none, so the drawer asks again
+     * when it opens, when the app returns to the foreground, and now and then while it stays open.
+     * [force] skips the spacing for a trigger that must not be swallowed, never the single flight.
+     */
+    suspend fun refreshSessionsIfStale(force: Boolean = false) {
+        if (!sessionSyncThrottle.begin(force)) return
+        try {
+            refreshSessions(quiet = true)
+        } finally {
+            sessionSyncThrottle.end()
         }
     }
 
@@ -3156,5 +3255,12 @@ class SessionStore @Inject constructor(
          * drawn, and the deltas of a single turn arrive far faster than that.
          */
         const val REBUILD_INTERVAL_MS = 50L
+
+        /**
+         * The least time between two fallback list reads. The pushes are the fast path; this read
+         * only repairs what they missed, so a few seconds is soon enough and keeps a drawer that
+         * is opened and closed repeatedly from asking the host each time.
+         */
+        const val SESSION_SYNC_MIN_INTERVAL_MS = 4_000L
     }
 }

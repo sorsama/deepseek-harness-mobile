@@ -3,6 +3,47 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [Unreleased]
+
+### Added
+
+- **Pull down in Sessions to reload the list.** The drawer now answers a downward pull at the top
+  of the list with a small ring that fills under your finger; past the latch it ticks, and letting
+  go re-reads the session list from the harness. While the read runs the ring becomes a spinner, and
+  when it lands the spinner is replaced by a check that pops in before the whole pill springs away.
+  A pull that fails says so in the drawer instead of leaving a banner on the chat behind it. The
+  same read is in the overflow menu and as a screen-reader action on the list, since a pull is not
+  something TalkBack can perform.
+
+### Fixed
+
+- **Sessions started or renamed on the computer now show up in the drawer without reconnecting.** A
+  session you began in the desktop app, or with `dsh` in a terminal, stayed out of the Sessions
+  drawer until the app reconnected, and a rename made there never showed at all. The app only noticed
+  a first message in the chat you had open. It now picks it up for every session, and the drawer also
+  checks again when you open it, when you come back to the app, and every so often while it stays
+  open. Those checks are spaced out and quiet, so they do not add load on the harness or show an
+  error banner if one fails.
+
+- **Tapping beside a dialog now closes it.** The scrim around every dialog in the app ignored taps:
+  the windows are deliberately laid out edge to edge, and the platform only reports a tap as
+  "outside" when it lands beyond the window, which it never could. The new-session picker was the
+  one people noticed. The area around the plate dismisses again, and a tap on the plate itself still
+  does not.
+
+- **The permission presets are no longer touching each other.** The three cards in the permission
+  sheet were drawn at zero offset, so their rounded corners collided and the selected card's accent
+  border ran into its neighbours. Each preset now has a gap of its own.
+
+### Changed
+
+- **The `+` sheet splits commands and skills into two catalogs.** A session can publish dozens of
+  commands and a machine can carry dozens of skills, and the sheet used to put both behind one
+  endless scroll with the search field inside it — so the field scrolled away exactly when the
+  catalog got big enough to need it. Commands and Skills are now tabs with live counts, the tabs and
+  the search stay pinned while only the list scrolls, and the attach actions and send-mode choice
+  moved to a footer bar so they no longer push the catalog off the bottom.
+
 ## [0.19.2] - 2026-11-08
 
 ### Added

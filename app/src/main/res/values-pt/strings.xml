@@ -439,6 +439,8 @@
     <string name="chatlist_pinned">Fixadas</string>
     <string name="chatlist_session_pin">Fixar sessão</string>
     <string name="chatlist_session_unpin">Desafixar sessão</string>
+    <string name="chatlist_refresh">Atualizar sessões</string>
+    <string name="chatlist_refresh_failed">Não foi possível atualizar a lista de sessões.</string>
 
     <string name="harness_questions">Perguntas</string>
     <string name="harness_reply_queued">Resposta na fila</string>

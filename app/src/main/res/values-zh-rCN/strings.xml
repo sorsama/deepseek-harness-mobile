@@ -439,6 +439,8 @@
     <string name="chatlist_pinned">已置顶</string>
     <string name="chatlist_session_pin">置顶会话</string>
     <string name="chatlist_session_unpin">取消置顶</string>
+    <string name="chatlist_refresh">刷新会话</string>
+    <string name="chatlist_refresh_failed">无法刷新会话列表。</string>
 
     <string name="harness_questions">问题</string>
     <string name="harness_reply_queued">回复已排队</string>

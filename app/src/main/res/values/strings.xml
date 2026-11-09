@@ -446,6 +446,9 @@
     <string name="chatlist_pinned">Pinned</string>
     <string name="chatlist_session_pin">Pin session</string>
     <string name="chatlist_session_unpin">Unpin session</string>
+    <!-- Pull-to-refresh in the Sessions drawer: the overflow item and the screen-reader action. -->
+    <string name="chatlist_refresh">Refresh sessions</string>
+    <string name="chatlist_refresh_failed">Couldn\'t refresh the session list.</string>
 
     <string name="harness_questions">Questions</string>
     <string name="harness_reply_queued">Reply queued</string>

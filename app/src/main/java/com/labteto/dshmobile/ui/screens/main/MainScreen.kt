@@ -44,13 +44,18 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.components.DsToastHost
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.theme.DsTheme
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -87,6 +92,23 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     var subagentRequest by remember { mutableStateOf<String?>(null) }
     val store = com.labteto.dshmobile.ui.rememberSessionStore()
     val automationAvailable by store.automationAvailable.collectAsStateWithLifecycle()
+    // Sessions started, renamed or archived on the computer reach this list by push, and a push is
+    // never replayed after a gap, so the drawer also re-reads the list when it opens and when the
+    // app comes back to the front, and now and then while it stays open. The store spaces these
+    // reads out and runs them quietly; see SessionStore.refreshSessionsIfStale.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val drawerWanted = drawerState.targetValue == DrawerValue.Open
+    LaunchedEffect(drawerWanted, lifecycleOwner) {
+        if (!drawerWanted) return@LaunchedEffect
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                store.refreshSessionsIfStale()
+                delay(DrawerSyncPeriodMs)
+            }
+        }
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { scope.launch { store.refreshSessionsIfStale() } }
+
     val toast = rememberDsToast()
     val unsupportedAutomation = stringResource(R.string.ux_b_automation_unavailable)
     LaunchedEffect(automationAvailable, automationsOpen) {
@@ -291,3 +313,6 @@ private const val BackPeek = 0.4f
 
 /** The chat list keeps a sliver of the conversation visible, so the scrim has somewhere to be tapped. */
 private const val DrawerWidthFraction = 0.9f
+
+/** How often an open sessions drawer re-reads the list as a fallback for pushes it missed. */
+private const val DrawerSyncPeriodMs = 15_000L

@@ -46,6 +46,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SwapVert
@@ -112,12 +113,14 @@ import com.labteto.dshmobile.ui.components.HoldMenu
 import com.labteto.dshmobile.ui.components.MascotMark
 import com.labteto.dshmobile.ui.components.MascotState
 import com.labteto.dshmobile.ui.components.MenuItem
+import com.labteto.dshmobile.ui.components.PullToRefreshIndicator
 import com.labteto.dshmobile.ui.components.StateDot
 import com.labteto.dshmobile.ui.components.StateDotState
 import com.labteto.dshmobile.ui.components.clickableWithHold
 import com.labteto.dshmobile.ui.components.rememberCopier
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
+import com.labteto.dshmobile.ui.components.rememberPullToRefresh
 import com.labteto.dshmobile.ui.components.relativeTime
 import com.labteto.dshmobile.ui.rememberHostsStore
 import com.labteto.dshmobile.ui.rememberSessionStore
@@ -236,6 +239,38 @@ fun ChatListDrawer(
     // under a session are open at all, the other whether the newest rows have been widened.
     val collapsed = remember { mutableStateMapOf<String, Boolean>() }
     val hapticsTap = { haptics.tap() }
+
+    // ---- Pull to refresh -------------------------------------------------------------------
+    // The store keeps this list current by itself: pushes carry most changes and the fallback
+    // re-reads on open, on resume and every so often. This is the manual version — a person who
+    // wants to be sure, and the only refresh that says so where the gesture happened. The read is
+    // quiet: a failure lands as a toast in the drawer, not as a banner on the chat underneath it.
+    val refreshLabel = stringResource(R.string.chatlist_refresh)
+    val refreshFailedLabel = stringResource(R.string.chatlist_refresh_failed)
+    var refreshFailure by remember { mutableStateOf<String?>(null) }
+    val refresh = rememberPullRefreshCycle(
+        scope = scope,
+        read = { store.refreshSessions(quiet = true) },
+        onDone = { haptics.confirm() },
+        onFailed = { reason ->
+            haptics.reject()
+            refreshFailure = failureNotice(refreshFailedLabel, reason)
+        },
+    )
+    val refreshPhase by refresh.phase.collectAsStateWithLifecycle()
+    val pull = rememberPullToRefresh(
+        phase = refreshPhase,
+        onRefresh = refresh::start,
+        // A held row is being dragged by the finger; the pull would fight it for the same gesture.
+        enabled = !reorder.active,
+    )
+    // The toast waits for the cross to leave: two floating plates in the same place would collide.
+    LaunchedEffect(refreshFailure) {
+        val failure = refreshFailure ?: return@LaunchedEffect
+        delay(320)
+        toast.second(failure)
+        refreshFailure = null
+    }
 
     LaunchedEffect(query) {
         delay(250)
@@ -510,6 +545,7 @@ fun ChatListDrawer(
                 onNewWorkspace = { newWorkspaceOpen = true },
                 onWorkspaces = { workspacesOpen = true },
                 onAutomations = onOpenAutomations,
+                onRefresh = refresh::start,
             )
         }
 
@@ -619,7 +655,25 @@ fun ChatListDrawer(
         Spacer(Modifier.height(DsSpacing.small))
 
         Box(Modifier.weight(1f)) {
-            LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(pull.modifier)
+                    // The list slides down to make room for the pill, so the indicator never sits
+                    // on the first row; the pull lays it out, so a drag does not recompose the list.
+                    .then(pull.followModifier)
+                    // A pull is not reachable with a screen reader, so the same read is exposed as
+                    // an action on the list (and in the overflow menu) with the same wording.
+                    .semantics {
+                        customActions = listOf(
+                            CustomAccessibilityAction(refreshLabel) {
+                                refresh.start()
+                                true
+                            },
+                        )
+                    },
+            ) {
                 if (query.isNotBlank()) {
                     item(key = "search-header") {
                         Text(
@@ -875,6 +929,14 @@ fun ChatListDrawer(
                 }
             }
 
+            // The pull indicator paints over the list's top edge; the toast still wins the top
+            // centre, which is why a failed read waits for the pill to leave before it speaks.
+            PullToRefreshIndicator(
+                pull = pull,
+                phase = refreshPhase,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+
             // A drop the harness refused, or an approval it did not take: said here, where the
             // person is looking, rather than on a chat banner behind the drawer.
             DsToastHost(toast, modifier = Modifier.align(Alignment.TopCenter), belowStatusBar = false)
@@ -1039,7 +1101,7 @@ private fun SortButton(sort: String, onPick: (sort: String) -> Unit) {
     )
 }
 
-/** New session, new workspace, workspace management and automations — the old drawer's verbs. */
+/** New session, new workspace, workspace management, automations and a manual refresh. */
 @Composable
 private fun MoreMenu(
     automationAvailable: Boolean,
@@ -1047,6 +1109,7 @@ private fun MoreMenu(
     onNewWorkspace: () -> Unit,
     onWorkspaces: () -> Unit,
     onAutomations: () -> Unit,
+    onRefresh: () -> Unit,
 ) {
     DsIconMenu(
         icon = Icons.Outlined.MoreVert,
@@ -1058,6 +1121,9 @@ private fun MoreMenu(
             if (automationAvailable) {
                 add(MenuItem(stringResource(R.string.harness_automations), icon = FeatherIcons.Zap, onClick = onAutomations))
             }
+            // The pull is the fast path; this is the same read for TalkBack and for anyone who
+            // would rather not drag. It runs the same cycle, so it animates the same pill.
+            add(MenuItem(stringResource(R.string.chatlist_refresh), icon = Icons.Outlined.Refresh, onClick = onRefresh))
         },
     )
 }

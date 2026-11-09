@@ -439,6 +439,8 @@
     <string name="chatlist_pinned">پن شدہ</string>
     <string name="chatlist_session_pin">سیشن پن کریں</string>
     <string name="chatlist_session_unpin">سیشن ان پن کریں</string>
+    <string name="chatlist_refresh">سیشنز تازہ کریں</string>
+    <string name="chatlist_refresh_failed">سیشنز کی فہرست تازہ نہیں ہو سکی۔</string>
 
     <string name="harness_questions">سوالات</string>
     <string name="harness_reply_queued">جواب قطار میں ہے</string>

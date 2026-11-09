@@ -439,6 +439,8 @@
     <string name="chatlist_pinned">पिन किए गए</string>
     <string name="chatlist_session_pin">सेशन पिन करें</string>
     <string name="chatlist_session_unpin">सेशन अनपिन करें</string>
+    <string name="chatlist_refresh">सेशन रीफ़्रेश करें</string>
+    <string name="chatlist_refresh_failed">सेशन की सूची रीफ़्रेश नहीं हो सकी।</string>
 
     <string name="harness_questions">प्रश्न</string>
     <string name="harness_reply_queued">उत्तर कतार में है</string>
