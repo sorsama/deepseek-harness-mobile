@@ -153,11 +153,6 @@
     <string name="settings_follow_streaming_hint">يُبقي أحدث رسالة ظاهرة أثناء كتابة الرد. مرّر لأعلى لتقرأ براحتك، وتعود المتابعة عندما تنزل إلى الأسفل.</string>
     <string name="settings_plugins">الإضافات</string>
     <string name="settings_plugins_inventory">قائمة الإضافات</string>
-    <string name="settings_language">اللغة</string>
-    <string name="settings_appearance">المظهر</string>
-    <string name="settings_appearance_light">فاتح</string>
-    <string name="settings_appearance_dark">داكن</string>
-    <string name="settings_appearance_system">النظام</string>
     <string name="settings_readonly_banner">الإعدادات للقراءة فقط عبر الشبكة. لتغييرها، افتح harness على الكمبيوتر الذي يعمل عليه.</string>
     <string name="settings_notifications">الإشعارات</string>
     <string name="settings_notifications_turn">الإشعار عند اكتمال جولة</string>
@@ -254,7 +249,6 @@
     <string name="settings_connection_disconnect">قطع الاتصال</string>
     <string name="settings_connection_disconnect_confirm">قطع الاتصال بـ harness؟</string>
     <string name="settings_connection_disconnect_message">ستعود إلى شاشة الاتصال.</string>
-    <string name="settings_language_system">افتراضي النظام</string>
     <string name="settings_harness">Harness</string>
     <string name="settings_data">البيانات</string>
     <string name="settings_forget_hosts">نسيان أجهزة harness المحفوظة</string>

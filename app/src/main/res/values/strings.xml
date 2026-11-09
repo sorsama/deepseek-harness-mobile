@@ -203,11 +203,6 @@
     <string name="settings_follow_streaming_hint">Keeps the newest message in view while a reply is written. Scroll up to read at your own pace. Following starts again when you return to the bottom.</string>
     <string name="settings_plugins">Plugins</string>
     <string name="settings_plugins_inventory">Plugin inventory</string>
-    <string name="settings_language">Language</string>
-    <string name="settings_appearance">Appearance</string>
-    <string name="settings_appearance_light">Light</string>
-    <string name="settings_appearance_dark">Dark</string>
-    <string name="settings_appearance_system">System</string>
     <string name="settings_readonly_banner">Settings are read-only over the network. Open the harness on its own computer to change them.</string>
     <string name="settings_notifications">Notifications</string>
     <string name="settings_notifications_turn">Notify when a turn completes</string>
@@ -223,7 +218,6 @@
     <string name="settings_connection_disconnect">Disconnect</string>
     <string name="settings_connection_disconnect_confirm">Disconnect from the harness?</string>
     <string name="settings_connection_disconnect_message">You will return to the connection screen.</string>
-    <string name="settings_language_system">System default</string>
     <string name="settings_harness">Harness</string>
     <string name="settings_data">Data</string>
     <string name="settings_forget_hosts">Forget remembered harnesses</string>

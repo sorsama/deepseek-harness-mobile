@@ -44,7 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
@@ -61,7 +61,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.*
 import com.labteto.dshmobile.ui.components.DetentCounter
 import com.labteto.dshmobile.ui.components.DsBottomSheet
 import com.labteto.dshmobile.ui.components.DsButton
@@ -123,8 +123,8 @@ internal fun AccentPickerSheet(
     onDismiss: () -> Unit,
 ) {
     DsBottomSheet(
-        title = stringResource(R.string.appearance_custom_title),
-        subtitle = stringResource(R.string.appearance_custom_hint),
+        title = stringResource(Res.string.appearance_custom_title),
+        subtitle = stringResource(Res.string.appearance_custom_hint),
         onDismiss = onDismiss,
     ) {
         AccentPickerContent(initial = initial, onApply = onApply, onDismiss = onDismiss)
@@ -167,7 +167,7 @@ private fun AccentPickerContent(
         verticalArrangement = Arrangement.spacedBy(DsSpacing.medium),
     ) {
         // Both schemes at once, because the pick is judged in whichever one the phone is not in.
-        Text(stringResource(R.string.appearance_custom_preview), style = DsType.label12, color = colors.labelTertiary)
+        Text(stringResource(Res.string.appearance_custom_preview), style = DsType.label12, color = colors.labelTertiary)
         Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
             AccentPreview(ramp = ramp, dark = true, modifier = Modifier.weight(1f))
             AccentPreview(ramp = ramp, dark = false, modifier = Modifier.weight(1f))
@@ -186,8 +186,8 @@ private fun AccentPickerContent(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            label = stringResource(R.string.appearance_custom_hex),
-            placeholder = stringResource(R.string.appearance_custom_hex_placeholder),
+            label = stringResource(Res.string.appearance_custom_hex),
+            placeholder = stringResource(Res.string.appearance_custom_hex_placeholder),
             mono = true,
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Characters,
@@ -198,13 +198,13 @@ private fun AccentPickerContent(
         )
         if (hexState == HexInput.Invalid) {
             Text(
-                stringResource(R.string.appearance_custom_hex_invalid),
+                stringResource(Res.string.appearance_custom_hex_invalid),
                 style = DsType.caption11,
                 color = colors.error,
             )
         }
 
-        Text(stringResource(R.string.appearance_custom_quick_picks), style = DsType.label12, color = colors.labelTertiary)
+        Text(stringResource(Res.string.appearance_custom_quick_picks), style = DsType.label12, color = colors.labelTertiary)
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
             verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
@@ -223,7 +223,7 @@ private fun AccentPickerContent(
 
         Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
             DsButton(
-                text = stringResource(R.string.common_cancel),
+                text = stringResource(Res.string.common_cancel),
                 onClick = {
                     haptics.tap()
                     hide { onDismiss() }
@@ -233,7 +233,7 @@ private fun AccentPickerContent(
                 modifier = Modifier.weight(1f),
             )
             DsButton(
-                text = stringResource(R.string.appearance_custom_apply),
+                text = stringResource(Res.string.appearance_custom_apply),
                 onClick = {
                     haptics.confirm()
                     // Applied first, then the sheet slides away: the theme changes under it, so the
@@ -256,7 +256,7 @@ private fun AccentPickerContent(
 @Composable
 private fun AccentPreview(ramp: AccentRamp, dark: Boolean, modifier: Modifier = Modifier) {
     val scheme = (if (dark) DsThemeTokens.dark else DsThemeTokens.light).withAccent(ramp, dark)
-    val name = stringResource(if (dark) R.string.settings_appearance_dark else R.string.settings_appearance_light)
+    val name = stringResource(if (dark) Res.string.settings_appearance_dark else Res.string.settings_appearance_light)
     Column(
         modifier = modifier
             .clip(DsShapes.block)
@@ -275,7 +275,7 @@ private fun AccentPreview(ramp: AccentRamp, dark: Boolean, modifier: Modifier = 
                 .background(scheme.accent),
             contentAlignment = Alignment.Center,
         ) {
-            Text(stringResource(R.string.appearance_custom_sample_button), style = DsType.button, color = scheme.onAccent)
+            Text(stringResource(Res.string.appearance_custom_sample_button), style = DsType.button, color = scheme.onAccent)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -285,7 +285,7 @@ private fun AccentPreview(ramp: AccentRamp, dark: Boolean, modifier: Modifier = 
                     .border(1.dp, scheme.accentBorder, DsShapes.chip)
                     .padding(horizontal = DsSpacing.xsmall, vertical = DsSpacing.tiny),
             ) {
-                Text(stringResource(R.string.appearance_custom_sample_chip), style = DsType.caption11Strong, color = scheme.accent)
+                Text(stringResource(Res.string.appearance_custom_sample_chip), style = DsType.caption11Strong, color = scheme.accent)
             }
             Spacer(Modifier.weight(1f))
             Box(
@@ -305,7 +305,7 @@ private fun AccentPreview(ramp: AccentRamp, dark: Boolean, modifier: Modifier = 
             }
         }
         Text(
-            stringResource(R.string.appearance_custom_sample_link),
+            stringResource(Res.string.appearance_custom_sample_link),
             style = DsType.small13.copy(textDecoration = TextDecoration.Underline),
             color = scheme.accent,
         )
@@ -333,16 +333,16 @@ private fun SaturationBrightnessArea(
     val brightnessDetents = remember { DetentCounter(DETENT_STEP) }
     var size by remember { mutableStateOf(IntSize.Zero) }
     val hue = remember(hsv.h) { hsvToColor(hsv.h, 1f, 1f) }
-    val label = stringResource(R.string.appearance_custom_area)
+    val label = stringResource(Res.string.appearance_custom_area)
     val state = stringResource(
-        R.string.appearance_custom_area_state,
+        Res.string.appearance_custom_area_state,
         (hsv.s * 100f).roundToInt(),
         (hsv.v * 100f).roundToInt(),
     )
-    val moreSaturation = stringResource(R.string.appearance_custom_more_saturation)
-    val lessSaturation = stringResource(R.string.appearance_custom_less_saturation)
-    val moreBrightness = stringResource(R.string.appearance_custom_more_brightness)
-    val lessBrightness = stringResource(R.string.appearance_custom_less_brightness)
+    val moreSaturation = stringResource(Res.string.appearance_custom_more_saturation)
+    val lessSaturation = stringResource(Res.string.appearance_custom_less_saturation)
+    val moreBrightness = stringResource(Res.string.appearance_custom_more_brightness)
+    val lessBrightness = stringResource(Res.string.appearance_custom_less_brightness)
 
     fun report(position: Offset) {
         if (size.width <= 0 || size.height <= 0) return
@@ -419,8 +419,8 @@ private fun HueStrip(
     // A detent every 10 degrees: 36 notches around the wheel, laid out flat.
     val hueDetents = remember { DetentCounter(HUE_DETENT_DEGREES) }
     var size by remember { mutableStateOf(IntSize.Zero) }
-    val label = stringResource(R.string.appearance_custom_hue)
-    val state = stringResource(R.string.appearance_custom_hue_state, hsv.h.roundToInt())
+    val label = stringResource(Res.string.appearance_custom_hue)
+    val state = stringResource(Res.string.appearance_custom_hue_state, hsv.h.roundToInt())
     val stops = remember { (0..6).map { Color.hsv(it * 60f, 1f, 1f) } }
 
     fun report(x: Float) {
@@ -500,7 +500,7 @@ private fun PickerThumb(x: Float, y: Float, fill: Color) {
 private fun QuickPick(color: Color, selected: Boolean, onClick: () -> Unit) {
     val colors = DsTheme.colors
     val hex = color.toAccentHex()
-    val description = stringResource(R.string.appearance_custom_quick_pick, hex)
+    val description = stringResource(Res.string.appearance_custom_quick_pick, hex)
     Box(
         modifier = Modifier
             .size(DsSpacing.touchTarget)
@@ -531,3 +531,5 @@ private fun QuickPick(color: Color, selected: Boolean, onClick: () -> Unit) {
         }
     }
 }
+
+

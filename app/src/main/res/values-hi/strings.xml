@@ -153,11 +153,6 @@
     <string name="settings_follow_streaming_hint">जवाब लिखे जाते समय सबसे नया संदेश स्क्रीन पर बना रहता है। अपनी रफ़्तार से पढ़ने के लिए ऊपर स्क्रॉल करें। नीचे लौटते ही यह फिर चालू हो जाता है।</string>
     <string name="settings_plugins">प्लगइन</string>
     <string name="settings_plugins_inventory">प्लगइन सूची</string>
-    <string name="settings_language">भाषा</string>
-    <string name="settings_appearance">दिखावट</string>
-    <string name="settings_appearance_light">लाइट</string>
-    <string name="settings_appearance_dark">डार्क</string>
-    <string name="settings_appearance_system">सिस्टम</string>
     <string name="settings_readonly_banner">नेटवर्क से सेटिंग्स सिर्फ़ देखी जा सकती हैं। बदलने के लिए harness को उसके अपने कंप्यूटर पर खोलें।</string>
     <string name="settings_notifications">सूचनाएं</string>
     <string name="settings_notifications_turn">टर्न पूरा होने पर बताएँ</string>
@@ -254,7 +249,6 @@
     <string name="settings_connection_disconnect">डिस्कनेक्ट करें</string>
     <string name="settings_connection_disconnect_confirm">harness से डिस्कनेक्ट करें?</string>
     <string name="settings_connection_disconnect_message">आप कनेक्शन स्क्रीन पर लौट जाएँगे।</string>
-    <string name="settings_language_system">सिस्टम डिफ़ॉल्ट</string>
     <string name="settings_harness">Harness</string>
     <string name="settings_data">डेटा</string>
     <string name="settings_forget_hosts">याद किए गए harness भूल जाएँ</string>

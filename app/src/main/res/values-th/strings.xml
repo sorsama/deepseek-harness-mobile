@@ -153,11 +153,6 @@
     <string name="settings_follow_streaming_hint">เลื่อนตามข้อความล่าสุดขณะกำลังเขียนคำตอบ เลื่อนขึ้นเพื่ออ่านตามสบาย พอกลับลงมาล่างสุดก็จะเลื่อนตามอีกครั้ง</string>
     <string name="settings_plugins">ปลั๊กอิน</string>
     <string name="settings_plugins_inventory">รายการปลั๊กอิน</string>
-    <string name="settings_language">ภาษา</string>
-    <string name="settings_appearance">รูปลักษณ์</string>
-    <string name="settings_appearance_light">สว่าง</string>
-    <string name="settings_appearance_dark">มืด</string>
-    <string name="settings_appearance_system">ตามระบบ</string>
     <string name="settings_readonly_banner">ผ่านเครือข่ายแก้การตั้งค่าไม่ได้ ต้องไปแก้ที่คอมพิวเตอร์ที่รัน harness โดยตรง</string>
     <string name="settings_notifications">การแจ้งเตือน</string>
     <string name="settings_notifications_turn">แจ้งเตือนเมื่อเทิร์นเสร็จ</string>
@@ -254,7 +249,6 @@
     <string name="settings_connection_disconnect">ตัดการเชื่อมต่อ</string>
     <string name="settings_connection_disconnect_confirm">ตัดการเชื่อมต่อจาก harness หรือไม่</string>
     <string name="settings_connection_disconnect_message">คุณจะกลับไปที่หน้าเชื่อมต่อ</string>
-    <string name="settings_language_system">ค่าเริ่มต้นของระบบ</string>
     <string name="settings_harness">Harness</string>
     <string name="settings_data">ข้อมูล</string>
     <string name="settings_forget_hosts">ลืม harness ที่จดจำไว้</string>

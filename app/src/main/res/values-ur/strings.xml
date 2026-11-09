@@ -153,11 +153,6 @@
     <string name="settings_follow_streaming_hint">جواب لکھے جانے کے دوران تازہ ترین پیغام نظر میں رکھتا ہے۔ آرام سے پڑھنے کے لیے اوپر اسکرول کریں۔ نیچے واپس آتے ہی یہ دوبارہ ساتھ چلنے لگتا ہے۔</string>
     <string name="settings_plugins">پلگ انز</string>
     <string name="settings_plugins_inventory">پلگ ان کی فہرست</string>
-    <string name="settings_language">زبان</string>
-    <string name="settings_appearance">ظاہری شکل</string>
-    <string name="settings_appearance_light">روشن</string>
-    <string name="settings_appearance_dark">تاریک</string>
-    <string name="settings_appearance_system">سسٹم</string>
     <string name="settings_readonly_banner">سیٹنگز نیٹ ورک پر صرف پڑھنے کے لیے ہیں۔ انہیں تبدیل کرنے کے لیے harness کو اس کے اپنے کمپیوٹر پر کھولیں۔</string>
     <string name="settings_notifications">اطلاعات</string>
     <string name="settings_notifications_turn">ٹرن مکمل ہونے پر اطلاع دیں</string>
@@ -254,7 +249,6 @@
     <string name="settings_connection_disconnect">کنکشن ختم کریں</string>
     <string name="settings_connection_disconnect_confirm">Harness سے کنکشن ختم کریں؟</string>
     <string name="settings_connection_disconnect_message">آپ کنکشن اسکرین پر واپس چلے جائیں گے۔</string>
-    <string name="settings_language_system">سسٹم ڈیفالٹ</string>
     <string name="settings_harness">Harness</string>
     <string name="settings_data">ڈیٹا</string>
     <string name="settings_forget_hosts">محفوظ harness بھول جائیں</string>

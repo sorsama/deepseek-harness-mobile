@@ -34,23 +34,6 @@ import javax.inject.Inject
  * A null [tag] clears the override. Without it the picker is a one-way door — once a language is
  * chosen there is no way back to whatever the device is set to.
  */
-data class LanguageOption(val tag: String?, val label: String?, val labelRes: Int? = null)
-
-val LanguageOptions = listOf(
-    LanguageOption(null, null, com.labteto.dshmobile.R.string.settings_language_system),
-    LanguageOption("en", "English"),
-    LanguageOption("zh", "中文"),
-    LanguageOption("hi", "हिन्दी"),
-    LanguageOption("es", "Español"),
-    LanguageOption("fr", "Français"),
-    LanguageOption("ar", "العربية"),
-    LanguageOption("bn", "বাংলা"),
-    LanguageOption("pt", "Português"),
-    LanguageOption("ru", "Русский"),
-    LanguageOption("ur", "اردو"),
-    LanguageOption("th", "ไทย"),
-)
-
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val hostsStore: HostsStore,

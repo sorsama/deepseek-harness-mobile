@@ -153,11 +153,6 @@
     <string name="settings_follow_streaming_hint">回复生成时，始终显示最新的消息。向上滚动可以慢慢阅读，回到底部后会继续跟随。</string>
     <string name="settings_plugins">插件</string>
     <string name="settings_plugins_inventory">插件清单</string>
-    <string name="settings_language">语言</string>
-    <string name="settings_appearance">外观</string>
-    <string name="settings_appearance_light">浅色</string>
-    <string name="settings_appearance_dark">深色</string>
-    <string name="settings_appearance_system">跟随系统</string>
     <string name="settings_readonly_banner">通过网络连接时，设置是只读的。要修改设置，请在运行 harness 的电脑上操作。</string>
     <string name="settings_notifications">通知</string>
     <string name="settings_notifications_turn">回合完成时通知</string>
@@ -254,7 +249,6 @@
     <string name="settings_connection_disconnect">断开连接</string>
     <string name="settings_connection_disconnect_confirm">要断开与 harness 的连接吗？</string>
     <string name="settings_connection_disconnect_message">你将返回连接界面。</string>
-    <string name="settings_language_system">跟随系统</string>
     <string name="settings_harness">Harness</string>
     <string name="settings_data">数据</string>
     <string name="settings_forget_hosts">忘记已保存的 harness</string>

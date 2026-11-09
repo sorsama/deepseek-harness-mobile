@@ -63,6 +63,17 @@ function androidStrings(dir) {
 
 const unescape = (text) => text.replace(/\\'/g, "'");
 
+// Strings the Android resources mark translatable="false" live only in `values/`; their text is
+// the same in every locale (a hex placeholder, a product name). A shared copy needs a line in each
+// locale file, so those keys are filled from the default locale instead of being reported missing.
+const nonTranslatable = new Set();
+for (const name of readdirSync(join(androidRes, 'values')).filter((n) => /^strings.*\.xml$/.test(n))) {
+  const text = read(join(androidRes, 'values', name));
+  for (const m of text.matchAll(/<string name="([^"]+)"([^>]*)>/g)) {
+    if (/translatable="false"/.test(m[2])) nonTranslatable.add(m[1]);
+  }
+}
+
 const locales = readdirSync(androidRes).filter((n) => n === 'values' || /^values-[a-z]{2}(-r[A-Z]{2})?$/.test(n)).sort();
 let failed = false;
 
@@ -71,6 +82,7 @@ for (const locale of locales) {
   const dir = join(androidRes, locale);
   if (!existsSync(join(dir, 'strings.xml'))) continue;
   const strings = androidStrings(dir);
+  const defaultStrings = locale === 'values' ? strings : androidStrings(join(androidRes, 'values'));
   const out = join(sharedRes, locale, 'strings.xml');
   // What the shared file says now, for a string that has already left the Android resources.
   const shared = new Map();
@@ -79,6 +91,9 @@ for (const locale of locales) {
   for (const key of [...keys].sort()) {
     if (strings.has(key)) lines.push(`    <string name="${key}">${unescape(strings.get(key))}</string>`);
     else if (shared.has(key)) lines.push(`    <string name="${key}">${shared.get(key)}</string>`);
+    else if (nonTranslatable.has(key)) {
+      lines.push(`    <string name="${key}">${unescape(defaultStrings.get(key))}</string>`);
+    }
     else {
       console.error(`${locale}: neither the Android resources nor the shared ones have "${key}"`);
       failed = true;
@@ -126,3 +141,4 @@ if (prune && !check && !failed) {
 
 if (failed) process.exit(1);
 console.log(check ? 'shared strings are in sync' : `wrote ${keys.size} strings in ${locales.length} locales`);
+
