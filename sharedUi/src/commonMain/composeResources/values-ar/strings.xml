@@ -14,7 +14,7 @@
     <string name="appearance_amoled_hint">خلفية سوداء نقية لشاشات OLED</string>
     <string name="appearance_custom_apply">تطبيق</string>
     <string name="appearance_custom_area">التشبّع والسطوع</string>
-    <string name="appearance_custom_area_state">التشبّع %1$d%%، السطوع %2$d%%</string>
+    <string name="appearance_custom_area_state">التشبّع %1$s، السطوع %2$s</string>
     <string name="appearance_custom_hex">لون سداسي عشري</string>
     <string name="appearance_custom_hex_invalid">استخدم ستة أرقام سداسية عشرية، مثل #6E9BFF</string>
     <string name="appearance_custom_hex_placeholder">#RRGGBB</string>
@@ -187,3 +187,4 @@
     <string name="settings_language_system">افتراضي النظام</string>
     <string name="settings_title">الإعدادات</string>
 </resources>
+

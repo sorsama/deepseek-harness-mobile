@@ -336,8 +336,8 @@ private fun SaturationBrightnessArea(
     val label = stringResource(Res.string.appearance_custom_area)
     val state = stringResource(
         Res.string.appearance_custom_area_state,
-        (hsv.s * 100f).roundToInt(),
-        (hsv.v * 100f).roundToInt(),
+        "${(hsv.s * 100f).roundToInt()}%",
+        "${(hsv.v * 100f).roundToInt()}%",
     )
     val moreSaturation = stringResource(Res.string.appearance_custom_more_saturation)
     val lessSaturation = stringResource(Res.string.appearance_custom_less_saturation)
@@ -531,5 +531,6 @@ private fun QuickPick(color: Color, selected: Boolean, onClick: () -> Unit) {
         }
     }
 }
+
 
 

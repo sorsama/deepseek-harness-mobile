@@ -14,7 +14,7 @@
     <string name="appearance_amoled_hint">OLED 屏幕专用的纯黑背景</string>
     <string name="appearance_custom_apply">应用</string>
     <string name="appearance_custom_area">饱和度和亮度</string>
-    <string name="appearance_custom_area_state">饱和度 %1$d%%，亮度 %2$d%%</string>
+    <string name="appearance_custom_area_state">饱和度 %1$s，亮度 %2$s</string>
     <string name="appearance_custom_hex">十六进制颜色</string>
     <string name="appearance_custom_hex_invalid">请输入六位十六进制数字，例如 #6E9BFF</string>
     <string name="appearance_custom_hex_placeholder">#RRGGBB</string>
@@ -187,3 +187,4 @@
     <string name="settings_language_system">跟随系统</string>
     <string name="settings_title">设置</string>
 </resources>
+

@@ -14,7 +14,7 @@
     <string name="appearance_amoled_hint">Pure black canvas for OLED screens</string>
     <string name="appearance_custom_apply">Apply</string>
     <string name="appearance_custom_area">Saturation and brightness</string>
-    <string name="appearance_custom_area_state">Saturation %1$d%%, brightness %2$d%%</string>
+    <string name="appearance_custom_area_state">Saturation %1$s, brightness %2$s</string>
     <string name="appearance_custom_hex">Hex color</string>
     <string name="appearance_custom_hex_invalid">Use six hex digits, like #6E9BFF</string>
     <string name="appearance_custom_hex_placeholder">#RRGGBB</string>
@@ -187,3 +187,4 @@
     <string name="settings_language_system">System default</string>
     <string name="settings_title">Settings</string>
 </resources>
+

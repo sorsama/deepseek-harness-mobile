@@ -14,7 +14,7 @@
     <string name="appearance_amoled_hint">OLED স্ক্রিনের জন্য পুরো কালো ব্যাকগ্রাউন্ড</string>
     <string name="appearance_custom_apply">প্রয়োগ করুন</string>
     <string name="appearance_custom_area">স্যাচুরেশন ও উজ্জ্বলতা</string>
-    <string name="appearance_custom_area_state">স্যাচুরেশন %1$d%%, উজ্জ্বলতা %2$d%%</string>
+    <string name="appearance_custom_area_state">স্যাচুরেশন %1$s, উজ্জ্বলতা %2$s</string>
     <string name="appearance_custom_hex">হেক্স রঙ</string>
     <string name="appearance_custom_hex_invalid">ছয়টি হেক্স অঙ্ক দিন, যেমন #6E9BFF</string>
     <string name="appearance_custom_hex_placeholder">#RRGGBB</string>
@@ -187,3 +187,4 @@
     <string name="settings_language_system">সিস্টেম ডিফল্ট</string>
     <string name="settings_title">সেটিংস</string>
 </resources>
+

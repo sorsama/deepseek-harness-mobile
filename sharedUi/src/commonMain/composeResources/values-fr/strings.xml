@@ -14,7 +14,7 @@
     <string name="appearance_amoled_hint">Fond noir absolu pour les écrans OLED</string>
     <string name="appearance_custom_apply">Appliquer</string>
     <string name="appearance_custom_area">Saturation et luminosité</string>
-    <string name="appearance_custom_area_state">Saturation %1$d %%, luminosité %2$d %%</string>
+    <string name="appearance_custom_area_state">Saturation %1$s, luminosité %2$s</string>
     <string name="appearance_custom_hex">Couleur hexadécimale</string>
     <string name="appearance_custom_hex_invalid">Saisissez six chiffres hexadécimaux, comme #6E9BFF</string>
     <string name="appearance_custom_hex_placeholder">#RRGGBB</string>
@@ -187,3 +187,4 @@
     <string name="settings_language_system">Par défaut du système</string>
     <string name="settings_title">Paramètres</string>
 </resources>
+

@@ -14,7 +14,7 @@
     <string name="appearance_amoled_hint">พื้นหลังดำสนิทสำหรับจอ OLED</string>
     <string name="appearance_custom_apply">ใช้</string>
     <string name="appearance_custom_area">ความอิ่มสีและความสว่าง</string>
-    <string name="appearance_custom_area_state">ความอิ่มสี %1$d%%, ความสว่าง %2$d%%</string>
+    <string name="appearance_custom_area_state">ความอิ่มสี %1$s, ความสว่าง %2$s</string>
     <string name="appearance_custom_hex">สีแบบเลขฐานสิบหก</string>
     <string name="appearance_custom_hex_invalid">ใส่เลขฐานสิบหก 6 หลัก เช่น #6E9BFF</string>
     <string name="appearance_custom_hex_placeholder">#RRGGBB</string>
@@ -187,3 +187,4 @@
     <string name="settings_language_system">ค่าเริ่มต้นของระบบ</string>
     <string name="settings_title">การตั้งค่า</string>
 </resources>
+

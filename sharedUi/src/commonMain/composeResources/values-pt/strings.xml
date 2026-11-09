@@ -14,7 +14,7 @@
     <string name="appearance_amoled_hint">Fundo preto puro para telas OLED</string>
     <string name="appearance_custom_apply">Aplicar</string>
     <string name="appearance_custom_area">Saturação e brilho</string>
-    <string name="appearance_custom_area_state">Saturação %1$d%%, brilho %2$d%%</string>
+    <string name="appearance_custom_area_state">Saturação %1$s, brilho %2$s</string>
     <string name="appearance_custom_hex">Cor hexadecimal</string>
     <string name="appearance_custom_hex_invalid">Use seis dígitos hexadecimais, como #6E9BFF</string>
     <string name="appearance_custom_hex_placeholder">#RRGGBB</string>
@@ -187,3 +187,4 @@
     <string name="settings_language_system">Padrão do sistema</string>
     <string name="settings_title">Configurações</string>
 </resources>
+

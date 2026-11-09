@@ -14,7 +14,7 @@
     <string name="appearance_amoled_hint">OLED स्क्रीन के लिए पूरी तरह काली पृष्ठभूमि</string>
     <string name="appearance_custom_apply">लागू करें</string>
     <string name="appearance_custom_area">सैचुरेशन और ब्राइटनेस</string>
-    <string name="appearance_custom_area_state">सैचुरेशन %1$d%%, ब्राइटनेस %2$d%%</string>
+    <string name="appearance_custom_area_state">सैचुरेशन %1$s, ब्राइटनेस %2$s</string>
     <string name="appearance_custom_hex">हेक्स रंग</string>
     <string name="appearance_custom_hex_invalid">छह हेक्स अंक दर्ज करें, जैसे #6E9BFF</string>
     <string name="appearance_custom_hex_placeholder">#RRGGBB</string>
@@ -187,3 +187,4 @@
     <string name="settings_language_system">सिस्टम डिफ़ॉल्ट</string>
     <string name="settings_title">सेटिंग्स</string>
 </resources>
+
