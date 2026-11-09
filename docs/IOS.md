@@ -575,6 +575,30 @@ with a reachable harness, the forget menu), and the same 12 in French and Arabic
 pixel for pixel, status bar included.** One French shot differed on its first run by a hover highlight round the
 Settings button; a second run of both builds was identical.
 
+### How M4b was verified on Android
+
+The Pair screen moved into `:sharedUi`, so the Android Pair screen had to stay exactly what it was: the same
+two builds and the same adb script, compared pixel for pixel. The build before is `main` at `271e19e`, the merge
+this branch is based on; the build after is this branch's `:app:assembleDebug`.
+
+Emulator DSH_Verify37 (API 37, 1080×2340), animations off, the status bar pinned with the demo-mode broadcast,
+and the on-screen keyboard disabled: an IME is system chrome, and a swipe meant to scroll the form would type
+into it. The same eight states came from both builds: the Pair screen at rest; a typed relay address; the camera
+sheet in its denied state (the system dialog is answered "Don't allow" — a live preview is not deterministic);
+the failure card for a form submitted with no code; the dark scheme; three-button navigation; French; and Arabic,
+right to left. One adb script (`.team/m4b-verify/drive.ps1`) drove both, and `.team/m4b-verify/compare.py`
+compared the screenshots.
+
+**Screen content is identical in all eight states: zero differing pixels below the status bar.** The
+full-frame comparison differs by 161 to 635 pixels in a 34×33 box at the top-right of the status bar, where the
+emulator's signal-strength icon changed between captures; the demo overlay pins the clock and the battery but not
+that icon across a whole capture set, and the two shots that were taken while it happened to match are identical
+to the pixel. Nothing else was tolerated: a difference anywhere in the screen would have been a regression.
+
+What this does not prove: the camera (the emulator has no camera, so only the denied state is driven), and
+anything that needs a relay on the other end — the exchange itself and every failure kind past the URL and code
+validation are covered by `PairControllerTest` and by the iOS simulator scenarios, not by these screenshots.
+
 ## Pairing on iOS
 
 The Pair screen is shared (`PairContent`, `PairController`); this section is what is iOS about it.
