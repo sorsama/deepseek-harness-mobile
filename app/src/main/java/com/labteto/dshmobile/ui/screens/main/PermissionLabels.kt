@@ -9,12 +9,14 @@ import com.labteto.dshmobile.core.wire.dto.FULL_ACCESS_PRESET
 /**
  * Localized permission-preset labels.
  *
- * The preset table is deployment-configurable on the harness, so labels always come from the wire
- * — except for the presets the harness itself ships, whose ids are
- * fixed (`read-only`, `workspace-write`, `danger-full-access`, and the reserved `auto`, which a
- * deployment can neither rename nor define). Those get the app's own translations, matching the
- * harness web client's locale dictionaries; a deployment that renames a shipped preset keeps the
- * name it chose, exactly like the desktop client.
+ * The preset table is deployment-configurable on the harness, so a label always comes from the wire
+ * — except for the presets the harness itself ships, whose ids are fixed (`read-only`,
+ * `workspace-write`, `danger-full-access`, and the reserved `auto`, which a deployment can neither
+ * rename nor define). Those get the app's own translations, matching the harness web client's
+ * locale dictionaries; a deployment that renames a shipped preset keeps the name it chose.
+ *
+ * The core layer keeps its platform-agnostic [displayPermissionPreset] helper unchanged; the
+ * localization belongs to the UI layer, so this file is the app's only label source.
  */
 
 /** Which shipped preset a value resolves to, or null when the wire label must be kept. */
@@ -35,10 +37,10 @@ private val SHIPPED_DEFAULT_NAMES = mapOf(
 /**
  * Resolve a preset value + host name to a shipped preset worth localizing.
  *
- * Mirrors the harness web client's permission-preset guard: a shipped id is only
- * localized while the host still calls it by its id or by the shipped English label; a
- * deployment-chosen name is kept verbatim. `auto` is the one exception — the harness reserves the
- * id itself (a configured preset may not be named `auto`), so its label is always the app's.
+ * Mirrors the harness web client's permission-preset guard: a shipped id is only localized while the
+ * host still calls it by its id or by the shipped English label; a deployment-chosen name is kept
+ * verbatim. `auto` is the one exception — the harness reserves the id itself (a configured preset
+ * may not be named `auto`), so its label is always the app's.
  */
 internal fun shippedPermissionPreset(value: String, name: String?): ShippedPermissionPreset? = when (value) {
     "read-only", "read", "readonly" -> shippedOrNull(name, value, ShippedPermissionPreset.ReadOnly)
@@ -68,8 +70,11 @@ internal fun permissionPresetLabel(value: String, name: String?): String = when 
 }
 
 /**
- * The wire label, humanised the same way the desktop client does: `workspace-write` ->
+ * The wire label, humanised the way the desktop client does: `workspace-write` ->
  * "Workspace Write"; already-spaced names pass through unchanged.
+ *
+ * Unlike the core helper this keeps a deployment-chosen name for every id, full access included:
+ * a deployment that renamed the full-access preset keeps that name.
  */
 internal fun humanisedPresetLabel(value: String, name: String?): String {
     val host = name?.takeIf { it.isNotBlank() } ?: value

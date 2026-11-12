@@ -159,4 +159,18 @@ class PermissionDtosTest {
         assertEquals(listOf("read-only", "danger-full-access"), select.selectable.map { it.value })
         assertEquals("Custom", select.current?.name)
     }
+
+    @Test
+    fun `labels are humanised the same way the desktop client does`() {
+        assertEquals("Full access", displayPermissionPreset("danger-full-access", "danger-full-access"))
+        assertEquals("Workspace Write", displayPermissionPreset("workspace-write", "workspace-write"))
+        assertEquals("Read Only", displayPermissionPreset("read-only", "read-only"))
+    }
+
+    @Test
+    fun `a deployment that renames a preset keeps its own label`() {
+        // The preset table is configurable, so a local id-to-string map would mislabel any
+        // deployment that renamed one. Only the full-access id gets special treatment.
+        assertEquals("Sandboxed", displayPermissionPreset("workspace-write", "Sandboxed"))
+    }
 }
