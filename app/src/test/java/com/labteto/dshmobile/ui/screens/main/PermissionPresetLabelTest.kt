@@ -4,7 +4,6 @@ import com.labteto.dshmobile.R
 import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -138,6 +137,6 @@ class PermissionPresetLabelTest {
     @Test fun `string resources the composables read exist`() {
         // Guard the R entries the three entry points and the auto description read.
         val names = R.string::class.java.fields.map { it.name }.toSet()
-        for (k in keys) assertNotNull(k, names.contains(k))
+        for (k in keys) assertTrue(k, names.contains(k))
     }
 }
