@@ -535,4 +535,9 @@
     <string name="quota_compact_minute">分</string>
     <string name="quota_other">其他限额</string>
     <string name="quota_remaining_percent">剩余：%1$s</string>
+    <string name="permission_preset_read_only">仅可查看</string>
+    <string name="permission_preset_workspace_write">工作区内修改</string>
+    <string name="permission_preset_full_access">完全权限</string>
+    <string name="permission_preset_auto">自动审查</string>
+    <string name="permission_preset_auto_desc">无沙箱运行；每次原生工具调用和 PTC 内层调用前由同一模型进行实验性审查。</string>
 </resources>

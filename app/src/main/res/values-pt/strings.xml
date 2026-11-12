@@ -535,4 +535,9 @@
     <string name="quota_compact_minute">min</string>
     <string name="quota_other">Outro limite</string>
     <string name="quota_remaining_percent">Restante: %1$s</string>
+    <string name="permission_preset_read_only">Somente leitura</string>
+    <string name="permission_preset_workspace_write">Gravação no espaço de trabalho</string>
+    <string name="permission_preset_full_access">Acesso total</string>
+    <string name="permission_preset_auto">Revisão automática</string>
+    <string name="permission_preset_auto_desc">Executa sem um sandbox após uma revisão experimental do mesmo modelo de cada chamada de ferramenta nativa e chamada interna PTC.</string>
 </resources>

@@ -535,4 +535,9 @@
     <string name="quota_compact_minute">মি</string>
     <string name="quota_other">অন্য সীমা</string>
     <string name="quota_remaining_percent">অবশিষ্ট: %1$s</string>
+    <string name="permission_preset_read_only">শুধু পড়া</string>
+    <string name="permission_preset_workspace_write">ওয়ার্কস্পেসে লেখা</string>
+    <string name="permission_preset_full_access">সম্পূর্ণ অ্যাক্সেস</string>
+    <string name="permission_preset_auto">স্বয়ংক্রিয় পর্যালোচনা</string>
+    <string name="permission_preset_auto_desc">প্রতিটি নেটিভ টুল কল এবং PTC অভ্যন্তরীণ কলের আগে একই মডেলের পরীক্ষামূলক পর্যালোচনার পরে স্যান্ডবক্স ছাড়াই চলে।</string>
 </resources>

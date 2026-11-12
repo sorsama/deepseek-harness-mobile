@@ -39,22 +39,5 @@ data class PermissionSelect(
     val current: PresetOption? get() = options.firstOrNull { it.value == currentValue }
 }
 
-/**
- * The harness's own preset label transform (`ui-permission-presets/src/client/presentation.ts`):
- * the full-access preset gets a friendlier name, everything else is its kebab id in Title Case.
- * The preset table is deployment-configurable, so labels are always derived from the wire — never
- * from a local id-to-string map.
- */
-fun displayPermissionPreset(value: String, name: String = value): String = when (value) {
-    FULL_ACCESS_PRESET -> "Full access"
-    else -> titleCasePreset(name)
-}
-
 /** The preset id whose capability is broad enough to warrant a confirmation step. */
 const val FULL_ACCESS_PRESET = "danger-full-access"
-
-/** `workspace-write` -> `Workspace Write`; already-spaced names pass through unchanged. */
-private fun titleCasePreset(name: String): String = name
-    .split('-', '_')
-    .filter { it.isNotEmpty() }
-    .joinToString(" ") { part -> part.replaceFirstChar { it.uppercaseChar() } }

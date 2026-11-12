@@ -535,4 +535,9 @@
     <string name="quota_compact_minute">د</string>
     <string name="quota_other">حد آخر</string>
     <string name="quota_remaining_percent">المتبقي: %1$s</string>
+    <string name="permission_preset_read_only">قراءة فقط</string>
+    <string name="permission_preset_workspace_write">كتابة في مساحة العمل</string>
+    <string name="permission_preset_full_access">وصول كامل</string>
+    <string name="permission_preset_auto">مراجعة تلقائية</string>
+    <string name="permission_preset_auto_desc">يعمل بدون صندوق حماية بعد مراجعة تجريبية من نفس النموذج لكل استدعاء أداة أصلي وكل استدعاء PTC داخلي.</string>
 </resources>

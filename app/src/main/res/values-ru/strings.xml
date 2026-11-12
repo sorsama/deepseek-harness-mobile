@@ -535,4 +535,9 @@
     <string name="quota_compact_minute">м</string>
     <string name="quota_other">Другой лимит</string>
     <string name="quota_remaining_percent">Осталось: %1$s</string>
+    <string name="permission_preset_read_only">Только чтение</string>
+    <string name="permission_preset_workspace_write">Запись в рабочей области</string>
+    <string name="permission_preset_full_access">Полный доступ</string>
+    <string name="permission_preset_auto">Автопроверка</string>
+    <string name="permission_preset_auto_desc">Запуск без песочницы после экспериментальной проверки той же моделью каждого вызова встроенного инструмента и внутреннего вызова PTC.</string>
 </resources>

@@ -42,7 +42,6 @@ import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.dto.FULL_ACCESS_PRESET
 import com.labteto.dshmobile.core.wire.dto.PermissionSelect
 import com.labteto.dshmobile.core.wire.dto.PresetOption
-import com.labteto.dshmobile.core.wire.dto.displayPermissionPreset
 import com.labteto.dshmobile.ui.components.DsBottomSheet
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonVariant
@@ -156,7 +155,7 @@ private fun PermissionCard(option: PresetOption, selected: Boolean, onSelect: ()
             )
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    displayPermissionPreset(option.value, option.name),
+                    permissionPresetLabel(option.value, option.name),
                     style = DsType.rowTitle,
                     color = colors.labelPrimary,
                     maxLines = 1,
@@ -205,6 +204,7 @@ internal fun permissionIcon(value: String): ImageVector = when (value) {
 internal fun permissionFallbackDescription(value: String): String = when (value) {
     "read-only", "read", "readonly" -> stringResource(R.string.ink_panel_permission_readonly_desc)
     FULL_ACCESS_PRESET -> stringResource(R.string.ink_panel_permission_full_desc)
+    "auto" -> stringResource(R.string.permission_preset_auto_desc)
     else -> stringResource(R.string.ink_panel_permission_workspace_desc)
 }
 
