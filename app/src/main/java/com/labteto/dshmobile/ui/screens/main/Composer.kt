@@ -87,7 +87,6 @@ import com.labteto.dshmobile.core.wire.dto.FULL_ACCESS_PRESET
 import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
 import com.labteto.dshmobile.core.wire.dto.FileAttachmentRef
 import com.labteto.dshmobile.core.wire.dto.PermissionSelect
-import com.labteto.dshmobile.core.wire.dto.displayPermissionPreset
 import com.labteto.dshmobile.ui.components.ContextMeter
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.DsIconButton
@@ -521,11 +520,7 @@ private fun PermissionChip(
     var confirming by remember { mutableStateOf<String?>(null) }
     val effective = pending ?: select.currentValue
     val option = select.options.firstOrNull { it.value == effective }
-    val label = if (option != null) {
-        displayPermissionPreset(option.value, option.name)
-    } else {
-        stringResource(R.string.permission_custom)
-    }
+    val label = permissionPresetLabel(effective, option?.name)
 
     Box {
         Row(

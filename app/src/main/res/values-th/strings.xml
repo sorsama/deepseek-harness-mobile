@@ -535,4 +535,9 @@
     <string name="quota_compact_minute">นาที</string>
     <string name="quota_other">ขีดจำกัดอื่น</string>
     <string name="quota_remaining_percent">คงเหลือ: %1$s</string>
+    <string name="permission_preset_read_only">อ่านอย่างเดียว</string>
+    <string name="permission_preset_workspace_write">เขียนในเวิร์กสเปซ</string>
+    <string name="permission_preset_full_access">เข้าถึงทั้งหมด</string>
+    <string name="permission_preset_auto">ตรวจสอบอัตโนมัติ</string>
+    <string name="permission_preset_auto_desc">รันโดยไม่มีแซนด์บ็อกซ์ หลังจากการตรวจสอบเชิงทดลองโดยโมเดลเดียวกันสำหรับการเรียกใช้เครื่องมือเนทีฟและการเรียก PTC ภายในทุกครั้ง</string>
 </resources>

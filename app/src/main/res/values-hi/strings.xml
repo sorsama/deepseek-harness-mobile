@@ -535,4 +535,9 @@
     <string name="quota_compact_minute">मि</string>
     <string name="quota_other">अन्य सीमा</string>
     <string name="quota_remaining_percent">शेष: %1$s</string>
+    <string name="permission_preset_read_only">केवल पढ़ें</string>
+    <string name="permission_preset_workspace_write">वर्कस्पेस में लिखें</string>
+    <string name="permission_preset_full_access">पूर्ण एक्सेस</string>
+    <string name="permission_preset_auto">स्वतः समीक्षा</string>
+    <string name="permission_preset_auto_desc">हर नेटिव टूल कॉल और PTC आंतरिक कॉल से पहले उसी मॉडल की प्रयोगात्मक समीक्षा के बाद बिना सैंडबॉक्स के चलता है।</string>
 </resources>

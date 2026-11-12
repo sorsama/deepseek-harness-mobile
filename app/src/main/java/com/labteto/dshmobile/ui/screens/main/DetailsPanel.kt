@@ -93,7 +93,6 @@ import com.labteto.dshmobile.core.wire.dto.SessionModelsValue
 import com.labteto.dshmobile.core.wire.dto.SessionStatsView
 import com.labteto.dshmobile.core.wire.dto.SubagentListEntry
 import com.labteto.dshmobile.core.wire.dto.TokenUsageView
-import com.labteto.dshmobile.core.wire.dto.displayPermissionPreset
 import com.labteto.dshmobile.data.ActionOutcome
 import com.labteto.dshmobile.data.ArchiveOutcome
 import com.labteto.dshmobile.data.CommandOutcome
@@ -980,7 +979,7 @@ private fun ModelPermissionCard(
     val effortName = effortDisplayName(models)
     val permissionValue = permissions?.let { select ->
         val effective = pendingPermission ?: select.currentValue
-        displayPermissionPreset(effective, select.current?.name ?: effective)
+        permissionPresetLabel(effective, select.current?.name)
     }
     val permissionHint = permissions?.let { select ->
         val effective = pendingPermission ?: select.currentValue

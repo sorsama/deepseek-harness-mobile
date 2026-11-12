@@ -543,4 +543,9 @@
     <string name="quota_compact_minute">m</string>
     <string name="quota_other">Other limit</string>
     <string name="quota_remaining_percent">%1$s remaining</string>
+    <string name="permission_preset_read_only">Read Only</string>
+    <string name="permission_preset_workspace_write">Workspace Write</string>
+    <string name="permission_preset_full_access">Full access</string>
+    <string name="permission_preset_auto">Auto review</string>
+    <string name="permission_preset_auto_desc">Run without a sandbox after an experimental same-model review of every native tool call and PTC inner call.</string>
 </resources>
