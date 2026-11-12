@@ -106,19 +106,29 @@ internal fun subagentRunning(entry: SubagentListEntry): Boolean = when (entry) {
  * whatever language the client is in. The harness's own web UI covers this by overriding the
  * built-ins with its own translations, and this is the same table for the same four ids.
  *
- * Keyed on `trust == SYSTEM` exactly as the reference is: a preset someone wrote themselves and
- * happened to call `standard` is theirs, and keeps the name they gave it.
+ * `ptc` is the id harness 0.2.x ships; `code` is the id older hosts used, kept as an alias so a
+ * client talking to one of those still gets a translated row.
  */
-private fun builtInPresetStrings(id: String): Pair<Int, Int>? = when (id) {
+internal fun builtInPresetStrings(id: String): Pair<Int, Int>? = when (id) {
     "standard" -> R.string.preset_standard_name to R.string.preset_standard_desc
-    "code" -> R.string.preset_code_name to R.string.preset_code_desc
+    "ptc", "code" -> R.string.preset_code_name to R.string.preset_code_desc
     "minimal" -> R.string.preset_minimal_name to R.string.preset_minimal_desc
     "cordis" -> R.string.preset_cordis_name to R.string.preset_cordis_desc
     else -> null
 }
 
-private fun builtInPresetStrings(entry: AgentPresetEntry): Pair<Int, Int>? =
-    if (entry.trust == AgentPresetTrust.SYSTEM) builtInPresetStrings(entry.id) else null
+/**
+ * Whether a roster row is one of the shipped presets, whose copy the app owns.
+ *
+ * Harness 0.2.1 stopped sending `trust` on `agentPresets/list` — the roster is just
+ * `{id, order, isDefault}` — so every shipped preset arrives [AgentPresetTrust.UNKNOWN], and a
+ * `SYSTEM`-only gate left the picker showing raw ids (`standard`, `ptc`, …) with no descriptions
+ * at all. An id is still proof enough: a roster holds one row per id, so a preset someone authored
+ * can never answer to `standard`. `USER` stays theirs, and an unknown id has no translation to
+ * reach for anyway.
+ */
+internal fun builtInPresetStrings(entry: AgentPresetEntry): Pair<Int, Int>? =
+    if (entry.trust == AgentPresetTrust.USER) null else builtInPresetStrings(entry.id)
 
 /**
  * What to call the preset a session is pinned to, given only its id.
