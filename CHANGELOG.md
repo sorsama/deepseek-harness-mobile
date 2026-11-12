@@ -14,6 +14,24 @@ All notable changes to DSH Mobile are documented here. Format based on
   default; holding send still chooses the mode for one message alone. Upgrades keep Queue, so
   nothing changes until the choice is made.
 
+### Fixed
+
+- **Permission presets read in the app's language.** The permission sheet, the composer's permission
+  chip and the session details panel showed Read Only, Workspace Write, Full access and Auto review
+  in English whatever language the app was set to: the harness sends those four names as they are
+  written in its own preset files and leaves the translating to the client, which did not do it. The
+  four now use the app's own words in all eleven languages, and the Auto review row describes its
+  own behaviour instead of borrowing the workspace-write blurb. A deployment that renamed a shipped
+  preset, and every preset whose name or id the app does not ship, still reads the way the harness
+  labels it.
+
+- **Agent presets show their translated names again.** Harness 0.2 stopped sending the preset
+  roster's `trust` field, so every shipped preset arrived as a tier this build cannot name, and the
+  picker, the top-bar chip and the session details fell back to raw ids (`standard`, `ptc`, …) with
+  no descriptions. The four shipped presets are recognised by id again — and `ptc` beside the older
+  `code` id — while a preset marked as authored, and any id the app does not ship, keeps its own
+  name.
+
 ## [0.20.0] - 2026-11-09
 
 ### Added
