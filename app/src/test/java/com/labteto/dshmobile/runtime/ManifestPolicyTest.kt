@@ -64,14 +64,33 @@ class ManifestPolicyTest {
 
     @Test
     fun `only changed layers are fetched`() {
-        val base = manifest.layer("x86_64", "base")!!.id
-        val harness = manifest.layer("x86_64", "harness")!!.id
-        assertTrue(ManifestPolicy.decide(manifest, "0.22.0", listOf("x86_64"), installed(base, harness)) is ManifestPolicy.Decision.UpToDate)
-        val harnessOnly = ManifestPolicy.decide(manifest, "0.22.0", listOf("x86_64"), installed(base, "dsh-0.1.0")) as ManifestPolicy.Decision.Install
+        val base = manifest.layer("x86_64", "base")!!
+        val harness = manifest.layer("x86_64", "harness")!!
+        fun record(layer: RuntimeManifest.Layer) = LayerRecord(layer.id, "dir", layer.sha256)
+        val current = installed("x", "y").copy(base = record(base), harness = record(harness))
+        fun decide(record: InstalledRecord) = ManifestPolicy.decide(manifest, "0.22.0", listOf("x86_64"), record)
+
+        assertTrue(decide(current) is ManifestPolicy.Decision.UpToDate)
+        val harnessOnly = decide(current.copy(harness = LayerRecord("dsh-0.1.0", "dir", "0".repeat(64)))) as ManifestPolicy.Decision.Install
         assertEquals(listOf("harness"), harnessOnly.layers.map { it.name })
         assertFalse(harnessOnly.baseChanges)
-        val baseOnly = ManifestPolicy.decide(manifest, "0.22.0", listOf("x86_64"), installed("old-base", harness)) as ManifestPolicy.Decision.Install
+        val baseOnly = decide(current.copy(base = LayerRecord("old-base", "dir", "0".repeat(64)))) as ManifestPolicy.Decision.Install
         assertEquals(listOf("base"), baseOnly.layers.map { it.name })
+    }
+
+    @Test
+    fun `a different archive under the same layer id is still an update`() {
+        // Release 2026.11.14-2 shipped a new harness archive as dsh-0.2.2-rc.1, the id 2026.11.14-1 used.
+        val base = manifest.layer("x86_64", "base")!!
+        val harness = manifest.layer("x86_64", "harness")!!
+        val record = installed("x", "y").copy(
+            base = LayerRecord(base.id, "dir", base.sha256),
+            harness = LayerRecord(harness.id, "dir", "f".repeat(64)),
+        )
+        val decision = ManifestPolicy.decide(manifest, "0.22.0", listOf("x86_64"), record) as ManifestPolicy.Decision.Install
+        assertEquals(listOf("harness"), decision.layers.map { it.name })
+        val layout = RuntimeLayout(java.io.File("r"), java.io.File("c"))
+        assertTrue(layout.harnessDir(harness.id, harness.sha256) != layout.harnessDir(harness.id, "f".repeat(64)))
     }
 
     @Test

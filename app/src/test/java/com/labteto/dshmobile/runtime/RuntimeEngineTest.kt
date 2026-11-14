@@ -110,6 +110,10 @@ class RuntimeEngineTest {
         fx.close()
     }
 
+    /** Whether a layer directory for [prefix] (`harness-<id>`, then a hash suffix) exists. */
+    private fun layerDir(prefix: String): Boolean =
+        fx.layout.root.listFiles().orEmpty().any { it.isDirectory && it.name.startsWith("$prefix-") }
+
     private fun await(what: String, predicate: (RuntimeState) -> Boolean): RuntimeState = runBlocking {
         try {
             withTimeout(30_000) { engine.state.first(predicate) }
@@ -163,8 +167,8 @@ class RuntimeEngineTest {
         val reason = rolledBack.reason as RuntimeFailure.ExitedBeforeReady
         assertEquals(1, reason.exitCode)
         assertTrue(reason.logTail.contains("missing-native.node"))
-        assertFalse(File(fx.layout.root, "harness-dsh-2.0.0").exists())
-        assertTrue(File(fx.layout.root, "harness-dsh-1.0.0").isDirectory)
+        assertFalse(layerDir("harness-dsh-2.0.0"))
+        assertTrue(layerDir("harness-dsh-1.0.0"))
         // Two launches for the trial start: the new harness, then the old one.
         assertTrue(launches[1].any { it.contains("harness-dsh-2.0.0") })
         assertTrue(launches[2].any { it.contains("harness-dsh-1.0.0") })
@@ -184,7 +188,7 @@ class RuntimeEngineTest {
         await("updating") { it is RuntimeState.Updating }
         val after = await("running v3") { it is RuntimeState.Running && it.harnessVersion == "3.0.0" } as RuntimeState.Running
         assertFalse(after.installed.harnessOnTrial)
-        assertFalse(File(fx.layout.root, "harness-dsh-1.0.0").exists())
+        assertFalse(layerDir("harness-dsh-1.0.0"))
         assertEquals(1, running.size)
     }
 

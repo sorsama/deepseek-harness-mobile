@@ -95,7 +95,7 @@ class RuntimeFixture(tmp: TemporaryFolder) {
         client = client,
         downloader = LayerDownloader(client, layout.downloads),
         space = SpaceProbe { freeBytes },
-        manifestUrl = manifestUrl,
+        manifestUrl = { manifestUrl },
         appVersion = { appVersion },
         deviceAbis = listOf("x86_64"),
         verifier = ManifestVerifier(key.rawPublicKey),

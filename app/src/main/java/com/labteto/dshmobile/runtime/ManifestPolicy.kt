@@ -54,11 +54,21 @@ object ManifestPolicy {
         }
         val needed = arch.layers.filter { layer ->
             when (layer.name) {
-                LAYER_BASE -> installed?.base?.id != layer.id
-                LAYER_HARNESS -> installed?.harness?.id != layer.id
+                LAYER_BASE -> !installed?.base.isLayer(layer)
+                LAYER_HARNESS -> !installed?.harness.isLayer(layer)
                 else -> false
             }
         }
         return if (needed.isEmpty()) Decision.UpToDate(abi) else Decision.Install(abi, needed)
     }
 }
+
+/**
+ * Whether this unpacked layer is [layer]: same id *and* same archive hash.
+ *
+ * The README says the id alone decides, but release 2026.11.14-2 shipped a different harness
+ * archive under the same id (`dsh-0.2.2-rc.1`) as 2026.11.14-1. Comparing the hash as well means
+ * such a release still reaches devices; the signed manifest vouches for both values.
+ */
+fun LayerRecord?.isLayer(layer: RuntimeManifest.Layer): Boolean =
+    this != null && id == layer.id && sha256 == layer.sha256

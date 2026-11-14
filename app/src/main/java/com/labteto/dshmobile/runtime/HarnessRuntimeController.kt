@@ -64,6 +64,10 @@ class HarnessRuntimeController @Inject constructor(
     @Volatile
     var appVersionOverride: String? = null
 
+    /** Debug builds only: install a specific release (its manifest URL) instead of the latest. */
+    @Volatile
+    var manifestUrlOverride: String? = null
+
     private val installer = RuntimeInstaller(
         layout = layout,
         store = InstalledStore(layout),
@@ -71,7 +75,7 @@ class HarnessRuntimeController @Inject constructor(
         client = downloadClient,
         downloader = LayerDownloader(downloadClient, layout.downloads),
         space = system.space,
-        manifestUrl = RuntimeInstaller.DEFAULT_MANIFEST_URL,
+        manifestUrl = { manifestUrlOverride?.takeIf { BuildConfig.DEBUG } ?: RuntimeInstaller.DEFAULT_MANIFEST_URL },
         appVersion = { appVersionOverride?.takeIf { BuildConfig.DEBUG } ?: BuildConfig.VERSION_NAME },
         deviceAbis = system.deviceAbis,
         decoder = { ZstdInputStream(it) },
@@ -106,9 +110,9 @@ class HarnessRuntimeController @Inject constructor(
     private val _holdWakeLock = MutableStateFlow(true)
 
     /**
-     * Whether a partial wake lock is held while the harness runs. On by default: in deep Doze the
-     * CPU sleeps and a long agent turn would stall with the screen off. The single switch M3's
-     * settings can expose.
+     * Whether a partial wake lock is held while the harness runs (and while the runtime installs or
+     * updates). On by default: in deep Doze the CPU sleeps and a long agent turn would stall with
+     * the screen off. The single switch M3's settings can expose; it takes effect at once.
      */
     val holdWakeLock: StateFlow<Boolean> = _holdWakeLock.asStateFlow()
 

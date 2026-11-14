@@ -43,7 +43,7 @@ class RuntimeInstaller(
     private val client: OkHttpClient,
     private val downloader: LayerDownloader,
     private val space: SpaceProbe,
-    private val manifestUrl: String,
+    private val manifestUrl: () -> String,
     private val appVersion: () -> String,
     private val deviceAbis: List<String>,
     private val verifier: ManifestVerifier = ManifestVerifier(),
@@ -70,8 +70,9 @@ class RuntimeInstaller(
         val manifestBytes: ByteArray
         val signature: ByteArray
         try {
-            manifestBytes = fetchSmall(manifestUrl)
-            signature = fetchSmall(manifestUrl.substringBeforeLast('/') + "/" + SIGNATURE_FILE)
+            val url = manifestUrl()
+            manifestBytes = fetchSmall(url)
+            signature = fetchSmall(url.substringBeforeLast('/') + "/" + SIGNATURE_FILE)
         } catch (e: InstallException) {
             return@withContext CheckResult.Refused(e.failure)
         }
@@ -106,7 +107,7 @@ class RuntimeInstaller(
         layout.downloads.mkdirs()
         val installed = store.read()?.takeIf { it.abi == decision.abi }
         val layers = decision.layers
-        val reuse = layers.filter { it.name == LAYER_HARNESS && installed?.previousHarness?.id == it.id && File(layout.root, installed.previousHarness.dir).isDirectory }
+        val reuse = layers.filter { it.name == LAYER_HARNESS && installed?.previousHarness.isLayer(it) && File(layout.root, installed!!.previousHarness!!.dir).isDirectory }
         val toUnpack = layers - reuse.toSet()
         val assets = toUnpack.map { asset(manifest, it) }
 
@@ -144,7 +145,7 @@ class RuntimeInstaller(
         val harnessOnly = installed != null && unpacked.keys == setOf(LAYER_HARNESS)
         val previous = when {
             !harnessOnly -> null
-            harness.id == installed!!.previousHarness?.id -> null // the update is the old one: a rollback
+            harness == installed!!.previousHarness -> null // the update is the old one: a rollback
             installed.previousHarness != null -> installed.previousHarness // keep the last one known to work
             else -> installed.harness
         }
@@ -226,7 +227,7 @@ class RuntimeInstaller(
         count: Int,
         onEvent: (InstallEvent) -> Unit,
     ): LayerRecord {
-        val finalDir = if (layer.name == LAYER_BASE) layout.baseDir(layer.id) else layout.harnessDir(layer.id)
+        val finalDir = if (layer.name == LAYER_BASE) layout.baseDir(layer.id, layer.sha256) else layout.harnessDir(layer.id, layer.sha256)
         val staging = layout.staging(layer.name + "-" + layer.id)
         FsTree.delete(fs, staging)
         if (!staging.mkdirs()) throw InstallException(RuntimeFailure.Storage("mkdir ${staging.name}"))

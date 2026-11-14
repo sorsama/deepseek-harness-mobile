@@ -31,7 +31,7 @@ import javax.inject.Inject
  *
  * | op | extras | does |
  * |---|---|---|
- * | `install`, `update` | `--es appVersion 0.22.0` (optional) | install or update to the latest release |
+ * | `install`, `update` | `--es appVersion 0.22.0`, `--es manifestUrl <url>` ("" for the latest) | install or update to the latest (or that) release |
  * | `check` | `--es appVersion` | look for an update, log the result |
  * | `cancel` | | abandon an install or a start |
  * | `start` | `--ei port 3080` | start the harness |
@@ -41,6 +41,7 @@ import javax.inject.Inject
  * | `logtail` | `--ei lines 40` | the end of the harness log (token already removed) |
  * | `wakelock` | `--ez on false` | the wake-lock switch |
  * | `probe` | `--ei port 3080` | `POST /api/session/list` without and with the stored cookie; status codes only |
+ * | `orphan` | `--ei port 3080` | leave an untracked proot holding the port, as an earlier app process could |
  *
  * Everything is logged to logcat (tag `DshRuntimeDebug`) and to `files/runtime-debug.log`
  * (`run-as com.labteto.dshmobile.debug cat files/runtime-debug.log`). State changes are logged as
@@ -60,6 +61,7 @@ class RuntimeDebugActivity : ComponentActivity() {
         log.follow(controller)
         val op = intent.getStringExtra("op").orEmpty()
         intent.getStringExtra("appVersion")?.let { controller.appVersionOverride = it }
+        intent.getStringExtra("manifestUrl")?.let { controller.manifestUrlOverride = it.ifEmpty { null } }
         val port = intent.getIntExtra("port", 3080)
         log.write("op=$op")
         when (op) {
@@ -79,9 +81,32 @@ class RuntimeDebugActivity : ComponentActivity() {
             }
             "logtail" -> log.write("log tail:\n" + controller.logTail(intent.getIntExtra("lines", 40)))
             "probe" -> log.scope.launch { probe(log, port) }
+            "orphan" -> log.write("orphan: ${spawnOrphan(port)}")
             else -> log.write("unknown op '$op'")
         }
         finish()
+    }
+
+    /**
+     * Leave a proot behind that the supervisor does not know about: started from this process (so
+     * it has the app's uid and SELinux domain, like a harness an earlier app process left), running
+     * node with a listener on [port]. The next start has to find it, stop it and take the port.
+     */
+    private fun spawnOrphan(port: Int): String {
+        val record = InstalledStore(controller.layout).read() ?: return "not installed"
+        val nativeDir = File(applicationInfo.nativeLibraryDir)
+        val rootfs = File(controller.layout.root, record.base.dir)
+        val script = "require('net').createServer().listen($port, '127.0.0.1')"
+        val builder = ProcessBuilder(
+            File(nativeDir, ProotCommand.PROOT).path, "--kill-on-exit", "-0", "-r", rootfs.path,
+            "-b", "/dev", "-b", "/proc", "-b", "/sys",
+            "/usr/bin/env", "-i", "PATH=/opt/node/bin:/usr/bin:/bin", "/opt/node/bin/node", "-e", script,
+        ).redirectErrorStream(true).redirectOutput(File("/dev/null"))
+        builder.environment()["PROOT_LOADER"] = File(nativeDir, ProotCommand.LOADER).path
+        builder.environment()["PROOT_TMP_DIR"] = controller.layout.prootTmp.apply { mkdirs() }.path
+        val process = builder.start()
+        RuntimeDebugLog.orphans += process
+        return "started an untracked proot ($process) listening on $port"
     }
 
     private suspend fun probe(log: RuntimeDebugLog, port: Int) {
@@ -144,6 +169,9 @@ class RuntimeDebugLog private constructor(private val file: File) {
 
     companion object {
         private const val TAG = "DshRuntimeDebug"
+
+        /** Kept only so the orphan's pipes are not collected; nothing ever stops them. */
+        val orphans = mutableListOf<Process>()
 
         @Volatile
         private var instance: RuntimeDebugLog? = null

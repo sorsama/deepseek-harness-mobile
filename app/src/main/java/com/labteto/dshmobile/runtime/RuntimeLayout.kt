@@ -38,8 +38,13 @@ class RuntimeLayout(val root: File, val cache: File) {
     val downloads = File(cache, "downloads")
     val prootTmp = File(cache, "proot-tmp")
 
-    fun baseDir(id: String) = File(root, "base-" + safeName(id))
-    fun harnessDir(id: String) = File(root, "harness-" + safeName(id))
+    /**
+     * A layer's directory: its id and the start of its archive hash, so two archives released
+     * under one id (it has happened) never share a directory, and an update can sit next to
+     * the layer it replaces.
+     */
+    fun baseDir(id: String, sha256: String) = File(root, "base-" + safeName(id) + "-" + sha256.take(12))
+    fun harnessDir(id: String, sha256: String) = File(root, "harness-" + safeName(id) + "-" + sha256.take(12))
     fun staging(name: String) = File(root, STAGING_PREFIX + safeName(name))
 
     /** Directories under [root] that hold no user data and that [record] does not name. */

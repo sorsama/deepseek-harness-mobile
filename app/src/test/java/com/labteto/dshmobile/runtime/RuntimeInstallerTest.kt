@@ -216,6 +216,23 @@ class RuntimeInstallerTest {
     }
 
     @Test
+    fun `a new archive under the same harness id updates beside the old one`() = runBlocking {
+        val base = fx.baseLayer()
+        fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100)
+        val first = install(fx.installer())
+        // Same id, different bytes: what release 2026.11.14-2 did.
+        fx.publish(base, fx.harnessLayer("1.0.0") { file("opt/dsh/runtime-pack/index", "packed") }, sequence = 101)
+        val updated = install(fx.installer())
+        assertEquals(first.harness.id, updated.harness.id)
+        assertTrue(first.harness.dir != updated.harness.dir)
+        assertEquals(first.harness, updated.previousHarness)
+        assertTrue(File(fx.layout.root, first.harness.dir).isDirectory)
+        assertTrue(File(File(fx.layout.root, updated.harness.dir), "opt/dsh/runtime-pack/index").isFile)
+        assertOnlyCommitted(updated)
+        assertTrue(fx.installer().check() is RuntimeInstaller.CheckResult.UpToDate)
+    }
+
+    @Test
     fun `a harness on trial that never became ready is rolled back`() = runBlocking {
         val base = fx.baseLayer()
         fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100)
@@ -228,7 +245,7 @@ class RuntimeInstallerTest {
         assertEquals("1.0.0", rolledBack.harnessVersion)
         assertNull(rolledBack.previousHarness)
         assertFalse(File(fx.layout.root, updated.harness.dir).exists())
-        assertTrue(File(fx.layout.root, first.harness.dir, ).isDirectory)
+        assertTrue(File(fx.layout.root, first.harness.dir).isDirectory)
         assertOnlyCommitted(rolledBack)
     }
 
