@@ -182,8 +182,23 @@ contract (manifest schema, unpacking rules, proot command line).
   foreground while the runtime installs or runs and holds a partial wake lock while it does
   (`HarnessRuntimeController.setHoldWakeLock` turns it off). Everything runs in the app
   process; there is no second process.
-- **No UI yet**: the controller exposes `StateFlow<RuntimeState>` (types in `:sharedUi`).
-  Debug builds can drive it from adb through `RuntimeDebugActivity` (`app/src/debug`).
+- **UI**: the controller exposes `StateFlow<RuntimeState>` (types in `:sharedUi`).
+  `BuiltInHarnessHost` (app-scoped) adds the set-up flow on top: install then start, a
+  download that broke off with the network resumed when it comes back, a cancel that deletes
+  partial downloads, and the latest release's sizes read before anything is downloaded. It is
+  the Android side of the shared `BuiltInHarness` port; iOS and 32-bit devices pass
+  `NoBuiltInHarness`, and the Connect screen is then what it was before. What each state shows
+  and which one action it offers is plain code in `:sharedUi` (`RuntimePresentation.kt`, tested
+  in `commonTest`): the Connect card, the set-up page's step tracker, the failure-to-fix mapping,
+  auto-start and whether "Use Termux instead" starts open. The screens are in `:app`
+  (`ui/screens/runtime`): the card in "This phone" mode, the set-up page and the control page
+  (also reached from Settings, "Harness on this phone"). The controller never connects; the
+  Connect screen's own "connect when ready" rules do, the same as after a Termux start.
+- **Settings of its own**: `RuntimePreferences` keeps the wake-lock switch and "fast start"
+  (the runtime's module pack; off sets `DSH_RUNTIME_MODULE_PACK=0` in the guest on the next
+  start). Starting the harness when the app opens is an app setting beside Termux's
+  (`AppSettings.autoStartBuiltInHarness`).
+- Debug builds can drive the controller from adb through `RuntimeDebugActivity` (`app/src/debug`).
 
 ## Key invariants
 

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_action_show_progress_label">সেট আপ পেজ খুলুন</string>
+
+    <string name="runtime_card_title">বিল্ট-ইন harness</string>
+    <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
+    <string name="runtime_card_intro">কম্পিউটার বা Termux ছাড়াই DSH-এর ভেতরে harness চালান।</string>
+    <string name="runtime_card_sizes">%1$s ডাউনলোড, ফোনে প্রায় %2$s</string>
+    <string name="runtime_card_setting_up">সেট আপ হচ্ছে…</string>
+    <string name="runtime_card_stopped">ইনস্টল করা আছে, চালু করার জন্য তৈরি।</string>
+    <string name="runtime_card_starting">harness চালু হচ্ছে…</string>
+    <string name="runtime_card_stopping">harness থামছে…</string>
+    <string name="runtime_card_running">পোর্ট %1$s-এ চলছে</string>
+    <string name="runtime_card_signed_out">এটি চলছে, কিন্তু অ্যাপ সাইন ইন করা নেই। আবার চালু করলে ঠিক হয়ে যাবে।</string>
+    <string name="runtime_card_update">আপডেট আছে</string>
+    <string name="runtime_card_updating">আপডেট হচ্ছে…</string>
+    <string name="runtime_card_rolled_back">শেষ আপডেটটি চালু হয়নি, তাই আগের সংস্করণ ফিরে এসেছে।</string>
+    <string name="runtime_use_termux">এর বদলে Termux ব্যবহার করুন</string>
+    <string name="runtime_state_expanded">খোলা</string>
+    <string name="runtime_state_collapsed">বন্ধ</string>
+
+
+    <string name="runtime_step_done">হয়ে গেছে</string>
+    <string name="runtime_step_active">চলছে</string>
+    <string name="runtime_step_pending">শুরু হয়নি</string>
+    <string name="runtime_step_failed">শেষ হয়নি</string>
+
+    <string name="runtime_progress_speed">প্রতি সেকেন্ডে %1$s</string>
+    <string name="runtime_progress_minutes_left">প্রায় %1$s মিনিট বাকি</string>
+    <string name="runtime_progress_seconds_left">প্রায় %1$s সেকেন্ড বাকি</string>
+
+    <string name="runtime_setup_title">বিল্ট-ইন harness সেট আপ করুন</string>
+    <string name="runtime_setup_intro">DSH harness সহ একটি ছোট Linux সিস্টেম ডাউনলোড করে অ্যাপের ভেতরেই চালায়। আপনার মডেল প্রোভাইডারকে যা পাঠান তা ছাড়া সবকিছু এই ফোনেই থাকে।</string>
+    <string name="runtime_setup_start">ডাউনলোড করে সেট আপ করুন</string>
+    <string name="runtime_setup_start_sized">ডাউনলোড করে সেট আপ করুন (%1$s)</string>
+    <string name="runtime_setup_working_title">সেট আপ হচ্ছে</string>
+    <string name="runtime_setup_leave_hint">আপনি এই পেজ ছেড়ে যেতে পারেন। সেট আপ ব্যাকগ্রাউন্ডে চলতে থাকবে।</string>
+    <string name="runtime_setup_no_space_title">যথেষ্ট জায়গা নেই</string>
+    <string name="runtime_setup_failed_title">সেট আপ থেমে গেছে</string>
+    <string name="runtime_setup_failed_body">আধা-সম্পূর্ণ কিছুই রেখে যাওয়া হয়নি।</string>
+    <string name="runtime_setup_done_title">আপনার harness তৈরি</string>
+    <string name="runtime_setup_done_body">যখনই দরকার, এটি এই ফোনেই চলে।</string>
+    <string name="runtime_setup_provider_hint">প্রথম চ্যাটের আগে harness-এর আপনার মডেল প্রোভাইডারের API কী লাগবে। এখনো যোগ না করে থাকলে harness-এর সেটিংসে যোগ করুন।</string>
+    <string name="runtime_setup_connecting">সংযোগ হচ্ছে…</string>
+    <string name="runtime_setup_metered_title">মোবাইল ডেটা ব্যবহার করবেন?</string>
+    <string name="runtime_setup_metered_body">আপনি মিটারযুক্ত সংযোগে আছেন। সেট আপে %1$s ডাউনলোড হবে।</string>
+    <string name="runtime_setup_metered_confirm">তবুও ডাউনলোড করুন</string>
+    <string name="runtime_setup_cancel_title">সেট আপ থামাবেন?</string>
+    <string name="runtime_setup_cancel_body">এ পর্যন্ত যা ডাউনলোড হয়েছে তা মুছে ফেলা হবে। আপনি যেকোনো সময় আবার সেট আপ করতে পারবেন।</string>
+    <string name="runtime_setup_cancel_confirm">থামিয়ে মুছে ফেলুন</string>
+    <string name="runtime_setup_keep_going">চালিয়ে যান</string>
+    <string name="runtime_space_needed">দরকার</string>
+    <string name="runtime_space_free">এখন খালি</string>
+
+    <string name="runtime_section_status">অবস্থা</string>
+    <string name="runtime_section_options">বিকল্প</string>
+    <string name="runtime_section_update">আপডেট</string>
+    <string name="runtime_section_storage">স্টোরেজ</string>
+    <string name="runtime_section_log">লগ</string>
+    <string name="runtime_section_reliability">চালু রাখা</string>
+    <string name="runtime_status_not_set_up">সেট আপ করা নেই</string>
+    <string name="runtime_status_stopped">থেমে আছে</string>
+    <string name="runtime_status_needs_attention">দেখা দরকার</string>
+    <string name="runtime_info_uptime">চলছে</string>
+    <string name="runtime_info_harness">harness</string>
+    <string name="runtime_info_release">রানটাইম রিলিজ</string>
+    <string name="runtime_info_port">পোর্ট</string>
+    <string name="runtime_uptime_just_now">এক মিনিটের কম</string>
+    <string name="runtime_uptime_minutes">%1$s মিনিট</string>
+    <string name="runtime_uptime_hours">%1$s ঘণ্টা %2$s মিনিট</string>
+
+    <string name="runtime_switch_auto_start">অ্যাপ খুললে বিল্ট-ইন harness চালু করুন</string>
+    <string name="runtime_switch_auto_start_hint">শুধু এই ফোন মোডে, আর শুধু যদি এটি আগে থেকে চালু না থাকে।</string>
+    <string name="runtime_switch_wake_lock">চলার সময় ফোন জাগিয়ে রাখুন</string>
+    <string name="runtime_switch_wake_lock_hint">স্ক্রিন বন্ধ থাকলেও লম্বা উত্তর চলতে থাকে। ব্যাটারি বেশি খরচ হয়।</string>
+    <string name="runtime_switch_fast_start">দ্রুত চালু</string>
+    <string name="runtime_switch_fast_start_hint">একটি প্যাক করা বান্ডেল থেকে harness লোড করে। চালু হতে সমস্যা হলে এটি বন্ধ করুন। পরের বার চালু হলে কাজ করবে।</string>
+
+    <string name="runtime_update_available">harness %1$s পাওয়া যাচ্ছে</string>
+    <string name="runtime_update_what_harness">harness আপডেট হবে। %1$s ডাউনলোড।</string>
+    <string name="runtime_update_what_both">সিস্টেম আর harness আপডেট হবে। %1$s ডাউনলোড।</string>
+    <string name="runtime_update_versions">%1$s → %2$s</string>
+    <string name="runtime_update_button">আপডেট করুন</string>
+    <string name="runtime_update_check">আপডেট খুঁজুন</string>
+    <string name="runtime_update_checking">খোঁজা হচ্ছে…</string>
+    <string name="runtime_update_none">সব হালনাগাদ আছে।</string>
+    <string name="runtime_update_rolled_back">harness %1$s চালু হয়নি, তাই আগের সংস্করণ ফিরে এসেছে।</string>
+
+    <string name="runtime_storage_runtime">রানটাইম</string>
+    <string name="runtime_storage_data">সেশন ও সেটিংস</string>
+    <string name="runtime_storage_other">ডাউনলোড ও লগ</string>
+    <string name="runtime_remove">রানটাইম সরান</string>
+    <string name="runtime_remove_title">রানটাইম সরাবেন?</string>
+    <string name="runtime_remove_body">এতে প্রায় %1$s খালি হবে। আপনার সেশন আর harness-এর সেটিংস থেকে যাবে, তাই আবার সেট আপ করলে আগের জায়গা থেকেই শুরু হবে।</string>
+    <string name="runtime_delete_all">সব মুছে ফেলুন</string>
+    <string name="runtime_delete_all_title">সব মুছে ফেলবেন?</string>
+    <string name="runtime_delete_all_body">এতে রানটাইম এবং এই ফোনে harness-এর সব সেশন, সেটিংস ও ওয়ার্কস্পেস মুছে যাবে। এটি ফেরানো যাবে না।</string>
+
+    <string name="runtime_log_empty">লগে এখনো কিছু নেই।</string>
+    <string name="runtime_log_share">শেয়ার করুন</string>
+    <string name="runtime_log_copied">লগ কপি হয়েছে</string>
+
+    <string name="runtime_check_notifications">বিজ্ঞপ্তি</string>
+    <string name="runtime_check_notifications_on">চালু। harness চললে আপনি দেখতে পাবেন।</string>
+    <string name="runtime_check_notifications_off">বন্ধ। harness কখন চলছে তা দেখতে এগুলো চালু করুন।</string>
+    <string name="runtime_check_battery">ব্যাটারি অপ্টিমাইজেশন</string>
+    <string name="runtime_check_battery_on">কোনো বিধিনিষেধ নেই।</string>
+    <string name="runtime_check_battery_off">বিধিনিষেধ আছে। Android ব্যাকগ্রাউন্ডে harness থামিয়ে দিতে পারে।</string>
+    <string name="runtime_check_child">ব্যাকগ্রাউন্ড প্রসেসের সীমা</string>
+    <string name="runtime_check_child_body_12">Android 12 ও 13 ব্যাকগ্রাউন্ডে অনেক প্রসেস চালানো অ্যাপ থামিয়ে দিতে পারে। harness নিজে থেকে থেমে গেলে, এটি কাজ করার সময় DSH খোলা রাখুন।</string>
+    <string name="runtime_check_child_body_14">Android অনেক প্রসেস চালানো অ্যাপ থামিয়ে দিতে পারে। harness নিজে থেকে থেমে গেলে, ডেভেলপার বিকল্পে \"চাইল্ড প্রসেসের বিধিনিষেধ বন্ধ করুন\" চালু করুন।</string>
+    <string name="runtime_check_child_off">চাইল্ড প্রসেসের বিধিনিষেধ বন্ধ আছে।</string>
+    <string name="runtime_check_open">সিস্টেম সেটিং খুলুন</string>
+    <string name="runtime_check_footer">প্রতিটি সারি সেই সিস্টেম স্ক্রিন খোলে যেখানে এটি বদলানো যায়।</string>
+
+    <string name="runtime_termux_heading">Termux-এ harness</string>
+</resources>

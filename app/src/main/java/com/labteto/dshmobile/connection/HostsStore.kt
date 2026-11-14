@@ -33,6 +33,7 @@ class HostsStore @Inject constructor(
         val AUTO_LAN = booleanPreferencesKey("auto_lan")
         val AUTO_LOOPBACK = booleanPreferencesKey("auto_loopback")
         val AUTO_START_LOOPBACK = booleanPreferencesKey("auto_start_loopback")
+        val AUTO_START_BUILT_IN = booleanPreferencesKey("auto_start_built_in")
         val AUTO_RELAY = booleanPreferencesKey("auto_relay")
         val CONNECT_MODE = stringPreferencesKey("connect_mode")
         val BACKGROUND = booleanPreferencesKey("background")
@@ -79,6 +80,7 @@ class HostsStore @Inject constructor(
             autoConnectLan = prefs[Keys.AUTO_LAN] ?: false,
             autoConnectLoopback = prefs[Keys.AUTO_LOOPBACK] ?: true,
             autoStartLoopbackHarness = prefs[Keys.AUTO_START_LOOPBACK] ?: false,
+            autoStartBuiltInHarness = prefs[Keys.AUTO_START_BUILT_IN] ?: false,
             autoConnectRelay = prefs[Keys.AUTO_RELAY] ?: false,
             connectMode = ConnectMode.of(prefs[Keys.CONNECT_MODE]),
             keepConnectedInBackground = prefs[Keys.BACKGROUND] ?: false,
@@ -285,6 +287,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.AUTO_LAN] = next.autoConnectLan
             prefs[Keys.AUTO_LOOPBACK] = next.autoConnectLoopback
             prefs[Keys.AUTO_START_LOOPBACK] = next.autoStartLoopbackHarness
+            prefs[Keys.AUTO_START_BUILT_IN] = next.autoStartBuiltInHarness
             prefs[Keys.AUTO_RELAY] = next.autoConnectRelay
             prefs[Keys.CONNECT_MODE] = next.connectMode
             prefs[Keys.BACKGROUND] = next.keepConnectedInBackground

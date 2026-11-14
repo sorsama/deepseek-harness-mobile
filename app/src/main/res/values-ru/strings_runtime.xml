@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_action_show_progress_label">открыть страницу установки</string>
+
+    <string name="runtime_card_title">Встроенный harness</string>
+    <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
+    <string name="runtime_card_intro">Запускайте harness прямо в DSH, без компьютера и без Termux.</string>
+    <string name="runtime_card_sizes">Скачать %1$s, на телефоне займёт около %2$s</string>
+    <string name="runtime_card_setting_up">Установка…</string>
+    <string name="runtime_card_stopped">Установлен и готов к запуску.</string>
+    <string name="runtime_card_starting">Запускаем harness…</string>
+    <string name="runtime_card_stopping">Останавливаем harness…</string>
+    <string name="runtime_card_running">Работает на порту %1$s</string>
+    <string name="runtime_card_signed_out">Он работает, но приложение в нём не авторизовано. Перезапуск это исправит.</string>
+    <string name="runtime_card_update">Есть обновление</string>
+    <string name="runtime_card_updating">Обновление…</string>
+    <string name="runtime_card_rolled_back">Последнее обновление не запустилось, поэтому вернулась прежняя версия.</string>
+    <string name="runtime_use_termux">Использовать Termux</string>
+    <string name="runtime_state_expanded">Развёрнуто</string>
+    <string name="runtime_state_collapsed">Свёрнуто</string>
+
+
+    <string name="runtime_step_done">Готово</string>
+    <string name="runtime_step_active">Идёт</string>
+    <string name="runtime_step_pending">Не начато</string>
+    <string name="runtime_step_failed">Не завершено</string>
+
+    <string name="runtime_progress_speed">%1$s в секунду</string>
+    <string name="runtime_progress_minutes_left">осталось около %1$s мин</string>
+    <string name="runtime_progress_seconds_left">осталось около %1$s с</string>
+
+    <string name="runtime_setup_title">Установка встроенного harness</string>
+    <string name="runtime_setup_intro">DSH скачивает небольшую систему Linux с harness внутри и запускает её в приложении. Всё остаётся на этом телефоне, кроме того, что вы отправляете своему поставщику моделей.</string>
+    <string name="runtime_setup_start">Скачать и установить</string>
+    <string name="runtime_setup_start_sized">Скачать и установить (%1$s)</string>
+    <string name="runtime_setup_working_title">Идёт установка</string>
+    <string name="runtime_setup_leave_hint">С этой страницы можно уйти. Установка продолжится в фоне.</string>
+    <string name="runtime_setup_no_space_title">Не хватает места</string>
+    <string name="runtime_setup_failed_title">Установка остановилась</string>
+    <string name="runtime_setup_failed_body">Ничего недоделанного не осталось.</string>
+    <string name="runtime_setup_done_title">Ваш harness готов</string>
+    <string name="runtime_setup_done_body">Он работает на этом телефоне, когда вам нужно.</string>
+    <string name="runtime_setup_provider_hint">Перед первым чатом для harness нужен API-ключ вашего поставщика моделей. Добавьте его в настройках harness, если ещё не сделали этого.</string>
+    <string name="runtime_setup_connecting">Подключение…</string>
+    <string name="runtime_setup_metered_title">Использовать мобильный интернет?</string>
+    <string name="runtime_setup_metered_body">Вы подключены к сети с тарификацией трафика. Установка скачает %1$s.</string>
+    <string name="runtime_setup_metered_confirm">Всё равно скачать</string>
+    <string name="runtime_setup_cancel_title">Прервать установку?</string>
+    <string name="runtime_setup_cancel_body">Всё, что уже скачано, будет удалено. Установить можно снова в любой момент.</string>
+    <string name="runtime_setup_cancel_confirm">Прервать и удалить</string>
+    <string name="runtime_setup_keep_going">Продолжить</string>
+    <string name="runtime_space_needed">Нужно</string>
+    <string name="runtime_space_free">Свободно</string>
+
+    <string name="runtime_section_status">Состояние</string>
+    <string name="runtime_section_options">Параметры</string>
+    <string name="runtime_section_update">Обновление</string>
+    <string name="runtime_section_storage">Хранилище</string>
+    <string name="runtime_section_log">Журнал</string>
+    <string name="runtime_section_reliability">Чтобы он не выключался</string>
+    <string name="runtime_status_not_set_up">Не установлен</string>
+    <string name="runtime_status_stopped">Остановлен</string>
+    <string name="runtime_status_needs_attention">Нужно проверить</string>
+    <string name="runtime_info_uptime">Работает</string>
+    <string name="runtime_info_harness">Harness</string>
+    <string name="runtime_info_release">Версия среды</string>
+    <string name="runtime_info_port">Порт</string>
+    <string name="runtime_uptime_just_now">Меньше минуты</string>
+    <string name="runtime_uptime_minutes">%1$s мин</string>
+    <string name="runtime_uptime_hours">%1$s ч %2$s мин</string>
+
+    <string name="runtime_switch_auto_start">Запускать встроенный harness при открытии приложения</string>
+    <string name="runtime_switch_auto_start_hint">Только в режиме «Этот телефон» и только если он ещё не запущен.</string>
+    <string name="runtime_switch_wake_lock">Не давать телефону засыпать, пока он работает</string>
+    <string name="runtime_switch_wake_lock_hint">Длинные ответы продолжаются при выключенном экране. Тратит больше заряда.</string>
+    <string name="runtime_switch_fast_start">Быстрый запуск</string>
+    <string name="runtime_switch_fast_start_hint">Загружает harness из упакованного набора. Выключите, если запуск не удаётся. Сработает при следующем запуске.</string>
+
+    <string name="runtime_update_available">Доступен harness %1$s</string>
+    <string name="runtime_update_what_harness">Обновляет harness. Скачать %1$s.</string>
+    <string name="runtime_update_what_both">Обновляет систему и harness. Скачать %1$s.</string>
+    <string name="runtime_update_versions">%1$s → %2$s</string>
+    <string name="runtime_update_button">Обновить</string>
+    <string name="runtime_update_check">Проверить обновления</string>
+    <string name="runtime_update_checking">Проверяем…</string>
+    <string name="runtime_update_none">У вас последняя версия.</string>
+    <string name="runtime_update_rolled_back">Harness %1$s не запустился, поэтому вернулась прежняя версия.</string>
+
+    <string name="runtime_storage_runtime">Среда</string>
+    <string name="runtime_storage_data">Сессии и настройки</string>
+    <string name="runtime_storage_other">Загрузки и журналы</string>
+    <string name="runtime_remove">Удалить среду</string>
+    <string name="runtime_remove_title">Удалить среду?</string>
+    <string name="runtime_remove_body">Освободится около %1$s. Ваши сессии и настройки harness останутся, и после новой установки всё продолжится с того же места.</string>
+    <string name="runtime_delete_all">Удалить всё</string>
+    <string name="runtime_delete_all_title">Удалить всё?</string>
+    <string name="runtime_delete_all_body">Будут удалены среда и все сессии, настройки и рабочие папки harness на этом телефоне. Отменить это нельзя.</string>
+
+    <string name="runtime_log_empty">В журнале пока пусто.</string>
+    <string name="runtime_log_share">Поделиться</string>
+    <string name="runtime_log_copied">Журнал скопирован</string>
+
+    <string name="runtime_check_notifications">Уведомления</string>
+    <string name="runtime_check_notifications_on">Включены. Вы увидите, когда harness работает.</string>
+    <string name="runtime_check_notifications_off">Выключены. Включите их, чтобы видеть, когда harness работает.</string>
+    <string name="runtime_check_battery">Оптимизация батареи</string>
+    <string name="runtime_check_battery_on">Без ограничений.</string>
+    <string name="runtime_check_battery_off">Ограничена. Android может остановить harness в фоне.</string>
+    <string name="runtime_check_child">Ограничение фоновых процессов</string>
+    <string name="runtime_check_child_body_12">Android 12 и 13 могут останавливать приложения, у которых много фоновых процессов. Если harness останавливается сам, держите DSH открытым, пока он работает.</string>
+    <string name="runtime_check_child_body_14">Android может останавливать приложения с множеством процессов. Если harness останавливается сам, включите «Отключить ограничения дочерних процессов» в разделе «Для разработчиков».</string>
+    <string name="runtime_check_child_off">Ограничения дочерних процессов отключены.</string>
+    <string name="runtime_check_open">открыть системную настройку</string>
+    <string name="runtime_check_footer">Каждая строка открывает системный экран, где это меняется.</string>
+
+    <string name="runtime_termux_heading">Harness в Termux</string>
+</resources>

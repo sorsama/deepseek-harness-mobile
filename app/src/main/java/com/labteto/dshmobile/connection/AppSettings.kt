@@ -17,6 +17,8 @@ data class AppSettings(
      * behaviour the permission exists to prevent.
      */
     val autoStartLoopbackHarness: Boolean = false,
+    /** In "this phone" mode, start the built-in harness when the app opens and finds it stopped. Off by default. */
+    val autoStartBuiltInHarness: Boolean = false,
     /** Relay mode's counterpart to [autoConnectLan]: connect to a paired relay that mDNS finds. */
     val autoConnectRelay: Boolean = false,
     val keepConnectedInBackground: Boolean = false,
