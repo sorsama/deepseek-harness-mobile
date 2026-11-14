@@ -176,6 +176,61 @@ travels in the clear.
 The app keeps no copy: it reads the picked document once, at upload time, and
 holds only the receipt the harness answered with until the message is sent.
 
+## Updating inside the app
+
+The update dialog (and **Settings → About**) can download and install a new
+release without a browser. Nothing is downloaded until you tap
+**Download and install**. What happens then, in order:
+
+- **What is downloaded.** The release APK (`app-release.apk`) and its
+  `SHA256SUMS.txt`, both attached to the latest release of
+  `sorsama/deepseek-harness-mobile`, as GitHub's own release API lists them.
+  Nothing else is fetched, and nothing is uploaded.
+- **From where.** HTTPS only, and only from `api.github.com`, `github.com` and
+  the hosts GitHub serves release files from (`objects.githubusercontent.com`,
+  `release-assets.githubusercontent.com`, `github-releases.githubusercontent.com`),
+  on the default port. A release file answers with a redirect to a signed,
+  short-lived URL on one of those hosts; the app follows redirects itself and
+  checks every hop, so a redirect anywhere else, or down to plain HTTP, stops the
+  download before a byte is read from it. Certificates are verified exactly as
+  for any other HTTPS request (see **HTTPS through a reverse proxy**).
+- **Where it is kept.** In the app's private cache (`cache/updates/`), which no
+  other app can read or write. A partial download is resumed with an HTTP range
+  request guarded by `If-Range`, so a file that changed on the server starts
+  over instead of being stitched together. Old downloads are deleted on the next
+  launch, and the system may clear the cache under storage pressure.
+- **What is checked before Android sees it.** The file's SHA-256 against the
+  release's `SHA256SUMS.txt`; a mismatch deletes it. A release without a
+  checksum file (or one that does not list the APK) is not installed unless you
+  choose **Install anyway** after being told it cannot be verified. Then the
+  package manager reads the APK, and the app refuses it if its package name is
+  not this app's, its version code is not newer than the installed one, or none
+  of its signing certificates matches the installed app's (a key rotated through
+  an APK Signature Scheme v3 lineage still matches). A debug build is told a
+  release cannot replace it, since it has another application id and key.
+- **Android's own check is the final guard.** The APK is handed to the system's
+  `PackageInstaller`, which verifies the signature again and refuses to replace
+  an app with one signed by a different key. Everything above exists to give a
+  clear message before that point, not to replace it. Note what the checksum
+  does and does not prove: it shows the file is the one published in the
+  release, so it guards against damage and against a tampered mirror, but
+  someone able to publish a release could publish a matching checksum too. The
+  signature check is what ties an update to the key the app was first
+  installed with.
+- **The install permission.** The app declares `REQUEST_INSTALL_PACKAGES`.
+  Android does not grant it at install: the first time an update is installed,
+  the app opens Android's own **Install unknown apps** page for this app, and you
+  decide there. You can switch it off again at any time; the app then cannot
+  install anything. On Android 12 and newer the session asks for
+  `USER_ACTION_NOT_REQUIRED`, which Android honours only once this app is the
+  installer of record of itself, so the first in-app update always shows the
+  system's confirmation and later ones may not. The app only ever installs an
+  APK of itself.
+- **Debug builds only:** a file in the app's private storage can point the
+  updater at a local test feed (see `app/src/debug/.../UpdateFeedOverride.kt`).
+  It accepts only loopback and the emulator's host alias, for the feed and for
+  every download. Release builds compile a stub that always returns GitHub.
+
 ## What DSH Mobile stores
 
 - Remembered endpoints (host, port, whether to use HTTPS, display name, and —
@@ -203,7 +258,11 @@ with one exception:
   repository's latest release, over HTTPS, so it can tell you when a newer APK
   exists. It sends no identifying information beyond what any HTTPS request
   carries, and it is the only request the app itself makes that leaves your
-  network. Turn it off in **Settings → About → Check for updates**.
+  network. Turn it off in **Settings → About → Check for updates**. With
+  **Notify me about new versions** on (off by default), the same request is also
+  made in the background, at most once a day.
+- **Download and install**, when you tap it: the release APK and its checksum
+  file from GitHub, as described in **Updating inside the app**.
 - **Install via Termux**, when you tap it. Termux — not the app — downloads the
   release APK and `SHA256SUMS.txt` from `github.com` with `curl`, verifies the
   file, and opens Android's package installer, which asks you before anything
