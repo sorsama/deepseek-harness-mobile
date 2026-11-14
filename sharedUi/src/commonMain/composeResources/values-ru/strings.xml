@@ -40,6 +40,8 @@
     <string name="connect_harness_actions">Действия с harness</string>
     <string name="connect_harness_home">Домашний каталог %1$s</string>
     <string name="connect_hero_subtitle">Следите за harness, который работает на вашем компьютере.</string>
+    <string name="connect_hero_subtitle_phone">Используйте harness, работающий на этом телефоне.</string>
+    <string name="connect_hero_subtitle_relay">Подключайтесь к harness на компьютере откуда угодно.</string>
     <string name="connect_host_hint">192.168.1.20</string>
     <string name="connect_host_label">Адрес хоста</string>
     <string name="connect_lan_notice">Без шифрования. Используйте «Локальную сеть» только в Wi-Fi, которому доверяете.</string>

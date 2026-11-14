@@ -40,6 +40,8 @@
     <string name="connect_harness_actions">Harness actions</string>
     <string name="connect_harness_home">Home %1$s</string>
     <string name="connect_hero_subtitle">Mirror the harness running on your computer.</string>
+    <string name="connect_hero_subtitle_phone">Use the harness running on this phone.</string>
+    <string name="connect_hero_subtitle_relay">Reach the harness on your computer from anywhere.</string>
     <string name="connect_host_hint">192.168.1.20</string>
     <string name="connect_host_label">Host address</string>
     <string name="connect_lan_notice">Not encrypted. Use Local network only on Wi-Fi you trust.</string>

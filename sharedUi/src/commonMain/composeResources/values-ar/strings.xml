@@ -40,6 +40,8 @@
     <string name="connect_harness_actions">إجراءات الـ harness</string>
     <string name="connect_harness_home">المجلد الرئيسي %1$s</string>
     <string name="connect_hero_subtitle">تابع harness الذي يعمل على حاسوبك من هاتفك.</string>
+    <string name="connect_hero_subtitle_phone">استخدم harness الذي يعمل على هذا الهاتف.</string>
+    <string name="connect_hero_subtitle_relay">صِل إلى harness على حاسوبك من أي مكان.</string>
     <string name="connect_host_hint">192.168.1.20</string>
     <string name="connect_host_label">عنوان المضيف</string>
     <string name="connect_lan_notice">غير مشفّر. استخدم «الشبكة المحلية» فقط على شبكة Wi-Fi تثق بها.</string>

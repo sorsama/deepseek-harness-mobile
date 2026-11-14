@@ -40,6 +40,8 @@
     <string name="connect_harness_actions">Harness کی کارروائیاں</string>
     <string name="connect_harness_home">ہوم %1$s</string>
     <string name="connect_hero_subtitle">کمپیوٹر پر چلنے والا harness اپنے فون پر دیکھیں۔</string>
+    <string name="connect_hero_subtitle_phone">اس فون پر چلنے والا harness استعمال کریں۔</string>
+    <string name="connect_hero_subtitle_relay">کہیں سے بھی اپنے کمپیوٹر کے harness تک پہنچیں۔</string>
     <string name="connect_host_hint">192.168.1.20</string>
     <string name="connect_host_label">میزبان کا پتہ</string>
     <string name="connect_lan_notice">غیر خفیہ کردہ۔ لوکل نیٹ ورک صرف قابلِ اعتماد Wi-Fi پر استعمال کریں۔</string>

@@ -40,6 +40,8 @@
     <string name="connect_harness_actions">Ações do harness</string>
     <string name="connect_harness_home">Início %1$s</string>
     <string name="connect_hero_subtitle">Espelhe o harness que roda no seu computador.</string>
+    <string name="connect_hero_subtitle_phone">Use o harness que roda neste celular.</string>
+    <string name="connect_hero_subtitle_relay">Acesse o harness do seu computador de qualquer lugar.</string>
     <string name="connect_host_hint">192.168.1.20</string>
     <string name="connect_host_label">Endereço do host</string>
     <string name="connect_lan_notice">Sem criptografia. Use Rede local só em uma rede Wi-Fi confiável.</string>

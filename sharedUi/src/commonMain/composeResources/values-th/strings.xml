@@ -40,6 +40,8 @@
     <string name="connect_harness_actions">ตัวเลือกของ harness</string>
     <string name="connect_harness_home">โฮม %1$s</string>
     <string name="connect_hero_subtitle">แสดง harness ของคอมพิวเตอร์คุณบนมือถือ</string>
+    <string name="connect_hero_subtitle_phone">ใช้ harness ที่ทำงานอยู่บนโทรศัพท์เครื่องนี้</string>
+    <string name="connect_hero_subtitle_relay">เข้าถึง harness บนคอมพิวเตอร์ของคุณได้จากทุกที่</string>
     <string name="connect_host_hint">192.168.1.20</string>
     <string name="connect_host_label">ที่อยู่โฮสต์</string>
     <string name="connect_lan_notice">ไม่เข้ารหัส ใช้โหมดเครือข่ายภายในเฉพาะบน Wi-Fi ที่คุณไว้ใจ</string>

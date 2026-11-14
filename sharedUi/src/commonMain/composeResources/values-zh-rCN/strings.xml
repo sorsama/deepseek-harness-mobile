@@ -40,6 +40,8 @@
     <string name="connect_harness_actions">Harness 操作</string>
     <string name="connect_harness_home">主目录 %1$s</string>
     <string name="connect_hero_subtitle">在手机上显示电脑上运行的 harness。</string>
+    <string name="connect_hero_subtitle_phone">使用在这台手机上运行的 harness。</string>
+    <string name="connect_hero_subtitle_relay">随时随地连接你电脑上的 harness。</string>
     <string name="connect_host_hint">192.168.1.20</string>
     <string name="connect_host_label">主机地址</string>
     <string name="connect_lan_notice">未加密。请只在你信任的 Wi-Fi 上使用“局域网”。</string>

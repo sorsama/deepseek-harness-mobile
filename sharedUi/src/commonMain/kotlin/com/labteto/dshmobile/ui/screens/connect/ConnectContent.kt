@@ -84,6 +84,8 @@ import com.labteto.dshmobile.shared.resources.connect_found_untrusted
 import com.labteto.dshmobile.shared.resources.connect_found_untrusted_hint
 import com.labteto.dshmobile.shared.resources.connect_harness_actions
 import com.labteto.dshmobile.shared.resources.connect_hero_subtitle
+import com.labteto.dshmobile.shared.resources.connect_hero_subtitle_phone
+import com.labteto.dshmobile.shared.resources.connect_hero_subtitle_relay
 import com.labteto.dshmobile.shared.resources.connect_host_hint
 import com.labteto.dshmobile.shared.resources.connect_host_label
 import com.labteto.dshmobile.shared.resources.connect_lan_notice
@@ -382,7 +384,7 @@ private fun ConnectForm(
                 .padding(top = DsSpacing.large, bottom = DsSpacing.large),
             verticalArrangement = Arrangement.spacedBy(DsSpacing.large),
         ) {
-            ConnectHeader(onOpenSettings = onOpenSettings.takeIf { features.settings })
+            ConnectHeader(mode = state.mode, onOpenSettings = onOpenSettings.takeIf { features.settings })
 
             // A switch with one choice on it is not a switch: a platform that offers only the local
             // network (iOS, for now) shows no control and no empty tabs.
@@ -527,7 +529,7 @@ private fun ConnectForm(
  * also reaches it does not exist yet at that point.
  */
 @Composable
-private fun ConnectHeader(onOpenSettings: (() -> Unit)?) {
+private fun ConnectHeader(mode: String, onOpenSettings: (() -> Unit)?) {
     val colors = DsTheme.colors
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -543,11 +545,24 @@ private fun ConnectHeader(onOpenSettings: (() -> Unit)?) {
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                stringResource(Res.string.connect_hero_subtitle),
-                style = DsType.small13,
-                color = colors.labelTertiary,
-            )
+            // One line for what this mode is for: "your computer" is wrong for the harness on the phone.
+            AnimatedContent(
+                targetState = mode,
+                transitionSpec = { fadeIn(DsAnimations.fade) togetherWith fadeOut(DsAnimations.fade) using SizeTransform(clip = false) },
+                label = "connectSubtitle",
+            ) { shown ->
+                Text(
+                    stringResource(
+                        when (shown) {
+                            ConnectMode.LOOPBACK -> Res.string.connect_hero_subtitle_phone
+                            ConnectMode.RELAY -> Res.string.connect_hero_subtitle_relay
+                            else -> Res.string.connect_hero_subtitle
+                        },
+                    ),
+                    style = DsType.small13,
+                    color = colors.labelTertiary,
+                )
+            }
         }
         if (onOpenSettings != null) {
             DsIconButton(

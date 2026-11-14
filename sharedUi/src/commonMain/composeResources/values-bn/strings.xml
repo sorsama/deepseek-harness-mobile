@@ -40,6 +40,8 @@
     <string name="connect_harness_actions">harness-এর বিকল্প</string>
     <string name="connect_harness_home">হোম %1$s</string>
     <string name="connect_hero_subtitle">আপনার কম্পিউটারে চলা harness ফোনে দেখুন।</string>
+    <string name="connect_hero_subtitle_phone">এই ফোনে চলা harness ব্যবহার করুন।</string>
+    <string name="connect_hero_subtitle_relay">যেকোনো জায়গা থেকে আপনার কম্পিউটারের harness-এ পৌঁছান।</string>
     <string name="connect_host_hint">192.168.1.20</string>
     <string name="connect_host_label">হোস্টের ঠিকানা</string>
     <string name="connect_lan_notice">এনক্রিপ্টেড নয়। শুধু ভরসার Wi-Fi-তে লোকাল নেটওয়ার্ক ব্যবহার করুন।</string>

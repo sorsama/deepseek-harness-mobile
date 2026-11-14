@@ -40,6 +40,8 @@
     <string name="connect_harness_actions">Acciones del harness</string>
     <string name="connect_harness_home">Inicio %1$s</string>
     <string name="connect_hero_subtitle">Refleja el harness que se ejecuta en tu ordenador.</string>
+    <string name="connect_hero_subtitle_phone">Usa el harness que se ejecuta en este teléfono.</string>
+    <string name="connect_hero_subtitle_relay">Llega al harness de tu ordenador desde cualquier sitio.</string>
     <string name="connect_host_hint">192.168.1.20</string>
     <string name="connect_host_label">Dirección del host</string>
     <string name="connect_lan_notice">Sin cifrar. Usa Red local solo en una red Wi-Fi de confianza.</string>

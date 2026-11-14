@@ -40,6 +40,8 @@
     <string name="connect_harness_actions">harness के विकल्प</string>
     <string name="connect_harness_home">होम %1$s</string>
     <string name="connect_hero_subtitle">अपने कंप्यूटर पर चल रहे harness को फ़ोन पर देखें।</string>
+    <string name="connect_hero_subtitle_phone">इस फ़ोन पर चल रहे harness का इस्तेमाल करें।</string>
+    <string name="connect_hero_subtitle_relay">कहीं से भी अपने कंप्यूटर के harness तक पहुंचें।</string>
     <string name="connect_host_hint">192.168.1.20</string>
     <string name="connect_host_label">होस्ट का पता</string>
     <string name="connect_lan_notice">एन्क्रिप्टेड नहीं। लोकल नेटवर्क सिर्फ़ भरोसेमंद Wi-Fi पर इस्तेमाल करें।</string>
