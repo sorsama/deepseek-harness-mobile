@@ -42,7 +42,17 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import com.labteto.dshmobile.ui.adaptive.ListControl
+import com.labteto.dshmobile.ui.adaptive.TabletopSplit
+import com.labteto.dshmobile.ui.adaptive.readingGutter
+import com.labteto.dshmobile.ui.adaptive.tabletopRegions
 import com.labteto.dshmobile.connection.AppSettings
 import com.labteto.dshmobile.ui.media.sampleSizeFor
 import com.labteto.dshmobile.ui.rememberHostsStore
@@ -105,6 +115,19 @@ fun ChatScreen(
     subagentRequest: String? = null,
     /** Called once the request has been taken, so the same child can be asked for again later. */
     onSubagentRequestHandled: () -> Unit = {},
+    /** What the top bar's leading button does: open the drawer, toggle a docked list, or nothing. */
+    listControl: ListControl = ListControl.OpenDrawer,
+    /**
+     * The widest the transcript and composer grow before they centre in the pane. Unspecified keeps
+     * them as wide as the pane, which is every phone.
+     */
+    readingWidth: Dp = Dp.Unspecified,
+    /**
+     * Set while a half-open horizontal hinge cuts the window: the transcript ends at the hinge and
+     * everything the reader acts on (the docks, an approval, the composer) sits below it. In window
+     * coordinates, because the hinge belongs to the device, not to this column.
+     */
+    tabletop: TabletopSplit? = null,
 ) {
     val store = rememberSessionStore()
     val hostsStore = rememberHostsStore()
@@ -557,6 +580,7 @@ fun ChatScreen(
                 tab = tab,
                 fileCount = sessionFiles.size,
                 onOpenDrawer = onOpenDrawer,
+                listControl = listControl,
                 onOpenModels = { sheet = ChatSheet.Models },
                 onOpenHistory = { sheet = ChatSheet.History },
                 onOpenPresets = {
@@ -617,19 +641,44 @@ fun ChatScreen(
                 },
             )
 
-            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+            // Where this column starts in the window, for a tabletop split: the hinge is a fact about
+            // the device, so it arrives in window coordinates and is turned into this column's own.
+            var contentTopPx by remember { mutableIntStateOf(0) }
+            BoxWithConstraints(
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .onGloballyPositioned { contentTopPx = it.positionInWindow().y.toInt() },
+            ) {
                 // Keep transcript/question space even with a long draft. On very short screens,
                 // reserve enough for reference chips, a line of text and the fixed action row.
                 // The attachment tray sits above the card inside the composer's own height, so it
                 // would eat the card's room if the caps ignored it. It is added on top of them
                 // instead: a card with a tray keeps exactly the room it has without one.
                 val trayAllowance = if (attachments.isNotEmpty()) AttachmentTrayHeight else 0.dp
-                val composerMaxHeight = (maxHeight * 0.6f).coerceAtLeast(180.dp) + trayAllowance
+                // On a wide pane the transcript and everything under it keep to a comfortable line
+                // length and centre. The lists keep the whole pane to scroll in and take the margin
+                // as padding, so a drag in the margin still scrolls; the blocks that are not lists
+                // take the same margin as padding of their own.
+                val gutter = readingGutter(maxWidth, readingWidth)
+                // A half-open horizontal hinge divides this column: the transcript above it, the
+                // controls below it. Null (no hinge, or no room to honour it) lays the column out
+                // as it always was.
+                val regions = tabletop?.let {
+                    tabletopRegions(
+                        columnTop = with(LocalDensity.current) { contentTopPx.toDp() },
+                        columnHeight = maxHeight,
+                        split = it,
+                    )
+                }
+                // The most the composer may take while it has to stay in the half below the hinge.
+                val bottomHalf = regions?.let { (maxHeight - it.topHeight - it.gap).coerceAtLeast(180.dp) }
+                val composerMaxHeight = (maxHeight * 0.6f).coerceAtLeast(180.dp).capTo(bottomHalf) + trayAllowance
                 // The lifted drawer's cap: 45% of what the keyboard left, floored at the 180dp that
                 // fits a reference row, a line of text and the action row. Smaller than the in-flow
                 // cap on purpose — a drawer that takes more room than the conversation it covers is
                 // not a drawer any more.
-                val composerDrawerHeight = (maxHeight * 0.45f).coerceAtLeast(180.dp) + trayAllowance
+                val composerDrawerHeight = (maxHeight * 0.45f).coerceAtLeast(180.dp).capTo(bottomHalf) + trayAllowance
                 // Two wrapped lines is where the drawer and the full-screen button both appear. The
                 // composer measures that (it is the only thing that knows how the text wrapped);
                 // this is only what it reported.
@@ -654,7 +703,7 @@ fun ChatScreen(
                             )
                             .togetherWith(fadeOut(DsAnimations.fade)) using SizeTransform(clip = false)
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = if (regions != null) Modifier.height(regions.topHeight) else Modifier.weight(1f),
                     label = "chatTab",
                 ) { current ->
                     when (current) {
@@ -665,6 +714,7 @@ fun ChatScreen(
                             loadOlderFailed = loadOlderFailed,
                             context = nodeContext,
                             listState = chatListState,
+                            gutter = gutter,
                             onLoadOlder = { scope.launch { store.loadOlder() } },
                             jumpToSeq = pendingJumpSeq,
                             onJumpConsumed = { pendingJumpSeq = null },
@@ -683,6 +733,7 @@ fun ChatScreen(
                             usage = tokenUsage,
                             cwd = workingDirectory,
                             listState = trajectoryListState,
+                            gutter = gutter,
                             loadingOlder = loadingOlder,
                             loadOlderFailed = loadOlderFailed,
                             onLoadOlder = { scope.launch { store.loadOlder() } },
@@ -694,15 +745,20 @@ fun ChatScreen(
                             files = sessionFiles,
                             cwd = workingDirectory,
                             listState = filesListState,
+                            gutter = gutter,
                         )
                     }
                 }
 
+                // Everything under the transcript. In flow it continues this column; with a tabletop
+                // hinge it is the bottom half, anchored to the foot of the column so the docks sit
+                // directly above the composer however much room the half has.
+                val belowTranscript: @Composable ColumnScope.() -> Unit = {
                 conversation?.let { conv ->
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
+                            .padding(horizontal = 12.dp + gutter),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         // Each dock slides in and out on its own, so one arriving mid-turn eases the
@@ -739,6 +795,7 @@ fun ChatScreen(
                             ?.let { toast.second(it) }
                     }
                     ApprovalPanel(
+                        modifier = Modifier.padding(horizontal = gutter),
                         toolName = approval.toolName,
                         reason = approval.reason,
                         onAllow = { decide(true) },
@@ -772,6 +829,7 @@ fun ChatScreen(
                             )
                         }
                         PlanReviewPanel(
+                            modifier = Modifier.padding(horizontal = gutter),
                             review = review,
                             busy = planBusy,
                             onApprove = { decide(review.approve) },
@@ -785,6 +843,7 @@ fun ChatScreen(
                         )
                     } else {
                         QuestionsPanel(
+                            modifier = Modifier.padding(horizontal = gutter),
                             requestKey = questions.rpcId,
                             questions = questions.items,
                             onSubmit = { answer ->
@@ -797,13 +856,35 @@ fun ChatScreen(
 
                 // Weighted questions are measured after the composer, so long questions cannot
                 // consume its controls. The question area scrolls within its allotted height.
-                ModernQuestions(store, currentSessionId, Modifier.weight(1f, fill = false))
+                ModernQuestions(store, currentSessionId, Modifier.weight(1f, fill = false).padding(horizontal = gutter))
 
                 // Reserved for the composer block drawn below: the conversation ends exactly where
                 // the block starts, which is the space the composer took when it was a child of
                 // this column. Lifted, it reserves nothing and the drawer floats over the
                 // conversation instead.
                 Spacer(Modifier.height(if (composerLifted) 0.dp else with(density) { composerBlockPx.toDp() }))
+                }
+                if (regions != null) {
+                    // The hinge: a hairline where the device folds, so the two halves read as two
+                    // surfaces rather than a transcript that stops for no reason.
+                    val rule = colors.borderL2
+                    Spacer(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(regions.gap)
+                            .drawBehind {
+                                val y = size.height / 2f
+                                drawLine(rule, Offset(0f, y), Offset(size.width, y), strokeWidth = 1.dp.toPx())
+                            },
+                    )
+                    Column(
+                        Modifier.fillMaxWidth().weight(1f),
+                        verticalArrangement = Arrangement.Bottom,
+                        content = belowTranscript,
+                    )
+                } else {
+                    belowTranscript()
+                }
                 }
 
                 // The composer and the two things that belong directly above it, anchored to the
@@ -812,6 +893,7 @@ fun ChatScreen(
                 Column(
                     Modifier.fillMaxWidth()
                         .align(Alignment.BottomCenter)
+                        .padding(horizontal = gutter)
                         .onSizeChanged { composerBlockPx = it.height },
                 ) {
                     // The `/` autocomplete sits where the web's does: directly above the composer,
@@ -1144,3 +1226,6 @@ internal fun decodePick(bytes: ByteArray): DecodedPick {
 
 /** The composer thumbnail is 56dp; decoding much past that is wasted memory. */
 private const val PREVIEW_WIDTH_PX = 224
+
+/** This height, held to [limit] when there is one: the room a composer has in the half below a hinge. */
+private fun Dp.capTo(limit: Dp?): Dp = if (limit == null) this else minOf(this, limit)

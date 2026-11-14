@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.dto.SessionModelsValue
+import com.labteto.dshmobile.ui.adaptive.ListControl
 import com.labteto.dshmobile.ui.components.DsIconButton
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.MascotMark
@@ -122,6 +123,12 @@ internal fun ChatTopBar(
      * host refuses a switch from here, so the chip states the model instead of offering a picker.
      */
     modelsEnabled: Boolean = true,
+    /**
+     * What the leading button is. On a phone it opens the chat list drawer; beside a docked list it
+     * shows or hides that pane; where a hinge pins the list in place it is not drawn at all.
+     * [onOpenDrawer] is the click handler for all three.
+     */
+    listControl: ListControl = ListControl.OpenDrawer,
     modifier: Modifier = Modifier,
 ) {
     val colors = DsTheme.colors
@@ -135,13 +142,29 @@ internal fun ChatTopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
         ) {
-            DsIconButton(
-                icon = FeatherIcons.Menu,
-                contentDescription = stringResource(R.string.chatlist_open),
-                onClick = onOpenDrawer,
-                tint = colors.labelSecondary,
-                iconSize = 20.dp,
-            )
+            when (listControl) {
+                ListControl.OpenDrawer -> DsIconButton(
+                    icon = FeatherIcons.Menu,
+                    contentDescription = stringResource(R.string.chatlist_open),
+                    onClick = onOpenDrawer,
+                    tint = colors.labelSecondary,
+                    iconSize = 20.dp,
+                )
+                // The list is a pane: the same slot becomes its switch. The pane's own edge shows
+                // which way it goes, so the glyph is one drawing for both states and the words say
+                // what the tap will do.
+                ListControl.Collapse, ListControl.Expand -> DsIconButton(
+                    icon = FeatherIcons.Sidebar,
+                    contentDescription = stringResource(
+                        if (listControl == ListControl.Collapse) R.string.chatlist_hide else R.string.chatlist_show,
+                    ),
+                    onClick = onOpenDrawer,
+                    tint = colors.labelSecondary,
+                    iconSize = 20.dp,
+                )
+                // Nothing to open or hide: keep the bar's rhythm with a little start padding instead.
+                ListControl.None -> Spacer(Modifier.width(DsSpacing.small))
+            }
             // The only elastic item in the row is this empty box: it takes what the icons leave, and
             // the chip inside wraps its text, so the bordered chip is exactly as wide as what it
             // says. With the run-status pill down on the title row, the whole width is available to a

@@ -14,6 +14,23 @@ All notable changes to DSH Mobile are documented here. Format based on
   default; holding send still chooses the mode for one message alone. Upgrades keep Queue, so
   nothing changes until the choice is made.
 
+- **A layout for tablets and foldables.** The app was one phone screen stretched to whatever it was
+  given. It now follows Android's window size classes: a phone, a Flip's inner and cover screens and
+  any window under 600dp wide keep exactly the phone layout. From about 620dp the chat list becomes a
+  pane beside the chat, with a button in the top bar to hide it. On windows 1180dp wide and up
+  (tablets in landscape, an unfolded Fold with room) Details docks as a third pane you can close, and
+  the conversation and composer stop at a comfortable reading width and centre in their pane. A
+  landscape phone gets the list beside the chat but never three panes. The Connect, Pair and Settings
+  forms hold a readable width instead of running edge to edge.
+
+  Folds are respected. With the device half open like a book, the boundary between the panes lands
+  on the hinge, so the chat list is one half and the chat the other and nothing sits on the crease.
+  Propped half open like a laptop (a Flip, or a Fold turned sideways), the transcript sits above the
+  hinge and the composer and its controls below it, with the keyboard in the lower half. The window
+  can be resized freely: rotating, folding, unfolding and dragging the split-screen divider no longer
+  restart the activity, so the draft, the attachment tray, the open session, an open sheet and the
+  scroll position stay where they were.
+
 ### Fixed
 
 - **The usage card shows real numbers on every provider.** The card in the session details said "No

@@ -213,6 +213,8 @@
     <string name="time_months">%1$d мес</string>
     <string name="time_years">%1$d г</string>
     <string name="chatlist_open">Открыть чаты</string>
+    <string name="chatlist_hide">Скрыть чаты</string>
+    <string name="chatlist_show">Показать чаты</string>
     <string name="chatlist_workspace_rename">Переименовать проект</string>
     <string name="chatlist_workspace_delete">Убрать проект</string>
     <string name="chatlist_workspace_delete_confirm">Убрать этот проект из harness? Его папка и журналы сеансов останутся как есть.</string>

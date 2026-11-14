@@ -213,6 +213,8 @@
     <string name="time_months">%1$d m</string>
     <string name="time_years">%1$d a</string>
     <string name="chatlist_open">Abrir conversas</string>
+    <string name="chatlist_hide">Ocultar conversas</string>
+    <string name="chatlist_show">Mostrar conversas</string>
     <string name="chatlist_workspace_rename">Renomear projeto</string>
     <string name="chatlist_workspace_delete">Remover projeto</string>
     <string name="chatlist_workspace_delete_confirm">Remover este projeto do harness? A pasta e os registros de sessão dele continuam como estão.</string>

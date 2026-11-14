@@ -30,6 +30,11 @@ junitVersion = "1.2.1"
 espresso = "3.6.1"
 kotlinxCoroutinesTest = "1.9.0"
 androidxTestRunner = "1.6.2"
+# Jetpack WindowManager: `WindowInfoTracker` reports the fold or hinge that crosses the window
+# (`FoldingFeature`), and `window-core` (plain JVM, a runtime-only dependency of it, so named here
+# too) holds the Material window size classes the shell picks its layout by. 1.3.0 needs
+# compileSdk 34, so it builds against this repo's compileSdk 35 / AGP 8.7 without moving the Compose BOM.
+androidxWindow = "1.3.0"
 commonmark = "0.24.0"
 # Compose Multiplatform for the UI both apps share (`:sharedUi`). 1.7.1 is the release built for Kotlin 2.0.21,
 # the compiler this repo is on; 1.7.3 and later are built for Kotlin 2.1+ and their klibs would not
@@ -88,6 +93,9 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
+androidx-window = { group = "androidx.window", name = "window", version.ref = "androidxWindow" }
+androidx-window-core = { group = "androidx.window", name = "window-core", version.ref = "androidxWindow" }
+androidx-window-testing = { group = "androidx.window", name = "window-testing", version.ref = "androidxWindow" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 

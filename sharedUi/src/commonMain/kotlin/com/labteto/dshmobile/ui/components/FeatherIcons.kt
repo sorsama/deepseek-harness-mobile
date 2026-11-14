@@ -200,6 +200,25 @@ object FeatherIcons {
         }
     }
 
+    /** `sidebar` — show or hide a pane docked beside the chat (the chat list on a wide screen). */
+    val Sidebar: ImageVector by lazy {
+        // Mirrored in right-to-left, where the pane (and so its edge rule) is on the right.
+        feather("Sidebar", autoMirror = true) {
+            // The 18-unit square with 2-unit corners, then the rule that marks the pane's edge.
+            moveTo(5f, 3f)
+            horizontalLineToRelative(14f)
+            arcToRelative(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = true, 2f, 2f)
+            verticalLineToRelative(14f)
+            arcToRelative(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = true, -2f, 2f)
+            horizontalLineToRelative(-14f)
+            arcToRelative(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = true, -2f, -2f)
+            verticalLineToRelative(-14f)
+            arcToRelative(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = true, 2f, -2f)
+            close()
+            moveTo(9f, 3f); lineTo(9f, 21f)
+        }
+    }
+
     /** `at-sign` — insert a structured draft reference. */
     val AtSign: ImageVector by lazy {
         feather("AtSign") {
@@ -377,13 +396,14 @@ object FeatherIcons {
 // ---------------------------------------------------------------------------
 
 /** One Feather glyph: 24-unit grid, 2-unit round-capped stroke, no fill. */
-private fun feather(name: String, block: PathBuilder.() -> Unit): ImageVector =
+private fun feather(name: String, autoMirror: Boolean = false, block: PathBuilder.() -> Unit): ImageVector =
     ImageVector.Builder(
         name = "Feather.$name",
         defaultWidth = 24.dp,
         defaultHeight = 24.dp,
         viewportWidth = 24f,
         viewportHeight = 24f,
+        autoMirror = autoMirror,
     ).apply {
         path(
             stroke = SolidColor(Color.Black),

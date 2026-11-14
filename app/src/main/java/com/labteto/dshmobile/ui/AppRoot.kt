@@ -59,6 +59,7 @@ import com.labteto.dshmobile.ui.components.MascotMark
 import com.labteto.dshmobile.ui.components.MascotState
 import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.screens.connect.ConnectScreen
+import com.labteto.dshmobile.ui.adaptive.FormPane
 import com.labteto.dshmobile.ui.screens.main.MainScreen
 import com.labteto.dshmobile.ui.screens.pair.PairScreen
 import com.labteto.dshmobile.ui.screens.settings.SettingsScreen
@@ -162,16 +163,20 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
                 label = "rootRoute",
             ) { current ->
                 when (current) {
-                    RootRoute.Settings -> SettingsScreen(onClose = { showSettings = false })
-                    RootRoute.Pair -> PairScreen(onClose = { showPair = false }, prefillUrl = pairUrl)
+                    // The forms are one column of fields: held to a readable width and centred on a
+                    // wide window, instead of stretched edge to edge across a tablet.
+                    RootRoute.Settings -> FormPane { SettingsScreen(onClose = { showSettings = false }) }
+                    RootRoute.Pair -> FormPane { PairScreen(onClose = { showPair = false }, prefillUrl = pairUrl) }
                     RootRoute.Main -> MainScreen(onOpenSettings = { showSettings = true })
-                    RootRoute.Connect -> ConnectScreen(
-                        onOpenSettings = { showSettings = true },
-                        onPair = { url ->
-                            pairUrl = url
-                            showPair = true
-                        },
-                    )
+                    RootRoute.Connect -> FormPane {
+                        ConnectScreen(
+                            onOpenSettings = { showSettings = true },
+                            onPair = { url ->
+                                pairUrl = url
+                                showPair = true
+                            },
+                        )
+                    }
                 }
             }
             AnimatedVisibility(
