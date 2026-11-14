@@ -45,6 +45,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.session.ChatNode
@@ -255,6 +256,8 @@ internal fun SessionFilesTab(
     cwd: String?,
     listState: LazyListState,
     modifier: Modifier = Modifier,
+    /** Extra room at each side, so a wide pane keeps the list to a reading width. */
+    gutter: Dp = 0.dp,
 ) {
     val colors = DsTheme.colors
     if (files.isEmpty()) {
@@ -282,7 +285,7 @@ internal fun SessionFilesTab(
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = DsSpacing.medium, vertical = DsSpacing.small),
+        contentPadding = PaddingValues(horizontal = DsSpacing.medium + gutter, vertical = DsSpacing.small),
         verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
     ) {
         item(key = "files-card") {

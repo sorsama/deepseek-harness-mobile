@@ -157,6 +157,11 @@ fun DetailsPanel(
     onOpenSubagent: (String) -> Unit = {},
     /** Open another session, such as the fork just made. Runs outside the panel, which is closing. */
     onOpenSession: (String) -> Unit = {},
+    /**
+     * True when the panel is a pane docked beside the chat rather than a sheet over it: square
+     * edges, and no grabber, because a docked pane is closed with its button and is not dragged.
+     */
+    docked: Boolean = false,
 ) {
     // Back is handled by MainScreen, which drags the panel closed with the predictive back gesture.
     val store = rememberSessionStore()
@@ -309,7 +314,7 @@ fun DetailsPanel(
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = colors.bgLayer2,
-            shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp),
+            shape = if (docked) androidx.compose.ui.graphics.RectangleShape else RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp),
         ) {
             Row(Modifier.fillMaxSize()) {
                     // The rule on the chat side of the panel, drawn as a 1dp bar so it can sit on the
@@ -327,8 +332,9 @@ fun DetailsPanel(
                             .safeDrawingPadding(),
                     ) {
                         // A grabber reads as "this edge moves"; the panel closes by dragging toward
-                        // the chat, which is the same gesture family as a sheet pulled down.
-                        Row(
+                        // the chat, which is the same gesture family as a sheet pulled down. A docked
+                        // pane does not move, so it does not promise to.
+                        if (!docked) Row(
                             Modifier
                                 .fillMaxWidth()
                                 .padding(top = DsSpacing.small),

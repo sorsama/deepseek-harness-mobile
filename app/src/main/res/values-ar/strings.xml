@@ -213,6 +213,8 @@
     <string name="time_months">%1$d ش</string>
     <string name="time_years">%1$d سنة</string>
     <string name="chatlist_open">فتح المحادثات</string>
+    <string name="chatlist_hide">إخفاء المحادثات</string>
+    <string name="chatlist_show">إظهار المحادثات</string>
     <string name="chatlist_workspace_rename">إعادة تسمية المشروع</string>
     <string name="chatlist_workspace_delete">إزالة المشروع</string>
     <string name="chatlist_workspace_delete_confirm">إزالة هذا المشروع من harness؟ يبقى مجلده وسجلات جلساته كما هي.</string>

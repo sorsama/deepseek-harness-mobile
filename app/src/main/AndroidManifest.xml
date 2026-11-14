@@ -49,6 +49,7 @@
         android:label="@string/app_name"
         android:localeConfig="@xml/locales_config"
         android:networkSecurityConfig="@xml/network_security_config"
+        android:resizeableActivity="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.DshMobile"
         tools:targetApi="35">
@@ -63,10 +64,27 @@
             instead; Compose re-reads its resources and the text simply changes, with the transcript
             and scroll position kept. `layoutDirection` is listed with `locale` on purpose: without
             it, switching to Arabic or Urdu would still tear the activity down.
+
+            The same reasoning covers the window itself. A fold or unfold, a rotation, a split-screen
+            divider being dragged and a hardware keyboard being attached are configuration changes
+            too, and on a foldable they arrive constantly. Letting the framework rebuild the
+            activity for each would tear down the transcript's scroll position, an open sheet and
+            the focused composer every time the device is folded. `orientation`, `screenSize`,
+            `smallestScreenSize` and `screenLayout` are the window's size and shape; `keyboard`,
+            `keyboardHidden` and `navigation` are what a tablet's keyboard dock toggles. The adaptive
+            shell reads the new size from Compose and from WindowManager and lays itself out again
+            in place. `density`, `uiMode` and `fontScale` are deliberately left out: a different
+            density or night mode wants the activity rebuilt (the status bar style is set once in
+            `onCreate`), and what the reader typed, which session is open and which panes are shown
+            all survive that rebuild (see MainScreen and SessionStore).
+
+            `resizeableActivity` is declared on the application, and no `screenOrientation` is
+            pinned anywhere: Android 16 ignores both on large screens, and the app has to look right
+            at any size it is given, including a half-width split-screen window.
         -->
         <activity
             android:name=".MainActivity"
-            android:configChanges="locale|layoutDirection"
+            android:configChanges="locale|layoutDirection|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"

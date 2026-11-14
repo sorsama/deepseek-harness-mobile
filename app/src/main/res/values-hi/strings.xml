@@ -213,6 +213,8 @@
     <string name="time_months">%1$d माह</string>
     <string name="time_years">%1$d साल</string>
     <string name="chatlist_open">चैट खोलें</string>
+    <string name="chatlist_hide">चैट छिपाएँ</string>
+    <string name="chatlist_show">चैट दिखाएँ</string>
     <string name="chatlist_workspace_rename">प्रोजेक्ट का नाम बदलें</string>
     <string name="chatlist_workspace_delete">प्रोजेक्ट हटाएँ</string>
     <string name="chatlist_workspace_delete_confirm">इस प्रोजेक्ट को harness से हटाएँ? उसका फ़ोल्डर और सेशन लॉग वैसे ही रहेंगे।</string>

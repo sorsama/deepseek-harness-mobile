@@ -213,6 +213,8 @@
     <string name="time_months">%1$d 个月</string>
     <string name="time_years">%1$d 年</string>
     <string name="chatlist_open">打开会话列表</string>
+    <string name="chatlist_hide">隐藏会话列表</string>
+    <string name="chatlist_show">显示会话列表</string>
     <string name="chatlist_workspace_rename">重命名项目</string>
     <string name="chatlist_workspace_delete">移除项目</string>
     <string name="chatlist_workspace_delete_confirm">要从 harness 中移除这个项目吗？它的文件夹和会话日志都会保留。</string>

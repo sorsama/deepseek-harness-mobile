@@ -128,6 +128,9 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.appcompat)
+    // Folds, hinges and postures for the adaptive shell (see ui/adaptive).
+    implementation(libs.androidx.window)
+    implementation(libs.androidx.window.core)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -167,6 +170,9 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.runner)
+    // `FoldingFeature(...)` and `WindowLayoutInfoPublisherRule`: drive a fold or a half-open hinge
+    // into the running activity's WindowInfoTracker without a foldable.
+    androidTestImplementation(libs.androidx.window.testing)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

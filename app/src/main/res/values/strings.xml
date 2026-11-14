@@ -55,6 +55,8 @@
     <string name="chatlist_sort_updated">Sort by last update</string>
     <string name="chatlist_sort_manual">Manual order</string>
     <string name="chatlist_open">Open chats</string>
+    <string name="chatlist_hide">Hide chats</string>
+    <string name="chatlist_show">Show chats</string>
     <string name="chatlist_workspace_rename">Rename project</string>
     <string name="chatlist_workspace_delete">Remove project</string>
     <string name="chatlist_workspace_delete_confirm">Remove this project from the harness? Its folder and session logs stay as they are.</string>

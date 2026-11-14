@@ -49,6 +49,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.session.AssistantMessageNode
@@ -139,6 +140,11 @@ internal fun ChatTranscript(
     listState: LazyListState,
     onLoadOlder: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Extra room at each side, so the rows keep to a reading width centred in a wide pane while the
+     * list itself still spans the pane and scrolls from anywhere on it.
+     */
+    gutter: Dp = 0.dp,
     /** A message the reader picked out of the history sheet, still waiting to be scrolled to. */
     jumpToSeq: Long? = null,
     onJumpConsumed: () -> Unit = {},
@@ -396,7 +402,7 @@ internal fun ChatTranscript(
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp + gutter, vertical = 10.dp),
         // Newest first, so the row the viewport anchors on is the one that grows.
         reverseLayout = true,
         // Still bottom-aligned: a transcript shorter than the viewport belongs above the composer,
