@@ -247,8 +247,9 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
         )
         // Unknown event types stay visible — that is the compatibility contract — but the
         // structural ones are not "unknown", they are bookkeeping, and printing `step/start` /
-        // `step/end` between every tool call buried the actual work in noise.
-        is OtherNode -> if (node.type !in STRUCTURAL_EVENT_TYPES) {
+        // `step/end` between every tool call buried the actual work in noise. A record the harness
+        // marked skippable (its `plugin:` records) is not "unknown" either; see drawsInTranscript.
+        is OtherNode -> if (node.drawsInTranscript()) {
             // The turn's settled file changes, listed the way the web client lists them. A payload
             // this build cannot read falls through to the raw disclosure like any other event.
             val changesTurn = if (node.type == "workspace/changes") changesTurn(node.data) else null

@@ -89,7 +89,7 @@ internal fun ChatNode.rendersContent(
     // draws nothing for (harness 0.1.7's `forked`, or one this build has never seen) cost a gap.
     is TurnEndNode -> reasonKind in DRAWN_TURN_END_KINDS
     // Bookkeeping event types are not "unknown" — they are noise between the tool calls.
-    is OtherNode -> type !in STRUCTURAL_EVENT_TYPES
+    is OtherNode -> drawsInTranscript()
 
     // Content that can still fold to nothing.
     is UserMessageNode -> blocks.any { it.kind == "image" } || displayText().isNotBlank()
@@ -121,6 +121,21 @@ internal fun ChatNode.rendersContent(
     is TitleNode -> false
     is SubagentNode -> true
 }
+
+/**
+ * Whether the transcript draws an [OtherNode].
+ *
+ * Two kinds stay out. Structural bookkeeping frames the transcript rather than filling it. And a
+ * record the harness marked `ignorable` that this build has no opinion about is, by the harness's
+ * own contract, one a reader may skip: every `plugin:` record is written that way, so the
+ * translator's `plugin:translator/request` and `plugin:translator/result` would otherwise print as
+ * raw JSON rows in the middle of a conversation.
+ *
+ * A type the harness did *not* mark skippable and this build has never seen stays visible, which is
+ * the compatibility contract. Shared by [rendersContent] and [ChatNodeItem] so the list filter and
+ * the renderer cannot disagree. Trajectory does not use it: it is where a skipped record is found.
+ */
+internal fun OtherNode.drawsInTranscript(): Boolean = type !in STRUCTURAL_EVENT_TYPES && !isSkippableUnknown
 
 /** The `turn/end` reasons [ChatNodeItem] draws something for. */
 internal val DRAWN_TURN_END_KINDS = setOf("aborted", "interrupted", "error", "max-tokens")

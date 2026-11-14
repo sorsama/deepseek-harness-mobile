@@ -140,7 +140,34 @@ data class CommandNode(override val seq: Long, val kind: String, val data: JsonE
 data class TitleNode(override val seq: Long, val title: String) : ChatNode
 data class WorkflowNode(override val seq: Long, val kind: String, val data: JsonElement) : ChatNode
 data class SubagentNode(override val seq: Long, val data: JsonElement) : ChatNode
-data class OtherNode(override val seq: Long, val type: String, val data: JsonElement) : ChatNode
+/**
+ * An event this build draws no typed node for: a [EventClassification.PASSTHROUGH] type the
+ * presentation layer labels or hides, or a type this build has never heard of.
+ *
+ * [ignorable] is the harness's own envelope marker, carried verbatim. It means "a reader that does
+ * not recognise this type may skip it", which is exactly how the harness writes plugin records
+ * (`plugin:<owner>/<record>`, such as the translator's request and result): retained in the log,
+ * never part of the conversation.
+ */
+data class OtherNode(
+    override val seq: Long,
+    val type: String,
+    val data: JsonElement,
+    val ignorable: Boolean = false,
+) : ChatNode {
+    /**
+     * True when the harness marked this record skippable *and* this build has no opinion about its
+     * type, so the conversation has nothing to say for it.
+     *
+     * Both halves matter. An unknown type without the marker is a required event the harness would
+     * refuse to read past, so it stays visible: that is the compatibility contract. A type this
+     * build classifies keeps whatever treatment [EventClassification] gives it whatever the marker
+     * says. Trajectory ignores this on purpose: the ledger is where such a record is meant to be
+     * found.
+     */
+    val isSkippableUnknown: Boolean
+        get() = ignorable && type !in EventClassification.CLASSIFIED
+}
 
 /** One pending queue item (from the session/queue frame snapshot). */
 data class QueueItem(
