@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -88,6 +90,27 @@ fun DsDialog(
     onDismiss: () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    DsDialogScaffold(title, onDismiss, content, actions = null)
+}
+
+/** A dialog whose actions stay visible while its long body scrolls. */
+@Composable
+fun DsDialog(
+    title: String?,
+    onDismiss: () -> Unit,
+    body: @Composable ColumnScope.() -> Unit,
+    actions: @Composable RowScope.() -> Unit,
+) {
+    DsDialogScaffold(title, onDismiss, body, actions)
+}
+
+@Composable
+private fun DsDialogScaffold(
+    title: String?,
+    onDismiss: () -> Unit,
+    body: @Composable ColumnScope.() -> Unit,
+    actions: (@Composable RowScope.() -> Unit)?,
+) {
     val colors = DsTheme.colors
     DsWindow(onDismissRequest = onDismiss, dimBehind = true) { insets ->
         Box(Modifier.fillMaxSize()) {
@@ -144,8 +167,15 @@ fun DsDialog(
                                 .weight(1f, fill = false)
                                 .verticalScroll(rememberScrollState()),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
-                            content = content,
+                            content = body,
                         )
+                        actions?.let {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                                content = it,
+                            )
+                        }
                     }
                 }
             }
