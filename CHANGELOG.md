@@ -3,6 +3,49 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [0.21.1] - 2026-11-14
+
+### Fixed
+
+- **Tool results show their text instead of a tree of nested JSON.** A tool's result used to be
+  drawn as a generic JSON tree, so reading a background job's output meant opening Output, `0`,
+  `type`, `text` and `text` again, with a Copy button on every level, before the log appeared
+  (closes #97). The text now shows directly under the tool card and Copy copies exactly that text.
+  Results wrapped in a list of typed text blocks, in an `output` or `content` envelope, or in text
+  that is itself the JSON of another block list are unwrapped, while a result with real fields of
+  its own, such as an exit code beside the output, stays readable as structured data. **Show raw
+  JSON** swaps in the original result untouched and **Copy raw JSON** copies it, so nothing is out
+  of reach. Terminal, diff, read, search and web cards already present their result, so there the
+  same text waits behind the Output row. The hold menu's "Copy output" and the red failure line
+  read results the same way.
+
+  <img src="docs/images/releases/0.21.1/tool-output-shown-as-text.png" alt="A background job's build log shown directly under the tool card, with Copy and Show raw JSON" width="260">
+  <img src="docs/images/releases/0.21.1/tool-output-raw-json-view.png" alt="The same output switched to its original JSON, with Hide raw JSON and Copy raw JSON" width="260">
+
+- **Tapping anywhere else in the chat clears a text selection.** Pressing and holding a word starts
+  a selection, but its highlight, handles and the Copy / Select all toolbar stayed on screen when
+  you tapped the next paragraph, the gap between messages or a card, and with Thinking, tool or
+  context cards open there was even more screen that could not dismiss it (closes #90). One tap
+  outside the selection now clears it, cards open or closed. The tap still does its normal job: it
+  toggles a card, presses a button, opens a link or shows a message's actions. Scrolling, dragging a
+  handle, a long press and the toolbar's Copy and Select all leave the selection alone, and with no
+  selection a tap on a reply leaves the keyboard and the draft as they were.
+
+  <img src="docs/images/releases/0.21.1/text-selection-active.png" alt="A word selected in a reply, with its handles and the Copy and Select all toolbar showing" width="260">
+  <img src="docs/images/releases/0.21.1/text-selection-cleared-by-tap.png" alt="The same chat after tapping another paragraph, with the selection and toolbar gone" width="260">
+
+- **Plugin records stay out of the chat, and the translate button names its provider properly.**
+  After translating a reasoning block, `plugin:translator/request` and `plugin:translator/result`
+  showed up as raw rows in the conversation, live and again when the session was reopened (closes
+  #96). The harness marks those records as safe to skip and the chat now honours it. The Trajectory
+  tab and the raw journal still list them, and records the harness does not mark, like every type
+  the app knows how to draw, still show. The translate button also printed an internal route name
+  such as `deepseek-account`; it now reads Translate with DeepSeek, DeepSeek API, Bing or Google,
+  whichever route the host offers, and a route the app has not met is spelled out in plain words.
+
+  <img src="docs/images/releases/0.21.1/plugin-records-hidden-from-chat.png" alt="A translated reasoning block in the chat with no plugin rows around it, and a Show original link" width="260">
+  <img src="docs/images/releases/0.21.1/translate-button-deepseek-api-label.png" alt="The translate button under a reasoning block reading Translate with DeepSeek API" width="260">
+
 ## [0.21.0] - 2026-11-14
 
 ![DSH Mobile 0.21.0 on a tablet, a Chromebook, a flip phone, a phone and a foldable](docs/images/releases/0.21.0/devices/hero-devices.png)
