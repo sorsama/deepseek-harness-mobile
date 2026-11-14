@@ -151,6 +151,59 @@ class EventFoldTest {
         assertTrue(snapshot.nodes.single() is OtherNode)
     }
 
+    private fun pluginRecord(seq: Long, type: String, ignorable: Boolean? = true) =
+        SessionEventEnvelope(type, seq, seq, buildJsonObject { put("provider", "deepseek-account") }, ignorable = ignorable)
+
+    // Issue #96: the harness writes the translator's request and result with `ignorable: true`
+    // (every `plugin:` record is), and they printed as raw JSON rows in the middle of the chat.
+    @Test
+    fun ignorablePluginRecordsFoldToSkippableNodesAndStayInTheJournal() {
+        val events = listOf(
+            event("turn/start", 0, buildJsonObject { put("turn", 1) }),
+            pluginRecord(1, "plugin:translator/request"),
+            pluginRecord(2, "plugin:translator/result"),
+        )
+        val snapshot = EventFold("s1").fold(events)
+
+        val records = snapshot.nodes.filterIsInstance<OtherNode>()
+        assertEquals(listOf("plugin:translator/request", "plugin:translator/result"), records.map { it.type })
+        assertTrue(records.all { it.ignorable && it.isSkippableUnknown })
+        // Trajectory re-folds this journal and also lists it raw, so the record must survive both.
+        assertEquals(listOf(0L, 1L, 2L), snapshot.journal.map { it.seq })
+        assertEquals(true, snapshot.journal[1].ignorable)
+    }
+
+    @Test
+    fun ignorableMarkerSurvivesIncrementalFolding() {
+        val fold = EventFold.Incremental(ConversationSnapshot("s1", lastSeq = 0), "s1")
+        val snapshot = fold.apply(pluginRecord(1, "plugin:translator/request"))!!
+        val record = snapshot.nodes.single() as OtherNode
+        assertTrue(record.isSkippableUnknown)
+    }
+
+    @Test
+    fun unknownEventWithoutTheMarkerStaysVisible() {
+        // An unrecognised type the harness did not mark skippable is a required event: the
+        // compatibility contract keeps it on screen rather than guessing it away.
+        for (marker in listOf(null, false)) {
+            val node = EventFold("s1").fold(listOf(pluginRecord(0, "mystery/event", marker))).nodes.single() as OtherNode
+            assertFalse("marker=$marker", node.isSkippableUnknown)
+        }
+        // The plugin namespace alone proves nothing; only the harness's marker does.
+        val unmarked = EventFold("s1").fold(listOf(pluginRecord(0, "plugin:translator/request", null))).nodes.single() as OtherNode
+        assertFalse(unmarked.isSkippableUnknown)
+    }
+
+    @Test
+    fun aClassifiedTypeIsNeverSkippableWhateverTheMarkerSays() {
+        // A type this build draws keeps its own treatment; a stray marker cannot make it vanish.
+        for (type in listOf("workspace/changes", "system/message", "deliverables/presented", "step/start")) {
+            val node = EventFold("s1").fold(listOf(pluginRecord(0, type))).nodes.single() as OtherNode
+            assertTrue(type, node.ignorable)
+            assertFalse(type, node.isSkippableUnknown)
+        }
+    }
+
     @Test
     fun incrementalSkipsDuplicates() {
         val fold = EventFold.Incremental(ConversationSnapshot("s1", lastSeq = 2), "s1")

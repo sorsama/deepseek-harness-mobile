@@ -448,8 +448,13 @@ expands it back into one `assistant/chunk` per member: read as a single event a
 run swallows the sequence numbers of everything after its first, and the hole
 that leaves reads as a gapped journal.
 An `ignorable: true` marks an informational event a reader that does not
-recognise its `type` may skip; this client renders unknown events as passthrough
-rows either way.
+recognise its `type` may skip. The harness writes every `plugin:<owner>/<record>`
+record that way (the translator's `plugin:translator/request` and
+`plugin:translator/result` are the common ones). This client keeps such a record
+in the journal and lists it in Trajectory, but draws no transcript row for it.
+An unknown `type` without the marker is a required event and still renders as a
+passthrough row. History pages, follow snapshots and live entries all carry the
+flag through to the fold.
 
 ### Session format V3: attempts and settlements
 

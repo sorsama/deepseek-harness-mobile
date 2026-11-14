@@ -3,7 +3,9 @@ package com.labteto.dshmobile.ui.screens.main
 import com.labteto.dshmobile.core.session.AssistantMessageNode
 import com.labteto.dshmobile.core.session.ChatBlock
 import com.labteto.dshmobile.core.session.CommandNode
+import com.labteto.dshmobile.core.session.EventFold
 import com.labteto.dshmobile.core.session.OtherNode
+import com.labteto.dshmobile.core.session.SessionEventEnvelope
 import com.labteto.dshmobile.core.session.ToolCallNode
 import com.labteto.dshmobile.core.session.ToolResultNode
 import com.labteto.dshmobile.core.session.TurnEndNode
@@ -11,6 +13,8 @@ import com.labteto.dshmobile.core.session.TurnStartNode
 import com.labteto.dshmobile.core.session.UserMessageNode
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -92,6 +96,57 @@ class ChatNodeVisibilityTest {
         assertFalse(OtherNode(seq = 4, type = "step/start", data = JsonNull).rendersContent())
         assertFalse(OtherNode(seq = 5, type = "assistant/chunk", data = JsonNull).rendersContent())
         assertTrue(OtherNode(seq = 6, type = "something/new", data = JsonNull).rendersContent())
+    }
+
+    // Issue #96: `plugin:translator/request` and `/result` showed up as raw rows after a reasoning
+    // translation. The harness writes every plugin record `ignorable`, which means a reader that
+    // does not know the type may skip it.
+    @Test
+    fun `harness plugin records are not transcript rows`() {
+        val request = OtherNode(seq = 4, type = "plugin:translator/request", data = JsonNull, ignorable = true)
+        val result = OtherNode(seq = 5, type = "plugin:translator/result", data = JsonNull, ignorable = true)
+        assertFalse(request.rendersContent())
+        assertFalse(result.rendersContent())
+
+        val reply = AssistantMessageNode(
+            seq = 6, messageId = "a", turn = 1, step = 1, blocks = listOf(ChatBlock("text", "done")),
+        )
+        assertEquals(listOf(reply), renderableChatNodes(listOf(request, result, reply), running = false))
+    }
+
+    @Test
+    fun `an unknown event the harness did not mark skippable still renders`() {
+        // Required-but-unrecognised events stay on screen: that is the compatibility contract.
+        assertTrue(OtherNode(seq = 4, type = "something/new", data = JsonNull).rendersContent())
+        assertTrue(OtherNode(seq = 5, type = "something/new", data = JsonNull, ignorable = false).rendersContent())
+        // The plugin namespace alone is not the signal; the harness's marker is.
+        assertTrue(OtherNode(seq = 6, type = "plugin:translator/request", data = JsonNull).rendersContent())
+    }
+
+    @Test
+    fun `a marker cannot hide a type this build draws`() {
+        assertTrue(OtherNode(seq = 4, type = "workspace/changes", data = JsonNull, ignorable = true).rendersContent())
+        assertTrue(OtherNode(seq = 5, type = "deliverables/presented", data = JsonNull, ignorable = true).rendersContent())
+    }
+
+    @Test
+    fun `a skipped plugin record stays in the journal and in the folded nodes Trajectory reads`() {
+        val events = listOf(
+            SessionEventEnvelope("turn/start", 0, 0, buildJsonObject { put("turn", 1) }),
+            SessionEventEnvelope("plugin:translator/request", 1, 1, buildJsonObject { put("provider", "deepseek-account") }, ignorable = true),
+            SessionEventEnvelope("plugin:translator/result", 2, 2, buildJsonObject { put("requestSeq", 1) }, ignorable = true),
+        )
+        val snapshot = EventFold("s1").fold(events)
+
+        // Chat draws nothing for them...
+        assertTrue(renderableChatNodes(snapshot.nodes, running = false).isEmpty())
+        // ...while Trajectory, which re-folds the journal and lists every event raw, still has both.
+        val refolded = EventFold("s1").fold(snapshot.journal.map { it.copy(surfaceOp = null, surfaceIntent = null) })
+        assertEquals(
+            listOf("plugin:translator/request", "plugin:translator/result"),
+            refolded.nodes.filterIsInstance<OtherNode>().map { it.type },
+        )
+        assertEquals(listOf("plugin:translator/request", "plugin:translator/result"), snapshot.journal.drop(1).map { it.type })
     }
 
     @Test

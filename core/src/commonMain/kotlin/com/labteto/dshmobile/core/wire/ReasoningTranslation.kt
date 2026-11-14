@@ -20,6 +20,32 @@ suspend fun DshApiClient.translateReasoning(sessionId: String, text: String, tar
         })
     }, serializer())
 
+/**
+ * What the reader sees for a translation provider id, such as the button's "Translate with DeepSeek".
+ *
+ * `cotTranslation/limits` names a provider by its route key and nothing else, and the host sends no
+ * display names for it. The keys are a closed set the host defines, and its own web client keeps a
+ * label for each, so this does the same. They are brand names, so they are not localised. A key this
+ * build has never seen is made readable (`my-provider` becomes "My Provider") rather than printed raw.
+ */
+fun translationProviderLabel(provider: String): String =
+    KNOWN_TRANSLATION_PROVIDERS[provider] ?: humanisedProviderId(provider)
+
+private val KNOWN_TRANSLATION_PROVIDERS = mapOf(
+    "bing" to "Bing",
+    "google" to "Google",
+    // Both paid routes go to DeepSeek; the second is billed to an API key rather than the account.
+    "deepseek-account" to "DeepSeek",
+    "deepseek-official" to "DeepSeek API",
+)
+
+private val BRAND_WORDS = mapOf("deepseek" to "DeepSeek", "openai" to "OpenAI", "api" to "API")
+
+private fun humanisedProviderId(provider: String): String = provider
+    .split('-', '_', ' ')
+    .filter { it.isNotEmpty() }
+    .joinToString(" ") { word -> BRAND_WORDS[word.lowercase()] ?: word.replaceFirstChar { it.uppercaseChar() } }
+
 /** Request caps count UTF-16 code units; never split a surrogate pair. */
 fun translationFragments(text: String, maxChars: Int): List<String> {
     require(maxChars >= 2)

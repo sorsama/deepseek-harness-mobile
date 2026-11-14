@@ -110,6 +110,11 @@ object EventClassification {
      * (`system/message`, `request/context`, `image/offload`), render them properly
      * (`deliverables/presented`) or hide them as structural noise (`step/start`, `step/end`) —
      * see `STRUCTURAL_EVENT_TYPES` in the app's `ChatNodeItem`.
+     *
+     * The one exception to "unknown stays visible" is a record the harness itself marked
+     * `ignorable`, which is how every `plugin:` record is written (the translator's request and
+     * result, for one). It is a node like any other, but [OtherNode.isSkippableUnknown] keeps it
+     * out of the transcript while Trajectory still lists it.
      */
     val PASSTHROUGH: Set<String> = setOf(
         "step/start",

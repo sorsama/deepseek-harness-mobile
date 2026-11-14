@@ -67,7 +67,7 @@ private fun ReasoningContentState(text: String, streaming: Boolean) {
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 Text(
                     if (busy) stringResource(R.string.common_loading) else if (showTranslation)
-                        stringResource(R.string.alpha2_original) else stringResource(R.string.alpha2_translate, metadata.preferences.provider),
+                        stringResource(R.string.alpha2_original) else stringResource(R.string.alpha2_translate, translationProviderLabel(metadata.preferences.provider)),
                     style = DsType.small13Strong,
                     color = if (busy) colors.labelTertiary else colors.accent,
                     maxLines = 1,

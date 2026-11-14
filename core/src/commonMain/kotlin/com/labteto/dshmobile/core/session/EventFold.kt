@@ -46,7 +46,8 @@ private fun SessionEventEnvelope.sourceKindOf(): String? =
  *    on the `assistant/message` itself, and that wins; a `turn/end` whose reason
  *    kind is `interrupted`/`aborted`/`error` marks the turn's assistant node
  *    otherwise, which is all an rc.7 host gives.
- *  - unknown event types become [OtherNode] (merge-extensible contract).
+ *  - unknown event types become [OtherNode] (merge-extensible contract), carrying the harness's
+ *    `ignorable` marker so a renderer can tell a skippable plugin record from a required event.
  *
  * The fold is pure: same events → same snapshot.
  */
@@ -312,9 +313,14 @@ private class FoldState(private val sessionId: String) {
             // Everything else passes through as an untyped row: the known ones because
             // presentation labels or hides them, the unknown ones because staying visible is the
             // compatibility contract. `EventClassification` says which is which.
+            //
+            // The harness's `ignorable` marker rides along on the node rather than deciding here:
+            // an unknown type the harness marked skippable (every `plugin:` record) is hidden from
+            // the transcript by `OtherNode.isSkippableUnknown`, but the node itself stays so the
+            // Trajectory ledger, which folds the same journal, can still list it.
             in EventClassification.LOG_ONLY -> Unit
 
-            else -> nodes.add(OtherNode(event.seq, event.type, data))
+            else -> nodes.add(OtherNode(event.seq, event.type, data, ignorable = event.ignorable == true))
         }
     }
 
