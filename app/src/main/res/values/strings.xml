@@ -61,6 +61,8 @@
     <string name="chatlist_needs_action">Needs you</string>
     <string name="chatlist_sort_title">Order</string>
     <string name="chat_composer_hint">Message the agent</string>
+    <string name="chat_composer_expand">Open the full screen editor</string>
+    <string name="chat_composer_fullscreen_title">Message</string>
     <string name="chat_composer_send">Send message</string>
     <string name="chat_composer_commands">Commands</string>
     <string name="chat_composer_mode">Send mode</string>

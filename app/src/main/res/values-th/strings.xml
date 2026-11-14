@@ -46,6 +46,8 @@
     <string name="chatlist_sort_updated">เรียงตามการอัปเดตล่าสุด</string>
     <string name="chatlist_sort_manual">เรียงเอง</string>
     <string name="chat_composer_hint">ส่งข้อความถึงเอเจนต์…</string>
+    <string name="chat_composer_expand">เปิดตัวแก้ไขแบบเต็มหน้าจอ</string>
+    <string name="chat_composer_fullscreen_title">ข้อความ</string>
     <string name="chat_composer_queue">คิว</string>
     <string name="chat_composer_steer">แทรก</string>
     <string name="chat_composer_stop">หยุด</string>

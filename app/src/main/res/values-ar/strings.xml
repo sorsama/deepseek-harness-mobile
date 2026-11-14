@@ -46,6 +46,8 @@
     <string name="chatlist_sort_updated">ترتيب حسب آخر تحديث</string>
     <string name="chatlist_sort_manual">ترتيب يدوي</string>
     <string name="chat_composer_hint">أرسل رسالة إلى الوكيل…</string>
+    <string name="chat_composer_expand">فتح المحرر بملء الشاشة</string>
+    <string name="chat_composer_fullscreen_title">رسالة</string>
     <string name="chat_composer_queue">قائمة الانتظار</string>
     <string name="chat_composer_steer">توجيه</string>
     <string name="chat_composer_stop">إيقاف</string>

@@ -32,6 +32,13 @@ All notable changes to DSH Mobile are documented here. Format based on
   `code` id — while a preset marked as authored, and any id the app does not ship, keeps its own
   name.
 
+- **No more grey pill between the permission chip and send.** Once a session had reported any
+  context usage at all, the composer drew a small empty bar there, even at 0%, and it took enough
+  room to cut the permission chip down to "Works…" on a Flip's inner screen. The bar now appears
+  only once the window is filling up enough for it to show anything, it takes only the room the chip
+  leaves (the chip keeps its whole name), and a screen reader hears what it says ("62% of context
+  used"). The Details panel still shows the exact figure and the breakdown at any usage.
+
 ## [0.20.0] - 2026-11-09
 
 ### Added

@@ -31,6 +31,10 @@ import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 
+/** The composer's bar, in dp. Shared so the action row can tell whether one fits before composing it. */
+internal const val ContextMeterBarWidth = 44
+internal const val ContextMeterBarHeight = 6
+
 /**
  * How full the model's context window is, split by what is filling it.
  *
@@ -44,7 +48,7 @@ fun ContextMeter(
     pressure: ContextPressureView?,
     modifier: Modifier = Modifier,
     /** Fixed bar width in dp; null lets the caller's modifier size it (the detail reading). */
-    barWidth: Int? = 44,
+    barWidth: Int? = ContextMeterBarWidth,
 ) {
     val colors = DsTheme.colors
     val ratio = pressure?.usedRatio ?: return
@@ -69,7 +73,7 @@ fun ContextMeter(
     Canvas(
         modifier = modifier
             .then(if (barWidth != null) Modifier.width(barWidth.dp) else Modifier)
-            .height(6.dp)
+            .height(ContextMeterBarHeight.dp)
             .clip(CircleShape)
             .background(colors.bgModulePlatform),
     ) {

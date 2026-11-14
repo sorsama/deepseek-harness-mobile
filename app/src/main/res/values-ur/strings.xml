@@ -46,6 +46,8 @@
     <string name="chatlist_sort_updated">آخری تازہ کاری کے مطابق ترتیب دیں</string>
     <string name="chatlist_sort_manual">دستی ترتیب</string>
     <string name="chat_composer_hint">ایجنٹ کو پیغام بھیجیں…</string>
+    <string name="chat_composer_expand">مکمل اسکرین ایڈیٹر کھولیں</string>
+    <string name="chat_composer_fullscreen_title">پیغام</string>
     <string name="chat_composer_queue">قطار</string>
     <string name="chat_composer_steer">رہنمائی</string>
     <string name="chat_composer_stop">روکیں</string>

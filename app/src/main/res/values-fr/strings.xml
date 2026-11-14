@@ -46,6 +46,8 @@
     <string name="chatlist_sort_updated">Trier par dernière mise à jour</string>
     <string name="chatlist_sort_manual">Ordre manuel</string>
     <string name="chat_composer_hint">Écrivez à l’agent…</string>
+    <string name="chat_composer_expand">Ouvrir l’éditeur en plein écran</string>
+    <string name="chat_composer_fullscreen_title">Message</string>
     <string name="chat_composer_queue">File d’attente</string>
     <string name="chat_composer_steer">Orienter</string>
     <string name="chat_composer_stop">Arrêter</string>
