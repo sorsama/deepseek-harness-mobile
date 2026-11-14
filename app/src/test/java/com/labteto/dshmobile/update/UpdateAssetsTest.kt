@@ -63,4 +63,20 @@ class UpdateAssetsTest {
         assertNull(apk)
         assertNull(sums)
     }
+
+    @Test
+    fun `the in-app updater only picks assets its host policy allows`() {
+        val allowed = { url: String -> DownloadHostPolicy.GitHub.allowsUrl(url) }
+        val (apk, sums) = pickReleaseAssets(
+            listOf(
+                ReleaseAsset("app-release.apk", "https://mirror.example.com/app-release.apk", 30),
+                ReleaseAsset("other.apk", "$base/other.apk", 31),
+                ReleaseAsset("SHA256SUMS.txt", "$base/SHA256SUMS.txt"),
+            ),
+            allowed,
+        )
+        assertEquals("the named APK on another host is skipped for the one GitHub serves", "other.apk", apk?.name)
+        assertEquals(31L, apk?.size)
+        assertEquals("$base/SHA256SUMS.txt", sums?.url)
+    }
 }
