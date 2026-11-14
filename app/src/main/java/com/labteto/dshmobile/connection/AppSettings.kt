@@ -67,6 +67,12 @@ data class AppSettings(
      * rather it stayed local-only.
      */
     val updateCheckEnabled: Boolean = true,
+    /**
+     * Whether a new release is announced with a notification when the app is not open. Off by
+     * default: it makes the update check run in the background too, once a day, which is a request
+     * the app would otherwise only make while someone is looking at it.
+     */
+    val updateNotifyEnabled: Boolean = false,
     /** A release the user has already declined, so it is offered once rather than every launch. */
     val dismissedUpdate: String? = null,
     /**
