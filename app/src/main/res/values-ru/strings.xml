@@ -46,6 +46,8 @@
     <string name="chatlist_sort_updated">Сортировать по дате обновления</string>
     <string name="chatlist_sort_manual">Вручную</string>
     <string name="chat_composer_hint">Напишите агенту…</string>
+    <string name="chat_composer_expand">Открыть полноэкранный редактор</string>
+    <string name="chat_composer_fullscreen_title">Сообщение</string>
     <string name="chat_composer_queue">Очередь</string>
     <string name="chat_composer_steer">Направить</string>
     <string name="chat_composer_stop">Стоп</string>

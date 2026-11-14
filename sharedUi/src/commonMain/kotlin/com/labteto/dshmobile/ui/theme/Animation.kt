@@ -18,6 +18,8 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -129,6 +131,31 @@ object DsAnimations {
     /** Docks (todo, goal, queue) joining or leaving the stack above the composer. */
     val dockEnter: EnterTransition = fadeIn(tween(200, easing = inkDecelerate)) + expandVertically(expand)
     val dockExit: ExitTransition = fadeOut(tween(140)) + shrinkVertically(expand)
+
+    /**
+     * The attachment tray unfolding from behind the composer card, and folding back into it. The
+     * card stays put (the block is anchored to the bottom), so the tray grows upward out of the
+     * card's top edge rather than pushing it, and the fade keeps the chips from popping while the
+     * clip is still narrow.
+     */
+    val trayEnter: EnterTransition =
+        expandVertically(tween(240, easing = FastOutSlowInEasing), expandFrom = Alignment.Bottom) +
+            fadeIn(tween(200, easing = FastOutSlowInEasing))
+    val trayExit: ExitTransition =
+        shrinkVertically(tween(220, easing = FastOutSlowInEasing), shrinkTowards = Alignment.Bottom) +
+            fadeOut(tween(160, easing = FastOutSlowInEasing))
+
+    /**
+     * A full-screen page rising into place and sinking away. A short rise plus a fade rather than a
+     * full-height slide: the page covers the chat completely, so a long slide would only show the
+     * chat sliding off behind it.
+     */
+    val pageEnter: EnterTransition =
+        slideInVertically(tween(300, easing = inkDecelerate)) { it / 8 } +
+            fadeIn(tween(220, easing = inkDecelerate))
+    val pageExit: ExitTransition =
+        slideOutVertically(tween(220, easing = emphasizedAccelerate)) { it / 8 } +
+            fadeOut(tween(180, easing = emphasizedAccelerate))
 
     /** A floating control popping in, like the jump-to-latest button. */
     val popEnter: EnterTransition =

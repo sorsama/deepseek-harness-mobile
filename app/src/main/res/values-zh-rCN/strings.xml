@@ -46,6 +46,8 @@
     <string name="chatlist_sort_updated">按最近更新排序</string>
     <string name="chatlist_sort_manual">手动排序</string>
     <string name="chat_composer_hint">给智能体发消息…</string>
+    <string name="chat_composer_expand">打开全屏编辑器</string>
+    <string name="chat_composer_fullscreen_title">消息</string>
     <string name="chat_composer_queue">队列</string>
     <string name="chat_composer_steer">引导</string>
     <string name="chat_composer_stop">停止</string>

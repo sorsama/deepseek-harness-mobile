@@ -1,10 +1,12 @@
 package com.labteto.dshmobile.ui.screens.main
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.dto.CUSTOM_PRESET
 import com.labteto.dshmobile.core.wire.dto.FULL_ACCESS_PRESET
+import com.labteto.dshmobile.ui.theme.DsColors
 
 /**
  * Localized permission-preset labels.
@@ -85,3 +87,21 @@ private fun titleCasePresetId(name: String): String = name
     .split('-', '_')
     .filter { it.isNotEmpty() }
     .joinToString(" ") { part -> part.replaceFirstChar { it.uppercaseChar() } }
+
+/**
+ * The shield's colour where the preset name has no room — the full-screen page's icon-only bar.
+ *
+ * There the colour is the whole message, so each shipped preset gets its own reading: read-only is
+ * muted because nothing can change, the working preset takes the accent, full access the warning
+ * amber it already had, and auto-review the green of "nobody has to watch this". A deployment's own
+ * preset stays neutral on purpose: a colour would be the app claiming to know what it does, and it
+ * cannot.
+ */
+internal fun permissionPresetTint(value: String, name: String?, colors: DsColors): Color =
+    when (shippedPermissionPreset(value, name)) {
+        ShippedPermissionPreset.ReadOnly -> colors.labelSecondary
+        ShippedPermissionPreset.WorkspaceWrite -> colors.accent
+        ShippedPermissionPreset.FullAccess -> colors.warnLabel
+        ShippedPermissionPreset.AutoReview -> colors.success
+        null -> colors.labelPrimary
+    }

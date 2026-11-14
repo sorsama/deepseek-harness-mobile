@@ -46,6 +46,8 @@
     <string name="chatlist_sort_updated">সর্বশেষ আপডেট অনুযায়ী সাজান</string>
     <string name="chatlist_sort_manual">ম্যানুয়াল ক্রম</string>
     <string name="chat_composer_hint">এজেন্টকে বার্তা পাঠান…</string>
+    <string name="chat_composer_expand">পূর্ণ স্ক্রিন সম্পাদক খুলুন</string>
+    <string name="chat_composer_fullscreen_title">বার্তা</string>
     <string name="chat_composer_queue">কিউ</string>
     <string name="chat_composer_steer">নির্দেশ দিন</string>
     <string name="chat_composer_stop">থামান</string>

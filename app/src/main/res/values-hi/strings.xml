@@ -46,6 +46,8 @@
     <string name="chatlist_sort_updated">आखिरी अपडेट के हिसाब से सॉर्ट करें</string>
     <string name="chatlist_sort_manual">मैन्युअल क्रम</string>
     <string name="chat_composer_hint">एजेंट को संदेश भेजें…</string>
+    <string name="chat_composer_expand">पूरी स्क्रीन का संपादक खोलें</string>
+    <string name="chat_composer_fullscreen_title">संदेश</string>
     <string name="chat_composer_queue">कतार</string>
     <string name="chat_composer_steer">दिशा दें</string>
     <string name="chat_composer_stop">रोकें</string>
