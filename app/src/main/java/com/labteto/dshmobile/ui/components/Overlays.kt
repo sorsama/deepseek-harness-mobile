@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -71,7 +73,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * Modal dialog: dim overlay (platform scrim ~ overlayMask), r24 bgLayer2 plate with a hairline
- * border. [content] receives a [ColumnScope] and scrolls when the dialog would outgrow the screen.
+ * border. [content] receives a [ColumnScope] and scrolls when the dialog would outgrow the screen,
+ * so any buttons placed inside it scroll with it. For a dialog whose buttons must always stay
+ * visible, use the overload that takes separate `body` and `actions`.
  *
  * A dialog is the easiest place for a button to disappear: the plate grows with its content, and a
  * long explanation, a list of approved builds or a keyboard could push the actions past the bottom
@@ -87,6 +91,32 @@ fun DsDialog(
     title: String?,
     onDismiss: () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
+) {
+    DsDialogScaffold(title, onDismiss, content, actions = null)
+}
+
+/**
+ * A dialog with a fixed action row. [body] scrolls when the dialog would outgrow the screen, but
+ * [actions] sit below it, outside the scroll region, so the buttons stay visible however long the
+ * body is or when the soft keyboard is open. The row is right-aligned with [DsSpacing.small]
+ * between buttons: pass the dismissing button first and the confirming one last.
+ */
+@Composable
+fun DsDialog(
+    title: String?,
+    onDismiss: () -> Unit,
+    body: @Composable ColumnScope.() -> Unit,
+    actions: @Composable RowScope.() -> Unit,
+) {
+    DsDialogScaffold(title, onDismiss, body, actions)
+}
+
+@Composable
+private fun DsDialogScaffold(
+    title: String?,
+    onDismiss: () -> Unit,
+    body: @Composable ColumnScope.() -> Unit,
+    actions: (@Composable RowScope.() -> Unit)?,
 ) {
     val colors = DsTheme.colors
     DsWindow(onDismissRequest = onDismiss, dimBehind = true) { insets ->
@@ -144,8 +174,15 @@ fun DsDialog(
                                 .weight(1f, fill = false)
                                 .verticalScroll(rememberScrollState()),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
-                            content = content,
+                            content = body,
                         )
+                        actions?.let {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(DsSpacing.small, Alignment.End),
+                                content = it,
+                            )
+                        }
                     }
                 }
             }

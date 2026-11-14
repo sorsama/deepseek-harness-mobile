@@ -71,18 +71,19 @@ internal fun ConfirmDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
-    DsDialog(title = title, onDismiss = onDismiss) {
-        Text(body, style = DsType.std14, color = DsTheme.colors.labelSecondary)
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+    DsDialog(
+        title = title,
+        onDismiss = onDismiss,
+        body = { Text(body, style = DsType.std14, color = DsTheme.colors.labelSecondary) },
+        actions = {
             DsButton(
                 text = stringResource(R.string.common_cancel),
                 onClick = onDismiss,
                 variant = DsButtonVariant.Ghost,
             )
-            Spacer(Modifier.width(DsSpacing.small))
             DsButton(text = confirmLabel, onClick = onConfirm, variant = DsButtonVariant.Danger)
-        }
-    }
+        },
+    )
 }
 
 /**

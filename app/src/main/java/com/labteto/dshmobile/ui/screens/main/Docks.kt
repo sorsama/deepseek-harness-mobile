@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Bolt
@@ -284,6 +286,13 @@ internal fun GoalSummary(goal: GoalSnapshot) {
 }
 
 /**
+ * Tallest a goal's text may grow in the dock, the details panel and the edit field before it
+ * scrolls on its own. A goal can run to thousands of characters; uncapped, it would push the
+ * Pause, Edit and Clear actions below it off screen.
+ */
+internal val GoalTextMaxHeight = 240.dp
+
+/**
  * The live goal bar above the composer: the mock's compact card, expanding into its verbs.
  *
  * The mock's round meter (`3/10`) needs a completed-round count the goal projection does not
@@ -319,6 +328,10 @@ internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier
             goal.objective,
             style = DsType.small13,
             color = colors.labelSecondary,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = GoalTextMaxHeight)
+                .verticalScroll(rememberScrollState()),
         )
         goal.blockedReason?.let {
             Text(
@@ -427,17 +440,29 @@ internal fun GoalActions(
         )
     }
     if (editing) {
-        DsDialog(title = stringResource(R.string.goal_edit), onDismiss = { editing = false }) {
-            TextField(
-                minLines = 3,
-                value = editText,
-                onValueChange = { editText = it },
-                modifier = Modifier.fillMaxWidth().inkFieldFrame(),
-                placeholder = { Text(stringResource(R.string.goal_title), style = DsType.std14) },
-                colors = dialogTextFieldColors(),
-                shape = DsShapes.control,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        DsDialog(
+            title = stringResource(R.string.goal_edit),
+            onDismiss = { editing = false },
+            body = {
+                TextField(
+                    minLines = 3,
+                    value = editText,
+                    onValueChange = { editText = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = GoalTextMaxHeight)
+                        .inkFieldFrame(),
+                    placeholder = { Text(stringResource(R.string.goal_title), style = DsType.std14) },
+                    colors = dialogTextFieldColors(),
+                    shape = DsShapes.control,
+                )
+            },
+            actions = {
+                DsButton(
+                    text = stringResource(R.string.common_cancel),
+                    onClick = { editing = false },
+                    variant = DsButtonVariant.Ghost,
+                )
                 DsButton(
                     text = stringResource(R.string.common_ok),
                     onClick = {
@@ -446,13 +471,8 @@ internal fun GoalActions(
                     },
                     variant = DsButtonVariant.Info,
                 )
-                DsButton(
-                    text = stringResource(R.string.common_cancel),
-                    onClick = { editing = false },
-                    variant = DsButtonVariant.Ghost,
-                )
-            }
-        }
+            },
+        )
     }
 }
 

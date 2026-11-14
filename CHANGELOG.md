@@ -3,6 +3,15 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [Unreleased]
+
+### Fixed
+
+- **Goal actions stay reachable with long text.** A long goal now scrolls inside a capped region
+  in the chat dock and the details panel, so Pause, Edit and Clear stay on screen. The Edit Goal
+  dialog keeps Cancel and OK visible above the keyboard, and every confirm dialog (including Clear
+  Goal) now keeps its buttons pinned below its scrolling text (closes #102).
+
 ## [0.21.1] - 2026-11-14
 
 ### Fixed
