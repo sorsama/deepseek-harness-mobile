@@ -660,17 +660,30 @@ private fun UpdateSection(
     }
 }
 
-/** Release and harness, from what is installed to what an update brings. Left to right in every language. */
+/**
+ * Release and harness, from what is installed to what an update brings. Each label sits above its
+ * "from → to": two release ids side by side do not leave a label room beside them on a narrow
+ * screen with large text.
+ */
 @Composable
 private fun FromTo(fromRelease: String, toRelease: String, fromHarness: String, toHarness: String) {
-    ValueRow(
+    StackedValue(
         stringResource(R.string.runtime_info_release),
         stringResource(R.string.runtime_update_versions, technicalDisplay(fromRelease), technicalDisplay(toRelease)),
     )
-    ValueRow(
+    StackedValue(
         stringResource(R.string.runtime_info_harness),
         stringResource(R.string.runtime_update_versions, technicalDisplay(fromHarness), technicalDisplay(toHarness)),
     )
+}
+
+@Composable
+private fun StackedValue(label: String, value: String) {
+    val colors = DsTheme.colors
+    Column(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(label, style = DsType.small13, color = colors.labelSecondary)
+        Text(value, style = DsType.std14, color = colors.labelPrimary)
+    }
 }
 
 /**
@@ -889,6 +902,8 @@ internal fun Section(title: String, content: @Composable ColumnScope.() -> Unit)
 @Composable
 private fun ValueRow(label: String, value: String, mono: Boolean = false) {
     val colors = DsTheme.colors
+    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
+    val maxValueWidth = maxWidth * 0.6f
     Row(
         Modifier.fillMaxWidth().heightIn(min = 36.dp).padding(vertical = DsSpacing.xsmall),
         verticalAlignment = Alignment.CenterVertically,
@@ -903,7 +918,12 @@ private fun ValueRow(label: String, value: String, mono: Boolean = false) {
             color = colors.labelPrimary,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
+            textAlign = androidx.compose.ui.text.style.TextAlign.End,
+            // Its own width up to most of the row, so a long value never squeezes its label to a
+            // letter a line; the label takes whatever is left.
+            modifier = Modifier.widthIn(max = maxValueWidth),
         )
+    }
     }
 }
 
