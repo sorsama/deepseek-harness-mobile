@@ -46,6 +46,8 @@ class RotatingLog(private val file: File, private val maxBytes: Long = 512 * 102
     @Synchronized
     fun append(line: String) {
         val bytes = (line + "\n").toByteArray()
+        // Uninstall deletes the log directory under an open stream: write a new file, not the unlinked one.
+        if (out != null && !file.exists()) close()
         if (out == null) open()
         if (size + bytes.size > maxBytes && size > 0) rotate()
         out?.write(bytes)

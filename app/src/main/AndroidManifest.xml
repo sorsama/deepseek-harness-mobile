@@ -50,7 +50,7 @@
         The built-in harness runtime: a local server the person starts and expects to keep running
         for hours. `specialUse` because no other type describes it, and `dataSync` is capped at 6
         hours a day from Android 15. The wake lock keeps a long agent turn going with the screen off;
-        it is held only while the harness runs.
+        it is held only while the runtime installs, updates or runs, and is a switch in the app.
     -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />

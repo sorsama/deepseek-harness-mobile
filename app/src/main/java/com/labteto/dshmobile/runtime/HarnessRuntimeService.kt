@@ -61,7 +61,10 @@ class HarnessRuntimeService : LifecycleService() {
                     return@collect
                 }
                 notify(state)
-                if (hold && (state is RuntimeState.Running || state is RuntimeState.Starting)) acquireWakeLock() else releaseWakeLock()
+                // Held for everything this service covers, not only Running: an update downloads
+                // while the old harness keeps serving, and a long download or unpack with the
+                // screen off should not stall either.
+                if (hold && state !is RuntimeState.Stopping) acquireWakeLock() else releaseWakeLock()
             }
         }
     }
