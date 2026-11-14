@@ -84,7 +84,11 @@ class RuntimeEngineTest {
         override val cpuCount = 4
         override fun portFree(port: Int) = true
         override fun keepAlive() = Unit
+        override val modulePack: Boolean get() = fastStart
     }
+
+    @Volatile
+    private var fastStart = true
 
     private lateinit var engine: RuntimeEngine
 
@@ -197,5 +201,24 @@ class RuntimeEngineTest {
         assertFalse(engine.start(3080)) // nothing installed
         assertFalse(engine.stop())
         assertFalse(engine.restart())
+    }
+
+    @Test
+    fun `the fast start switch reaches the guest environment on the next start`() {
+        fx.publish(fx.baseLayer(), fx.harnessLayer("1.0.0"), sequence = 100)
+        engine.install()
+        await("installed") { it is RuntimeState.Stopped }
+
+        fastStart = false
+        assertTrue(engine.start(3080))
+        await("running without the pack") { it is RuntimeState.Running }
+        assertTrue(launches.last().contains("DSH_RUNTIME_MODULE_PACK=0"))
+        engine.stop()
+        await("stopped") { it is RuntimeState.Stopped }
+
+        fastStart = true
+        assertTrue(engine.start(3080))
+        await("running with the pack") { it is RuntimeState.Running }
+        assertFalse(launches.last().any { it.startsWith("DSH_RUNTIME_MODULE_PACK") })
     }
 }

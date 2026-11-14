@@ -73,6 +73,18 @@ class ProotCommandTest {
     }
 
     @Test
+    fun `fast start off turns the module pack off in the guest, and only then`() {
+        assertFalse(argv.any { it.startsWith("DSH_RUNTIME_MODULE_PACK") })
+        val off = ProotCommand.build(ProotCommand.Inputs(File("/data/app/x/lib/x86_64"), layout, record, 3080, modulePack = false)).argv
+        // Inside `env -i`, so the guest sees it, and before the shell that execs the harness.
+        val env = off.indexOf("/usr/bin/env")
+        val variable = off.indexOf("DSH_RUNTIME_MODULE_PACK=0")
+        assertTrue(variable > env)
+        assertTrue(variable < off.indexOf("/bin/bash"))
+        assertFalse(command.environment.containsKey("DSH_RUNTIME_MODULE_PACK"))
+    }
+
+    @Test
     fun `proot's environment names the loader and the temp dir and drops PROOT_NO_SECCOMP`() {
         assertEquals("/data/app/x/lib/x86_64/libproot-loader.so", command.environment["PROOT_LOADER"]?.replace('\\', '/'))
         assertEquals("/data/user/0/app/cache/runtime/proot-tmp", command.environment["PROOT_TMP_DIR"]?.replace('\\', '/'))

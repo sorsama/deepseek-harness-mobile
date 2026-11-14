@@ -47,6 +47,9 @@ class RuntimeEngine(
 
         /** Something long-running is about to happen: make sure the foreground service is up. */
         fun keepAlive()
+
+        /** "Fast start": whether the next start may use the runtime's module pack. Read at each start. */
+        val modulePack: Boolean get() = true
     }
 
     private val _state = MutableStateFlow(initialState())
@@ -253,7 +256,7 @@ class RuntimeEngine(
                 RuntimeFailure.PortInUse(port)
             } else {
                 prepareRun(record)
-                val command = ProotCommand.build(ProotCommand.Inputs(platform.nativeLibraryDir, layout, record, port))
+                val command = ProotCommand.build(ProotCommand.Inputs(platform.nativeLibraryDir, layout, record, port, modulePack = platform.modulePack))
                 when (val outcome = supervisor.start(command, layout.root, record.readinessPrefix, port, ::onExitAfterReady)) {
                     is HarnessSupervisor.StartOutcome.Ready -> {
                         val current = if (record.onTrial) installer.commitTrial() ?: record else record

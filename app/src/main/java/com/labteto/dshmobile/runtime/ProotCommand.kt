@@ -16,6 +16,13 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
         val layout: RuntimeLayout,
         val record: InstalledRecord,
         val port: Int,
+        /**
+         * Whether the harness may load its module pack (release `2026.11.14-2` and later), which
+         * is what makes a warm start take seconds instead of half a minute. Off sets
+         * [MODULE_PACK_ENV]`=0` in the guest, the runtime's switch for loading the plain
+         * `node_modules` tree instead; it exists for a pack that misbehaves on some device.
+         */
+        val modulePack: Boolean = true,
     )
 
     companion object {
@@ -26,6 +33,9 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
         const val GUEST_WORKDIR = "/root/work"
         const val GENERATED_RESOLV = "resolv.conf"
         const val GENERATED_PROC_STAT = "proc-stat"
+
+        /** The guest variable that turns the runtime's module pack off (`0`). */
+        const val MODULE_PACK_ENV = "DSH_RUNTIME_MODULE_PACK"
 
         private const val GUEST_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/node/bin"
 
@@ -71,6 +81,7 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
                 add("HOME=$GUEST_HOME"); add("USER=root"); add("LOGNAME=root")
                 add("PATH=$GUEST_PATH")
                 add("LANG=C.UTF-8"); add("TERM=dumb"); add("TMPDIR=/tmp")
+                if (!inputs.modulePack) add("$MODULE_PACK_ENV=0")
                 add("/bin/bash"); add("-c")
                 // umask: the app's is 077, which would leave everything the guest writes unreadable
                 // to the guest's own tools. exec keeps the guest's main process one pid, which ends

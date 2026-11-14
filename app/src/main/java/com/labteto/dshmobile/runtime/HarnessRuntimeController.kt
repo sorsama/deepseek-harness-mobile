@@ -10,9 +10,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.OkHttpClient
 import java.io.File
 import java.net.InetAddress
@@ -42,6 +40,7 @@ class HarnessRuntimeController @Inject constructor(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val system = AndroidRuntimeSystem(context)
+    private val preferences = RuntimePreferences.over(context.getSharedPreferences(RuntimePreferences.FILE, Context.MODE_PRIVATE))
 
     val layout = RuntimeLayout(
         root = File(context.noBackupFilesDir, "runtime"),
@@ -90,6 +89,7 @@ class HarnessRuntimeController @Inject constructor(
         override val cpuCount: Int get() = system.cpuCount
         override fun portFree(port: Int): Boolean = isPortFree(port)
         override fun keepAlive() = startService(null)
+        override val modulePack: Boolean get() = preferences.modulePack.value
     }
 
     private val engine = RuntimeEngine(
@@ -107,18 +107,19 @@ class HarnessRuntimeController @Inject constructor(
     /** Set by [checkForUpdate]; null when none is known. */
     val availableUpdate: StateFlow<AvailableRuntimeUpdate?> get() = engine.availableUpdate
 
-    private val _holdWakeLock = MutableStateFlow(true)
-
     /**
      * Whether a partial wake lock is held while the harness runs (and while the runtime installs or
      * updates). On by default: in deep Doze the CPU sleeps and a long agent turn would stall with
-     * the screen off. The single switch M3's settings can expose; it takes effect at once.
+     * the screen off. Persisted in [RuntimePreferences]; it takes effect at once.
      */
-    val holdWakeLock: StateFlow<Boolean> = _holdWakeLock.asStateFlow()
+    val holdWakeLock: StateFlow<Boolean> get() = preferences.holdWakeLock
 
-    fun setHoldWakeLock(enabled: Boolean) {
-        _holdWakeLock.value = enabled
-    }
+    fun setHoldWakeLock(enabled: Boolean) = preferences.setHoldWakeLock(enabled)
+
+    /** "Fast start": the runtime's module pack. Persisted; takes effect on the next start. */
+    val modulePack: StateFlow<Boolean> get() = preferences.modulePack
+
+    fun setModulePack(enabled: Boolean) = preferences.setModulePack(enabled)
 
     fun install(): Boolean = engine.install()
 
