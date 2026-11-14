@@ -101,18 +101,11 @@ internal fun RuntimeSetupPage(
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
-    val visible = remember { MutableTransitionState(false) }
-    val close by rememberUpdatedState(onClose)
-    fun requestClose() {
-        visible.targetState = false
-    }
-    LaunchedEffect(visible.currentState, visible.targetState, visible.isIdle) {
-        if (!visible.targetState && !visible.currentState && visible.isIdle) close()
-    }
+    val page = rememberPageVisibility(onClose)
+    fun requestClose() = page.hide()
 
-    val lastDownload by host.lastDownload.collectAsStateWithLifecycle()
     val runtime = state.runtime
-    val progress = setupProgress(state, lastDownload)
+    val progress = setupProgress(state)
     val failure = (runtime as? RuntimeState.Failed)?.reason?.takeIf { !(state.settingUp && state.waitingForNetwork) }
         ?: state.releaseProblem?.takeIf { runtime == RuntimeState.NotInstalled && !state.settingUp && it !is RuntimeFailure.Network }
     val issue = failure?.let { runtimeIssue(it, installed = state.installed != null, port = 0) }
@@ -155,8 +148,8 @@ internal fun RuntimeSetupPage(
 
     DsFullScreenDialog(
         onDismissRequest = ::requestClose,
-        visibleState = visible,
-        onWindowReady = { visible.targetState = true },
+        visibleState = page.state,
+        onWindowReady = page::show,
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = DsSpacing.small, vertical = DsSpacing.xsmall),
@@ -369,7 +362,6 @@ private fun StepTracker(steps: List<Pair<SetupStep, StepStatus>>, progress: com.
             .background(colors.bgLayer1)
             .border(1.dp, colors.borderL2, DsShapes.block)
             .padding(horizontal = DsSpacing.medium, vertical = DsSpacing.small),
-        verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
     ) {
         steps.forEachIndexed { index, (step, status) ->
             SetupStepRow(
@@ -378,7 +370,7 @@ private fun StepTracker(steps: List<Pair<SetupStep, StepStatus>>, progress: com.
                 index = index,
                 progress = progress.takeIf { status == StepStatus.Active },
                 transferLine = transferLine.takeIf { status == StepStatus.Active && step == SetupStep.Download },
-                modifier = Modifier.padding(vertical = DsSpacing.xsmall),
+                modifier = Modifier.padding(vertical = DsSpacing.small),
             )
         }
     }

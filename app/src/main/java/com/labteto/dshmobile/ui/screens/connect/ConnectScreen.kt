@@ -95,10 +95,12 @@ fun ConnectScreen(
         }
     }
 
-    // Whether "Use Termux instead" starts open is decided once, when the screen first knows what
-    // answers on the port; after that it is the person's to open and close.
-    var termuxDefault by rememberSaveable { mutableStateOf<Boolean?>(null) }
-    var termuxChosen by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    // Whether "Use Termux instead" starts open is decided once per app process, when the screen
+    // first knows what answers on the port; after that it is the person's to open and close. Kept
+    // in the view model: this screen leaves composition for Settings, and deciding again on the
+    // way back would read a probe result from before the harness changed.
+    var termuxDefault by viewModel.termuxDefault
+    var termuxChosen by viewModel.termuxChosen
     val termuxNow = termuxSectionStartsOpen(
         builtIn = state.builtIn,
         termuxInstalled = state.termuxInstalled,

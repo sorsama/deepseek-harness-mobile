@@ -88,6 +88,16 @@ class RuntimePresentationTest {
     }
 
     @Test
+    fun `waiting for the network holds the bar where the download stopped`() {
+        val last = DownloadProgress("harness", 1, 2, 42_000_000, 84_000_000)
+        val waiting = card(RuntimeState.Failed(RuntimeFailure.Network("reset"), null)) {
+            it.copy(settingUp = true, waitingForNetwork = true, lastDownload = last)
+        }!!
+        assertEquals((72f + 42f) / 156f, waiting.progress!!.fraction!!, 0.0001f)
+        assertEquals(114_000_000L, waiting.progress!!.bytesDone)
+    }
+
+    @Test
     fun `a harness up but not signed in offers a restart, never a connect`() {
         val c = card(running(StartSignIn.REFUSED), LoopbackStatus.NeedsSignIn)!!
         assertEquals(RuntimeAction.Restart, c.primary)

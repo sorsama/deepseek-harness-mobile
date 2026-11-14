@@ -229,7 +229,7 @@ private const val LAYER_HARNESS_NAME = "harness"
  * Where the set-up page is for [state], or null when no set-up is under way and none just ended.
  * [lastDownload] is the last download event seen, for a check between two downloads.
  */
-fun setupProgress(state: BuiltInHarnessState, lastDownload: DownloadProgress? = null): SetupProgress? {
+fun setupProgress(state: BuiltInHarnessState, lastDownload: DownloadProgress? = state.lastDownload): SetupProgress? {
     val release = state.release
     return when (val r = state.runtime) {
         is RuntimeState.Downloading -> downloadProgress(r.progress, release)

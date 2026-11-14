@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.ui.screens.connect
 
 import android.content.Intent
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.labteto.dshmobile.connection.ConnectionManager
@@ -46,6 +47,10 @@ class ConnectViewModel @Inject constructor(
     )
 
     val state: StateFlow<ConnectUiState> = controller.state
+
+    /** "Use Termux instead": its first state, decided once, and the person's own choice since. */
+    val termuxDefault = mutableStateOf<Boolean?>(null)
+    val termuxChosen = mutableStateOf<Boolean?>(null)
 
     /** The intent that opens Termux, or null when it is not installed. */
     fun openTermuxIntent(): Intent? = termux.launchTermuxIntent()

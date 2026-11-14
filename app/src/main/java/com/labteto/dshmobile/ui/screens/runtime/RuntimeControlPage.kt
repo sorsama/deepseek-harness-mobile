@@ -128,11 +128,7 @@ internal fun RuntimeControlPage(
     val state by host.state.collectAsStateWithLifecycle()
     val holdWakeLock by host.holdWakeLock.collectAsStateWithLifecycle()
     val modulePack by host.modulePack.collectAsStateWithLifecycle()
-    val visible = remember { MutableTransitionState(false) }
-    val close by rememberUpdatedState(onClose)
-    LaunchedEffect(visible.currentState, visible.targetState, visible.isIdle) {
-        if (!visible.targetState && !visible.currentState && visible.isIdle) close()
-    }
+    val page = rememberPageVisibility(onClose)
     val runtime = state.runtime
 
     var storage by remember { mutableStateOf<RuntimeStorageUsage?>(null) }
@@ -161,9 +157,9 @@ internal fun RuntimeControlPage(
     }
 
     DsFullScreenDialog(
-        onDismissRequest = { visible.targetState = false },
-        visibleState = visible,
-        onWindowReady = { visible.targetState = true },
+        onDismissRequest = page::hide,
+        visibleState = page.state,
+        onWindowReady = page::show,
     ) {
         Box(Modifier.weight(1f)) {
             Column(Modifier.fillMaxWidth()) {
@@ -174,7 +170,7 @@ internal fun RuntimeControlPage(
                     DsIconButton(
                         icon = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.common_back),
-                        onClick = { visible.targetState = false },
+                        onClick = page::hide,
                         tint = colors.labelPrimary,
                     )
                     Spacer(Modifier.width(DsSpacing.small))
@@ -518,7 +514,8 @@ private fun runtimeIssueTextOf(refused: RuntimeInstaller.CheckResult.Refused): S
 private fun LogBlock(log: String) {
     val colors = DsTheme.colors
     val vertical = rememberScrollState()
-    LaunchedEffect(log) { vertical.scrollTo(vertical.maxValue) }
+    // The newest lines are the ones worth reading: stay at the end as the log grows.
+    LaunchedEffect(log, vertical.maxValue) { vertical.scrollTo(vertical.maxValue) }
     Box(
         Modifier
             .fillMaxWidth()
@@ -534,7 +531,7 @@ private fun LogBlock(log: String) {
         SelectionContainer {
             Text(
                 log.ifBlank { stringResource(R.string.runtime_log_empty) },
-                style = DsType.mdCode,
+                style = DsType.mono12,
                 color = if (log.isBlank()) colors.labelTertiary else colors.labelSecondary,
                 softWrap = false,
             )

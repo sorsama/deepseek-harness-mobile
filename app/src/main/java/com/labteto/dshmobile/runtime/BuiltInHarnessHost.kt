@@ -62,11 +62,11 @@ class BuiltInHarnessHost @Inject constructor(
     private val _lastDownload = MutableStateFlow<DownloadProgress?>(null)
     val lastDownload: StateFlow<DownloadProgress?> = _lastDownload
 
-    override val state: StateFlow<BuiltInHarnessState> = combine(controller.state, controller.availableUpdate, flow) { runtime, update, f ->
-        compose(runtime, update, f)
-    }.stateIn(scope, SharingStarted.Eagerly, compose(controller.state.value, controller.availableUpdate.value, flow.value))
+    override val state: StateFlow<BuiltInHarnessState> = combine(controller.state, controller.availableUpdate, flow, _lastDownload) { runtime, update, f, last ->
+        compose(runtime, update, f, last)
+    }.stateIn(scope, SharingStarted.Eagerly, compose(controller.state.value, controller.availableUpdate.value, flow.value, null))
 
-    private fun compose(runtime: RuntimeState, update: AvailableRuntimeUpdate?, f: SetupFlow) = BuiltInHarnessState(
+    private fun compose(runtime: RuntimeState, update: AvailableRuntimeUpdate?, f: SetupFlow, last: DownloadProgress?) = BuiltInHarnessState(
         runtime = runtime,
         release = f.release,
         releaseProblem = f.releaseProblem,
@@ -75,6 +75,7 @@ class BuiltInHarnessHost @Inject constructor(
         update = update.takeIf { runtime.hasInstall() },
         settingUp = f.settingUp,
         waitingForNetwork = f.waitingForNetwork,
+        lastDownload = last,
     )
 
     private var lastReleaseCheck = 0L

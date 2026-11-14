@@ -192,7 +192,6 @@ internal fun SetupStepRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 44.dp)
             .semantics(mergeDescendants = true) {
                 stateDescription = stateText
                 if (active) liveRegion = LiveRegionMode.Polite
@@ -201,7 +200,8 @@ internal fun SetupStepRow(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.medium),
     ) {
         StepMarker(status = status, number = index + 1, modifier = Modifier.padding(top = 1.dp))
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall)) {
+        // Not spaced: a hidden detail must not leave a gap under the label.
+        Column(Modifier.weight(1f).padding(top = 2.dp)) {
             Text(
                 label,
                 style = if (active) DsType.std14Strong else DsType.std14,
@@ -212,8 +212,8 @@ internal fun SetupStepRow(
                 enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
                 exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall), modifier = Modifier.padding(top = 2.dp)) {
-                    if (progress != null && (progress.step == SetupStep.Download || progress.step == SetupStep.Unpack) && !progress.waitingForNetwork) {
+                Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall), modifier = Modifier.padding(top = DsSpacing.small)) {
+                    if (progress != null && (progress.step == SetupStep.Download || progress.step == SetupStep.Unpack)) {
                         RuntimeProgressBar(progress.fraction)
                     }
                     if (detail != null) {
@@ -381,4 +381,38 @@ internal fun UpdateBadge(onClick: () -> Unit) {
             )
         }
     }
+}
+
+/**
+ * A full-screen page's rise and fall: it rises once its window is on screen ([show]) and calls
+ * [onClosed] when it has finished sinking away after [hide]. Before it has been shown, the
+ * transition state already reads "hidden and idle", so closing waits for a page that was shown.
+ */
+internal class PageVisibility(val state: androidx.compose.animation.core.MutableTransitionState<Boolean>) {
+    var shown by mutableStateOf(false)
+        private set
+    var hiding by mutableStateOf(false)
+        private set
+
+    fun show() {
+        shown = true
+        state.targetState = true
+    }
+
+    fun hide() {
+        hiding = true
+        state.targetState = false
+    }
+}
+
+@Composable
+internal fun rememberPageVisibility(onClosed: () -> Unit): PageVisibility {
+    val page = remember { PageVisibility(androidx.compose.animation.core.MutableTransitionState(false)) }
+    val closed = androidx.compose.runtime.rememberUpdatedState(onClosed)
+    val state = page.state
+    LaunchedEffect(page.hiding, page.shown, state.currentState, state.isIdle) {
+        // Dismissed before the window was ready: there is nothing to animate away.
+        if (page.hiding && (!page.shown || !state.currentState && state.isIdle)) closed.value()
+    }
+    return page
 }

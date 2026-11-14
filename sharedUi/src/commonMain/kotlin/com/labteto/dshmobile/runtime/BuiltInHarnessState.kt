@@ -46,6 +46,8 @@ data class BuiltInHarnessState(
     val update: AvailableRuntimeUpdate? = null,
     val settingUp: Boolean = false,
     val waitingForNetwork: Boolean = false,
+    /** The last download reading, so a pause (a check, a lost network) holds the bar where it was. */
+    val lastDownload: DownloadProgress? = null,
 ) {
     /** False on iOS and on a device without a 64-bit ABI the runtime is built for. */
     val supported: Boolean get() = runtime !is RuntimeState.NotSupported

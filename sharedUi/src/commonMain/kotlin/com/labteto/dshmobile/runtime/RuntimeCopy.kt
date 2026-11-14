@@ -126,6 +126,9 @@ fun setupProgressDetail(progress: SetupProgress): String = when {
 fun formatBytes(bytes: Long): String {
     val mb = bytes.coerceAtLeast(0) / 1_000_000.0
     return when {
+        bytes <= 0 -> stringResource(Res.string.runtime_size_mb, localizedCount(0))
+        // A few kilobytes is not "0.0 MB": the smallest size said is a tenth of one.
+        mb < 0.1 -> stringResource(Res.string.runtime_size_mb, localizedDecimal(0.1, 1))
         mb >= 1000 -> stringResource(Res.string.runtime_size_gb, localizedDecimal(mb / 1000, 1))
         mb >= 10 -> stringResource(Res.string.runtime_size_mb, localizedCount(mb.toInt()))
         else -> stringResource(Res.string.runtime_size_mb, localizedDecimal(mb, 1))

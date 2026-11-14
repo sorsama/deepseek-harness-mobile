@@ -111,14 +111,17 @@ internal fun BuiltInHarnessCard(
         ) { key ->
             // The key only decides when to cross-fade; the content reads the live card, so progress
             // inside one state never restarts the fade.
-            CardBody(phase = key.phase, card = card, builtIn = builtIn, port = port, onAction = onAction)
-        }
-
-        if (card.phase != BuiltInCardPhase.SettingUp && (card.primary != null || card.secondary != null)) {
-            RuntimeActionRow(primary = card.primary, secondary = card.secondary, issue = card.issue, onAction = { action ->
-                haptics.tap()
-                onAction(action)
-            })
+            // The buttons belong to the state they act on, so they cross-fade with its words: a
+            // Start must not appear while "Stopping the harness" is still fading out.
+            Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+                CardBody(phase = key.phase, card = card, builtIn = builtIn, port = port, onAction = onAction)
+                if (key.phase == card.phase && card.phase != BuiltInCardPhase.SettingUp && (card.primary != null || card.secondary != null)) {
+                    RuntimeActionRow(primary = card.primary, secondary = card.secondary, issue = card.issue, onAction = { action ->
+                        haptics.tap()
+                        onAction(action)
+                    })
+                }
+            }
         }
     }
 }
@@ -205,7 +208,8 @@ private fun SettingUpBody(card: BuiltInCard, onOpen: () -> Unit) {
             )
             Icon(DsIcons.ChevronRight, contentDescription = null, tint = colors.labelTertiary, modifier = Modifier.size(18.dp))
         }
-        RuntimeProgressBar(if (progress?.waitingForNetwork == true) 0f else progress?.fraction)
+        // Waiting for the network holds the bar where the download stopped.
+        RuntimeProgressBar(progress?.fraction)
         if (progress != null) {
             Text(
                 setupProgressDetail(progress),
