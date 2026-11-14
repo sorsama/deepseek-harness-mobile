@@ -88,6 +88,16 @@ object DsAnimations {
         stiffness = Spring.StiffnessMediumLow,
     )
 
+    /**
+     * A determinate progress bar following its value (a download's bytes). A spring, so a bar that
+     * is retargeted every fraction of a second glides through the updates instead of stepping, and
+     * never overshoots past the value it shows.
+     */
+    val progressFill: FiniteAnimationSpec<Float> = spring(
+        dampingRatio = Spring.DampingRatioNoBouncy,
+        stiffness = Spring.StiffnessLow,
+    )
+
     /** Generic opacity change. */
     val fade: FiniteAnimationSpec<Float> = tween(fadeDuration, easing = inkStandard)
 

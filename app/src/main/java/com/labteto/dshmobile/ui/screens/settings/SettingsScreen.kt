@@ -21,6 +21,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import com.labteto.dshmobile.ui.components.DsButtonSize
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.update.UpdateChecker
+import com.labteto.dshmobile.ui.update.LocalUpdateUi
+import com.labteto.dshmobile.ui.update.UpdatePanel
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -425,6 +427,13 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         settings.updateCheckEnabled,
                         stringResource(R.string.settings_update_check_hint),
                     ) { viewModel.set { it.copy(updateCheckEnabled = !it.updateCheckEnabled) } }
+                    // Off unless asked for: it makes the check run in the background, once a day.
+                    ToggleRow(
+                        stringResource(R.string.settings_update_notify),
+                        settings.updateCheckEnabled && settings.updateNotifyEnabled,
+                        stringResource(R.string.settings_update_notify_hint),
+                        enabled = settings.updateCheckEnabled,
+                    ) { viewModel.set { it.copy(updateNotifyEnabled = !it.updateNotifyEnabled) } }
                     // The same check, on demand. Every outcome is reported: a button that says
                     // nothing when there is nothing to offer looks broken.
                     var checking by remember { mutableStateOf(false) }
@@ -460,6 +469,20 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                                 modifier = Modifier.weight(1f),
                             )
                             is UpdateChecker.CheckOutcome.Available, is UpdateChecker.CheckOutcome.Dismissed, null -> Unit
+                        }
+                    }
+                    // The in-app update, beside the version it would replace. It stays here after
+                    // "Later" in the dialog, and shows the same progress the dialog does.
+                    LocalUpdateUi.current?.let { updateUi ->
+                        val latest by updateUi.latest.collectAsStateWithLifecycle()
+                        val updaterState by updateUi.state.collectAsStateWithLifecycle()
+                        (updaterState.update ?: latest)?.let { shown ->
+                            Text(
+                                stringResource(R.string.update_settings_available, shown.version),
+                                style = DsType.std14Strong,
+                                color = colors.labelPrimary,
+                            )
+                            UpdatePanel(shown, updaterState, updateUi)
                         }
                     }
                 }
