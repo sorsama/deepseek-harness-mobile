@@ -383,7 +383,7 @@ private fun StatusSection(
         }
         (runtime as? RuntimeState.Running)?.rolledBack?.let { rolledBack ->
             Text(
-                stringResource(R.string.runtime_update_rolled_back, rolledBack.failedVersion),
+                stringResource(R.string.runtime_update_rolled_back, com.labteto.dshmobile.ui.screens.main.technicalDisplay(rolledBack.failedVersion)),
                 style = DsType.small13,
                 color = colors.warnLabel,
                 modifier = Modifier.padding(vertical = DsSpacing.xsmall),
@@ -474,7 +474,7 @@ private fun UpdateSection(
                     DsConnectButton(stringResource(R.string.common_cancel), onCancel, variant = ConnectButtonVariant.Outline)
                 }
                 update != null -> {
-                    Text(stringResource(R.string.runtime_update_available, update.harnessVersion), style = DsType.std14Strong, color = colors.labelPrimary)
+                    Text(stringResource(R.string.runtime_update_available, com.labteto.dshmobile.ui.screens.main.technicalDisplay(update.harnessVersion)), style = DsType.std14Strong, color = colors.labelPrimary)
                     Text(
                         stringResource(
                             if (update.baseChanges) R.string.runtime_update_what_both else R.string.runtime_update_what_harness,
@@ -484,7 +484,11 @@ private fun UpdateSection(
                         color = colors.labelSecondary,
                     )
                     Text(
-                        stringResource(R.string.runtime_update_versions, state.installed?.harnessVersion.orEmpty(), update.harnessVersion),
+                        stringResource(
+                            R.string.runtime_update_versions,
+                            com.labteto.dshmobile.ui.screens.main.technicalDisplay(state.installed?.harnessVersion.orEmpty()),
+                            com.labteto.dshmobile.ui.screens.main.technicalDisplay(update.harnessVersion),
+                        ),
                         style = DsType.mono12,
                         color = colors.labelTertiary,
                     )
@@ -516,6 +520,11 @@ private fun LogBlock(log: String) {
     val vertical = rememberScrollState()
     // The newest lines are the ones worth reading: stay at the end as the log grows.
     LaunchedEffect(log, vertical.maxValue) { vertical.scrollTo(vertical.maxValue) }
+    // A log is left to right in every language: in Arabic or Urdu a line that starts with "----"
+    // would otherwise be reordered and pushed to the right edge.
+    androidx.compose.runtime.CompositionLocalProvider(
+        androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr,
+    ) {
     Box(
         Modifier
             .fillMaxWidth()
@@ -531,11 +540,12 @@ private fun LogBlock(log: String) {
         SelectionContainer {
             Text(
                 log.ifBlank { stringResource(R.string.runtime_log_empty) },
-                style = DsType.mono12,
+                style = DsType.mono12.copy(textDirection = androidx.compose.ui.text.style.TextDirection.Ltr),
                 color = if (log.isBlank()) colors.labelTertiary else colors.labelSecondary,
                 softWrap = false,
             )
         }
+    }
     }
 }
 
@@ -659,7 +669,9 @@ private fun ValueRow(label: String, value: String, mono: Boolean = false) {
     ) {
         Text(label, style = DsType.std14, color = colors.labelSecondary, modifier = Modifier.weight(1f))
         Text(
-            value,
+            // A version or a port is left-to-right in every language: isolated, so Arabic and Urdu
+            // do not reorder "0.2.2-rc.1" into "rc.1-0.2.2".
+            if (mono) com.labteto.dshmobile.ui.screens.main.technicalDisplay(value) else value,
             style = if (mono) DsType.mono12 else DsType.std14,
             color = colors.labelPrimary,
             maxLines = 2,

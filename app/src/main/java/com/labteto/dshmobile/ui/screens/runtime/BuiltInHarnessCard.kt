@@ -88,7 +88,15 @@ internal fun BuiltInHarnessCard(
                     modifier = Modifier.semantics { heading() },
                 )
                 Text(
-                    if (installed != null) stringResource(R.string.runtime_card_address, port.toString(), installed.harnessVersion) else "127.0.0.1:$port",
+                    if (installed != null) {
+                        stringResource(
+                            R.string.runtime_card_address,
+                            port.toString(),
+                            com.labteto.dshmobile.ui.screens.main.technicalDisplay(installed.harnessVersion),
+                        )
+                    } else {
+                        com.labteto.dshmobile.ui.screens.main.technicalDisplay("127.0.0.1:$port")
+                    },
                     style = DsType.mono12,
                     color = colors.labelTertiary,
                 )
