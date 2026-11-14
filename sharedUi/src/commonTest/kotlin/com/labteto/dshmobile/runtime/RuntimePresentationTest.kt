@@ -98,7 +98,7 @@ class RuntimePresentationTest {
     }
 
     @Test
-    fun `a harness up but not signed in offers a restart, never a connect`() {
+    fun `a harness up but not signed in offers a restart and never a connect`() {
         val c = card(running(StartSignIn.REFUSED), LoopbackStatus.NeedsSignIn)!!
         assertEquals(RuntimeAction.Restart, c.primary)
         assertTrue(c.signedOut)
@@ -160,7 +160,7 @@ class RuntimePresentationTest {
     }
 
     @Test
-    fun `an update that failed leaves the harness to start, with the retry second`() {
+    fun `an update that failed leaves the harness to start with the retry second`() {
         val update = runtimeIssue(RuntimeFailure.Network("reset"), installed = true, port = 3080)
         assertTrue(update.updateFailed)
         assertEquals(RuntimeAction.Start, update.fix)
@@ -181,7 +181,7 @@ class RuntimePresentationTest {
     // ---- The step tracker ----------------------------------------------------------------------
 
     @Test
-    fun `download progress runs once over both layers, weighted by their sizes`() {
+    fun `download progress runs once over both layers weighted by their sizes`() {
         val first = downloadProgress(DownloadProgress("base", 0, 2, 36_000_000, 72_000_000), release)
         assertEquals(36_000_000L, first.bytesDone)
         assertEquals(156_000_000L, first.bytesTotal)
@@ -203,7 +203,7 @@ class RuntimePresentationTest {
     }
 
     @Test
-    fun `checking the first layer is a pause inside download, the last one is the check step`() {
+    fun `checking the first layer is a pause inside download and the last one is the check step`() {
         val last = DownloadProgress("base", 0, 2, 72_000_000, 72_000_000)
         val between = verifyProgress("base", release, last)
         assertEquals(SetupStep.Download, between.step)
@@ -243,7 +243,7 @@ class RuntimePresentationTest {
     // ---- Auto-start and Termux -----------------------------------------------------------------
 
     @Test
-    fun `auto-start only starts an installed, idle runtime when it is asked to and the port is quiet`() {
+    fun `auto-start only starts an installed idle runtime when it is asked to and the port is quiet`() {
         val stopped = BuiltInHarnessState(RuntimeState.Stopped(installed))
         assertTrue(shouldAutoStartBuiltIn(true, stopped, down))
         assertFalse(shouldAutoStartBuiltIn(false, stopped, down))

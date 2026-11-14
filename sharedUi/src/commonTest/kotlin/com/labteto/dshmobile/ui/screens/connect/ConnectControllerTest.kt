@@ -327,7 +327,7 @@ class ConnectControllerTest {
     private val loopbackMode = ConnectSettings(connectMode = ConnectMode.LOOPBACK, autoConnectLoopback = false)
 
     @Test
-    fun `starting the built-in harness connects once it answers, like a Termux start`() = runTest {
+    fun `starting the built-in harness connects once it answers like a Termux start`() = runTest {
         val rig = BuiltInRig(this, RuntimeState.Stopped(installedRuntime), loopbackMode)
         runCurrent()
         rig.controller.startBuiltIn()
