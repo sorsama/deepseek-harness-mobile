@@ -2,6 +2,7 @@ package com.labteto.dshmobile.ui.screens.main
 
 import android.graphics.BitmapFactory
 import android.provider.OpenableColumns
+import android.net.Uri
 import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -75,6 +76,10 @@ import com.labteto.dshmobile.ui.components.PlanReviewPanel
 import com.labteto.dshmobile.ui.components.planReviewOf
 import com.labteto.dshmobile.ui.components.QuestionsPanel
 import com.labteto.dshmobile.ui.components.rememberDsToast
+import com.labteto.dshmobile.ui.input.AppShortcut
+import com.labteto.dshmobile.ui.input.DropHighlight
+import com.labteto.dshmobile.ui.input.LocalShortcutRouter
+import com.labteto.dshmobile.ui.input.attachmentDropTarget
 import com.labteto.dshmobile.ui.rememberSessionStore
 import com.labteto.dshmobile.ui.screens.main.commands.CommandContext
 import com.labteto.dshmobile.ui.screens.main.commands.CommandDecorations
@@ -276,13 +281,14 @@ fun ChatScreen(
         is QuestionOutcome.Unsent -> answerUnsent
     }
 
-    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
-        val selection = store.composers.imagePickTarget
-        val target = selection?.first
-        store.composers.imagePickTarget = null
-        if (target != null && uris.isNotEmpty()) {
+    /**
+     * Prepare picked, dropped or pasted images and add them to [target]'s tray. One path for all
+     * three, so a dropped image is held to the same limits, and refused in the same words, as one
+     * picked from the gallery.
+     */
+    fun addImages(target: ComposerDraft, uris: List<Uri>, limits: ImageLimitsView) {
+        if (uris.isNotEmpty()) {
             target.preparing = true
-            val limits = selection.second
             store.composers.scope.launch {
                 val failures = mutableListOf<String>()
                 try {
@@ -331,6 +337,12 @@ fun ChatScreen(
         }
     }
 
+    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+        val selection = store.composers.imagePickTarget
+        store.composers.imagePickTarget = null
+        if (selection != null) addImages(selection.first, uris, selection.second)
+    }
+
     /** Replace one pending file by identity; a chip that was removed meanwhile is left removed. */
     fun updateFile(target: ComposerDraft, id: String, transform: (PendingAttachment.File) -> PendingAttachment.File) {
         val attachments = target.attachments
@@ -365,14 +377,12 @@ fun ChatScreen(
         }
     }
 
-    val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        val target = store.composers.filePickTarget
-        store.composers.filePickTarget = null
-        if (uri == null || target == null) return@rememberLauncherForActivityResult
+    /** Add one picked, dropped or pasted file to [target]'s tray and start its upload. */
+    fun addFile(target: ComposerDraft, uri: Uri) {
         val (name, size) = describeDocument(context.contentResolver, uri)
         if (name == null) {
             toast.second(context.getString(R.string.err_file_read_failed))
-            return@rememberLauncherForActivityResult
+            return
         }
         val file = PendingAttachment.File(
             id = UUID.randomUUID().toString(),
@@ -383,6 +393,28 @@ fun ChatScreen(
         )
         target.attachments.add(file)
         startUpload(file, target)
+    }
+
+    val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        val target = store.composers.filePickTarget
+        store.composers.filePickTarget = null
+        if (uri != null && target != null) addFile(target, uri)
+    }
+
+    /**
+     * Take files that arrived by drop or by paste: images go through the photo path, everything else
+     * is uploaded as a file. A child session refuses files (the host refuses every subagent upload),
+     * so there only images are taken, and the rest is said not to be.
+     * Returns whether anything was taken.
+     */
+    fun attachArrivals(uris: List<Uri>): Boolean {
+        if (uris.isEmpty() || currentSessionId == null || composer.preparing || composer.submitting) return false
+        val (images, others) = uris.partition { context.contentResolver.getType(it)?.startsWith("image/") == true }
+        addImages(composer, images, imageLimits ?: ImageLimitsView())
+        if (others.isNotEmpty()) {
+            if (currentSubagent == null) others.forEach { addFile(composer, it) } else toast.second(context.getString(R.string.err_attachment_failed))
+        }
+        return images.isNotEmpty() || (others.isNotEmpty() && currentSubagent == null)
     }
 
     /** What a decoration gets to work with: the open session's conversation, a command runner, the draft. */
@@ -551,7 +583,33 @@ fun ChatScreen(
             store.panels.get(composer.key).browse(path); panelKey = composer.key
         },
     ) {
-    Surface(modifier = Modifier.fillMaxSize(), color = colors.bgBase) {
+    // Files and text dropped from another window (the ChromeOS Files app, a browser, an app in the
+    // next split) land in the tray and the draft, the same as picking them does.
+    var dropActive by remember { mutableStateOf(false) }
+    fun takeDrop(files: List<Uri>, text: String): Boolean {
+        if (files.isNotEmpty()) return attachArrivals(files)
+        if (text.isBlank() || currentSessionId == null) return false
+        val at = composer.selection.coerceIn(0, draft.length)
+        draft = draft.substring(0, at) + text + draft.substring(at)
+        composer.selection = at + text.length
+        composerFocusTick++
+        return true
+    }
+    // Ctrl+K and Ctrl+/ move to the message box.
+    val shortcutRouter = LocalShortcutRouter.current
+    LaunchedEffect(shortcutRouter) {
+        shortcutRouter.events.collect { if (it == AppShortcut.FocusComposer) composerFocusTick++ }
+    }
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .attachmentDropTarget(
+                enabled = currentSessionId != null,
+                onActiveChange = { dropActive = it },
+                onDrop = { files, text -> takeDrop(files, text) },
+            ),
+        color = colors.bgBase,
+    ) {
         // The activity draws edge to edge, so every top-level surface has to consume the insets
         // itself or the chrome ends up underneath the status bar. safeDrawing covers the status
         // bar, the gesture area and the keyboard in one modifier.
@@ -999,6 +1057,8 @@ fun ChatScreen(
                         onSendWith = { text, delivery -> send(text, delivery) },
                         onStop = { scope.launch { store.cancelTurn() } },
                         focusTick = composerFocusTick,
+                        // Ctrl+V with an image or a file on the clipboard attaches it; text is pasted as usual.
+                        onPasteFiles = { uris -> attachArrivals(uris) },
                         // The page's attach button reaches the same picker the `+` sheet does, and a
                         // child session refuses attachments the way it refuses commands, so it gets
                         // no button rather than one that ends in an error.
@@ -1027,6 +1087,7 @@ fun ChatScreen(
                 }
             }
         }
+        DropHighlight(visible = dropActive)
         DsToastHost(toast, modifier = Modifier.fillMaxWidth())
     }
 

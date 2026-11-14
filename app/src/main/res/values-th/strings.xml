@@ -565,4 +565,16 @@
     <string name="permission_preset_full_access">เข้าถึงทั้งหมด</string>
     <string name="permission_preset_auto">ตรวจสอบอัตโนมัติ</string>
     <string name="permission_preset_auto_desc">รันโดยไม่มีแซนด์บ็อกซ์ หลังจากการตรวจสอบเชิงทดลองโดยโมเดลเดียวกันสำหรับการเรียกใช้เครื่องมือเนทีฟและการเรียก PTC ภายในทุกครั้ง</string>
+    <string name="shortcuts_group_message">ช่องข้อความ</string>
+    <string name="shortcuts_group_sessions">เซสชัน</string>
+    <string name="shortcuts_group_general">ทั่วไป</string>
+    <string name="shortcuts_send">ส่งข้อความ</string>
+    <string name="shortcuts_newline">ขึ้นบรรทัดใหม่</string>
+    <string name="shortcuts_focus_composer">ไปที่ช่องข้อความ</string>
+    <string name="shortcuts_new_session">เซสชันใหม่</string>
+    <string name="shortcuts_search_sessions">ค้นหาเซสชัน</string>
+    <string name="shortcuts_toggle_list">แสดงหรือซ่อนเซสชัน</string>
+    <string name="shortcuts_settings">เปิดการตั้งค่า</string>
+    <string name="shortcuts_close">ปิดแผ่นหรือกล่องโต้ตอบ</string>
+    <string name="chat_drop_hint">วางไฟล์ที่นี่เพื่อแนบ</string>
 </resources>

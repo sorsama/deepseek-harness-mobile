@@ -78,6 +78,8 @@ fun DsSearchField(
     placeholder: String,
     modifier: Modifier = Modifier,
     autoFocus: Boolean = false,
+    /** Bumped to take focus again while the field is already showing (Ctrl+F on an open search). */
+    focusTick: Int = 0,
     onSearch: () -> Unit = {},
 ) {
     val colors = DsTheme.colors
@@ -89,7 +91,7 @@ fun DsSearchField(
     val style = DsType.body15.copy(color = colors.labelPrimary)
     val clearLabel = stringResource(R.string.ux_b_clear_search)
 
-    LaunchedEffect(autoFocus) {
+    LaunchedEffect(autoFocus, focusTick) {
         if (autoFocus) {
             // A frame first: asking for focus before the field is attached throws, and an
             // animated entrance (the files search folds open) attaches it a moment late.

@@ -7,6 +7,7 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -149,7 +150,10 @@ internal fun DsWindow(
         val insets = remember(bars, cutout, keyboard, host, windowView) {
             bars.union(cutout).union(keyboard).union(HostRelative(host, windowView))
         }
-        CompositionLocalProvider(LocalDsHost provides host) { content(insets) }
+        // Escape closes any window the app opens, as back does on a touch screen.
+        CompositionLocalProvider(LocalDsHost provides host) {
+            Box(Modifier.fillMaxSize().dismissOnEscape { onDismissRequest() }) { content(insets) }
+        }
     }
 }
 

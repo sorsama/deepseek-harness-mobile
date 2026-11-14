@@ -66,6 +66,7 @@ fun DsIconButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val isHovered by interactionSource.collectIsHoveredAsState()
+    val focusBorder = rememberFocusBorder(interactionSource)
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled) DsAnimations.Scale.pressed else DsAnimations.Scale.normal,
@@ -93,25 +94,30 @@ fun DsIconButton(
         },
         modifier = modifier
             .size(if (bordered) DsSizes.field else DsSpacing.touchTarget)
+            .handCursor(enabled)
             .semantics { role = Role.Button },
         enabled = enabled,
         color = background,
         shape = if (bordered) DsShapes.control else CircleShape,
-        border = if (bordered) BorderStroke(1.dp, if (selected) colors.accent else colors.borderL2) else null,
+        border = focusBorder ?: if (bordered) BorderStroke(1.dp, if (selected) colors.accent else colors.borderL2) else null,
         interactionSource = interactionSource,
     ) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
-                tint = if (enabled) glyph else glyph.copy(alpha = 0.4f),
-                modifier = Modifier
-                    .requiredSize(iconSize)
-                    .graphicsLayer {
-                        scaleX = scale
-                        scaleY = scale
-                    },
-            )
+        // An icon alone says nothing to a mouse until it is pointed at: the tooltip repeats what a
+        // screen reader already announces, so no string exists only for it.
+        HoverTooltip(contentDescription, interactionSource) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = contentDescription,
+                    tint = if (enabled) glyph else glyph.copy(alpha = 0.4f),
+                    modifier = Modifier
+                        .requiredSize(iconSize)
+                        .graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                        },
+                )
+            }
         }
     }
 }

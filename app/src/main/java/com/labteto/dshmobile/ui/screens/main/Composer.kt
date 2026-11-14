@@ -12,7 +12,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.labteto.dshmobile.ui.components.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
@@ -56,6 +56,17 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import com.labteto.dshmobile.ui.components.HoverTooltip
+import com.labteto.dshmobile.ui.components.horizontalWheelScroll
+import com.labteto.dshmobile.ui.input.ComposerKeyOutcome
+import com.labteto.dshmobile.ui.input.clipboardFiles
+import com.labteto.dshmobile.ui.input.decideComposerKey
+import com.labteto.dshmobile.ui.input.insertNewline
+import com.labteto.dshmobile.ui.input.isPasteChord
+import com.labteto.dshmobile.ui.input.toComposerKeyPress
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -234,12 +245,23 @@ internal fun Composer(
      * (the default) hides it there; the composer card reaches the same picker through its `+` sheet.
      */
     onAttachFile: (() -> Unit)? = null,
+    /**
+     * Called when Ctrl+V pastes a copied image or file instead of text. Returns true when it took
+     * them (they are in the tray), false to let the field paste whatever it can.
+     */
+    onPasteFiles: ((List<Uri>) -> Boolean)? = null,
 ) {
     var editor by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(draft, androidx.compose.ui.text.TextRange(cursor))) }
     androidx.compose.runtime.LaunchedEffect(draft, cursor) {
         if (editor.text != draft || editor.selection.end != cursor) editor = editor.copy(text = draft, selection = androidx.compose.ui.text.TextRange(cursor.coerceIn(0, draft.length)))
     }
     val colors = DsTheme.colors
+    // A hardware keyboard changes what Enter means: it sends, and Shift+Enter adds a line. The
+    // configuration reports one while a keyboard is attached (a Chromebook always has one) and
+    // none on a bare phone, so the soft keyboard's behaviour is never touched.
+    val hardwareKeyboard = LocalConfiguration.current.keyboard != android.content.res.Configuration.KEYBOARD_NOKEYS
+    val clipboard = LocalClipboardManager.current
+    val context = LocalContext.current
     val haptics = rememberDsHaptics()
     // A file that is still uploading has no receipt to cite yet, and one that failed never will;
     // the send affordance waits for the chips rather than sending a message that names neither.
@@ -262,7 +284,7 @@ internal fun Composer(
     androidx.compose.runtime.LaunchedEffect(focusTick) {
         if (focusTick > 0 && enabled) {
             runCatching { fieldFocus.requestFocus() }
-            keyboard?.show()
+            if (!hardwareKeyboard) keyboard?.show()
         }
     }
 
@@ -319,7 +341,7 @@ internal fun Composer(
     androidx.compose.runtime.LaunchedEffect(pageComposed) {
         if (pageWasOpen && !pageComposed && enabled) {
             runCatching { fieldFocus.requestFocus() }
-            keyboard?.show()
+            if (!hardwareKeyboard) keyboard?.show()
         }
         pageWasOpen = pageComposed
     }
@@ -384,8 +406,9 @@ internal fun Composer(
                     verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
                 ) {
                 if (references.isNotEmpty()) {
+                    val referenceScroll = rememberScrollState()
                     Row(
-                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        Modifier.fillMaxWidth().horizontalWheelScroll(referenceScroll).horizontalScroll(referenceScroll),
                         horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
                     ) {
                         references.forEach { reference ->
@@ -431,20 +454,31 @@ internal fun Composer(
                         .focusRequester(fieldFocus)
                         .onFocusChanged { fieldFocused = it.isFocused }
                         .onPreviewKeyEvent { event ->
-                        if (event.key == Key.Enter && (event.isCtrlPressed || event.isMetaPressed)) {
-                            if (event.type == KeyEventType.KeyUp && canSend) {
-                                val text = currentDraft
-                                editor = androidx.compose.ui.text.input.TextFieldValue("")
-                                currentOnDraftChange("")
-                                currentOnSend(text)
+                            // Paste: a copied image or file goes to the attachment tray, anything with
+                            // text in it is left to the field's own paste.
+                            if (event.type == KeyEventType.KeyDown && isPasteChord(event)) {
+                                val files = onPasteFiles
+                                if (files != null && files(clipboardFiles(clipboard, context))) return@onPreviewKeyEvent true
                             }
-                            true
-                        } else false
-                    },
+                            when (decideComposerKey(event.toComposerKeyPress(), hardwareKeyboard)) {
+                                ComposerKeyOutcome.Send -> {
+                                    if (canSend) submitDraft { currentOnSend(it) }
+                                    true
+                                }
+                                ComposerKeyOutcome.Newline -> {
+                                    applyEdit(insertNewline(editor))
+                                    true
+                                }
+                                ComposerKeyOutcome.Swallow -> true
+                                ComposerKeyOutcome.Default -> false
+                            }
+                        },
                     // No `keyboardActions` here. The field is multi-line, so it carries the default IME
                     // action and the on-screen return key inserts a newline — which means an
                     // `onSend` action could never fire, and the one that used to sit here never did.
-                    // The send key is the button; Ctrl/Cmd+Enter above is the shortcut.
+                    // The send key is the button. With a hardware keyboard Enter and Ctrl/Cmd+Enter
+                    // send and Shift+Enter adds a line (see decideComposerKey); the soft keyboard is
+                    // never answered there, so a phone is exactly as it was.
                     enabled = enabled,
                     placeholder = {
                         Text(
@@ -821,7 +855,19 @@ private fun FullScreenComposer(
                     modifier = Modifier
                         .fillMaxSize()
                         .onSizeChanged { viewportPx = it.height }
-                        .focusRequester(focus),
+                        .focusRequester(focus)
+                        // The page is for long text, so plain Enter keeps adding a line here; the
+                        // send chord still sends, and Escape (the window's) goes back to the card.
+                        .onPreviewKeyEvent { event ->
+                            when (decideComposerKey(event.toComposerKeyPress(), hardwareKeyboard = false)) {
+                                ComposerKeyOutcome.Send -> {
+                                    if (canSend) onSend()
+                                    true
+                                }
+                                ComposerKeyOutcome.Swallow -> true
+                                else -> false
+                            }
+                        },
                     enabled = enabled,
                     placeholder = {
                         Text(
@@ -870,6 +916,7 @@ private fun PermissionChip(
     if (select == null) return
     var menuOpen by remember { mutableStateOf(false) }
     var confirming by remember { mutableStateOf<String?>(null) }
+    val chipInteraction = remember { MutableInteractionSource() }
     val effective = pending ?: select.currentValue
     val option = select.options.firstOrNull { it.value == effective }
     val label = permissionPresetLabel(effective, option?.name)
@@ -884,19 +931,21 @@ private fun PermissionChip(
                     .size(40.dp)
                     .clip(CircleShape)
                     .background(colors.bgLayer3)
-                    .clickable(enabled = enabled) {
+                    .clickable(interactionSource = chipInteraction, indication = androidx.compose.foundation.LocalIndication.current, enabled = enabled) {
                         haptics.tap()
                         menuOpen = true
                     }
                     .semantics { contentDescription = label },
                 contentAlignment = Alignment.Center,
             ) {
+                HoverTooltip(label, chipInteraction) {
                 Icon(
                     Icons.Outlined.Shield,
                     contentDescription = null,
                     tint = permissionPresetTint(effective, option?.name, colors),
                     modifier = Modifier.size(18.dp),
                 )
+                }
             }
         } else {
             Row(
@@ -1134,6 +1183,7 @@ private fun AttachmentTray(
             val trayState = androidx.compose.foundation.lazy.rememberLazyListState()
             LazyRow(
                 state = trayState,
+                modifier = Modifier.horizontalWheelScroll(trayState),
                 contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp + TrayOverlap),
                 horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
             ) {
@@ -1227,14 +1277,21 @@ private val RemoveBadgeSize = 18.dp
 @Composable
 private fun RemoveButton(description: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = DsTheme.colors
+    val interaction = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
             .size(DsSpacing.touchTarget)
             .clip(CircleShape)
             .semantics { contentDescription = description }
-            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick),
+            .clickable(
+                interactionSource = interaction,
+                indication = androidx.compose.foundation.LocalIndication.current,
+                role = androidx.compose.ui.semantics.Role.Button,
+                onClick = onClick,
+            ),
         contentAlignment = Alignment.Center,
     ) {
+        HoverTooltip(description, interaction) {
         Box(
             Modifier
                 .size(RemoveBadgeSize)
@@ -1248,6 +1305,7 @@ private fun RemoveButton(description: String, onClick: () -> Unit, modifier: Mod
                 tint = Color.White,
                 modifier = Modifier.size(12.dp),
             )
+        }
         }
     }
 }
@@ -1370,6 +1428,9 @@ private fun CircleAction(
             ),
         contentAlignment = Alignment.Center,
     ) {
+        // The circle is only an icon: name it for a mouse that rests on it. Inside the hit area,
+        // so the tooltip anchors to the button and the wrapper takes no layout room.
+        HoverTooltip(description, interaction) {
         Box(
             Modifier
                 .pressScale(interaction, 0.9f)
@@ -1377,6 +1438,7 @@ private fun CircleAction(
                 .clip(CircleShape)
                 .background(background),
         ) { CircleGlyph(icon, size, tint, content) }
+        }
     }
 }
 

@@ -76,6 +76,7 @@ fun DsPill(
             onClick?.invoke()
         },
         modifier = modifier
+            .handCursor(tappable)
             // A chip you can tap is the 36dp pill with a 48dp target; a tag you cannot is 24dp.
             .then(
                 if (tappable) {
@@ -92,7 +93,7 @@ fun DsPill(
         shape = shape,
         color = background,
         contentColor = contentColor,
-        border = when {
+        border = rememberFocusBorder(interactionSource) ?: when {
             warn -> BorderStroke(1.dp, colors.warnBorder)
             selected -> BorderStroke(1.dp, colors.accentBorder)
             tappable -> BorderStroke(1.dp, colors.borderL2)

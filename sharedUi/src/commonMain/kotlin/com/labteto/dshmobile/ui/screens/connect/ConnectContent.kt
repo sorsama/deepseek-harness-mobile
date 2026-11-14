@@ -14,7 +14,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.labteto.dshmobile.ui.components.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -139,6 +139,8 @@ import com.labteto.dshmobile.ui.components.HoldAction
 import com.labteto.dshmobile.ui.components.HoldMenu
 import com.labteto.dshmobile.ui.components.MascotMark
 import com.labteto.dshmobile.ui.components.MascotState
+import com.labteto.dshmobile.ui.components.handCursor
+import com.labteto.dshmobile.ui.components.onSecondaryClick
 import com.labteto.dshmobile.ui.components.PlatformBackHandler
 import com.labteto.dshmobile.ui.components.StateDot
 import com.labteto.dshmobile.ui.components.StateDotState
@@ -714,6 +716,9 @@ private fun RecentHarnessCard(
             .clip(DsShapes.block)
             .background(colors.bgLayer1)
             .border(1.dp, colors.borderL2, DsShapes.block)
+            // Right click opens the same menu a long press does, for a mouse.
+            .onSecondaryClick { onMore() }
+            .handCursor()
             .combinedClickable(
                 interactionSource = interaction,
                 indication = androidx.compose.foundation.LocalIndication.current,

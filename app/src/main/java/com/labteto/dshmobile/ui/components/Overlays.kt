@@ -12,7 +12,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.clickable
+import com.labteto.dshmobile.ui.components.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -272,6 +272,9 @@ internal fun DsMenuPopup(expanded: Boolean, onDismiss: () -> Unit, items: List<M
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
+        // Escape closes a menu as it does a sheet or a dialog; the menu's popup takes key events, so this
+        // lands whether or not an item has focus.
+        modifier = Modifier.dismissOnEscape { onDismiss() },
         shape = DsShapes.menu,
         containerColor = colors.bgLayer3,
         tonalElevation = 0.dp,

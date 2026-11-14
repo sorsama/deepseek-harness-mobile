@@ -95,7 +95,10 @@ class DsFullScreenDialogInsetsTest {
                 val topBar = bars?.top ?: 0
 
                 // The root cause: the window is the whole display, not the space between the bars.
-                assertEquals("the dialog window should start at the top of the display", 0, measured.windowTop)
+                // "The whole display" is the activity's own window: the top of the screen on a phone or a
+                // tablet, and the window's top edge when the app runs in a freeform (desktop) window.
+                val activityTop = IntArray(2).also { activity.window.decorView.getLocationOnScreen(it) }[1]
+                assertEquals("the dialog window should start where the activity window does", activityTop, measured.windowTop)
                 assertTrue(
                     "the dialog window is ${measured.windowHeight}px tall on a ${bounds.height()}px display",
                     measured.windowHeight >= bounds.height() - 1,

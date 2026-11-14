@@ -100,6 +100,8 @@ fun DsBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                // Escape closes the sheet the way a swipe does, for a person at a keyboard.
+                .dismissOnEscape { hide { onDismiss() } }
                 .padding(horizontal = DsSpacing.large, vertical = DsSpacing.medium),
             verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
         ) {

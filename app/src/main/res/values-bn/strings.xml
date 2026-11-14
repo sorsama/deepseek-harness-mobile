@@ -565,4 +565,16 @@
     <string name="permission_preset_full_access">সম্পূর্ণ অ্যাক্সেস</string>
     <string name="permission_preset_auto">স্বয়ংক্রিয় পর্যালোচনা</string>
     <string name="permission_preset_auto_desc">প্রতিটি নেটিভ টুল কল এবং PTC অভ্যন্তরীণ কলের আগে একই মডেলের পরীক্ষামূলক পর্যালোচনার পরে স্যান্ডবক্স ছাড়াই চলে।</string>
+    <string name="shortcuts_group_message">বার্তার ঘর</string>
+    <string name="shortcuts_group_sessions">সেশন</string>
+    <string name="shortcuts_group_general">সাধারণ</string>
+    <string name="shortcuts_send">বার্তা পাঠান</string>
+    <string name="shortcuts_newline">নতুন লাইন</string>
+    <string name="shortcuts_focus_composer">বার্তার ঘরে যান</string>
+    <string name="shortcuts_new_session">নতুন সেশন</string>
+    <string name="shortcuts_search_sessions">সেশন খুঁজুন</string>
+    <string name="shortcuts_toggle_list">সেশন দেখান বা লুকান</string>
+    <string name="shortcuts_settings">সেটিংস খুলুন</string>
+    <string name="shortcuts_close">শিট বা ডায়ালগ বন্ধ করুন</string>
+    <string name="chat_drop_hint">সংযুক্ত করতে ফাইলগুলো এখানে ছেড়ে দিন</string>
 </resources>

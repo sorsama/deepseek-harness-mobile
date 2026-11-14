@@ -1,6 +1,8 @@
 package com.labteto.dshmobile.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.Indication
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -318,11 +320,16 @@ fun isDsDark(customization: ThemeCustomization): Boolean = when (customization.p
  * [hapticPlatform] is the host's half of the haptic vocabulary (Android's engine, iOS's feedback
  * generators). Left null, whatever an enclosing composition provided stays in force, and with none
  * at all the app is silent.
+ *
+ * [indication] lets a host decorate the platform's own click indication, which is read from the
+ * Material theme's local and handed in with the accent colour. Android uses it to draw a keyboard
+ * focus ring on every clickable at once; left null, Material's stays untouched.
  */
 @Composable
 fun DshTheme(
     customization: ThemeCustomization = ThemeCustomization.Default,
     hapticPlatform: HapticPlatform? = null,
+    indication: (@Composable (base: Indication, accent: Color) -> Indication)? = null,
     content: @Composable () -> Unit,
 ) {
     val dark = isDsDark(customization)
@@ -344,7 +351,13 @@ fun DshTheme(
             colorScheme = scheme,
             typography = DsTypography,
             shapes = DsMaterialShapes,
-            content = content,
+            content = {
+                if (indication == null) {
+                    content()
+                } else {
+                    CompositionLocalProvider(LocalIndication provides indication(LocalIndication.current, ds.accent)) { content() }
+                }
+            },
         )
     }
 }

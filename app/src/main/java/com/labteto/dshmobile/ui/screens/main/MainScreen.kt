@@ -5,7 +5,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.labteto.dshmobile.ui.components.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitHorizontalTouchSlopOrCancellation
@@ -31,6 +31,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
@@ -55,6 +64,9 @@ import com.labteto.dshmobile.ui.adaptive.rememberHinge
 import com.labteto.dshmobile.ui.components.DsToastHost
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
+import com.labteto.dshmobile.ui.input.AppShortcut
+import com.labteto.dshmobile.ui.input.LocalShortcutRouter
+import com.labteto.dshmobile.ui.input.matchAppShortcut
 import com.labteto.dshmobile.ui.theme.DsTheme
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -140,7 +152,35 @@ fun MainScreen(onOpenSettings: () -> Unit) {
         scope.launch { reveal.animateTo(if (open) 1f else 0f, PanelSpring, initialVelocity = velocity) }
     }
 
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    val router = LocalShortcutRouter.current
+    BoxWithConstraints(
+        Modifier
+            .fillMaxSize()
+            // Keyboard: Ctrl chords go to whoever owns the command (the list, the chat, this
+            // screen), and Escape puts away the drawer or the Details overlay, the transient
+            // surfaces that belong to this screen rather than to a window of their own.
+            .onPreviewKeyEvent { event ->
+                val shortcut = matchAppShortcut(
+                    key = event.key,
+                    ctrl = event.isCtrlPressed,
+                    shift = event.isShiftPressed,
+                    alt = event.isAltPressed,
+                    meta = event.isMetaPressed,
+                )
+                when {
+                    shortcut != null -> {
+                        if (event.type == KeyEventType.KeyDown) router.post(shortcut)
+                        true
+                    }
+                    event.key == Key.Escape && event.type == KeyEventType.KeyDown &&
+                        (drawerState.targetValue == DrawerValue.Open || detailsOpen) -> {
+                        if (detailsOpen) settleDetails(false) else scope.launch { drawerState.close() }
+                        true
+                    }
+                    else -> false
+                }
+            },
+    ) {
         val hinge = com.labteto.dshmobile.ui.adaptive.rememberHinge()
         val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
         val plan = remember(maxWidth, maxHeight, hinge, rtl) { planShell(maxWidth, maxHeight, hinge, rtl) }
@@ -174,6 +214,29 @@ fun MainScreen(onOpenSettings: () -> Unit) {
         }
 
         val currentOpenSettings = androidx.compose.runtime.rememberUpdatedState(onOpenSettings)
+        // The commands that belong to the shell: revealing the session list for the ones that act
+        // on it (the list itself opens the dialog or the search), showing or hiding it, settings.
+        val currentPlan = androidx.compose.runtime.rememberUpdatedState(plan)
+        LaunchedEffect(router) {
+            router.events.collect { shortcut ->
+                val now = currentPlan.value
+                when (shortcut) {
+                    AppShortcut.NewSession, AppShortcut.SearchSessions -> {
+                        // Show the list; the list itself opens the dialog or the search.
+                        if (now.listDocked) listShown = true else scope.launch { drawerState.open() }
+                    }
+                    AppShortcut.ToggleSessionList -> {
+                        if (!now.listDocked) {
+                            scope.launch { if (drawerState.isOpen) drawerState.close() else drawerState.open() }
+                        } else if (now.listCanCollapse) {
+                            listShown = !listShown
+                        }
+                    }
+                    AppShortcut.FocusComposer -> if (!now.listDocked) scope.launch { drawerState.close() }
+                    AppShortcut.OpenSettings -> currentOpenSettings.value()
+                }
+            }
+        }
         // Details is one panel, built here whether it is a pane or an overlay: the same actions either way.
         val detailsContent: @Composable (Modifier, Boolean) -> Unit = { modifier, docked ->
             fun close() = if (docked) detailsShown = false else settleDetails(false)
