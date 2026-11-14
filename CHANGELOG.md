@@ -3,9 +3,25 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
-## [Unreleased]
+## [0.21.0] - 2026-11-14
+
+![DSH Mobile 0.21.0 on a tablet, a Chromebook, a flip phone, a phone and a foldable](docs/images/releases/0.21.0/devices/hero-devices.png)
 
 ### Added
+
+- **The composer lifts into a drawer for long prompts, with a full-screen editor and a tray for
+  attachments.** Once a draft wraps past one line, the message box lifts into a drawer over the chat,
+  sized to a bounded part of the room above the keyboard, and the row with attach, mention, the
+  permission chip and send stays in view however long the prompt gets. Pasting a few thousand
+  characters no longer hides send behind the keyboard (closes #87). A button on the drawer opens a
+  full-screen editor for the really long ones, with back, mention, attach, the permission shield and
+  send along the top. It edits the same draft, so nothing is copied or lost on the way in or out.
+  Attached files now sit in a tray on top of the message box, and on the editor's page too: it
+  unfolds with the first file and folds away after the last one is removed. The drawer, the editor
+  and the tray all move with short animations instead of jumping.
+
+  <img src="docs/images/releases/0.21.0/devices/composer-tray-phone.png" alt="The composer drawer with two attached files in the tray above it" width="260">
+  <img src="docs/images/releases/0.21.0/devices/fullscreen-editor-phone.png" alt="The full-screen editor with the same two files in its tray" width="260">
 
 - **A default send mode for prompts sent while a turn is running.** Settings → Chat now offers
   **Default send mode**, Queue or Steer, so a reader who always wants one of them no longer flips
@@ -31,6 +47,10 @@ All notable changes to DSH Mobile are documented here. Format based on
   restart the activity, so the draft, the attachment tray, the open session, an open sheet and the
   scroll position stay where they were.
 
+  <img src="docs/images/releases/0.21.0/devices/tablet-three-pane.png" alt="A tablet in landscape with the session list, the chat and Details side by side" width="360">
+  <img src="docs/images/releases/0.21.0/devices/fold-book.png" alt="A foldable half open like a book, with the list on one half and the chat on the other" width="300">
+  <img src="docs/images/releases/0.21.0/devices/flip-tabletop.png" alt="A flip phone propped half open, with the chat above the hinge and the composer below it" width="180">
+
 - **Works on Chromebooks and in desktop windows.** The app is now installable on a Chromebook (a
   touchscreen, a camera and Wi-Fi are all optional), opens in a 900x700dp window that can be dragged
   down to 320x360dp, and follows the window live as it is resized, maximized or snapped. With a
@@ -44,6 +64,9 @@ All notable changes to DSH Mobile are documented here. Format based on
   the wheel scrolls the attachment strip sideways. Files and images dragged in from the Files app
   or another window attach to the message, dropped text lands in the draft, and Ctrl+V pastes a
   copied image or file as an attachment. See docs/ADAPTIVE.md.
+
+  <img src="docs/images/releases/0.21.0/devices/chromebook-window.png" alt="The app in a resizable Chromebook window with the list, the chat and Details" width="340">
+  <img src="docs/images/releases/0.21.0/devices/chromebook-drag-drop.png" alt="A file being dragged from the Files app onto the message box, with a drop hint showing" width="340">
 
 ### Fixed
 
@@ -59,6 +82,8 @@ All notable changes to DSH Mobile are documented here. Format based on
   request goes through. The subscription-limit bars are asked for once per connection: a harness
   without them is remembered and left alone, and the bars appear by themselves if one ever serves
   them. The token totals that sat in the Context card moved into this one.
+
+  <img src="docs/images/releases/0.21.0/devices/usage-card-phone.png" alt="The usage card in the session details, with session tokens and a DeepSeek balance" width="260">
 
 - **Permission presets read in the app's language.** The permission sheet, the composer's permission
   chip and the session details panel showed Read Only, Workspace Write, Full access and Auto review
@@ -82,6 +107,18 @@ All notable changes to DSH Mobile are documented here. Format based on
   only once the window is filling up enough for it to show anything, it takes only the room the chip
   leaves (the chip keeps its whole name), and a screen reader hears what it says ("62% of context
   used"). The Details panel still shows the exact figure and the breakdown at any usage.
+
+### Changed
+
+- **Your own actions in the chat are quiet grey lines instead of terminal rows.** Things you do that
+  are not chat messages, such as changing the permission, turning plan mode on or off, compacting
+  the conversation or running any other slash command, used to appear as terminal rows, as if the AI
+  had run them, and they folded into its process. They now show as small centred grey lines: "You
+  changed permission to Read Only", "You turned plan mode on", "You compacted the conversation",
+  "You ran /foo", or a note that it did not go through. What the AI itself does looks the same as
+  before.
+
+  <img src="docs/images/releases/0.21.0/devices/system-lines-phone.png" alt="Two permission changes shown as small grey lines in the chat" width="260">
 
 ## [0.20.0] - 2026-11-09
 
