@@ -1,0 +1,4 @@
+# Native binaries vendored for the built-in harness runtime: never touch their bytes.
+app/src/main/jniLibs/**/*.so binary
+# A signed release manifest fixture: its exact bytes are the signed message.
+app/src/test/resources/runtime/* binary
