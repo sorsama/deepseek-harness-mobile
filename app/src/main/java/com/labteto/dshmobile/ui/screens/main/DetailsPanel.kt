@@ -1293,7 +1293,7 @@ private fun GoalRow(goal: GoalSnapshot?, store: SessionStore, onFailed: (String?
                 color = colors.labelSecondary,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 240.dp)
+                    .heightIn(max = GoalTextMaxHeight)
                     .verticalScroll(rememberScrollState()),
             )
             goal.blockedReason?.let {

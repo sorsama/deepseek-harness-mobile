@@ -73,7 +73,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * Modal dialog: dim overlay (platform scrim ~ overlayMask), r24 bgLayer2 plate with a hairline
- * border. [content] receives a [ColumnScope] and scrolls when the dialog would outgrow the screen.
+ * border. [content] receives a [ColumnScope] and scrolls when the dialog would outgrow the screen,
+ * so any buttons placed inside it scroll with it. For a dialog whose buttons must always stay
+ * visible, use the overload that takes separate `body` and `actions`.
  *
  * A dialog is the easiest place for a button to disappear: the plate grows with its content, and a
  * long explanation, a list of approved builds or a keyboard could push the actions past the bottom
@@ -93,7 +95,12 @@ fun DsDialog(
     DsDialogScaffold(title, onDismiss, content, actions = null)
 }
 
-/** A dialog whose actions stay visible while its long body scrolls. */
+/**
+ * A dialog with a fixed action row. [body] scrolls when the dialog would outgrow the screen, but
+ * [actions] sit below it, outside the scroll region, so the buttons stay visible however long the
+ * body is or when the soft keyboard is open. The row is right-aligned with [DsSpacing.small]
+ * between buttons: pass the dismissing button first and the confirming one last.
+ */
 @Composable
 fun DsDialog(
     title: String?,
@@ -172,7 +179,7 @@ private fun DsDialogScaffold(
                         actions?.let {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
+                                horizontalArrangement = Arrangement.spacedBy(DsSpacing.small, Alignment.End),
                                 content = it,
                             )
                         }

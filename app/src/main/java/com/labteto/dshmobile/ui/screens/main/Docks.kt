@@ -286,6 +286,13 @@ internal fun GoalSummary(goal: GoalSnapshot) {
 }
 
 /**
+ * Tallest a goal's text may grow in the dock, the details panel and the edit field before it
+ * scrolls on its own. A goal can run to thousands of characters; uncapped, it would push the
+ * Pause, Edit and Clear actions below it off screen.
+ */
+internal val GoalTextMaxHeight = 240.dp
+
+/**
  * The live goal bar above the composer: the mock's compact card, expanding into its verbs.
  *
  * The mock's round meter (`3/10`) needs a completed-round count the goal projection does not
@@ -323,7 +330,7 @@ internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier
             color = colors.labelSecondary,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 240.dp)
+                .heightIn(max = GoalTextMaxHeight)
                 .verticalScroll(rememberScrollState()),
         )
         goal.blockedReason?.let {
@@ -421,35 +428,14 @@ internal fun GoalActions(
     }
 
     if (clearing) {
-        DsDialog(
+        ConfirmDialog(
             title = stringResource(R.string.goal_clear),
+            body = goal.objective,
+            confirmLabel = stringResource(R.string.goal_clear),
             onDismiss = { clearing = false },
-            body = {
-                Text(
-                    goal.objective,
-                    style = DsType.std14,
-                    color = DsTheme.colors.labelSecondary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 240.dp)
-                        .verticalScroll(rememberScrollState()),
-                )
-            },
-            actions = {
-                DsButton(
-                    text = stringResource(R.string.common_cancel),
-                    onClick = { clearing = false },
-                    variant = DsButtonVariant.Ghost,
-                )
-                Spacer(Modifier.width(DsSpacing.small))
-                DsButton(
-                    text = stringResource(R.string.goal_clear),
-                    onClick = {
-                        clearing = false
-                        run("clear")
-                    },
-                    variant = DsButtonVariant.Danger,
-                )
+            onConfirm = {
+                clearing = false
+                run("clear")
             },
         )
     }
@@ -460,12 +446,11 @@ internal fun GoalActions(
             body = {
                 TextField(
                     minLines = 3,
-                    maxLines = Int.MAX_VALUE,
                     value = editText,
                     onValueChange = { editText = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 240.dp)
+                        .heightIn(max = GoalTextMaxHeight)
                         .inkFieldFrame(),
                     placeholder = { Text(stringResource(R.string.goal_title), style = DsType.std14) },
                     colors = dialogTextFieldColors(),
@@ -474,17 +459,17 @@ internal fun GoalActions(
             },
             actions = {
                 DsButton(
+                    text = stringResource(R.string.common_cancel),
+                    onClick = { editing = false },
+                    variant = DsButtonVariant.Ghost,
+                )
+                DsButton(
                     text = stringResource(R.string.common_ok),
                     onClick = {
                         run("edit", editText)
                         editing = false
                     },
                     variant = DsButtonVariant.Info,
-                )
-                DsButton(
-                    text = stringResource(R.string.common_cancel),
-                    onClick = { editing = false },
-                    variant = DsButtonVariant.Ghost,
                 )
             },
         )

@@ -7,9 +7,10 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ### Fixed
 
-- **Goal actions stay reachable with long text.** Goal bodies now scroll within a bounded region
-  while pause/resume, edit and clear remain outside that scroll area. Edit and clear dialogs keep
-  their actions visible when the goal is long or the soft keyboard is open (closes #102).
+- **Goal actions stay reachable with long text.** A long goal now scrolls inside a capped region
+  in the chat dock and the details panel, so Pause, Edit and Clear stay on screen. The Edit Goal
+  dialog keeps Cancel and OK visible above the keyboard, and every confirm dialog (including Clear
+  Goal) now keeps its buttons pinned below its scrolling text (closes #102).
 
 ## [0.21.1] - 2026-11-14
 
