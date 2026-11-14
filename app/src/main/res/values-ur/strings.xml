@@ -423,6 +423,15 @@
     <string name="harness_automation_history_not_found">یہ کام اب دستیاب نہیں ہے۔</string>
     <string name="harness_automation_history_cursor_error">ریکارڈ بدل گئے ہیں۔ دوبارہ کوشش کریں۔</string>
 
+    <!-- System lines: things the user did that are not chat messages, told in the transcript -->
+    <string name="system_line_permission_changed">آپ نے اجازت بدل کر %1$s کر دی</string>
+    <string name="system_line_permission_changed_plain">آپ نے اجازت بدلی</string>
+    <string name="system_line_permission_failed">اجازت بدلی نہیں جا سکی</string>
+    <string name="system_line_compact">آپ نے گفتگو مختصر کی</string>
+    <string name="system_line_plan_on">آپ نے پلان موڈ آن کیا</string>
+    <string name="system_line_plan_off">آپ نے پلان موڈ آف کیا</string>
+    <string name="system_line_command">آپ نے %1$s چلایا</string>
+    <string name="system_line_command_failed">%1$s نہیں چل سکا</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">یہاں تک ریوائنڈ کیا گیا</string>
     <string name="rewind_no_text">(کوئی متن نہیں)</string>

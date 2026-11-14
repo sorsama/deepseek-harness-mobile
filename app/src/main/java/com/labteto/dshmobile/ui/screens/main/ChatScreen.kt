@@ -611,6 +611,9 @@ fun ChatScreen(
                 },
                 onMention = if (currentSessionId != null) ({ path, folder -> mention(path, folder) }) else null,
                 assistantMemory = assistantMemory,
+                permissionNames = remember(permissions) {
+                    permissions?.options?.associate { it.value to it.name }.orEmpty()
+                },
             )
 
             BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {

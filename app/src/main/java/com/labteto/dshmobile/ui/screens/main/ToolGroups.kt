@@ -146,8 +146,12 @@ private fun foldTurnProcess(rows: List<TranscriptRow>): List<TranscriptRow> {
         // turn of its own, so a reader who corrected the agent halfway would find their own words
         // folded away, and the history sheet's jump to them would land on nothing. The fold splits
         // around it instead: what led up to the correction, the correction, what followed it.
+        //
+        // Nor is a command the reader ran. It is their action, told as its own line; folded into
+        // the process it would sit among the agent's steps, which is what the line is there to
+        // tell apart. Picking a permission while a turn runs lands it inside that turn.
         val keep = row is TranscriptRow.Context ||
-            (row as? TranscriptRow.Message)?.node is UserMessageNode
+            (row as? TranscriptRow.Message)?.node.let { it is UserMessageNode || (it is CommandNode && it.isRun) }
         if (keep) { flush(); folded += row } else run += row
     }
     flush()

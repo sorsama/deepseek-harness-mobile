@@ -423,6 +423,15 @@
     <string name="harness_automation_history_not_found">งานนี้ไม่พร้อมใช้งานแล้ว</string>
     <string name="harness_automation_history_cursor_error">ประวัติมีการเปลี่ยนแปลง ลองอีกครั้ง</string>
 
+    <!-- System lines: things the user did that are not chat messages, told in the transcript -->
+    <string name="system_line_permission_changed">คุณเปลี่ยนสิทธิ์เป็น %1$s</string>
+    <string name="system_line_permission_changed_plain">คุณเปลี่ยนสิทธิ์</string>
+    <string name="system_line_permission_failed">เปลี่ยนสิทธิ์ไม่สำเร็จ</string>
+    <string name="system_line_compact">คุณบีบอัดการสนทนา</string>
+    <string name="system_line_plan_on">คุณเปิดโหมดวางแผน</string>
+    <string name="system_line_plan_off">คุณปิดโหมดวางแผน</string>
+    <string name="system_line_command">คุณรัน %1$s</string>
+    <string name="system_line_command_failed">รัน %1$s ไม่สำเร็จ</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">ย้อนกลับมาถึงตรงนี้</string>
     <string name="rewind_no_text">(ไม่มีข้อความ)</string>
