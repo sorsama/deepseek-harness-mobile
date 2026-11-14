@@ -527,10 +527,9 @@
     <string name="hold_replace_draft_confirm">বদলান</string>
 
     <!-- Provider usage -->
-    <string name="quota_title">সীমা ও ব্যালেন্স</string>
+    <string name="quota_title">ব্যবহার</string>
     <string name="quota_short">৫ ঘণ্টা</string>
     <string name="quota_week">সপ্তাহ</string>
-    <string name="quota_unknown">সীমার তথ্য নেই</string>
     <string name="quota_refresh">আবার যাচাই করুন</string>
     <string name="quota_checked">যাচাই করা হয়েছে: %1$s</string>
     <string name="quota_all">সব প্রদানকারী</string>
@@ -546,6 +545,19 @@
     <string name="quota_compact_minute">মি</string>
     <string name="quota_other">অন্য সীমা</string>
     <string name="quota_remaining_percent">অবশিষ্ট: %1$s</string>
+    <string name="quota_session_title">এই সেশন</string>
+    <string name="quota_tokens_input">ইনপুট</string>
+    <string name="quota_tokens_output">আউটপুট</string>
+    <string name="quota_tokens_cache">ক্যাশ হিট</string>
+    <string name="quota_tokens_total">মোট</string>
+    <string name="quota_session_empty">এখনও কোনো টোকেন ব্যবহার হয়নি</string>
+    <string name="quota_balance_title">DeepSeek ব্যালেন্স</string>
+    <string name="quota_balance_bonus">বোনাস: %1$s</string>
+    <string name="quota_balance_failed">ব্যালেন্স লোড করা যায়নি</string>
+    <string name="quota_limit_reached">ব্যবহারের সীমা শেষ হয়ে গেছে</string>
+    <string name="quota_rate_limited">অনেক বেশি অনুরোধ হয়েছে, একটু পরে আবার চেষ্টা করুন</string>
+    <string name="quota_limit_short">সীমা শেষ</string>
+    <string name="quota_rate_short">অনুরোধ সীমিত</string>
     <string name="permission_preset_read_only">শুধু পড়া</string>
     <string name="permission_preset_workspace_write">ওয়ার্কস্পেসে লেখা</string>
     <string name="permission_preset_full_access">সম্পূর্ণ অ্যাক্সেস</string>

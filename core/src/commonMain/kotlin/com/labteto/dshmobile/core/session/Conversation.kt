@@ -35,7 +35,8 @@ sealed interface ChatNode {
 }
 
 data class TurnStartNode(override val seq: Long, val turn: Int) : ChatNode
-data class TurnEndNode(override val seq: Long, val turn: Int, val reasonKind: String, val reasonDetail: JsonElement? = null) : ChatNode
+/** [failureCode] is the `error.code` of a turn that ended in an `error`, such as `QUOTA` or `RATE_LIMIT`. */
+data class TurnEndNode(override val seq: Long, val turn: Int, val reasonKind: String, val reasonDetail: JsonElement? = null, val failureCode: String? = null) : ChatNode
 
 data class UserMessageNode(
     override val seq: Long,

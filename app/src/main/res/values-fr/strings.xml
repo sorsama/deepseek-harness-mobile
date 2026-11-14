@@ -527,10 +527,9 @@
     <string name="hold_replace_draft_confirm">Remplacer</string>
 
     <!-- Provider usage -->
-    <string name="quota_title">Limites et solde</string>
+    <string name="quota_title">Utilisation</string>
     <string name="quota_short">5 h</string>
     <string name="quota_week">Semaine</string>
-    <string name="quota_unknown">Aucune donnée sur les limites</string>
     <string name="quota_refresh">Vérifier</string>
     <string name="quota_checked">Vérifié : %1$s</string>
     <string name="quota_all">Tous les fournisseurs</string>
@@ -546,6 +545,19 @@
     <string name="quota_compact_minute">min</string>
     <string name="quota_other">Autre limite</string>
     <string name="quota_remaining_percent">Reste : %1$s</string>
+    <string name="quota_session_title">Cette session</string>
+    <string name="quota_tokens_input">Entrée</string>
+    <string name="quota_tokens_output">Sortie</string>
+    <string name="quota_tokens_cache">Succès du cache</string>
+    <string name="quota_tokens_total">Total</string>
+    <string name="quota_session_empty">Aucun jeton utilisé pour l’instant</string>
+    <string name="quota_balance_title">Solde DeepSeek</string>
+    <string name="quota_balance_bonus">Bonus : %1$s</string>
+    <string name="quota_balance_failed">Impossible de charger le solde</string>
+    <string name="quota_limit_reached">Limite d’utilisation atteinte</string>
+    <string name="quota_rate_limited">Trop de requêtes, réessayez dans un instant</string>
+    <string name="quota_limit_short">Limite atteinte</string>
+    <string name="quota_rate_short">Limite de requêtes</string>
     <string name="permission_preset_read_only">Lecture seule</string>
     <string name="permission_preset_workspace_write">Écriture dans l\'espace de travail</string>
     <string name="permission_preset_full_access">Accès complet</string>

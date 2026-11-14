@@ -57,6 +57,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.session.QueueItem
+import com.labteto.dshmobile.core.usage.compactCount
 import com.labteto.dshmobile.core.wire.dto.GoalPhase
 import com.labteto.dshmobile.core.wire.dto.GoalSnapshot
 import com.labteto.dshmobile.core.wire.dto.SessionStatsView
@@ -79,7 +80,6 @@ import com.labteto.dshmobile.ui.components.rememberCopier
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.StateDot
 import com.labteto.dshmobile.ui.components.formatDurationMs
-import com.labteto.dshmobile.ui.components.formatTokens
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSizes
@@ -712,14 +712,18 @@ internal fun StatsFooter(
                     ),
                 )
             }
-            usage?.let {
+            val extra = quotaText.takeIf { text -> text.isNotBlank() }
+            if (usage != null) {
+                val labels = quotaLabels()
                 DetailLine(
                     stringResource(
                         R.string.chat_stats_tokens,
-                        formatTokens(it.inputTokens),
-                        formatTokens(it.outputTokens),
-                    ) + quotaText.takeIf { text -> text.isNotBlank() }?.let { text -> " · $text" }.orEmpty(),
+                        compactCount(usage.inputTokens, labels),
+                        compactCount(usage.outputTokens, labels),
+                    ) + extra?.let { text -> " · $text" }.orEmpty(),
                 )
+            } else if (extra != null) {
+                DetailLine(extra)
             }
         }
     }

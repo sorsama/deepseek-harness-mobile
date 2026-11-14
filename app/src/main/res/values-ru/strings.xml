@@ -527,10 +527,9 @@
     <string name="hold_replace_draft_confirm">Заменить</string>
 
     <!-- Provider usage -->
-    <string name="quota_title">Лимиты и баланс</string>
+    <string name="quota_title">Использование</string>
     <string name="quota_short">5ч</string>
     <string name="quota_week">Неделя</string>
-    <string name="quota_unknown">Нет данных о лимитах</string>
     <string name="quota_refresh">Проверить</string>
     <string name="quota_checked">Проверено: %1$s</string>
     <string name="quota_all">Все провайдеры</string>
@@ -546,6 +545,19 @@
     <string name="quota_compact_minute">м</string>
     <string name="quota_other">Другой лимит</string>
     <string name="quota_remaining_percent">Осталось: %1$s</string>
+    <string name="quota_session_title">Эта сессия</string>
+    <string name="quota_tokens_input">Вход</string>
+    <string name="quota_tokens_output">Выход</string>
+    <string name="quota_tokens_cache">Попадания в кэш</string>
+    <string name="quota_tokens_total">Всего</string>
+    <string name="quota_session_empty">Токены пока не использованы</string>
+    <string name="quota_balance_title">Баланс DeepSeek</string>
+    <string name="quota_balance_bonus">Бонус: %1$s</string>
+    <string name="quota_balance_failed">Не удалось загрузить баланс</string>
+    <string name="quota_limit_reached">Достигнут лимит использования</string>
+    <string name="quota_rate_limited">Слишком много запросов, попробуйте чуть позже</string>
+    <string name="quota_limit_short">Лимит исчерпан</string>
+    <string name="quota_rate_short">Лимит запросов</string>
     <string name="permission_preset_read_only">Только чтение</string>
     <string name="permission_preset_workspace_write">Запись в рабочей области</string>
     <string name="permission_preset_full_access">Полный доступ</string>

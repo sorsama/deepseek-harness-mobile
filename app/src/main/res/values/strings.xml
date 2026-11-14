@@ -535,10 +535,9 @@
     <string name="hold_replace_draft_confirm">Replace</string>
 
     <!-- Provider usage -->
-    <string name="quota_title">Limits and balance</string>
+    <string name="quota_title">Usage</string>
     <string name="quota_short">5h</string>
     <string name="quota_week">Week</string>
-    <string name="quota_unknown">No quota data</string>
     <string name="quota_refresh">Recheck</string>
     <string name="quota_checked">Checked: %1$s</string>
     <string name="quota_all">All providers</string>
@@ -554,6 +553,19 @@
     <string name="quota_compact_minute">m</string>
     <string name="quota_other">Other limit</string>
     <string name="quota_remaining_percent">%1$s remaining</string>
+    <string name="quota_session_title">This session</string>
+    <string name="quota_tokens_input">Input</string>
+    <string name="quota_tokens_output">Output</string>
+    <string name="quota_tokens_cache">Cache hits</string>
+    <string name="quota_tokens_total">Total</string>
+    <string name="quota_session_empty">No tokens used yet</string>
+    <string name="quota_balance_title">DeepSeek balance</string>
+    <string name="quota_balance_bonus">Bonus: %1$s</string>
+    <string name="quota_balance_failed">Couldn\'t load the balance</string>
+    <string name="quota_limit_reached">Usage limit reached</string>
+    <string name="quota_rate_limited">Rate limited, try again shortly</string>
+    <string name="quota_limit_short">Limit reached</string>
+    <string name="quota_rate_short">Rate limited</string>
     <string name="permission_preset_read_only">Read Only</string>
     <string name="permission_preset_workspace_write">Workspace Write</string>
     <string name="permission_preset_full_access">Full access</string>

@@ -192,7 +192,8 @@ private class FoldState(private val sessionId: String) {
                 val turn = data.jsonObject["turn"]?.jsonPrimitive?.intOrNull ?: 0
                 val reason = data.jsonObject["reason"]?.jsonObject
                 val kind = reason?.get("kind")?.jsonPrimitive?.contentOrNull ?: "completed"
-                nodes.add(TurnEndNode(event.seq, turn, kind, reason?.get("reason")))
+                val failureCode = (reason?.get("error") as? JsonObject)?.get("code")?.let { it as? JsonPrimitive }?.contentOrNull
+                nodes.add(TurnEndNode(event.seq, turn, kind, reason?.get("reason"), failureCode))
                 if (kind == "interrupted" || kind == "aborted" || kind == "error") {
                     markInterrupted(turn)
                 }

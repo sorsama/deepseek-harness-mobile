@@ -527,10 +527,9 @@
     <string name="hold_replace_draft_confirm">بدلیں</string>
 
     <!-- Provider usage -->
-    <string name="quota_title">حدود اور بیلنس</string>
+    <string name="quota_title">استعمال</string>
     <string name="quota_short">5 گھنٹے</string>
     <string name="quota_week">ہفتہ</string>
-    <string name="quota_unknown">حدود کی معلومات دستیاب نہیں</string>
     <string name="quota_refresh">دوبارہ جانچیں</string>
     <string name="quota_checked">جانچ کی گئی: %1$s</string>
     <string name="quota_all">تمام فراہم کنندگان</string>
@@ -546,6 +545,19 @@
     <string name="quota_compact_minute">منٹ</string>
     <string name="quota_other">دیگر حد</string>
     <string name="quota_remaining_percent">باقی: %1$s</string>
+    <string name="quota_session_title">یہ سیشن</string>
+    <string name="quota_tokens_input">ان پٹ</string>
+    <string name="quota_tokens_output">آؤٹ پٹ</string>
+    <string name="quota_tokens_cache">کیش ہٹ</string>
+    <string name="quota_tokens_total">کل</string>
+    <string name="quota_session_empty">ابھی تک کوئی ٹوکن استعمال نہیں ہوا</string>
+    <string name="quota_balance_title">DeepSeek بیلنس</string>
+    <string name="quota_balance_bonus">بونس: %1$s</string>
+    <string name="quota_balance_failed">بیلنس لوڈ نہیں ہو سکا</string>
+    <string name="quota_limit_reached">استعمال کی حد پوری ہو گئی</string>
+    <string name="quota_rate_limited">بہت زیادہ درخواستیں ہو گئیں، تھوڑی دیر بعد دوبارہ کوشش کریں</string>
+    <string name="quota_limit_short">حد پوری ہو گئی</string>
+    <string name="quota_rate_short">درخواستیں محدود</string>
     <string name="permission_preset_read_only">صرف پڑھنا</string>
     <string name="permission_preset_workspace_write">ورک اسپیس میں لکھنا</string>
     <string name="permission_preset_full_access">مکمل رسائی</string>

@@ -527,10 +527,9 @@
     <string name="hold_replace_draft_confirm">استبدال</string>
 
     <!-- Provider usage -->
-    <string name="quota_title">الحدود والرصيد</string>
+    <string name="quota_title">الاستخدام</string>
     <string name="quota_short">٥ س</string>
     <string name="quota_week">الأسبوع</string>
-    <string name="quota_unknown">لا توجد بيانات عن الحدود</string>
     <string name="quota_refresh">إعادة التحقق</string>
     <string name="quota_checked">تم التحقق: %1$s</string>
     <string name="quota_all">كل المزوّدين</string>
@@ -546,6 +545,19 @@
     <string name="quota_compact_minute">د</string>
     <string name="quota_other">حد آخر</string>
     <string name="quota_remaining_percent">المتبقي: %1$s</string>
+    <string name="quota_session_title">هذه الجلسة</string>
+    <string name="quota_tokens_input">الإدخال</string>
+    <string name="quota_tokens_output">الإخراج</string>
+    <string name="quota_tokens_cache">الذاكرة المؤقتة</string>
+    <string name="quota_tokens_total">الإجمالي</string>
+    <string name="quota_session_empty">لم تُستخدم أي رموز بعد</string>
+    <string name="quota_balance_title">رصيد DeepSeek</string>
+    <string name="quota_balance_bonus">مكافأة: %1$s</string>
+    <string name="quota_balance_failed">تعذّر تحميل الرصيد</string>
+    <string name="quota_limit_reached">تم بلوغ حد الاستخدام</string>
+    <string name="quota_rate_limited">عدد الطلبات كبير، حاول مرة أخرى بعد قليل</string>
+    <string name="quota_limit_short">تم بلوغ الحد</string>
+    <string name="quota_rate_short">الطلبات محدودة</string>
     <string name="permission_preset_read_only">قراءة فقط</string>
     <string name="permission_preset_workspace_write">كتابة في مساحة العمل</string>
     <string name="permission_preset_full_access">وصول كامل</string>

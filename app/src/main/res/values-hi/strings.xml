@@ -527,10 +527,9 @@
     <string name="hold_replace_draft_confirm">बदलें</string>
 
     <!-- Provider usage -->
-    <string name="quota_title">सीमाएं और शेष राशि</string>
+    <string name="quota_title">उपयोग</string>
     <string name="quota_short">5 घंटे</string>
     <string name="quota_week">सप्ताह</string>
-    <string name="quota_unknown">सीमा की जानकारी नहीं है</string>
     <string name="quota_refresh">फिर जांचें</string>
     <string name="quota_checked">जांच की गई: %1$s</string>
     <string name="quota_all">सभी प्रदाता</string>
@@ -546,6 +545,19 @@
     <string name="quota_compact_minute">मि</string>
     <string name="quota_other">अन्य सीमा</string>
     <string name="quota_remaining_percent">शेष: %1$s</string>
+    <string name="quota_session_title">यह सत्र</string>
+    <string name="quota_tokens_input">इनपुट</string>
+    <string name="quota_tokens_output">आउटपुट</string>
+    <string name="quota_tokens_cache">कैश हिट</string>
+    <string name="quota_tokens_total">कुल</string>
+    <string name="quota_session_empty">अभी तक कोई टोकन इस्तेमाल नहीं हुआ</string>
+    <string name="quota_balance_title">DeepSeek बैलेंस</string>
+    <string name="quota_balance_bonus">बोनस: %1$s</string>
+    <string name="quota_balance_failed">बैलेंस लोड नहीं हो सका</string>
+    <string name="quota_limit_reached">उपयोग की सीमा पूरी हो गई</string>
+    <string name="quota_rate_limited">बहुत ज़्यादा अनुरोध हो गए, थोड़ी देर बाद फिर कोशिश करें</string>
+    <string name="quota_limit_short">सीमा पूरी हो गई</string>
+    <string name="quota_rate_short">अनुरोध सीमित</string>
     <string name="permission_preset_read_only">केवल पढ़ें</string>
     <string name="permission_preset_workspace_write">वर्कस्पेस में लिखें</string>
     <string name="permission_preset_full_access">पूर्ण एक्सेस</string>
