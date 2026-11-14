@@ -1291,6 +1291,10 @@ private fun GoalRow(goal: GoalSnapshot?, store: SessionStore, onFailed: (String?
                 goal.objective,
                 style = DsType.small13,
                 color = colors.labelSecondary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 240.dp)
+                    .verticalScroll(rememberScrollState()),
             )
             goal.blockedReason?.let {
                 Text(

@@ -3,6 +3,14 @@
 All notable changes to DSH Mobile are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); the project uses SemVer.
 
+## [Unreleased]
+
+### Fixed
+
+- **Goal actions stay reachable with long text.** Goal bodies now scroll within a bounded region
+  while pause/resume, edit and clear remain outside that scroll area. Edit and clear dialogs keep
+  their actions visible when the goal is long or the soft keyboard is open (closes #102).
+
 ## [0.21.1] - 2026-11-14
 
 ### Fixed

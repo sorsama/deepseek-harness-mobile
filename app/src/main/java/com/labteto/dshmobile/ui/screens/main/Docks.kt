@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Bolt
@@ -319,6 +321,10 @@ internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier
             goal.objective,
             style = DsType.small13,
             color = colors.labelSecondary,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 240.dp)
+                .verticalScroll(rememberScrollState()),
         )
         goal.blockedReason?.let {
             Text(
@@ -415,29 +421,58 @@ internal fun GoalActions(
     }
 
     if (clearing) {
-        ConfirmDialog(
+        DsDialog(
             title = stringResource(R.string.goal_clear),
-            body = goal.objective,
-            confirmLabel = stringResource(R.string.goal_clear),
             onDismiss = { clearing = false },
-            onConfirm = {
-                clearing = false
-                run("clear")
+            body = {
+                Text(
+                    goal.objective,
+                    style = DsType.std14,
+                    color = DsTheme.colors.labelSecondary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 240.dp)
+                        .verticalScroll(rememberScrollState()),
+                )
+            },
+            actions = {
+                DsButton(
+                    text = stringResource(R.string.common_cancel),
+                    onClick = { clearing = false },
+                    variant = DsButtonVariant.Ghost,
+                )
+                Spacer(Modifier.width(DsSpacing.small))
+                DsButton(
+                    text = stringResource(R.string.goal_clear),
+                    onClick = {
+                        clearing = false
+                        run("clear")
+                    },
+                    variant = DsButtonVariant.Danger,
+                )
             },
         )
     }
     if (editing) {
-        DsDialog(title = stringResource(R.string.goal_edit), onDismiss = { editing = false }) {
-            TextField(
-                minLines = 3,
-                value = editText,
-                onValueChange = { editText = it },
-                modifier = Modifier.fillMaxWidth().inkFieldFrame(),
-                placeholder = { Text(stringResource(R.string.goal_title), style = DsType.std14) },
-                colors = dialogTextFieldColors(),
-                shape = DsShapes.control,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        DsDialog(
+            title = stringResource(R.string.goal_edit),
+            onDismiss = { editing = false },
+            body = {
+                TextField(
+                    minLines = 3,
+                    maxLines = Int.MAX_VALUE,
+                    value = editText,
+                    onValueChange = { editText = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 240.dp)
+                        .inkFieldFrame(),
+                    placeholder = { Text(stringResource(R.string.goal_title), style = DsType.std14) },
+                    colors = dialogTextFieldColors(),
+                    shape = DsShapes.control,
+                )
+            },
+            actions = {
                 DsButton(
                     text = stringResource(R.string.common_ok),
                     onClick = {
@@ -451,8 +486,8 @@ internal fun GoalActions(
                     onClick = { editing = false },
                     variant = DsButtonVariant.Ghost,
                 )
-            }
-        }
+            },
+        )
     }
 }
 
