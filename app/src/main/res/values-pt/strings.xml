@@ -565,4 +565,16 @@
     <string name="permission_preset_full_access">Acesso total</string>
     <string name="permission_preset_auto">Revisão automática</string>
     <string name="permission_preset_auto_desc">Executa sem um sandbox após uma revisão experimental do mesmo modelo de cada chamada de ferramenta nativa e chamada interna PTC.</string>
+    <string name="shortcuts_group_message">Caixa de mensagem</string>
+    <string name="shortcuts_group_sessions">Sessões</string>
+    <string name="shortcuts_group_general">Geral</string>
+    <string name="shortcuts_send">Enviar mensagem</string>
+    <string name="shortcuts_newline">Nova linha</string>
+    <string name="shortcuts_focus_composer">Ir para a caixa de mensagem</string>
+    <string name="shortcuts_new_session">Nova sessão</string>
+    <string name="shortcuts_search_sessions">Pesquisar sessões</string>
+    <string name="shortcuts_toggle_list">Mostrar ou ocultar sessões</string>
+    <string name="shortcuts_settings">Abrir configurações</string>
+    <string name="shortcuts_close">Fechar painel ou caixa de diálogo</string>
+    <string name="chat_drop_hint">Solte os arquivos aqui para anexá-los</string>
 </resources>

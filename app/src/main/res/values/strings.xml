@@ -573,4 +573,16 @@
     <string name="permission_preset_full_access">Full access</string>
     <string name="permission_preset_auto">Auto review</string>
     <string name="permission_preset_auto_desc">Run without a sandbox after an experimental same-model review of every native tool call and PTC inner call.</string>
+    <string name="shortcuts_group_message">Message box</string>
+    <string name="shortcuts_group_sessions">Sessions</string>
+    <string name="shortcuts_group_general">General</string>
+    <string name="shortcuts_send">Send message</string>
+    <string name="shortcuts_newline">New line</string>
+    <string name="shortcuts_focus_composer">Go to the message box</string>
+    <string name="shortcuts_new_session">New session</string>
+    <string name="shortcuts_search_sessions">Search sessions</string>
+    <string name="shortcuts_toggle_list">Show or hide sessions</string>
+    <string name="shortcuts_settings">Open settings</string>
+    <string name="shortcuts_close">Close a sheet or dialog</string>
+    <string name="chat_drop_hint">Drop files here to attach them</string>
 </resources>

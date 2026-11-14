@@ -31,6 +31,20 @@ All notable changes to DSH Mobile are documented here. Format based on
   restart the activity, so the draft, the attachment tray, the open session, an open sheet and the
   scroll position stay where they were.
 
+- **Works on Chromebooks and in desktop windows.** The app is now installable on a Chromebook (a
+  touchscreen, a camera and Wi-Fi are all optional), opens in a 900x700dp window that can be dragged
+  down to 320x360dp, and follows the window live as it is resized, maximized or snapped. With a
+  keyboard, Enter sends and Shift+Enter adds a line (Ctrl+Enter still sends; a phone's return key
+  is untouched), Esc closes a sheet, dialog or the full-screen editor, Tab and Shift+Tab move
+  through the controls with a visible focus ring, and arrow keys and Enter walk the session list.
+  Ctrl+N starts a session, Ctrl+F searches them, Ctrl+K or Ctrl+/ jumps to the message box, Ctrl+B
+  shows or hides the list and Ctrl+, opens settings; all of them are listed in the system's shortcut
+  panel (Search+/ on a Chromebook). With a mouse or trackpad, clickable things show the hand cursor,
+  icon-only buttons name themselves when pointed at, right click opens what a long press opens, and
+  the wheel scrolls the attachment strip sideways. Files and images dragged in from the Files app
+  or another window attach to the message, dropped text lands in the draft, and Ctrl+V pastes a
+  copied image or file as an attachment. See docs/ADAPTIVE.md.
+
 ### Fixed
 
 - **The usage card shows real numbers on every provider.** The card in the session details said "No

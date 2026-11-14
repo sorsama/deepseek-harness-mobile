@@ -565,4 +565,16 @@
     <string name="permission_preset_full_access">Accès complet</string>
     <string name="permission_preset_auto">Révision automatique</string>
     <string name="permission_preset_auto_desc">S\'exécute sans bac à sable après une révision expérimentale par le même modèle de chaque appel d\'outil natif et appel interne PTC.</string>
+    <string name="shortcuts_group_message">Zone de message</string>
+    <string name="shortcuts_group_sessions">Sessions</string>
+    <string name="shortcuts_group_general">Général</string>
+    <string name="shortcuts_send">Envoyer le message</string>
+    <string name="shortcuts_newline">Nouvelle ligne</string>
+    <string name="shortcuts_focus_composer">Aller à la zone de message</string>
+    <string name="shortcuts_new_session">Nouvelle session</string>
+    <string name="shortcuts_search_sessions">Rechercher des sessions</string>
+    <string name="shortcuts_toggle_list">Afficher ou masquer les sessions</string>
+    <string name="shortcuts_settings">Ouvrir les paramètres</string>
+    <string name="shortcuts_close">Fermer la feuille ou la boîte de dialogue</string>
+    <string name="chat_drop_hint">Déposez des fichiers ici pour les joindre</string>
 </resources>

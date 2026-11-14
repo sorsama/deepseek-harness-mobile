@@ -2,6 +2,29 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+        Hardware this app can run without. Google Play hides an app from every device that lacks a
+        feature the manifest requires, and several of our permissions imply one when it is not
+        stated (CAMERA implies a camera and autofocus, ACCESS_WIFI_STATE implies Wi-Fi), so each is
+        declared here as optional. That is what keeps the app installable on a Chromebook, which may
+        have no rear camera, no Wi-Fi radio (Ethernet) or, in tablet mode and desktop mode, no
+        touchscreen at all: it is driven by a keyboard and a mouse or trackpad, and every screen
+        works that way (see docs/ADAPTIVE.md, "ChromeOS and desktop windowing").
+    -->
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+    <!-- A Chromebook is landscape and the window is freely resizable: no orientation is required. -->
+    <uses-feature
+        android:name="android.hardware.screen.portrait"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.screen.landscape"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -14,6 +37,12 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature
         android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
         android:required="false" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
@@ -81,6 +110,13 @@
             `resizeableActivity` is declared on the application, and no `screenOrientation` is
             pinned anywhere: Android 16 ignores both on large screens, and the app has to look right
             at any size it is given, including a half-width split-screen window.
+
+            The `<layout>` element is what a freeform window (ChromeOS, Android desktop mode, a
+            tablet's windowed apps) opens at and may be dragged down to. 900x700dp is a comfortable
+            three-pane-capable window that fits a 1366x768 Chromebook with its shelf; the 320x360dp
+            floor is the smallest the layout stays usable at (a one-line composer and a short
+            transcript), so a window can be tiled into a quarter of the screen. The system never
+            offers a window smaller than the floor. It has no effect on phones.
         -->
         <activity
             android:name=".MainActivity"
@@ -89,6 +125,12 @@
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.DshMobile.Starting">
+            <layout
+                android:defaultWidth="900dp"
+                android:defaultHeight="700dp"
+                android:gravity="center"
+                android:minWidth="320dp"
+                android:minHeight="360dp" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

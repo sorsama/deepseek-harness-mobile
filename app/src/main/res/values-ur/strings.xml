@@ -565,4 +565,16 @@
     <string name="permission_preset_full_access">مکمل رسائی</string>
     <string name="permission_preset_auto">خودکار جائزہ</string>
     <string name="permission_preset_auto_desc">ہر نیٹو ٹول کال اور PTC اندرونی کال سے پہلے ایک ہی ماڈل کا تجرباتی جائزہ لینے کے بعد بغیر سیٹ باکس کے چلتا ہے۔</string>
+    <string name="shortcuts_group_message">پیغام کا خانہ</string>
+    <string name="shortcuts_group_sessions">سیشنز</string>
+    <string name="shortcuts_group_general">عمومی</string>
+    <string name="shortcuts_send">پیغام بھیجیں</string>
+    <string name="shortcuts_newline">نئی لائن</string>
+    <string name="shortcuts_focus_composer">پیغام کے خانے پر جائیں</string>
+    <string name="shortcuts_new_session">نیا سیشن</string>
+    <string name="shortcuts_search_sessions">سیشنز تلاش کریں</string>
+    <string name="shortcuts_toggle_list">سیشنز دکھائیں یا چھپائیں</string>
+    <string name="shortcuts_settings">سیٹنگز کھولیں</string>
+    <string name="shortcuts_close">شیٹ یا ڈائیلاگ بند کریں</string>
+    <string name="chat_drop_hint">منسلک کرنے کے لیے فائلیں یہاں چھوڑ دیں</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -8,6 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,6 +49,7 @@ fun DsFilterChip(
         warn -> colors.warnLabel
         else -> colors.labelSecondary
     }
+    val interaction = remember { MutableInteractionSource() }
     Surface(
         onClick = {
             haptics.selection()
@@ -55,9 +58,11 @@ fun DsFilterChip(
         shape = DsShapes.pillFull,
         color = fill,
         contentColor = content,
-        border = if (selected) null else BorderStroke(1.dp, if (warn) colors.warnBorder else colors.borderL3),
+        border = rememberFocusBorder(interaction) ?: if (selected) null else BorderStroke(1.dp, if (warn) colors.warnBorder else colors.borderL3),
+        interactionSource = interaction,
         modifier = modifier
             .minimumInteractiveComponentSize()
+            .handCursor()
             .height(DsSizes.chip)
             .semantics {
                 this.selected = selected

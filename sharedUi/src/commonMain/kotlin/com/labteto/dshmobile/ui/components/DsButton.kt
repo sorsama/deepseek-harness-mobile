@@ -127,6 +127,7 @@ fun DsButton(
             onClick()
         },
         modifier = modifier
+            .handCursor(enabled)
             .then(if (allowWrap) Modifier.heightIn(min = height) else Modifier.height(height))
             .graphicsLayer {
                 scaleX = scale
@@ -136,7 +137,7 @@ fun DsButton(
         shape = shape,
         color = background,
         contentColor = contentColor,
-        border = border,
+        border = rememberFocusBorder(interaction) ?: border,
         interactionSource = interaction,
     ) {
         Row(

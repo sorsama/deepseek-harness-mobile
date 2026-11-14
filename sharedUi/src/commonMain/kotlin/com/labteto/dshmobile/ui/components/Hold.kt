@@ -4,7 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.labteto.dshmobile.ui.components.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -89,6 +89,9 @@ fun Modifier.holdable(label: String, enabled: Boolean = true, onHold: () -> Unit
         label = "holdScale",
     )
     Modifier
+        // A mouse's secondary button opens what a touch hold opens. First in the chain, so its
+        // press is looked at before the hold gesture below sees it.
+        .onSecondaryClick { currentOnHold() }
         .graphicsLayer {
             scaleX = scale
             scaleY = scale
@@ -137,18 +140,24 @@ fun Modifier.clickableWithHold(
     onClick: () -> Unit,
 ): Modifier = composed {
     val haptics = rememberDsHaptics()
-    combinedClickable(
-        interactionSource = interactionSource,
-        indication = LocalIndication.current,
-        enabled = enabled,
-        role = role,
-        onLongClickLabel = holdLabel,
-        onLongClick = {
-            haptics.longPress()
-            onHold()
-        },
-        onClick = onClick,
-    )
+    val currentOnHold by rememberUpdatedState(onHold)
+    // The secondary mouse button is the hold for a pointer: right click opens the same menu, and
+    // the hand cursor says the row is clickable. Neither exists for a finger.
+    Modifier
+        .onSecondaryClick(enabled) { currentOnHold() }
+        .handCursor(enabled)
+        .combinedClickable(
+            interactionSource = interactionSource,
+            indication = LocalIndication.current,
+            enabled = enabled,
+            role = role,
+            onLongClickLabel = holdLabel,
+            onLongClick = {
+                haptics.longPress()
+                onHold()
+            },
+            onClick = onClick,
+        )
 }
 
 /**

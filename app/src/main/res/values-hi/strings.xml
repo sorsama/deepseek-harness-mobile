@@ -565,4 +565,16 @@
     <string name="permission_preset_full_access">पूर्ण एक्सेस</string>
     <string name="permission_preset_auto">स्वतः समीक्षा</string>
     <string name="permission_preset_auto_desc">हर नेटिव टूल कॉल और PTC आंतरिक कॉल से पहले उसी मॉडल की प्रयोगात्मक समीक्षा के बाद बिना सैंडबॉक्स के चलता है।</string>
+    <string name="shortcuts_group_message">संदेश बॉक्स</string>
+    <string name="shortcuts_group_sessions">सेशन</string>
+    <string name="shortcuts_group_general">सामान्य</string>
+    <string name="shortcuts_send">संदेश भेजें</string>
+    <string name="shortcuts_newline">नई पंक्ति</string>
+    <string name="shortcuts_focus_composer">संदेश बॉक्स पर जाएँ</string>
+    <string name="shortcuts_new_session">नया सेशन</string>
+    <string name="shortcuts_search_sessions">सेशन खोजें</string>
+    <string name="shortcuts_toggle_list">सेशन दिखाएँ या छिपाएँ</string>
+    <string name="shortcuts_settings">सेटिंग्स खोलें</string>
+    <string name="shortcuts_close">शीट या डायलॉग बंद करें</string>
+    <string name="chat_drop_hint">जोड़ने के लिए फ़ाइलें यहाँ छोड़ें</string>
 </resources>

@@ -9,7 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.labteto.dshmobile.ui.components.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,6 +59,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -103,6 +104,8 @@ import com.labteto.dshmobile.ui.components.DsFilterChip
 import com.labteto.dshmobile.ui.components.DsIconButton
 import com.labteto.dshmobile.ui.components.DsIconMenu
 import com.labteto.dshmobile.ui.components.DsSearchField
+import com.labteto.dshmobile.ui.input.AppShortcut
+import com.labteto.dshmobile.ui.input.LocalShortcutRouter
 import com.labteto.dshmobile.ui.components.DsPill
 import com.labteto.dshmobile.ui.components.DsToastHost
 import com.labteto.dshmobile.ui.components.inkFieldFrame
@@ -232,6 +235,22 @@ fun ChatListDrawer(
     var newWorkspaceOpen by remember { mutableStateOf(false) }
     var newSessionOpen by remember { mutableStateOf(false) }
     var workspacesOpen by remember { mutableStateOf(false) }
+    // Keyboard shortcuts that act on this list: Ctrl+N opens the new-session picker, Ctrl+F opens
+    // the search (and takes focus again when it is already open). The shell reveals the list first.
+    val shortcutRouter = LocalShortcutRouter.current
+    var searchFocusTick by remember { mutableIntStateOf(0) }
+    LaunchedEffect(shortcutRouter) {
+        shortcutRouter.events.collect { shortcut ->
+            when (shortcut) {
+                AppShortcut.NewSession -> newSessionOpen = true
+                AppShortcut.SearchSessions -> {
+                    searchOpen = true
+                    searchFocusTick++
+                }
+                else -> Unit
+            }
+        }
+    }
     // Subagent disclosure is independent of compact workspace expansion and keyed by host.
     val collapsed = remember(hostKey) { mutableStateMapOf<String, Boolean>() }
     val hapticsTap = { haptics.tap() }
@@ -650,6 +669,7 @@ fun ChatListDrawer(
                     onValueChange = { query = it },
                     placeholder = stringResource(R.string.chatlist_search_hint),
                     autoFocus = true,
+                    focusTick = searchFocusTick,
                 )
                 // A capability note, not a failure: most harnesses ship with content search off.
                 if (!contentSearchAvailable && query.isNotBlank()) {

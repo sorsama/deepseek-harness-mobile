@@ -2,17 +2,27 @@ package com.labteto.dshmobile
 
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.KeyboardShortcutGroup
+import android.view.KeyboardShortcutInfo
+import android.view.Menu
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.input.key.Key
 import androidx.core.os.LocaleListCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.labteto.dshmobile.connection.HostsStore
 import com.labteto.dshmobile.notify.DshNotifications
 import com.labteto.dshmobile.ui.AppRoot
+import com.labteto.dshmobile.ui.input.LocalShortcutRouter
+import com.labteto.dshmobile.ui.input.ShortcutCatalog
+import com.labteto.dshmobile.ui.input.ShortcutRouter
+import com.labteto.dshmobile.ui.input.matchAppShortcut
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,6 +32,9 @@ class MainActivity : AppCompatActivity() {
 
     @Inject lateinit var hostsStore: HostsStore
     @Inject lateinit var notifications: DshNotifications
+
+    /** Where keyboard shortcuts are announced; the main screen and its panes listen. */
+    private val shortcuts = ShortcutRouter()
 
     private val notificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -64,8 +77,48 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContent {
-            AppRoot()
+            CompositionLocalProvider(LocalShortcutRouter provides shortcuts) {
+                AppRoot()
+            }
         }
+    }
+
+    /**
+     * The platform's keyboard shortcuts panel (Search+/ on a Chromebook, Meta+/ on Android desktop
+     * and on tablets with a keyboard) lists what [ShortcutCatalog] declares. The labels are read
+     * here, from the activity's own context, so they follow the in-app language.
+     */
+    override fun onProvideKeyboardShortcuts(
+        data: MutableList<KeyboardShortcutGroup>,
+        menu: Menu?,
+        deviceId: Int,
+    ) {
+        ShortcutCatalog.forEach { group ->
+            data += KeyboardShortcutGroup(
+                getString(group.title),
+                group.entries.map { KeyboardShortcutInfo(getString(it.label), it.keyCode, it.modifiers) },
+            )
+        }
+    }
+
+    /**
+     * Ctrl shortcuts nothing on screen took first. The main screen reads the same chords from its
+     * own key events, which covers a focused window; this is for the moment nothing has focus yet
+     * (just after launch, or after a dialog closed), which is when the first Ctrl+N tends to come.
+     */
+    override fun onKeyShortcut(keyCode: Int, event: KeyEvent): Boolean {
+        val shortcut = matchAppShortcut(
+            key = Key(keyCode),
+            ctrl = event.isCtrlPressed,
+            shift = event.isShiftPressed,
+            alt = event.isAltPressed,
+            meta = event.isMetaPressed,
+        )
+        if (shortcut != null && event.repeatCount == 0) {
+            shortcuts.post(shortcut)
+            return true
+        }
+        return super.onKeyShortcut(keyCode, event)
     }
 
     /**

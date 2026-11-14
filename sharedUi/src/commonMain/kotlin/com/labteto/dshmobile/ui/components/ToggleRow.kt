@@ -79,7 +79,7 @@ fun DsSwitch(
             .background(track)
             .then(
                 if (onCheckedChange != null) {
-                    Modifier.toggleable(
+                    Modifier.handCursor(enabled).toggleable(
                         value = checked,
                         enabled = enabled,
                         role = Role.Switch,
@@ -137,6 +137,7 @@ fun ToggleRow(
             .fillMaxWidth()
             .clip(DsShapes.row)
             .heightIn(min = 56.dp)
+            .handCursor(enabled)
             .toggleable(
                 value = checked,
                 enabled = enabled,

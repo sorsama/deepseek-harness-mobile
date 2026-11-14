@@ -565,4 +565,16 @@
     <string name="permission_preset_full_access">完全权限</string>
     <string name="permission_preset_auto">自动审查</string>
     <string name="permission_preset_auto_desc">无沙箱运行；每次原生工具调用和 PTC 内层调用前由同一模型进行实验性审查。</string>
+    <string name="shortcuts_group_message">消息框</string>
+    <string name="shortcuts_group_sessions">会话</string>
+    <string name="shortcuts_group_general">通用</string>
+    <string name="shortcuts_send">发送消息</string>
+    <string name="shortcuts_newline">换行</string>
+    <string name="shortcuts_focus_composer">跳到消息框</string>
+    <string name="shortcuts_new_session">新建会话</string>
+    <string name="shortcuts_search_sessions">搜索会话</string>
+    <string name="shortcuts_toggle_list">显示或隐藏会话</string>
+    <string name="shortcuts_settings">打开设置</string>
+    <string name="shortcuts_close">关闭面板或对话框</string>
+    <string name="chat_drop_hint">将文件拖到这里即可添加</string>
 </resources>

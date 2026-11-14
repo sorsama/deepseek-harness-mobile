@@ -565,4 +565,16 @@
     <string name="permission_preset_full_access">Полный доступ</string>
     <string name="permission_preset_auto">Автопроверка</string>
     <string name="permission_preset_auto_desc">Запуск без песочницы после экспериментальной проверки той же моделью каждого вызова встроенного инструмента и внутреннего вызова PTC.</string>
+    <string name="shortcuts_group_message">Поле сообщения</string>
+    <string name="shortcuts_group_sessions">Сеансы</string>
+    <string name="shortcuts_group_general">Общие</string>
+    <string name="shortcuts_send">Отправить сообщение</string>
+    <string name="shortcuts_newline">Новая строка</string>
+    <string name="shortcuts_focus_composer">Перейти к полю сообщения</string>
+    <string name="shortcuts_new_session">Новый сеанс</string>
+    <string name="shortcuts_search_sessions">Искать сеансы</string>
+    <string name="shortcuts_toggle_list">Показать или скрыть сеансы</string>
+    <string name="shortcuts_settings">Открыть настройки</string>
+    <string name="shortcuts_close">Закрыть панель или диалог</string>
+    <string name="chat_drop_hint">Перетащите файлы сюда, чтобы прикрепить</string>
 </resources>

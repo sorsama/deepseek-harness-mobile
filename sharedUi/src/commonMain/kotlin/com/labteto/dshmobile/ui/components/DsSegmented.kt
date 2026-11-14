@@ -181,6 +181,7 @@ private fun DsSegmentItem(
         modifier = modifier
             .heightIn(min = minHeight)
             .clip(DsShapes.segment)
+            .handCursor(enabled)
             .selectable(selected = selected, enabled = enabled, role = role, onClick = onClick)
             .padding(horizontal = DsSpacing.medium, vertical = DsSpacing.tiny),
     ) {

@@ -565,4 +565,16 @@
     <string name="permission_preset_full_access">وصول كامل</string>
     <string name="permission_preset_auto">مراجعة تلقائية</string>
     <string name="permission_preset_auto_desc">يعمل بدون صندوق حماية بعد مراجعة تجريبية من نفس النموذج لكل استدعاء أداة أصلي وكل استدعاء PTC داخلي.</string>
+    <string name="shortcuts_group_message">مربع الرسالة</string>
+    <string name="shortcuts_group_sessions">الجلسات</string>
+    <string name="shortcuts_group_general">عام</string>
+    <string name="shortcuts_send">إرسال الرسالة</string>
+    <string name="shortcuts_newline">سطر جديد</string>
+    <string name="shortcuts_focus_composer">الانتقال إلى مربع الرسالة</string>
+    <string name="shortcuts_new_session">جلسة جديدة</string>
+    <string name="shortcuts_search_sessions">البحث في الجلسات</string>
+    <string name="shortcuts_toggle_list">إظهار الجلسات أو إخفاؤها</string>
+    <string name="shortcuts_settings">فتح الإعدادات</string>
+    <string name="shortcuts_close">إغلاق النافذة أو الحوار</string>
+    <string name="chat_drop_hint">أفلت الملفات هنا لإرفاقها</string>
 </resources>
