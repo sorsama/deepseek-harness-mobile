@@ -166,7 +166,8 @@ fun UpdatePanel(
                     Action(stringResource(R.string.update_cancel_download), DsButtonVariant.Ghost) { ui.cancel() }
                 }
                 is UpdaterState.Paused -> {
-                    if (s.total > 0) {
+                    // Only when something is saved: "0 B of 26 MB" above "not enough space" is noise.
+                    if (s.total > 0 && s.done > 0) {
                         DownloadProgress(s.done, s.total)
                         ProgressCaption(stringResource(R.string.update_progress_bytes, bytes(s.done), bytes(s.total)), null)
                     }

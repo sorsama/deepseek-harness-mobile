@@ -155,7 +155,9 @@ class UpdateChecker @Inject constructor(
         // Stamped only once a check really runs, so switching the check on is honoured at the
         // next resume rather than up to six hours later.
         lastAutoCheckAt = now
-        check(currentVersion, ignoreDismissed = false)
+        // A check that never reached GitHub (no network yet at launch, a connect that timed out)
+        // does not count: the next return to the app tries again instead of six hours later.
+        if (check(currentVersion, ignoreDismissed = false) == CheckOutcome.Unreachable) lastAutoCheckAt = 0L
     }
 
     /**
