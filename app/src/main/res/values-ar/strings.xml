@@ -79,6 +79,9 @@
     <string name="chat_details_empty">حدد صف أداة في المحادثة لعرض المدخلات والمخرجات.</string>
     <string name="chat_input_placeholder">المدخلات</string>
     <string name="chat_output_placeholder">المخرجات</string>
+    <string name="tool_output_show_raw">عرض JSON الخام</string>
+    <string name="tool_output_hide_raw">إخفاء JSON الخام</string>
+    <string name="tool_output_copy_raw">نسخ JSON الخام</string>
     <string name="goal_title">الهدف</string>
     <string name="goal_none">لا يوجد هدف نشط</string>
     <string name="goal_phase_active">نشط</string>

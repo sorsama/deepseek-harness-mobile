@@ -79,6 +79,9 @@
     <string name="chat_details_empty">Selecione uma linha de ferramenta no chat para inspecionar sua entrada e saída.</string>
     <string name="chat_input_placeholder">Entrada</string>
     <string name="chat_output_placeholder">Saída</string>
+    <string name="tool_output_show_raw">Mostrar JSON sem formatação</string>
+    <string name="tool_output_hide_raw">Ocultar JSON sem formatação</string>
+    <string name="tool_output_copy_raw">Copiar JSON sem formatação</string>
     <string name="goal_title">Objetivo</string>
     <string name="goal_none">Nenhum objetivo ativo</string>
     <string name="goal_phase_active">Ativo</string>

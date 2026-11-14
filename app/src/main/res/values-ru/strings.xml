@@ -79,6 +79,9 @@
     <string name="chat_details_empty">Выберите строку инструмента в чате, чтобы увидеть, что ему передали и что он вернул.</string>
     <string name="chat_input_placeholder">Ввод</string>
     <string name="chat_output_placeholder">Вывод</string>
+    <string name="tool_output_show_raw">Показать исходный JSON</string>
+    <string name="tool_output_hide_raw">Скрыть исходный JSON</string>
+    <string name="tool_output_copy_raw">Копировать исходный JSON</string>
     <string name="goal_title">Цель</string>
     <string name="goal_none">Нет активной цели</string>
     <string name="goal_phase_active">Активна</string>

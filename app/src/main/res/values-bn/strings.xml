@@ -79,6 +79,9 @@
     <string name="chat_details_empty">ইনপুট ও আউটপুট দেখতে চ্যাটে একটি টুল সারি বেছে নিন।</string>
     <string name="chat_input_placeholder">ইনপুট</string>
     <string name="chat_output_placeholder">আউটপুট</string>
+    <string name="tool_output_show_raw">মূল JSON দেখান</string>
+    <string name="tool_output_hide_raw">মূল JSON লুকান</string>
+    <string name="tool_output_copy_raw">মূল JSON কপি করুন</string>
     <string name="goal_title">লক্ষ্য</string>
     <string name="goal_none">কোনো চালু লক্ষ্য নেই</string>
     <string name="goal_phase_active">চালু</string>

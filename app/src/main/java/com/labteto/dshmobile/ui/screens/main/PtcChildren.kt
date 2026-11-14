@@ -57,7 +57,7 @@ internal fun PtcChildren(parent: String, events: List<OtherNode>, ancestors: Set
                     }
                     JsonDisclosure("JSON", args)
                 }
-                record["content"]?.let { JsonDisclosure("JSON", it) }
+                record["content"]?.let { ToolResultOutput(it) }
                 PtcChildren(id, events, ancestors + parent)
             }
         }

@@ -10,6 +10,7 @@ import androidx.compose.ui.res.stringResource
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.session.ToolCallNode
 import com.labteto.dshmobile.core.session.ToolResultNode
+import com.labteto.dshmobile.core.session.readToolResult
 import com.labteto.dshmobile.ui.components.HoldAction
 import com.labteto.dshmobile.ui.components.HoldMenu
 import com.labteto.dshmobile.ui.components.LocalFileOpener
@@ -52,9 +53,14 @@ internal fun toolCopies(argumentsJson: String?, output: String?): List<ToolCopy>
     )
 }
 
-/** The text a settled call returned, for "Copy output": every text part, else its failure prose. */
+/**
+ * The text a settled call returned, for "Copy output": the same text the output view shows, with
+ * the protocol wrappers around it peeled off, else its failure prose.
+ */
 internal fun toolOutputText(result: ToolResultNode?): String? =
-    result?.let { flattenContent(it) ?: toolFailureMessage(it.content) }
+    result?.let {
+        readToolResult(it.content)?.text?.takeIf(String::isNotBlank) ?: toolFailureMessage(it.content)
+    }
 
 /**
  * A tool call's hold menu: copy what it ran or touched, copy what came back, and for a file call,

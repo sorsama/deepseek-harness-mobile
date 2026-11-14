@@ -79,6 +79,9 @@
     <string name="chat_details_empty">چیٹ میں کسی ٹول پر ٹیپ کریں تو اس کا ان پٹ اور آؤٹ پٹ دکھائی دے گا۔</string>
     <string name="chat_input_placeholder">ان پٹ</string>
     <string name="chat_output_placeholder">آؤٹ پٹ</string>
+    <string name="tool_output_show_raw">خام JSON دکھائیں</string>
+    <string name="tool_output_hide_raw">خام JSON چھپائیں</string>
+    <string name="tool_output_copy_raw">خام JSON کاپی کریں</string>
     <string name="goal_title">ہدف</string>
     <string name="goal_none">کوئی فعال ہدف نہیں</string>
     <string name="goal_phase_active">فعال</string>

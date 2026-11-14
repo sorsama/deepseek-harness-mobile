@@ -121,6 +121,9 @@
     <string name="chat_details_empty">Tap a tool call in the chat to see its input and output.</string>
     <string name="chat_input_placeholder">Input</string>
     <string name="chat_output_placeholder">Output</string>
+    <string name="tool_output_show_raw">Show raw JSON</string>
+    <string name="tool_output_hide_raw">Hide raw JSON</string>
+    <string name="tool_output_copy_raw">Copy raw JSON</string>
     <string name="goal_title">Goal</string>
     <string name="goal_none">No active goal</string>
     <string name="goal_phase_active">Active</string>
