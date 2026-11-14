@@ -21,8 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,15 +61,6 @@ import java.util.Locale
  * Holding the bubble opens what can be done with the message (see [holdable]). It used to offer
  * nothing at all, so a prompt sent by mistake and then stopped could not even be copied back to fix.
  */
-
-/**
- * A shared dismiss token for text selections in the transcript.
- *
- * Tapping any row increments it; selectable components observe it and clear their selection when
- * it changes. This Compose version's SelectionContainer has no built-in "tap outside to clear", so
- * the transcript opts in by wiring this token through every row.
- */
-val LocalSelectionDismiss = staticCompositionLocalOf { mutableIntStateOf(0) }
 
 @Composable
 fun UserBubble(

@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.runtime.key
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalUriHandler
@@ -333,13 +332,11 @@ private fun InlineMarkdown(text: String, style: TextStyle, modifier: Modifier = 
     if (!hasLinks) {
         // Nothing to tap, so the text is laid out inside a SelectionContainer instead: long-press
         // selects and the platform handles the copy affordance. A ClickableText swallows the
-        // long-press, which is why the two cannot share one branch. Re-keyed on the shared dismiss
-        // token so a tap elsewhere in the transcript clears the selection (see ChatTranscript).
-        val dismissToken = LocalSelectionDismiss.current.value
-        key(dismissToken) {
-            SelectionContainer(modifier = modifier) {
-                Text(result, style = style)
-            }
+        // long-press, which is why the two cannot share one branch. A tap elsewhere in the
+        // transcript clears the selection through the transcript's own observer (see
+        // clearSelectionOnTap), not through anything in here.
+        SelectionContainer(modifier = modifier) {
+            Text(result, style = style)
         }
         return
     }
