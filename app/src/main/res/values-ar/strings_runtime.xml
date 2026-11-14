@@ -146,4 +146,5 @@
     <string name="runtime_chat_stopped">harness على هذا الهاتف لا يعمل.</string>
     <string name="runtime_chat_restarting">جارٍ تشغيل harness على هذا الهاتف…</string>
     <string name="runtime_chat_updating">جارٍ تحديث harness على هذا الهاتف. ستعود المحادثة عند الانتهاء.</string>
+    <string name="runtime_update_nothing_to_download">لا شيء للتنزيل: ما زال على الهاتف من قبل.</string>
 </resources>

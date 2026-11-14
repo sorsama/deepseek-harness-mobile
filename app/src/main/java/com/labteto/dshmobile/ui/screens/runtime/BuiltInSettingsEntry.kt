@@ -105,7 +105,7 @@ internal fun BuiltInSettingsEntry(
                     color = colors.labelTertiary,
                 )
             }
-            if (state.update != null) {
+            if (state.updateWorthShowing) {
                 UpdateBadge(onClick = { controlsOpen = true })
                 Spacer(Modifier.width(DsSpacing.small))
             }

@@ -601,10 +601,15 @@ private fun UpdateSection(
                     Text(stringResource(R.string.runtime_card_update), style = DsType.std14Strong, color = colors.labelPrimary)
                     if (installed != null) FromTo(installed.releaseId, update.releaseId, installed.harnessVersion, update.harnessVersion)
                     Text(
-                        stringResource(
-                            if (update.baseChanges) R.string.runtime_update_what_both else R.string.runtime_update_what_harness,
-                            formatBytes(update.downloadBytes),
-                        ),
+                        if (update.downloadBytes <= 0) {
+                            // The release kept for a rollback is still unpacked: nothing to fetch.
+                            stringResource(R.string.runtime_update_nothing_to_download)
+                        } else {
+                            stringResource(
+                                if (update.baseChanges) R.string.runtime_update_what_both else R.string.runtime_update_what_harness,
+                                formatBytes(update.downloadBytes),
+                            )
+                        },
                         style = DsType.small13,
                         color = colors.labelSecondary,
                     )

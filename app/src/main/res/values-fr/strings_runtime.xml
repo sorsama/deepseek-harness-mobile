@@ -146,4 +146,5 @@
     <string name="runtime_chat_stopped">Le harness de ce téléphone ne tourne pas.</string>
     <string name="runtime_chat_restarting">Démarrage du harness de ce téléphone…</string>
     <string name="runtime_chat_updating">Mise à jour du harness de ce téléphone. Le chat revient une fois terminé.</string>
+    <string name="runtime_update_nothing_to_download">Rien à télécharger : il est encore sur le téléphone.</string>
 </resources>

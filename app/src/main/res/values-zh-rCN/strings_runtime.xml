@@ -146,4 +146,5 @@
     <string name="runtime_chat_stopped">这台手机上的 harness 没有在运行。</string>
     <string name="runtime_chat_restarting">正在启动这台手机上的 harness…</string>
     <string name="runtime_chat_updating">正在更新这台手机上的 harness。完成后聊天会自动恢复。</string>
+    <string name="runtime_update_nothing_to_download">无需下载：之前的文件还在手机上。</string>
 </resources>
