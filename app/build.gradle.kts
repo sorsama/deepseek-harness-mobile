@@ -157,6 +157,8 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    // A real HTTP server for the in-app updater tests: ranges, redirects and dropped connections.
+    testImplementation(libs.okhttp.mockwebserver)
     // The mock harness carries this project's port of the host's answer-acceptance law. The
     // conformance test runs the real encoder through it rather than through a copy, because a copy
     // is a second thing to keep in step and the failure it guards against is a silent one.

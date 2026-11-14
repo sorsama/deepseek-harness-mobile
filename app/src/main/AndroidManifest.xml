@@ -60,6 +60,16 @@
         Stop or Install is tapped — never on launch. Meaningless on a phone without Termux.
     -->
     <uses-permission android:name="com.termux.permission.RUN_COMMAND" />
+    <!--
+        Lets the app hand a downloaded update to Android's package installer, so updating never
+        means leaving for a browser or a file manager. It is not granted by installing the app: the
+        first time an update is installed, Android shows its own "Install unknown apps" switch for
+        this app and the person turns it on there (or not). The app uses it for one thing only, an
+        APK of itself that it downloaded from this project's GitHub release, checked against the
+        release's SHA256SUMS.txt and confirmed to be a newer build signed with the same key.
+        Android checks the signature again before it replaces anything. See docs/SECURITY.md.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!--
         Package visibility (API 30+): without this the app cannot see whether Termux is installed,
@@ -160,6 +170,15 @@
         -->
         <receiver
             android:name=".termux.TermuxResultReceiver"
+            android:exported="false" />
+
+        <!--
+            Where Android's package installer reports what happened to an update this app handed
+            it: waiting for the person to confirm, installed, or why not. Not exported, for the same
+            reason as the Termux receiver: the status travels in a PendingIntent this app minted.
+        -->
+        <receiver
+            android:name=".update.UpdateInstallReceiver"
             android:exported="false" />
 
         <!--
