@@ -6,6 +6,9 @@ import com.labteto.dshmobile.connection.DiscoveredHost
 import com.labteto.dshmobile.connection.HostConfig
 import com.labteto.dshmobile.connection.belongsTo
 import com.labteto.dshmobile.core.wire.dto.HostDescription
+import com.labteto.dshmobile.runtime.BuiltInCard
+import com.labteto.dshmobile.runtime.BuiltInHarnessState
+import com.labteto.dshmobile.runtime.builtInCard
 import com.labteto.dshmobile.termux.HarnessControl
 
 /** Whether a remembered harness is answering right now. */
@@ -89,7 +92,24 @@ data class ConnectUiState(
     val termuxPermission: Boolean = false,
     /** What the Termux controller is doing, mirrored so the card can show it. */
     val harnessControl: HarnessControl = HarnessControl.Idle,
+    /** The built-in harness; [BuiltInHarnessState.Unsupported] where it cannot run (iOS). */
+    val builtIn: BuiltInHarnessState = BuiltInHarnessState.Unsupported,
+    val autoStartBuiltInHarness: Boolean = false,
 ) {
+    /**
+     * The built-in harness card, or null where there is none.
+     *
+     * Connected means connected to this phone's own port: the screen is only on show while not
+     * connected, but the stage says so for the moment between the hand-off and the switch.
+     */
+    val builtInCard: BuiltInCard?
+        get() = builtInCard(
+            state = builtIn,
+            loopback = loopback,
+            connected = stage == ConnectStage.Connected && attempted == "127.0.0.1:$loopbackPort",
+            port = loopbackPort,
+        )
+
     /** Remembered endpoints belonging to the selected mode. */
     val visibleHosts: List<HostConfig>
         get() = remembered.filter { it.belongsTo(mode) }

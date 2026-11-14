@@ -10,6 +10,9 @@ import com.labteto.dshmobile.connection.ProbeTimeouts
 import com.labteto.dshmobile.connection.belongsTo
 import com.labteto.dshmobile.connection.parseHostInput
 import com.labteto.dshmobile.core.wire.SessionExchange
+import com.labteto.dshmobile.runtime.BuiltInHarnessState
+import com.labteto.dshmobile.runtime.RuntimeState
+import com.labteto.dshmobile.runtime.shouldAutoStartBuiltIn
 import com.labteto.dshmobile.termux.HarnessControl
 import com.labteto.dshmobile.termux.StartSignIn
 import kotlinx.coroutines.CompletableDeferred
@@ -57,6 +60,8 @@ class ConnectController(
      * person cannot open would hide it from the Recent list and from "reconnect to the last harness".
      */
     private val loopbackIsThisPhone: Boolean = true,
+    /** The harness the app runs itself; [NoBuiltInHarness] where it cannot (iOS, a 32-bit phone). */
+    private val builtInHarness: BuiltInHarness = NoBuiltInHarness,
 ) {
 
     private val _state = MutableStateFlow(ConnectUiState())
@@ -199,6 +204,7 @@ class ConnectController(
                     autoConnectLoopback = settings.autoConnectLoopback,
                     autoConnectRelay = settings.autoConnectRelay,
                     autoStartLoopbackHarness = settings.autoStartLoopbackHarness,
+                    autoStartBuiltInHarness = settings.autoStartBuiltInHarness,
                     loopbackPort = loopbackHost?.port ?: DEFAULT_PORT,
                     termuxInstalled = loopbackHarness.installed,
                     termuxPermission = loopbackHarness.hasPermission(),
@@ -210,6 +216,7 @@ class ConnectController(
             }
         }
         scope.launch { loopbackHarness.state.collect(::onHarnessControl) }
+        scope.launch { builtInHarness.state.collect(::onBuiltInState) }
         scope.launch { settled.await(); autoConnect() }
         refreshRecent()
     }
@@ -343,6 +350,13 @@ class ConnectController(
                 connectLoopback()
             }
             is LoopbackStatus.Down -> if (
+                shouldAutoStartBuiltIn(settings.autoStartBuiltInHarness, builtInHarness.state.value, _state.value.loopback)
+            ) {
+                // The built-in harness first: it needs no permission, and when both are set up it
+                // is the one the person set up most recently in this app.
+                connectWhenReady = true
+                builtInHarness.start(port)
+            } else if (
                 settings.autoStartLoopbackHarness && loopbackHarness.installed && loopbackHarness.hasPermission()
             ) {
                 connectWhenReady = true
@@ -454,6 +468,65 @@ class ConnectController(
         scope.launch {
             store.ensureLoopbackHost(port)
             _state.update { it.copy(attempted = "$LOOPBACK:$port", signInOpen = true, signInError = null) }
+        }
+    }
+
+    // ---- The built-in harness -----------------------------------------------------
+    //
+    // Each call that brings the harness up asks to be connected when it answers, exactly as Termux's
+    // Start does; the watch and the probe after a start do the connecting, through the same rules.
+
+    /** Set the built-in harness up from nothing (or finish a set-up), then start it. */
+    fun setUpBuiltIn() {
+        connectWhenReady = true
+        builtInHarness.setUp(_state.value.loopbackPort)
+    }
+
+    fun startBuiltIn() {
+        connectWhenReady = true
+        builtInHarness.start(_state.value.loopbackPort)
+    }
+
+    fun stopBuiltIn() {
+        connectWhenReady = false
+        builtInHarness.stop()
+    }
+
+    /** A restart is also how a harness whose sign-in did not take signs the app in again. */
+    fun restartBuiltIn() {
+        connectWhenReady = true
+        autoConnectedThisUp = false
+        builtInHarness.restart()
+    }
+
+    /** The port is taken by something else: move to [port] and start there. */
+    fun startBuiltInOn(port: Int) {
+        if (port !in 1..65535) return
+        if (port != _state.value.loopbackPort) {
+            _state.update { it.copy(loopbackPort = port, loopback = LoopbackStatus.Unknown, failure = null) }
+            autoConnectedThisUp = false
+        }
+        connectWhenReady = true
+        builtInHarness.start(port)
+    }
+
+    private fun onBuiltInState(next: BuiltInHarnessState) {
+        val previous = _state.value.builtIn.runtime
+        _state.update { it.copy(builtIn = next) }
+        val runtime = next.runtime
+        when {
+            runtime is RuntimeState.Running && previous !is RuntimeState.Running -> {
+                // Up but not signed in: the card offers a restart, and nothing connects to a harness
+                // that would only answer 401.
+                if (runtime.signIn != StartSignIn.SIGNED_IN) connectWhenReady = false
+                autoConnectedThisUp = false
+                probeLoopbackNow()
+            }
+            runtime is RuntimeState.Failed && previous !is RuntimeState.Failed -> {
+                if (!next.settingUp) connectWhenReady = false
+                probeLoopbackNow()
+            }
+            runtime is RuntimeState.Stopped && previous is RuntimeState.Stopping -> probeLoopbackNow()
         }
     }
 
@@ -775,6 +848,7 @@ class ConnectController(
                     "lan" -> current.copy(autoConnectLan = value)
                     "relay" -> current.copy(autoConnectRelay = value)
                     "autoStart" -> current.copy(autoStartLoopbackHarness = value)
+                    "autoStartBuiltIn" -> current.copy(autoStartBuiltInHarness = value)
                     else -> current.copy(autoConnectLoopback = value)
                 }
             }
@@ -820,6 +894,7 @@ class ConnectController(
                 autoConnectLoopback = settings.autoConnectLoopback,
                 autoConnectRelay = settings.autoConnectRelay,
                 autoStartLoopbackHarness = settings.autoStartLoopbackHarness,
+                autoStartBuiltInHarness = settings.autoStartBuiltInHarness,
             )
         }
     }

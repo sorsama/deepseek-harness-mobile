@@ -10,3 +10,9 @@ actual fun localizedCount(value: Int): String {
     val locale: Locale = LocalConfiguration.current.locales.get(0)
     return String.format(locale, "%d", value)
 }
+
+@Composable
+actual fun localizedDecimal(value: Double, decimals: Int): String {
+    val locale: Locale = LocalConfiguration.current.locales.get(0)
+    return String.format(locale, "%.${decimals.coerceIn(0, 6)}f", value)
+}

@@ -88,6 +88,17 @@ object DsAnimations {
         stiffness = Spring.StiffnessMediumLow,
     )
 
+    /**
+     * A bar following a live measurement (a download, an unpack). A spring rather than a tween:
+     * readings arrive several times a second, and a tween restarted on each one stutters, where a
+     * spring carries its speed into the next target. No bounce, because a bar that overshoots
+     * says more was done than was.
+     */
+    val progress: FiniteAnimationSpec<Float> = spring(
+        dampingRatio = Spring.DampingRatioNoBouncy,
+        stiffness = Spring.StiffnessLow,
+    )
+
     /** Generic opacity change. */
     val fade: FiniteAnimationSpec<Float> = tween(fadeDuration, easing = inkStandard)
 
