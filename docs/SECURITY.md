@@ -47,6 +47,46 @@ Two things are new in this mode, both opt-in:
 A harness you start yourself in Termux is treated exactly as any other direct
 harness: found by probing loopback, signed in by pasting its startup line once.
 
+## This phone (built-in harness)
+
+The app can also run the harness itself, with no Termux. The trust model is the
+Termux one above: the harness binds `127.0.0.1`, and whoever holds the phone
+unlocked holds the agent. What is different is that the app downloads and runs
+the software.
+
+- **What is downloaded.** A Debian base with Node.js and the DeepSeek Harness, as
+  two layer archives from the releases of
+  [`sorsama/dsh-mobile-runtime`](https://github.com/sorsama/dsh-mobile-runtime),
+  over HTTPS, only when you install or update. Nothing is downloaded otherwise.
+- **How it is verified.** Each release has a `manifest.json` signed with an
+  Ed25519 key whose public half is compiled into the app (`ManifestVerifier`).
+  The signature is checked over the manifest's exact bytes before any of it is
+  read; a manifest signed by anything else is refused. The manifest names every
+  layer's size and SHA-256, and a downloaded layer that does not match is deleted
+  before it is unpacked. A release with a lower sequence number than the one
+  installed is refused, so an old release cannot be replayed. Unpacking refuses
+  any entry that would land outside the runtime's directory (absolute names,
+  `..`, a path through a symlink). The signing key's private half exists only in
+  the runtime repository's secrets and an offline backup; replacing it needs an
+  app update first.
+- **What runs.** `proot` and its loader, shipped inside the APK
+  (`jniLibs`, built from `termux/proot` by the runtime repository, hashes
+  recorded in `app/third_party/proot`), run the harness inside the downloaded
+  Debian tree. They run as this app's own Linux user with this app's
+  permissions, in the app's sandbox: proot fakes root inside the tree, it gives
+  nothing outside it. The harness can do anything this app can: read and write
+  the app's private files, use the network.
+- **Where it lives.** Everything is under the app's no-backup directory, so it
+  is never part of a device backup: the harness's own state (`/root` inside the
+  runtime, where it keeps provider keys) included. Uninstalling the runtime, or
+  the app, deletes it.
+- **The loopback port is shared.** Any app on the phone can connect to
+  `127.0.0.1:<port>`. The guard is the launch token: the harness prints it once
+  per start, the app reads it from the process it started and exchanges it at
+  once for the session cookie, like the Termux path. The token is never written
+  to disk or to the system log (the harness output log has it masked), and
+  without it or the cookie every `/api` call answers 401.
+
 ## Local network mode
 
 The harness web server (`dsh web`) serves plain HTTP with a *trust fence*, not
@@ -185,6 +225,8 @@ holds only the receipt the harness answered with until the message is sent.
   Keystore and never leaves it; only ciphertext reaches DataStore. Forgetting a
   host drops its token in the same act, and Settings → clear data drops all of
   them. Revoking the relay's own record of the device happens on the relay.
+- With the built-in harness: the runtime and the harness's own state, in the
+  app's no-backup directory (see **This phone (built-in harness)**).
 - No session content is persisted to disk (chat history lives in memory and is
   re-fetched on connect).
 - Cleartext HTTP remains permitted app-wide, alongside user-installed CAs
@@ -208,6 +250,9 @@ with one exception:
   release APK and `SHA256SUMS.txt` from `github.com` with `curl`, verifies the
   file, and opens Android's package installer, which asks you before anything
   is installed. Nothing is downloaded unless you tap the button.
+- **The built-in harness runtime**, when you install or update it: the signed
+  manifest and the layer archives from `github.com` (GitHub's release CDN). The
+  harness it runs then makes the requests you ask it to, like any harness.
 - **Scanning** probes only your own device's IPv4 /24 — with a TCP connect
   followed by one argument-free `session/canOpenWorkspacePath` call in
   local-network mode, or by `/relay/health` in relay mode. Relay mode browses mDNS `_dsh._tcp` first and only sweeps if that

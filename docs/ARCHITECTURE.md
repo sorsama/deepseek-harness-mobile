@@ -50,6 +50,12 @@ app/            Android UI
                   start/stop/install scripts, shipped in the app),
                   TermuxHarnessController (app-scoped start/stop/install
                   state; signs in from the readiness line a start prints)
+  runtime/      the built-in harness (see below): RuntimeInstaller (signed
+                  manifest, resumable layer downloads, tar unpack, atomic
+                  commit), HarnessSupervisor (proot process, readiness,
+                  redacted log, stop sequence), RuntimeEngine (state
+                  machine), HarnessRuntimeController (Hilt, Android wiring),
+                  HarnessRuntimeService (foreground service, wake lock)
   update/       UpdateChecker — GitHub latest-release lookup, release assets
                   for install via Termux
   media/        AttachmentImages — LruCache + BitmapFactory decoding of
@@ -136,6 +142,48 @@ tools/capture/  Node recorder of real harness traffic → conformance fixtures
 - **Non-Latin text falls back.** Geist/Geist Mono are bundled as Latin subsets in `res/font`; the
   platform fallback carries the other ten shipped languages, and every layout is verified for
   RTL (start/end alignment, auto-mirrored icons) and large font scales.
+
+## Built-in harness runtime
+
+The app can run the DeepSeek Harness on the phone itself, without Termux. The harness
+listens on `127.0.0.1:<port>` and the existing loopback mode ("This phone") talks to it like
+any other local harness. The runtime is built and published by
+[`sorsama/dsh-mobile-runtime`](https://github.com/sorsama/dsh-mobile-runtime); its README is the
+contract (manifest schema, unpacking rules, proot command line).
+
+- **What ships in the APK**: only proot and its loader (`jniLibs/<abi>/libproot.so`,
+  `libproot-loader.so`, 64-bit ABIs only, provenance in `app/third_party/proot`). They are
+  extracted to `nativeLibraryDir` (legacy packaging), the one app-owned place a targetSdk 29+
+  app may execute from. A device without `arm64-v8a` or `x86_64` reports `NotSupported`.
+- **What is downloaded**: two layers per ABI, a Debian base with Node.js and the harness, as
+  zstd-compressed GNU tar files described by a signed `manifest.json`. The manifest signature
+  (Ed25519, key pinned in `ManifestVerifier`) is checked before the manifest is parsed; every
+  layer is checked against the manifest's size and SHA-256 before it is unpacked. Downloads
+  resume with HTTP `Range` and live in the cache directory.
+- **Where it lives**: `noBackupFilesDir/runtime/` (see `RuntimeLayout`): one directory per
+  layer, `home/` (bound over the guest's `/root`, where the harness keeps its state),
+  `workspaces/` (bound at `/workspaces`), per-start files in `run/`, the log in `logs/`.
+  `installed.json` is the commit record, written last with an atomic rename; a layer
+  directory it does not name is deleted. Updates never touch `home/` or `workspaces/`.
+- **Updates**: only layers whose id changed are fetched. A harness-only update keeps the
+  previous harness directory until the new one has printed its readiness line once; if it
+  never does, the previous one is put back and started (`RuntimeState.Running.rolledBack`).
+- **Running**: proot is started through `/system/bin/sh -c "echo $; exec ..."` so the first
+  output line is its pid. The base is the root; the harness layer, `home/`, `workspaces/`,
+  a `resolv.conf` written from the active network's DNS and a `/proc/stat` with the real CPU
+  count are bound in. The supervisor waits for the readiness line, then `LoopbackSignIn`
+  (shared with the Termux path) exchanges its token for the session cookie. The token never
+  reaches the log file or logcat.
+- **Stopping**: proot ignores SIGTERM, so `Process.destroy()` does nothing. The supervisor
+  sends SIGTERM to the guest's main process (node), then SIGQUIT to proot after 5 s, then
+  SIGKILL to everything left. Before each start it stops any proot of this uid left by an
+  earlier app process, then checks that the port is free.
+- **Process and power**: `HarnessRuntimeService` (type `specialUse`) keeps the process in the
+  foreground while the runtime installs or runs and holds a partial wake lock while it does
+  (`HarnessRuntimeController.setHoldWakeLock` turns it off). Everything runs in the app
+  process; there is no second process.
+- **No UI yet**: the controller exposes `StateFlow<RuntimeState>` (types in `:sharedUi`).
+  Debug builds can drive it from adb through `RuntimeDebugActivity` (`app/src/debug`).
 
 ## Key invariants
 

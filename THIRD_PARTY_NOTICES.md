@@ -99,3 +99,42 @@ Gradle as a dependency of `commonmark-ext-autolink` and is not vendored.
 
 - Project: https://github.com/robinst/autolink-java
 - Licence: MIT
+
+## proot and talloc
+
+The built-in harness runtime ships `libproot.so` and `libproot-loader.so` for `arm64-v8a` and
+`x86_64` in `app/src/main/jniLibs/`. They are prebuilt by
+[`sorsama/dsh-mobile-runtime`](https://github.com/sorsama/dsh-mobile-runtime) (release
+`2026.11.14-1`) from proot and talloc sources, with talloc linked statically into proot. Provenance
+and hashes: `app/third_party/proot/`.
+
+- proot: https://github.com/termux/proot, commit `52d65a4dc140ca554d241a1438ddd4f6b00c9813`
+  (5.1.107.102). Licence: GPL-2.0-or-later.
+- talloc 2.5.0: https://talloc.samba.org. Licence: LGPL-3.0-or-later.
+- Complete corresponding source: `proot-source-52d65a4dc140ca554d241a1438ddd4f6b00c9813.tar.gz` and
+  `talloc-source-2.5.0.tar.gz`, attached to
+  https://github.com/sorsama/dsh-mobile-runtime/releases/tag/2026.11.14-1, with the build script
+  (`scripts/build-proot-android.sh`) in that repository.
+
+proot runs as a separate program the app starts; it is not linked into the app.
+
+The runtime layers the app downloads at run time (Debian, Node.js, the DeepSeek Harness) are not
+part of the APK. Their licences are listed in the runtime repository's `THIRD_PARTY_NOTICES.md`;
+every Debian package's copyright file is inside the base layer.
+
+## EdDSA-Java
+
+The runtime's manifest signature is checked with EdDSA-Java **0.3.0** (`net.i2p.crypto:eddsa`), a
+Gradle dependency, not vendored.
+
+- Project: https://github.com/str4d/ed25519-java
+- Licence: CC0 1.0 Universal (public domain dedication)
+
+## zstd-jni
+
+The runtime layers are decompressed with zstd-jni **1.5.7-12** (`com.github.luben:zstd-jni`, its
+Android AAR), a Gradle dependency, not vendored. It bundles the Zstandard library.
+
+- Project: https://github.com/luben/zstd-jni (BSD-2-Clause)
+- Zstandard: https://github.com/facebook/zstd (BSD-3-Clause, dual-licensed with GPL-2.0; used
+  under BSD)
