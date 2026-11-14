@@ -137,17 +137,6 @@ class BuiltInHarnessHost @Inject constructor(
     }
 
     /**
-     * The set-up page closed. A set-up still on its way (busy, waiting for the network, or between
-     * the unpack and the start) carries on; only a finished or failed one is cleared.
-     */
-    fun acknowledgeSetUp() {
-        val f = flow.value
-        val runtime = controller.state.value
-        val done = runtime is RuntimeState.Running || runtime is RuntimeState.Failed && !f.waitingForNetwork
-        if (done) flow.update { it.copy(settingUp = false, waitingForNetwork = false) }
-    }
-
-    /**
      * Read the latest release's manifest, for its sizes and for a refusal, at most every few
      * minutes unless [force]d. Also how the control page looks for an update.
      */
@@ -216,7 +205,10 @@ class BuiltInHarnessHost @Inject constructor(
 
     private fun follow(runtime: RuntimeState) {
         if (runtime is RuntimeState.Downloading && runtime.progress.bytesTotal > 0) _lastDownload.value = runtime.progress
-        if (runtime is RuntimeState.Downloading || runtime is RuntimeState.Unpacking) retries = 0
+        if (runtime is RuntimeState.Downloading && runtime.progress.bytesTotal > 0 || runtime is RuntimeState.Unpacking) {
+            retries = 0
+            if (flow.value.waitingForNetwork) flow.update { it.copy(waitingForNetwork = false) }
+        }
         val f = flow.value
         if (!f.settingUp) return
         when (runtime) {
@@ -257,7 +249,7 @@ class BuiltInHarnessHost @Inject constructor(
     private fun resume() {
         if (!flow.value.settingUp) return
         stopWaiting()
-        flow.update { it.copy(waitingForNetwork = false) }
+        // Still "waiting" until bytes move again: a retry that fails at once must not flash an error.
         controller.install()
     }
 

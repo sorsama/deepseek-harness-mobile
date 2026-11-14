@@ -144,10 +144,7 @@ internal fun BuiltInSettingsEntry(
             onConnect = { setupOpen = false },
             canConnect = false,
             onAction = ::action,
-            onClose = {
-                setupOpen = false
-                host.acknowledgeSetUp()
-            },
+            onClose = { setupOpen = false },
         )
     }
     if (controlsOpen) {

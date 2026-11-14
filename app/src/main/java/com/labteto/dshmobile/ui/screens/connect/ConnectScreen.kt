@@ -149,10 +149,8 @@ fun ConnectScreen(
             onSetUp = controller::setUpBuiltIn,
             onConnect = controller::connectLoopback,
             onAction = { action -> builtInAction(action) { it() } },
-            onClose = {
-                setupOpen = false
-                viewModel.builtIn.acknowledgeSetUp()
-            },
+            // Closing the page changes nothing: the set-up carries on, and ends by itself.
+            onClose = { setupOpen = false },
         )
     }
     if (controlsOpen && state.builtIn.supported) {
