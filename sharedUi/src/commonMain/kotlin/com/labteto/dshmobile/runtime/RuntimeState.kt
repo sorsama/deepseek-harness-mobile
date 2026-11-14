@@ -37,6 +37,8 @@ data class AvailableRuntimeUpdate(
     val harnessChanges: Boolean,
     /** The release's `sequence`, which orders releases: what "skipped" and "notified" compare. */
     val sequence: Long = 0,
+    /** Bytes of each layer the update downloads, in download order: progress over all of them. */
+    val layerDownloadBytes: List<Long> = emptyList(),
 ) {
     val ref: ReleaseRef get() = ReleaseRef(releaseId, harnessVersion, sequence)
 }

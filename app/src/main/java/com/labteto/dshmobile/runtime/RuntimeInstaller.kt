@@ -60,6 +60,8 @@ class RuntimeInstaller(
             val manifest: RuntimeManifest,
             val decision: ManifestPolicy.Decision.Install,
             val downloadBytes: Long = decision.downloadBytes,
+            /** The sizes of the layers that are fetched, in order (those not already on the device). */
+            val fetchedLayerBytes: List<Long> = decision.layers.map { it.size },
         ) : CheckResult {
             fun toUpdate() = AvailableRuntimeUpdate(
                 releaseId = manifest.releaseId,
@@ -68,6 +70,7 @@ class RuntimeInstaller(
                 baseChanges = decision.baseChanges,
                 harnessChanges = decision.harnessChanges,
                 sequence = manifest.sequence,
+                layerDownloadBytes = fetchedLayerBytes,
             )
         }
     }
@@ -100,10 +103,12 @@ class RuntimeInstaller(
             is ManifestPolicy.Decision.UpToDate -> CheckResult.UpToDate(manifest)
             is ManifestPolicy.Decision.Install -> {
                 val sameAbi = installed?.takeIf { it.abi == decision.abi }
+                val fetched = decision.layers.filter { reusable(it, sameAbi) == null }
                 CheckResult.Available(
                     manifest,
                     decision,
                     downloadBytes = changedDownloadBytes(decision.layers) { reusable(it, sameAbi) != null },
+                    fetchedLayerBytes = fetched.map { it.size },
                 )
             }
         }

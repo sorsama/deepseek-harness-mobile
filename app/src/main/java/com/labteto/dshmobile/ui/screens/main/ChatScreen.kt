@@ -654,16 +654,17 @@ fun ChatScreen(
                 sessionOpen = currentSessionId != null,
             )
 
-            AnimatedPresence(connectionError) {
-                ConnectionBanner(
-                    message = it,
-                    actionLabel = stringResource(R.string.common_retry),
-                    onAction = { store.retryConnection() },
-                )
-            }
             // When the harness is the one on this phone and it is down, its own notice says why
-            // and offers Restart; the plain "Reconnecting" strip would only say half of that.
+            // and offers Restart. The stream error and the plain "Reconnecting" strip would only
+            // say half of that, in transport words, so they stand aside while it shows.
             com.labteto.dshmobile.ui.screens.runtime.BuiltInChatNotice {
+                AnimatedPresence(connectionError) {
+                    ConnectionBanner(
+                        message = it,
+                        actionLabel = stringResource(R.string.common_retry),
+                        onAction = { store.retryConnection() },
+                    )
+                }
                 AnimatedPresence(Unit.takeIf { conversation?.gap == true && connectionError == null }) {
                     ConnectionBanner(stringResource(R.string.common_reconnecting), warning = true)
                 }

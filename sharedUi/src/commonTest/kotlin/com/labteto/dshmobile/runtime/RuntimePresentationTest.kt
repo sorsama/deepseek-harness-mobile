@@ -164,6 +164,17 @@ class RuntimePresentationTest {
     }
 
     @Test
+    fun `an update of both layers counts its bytes over both`() {
+        val update = AvailableRuntimeUpdate("2026.11.14-4", "0.2.2-rc.1", 157_000_000, baseChanges = true, harnessChanges = true, layerDownloadBytes = listOf(72_000_000, 85_000_000))
+        val first = updateProgress(UpdatePhase.Downloading(DownloadProgress("base", 0, 2, 36_000_000, 72_000_000)), update, null)
+        assertEquals(36_000_000L, first.bytesDone)
+        assertEquals(157_000_000L, first.bytesTotal)
+        val second = updateProgress(UpdatePhase.Downloading(DownloadProgress("harness", 1, 2, 10_000_000, 85_000_000)), update, null)
+        assertEquals(82_000_000L, second.bytesDone)
+        assertTrue(second.fraction!! > first.fraction!!)
+    }
+
+    @Test
     fun `a rollback is said on the running card`() {
         assertTrue(card(running(rolledBack = RolledBackUpdate("0.2.3", RuntimeFailure.ReadyTimeout(""))), ready)!!.rolledBack)
     }

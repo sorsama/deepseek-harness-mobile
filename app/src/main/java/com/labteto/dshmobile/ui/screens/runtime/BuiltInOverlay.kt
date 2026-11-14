@@ -234,7 +234,7 @@ fun BuiltInControlsOverlay(open: Boolean, atLog: Boolean, onClose: () -> Unit, v
 @Composable
 fun BuiltInChatNotice(
     viewModel: BuiltInControlsViewModel = hiltViewModel(),
-    /** What the chat shows instead while there is no notice: its "Reconnecting" strip. */
+    /** What the chat shows instead while there is no notice: its connection error and "Reconnecting" strips. */
     otherwise: @Composable () -> Unit,
 ) {
     val colors = DsTheme.colors

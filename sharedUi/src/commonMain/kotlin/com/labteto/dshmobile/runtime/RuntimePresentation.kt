@@ -254,11 +254,19 @@ fun updateProgress(phase: UpdatePhase, update: AvailableRuntimeUpdate?, lastDown
     UpdatePhase.Checking -> SetupProgress(SetupStep.Download, null)
     is UpdatePhase.Downloading -> {
         val p = phase.progress
+        val sizes = update?.layerDownloadBytes?.takeIf { it.size == p.layerCount && it.sum() > 0 }
         val total = update?.downloadBytes?.takeIf { it > 0 }
-        if (total != null && p.layerCount == 1) {
-            SetupProgress(SetupStep.Download, (p.bytesDone.toFloat() / total).coerceIn(0f, 1f), p.bytesDone, total, layer = p.layer)
-        } else {
-            downloadProgress(p, null)
+        when {
+            // Bytes over every layer the update fetches, so the line reads "90 MB of 157 MB" and
+            // does not start again at the second layer.
+            sizes != null -> {
+                val all = sizes.sum()
+                val done = (sizes.take(p.layerIndex).sum() + p.bytesDone).coerceIn(0, all)
+                SetupProgress(SetupStep.Download, done.toFloat() / all, done, all, layer = p.layer)
+            }
+            total != null && p.layerCount == 1 ->
+                SetupProgress(SetupStep.Download, (p.bytesDone.toFloat() / total).coerceIn(0f, 1f), p.bytesDone, total, layer = p.layer)
+            else -> downloadProgress(p, null)
         }
     }
     is UpdatePhase.Verifying -> SetupProgress(SetupStep.Check, null, layer = phase.layer)
