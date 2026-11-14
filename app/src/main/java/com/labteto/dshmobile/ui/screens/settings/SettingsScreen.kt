@@ -202,10 +202,14 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         tint = colors.labelPrimary,
                     )
                     Spacer(Modifier.width(DsSpacing.small))
+                    // The rest of the row, not the word's own measured width: with the display
+                    // style's negative letter spacing, Arabic shapes a few pixels wider than it
+                    // measures, and "الإعدادات" broke before its last letter.
                     Text(
                         stringResource(R.string.settings_title),
                         style = DsType.display24,
                         color = colors.labelPrimary,
+                        modifier = Modifier.weight(1f),
                     )
                 }
                 DsSegmented(

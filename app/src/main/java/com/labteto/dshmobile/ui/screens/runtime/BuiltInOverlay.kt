@@ -256,9 +256,12 @@ fun BuiltInChatNotice(
         // Held through the exit, so the words do not vanish before the strip has folded away.
         val shown = notice ?: return@AnimatedVisibility
         val live = shown.kind == ChatNoticeKind.Restarting || shown.kind == ChatNoticeKind.Updating
+        // Calm: amber, as for anything the app can put right with one tap. Red only for a start
+        // that already failed, where the tap may not be enough.
+        val alarm = shown.kind == ChatNoticeKind.StartFailed
         Surface(
-            color = if (live) colors.warnTertiary else colors.errorTertiary,
-            border = BorderStroke(1.dp, if (live) colors.warnBorder else colors.errorBorder),
+            color = if (alarm) colors.errorTertiary else colors.warnTertiary,
+            border = BorderStroke(1.dp, if (alarm) colors.errorBorder else colors.warnBorder),
             modifier = Modifier.fillMaxWidth(),
         ) {
             Column(
@@ -269,7 +272,7 @@ fun BuiltInChatNotice(
                 verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
             ) {
                 Row(verticalAlignment = Alignment.Top) {
-                    val tint = if (live) colors.warnLabel else colors.error
+                    val tint = if (alarm) colors.error else colors.warnLabel
                     if (live) {
                         CircularProgressIndicator(Modifier.padding(top = 2.dp).size(14.dp), color = tint, strokeWidth = 2.dp)
                     } else {

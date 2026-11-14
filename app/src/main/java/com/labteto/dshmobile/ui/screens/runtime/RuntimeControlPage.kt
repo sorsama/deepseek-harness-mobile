@@ -667,14 +667,27 @@ private fun FromTo(fromRelease: String, toRelease: String, fromHarness: String, 
     )
 }
 
-/** The end of the output of a start that failed, for the rollback notice; null when there is none. */
-private fun failureLog(reason: RuntimeFailure): String? = when (reason) {
-    is RuntimeFailure.ExitedBeforeReady -> reason.logTail
-    is RuntimeFailure.ReadyTimeout -> reason.logTail
-    is RuntimeFailure.Crashed -> reason.logTail
-    is RuntimeFailure.LaunchFailed -> reason.detail
-    else -> null
-}?.trim()?.takeIf { it.isNotEmpty() }?.lines()?.takeLast(8)?.joinToString("\n")
+/**
+ * The part of a failed start's output worth reading in the rollback notice: from the last line that
+ * names an error (a stack trace's own end is rarely the point), at most [LOG_EXCERPT] lines; the
+ * last lines when nothing names one. Null when there is no output.
+ */
+internal fun failureLog(reason: RuntimeFailure): String? {
+    val text = when (reason) {
+        is RuntimeFailure.ExitedBeforeReady -> reason.logTail
+        is RuntimeFailure.ReadyTimeout -> reason.logTail
+        is RuntimeFailure.Crashed -> reason.logTail
+        is RuntimeFailure.LaunchFailed -> reason.detail
+        else -> null
+    }?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+    val lines = text.lines()
+    val error = lines.indexOfLast { ERROR_LINE.containsMatchIn(it) }
+    val excerpt = if (error >= 0) lines.drop(error).take(LOG_EXCERPT) else lines.takeLast(LOG_EXCERPT)
+    return excerpt.joinToString("\n")
+}
+
+private const val LOG_EXCERPT = 8
+private val ERROR_LINE = Regex("^\\s*(\\w*Error|Error)\\b|^\\s*error:", RegexOption.IGNORE_CASE)
 
 /** A tinted block for how an update ended: amber when things are working again, red when they are not. */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
