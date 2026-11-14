@@ -82,6 +82,25 @@ class ProcessFoldTest {
         assertEquals(2, historyRowIndex(rows, 5L))
     }
 
+    @Test fun `a command the reader ran mid-turn stays on screen and splits the fold`() {
+        // Picking a permission while a turn runs lands inside that turn. It is the reader's own
+        // action, told as its own line; folded away it would sit among the agent's steps.
+        val permission = CommandNode(
+            5, "command/run",
+            kotlinx.serialization.json.Json.parseToJsonElement(
+                """{"commandId":"c","name":"permission","args":" read-only","source":{"kind":"user"}}""",
+            ),
+        )
+        val rows = fold(
+            listOf(user(2), reasoning(3), call(4), permission, reasoning(6), call(7), answer(8)),
+            turnStarts = listOf(1),
+        )
+        assertEquals(listOf(2L, 3L, 5L, 6L, 8L), rows.map { it.seq })
+        assertTrue((rows[2] as TranscriptRow.Message).node is CommandNode)
+        assertEquals(listOf(3L, 4L), (rows[1] as TranscriptRow.Process).rows.map { it.seq })
+        assertEquals(listOf(6L, 7L), (rows[3] as TranscriptRow.Process).rows.map { it.seq })
+    }
+
     @Test fun `the step count sums every tool call in the fold`() {
         val rows = fold(
             listOf(user(2), reasoning(3), call(4), call(5), answer(6)),

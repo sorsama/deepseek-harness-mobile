@@ -423,6 +423,15 @@
     <string name="harness_automation_history_not_found">لم تعد هذه المهمة متاحة.</string>
     <string name="harness_automation_history_cursor_error">تغيّرت السجلات. حاول مرة أخرى.</string>
 
+    <!-- System lines: things the user did that are not chat messages, told in the transcript -->
+    <string name="system_line_permission_changed">غيّرت الإذن إلى %1$s</string>
+    <string name="system_line_permission_changed_plain">غيّرت الإذن</string>
+    <string name="system_line_permission_failed">لم يكتمل تغيير الإذن</string>
+    <string name="system_line_compact">ضغطت المحادثة</string>
+    <string name="system_line_plan_on">فعّلت وضع الخطة</string>
+    <string name="system_line_plan_off">عطّلت وضع الخطة</string>
+    <string name="system_line_command">شغّلت %1$s</string>
+    <string name="system_line_command_failed">تعذّر تشغيل %1$s</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">تمت الإعادة إلى هنا</string>
     <string name="rewind_no_text">(بدون نص)</string>

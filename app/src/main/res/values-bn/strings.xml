@@ -423,6 +423,15 @@
     <string name="harness_automation_history_not_found">এই কাজটি আর নেই।</string>
     <string name="harness_automation_history_cursor_error">রেকর্ড বদলে গেছে। আবার চেষ্টা করুন।</string>
 
+    <!-- System lines: things the user did that are not chat messages, told in the transcript -->
+    <string name="system_line_permission_changed">আপনি অনুমতি বদলে %1$s করেছেন</string>
+    <string name="system_line_permission_changed_plain">আপনি অনুমতি বদলেছেন</string>
+    <string name="system_line_permission_failed">অনুমতি বদলানো যায়নি</string>
+    <string name="system_line_compact">আপনি কথোপকথন ছোট করেছেন</string>
+    <string name="system_line_plan_on">আপনি প্ল্যান মোড চালু করেছেন</string>
+    <string name="system_line_plan_off">আপনি প্ল্যান মোড বন্ধ করেছেন</string>
+    <string name="system_line_command">আপনি %1$s চালিয়েছেন</string>
+    <string name="system_line_command_failed">%1$s চালানো যায়নি</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">এখান পর্যন্ত রিওয়াইন্ড করা হয়েছে</string>
     <string name="rewind_no_text">(কোনো টেক্সট নেই)</string>

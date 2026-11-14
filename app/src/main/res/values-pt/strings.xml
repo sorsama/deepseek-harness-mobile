@@ -423,6 +423,15 @@
     <string name="harness_automation_history_not_found">Esta tarefa não está mais disponível.</string>
     <string name="harness_automation_history_cursor_error">Os registros mudaram. Tente de novo.</string>
 
+    <!-- System lines: things the user did that are not chat messages, told in the transcript -->
+    <string name="system_line_permission_changed">Você alterou a permissão para %1$s</string>
+    <string name="system_line_permission_changed_plain">Você alterou a permissão</string>
+    <string name="system_line_permission_failed">A alteração de permissão não foi concluída</string>
+    <string name="system_line_compact">Você compactou a conversa</string>
+    <string name="system_line_plan_on">Você ativou o modo de plano</string>
+    <string name="system_line_plan_off">Você desativou o modo de plano</string>
+    <string name="system_line_command">Você executou %1$s</string>
+    <string name="system_line_command_failed">%1$s não foi concluído</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">Retrocedido até aqui</string>
     <string name="rewind_no_text">(sem texto)</string>

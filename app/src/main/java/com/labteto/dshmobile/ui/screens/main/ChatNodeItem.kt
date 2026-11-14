@@ -117,6 +117,12 @@ internal data class ChatNodeContext(
      * falls back to state local to the row, which is right where the rows are short-lived.
      */
     val assistantMemory: AssistantMemory? = null,
+    /**
+     * The host's display name for each permission preset, by wire value. A "you changed permission"
+     * line names the preset the way the composer's chip does, which for a deployment that renamed a
+     * shipped preset means the name it chose. Empty falls back to the id.
+     */
+    val permissionNames: Map<String, String> = emptyMap(),
 )
 
 /**
@@ -222,7 +228,12 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
             node.code?.let { Text(" · $it", style = DsType.caption11, color = colors.labelTertiary) }
         }
 
-        is CommandNode -> CommandRow(node)
+        // A command the reader ran is their action, not the agent's: a muted system line, not a
+        // terminal row. A node that is not theirs keeps the row it always had.
+        is CommandNode -> {
+            val line = remember(node, context.nodes) { systemLineFor(node, context.nodes) }
+            if (line != null) SystemLineRow(line, context.permissionNames) else CommandRow(node)
+        }
 
         is WorkflowNode -> WorkflowRow(node.data, context.onOpenSubagent)
 

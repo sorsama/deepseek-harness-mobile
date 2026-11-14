@@ -65,8 +65,12 @@ internal fun renderableChatNodes(nodes: List<ChatNode>, running: Boolean): List<
     // the command ledger, and so does this. The marker the rewind appended stays, drawn as a
     // divider rather than an empty user bubble.
     val cut = RewindCuts.hiddenSeqs(nodes)
+    // A reader's command draws one system line from its `command/run`; the `command/done` that
+    // settles it is told inside that line, so it must not draw a second row.
+    val folded = foldedCommandDones(nodes)
     return nodes.filter { node ->
-        node.seq !in cut && ((node is UserMessageNode && node.isRewindMarker) || node.rendersContent(running, knownToolCallIds))
+        node.seq !in cut && node.seq !in folded &&
+            ((node is UserMessageNode && node.isRewindMarker) || node.rendersContent(running, knownToolCallIds))
     }
 }
 
