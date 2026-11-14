@@ -1,10 +1,7 @@
 package com.labteto.dshmobile.termux
 
 import android.content.Intent
-import com.labteto.dshmobile.connection.HarnessSessionStore
-import com.labteto.dshmobile.connection.HostsStore
-import com.labteto.dshmobile.core.wire.HarnessLaunchLine
-import com.labteto.dshmobile.core.wire.SessionExchange
+import com.labteto.dshmobile.connection.LoopbackSignIn
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -30,8 +27,7 @@ import kotlinx.coroutines.launch
 @Singleton
 class TermuxHarnessController @Inject constructor(
     private val bridge: TermuxBridge,
-    private val hostsStore: HostsStore,
-    private val sessions: HarnessSessionStore,
+    private val loopbackSignIn: LoopbackSignIn,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -130,22 +126,8 @@ class TermuxHarnessController @Inject constructor(
         }
     }
 
-    /**
-     * Exchange the token on the readiness line for a cookie, stored against the loopback record.
-     *
-     * The whole line goes to the exchange, which already accepts it; parsing here only decides
-     * whether there is a token to exchange at all.
-     */
-    private suspend fun signInFrom(stdout: String, port: Int): StartSignIn {
-        val line = HarnessLaunchLine.parse(stdout) ?: return StartSignIn.NO_TOKEN
-        if (line.token == null) return StartSignIn.NO_TOKEN
-        val host = hostsStore.ensureLoopbackHost(port)
-        return when (sessions.pair(host.id, host.baseUrl, line.raw)) {
-            is SessionExchange.Granted -> StartSignIn.SIGNED_IN
-            is SessionExchange.Refused -> StartSignIn.REFUSED
-            is SessionExchange.Unreachable -> StartSignIn.UNREACHABLE
-        }
-    }
+    /** Exchange the token in the start script's stdout for a cookie (see [LoopbackSignIn]). */
+    private suspend fun signInFrom(stdout: String, port: Int): StartSignIn = loopbackSignIn.signIn(stdout, port)
 
     private fun failureOf(result: TermuxResult): HarnessControlFailure = when (result) {
         is TermuxResult.Ok -> HarnessControlFailure.TermuxUnavailable(result.stderr)
