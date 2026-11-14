@@ -79,6 +79,9 @@
     <string name="chat_details_empty">เลือกแถวเครื่องมือในแชทเพื่อดูอินพุตและเอาต์พุต</string>
     <string name="chat_input_placeholder">อินพุต</string>
     <string name="chat_output_placeholder">เอาต์พุต</string>
+    <string name="tool_output_show_raw">แสดง JSON ดิบ</string>
+    <string name="tool_output_hide_raw">ซ่อน JSON ดิบ</string>
+    <string name="tool_output_copy_raw">คัดลอก JSON ดิบ</string>
     <string name="goal_title">เป้าหมาย</string>
     <string name="goal_none">ไม่มีเป้าหมายที่ใช้งานอยู่</string>
     <string name="goal_phase_active">ใช้งานอยู่</string>

@@ -81,7 +81,7 @@ internal fun JsonDisclosure(title: String, value: JsonElement, depth: Int = 0) {
 
 /** A compact text action in the Ink accent, for values inside a disclosure body. */
 @Composable
-private fun JsonAction(label: String, onClick: () -> Unit) {
+internal fun JsonAction(label: String, onClick: () -> Unit) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     Text(
@@ -99,7 +99,7 @@ private fun JsonAction(label: String, onClick: () -> Unit) {
 
 /** Raw JSON on the code-block surface, in the mono face. */
 @Composable
-private fun JsonCode(text: String) {
+internal fun JsonCode(text: String) {
     val colors = DsTheme.colors
     SelectionContainer {
         Text(

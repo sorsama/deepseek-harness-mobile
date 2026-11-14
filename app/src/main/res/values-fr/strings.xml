@@ -79,6 +79,9 @@
     <string name="chat_details_empty">Sélectionnez une ligne d’outil dans la conversation pour inspecter son entrée et sa sortie.</string>
     <string name="chat_input_placeholder">Entrée</string>
     <string name="chat_output_placeholder">Sortie</string>
+    <string name="tool_output_show_raw">Afficher le JSON brut</string>
+    <string name="tool_output_hide_raw">Masquer le JSON brut</string>
+    <string name="tool_output_copy_raw">Copier le JSON brut</string>
     <string name="goal_title">Objectif</string>
     <string name="goal_none">Aucun objectif actif</string>
     <string name="goal_phase_active">Actif</string>

@@ -61,6 +61,7 @@ import com.labteto.dshmobile.core.session.TitleNode
 import com.labteto.dshmobile.core.session.TodoNode
 import com.labteto.dshmobile.core.session.ToolCallNode
 import com.labteto.dshmobile.core.session.ToolResultNode
+import com.labteto.dshmobile.core.session.unwrapToolText
 import com.labteto.dshmobile.core.session.TurnEndNode
 import com.labteto.dshmobile.core.session.TurnErrorNode
 import com.labteto.dshmobile.core.session.TurnStartNode
@@ -590,7 +591,16 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         images.forEach { ref ->
             AttachmentImage(ref = ref, contentDescription = ref.name)
         }
-        result?.content?.let { JsonDisclosure(stringResource(R.string.chat_output_placeholder), it) }
+        // The text the tool returned, not the protocol JSON around it. A generic card has no output
+        // of its own, so the text sits right under the input; the specialised cards (a terminal, a
+        // diff, a read) already present the result in their body, so there it stays one row down.
+        result?.content?.let { content ->
+            if (card is com.labteto.dshmobile.ui.components.ToolCardView.GenericCard) {
+                ToolResultOutput(content, label = stringResource(R.string.chat_output_placeholder))
+            } else {
+                ToolResultOutputRow(stringResource(R.string.chat_output_placeholder), content)
+            }
+        }
         result?.meta?.let { JsonDisclosure(node.name, it) }
         PtcChildren(node.callId, context.nodes.filterIsInstance<OtherNode>())
     } }
@@ -745,7 +755,8 @@ private fun WorkflowRow(
  * A bare string body is accepted too: some tools answer with one.
  */
 internal fun toolFailureMessage(content: JsonElement?): String? {
-    fun fromText(value: String?): String? = value?.trim()?.takeIf { it.isNotEmpty() }
+    // A failure whose text is itself a block list or envelope is unwrapped like any other output.
+    fun fromText(value: String?): String? = value?.let(::unwrapToolText)?.trim()?.takeIf { it.isNotEmpty() }
 
     /** First prose part at or below [element], depth-first, or null. */
     fun walk(element: JsonElement?): String? = when (element) {

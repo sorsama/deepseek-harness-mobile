@@ -69,6 +69,20 @@ class HoldActionsTest {
         assertNull(toolOutputText(null))
     }
 
+    /** Copy output is the meaningful text, not a wrapper level of it (issue #97). */
+    @Test fun `copy output unwraps envelopes and double-encoded text to the final text`() {
+        fun result(content: String) =
+            ToolResultNode(seq = 2, callId = "c", content = Json.parseToJsonElement(content), isError = false, turn = 1, step = 1)
+        assertEquals("BUILD SUCCESSFUL", toolOutputText(result("""{"content":[{"type":"text","text":"BUILD SUCCESSFUL"}]}""")))
+        assertEquals("BUILD SUCCESSFUL", toolOutputText(result("""{"output":"BUILD SUCCESSFUL"}""")))
+        assertEquals(
+            "BUILD SUCCESSFUL",
+            toolOutputText(result("""[{"type":"text","text":"[{\"type\":\"text\",\"text\":\"BUILD SUCCESSFUL\"}]"}]""")),
+        )
+        // A real structured result copies as readable JSON, not as a one-line blob.
+        assertEquals("{\n  \"jobId\": \"j1\",\n  \"state\": \"running\"\n}", toolOutputText(result("""{"jobId":"j1","state":"running"}""")))
+    }
+
     /** Mentions are written the way the composer's own reference picker writes them. */
     @Test fun `a mention is relative to the working directory when it can be`() {
         assertEquals("src\\app.ts", mentionPath("C:\\work\\todo-api\\src\\app.ts", "C:\\work\\todo-api"))

@@ -90,6 +90,15 @@ class ToolFailureMessageTest {
     }
 
     @Test
+    fun `unwraps a failure whose text is itself a block list`() {
+        val inner = """[{\"type\":\"text\",\"text\":\"Error: build failed\"}]"""
+        val content = parse("""[ { "type": "text", "text": "$inner" } ]""")
+        assertEquals("Error: build failed", toolFailureMessage(content))
+        // Text that only looks like JSON stays as the tool wrote it.
+        assertEquals("[INFO] failed", toolFailureMessage(parse("""[ { "type": "text", "text": "[INFO] failed" } ]""")))
+    }
+
+    @Test
     fun `trims surrounding whitespace`() {
         val content = parse("""[ { "type": "tool-result", "content": [ { "type": "text", "text": "  boom\n\n" } ] } ]""")
         assertEquals("boom", toolFailureMessage(content))

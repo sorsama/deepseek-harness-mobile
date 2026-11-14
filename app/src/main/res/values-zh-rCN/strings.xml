@@ -79,6 +79,9 @@
     <string name="chat_details_empty">在对话中点选一个工具行，查看它的输入和输出。</string>
     <string name="chat_input_placeholder">输入</string>
     <string name="chat_output_placeholder">输出</string>
+    <string name="tool_output_show_raw">查看原始 JSON</string>
+    <string name="tool_output_hide_raw">收起原始 JSON</string>
+    <string name="tool_output_copy_raw">复制原始 JSON</string>
     <string name="goal_title">目标</string>
     <string name="goal_none">没有进行中的目标</string>
     <string name="goal_phase_active">进行中</string>

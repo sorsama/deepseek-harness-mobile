@@ -79,6 +79,9 @@
     <string name="chat_details_empty">इनपुट और आउटपुट देखने के लिए चैट में कोई टूल पंक्ति चुनें।</string>
     <string name="chat_input_placeholder">इनपुट</string>
     <string name="chat_output_placeholder">आउटपुट</string>
+    <string name="tool_output_show_raw">मूल JSON दिखाएं</string>
+    <string name="tool_output_hide_raw">मूल JSON छिपाएं</string>
+    <string name="tool_output_copy_raw">मूल JSON कॉपी करें</string>
     <string name="goal_title">लक्ष्य</string>
     <string name="goal_none">कोई चालू लक्ष्य नहीं</string>
     <string name="goal_phase_active">चालू</string>
