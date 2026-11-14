@@ -35,6 +35,7 @@
     <string name="update_installing_stalled">Todavía esperando a Android. Si cerraste su aviso, vuelve a intentarlo.</string>
     <string name="update_installed">Instalada. DSH Mobile se abrirá con la nueva versión.</string>
     <string name="update_failed_aborted">Se canceló la actualización. No cambió nada.</string>
+    <string name="update_failed_verification">La comprobación de seguridad del teléfono no aprobó la instalación o tardó demasiado en responder. Vuelve a intentarlo.</string>
     <string name="update_failed_blocked">Este dispositivo bloqueó la instalación. Puede que un perfil de trabajo o un ajuste de seguridad no lo permita.</string>
     <string name="update_failed_conflict">Android no pudo reemplazar la app que tienes. Puede que venga de otro sitio y esté firmada con otra clave.</string>
     <string name="update_failed_incompatible">Esta actualización no funciona en este dispositivo.</string>

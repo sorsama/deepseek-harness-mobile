@@ -35,6 +35,7 @@
     <string name="update_installing_stalled">Всё ещё ждём Android. Если вы закрыли его окно, попробуйте снова.</string>
     <string name="update_installed">Установлено. DSH Mobile откроется в новой версии.</string>
     <string name="update_failed_aborted">Обновление отменено. Ничего не изменилось.</string>
+    <string name="update_failed_verification">Проверка безопасности телефона не одобрила установку или слишком долго не отвечала. Попробуйте снова.</string>
     <string name="update_failed_blocked">Устройство заблокировало установку. Возможно, её не разрешает рабочий профиль или настройка безопасности.</string>
     <string name="update_failed_conflict">Android не смог заменить установленное приложение. Возможно, оно получено из другого источника и подписано другим ключом.</string>
     <string name="update_failed_incompatible">Это обновление не работает на этом устройстве.</string>

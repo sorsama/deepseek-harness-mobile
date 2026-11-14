@@ -35,6 +35,7 @@
     <string name="update_installing_stalled">Toujours en attente d\'Android. Si vous avez fermé sa fenêtre, réessayez.</string>
     <string name="update_installed">Installée. DSH Mobile s\'ouvrira sur la nouvelle version.</string>
     <string name="update_failed_aborted">La mise à jour a été annulée. Rien n\'a changé.</string>
+    <string name="update_failed_verification">Le contrôle de sécurité du téléphone n\'a pas approuvé l\'installation, ou a mis trop de temps à répondre. Réessayez.</string>
     <string name="update_failed_blocked">Cet appareil a bloqué l\'installation. Un profil professionnel ou un réglage de sécurité ne l\'autorise peut-être pas.</string>
     <string name="update_failed_conflict">Android n\'a pas pu remplacer l\'appli installée. Elle vient peut-être d\'ailleurs, signée avec une autre clé.</string>
     <string name="update_failed_incompatible">Cette mise à jour ne fonctionne pas sur cet appareil.</string>

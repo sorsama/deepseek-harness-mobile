@@ -224,8 +224,10 @@ release without a browser. Nothing is downloaded until you tap
   install anything. On Android 12 and newer the session asks for
   `USER_ACTION_NOT_REQUIRED`, which Android honours only once this app is the
   installer of record of itself, so the first in-app update always shows the
-  system's confirmation and later ones may not. The app only ever installs an
-  APK of itself.
+  system's confirmation and later ones may not (this also needs the normal
+  permission `UPDATE_PACKAGES_WITHOUT_USER_ACTION`, which the app declares). The
+  app only ever installs an APK of itself. The phone's own app verifier (Play
+  Protect on most phones) still checks every install and can refuse it.
 - **Debug builds only:** a file in the app's private storage can point the
   updater at a local test feed (see `app/src/debug/.../UpdateFeedOverride.kt`).
   It accepts only loopback and the emulator's host alias, for the feed and for

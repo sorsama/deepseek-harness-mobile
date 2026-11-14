@@ -35,6 +35,7 @@
     <string name="update_installing_stalled">এখনও Android-এর জন্য অপেক্ষা চলছে। যদি এর বার্তাটি বন্ধ করে থাকেন, আবার চেষ্টা করুন।</string>
     <string name="update_installed">ইনস্টল হয়েছে। DSH Mobile নতুন সংস্করণে খুলবে।</string>
     <string name="update_failed_aborted">আপডেট বাতিল হয়েছে। কিছুই বদলায়নি।</string>
+    <string name="update_failed_verification">আপনার ফোনের নিরাপত্তা যাচাই ইনস্টল অনুমোদন করেনি, বা উত্তর দিতে অনেক দেরি করেছে। আবার চেষ্টা করুন।</string>
     <string name="update_failed_blocked">এই ডিভাইস ইনস্টল আটকে দিয়েছে। হয়তো ওয়ার্ক প্রোফাইল বা কোনো নিরাপত্তা সেটিং এটি অনুমতি দেয় না।</string>
     <string name="update_failed_conflict">Android আপনার বর্তমান অ্যাপটি বদলাতে পারেনি। হয়তো এটি অন্য কোথাও থেকে এসেছে, অন্য কী দিয়ে সাইন করা।</string>
     <string name="update_failed_incompatible">এই আপডেট এই ডিভাইসে কাজ করে না।</string>

@@ -70,6 +70,14 @@
         Android checks the signature again before it replaces anything. See docs/SECURITY.md.
     -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!--
+        Android 12 and newer: lets an update this app installs go through without the system's
+        "Do you want to update this app?" prompt, but only when this app is already the one that
+        installed itself (the installer of record) and only for this app's own package. A normal
+        permission, granted at install. The first in-app update after installing from a browser or
+        a file manager still shows the prompt, and Android may ask anyway when it sees a reason to.
+    -->
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 
     <!--
         Package visibility (API 30+): without this the app cannot see whether Termux is installed,

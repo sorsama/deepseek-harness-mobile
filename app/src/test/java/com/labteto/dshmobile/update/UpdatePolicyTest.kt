@@ -219,6 +219,14 @@ class UpdatePolicyTest {
     }
 
     @Test
+    fun `an abort caused by the app verifier is told apart from the person saying no`() {
+        val message = "INSTALL_FAILED_VERIFICATION_FAILURE: Install not allowed for file:///data/app/vmdl1.tmp"
+        assertEquals(InstallFailure.Verification, (mapInstallStatus(PackageInstaller.STATUS_FAILURE_ABORTED, message) as InstallOutcome.Failed).failure)
+        assertEquals(InstallFailure.Aborted, (mapInstallStatus(PackageInstaller.STATUS_FAILURE_ABORTED, "User rejected permissions") as InstallOutcome.Failed).failure)
+        assertTrue(InstallFailure.Verification.retryable)
+    }
+
+    @Test
     fun `a blank status message is no message`() {
         assertEquals(InstallOutcome.Failed(InstallFailure.Unknown, null), mapInstallStatus(PackageInstaller.STATUS_FAILURE, "  "))
     }

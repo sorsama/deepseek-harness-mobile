@@ -35,6 +35,7 @@
     <string name="update_installing_stalled">ما زلنا ننتظر Android. إذا أغلقت نافذته، فأعد المحاولة.</string>
     <string name="update_installed">تم التثبيت. سيُفتح DSH Mobile على الإصدار الجديد.</string>
     <string name="update_failed_aborted">أُلغي التحديث. لم يتغير شيء.</string>
+    <string name="update_failed_verification">لم يوافق فحص الأمان في هاتفك على التثبيت، أو تأخر في الرد. أعد المحاولة.</string>
     <string name="update_failed_blocked">منع هذا الجهاز التثبيت. ربما لا يسمح به ملف العمل أو أحد إعدادات الأمان.</string>
     <string name="update_failed_conflict">لم يتمكن Android من استبدال التطبيق المثبت لديك. ربما جاء من مصدر آخر وموقّع بمفتاح مختلف.</string>
     <string name="update_failed_incompatible">هذا التحديث لا يعمل على هذا الجهاز.</string>

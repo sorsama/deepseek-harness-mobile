@@ -35,6 +35,7 @@
     <string name="update_installing_stalled">仍在等待 Android。如果你关闭了它的提示，请重试。</string>
     <string name="update_installed">已安装。DSH Mobile 将以新版本打开。</string>
     <string name="update_failed_aborted">更新已取消，什么都没有改变。</string>
+    <string name="update_failed_verification">手机的安全检查没有批准此次安装，或响应超时。请重试。</string>
     <string name="update_failed_blocked">此设备阻止了安装。可能是工作资料或安全设置不允许。</string>
     <string name="update_failed_conflict">Android 无法替换你现有的应用。它可能来自其他来源，并使用了不同的密钥签名。</string>
     <string name="update_failed_incompatible">此更新不适用于这台设备。</string>

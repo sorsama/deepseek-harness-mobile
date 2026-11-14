@@ -265,6 +265,7 @@ private fun UpdaterState.stage(): String = when (this) {
 private fun failureText(failure: InstallFailure): String = stringResource(
     when (failure) {
         InstallFailure.Aborted -> R.string.update_failed_aborted
+        InstallFailure.Verification -> R.string.update_failed_verification
         InstallFailure.Blocked -> R.string.update_failed_blocked
         InstallFailure.Conflict -> R.string.update_failed_conflict
         InstallFailure.Incompatible -> R.string.update_failed_incompatible
