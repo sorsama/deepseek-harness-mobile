@@ -3,6 +3,9 @@ package com.labteto.dshmobile.update
 import java.io.File
 import java.security.MessageDigest
 
+/** A byte-order mark a Windows editor may have left at the start of the file. */
+private val BYTE_ORDER_MARK = Char(0xFEFF)
+
 private val SHA256_HEX = Regex("^[0-9a-fA-F]{64}$")
 
 /**
@@ -16,7 +19,7 @@ private val SHA256_HEX = Regex("^[0-9a-fA-F]{64}$")
  */
 internal fun parseSha256Sums(text: String): Map<String, String> {
     val out = LinkedHashMap<String, String>()
-    text.lineSequence().map { it.trim().removePrefix("﻿") }.filter { it.isNotEmpty() && !it.startsWith("#") }.forEach { line ->
+    text.lineSequence().map { it.trim().trimStart(BYTE_ORDER_MARK) }.filter { it.isNotEmpty() && !it.startsWith("#") }.forEach { line ->
         val bsd = Regex("""^SHA256 \((.+)\) ?= ?([0-9a-fA-F]{64})$""").find(line)
         val (name, digest) = if (bsd != null) {
             bsd.groupValues[1] to bsd.groupValues[2]

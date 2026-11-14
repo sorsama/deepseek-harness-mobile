@@ -33,6 +33,9 @@ interface UpdaterPrefs {
 class SharedUpdaterPrefs @Inject constructor(@ApplicationContext context: Context) : UpdaterPrefs {
     private val prefs = context.getSharedPreferences("dsh_updater", Context.MODE_PRIVATE)
     override fun getString(key: String): String? = prefs.getString(key, null)
+    // commit(), not apply(): the marker is written just before an install that ends this process,
+    // and a write still queued in the background would be lost with it.
+    @android.annotation.SuppressLint("ApplySharedPref")
     override fun putString(key: String, value: String?) {
         prefs.edit().apply { if (value == null) remove(key) else putString(key, value) }.commit()
     }

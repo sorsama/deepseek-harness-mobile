@@ -120,13 +120,14 @@ fun UpdatePanel(
         }
     }
     AnimatedContent(
-        targetState = current.stage(),
+        targetState = current,
+        contentKey = { it.stage() },
         transitionSpec = { DsAnimations.cardEnter togetherWith DsAnimations.cardExit },
         modifier = modifier.fillMaxWidth(),
         label = "updateStage",
-    ) { _ ->
+    ) { shown ->
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
-            when (val s = current) {
+            when (val s = shown) {
                 UpdaterState.Idle -> {
                     val apk = update.apk
                     if (apk == null) {
@@ -206,7 +207,7 @@ fun UpdatePanel(
                     Message(stringResource(R.string.update_permission))
                     if (s.askedBefore) Message(stringResource(R.string.update_permission_still_off), tone = Tone.Warn)
                     Action(stringResource(R.string.update_permission_allow), DsButtonVariant.Info) { ui.requestPermission() }
-                    Action(stringResource(R.string.update_not_now), DsButtonVariant.Ghost) { (onHide ?: {}).invoke() }
+                    if (onHide != null) Action(stringResource(R.string.update_not_now), DsButtonVariant.Ghost, onHide)
                 }
                 is UpdaterState.Installing -> {
                     DownloadProgress(1, 1)
