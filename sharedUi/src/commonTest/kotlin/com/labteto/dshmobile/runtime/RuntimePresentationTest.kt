@@ -119,6 +119,51 @@ class RuntimePresentationTest {
     }
 
     @Test
+    fun `a release the person went back from is not flagged on the card`() {
+        val update = AvailableRuntimeUpdate("2026.11.14-4", "0.2.2-rc.1", 84_000_000, baseChanges = false, harnessChanges = true, sequence = 4)
+        val skipped = card(RuntimeState.Stopped(installed)) { it.copy(update = update, skippedRelease = "2026.11.14-4") }!!
+        assertFalse(skipped.updateAvailable)
+        val offered = card(RuntimeState.Stopped(installed)) { it.copy(update = update) }!!
+        assertTrue(offered.updateAvailable)
+    }
+
+    @Test
+    fun `an update that needs a newer app is still flagged and says which app`() {
+        val state = BuiltInHarnessState(RuntimeState.Stopped(installed), releaseProblem = RuntimeFailure.AppTooOld("0.23.0"))
+        assertEquals("0.23.0", state.updateNeedsApp)
+        assertTrue(state.updateWorthShowing)
+        assertTrue(builtInCard(state, down, false, 3080)!!.updateAvailable)
+        // Before anything is installed it is the card's own refusal, not an update.
+        assertNull(BuiltInHarnessState(RuntimeState.NotInstalled, releaseProblem = RuntimeFailure.AppTooOld("0.23.0")).updateNeedsApp)
+        // An unreachable server is not news.
+        assertFalse(BuiltInHarnessState(RuntimeState.Stopped(installed), releaseProblem = RuntimeFailure.Network(null)).updateWorthShowing)
+    }
+
+    // ---- The chat's notice -------------------------------------------------------------------------
+
+    @Test
+    fun `the chat explains a crash of the harness on this phone and offers a restart`() {
+        val crashed = RuntimeState.Failed(RuntimeFailure.Crashed(137, "killed"), installed)
+        assertEquals(ChatNoticeKind.Crashed, builtInChatNotice(crashed, onBuiltIn = true, connected = false)!!.kind)
+        assertEquals(ChatNoticeKind.Stopped, builtInChatNotice(RuntimeState.Stopped(installed), onBuiltIn = true, connected = false)!!.kind)
+        assertEquals(ChatNoticeKind.Restarting, builtInChatNotice(RuntimeState.Starting(3080, installed), onBuiltIn = true, connected = false)!!.kind)
+        assertEquals(ChatNoticeKind.Updating, builtInChatNotice(RuntimeState.Updating(UpdatePhase.Switching, installed), onBuiltIn = true, connected = false)!!.kind)
+        val failed = builtInChatNotice(RuntimeState.Failed(RuntimeFailure.ReadyTimeout("tail"), installed), onBuiltIn = true, connected = false)!!
+        assertEquals(ChatNoticeKind.StartFailed, failed.kind)
+        assertEquals(RuntimeIssueKind.ReadyTimeout, failed.issue!!.kind)
+    }
+
+    @Test
+    fun `the chat says nothing while connected or when its harness is another one`() {
+        val crashed = RuntimeState.Failed(RuntimeFailure.Crashed(137, ""), installed)
+        assertNull(builtInChatNotice(crashed, onBuiltIn = true, connected = true))
+        assertNull(builtInChatNotice(crashed, onBuiltIn = false, connected = false))
+        // Up but not reached yet is the chat's own reconnecting strip.
+        assertNull(builtInChatNotice(running(), onBuiltIn = true, connected = false))
+        assertNull(builtInChatNotice(RuntimeState.Failed(RuntimeFailure.Network(null), null), onBuiltIn = true, connected = false))
+    }
+
+    @Test
     fun `a rollback is said on the running card`() {
         assertTrue(card(running(rolledBack = RolledBackUpdate("0.2.3", RuntimeFailure.ReadyTimeout(""))), ready)!!.rolledBack)
     }

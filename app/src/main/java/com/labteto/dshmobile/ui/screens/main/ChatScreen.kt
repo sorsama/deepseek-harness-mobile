@@ -661,8 +661,12 @@ fun ChatScreen(
                     onAction = { store.retryConnection() },
                 )
             }
-            AnimatedPresence(Unit.takeIf { conversation?.gap == true && connectionError == null }) {
-                ConnectionBanner(stringResource(R.string.common_reconnecting), warning = true)
+            // When the harness is the one on this phone and it is down, its own notice says why
+            // and offers Restart; the plain "Reconnecting" strip would only say half of that.
+            com.labteto.dshmobile.ui.screens.runtime.BuiltInChatNotice {
+                AnimatedPresence(Unit.takeIf { conversation?.gap == true && connectionError == null }) {
+                    ConnectionBanner(stringResource(R.string.common_reconnecting), warning = true)
+                }
             }
 
             val nodeContext = ChatNodeContext(

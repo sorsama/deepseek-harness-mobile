@@ -116,4 +116,35 @@
     <string name="runtime_check_footer">Each row opens the system screen where it\'s changed.</string>
 
     <string name="runtime_termux_heading">Harness in Termux</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">Updating to release %1$s…</string>
+    <string name="runtime_update_going_back_to">Going back to release %1$s…</string>
+    <string name="runtime_update_rolled_back_title">The new version didn\'t start, so the previous one is back.</string>
+    <string name="runtime_update_rolled_back_detail">Release %1$s won\'t install by itself again. You\'re on release %2$s.</string>
+    <string name="runtime_update_needs_app_title">A harness update needs a newer app</string>
+    <string name="runtime_update_skipped">You went back from release %1$s</string>
+    <string name="runtime_update_skipped_hint">It won\'t install by itself or notify you. Newer releases are offered as usual.</string>
+    <string name="runtime_update_anyway">Update anyway</string>
+    <string name="runtime_update_done">Now on release %1$s.</string>
+    <string name="runtime_update_went_back_done">You\'re back on release %1$s.</string>
+    <string name="runtime_update_previous">Previous version</string>
+    <string name="runtime_update_go_back">Go back</string>
+    <string name="runtime_go_back_title">Go back to release %1$s?</string>
+    <string name="runtime_go_back_body">The harness goes back to version %1$s. If it\'s running, it restarts and the app reconnects by itself. Your sessions and settings stay. Release %2$s won\'t install by itself until a newer one comes out.</string>
+    <string name="runtime_switch_notify_updates">Tell me about new versions</string>
+    <string name="runtime_switch_notify_updates_hint">One notification for each new release.</string>
+    <string name="runtime_switch_auto_update">Install updates by themselves</string>
+    <string name="runtime_switch_auto_update_hint">Only on Wi-Fi or another unmetered network, and only while the harness is stopped or idle. You\'ll be told what changed.</string>
+    <string name="runtime_notif_channel_updates">Harness updates</string>
+    <string name="runtime_notif_update_title">Harness update available</string>
+    <string name="runtime_notif_update_text">Release %1$s, harness %2$s. Tap to see what changes.</string>
+    <string name="runtime_notif_updated_title">Harness updated</string>
+    <string name="runtime_notif_updated_text">Now on release %1$s, harness %2$s.</string>
+    <string name="runtime_notif_rolled_back_title">The harness update didn\'t start</string>
+    <string name="runtime_notif_rolled_back_text">Release %1$s is back. Tap to see why.</string>
+    <string name="runtime_chat_crashed">The harness on this phone stopped unexpectedly. Your sessions are safe.</string>
+    <string name="runtime_chat_stopped">The harness on this phone isn\'t running.</string>
+    <string name="runtime_chat_restarting">Starting the harness on this phone…</string>
+    <string name="runtime_chat_updating">Updating the harness on this phone. The chat comes back when it\'s done.</string>
 </resources>

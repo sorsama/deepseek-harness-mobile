@@ -115,4 +115,35 @@
     <string name="runtime_check_footer">แต่ละแถวจะเปิดหน้าการตั้งค่าระบบที่ใช้เปลี่ยนค่านั้น</string>
 
     <string name="runtime_termux_heading">harness ใน Termux</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">กำลังอัปเดตเป็นรุ่น %1$s…</string>
+    <string name="runtime_update_going_back_to">กำลังกลับไปใช้รุ่น %1$s…</string>
+    <string name="runtime_update_rolled_back_title">เวอร์ชันใหม่เริ่มไม่ได้ จึงกลับไปใช้เวอร์ชันก่อนหน้า</string>
+    <string name="runtime_update_rolled_back_detail">รุ่น %1$s จะไม่ติดตั้งเองอีก ตอนนี้คุณใช้รุ่น %2$s</string>
+    <string name="runtime_update_needs_app_title">อัปเดต harness ต้องใช้แอปที่ใหม่กว่านี้</string>
+    <string name="runtime_update_skipped">คุณกลับมาจากรุ่น %1$s</string>
+    <string name="runtime_update_skipped_hint">รุ่นนี้จะไม่ติดตั้งเองและจะไม่แจ้งเตือน ส่วนรุ่นที่ใหม่กว่าจะแสดงตามปกติ</string>
+    <string name="runtime_update_anyway">อัปเดตเลย</string>
+    <string name="runtime_update_done">ตอนนี้ใช้รุ่น %1$s</string>
+    <string name="runtime_update_went_back_done">คุณกลับมาใช้รุ่น %1$s แล้ว</string>
+    <string name="runtime_update_previous">เวอร์ชันก่อนหน้า</string>
+    <string name="runtime_update_go_back">ย้อนกลับ</string>
+    <string name="runtime_go_back_title">กลับไปใช้รุ่น %1$s ไหม</string>
+    <string name="runtime_go_back_body">harness จะกลับไปเป็นเวอร์ชัน %1$s ถ้ากำลังทำงานอยู่ จะเริ่มใหม่และแอปจะเชื่อมต่อใหม่เอง เซสชันและการตั้งค่าของคุณยังอยู่ครบ รุ่น %2$s จะไม่ติดตั้งเองจนกว่าจะมีรุ่นที่ใหม่กว่าออกมา</string>
+    <string name="runtime_switch_notify_updates">แจ้งฉันเมื่อมีเวอร์ชันใหม่</string>
+    <string name="runtime_switch_notify_updates_hint">แจ้งเตือนครั้งเดียวต่อหนึ่งรุ่นใหม่</string>
+    <string name="runtime_switch_auto_update">ติดตั้งอัปเดตเอง</string>
+    <string name="runtime_switch_auto_update_hint">เฉพาะเมื่อใช้ Wi-Fi หรือเครือข่ายอื่นที่ไม่จำกัดปริมาณ และเฉพาะตอนที่ harness หยุดอยู่หรือว่างอยู่ แล้วจะแจ้งให้ทราบว่ามีอะไรเปลี่ยน</string>
+    <string name="runtime_notif_channel_updates">อัปเดต harness</string>
+    <string name="runtime_notif_update_title">มีอัปเดต harness</string>
+    <string name="runtime_notif_update_text">รุ่น %1$s, harness %2$s แตะเพื่อดูว่าอะไรจะเปลี่ยน</string>
+    <string name="runtime_notif_updated_title">อัปเดต harness แล้ว</string>
+    <string name="runtime_notif_updated_text">ตอนนี้ใช้รุ่น %1$s, harness %2$s</string>
+    <string name="runtime_notif_rolled_back_title">อัปเดต harness เริ่มไม่ได้</string>
+    <string name="runtime_notif_rolled_back_text">กลับมาใช้รุ่น %1$s แล้ว แตะเพื่อดูสาเหตุ</string>
+    <string name="runtime_chat_crashed">harness บนโทรศัพท์เครื่องนี้หยุดไปกะทันหัน เซสชันของคุณยังอยู่ครบ</string>
+    <string name="runtime_chat_stopped">harness บนโทรศัพท์เครื่องนี้ไม่ได้ทำงานอยู่</string>
+    <string name="runtime_chat_restarting">กำลังเริ่ม harness บนโทรศัพท์เครื่องนี้…</string>
+    <string name="runtime_chat_updating">กำลังอัปเดต harness บนโทรศัพท์เครื่องนี้ แชตจะกลับมาเมื่อเสร็จ</string>
 </resources>

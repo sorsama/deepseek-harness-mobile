@@ -37,6 +37,37 @@ class DshNotifications @Inject constructor(
         manager.createNotificationChannel(
             NotificationChannel(CHANNEL_CONNECTION, context.getString(R.string.notif_channel_connection), NotificationManager.IMPORTANCE_LOW),
         )
+        // Quiet: a new harness release can wait until the person next looks.
+        manager.createNotificationChannel(
+            NotificationChannel(CHANNEL_UPDATES, context.getString(R.string.runtime_notif_channel_updates), NotificationManager.IMPORTANCE_LOW),
+        )
+    }
+
+    /**
+     * A notification about a harness update (one available, one installed, one that did not
+     * start). Tapping it opens the harness's control page. One [id] per kind, so a newer one
+     * replaces the last instead of piling up.
+     */
+    @android.annotation.SuppressLint("MissingPermission")
+    fun postRuntimeUpdate(id: Int, title: String, text: String) {
+        ensureChannels()
+        if (!canPost()) return
+        val open = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(EXTRA_OPEN, OPEN_RUNTIME_CONTROLS)
+        }
+        val pending = PendingIntent.getActivity(context, id, open, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val notification = NotificationCompat.Builder(context, CHANNEL_UPDATES)
+            .setSmallIcon(R.drawable.ic_notification_whale)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(pending)
+            .setAutoCancel(true)
+            .setOnlyAlertOnce(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+        NotificationManagerCompat.from(context).notify(id, notification)
     }
 
     fun canPost(): Boolean =
@@ -88,6 +119,11 @@ class DshNotifications @Inject constructor(
         const val CHANNEL_COMPLETIONS = "completions"
         const val CHANNEL_ACTION = "needs_action"
         const val CHANNEL_CONNECTION = "connection"
+        const val CHANNEL_UPDATES = "harness_updates"
         const val EXTRA_SESSION_ID = "dsh_session_id"
+
+        /** Where a notification wants the app to open; [OPEN_RUNTIME_CONTROLS] is the only value so far. */
+        const val EXTRA_OPEN = "dsh_open"
+        const val OPEN_RUNTIME_CONTROLS = "runtime_controls"
     }
 }

@@ -10,6 +10,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import okhttp3.OkHttpClient
 import java.io.File
@@ -42,6 +43,9 @@ class HarnessRuntimeController @Inject constructor(
     private val system = AndroidRuntimeSystem(context)
     private val preferences = RuntimePreferences.over(context.getSharedPreferences(RuntimePreferences.FILE, Context.MODE_PRIVATE))
 
+    /** What harness updates remember: the two switches, the last check, skipped and failed releases. */
+    val updatePreferences = RuntimeUpdatePreferences.over(context.getSharedPreferences(RuntimeUpdatePreferences.FILE, Context.MODE_PRIVATE))
+
     val layout = RuntimeLayout(
         root = File(context.noBackupFilesDir, "runtime"),
         cache = File(context.cacheDir, "runtime"),
@@ -67,6 +71,14 @@ class HarnessRuntimeController @Inject constructor(
     @Volatile
     var manifestUrlOverride: String? = null
 
+    /**
+     * Debug builds only: the next start of a release on trial fails before readiness (node is told
+     * to load a module that does not exist), so the device test can watch a real rollback.
+     * Ignored in release builds.
+     */
+    @Volatile
+    var failNextTrialStart: Boolean = false
+
     private val installer = RuntimeInstaller(
         layout = layout,
         store = InstalledStore(layout),
@@ -90,6 +102,11 @@ class HarnessRuntimeController @Inject constructor(
         override fun portFree(port: Int): Boolean = isPortFree(port)
         override fun keepAlive() = startService(null)
         override val modulePack: Boolean get() = preferences.modulePack.value
+        override fun guestEnvironment(record: InstalledRecord): Map<String, String> {
+            if (!BuildConfig.DEBUG || !record.onTrial || !failNextTrialStart) return emptyMap()
+            failNextTrialStart = false
+            return mapOf("NODE_OPTIONS" to "--require=/opt/dsh-fault-injection/missing-module.js")
+        }
     }
 
     private val engine = RuntimeEngine(
@@ -125,6 +142,12 @@ class HarnessRuntimeController @Inject constructor(
 
     /** Same as [install]: fetch the latest release and apply only what changed. */
     fun update(): Boolean = engine.install()
+
+    /** The person's "go back to the previous version" (the installed manifest's `previous`). */
+    fun goBack(): Boolean = engine.goBack()
+
+    /** How each update and go-back ended; replays the last one. */
+    val outcomes: SharedFlow<UpdateOutcome> get() = engine.outcomes
 
     fun cancel() = engine.cancel()
 

@@ -24,6 +24,7 @@ class AppViewModel @Inject constructor(
     connectionManager: ConnectionManager,
     private val updateChecker: UpdateChecker,
     private val termux: TermuxHarnessController,
+    private val runtimeUpdates: com.labteto.dshmobile.runtime.RuntimeUpdates,
 ) : ViewModel() {
 
     val settings: StateFlow<AppSettings> = hostsStore.settings.stateIn(
@@ -40,6 +41,8 @@ class AppViewModel @Inject constructor(
     /** Safe to call on every resume: the checker rate-limits itself. */
     fun checkForUpdate(currentVersion: String) {
         viewModelScope.launch { updateChecker.checkOnce(currentVersion) }
+        // The built-in harness's own release check; it rate-limits itself the same way.
+        runtimeUpdates.onAppOpen()
     }
 
     fun dismissUpdate(version: String) {

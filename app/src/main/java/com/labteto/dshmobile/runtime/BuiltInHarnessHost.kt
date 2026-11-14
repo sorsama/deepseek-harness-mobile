@@ -62,21 +62,35 @@ class BuiltInHarnessHost @Inject constructor(
     private val _lastDownload = MutableStateFlow<DownloadProgress?>(null)
     val lastDownload: StateFlow<DownloadProgress?> = _lastDownload
 
-    override val state: StateFlow<BuiltInHarnessState> = combine(controller.state, controller.availableUpdate, flow, _lastDownload) { runtime, update, f, last ->
-        compose(runtime, update, f, last)
-    }.stateIn(scope, SharingStarted.Eagerly, compose(controller.state.value, controller.availableUpdate.value, flow.value, null))
+    /** How the last update or go-back ended, until [dismissOutcome] or the next one. */
+    private val _outcome = MutableStateFlow<UpdateOutcome?>(null)
 
-    private fun compose(runtime: RuntimeState, update: AvailableRuntimeUpdate?, f: SetupFlow, last: DownloadProgress?) = BuiltInHarnessState(
-        runtime = runtime,
-        release = f.release,
-        releaseProblem = f.releaseProblem,
+    private val updatePrefs get() = controller.updatePreferences
+
+    private data class Extras(val last: DownloadProgress?, val skipped: ReleaseRef?, val outcome: UpdateOutcome?)
+
+    private val extras = combine(_lastDownload, updatePrefs.skipped, _outcome, ::Extras)
+
+    override val state: StateFlow<BuiltInHarnessState> = combine(controller.state, controller.availableUpdate, flow, extras) { runtime, update, f, x ->
+        compose(runtime, update, f, x)
+    }.stateIn(scope, SharingStarted.Eagerly, compose(controller.state.value, controller.availableUpdate.value, flow.value, Extras(null, updatePrefs.skipped.value, null)))
+
+    private fun compose(runtime: RuntimeState, update: AvailableRuntimeUpdate?, f: SetupFlow, x: Extras): BuiltInHarnessState {
         // The check that reads sizes for a first install also fills availableUpdate; it is only an
         // update when something is installed.
-        update = update.takeIf { runtime.hasInstall() },
-        settingUp = f.settingUp,
-        waitingForNetwork = f.waitingForNetwork,
-        lastDownload = last,
-    )
+        val installedUpdate = update.takeIf { runtime.hasInstall() }
+        return BuiltInHarnessState(
+            runtime = runtime,
+            release = f.release,
+            releaseProblem = f.releaseProblem,
+            update = installedUpdate,
+            settingUp = f.settingUp,
+            waitingForNetwork = f.waitingForNetwork,
+            lastDownload = x.last,
+            skippedRelease = x.skipped?.takeIf { installedUpdate != null && isSkipped(installedUpdate, it) }?.releaseId,
+            outcome = x.outcome,
+        )
+    }
 
     private var lastReleaseCheck = 0L
     private var retries = 0
@@ -85,6 +99,7 @@ class BuiltInHarnessHost @Inject constructor(
 
     init {
         scope.launch { controller.state.collect(::follow) }
+        scope.launch { controller.outcomes.collect { _outcome.value = it } }
         if (controller.state.value == RuntimeState.NotInstalled) refreshRelease()
     }
 
@@ -173,6 +188,27 @@ class BuiltInHarnessHost @Inject constructor(
     /** Cancel an update in flight; what is installed keeps running. */
     fun cancelUpdate() = controller.cancel()
 
+    /** Install the release before the installed one; only on the person's own request. */
+    fun goBack(): Boolean = controller.goBack()
+
+    /** The person has read how the last update ended. */
+    fun dismissOutcome() {
+        _outcome.value = null
+    }
+
+    /** Notifications about new harness releases (on by default). */
+    val notifyUpdates: StateFlow<Boolean> get() = updatePrefs.notify
+
+    fun setNotifyUpdates(enabled: Boolean) = updatePrefs.setNotify(enabled)
+
+    /** Install harness updates by themselves when nothing would be interrupted (off by default). */
+    val autoInstallUpdates: StateFlow<Boolean> get() = updatePrefs.autoInstall
+
+    fun setAutoInstallUpdates(enabled: Boolean) = updatePrefs.setAutoInstall(enabled)
+
+    /** The port a set-up or a start last used: where the harness is expected to listen. */
+    val port: Int get() = flow.value.port
+
     fun uninstall(keepUserData: Boolean): Boolean {
         flow.update { it.copy(settingUp = false, waitingForNetwork = false) }
         val accepted = controller.uninstall(keepUserData)
@@ -201,9 +237,17 @@ class BuiltInHarnessHost @Inject constructor(
         return cm.isActiveNetworkMetered
     }
 
+    /** The port the built-in harness last ran on in this app process, or null if it has not run. */
+    @Volatile
+    private var lastRunningPort: Int? = null
+
+    /** Whether the built-in harness has been up on [port] in this app process: the chat's notice is about it. */
+    fun servedThisProcess(port: Int): Boolean = lastRunningPort == port
+
     // ---- The flow -----------------------------------------------------------------------------
 
     private fun follow(runtime: RuntimeState) {
+        if (runtime is RuntimeState.Running) lastRunningPort = runtime.port
         if (runtime is RuntimeState.Downloading && runtime.progress.bytesTotal > 0) _lastDownload.value = runtime.progress
         if (runtime is RuntimeState.Downloading && runtime.progress.bytesTotal > 0 || runtime is RuntimeState.Unpacking) {
             retries = 0

@@ -62,10 +62,17 @@ import com.labteto.dshmobile.R
 import com.labteto.dshmobile.runtime.BuiltInHarnessHost
 import com.labteto.dshmobile.runtime.BuiltInHarnessState
 import com.labteto.dshmobile.runtime.RuntimeAction
+import com.labteto.dshmobile.runtime.RuntimeFailure
 import com.labteto.dshmobile.runtime.RuntimeInstaller
 import com.labteto.dshmobile.runtime.RuntimeState
 import com.labteto.dshmobile.runtime.RuntimeStorageUsage
+import com.labteto.dshmobile.runtime.UpdateOutcome
+import com.labteto.dshmobile.runtime.UpdatePhase
 import com.labteto.dshmobile.runtime.formatBytes
+import com.labteto.dshmobile.runtime.runtimeIssueText
+import com.labteto.dshmobile.ui.screens.main.technicalDisplay
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
 import com.labteto.dshmobile.runtime.runtimeActionLabel
 import com.labteto.dshmobile.runtime.runtimeIssue
 import com.labteto.dshmobile.runtime.setupProgressDetail
@@ -128,6 +135,10 @@ internal fun RuntimeControlPage(
     val state by host.state.collectAsStateWithLifecycle()
     val holdWakeLock by host.holdWakeLock.collectAsStateWithLifecycle()
     val modulePack by host.modulePack.collectAsStateWithLifecycle()
+    val notifyUpdates by host.notifyUpdates.collectAsStateWithLifecycle()
+    val autoInstallUpdates by host.autoInstallUpdates.collectAsStateWithLifecycle()
+    // Outside the page's own window: the activity's view models, for "Check now" and "Update the app".
+    val controls: BuiltInControlsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
     val page = rememberPageVisibility(onClose)
     val runtime = state.runtime
 
@@ -137,6 +148,7 @@ internal fun RuntimeControlPage(
     var checking by remember { mutableStateOf(false) }
     var confirmRemove by remember { mutableStateOf(false) }
     var confirmDeleteAll by remember { mutableStateOf(false) }
+    var confirmGoBack by remember { mutableStateOf(false) }
     // Storage and the log follow the state: re-read whenever it changes, and the log every few
     // seconds while the harness runs, so a start can be watched as it happens.
     LaunchedEffect(runtime::class, state.installed) {
@@ -219,18 +231,34 @@ internal fun RuntimeControlPage(
                                 state = state,
                                 checking = checking,
                                 checkResult = checkResult,
+                                notify = notifyUpdates,
+                                autoInstall = autoInstallUpdates,
                                 onCheck = {
+                                    haptics.tap()
                                     checking = true
                                     scope.launch {
-                                        checkResult = runCatching { host.checkRelease() }.getOrNull()
+                                        checkResult = runCatching { controls.checkNow() }.getOrNull()
                                         checking = false
+                                        when (checkResult) {
+                                            is RuntimeInstaller.CheckResult.Refused -> haptics.reject()
+                                            else -> haptics.confirm()
+                                        }
                                     }
                                 },
                                 onUpdate = {
                                     haptics.confirm()
+                                    host.dismissOutcome()
                                     host.update()
                                 },
                                 onCancel = host::cancelUpdate,
+                                onGoBack = { confirmGoBack = true },
+                                onUpdateApp = { controls.updateApp(context) },
+                                onDismissOutcome = {
+                                    haptics.tap()
+                                    host.dismissOutcome()
+                                },
+                                onNotifyChange = host::setNotifyUpdates,
+                                onAutoInstallChange = host::setAutoInstallUpdates,
                             )
 
                             Section(stringResource(R.string.runtime_section_storage)) {
@@ -311,6 +339,34 @@ internal fun RuntimeControlPage(
             )
         }
     }
+    val goBackTo = state.installed?.previousRelease
+    if (confirmGoBack && goBackTo != null) {
+        DsDialog(
+            title = stringResource(R.string.runtime_go_back_title, technicalDisplay(goBackTo.releaseId)),
+            onDismiss = { confirmGoBack = false },
+        ) {
+            Text(
+                stringResource(
+                    R.string.runtime_go_back_body,
+                    technicalDisplay(goBackTo.harnessVersion),
+                    technicalDisplay(state.installed?.releaseId.orEmpty()),
+                ),
+                style = DsType.std14,
+                color = colors.labelSecondary,
+            )
+            DialogButtons(
+                dismiss = stringResource(R.string.common_cancel),
+                confirm = stringResource(R.string.runtime_update_go_back),
+                onDismiss = { confirmGoBack = false },
+                onConfirm = {
+                    confirmGoBack = false
+                    haptics.confirm()
+                    host.dismissOutcome()
+                    host.goBack()
+                },
+            )
+        }
+    }
     if (confirmDeleteAll) {
         DsDialog(title = stringResource(R.string.runtime_delete_all_title), onDismiss = { confirmDeleteAll = false }) {
             Text(stringResource(R.string.runtime_delete_all_body), style = DsType.std14, color = colors.labelSecondary)
@@ -381,7 +437,8 @@ private fun StatusSection(
             ValueRow(stringResource(R.string.runtime_info_release), installed.releaseId, mono = true)
             ValueRow(stringResource(R.string.runtime_info_port), port.toString(), mono = true)
         }
-        (runtime as? RuntimeState.Running)?.rolledBack?.let { rolledBack ->
+        // The update section says it in full (with the reason and the log) while its outcome is shown.
+        (runtime as? RuntimeState.Running)?.rolledBack?.takeIf { state.outcome !is UpdateOutcome.RolledBack }?.let { rolledBack ->
             Text(
                 stringResource(R.string.runtime_update_rolled_back, com.labteto.dshmobile.ui.screens.main.technicalDisplay(rolledBack.failedVersion)),
                 style = DsType.small13,
@@ -451,30 +508,97 @@ private fun uptimeText(sinceEpochMs: Long): String {
     }
 }
 
+/**
+ * Updates: what is on offer and what it would change, the progress of one, how the last one ended,
+ * "go back to the previous version", and the two switches. One block at a time, cross-faded, so
+ * the section never shows an offer and a result that contradict each other.
+ */
 @Composable
 private fun UpdateSection(
     state: BuiltInHarnessState,
     checking: Boolean,
     checkResult: RuntimeInstaller.CheckResult?,
+    notify: Boolean,
+    autoInstall: Boolean,
     onCheck: () -> Unit,
     onUpdate: () -> Unit,
     onCancel: () -> Unit,
+    onGoBack: () -> Unit,
+    onUpdateApp: () -> Unit,
+    onDismissOutcome: () -> Unit,
+    onNotifyChange: (Boolean) -> Unit,
+    onAutoInstallChange: (Boolean) -> Unit,
 ) {
     val colors = DsTheme.colors
     val runtime = state.runtime
     val update = state.update
+    val installed = state.installed
+    val outcome = state.outcome
     Section(stringResource(R.string.runtime_section_update)) {
-        Column(Modifier.fillMaxWidth().padding(vertical = DsSpacing.small).animateContentSize(DsAnimations.expand), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+        Column(
+            Modifier.fillMaxWidth().padding(vertical = DsSpacing.small).animateContentSize(DsAnimations.expand),
+            verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+        ) {
             when {
                 runtime is RuntimeState.Updating -> {
-                    val progress = updateProgress(runtime.phase, update, null)
-                    Text(stringResource(R.string.runtime_card_updating), style = DsType.std14Strong, color = colors.labelPrimary)
+                    val progress = updateProgress(runtime.phase, update?.takeIf { !runtime.goingBack }, null)
+                    val target = runtime.target
+                    Text(
+                        when {
+                            target == null -> stringResource(R.string.runtime_card_updating)
+                            runtime.goingBack -> stringResource(R.string.runtime_update_going_back_to, technicalDisplay(target.releaseId))
+                            else -> stringResource(R.string.runtime_update_updating_to, technicalDisplay(target.releaseId))
+                        },
+                        style = DsType.std14Strong,
+                        color = colors.labelPrimary,
+                    )
+                    if (target != null) FromTo(runtime.installed.releaseId, target.releaseId, runtime.installed.harnessVersion, target.harnessVersion)
                     RuntimeProgressBar(progress.fraction)
                     Text(setupProgressDetail(progress), style = DsType.small13, color = colors.labelSecondary)
-                    DsConnectButton(stringResource(R.string.common_cancel), onCancel, variant = ConnectButtonVariant.Outline)
+                    if (runtime.phase !is UpdatePhase.Switching) {
+                        DsConnectButton(stringResource(R.string.common_cancel), onCancel, variant = ConnectButtonVariant.Outline)
+                    }
+                }
+                outcome is UpdateOutcome.RolledBack -> NoticeBlock(
+                    warn = true,
+                    text = stringResource(R.string.runtime_update_rolled_back_title),
+                    detail = runtimeIssueText(runtimeIssue(outcome.reason, installed = true, port = 0)) + " " +
+                        stringResource(R.string.runtime_update_rolled_back_detail, technicalDisplay(outcome.to.releaseId), technicalDisplay(outcome.from.releaseId)),
+                    log = failureLog(outcome.reason),
+                ) {
+                    DsConnectButton(stringResource(R.string.common_ok), onDismissOutcome, variant = ConnectButtonVariant.Outline)
+                }
+                outcome is UpdateOutcome.Failed -> NoticeBlock(
+                    warn = false,
+                    text = runtimeIssueText(runtimeIssue(outcome.reason, installed = true, port = 0)),
+                    detail = null,
+                    log = null,
+                ) {
+                    DsConnectButton(runtimeActionLabel(RuntimeAction.RetryInstall), if (outcome.wentBack) onGoBack else onUpdate, enabled = !runtime.busy)
+                    DsConnectButton(stringResource(R.string.common_ok), onDismissOutcome, variant = ConnectButtonVariant.Outline)
+                }
+                state.updateNeedsApp != null -> {
+                    Text(stringResource(R.string.runtime_update_needs_app_title), style = DsType.std14Strong, color = colors.labelPrimary)
+                    Text(
+                        runtimeIssueText(runtimeIssue(RuntimeFailure.AppTooOld(state.updateNeedsApp!!), installed = false, port = 0)),
+                        style = DsType.small13,
+                        color = colors.labelSecondary,
+                    )
+                    DsConnectButton(runtimeActionLabel(RuntimeAction.UpdateApp), onUpdateApp)
+                }
+                update != null && state.skippedRelease != null -> {
+                    Text(
+                        stringResource(R.string.runtime_update_skipped, technicalDisplay(state.skippedRelease!!)),
+                        style = DsType.std14Strong,
+                        color = colors.labelPrimary,
+                    )
+                    Text(stringResource(R.string.runtime_update_skipped_hint), style = DsType.small13, color = colors.labelSecondary)
+                    if (installed != null) FromTo(installed.releaseId, update.releaseId, installed.harnessVersion, update.harnessVersion)
+                    DsConnectButton(stringResource(R.string.runtime_update_anyway), onUpdate, variant = ConnectButtonVariant.Outline, enabled = !runtime.busy)
                 }
                 update != null -> {
-                    Text(stringResource(R.string.runtime_update_available, com.labteto.dshmobile.ui.screens.main.technicalDisplay(update.harnessVersion)), style = DsType.std14Strong, color = colors.labelPrimary)
+                    Text(stringResource(R.string.runtime_card_update), style = DsType.std14Strong, color = colors.labelPrimary)
+                    if (installed != null) FromTo(installed.releaseId, update.releaseId, installed.harnessVersion, update.harnessVersion)
                     Text(
                         stringResource(
                             if (update.baseChanges) R.string.runtime_update_what_both else R.string.runtime_update_what_harness,
@@ -483,28 +607,112 @@ private fun UpdateSection(
                         style = DsType.small13,
                         color = colors.labelSecondary,
                     )
-                    Text(
-                        stringResource(
-                            R.string.runtime_update_versions,
-                            com.labteto.dshmobile.ui.screens.main.technicalDisplay(state.installed?.harnessVersion.orEmpty()),
-                            com.labteto.dshmobile.ui.screens.main.technicalDisplay(update.harnessVersion),
-                        ),
-                        style = DsType.mono12,
-                        color = colors.labelTertiary,
-                    )
                     DsConnectButton(stringResource(R.string.runtime_update_button), onUpdate, enabled = !runtime.busy)
                 }
                 else -> {
+                    if (outcome is UpdateOutcome.Applied) {
+                        Text(
+                            stringResource(
+                                if (outcome.wentBack) R.string.runtime_update_went_back_done else R.string.runtime_update_done,
+                                technicalDisplay(outcome.to.releaseId),
+                            ),
+                            style = DsType.std14Strong,
+                            color = colors.labelPrimary,
+                        )
+                    }
                     val line = when {
                         checking -> stringResource(R.string.runtime_update_checking)
                         checkResult is RuntimeInstaller.CheckResult.UpToDate -> stringResource(R.string.runtime_update_none)
                         checkResult is RuntimeInstaller.CheckResult.Refused -> runtimeIssueTextOf(checkResult)
                         else -> null
                     }
-                    if (line != null) Text(line, style = DsType.small13, color = colors.labelSecondary)
+                    if (line != null) {
+                        Text(
+                            line,
+                            style = DsType.small13,
+                            color = if (checkResult is RuntimeInstaller.CheckResult.Refused && !checking) colors.warnLabel else colors.labelSecondary,
+                            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                        )
+                    }
                     DsConnectButton(stringResource(R.string.runtime_update_check), onCheck, variant = ConnectButtonVariant.Outline, enabled = !checking && !runtime.busy)
                 }
             }
+
+            val previous = installed?.previousRelease
+            if (previous != null && runtime !is RuntimeState.Updating) {
+                Spacer(Modifier.height(DsSpacing.xsmall))
+                ValueRow(stringResource(R.string.runtime_update_previous), previous.releaseId, mono = true)
+                DsConnectButton(stringResource(R.string.runtime_update_go_back), onGoBack, variant = ConnectButtonVariant.Outline, enabled = !runtime.busy)
+            }
+        }
+        ToggleRow(stringResource(R.string.runtime_switch_notify_updates), notify, stringResource(R.string.runtime_switch_notify_updates_hint)) {
+            onNotifyChange(!notify)
+        }
+        ToggleRow(stringResource(R.string.runtime_switch_auto_update), autoInstall, stringResource(R.string.runtime_switch_auto_update_hint)) {
+            onAutoInstallChange(!autoInstall)
+        }
+    }
+}
+
+/** Release and harness, from what is installed to what an update brings. Left to right in every language. */
+@Composable
+private fun FromTo(fromRelease: String, toRelease: String, fromHarness: String, toHarness: String) {
+    ValueRow(
+        stringResource(R.string.runtime_info_release),
+        stringResource(R.string.runtime_update_versions, technicalDisplay(fromRelease), technicalDisplay(toRelease)),
+    )
+    ValueRow(
+        stringResource(R.string.runtime_info_harness),
+        stringResource(R.string.runtime_update_versions, technicalDisplay(fromHarness), technicalDisplay(toHarness)),
+    )
+}
+
+/** The end of the output of a start that failed, for the rollback notice; null when there is none. */
+private fun failureLog(reason: RuntimeFailure): String? = when (reason) {
+    is RuntimeFailure.ExitedBeforeReady -> reason.logTail
+    is RuntimeFailure.ReadyTimeout -> reason.logTail
+    is RuntimeFailure.Crashed -> reason.logTail
+    is RuntimeFailure.LaunchFailed -> reason.detail
+    else -> null
+}?.trim()?.takeIf { it.isNotEmpty() }?.lines()?.takeLast(8)?.joinToString("\n")
+
+/** A tinted block for how an update ended: amber when things are working again, red when they are not. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun NoticeBlock(warn: Boolean, text: String, detail: String?, log: String?, buttons: @Composable () -> Unit) {
+    val colors = DsTheme.colors
+    val tint = if (warn) colors.warnLabel else colors.error
+    androidx.compose.material3.Surface(
+        shape = DsShapes.buttonLarge,
+        color = if (warn) colors.warnTertiary else colors.errorTertiary,
+        border = androidx.compose.foundation.BorderStroke(1.dp, if (warn) colors.warnBorder else colors.errorBorder),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(DsSpacing.medium), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+            Text(text, style = DsType.std14Strong, color = tint, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+            if (detail != null) Text(detail, style = DsType.small13, color = colors.labelSecondary)
+            if (log != null) {
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr,
+                ) {
+                    Text(
+                        log,
+                        style = DsType.mono12.copy(textDirection = androidx.compose.ui.text.style.TextDirection.Ltr),
+                        color = colors.labelSecondary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(DsShapes.code)
+                            .background(colors.codeBlockBg)
+                            .horizontalScroll(rememberScrollState())
+                            .padding(DsSpacing.compact),
+                        softWrap = false,
+                    )
+                }
+            }
+            androidx.compose.foundation.layout.FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+                verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+            ) { buttons() }
         }
     }
 }

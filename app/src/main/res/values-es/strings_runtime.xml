@@ -115,4 +115,35 @@
     <string name="runtime_check_footer">Cada fila abre la pantalla del sistema donde se cambia.</string>
 
     <string name="runtime_termux_heading">Harness en Termux</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">Actualizando a la versión del entorno %1$s…</string>
+    <string name="runtime_update_going_back_to">Volviendo a la versión del entorno %1$s…</string>
+    <string name="runtime_update_rolled_back_title">La versión nueva no arrancó, así que ha vuelto la anterior.</string>
+    <string name="runtime_update_rolled_back_detail">La versión %1$s no se volverá a instalar sola. Estás en la versión %2$s.</string>
+    <string name="runtime_update_needs_app_title">Una actualización del harness necesita una app más reciente</string>
+    <string name="runtime_update_skipped">Volviste desde la versión %1$s</string>
+    <string name="runtime_update_skipped_hint">No se instalará sola ni te avisará. Las versiones más nuevas se ofrecerán como siempre.</string>
+    <string name="runtime_update_anyway">Actualizar de todos modos</string>
+    <string name="runtime_update_done">Ahora estás en la versión %1$s.</string>
+    <string name="runtime_update_went_back_done">Has vuelto a la versión %1$s.</string>
+    <string name="runtime_update_previous">Versión anterior</string>
+    <string name="runtime_update_go_back">Volver</string>
+    <string name="runtime_go_back_title">¿Volver a la versión %1$s?</string>
+    <string name="runtime_go_back_body">El harness vuelve a la versión %1$s. Si está en marcha, se reinicia y la app se vuelve a conectar sola. Tus sesiones y ajustes se quedan. La versión %2$s no se instalará sola hasta que salga una más nueva.</string>
+    <string name="runtime_switch_notify_updates">Avisarme de las versiones nuevas</string>
+    <string name="runtime_switch_notify_updates_hint">Un aviso por cada versión nueva.</string>
+    <string name="runtime_switch_auto_update">Instalar las actualizaciones solas</string>
+    <string name="runtime_switch_auto_update_hint">Solo con Wi-Fi u otra red sin límite de datos, y solo cuando el harness esté parado o sin trabajo. Te diremos qué cambió.</string>
+    <string name="runtime_notif_channel_updates">Actualizaciones del harness</string>
+    <string name="runtime_notif_update_title">Hay una actualización del harness</string>
+    <string name="runtime_notif_update_text">Versión %1$s, harness %2$s. Toca para ver qué cambia.</string>
+    <string name="runtime_notif_updated_title">Harness actualizado</string>
+    <string name="runtime_notif_updated_text">Ahora en la versión %1$s, harness %2$s.</string>
+    <string name="runtime_notif_rolled_back_title">La actualización del harness no arrancó</string>
+    <string name="runtime_notif_rolled_back_text">Ha vuelto la versión %1$s. Toca para ver por qué.</string>
+    <string name="runtime_chat_crashed">El harness de este teléfono se detuvo de forma inesperada. Tus sesiones están a salvo.</string>
+    <string name="runtime_chat_stopped">El harness de este teléfono no está en marcha.</string>
+    <string name="runtime_chat_restarting">Iniciando el harness de este teléfono…</string>
+    <string name="runtime_chat_updating">Actualizando el harness de este teléfono. El chat vuelve cuando termine.</string>
 </resources>

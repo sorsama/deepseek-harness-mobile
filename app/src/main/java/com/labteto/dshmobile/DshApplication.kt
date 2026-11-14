@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import com.labteto.dshmobile.connection.KeepAliveWorker
 import com.labteto.dshmobile.notify.NotificationObserver
+import com.labteto.dshmobile.runtime.RuntimeUpdates
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -15,11 +16,15 @@ class DshApplication : Application() {
     // their frame collectors; start() then begins notification classification.
     @Inject lateinit var notificationObserver: NotificationObserver
 
+    // Harness updates: the daily check, the notifications and automatic installs.
+    @Inject lateinit var runtimeUpdates: RuntimeUpdates
+
     override fun onCreate() {
         super.onCreate()
         AppCompatDelegate.setDefaultNightMode(nightModeFor(storedThemePreference(this)))
         KeepAliveWorker.schedule(this)
         notificationObserver.start()
+        runtimeUpdates.start()
     }
 
     companion object {

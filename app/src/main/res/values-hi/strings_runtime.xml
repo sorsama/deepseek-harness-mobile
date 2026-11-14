@@ -115,4 +115,35 @@
     <string name="runtime_check_footer">हर पंक्ति वह सिस्टम स्क्रीन खोलती है जहाँ इसे बदला जाता है।</string>
 
     <string name="runtime_termux_heading">Termux में harness</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">रिलीज़ %1$s पर अपडेट हो रहा है…</string>
+    <string name="runtime_update_going_back_to">रिलीज़ %1$s पर वापस जा रहा है…</string>
+    <string name="runtime_update_rolled_back_title">नया वर्शन शुरू नहीं हुआ, इसलिए पिछला वाला वापस आ गया है।</string>
+    <string name="runtime_update_rolled_back_detail">रिलीज़ %1$s अब अपने आप इंस्टॉल नहीं होगी। आप रिलीज़ %2$s पर हैं।</string>
+    <string name="runtime_update_needs_app_title">harness अपडेट के लिए ऐप का नया वर्शन चाहिए</string>
+    <string name="runtime_update_skipped">आप रिलीज़ %1$s से वापस आए हैं</string>
+    <string name="runtime_update_skipped_hint">यह अपने आप इंस्टॉल नहीं होगी और इसकी सूचना भी नहीं आएगी। नई रिलीज़ पहले की तरह दिखेंगी।</string>
+    <string name="runtime_update_anyway">फिर भी अपडेट करें</string>
+    <string name="runtime_update_done">अब रिलीज़ %1$s चल रही है।</string>
+    <string name="runtime_update_went_back_done">आप फिर से रिलीज़ %1$s पर हैं।</string>
+    <string name="runtime_update_previous">पिछला वर्शन</string>
+    <string name="runtime_update_go_back">वापस जाएं</string>
+    <string name="runtime_go_back_title">रिलीज़ %1$s पर वापस जाएं?</string>
+    <string name="runtime_go_back_body">harness वर्शन %1$s पर वापस चला जाएगा। अगर यह चल रहा है तो फिर से शुरू होगा, और ऐप अपने आप फिर से जुड़ जाएगा। आपके सेशन और सेटिंग्स बनी रहेंगी। जब तक कोई नई रिलीज़ नहीं आती, रिलीज़ %2$s अपने आप इंस्टॉल नहीं होगी।</string>
+    <string name="runtime_switch_notify_updates">नए वर्शन के बारे में बताएं</string>
+    <string name="runtime_switch_notify_updates_hint">हर नई रिलीज़ के लिए एक सूचना।</string>
+    <string name="runtime_switch_auto_update">अपडेट अपने आप इंस्टॉल करें</string>
+    <string name="runtime_switch_auto_update_hint">सिर्फ़ Wi-Fi या किसी और अनमीटर्ड नेटवर्क पर, और सिर्फ़ तब जब harness बंद हो या खाली हो। बाद में बताया जाएगा कि क्या बदला।</string>
+    <string name="runtime_notif_channel_updates">harness अपडेट</string>
+    <string name="runtime_notif_update_title">harness अपडेट उपलब्ध है</string>
+    <string name="runtime_notif_update_text">रिलीज़ %1$s, harness %2$s। क्या बदलेगा, देखने के लिए टैप करें।</string>
+    <string name="runtime_notif_updated_title">harness अपडेट हो गया</string>
+    <string name="runtime_notif_updated_text">अब रिलीज़ %1$s, harness %2$s।</string>
+    <string name="runtime_notif_rolled_back_title">harness अपडेट शुरू नहीं हुआ</string>
+    <string name="runtime_notif_rolled_back_text">रिलीज़ %1$s वापस आ गई है। वजह देखने के लिए टैप करें।</string>
+    <string name="runtime_chat_crashed">इस फ़ोन का harness अचानक बंद हो गया। आपके सेशन सुरक्षित हैं।</string>
+    <string name="runtime_chat_stopped">इस फ़ोन का harness नहीं चल रहा है।</string>
+    <string name="runtime_chat_restarting">इस फ़ोन का harness शुरू हो रहा है…</string>
+    <string name="runtime_chat_updating">इस फ़ोन का harness अपडेट हो रहा है। पूरा होते ही चैट वापस आ जाएगी।</string>
 </resources>

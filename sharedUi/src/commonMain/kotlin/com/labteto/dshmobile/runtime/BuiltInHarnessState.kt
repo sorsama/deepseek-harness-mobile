@@ -48,9 +48,25 @@ data class BuiltInHarnessState(
     val waitingForNetwork: Boolean = false,
     /** The last download reading, so a pause (a check, a lost network) holds the bar where it was. */
     val lastDownload: DownloadProgress? = null,
+    /**
+     * The release the person went back from, while [update] is that release (or an older one):
+     * nothing nags about it or installs it by itself, and the control page offers "Update anyway".
+     * Null again once a newer release appears.
+     */
+    val skippedRelease: String? = null,
+    /** How the last update or "go back" ended, until the person moves on. */
+    val outcome: UpdateOutcome? = null,
 ) {
     /** False on iOS and on a device without a 64-bit ABI the runtime is built for. */
     val supported: Boolean get() = runtime !is RuntimeState.NotSupported
+
+    /** The newer release needs a newer DSH Mobile: the version it asks for, or null. */
+    val updateNeedsApp: String?
+        get() = (releaseProblem as? RuntimeFailure.AppTooOld)?.minAppVersion?.takeIf { installed != null }
+
+    /** An update worth a quiet mark: one that can be installed and was not left on purpose, or one that needs the app updated first. */
+    val updateWorthShowing: Boolean
+        get() = update != null && skippedRelease == null || updateNeedsApp != null
 
     /** What is on the device, whatever the engine is doing right now. */
     val installed: InstalledRuntime?

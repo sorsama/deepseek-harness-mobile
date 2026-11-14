@@ -115,4 +115,35 @@
     <string name="runtime_check_footer">每一行都会打开可以更改它的系统页面。</string>
 
     <string name="runtime_termux_heading">Termux 中的 harness</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">正在更新到运行环境版本 %1$s…</string>
+    <string name="runtime_update_going_back_to">正在退回运行环境版本 %1$s…</string>
+    <string name="runtime_update_rolled_back_title">新版本没能启动，已换回之前的版本。</string>
+    <string name="runtime_update_rolled_back_detail">版本 %1$s 不会再自动安装。你现在用的是版本 %2$s。</string>
+    <string name="runtime_update_needs_app_title">harness 更新需要更新的应用版本</string>
+    <string name="runtime_update_skipped">你已从版本 %1$s 退回</string>
+    <string name="runtime_update_skipped_hint">它不会自动安装，也不会再通知你。更新的版本照常提供。</string>
+    <string name="runtime_update_anyway">仍然更新</string>
+    <string name="runtime_update_done">现在是版本 %1$s。</string>
+    <string name="runtime_update_went_back_done">你已退回版本 %1$s。</string>
+    <string name="runtime_update_previous">上一个版本</string>
+    <string name="runtime_update_go_back">退回</string>
+    <string name="runtime_go_back_title">退回到版本 %1$s？</string>
+    <string name="runtime_go_back_body">harness 会退回到 %1$s。如果正在运行，它会重启，应用会自动重新连接。你的会话和设置都会保留。在有更新的版本发布之前，版本 %2$s 不会自动安装。</string>
+    <string name="runtime_switch_notify_updates">有新版本时通知我</string>
+    <string name="runtime_switch_notify_updates_hint">每个新版本只通知一次。</string>
+    <string name="runtime_switch_auto_update">自动安装更新</string>
+    <string name="runtime_switch_auto_update_hint">只在 Wi-Fi 或其他不按流量计费的网络下，并且只在 harness 已停止或空闲时进行。之后会告诉你改了什么。</string>
+    <string name="runtime_notif_channel_updates">harness 更新</string>
+    <string name="runtime_notif_update_title">有可用的 harness 更新</string>
+    <string name="runtime_notif_update_text">版本 %1$s，harness %2$s。点按查看会有哪些变化。</string>
+    <string name="runtime_notif_updated_title">harness 已更新</string>
+    <string name="runtime_notif_updated_text">现在是版本 %1$s，harness %2$s。</string>
+    <string name="runtime_notif_rolled_back_title">harness 更新没能启动</string>
+    <string name="runtime_notif_rolled_back_text">已换回版本 %1$s。点按查看原因。</string>
+    <string name="runtime_chat_crashed">这台手机上的 harness 意外停止了。你的会话都还在。</string>
+    <string name="runtime_chat_stopped">这台手机上的 harness 没有在运行。</string>
+    <string name="runtime_chat_restarting">正在启动这台手机上的 harness…</string>
+    <string name="runtime_chat_updating">正在更新这台手机上的 harness。完成后聊天会自动恢复。</string>
 </resources>

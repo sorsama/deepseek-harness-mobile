@@ -206,6 +206,14 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
             DsToastHost(toast, modifier = Modifier.fillMaxWidth())
         }
 
+        // A harness update notification was tapped: its control page, over whatever is on screen.
+        val openRuntimeControls by com.labteto.dshmobile.ui.screens.runtime.OpenRuntimeControls.requested.collectAsStateWithLifecycle()
+        com.labteto.dshmobile.ui.screens.runtime.BuiltInControlsOverlay(
+            open = openRuntimeControls,
+            atLog = false,
+            onClose = com.labteto.dshmobile.ui.screens.runtime.OpenRuntimeControls::done,
+        )
+
         // Offered over whatever is on screen, and only once per release: dismissing records the
         // version, so the next launch is quiet until there is a newer one.
         update?.takeIf { !updateHidden }?.let { available ->

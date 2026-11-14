@@ -115,4 +115,35 @@
     <string name="runtime_check_footer">Каждая строка открывает системный экран, где это меняется.</string>
 
     <string name="runtime_termux_heading">Harness в Termux</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">Обновление до версии среды %1$s…</string>
+    <string name="runtime_update_going_back_to">Возврат к версии среды %1$s…</string>
+    <string name="runtime_update_rolled_back_title">Новая версия не запустилась, поэтому вернулась прежняя.</string>
+    <string name="runtime_update_rolled_back_detail">Версия %1$s больше не установится сама. Сейчас у вас версия %2$s.</string>
+    <string name="runtime_update_needs_app_title">Для обновления harness нужно более новое приложение</string>
+    <string name="runtime_update_skipped">Вы вернулись с версии %1$s</string>
+    <string name="runtime_update_skipped_hint">Она не установится сама и не будет присылать уведомления. Более новые версии будут предлагаться как обычно.</string>
+    <string name="runtime_update_anyway">Всё равно обновить</string>
+    <string name="runtime_update_done">Теперь у вас версия %1$s.</string>
+    <string name="runtime_update_went_back_done">Вы снова на версии %1$s.</string>
+    <string name="runtime_update_previous">Предыдущая версия</string>
+    <string name="runtime_update_go_back">Вернуться</string>
+    <string name="runtime_go_back_title">Вернуться к версии %1$s?</string>
+    <string name="runtime_go_back_body">Harness вернётся к версии %1$s. Если он запущен, он перезапустится, а приложение подключится заново само. Ваши сессии и настройки останутся. Версия %2$s не установится сама, пока не выйдет более новая.</string>
+    <string name="runtime_switch_notify_updates">Сообщать о новых версиях</string>
+    <string name="runtime_switch_notify_updates_hint">Одно уведомление на каждую новую версию.</string>
+    <string name="runtime_switch_auto_update">Устанавливать обновления самостоятельно</string>
+    <string name="runtime_switch_auto_update_hint">Только по Wi-Fi или другой безлимитной сети и только когда harness остановлен или ничем не занят. Потом вы узнаете, что изменилось.</string>
+    <string name="runtime_notif_channel_updates">Обновления harness</string>
+    <string name="runtime_notif_update_title">Есть обновление harness</string>
+    <string name="runtime_notif_update_text">Версия %1$s, harness %2$s. Нажмите, чтобы посмотреть, что изменится.</string>
+    <string name="runtime_notif_updated_title">Harness обновлён</string>
+    <string name="runtime_notif_updated_text">Теперь версия %1$s, harness %2$s.</string>
+    <string name="runtime_notif_rolled_back_title">Обновление harness не запустилось</string>
+    <string name="runtime_notif_rolled_back_text">Версия %1$s вернулась. Нажмите, чтобы узнать почему.</string>
+    <string name="runtime_chat_crashed">Harness на этом телефоне неожиданно остановился. Ваши сессии сохранены.</string>
+    <string name="runtime_chat_stopped">Harness на этом телефоне не запущен.</string>
+    <string name="runtime_chat_restarting">Запускаем harness на этом телефоне…</string>
+    <string name="runtime_chat_updating">Обновляем harness на этом телефоне. Чат вернётся, когда всё закончится.</string>
 </resources>

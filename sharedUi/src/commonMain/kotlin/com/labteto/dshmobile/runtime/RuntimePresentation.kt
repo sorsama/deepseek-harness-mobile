@@ -330,7 +330,7 @@ data class BuiltInCard(
  */
 fun builtInCard(state: BuiltInHarnessState, loopback: LoopbackStatus, connected: Boolean, port: Int): BuiltInCard? {
     if (!state.supported) return null
-    val update = state.update != null
+    val update = state.updateWorthShowing
     return when (val r = state.runtime) {
         is RuntimeState.NotSupported -> null
         RuntimeState.NotInstalled -> when {
@@ -385,6 +385,50 @@ fun builtInCard(state: BuiltInHarnessState, loopback: LoopbackStatus, connected:
             val issue = runtimeIssue(r.reason, installed = r.installed != null, port = port)
             BuiltInCard(BuiltInCardPhase.Failed, issue.fix, issue.second, issue = issue, updateAvailable = update)
         }
+    }
+}
+
+// ---- The chat's notice ---------------------------------------------------------------------------
+
+/** What the chat says about the harness on this phone when it is not up. */
+enum class ChatNoticeKind {
+    /** It ended on its own (a crash, or the system stopped it). Restart and the log. */
+    Crashed,
+
+    /** It is installed and not running. Restart (a start) and the log. */
+    Stopped,
+
+    /** A start or a restart is on its way; nothing to press. */
+    Restarting,
+
+    /** An update is being installed; the chat comes back when it is done. Nothing to press. */
+    Updating,
+
+    /** A start failed: its own sentence ([ChatNotice.issue]), Restart and the log. */
+    StartFailed,
+}
+
+data class ChatNotice(val kind: ChatNoticeKind, val issue: RuntimeIssue? = null)
+
+/**
+ * The chat's notice for the built-in harness, or null when there is nothing to say.
+ *
+ * [onBuiltIn] is whether the chat's connection is to this phone's built-in harness (and that
+ * harness has served it in this app process), [connected] whether that connection is up. Up means
+ * no notice; a harness that runs but is not reached yet is the chat's own "Reconnecting" strip.
+ */
+fun builtInChatNotice(runtime: RuntimeState, onBuiltIn: Boolean, connected: Boolean): ChatNotice? {
+    if (!onBuiltIn || connected) return null
+    return when (runtime) {
+        is RuntimeState.Failed -> when {
+            runtime.installed == null -> null
+            runtime.reason is RuntimeFailure.Crashed -> ChatNotice(ChatNoticeKind.Crashed)
+            else -> ChatNotice(ChatNoticeKind.StartFailed, runtimeIssue(runtime.reason, installed = true, port = 0))
+        }
+        is RuntimeState.Stopped -> ChatNotice(ChatNoticeKind.Stopped)
+        is RuntimeState.Starting, is RuntimeState.Stopping -> ChatNotice(ChatNoticeKind.Restarting)
+        is RuntimeState.Updating -> ChatNotice(ChatNoticeKind.Updating)
+        else -> null
     }
 }
 

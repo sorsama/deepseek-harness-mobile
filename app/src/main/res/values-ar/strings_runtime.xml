@@ -115,4 +115,35 @@
     <string name="runtime_check_footer">كل صف يفتح شاشة النظام التي يُغيَّر منها.</string>
 
     <string name="runtime_termux_heading">harness في Termux</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">جارٍ التحديث إلى الإصدار %1$s…</string>
+    <string name="runtime_update_going_back_to">جارٍ الرجوع إلى الإصدار %1$s…</string>
+    <string name="runtime_update_rolled_back_title">لم يبدأ الإصدار الجديد، فعاد الإصدار السابق.</string>
+    <string name="runtime_update_rolled_back_detail">لن يُثبَّت الإصدار %1$s تلقائيًا مرة أخرى. أنت الآن على الإصدار %2$s.</string>
+    <string name="runtime_update_needs_app_title">تحديث harness يحتاج إلى تطبيق أحدث</string>
+    <string name="runtime_update_skipped">رجعت من الإصدار %1$s</string>
+    <string name="runtime_update_skipped_hint">لن يُثبَّت تلقائيًا ولن يصلك إشعار عنه. ستُعرض الإصدارات الأحدث كالمعتاد.</string>
+    <string name="runtime_update_anyway">التحديث على أي حال</string>
+    <string name="runtime_update_done">أنت الآن على الإصدار %1$s.</string>
+    <string name="runtime_update_went_back_done">رجعت إلى الإصدار %1$s.</string>
+    <string name="runtime_update_previous">الإصدار السابق</string>
+    <string name="runtime_update_go_back">الرجوع</string>
+    <string name="runtime_go_back_title">الرجوع إلى الإصدار %1$s؟</string>
+    <string name="runtime_go_back_body">سيعود harness إلى النسخة %1$s. إن كان يعمل فسيُعاد تشغيله وسيعيد التطبيق الاتصال تلقائيًا. تبقى جلساتك وإعداداتك كما هي. لن يُثبَّت الإصدار %2$s تلقائيًا حتى يصدر إصدار أحدث منه.</string>
+    <string name="runtime_switch_notify_updates">أعلمني بالنسخ الجديدة</string>
+    <string name="runtime_switch_notify_updates_hint">إشعار واحد لكل إصدار جديد.</string>
+    <string name="runtime_switch_auto_update">تثبيت التحديثات تلقائيًا</string>
+    <string name="runtime_switch_auto_update_hint">فقط على Wi-Fi أو شبكة أخرى غير محدودة، وفقط حين يكون harness متوقفًا أو غير مشغول. ستعرف بعدها ما الذي تغيّر.</string>
+    <string name="runtime_notif_channel_updates">تحديثات harness</string>
+    <string name="runtime_notif_update_title">يتوفر تحديث لـ harness</string>
+    <string name="runtime_notif_update_text">الإصدار %1$s مع harness %2$s. اضغط لترى ما الذي سيتغيّر.</string>
+    <string name="runtime_notif_updated_title">تم تحديث harness</string>
+    <string name="runtime_notif_updated_text">أنت الآن على الإصدار %1$s مع harness %2$s.</string>
+    <string name="runtime_notif_rolled_back_title">لم يبدأ تحديث harness</string>
+    <string name="runtime_notif_rolled_back_text">عاد الإصدار %1$s. اضغط لترى السبب.</string>
+    <string name="runtime_chat_crashed">توقّف harness على هذا الهاتف بشكل غير متوقع. جلساتك محفوظة.</string>
+    <string name="runtime_chat_stopped">harness على هذا الهاتف لا يعمل.</string>
+    <string name="runtime_chat_restarting">جارٍ تشغيل harness على هذا الهاتف…</string>
+    <string name="runtime_chat_updating">جارٍ تحديث harness على هذا الهاتف. ستعود المحادثة عند الانتهاء.</string>
 </resources>
