@@ -28,11 +28,17 @@ object ManifestPolicy {
         }
     }
 
+    /**
+     * [allowOlder] accepts a release with a lower `sequence` than the installed one. Only the
+     * person's own "go back to the previous version" passes it; every automatic path and the
+     * ordinary update keep refusing a lower sequence (README, "Manifest schema": `sequence`).
+     */
     fun decide(
         manifest: RuntimeManifest,
         appVersion: String,
         deviceAbis: List<String>,
         installed: InstalledRecord?,
+        allowOlder: Boolean = false,
     ): Decision {
         if (!AppVersion.satisfies(appVersion, manifest.minAppVersion)) {
             return Decision.Refused(RuntimeFailure.AppTooOld(manifest.minAppVersion))
@@ -42,7 +48,7 @@ object ManifestPolicy {
             // names the wrong key: a release-tooling bug, refused rather than guessed about.
             return Decision.Refused(RuntimeFailure.BadManifest("keyId ${manifest.signing.keyId}"))
         }
-        if (installed != null && manifest.sequence < installed.sequence) {
+        if (installed != null && manifest.sequence < installed.sequence && !allowOlder) {
             return Decision.Refused(RuntimeFailure.OlderRelease(installed.sequence, manifest.sequence))
         }
         val abi = deviceAbi(deviceAbis)

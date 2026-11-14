@@ -40,6 +40,9 @@ class RuntimeFixture(tmp: TemporaryFolder) {
 
     val manifestUrl: String get() = server.url("/rel/manifest.json").toString()
 
+    /** The manifest URL of a release published under [dir] (`publish(..., dir = ...)`). */
+    fun manifestUrlOf(dir: String): String = server.url("/$dir/manifest.json").toString()
+
     data class Layer(val name: String, val id: String, val bytes: ByteArray, val entries: Int) {
         val file = "dsh-runtime-$name-x86_64-$id.tar.zst"
     }
@@ -69,8 +72,9 @@ class RuntimeFixture(tmp: TemporaryFolder) {
     }
 
     /**
-     * Publish a release: the layers, a manifest describing [described] (defaults to the served
-     * layers), signed by [signer].
+     * Publish a release: the layers and a manifest describing them, signed by [signer]. [dir] is
+     * where it is served (`rel` is "the latest"); [previous] is the release before it, by its dir
+     * (it must have been published already), for the manifest's `previous` pointer.
      */
     fun publish(
         base: Layer,
@@ -80,12 +84,18 @@ class RuntimeFixture(tmp: TemporaryFolder) {
         minAppVersion: String = "0.22.0",
         signer: TestSigningKey = key,
         servedBase: ByteArray = base.bytes,
+        dir: String = "rel",
+        previous: Pair<String, Long>? = null,
+        releaseId: String = "test-$sequence",
     ) {
         release.files["rel/assets/${base.file}"] = servedBase
         release.files["rel/assets/${harness.file}"] = harness.bytes
-        val json = manifestJson(base, harness, sequence, harnessVersion, minAppVersion)
-        release.files["rel/manifest.json"] = json.toByteArray()
-        release.files["rel/manifest.json.sig"] = signer.signatureFile(json.toByteArray())
+        val pointer = previous?.let { (prevDir, prevSequence) ->
+            """{"releaseId": "test-$prevSequence", "harnessVersion": "x", "sequence": $prevSequence, "manifestUrl": "${manifestUrlOf(prevDir)}"}"""
+        }
+        val json = manifestJson(base, harness, sequence, harnessVersion, minAppVersion, pointer, releaseId)
+        release.files["$dir/manifest.json"] = json.toByteArray()
+        release.files["$dir/manifest.json.sig"] = signer.signatureFile(json.toByteArray())
     }
 
     fun installer(appVersion: String = "0.22.0") = RuntimeInstaller(
@@ -104,7 +114,15 @@ class RuntimeFixture(tmp: TemporaryFolder) {
 
     fun assetRequests(layer: Layer) = release.requestsFor("rel/assets/${layer.file}")
 
-    private fun manifestJson(base: Layer, harness: Layer, sequence: Long, harnessVersion: String, minAppVersion: String): String {
+    private fun manifestJson(
+        base: Layer,
+        harness: Layer,
+        sequence: Long,
+        harnessVersion: String,
+        minAppVersion: String,
+        previous: String? = null,
+        releaseId: String = "test-$sequence",
+    ): String {
         fun layer(l: Layer, extra: String) = """
             {"file": "${l.file}", "size": ${l.bytes.size}, "sha256": "${sha256Hex(l.bytes)}", "name": "${l.name}", "id": "${l.id}",
              "compression": "zstd", "zstdWindowLog": 27, "format": "tar (GNU)", "unpackedSize": ${l.bytes.size}, "entries": ${l.entries}$extra}
@@ -112,7 +130,7 @@ class RuntimeFixture(tmp: TemporaryFolder) {
         return """
             {
               "schemaVersion": 1,
-              "releaseId": "test-$sequence",
+              "releaseId": "$releaseId",${if (previous != null) "\n  \"previous\": $previous," else ""}
               "sequence": $sequence,
               "createdAt": "2026-11-14T00:00:00Z",
               "minAppVersion": "$minAppVersion",

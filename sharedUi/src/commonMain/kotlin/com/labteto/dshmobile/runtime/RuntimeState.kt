@@ -14,19 +14,32 @@ data class InstalledRuntime(
     val nodeVersion: String,
     val baseId: String,
     val harnessId: String,
-    /** True after a harness-only update until the new harness has reached readiness once. */
+    /** True after an update until the new release has reached readiness once. */
     val harnessOnTrial: Boolean = false,
+    /** The release before this one, from the installed manifest's `previous`: where "Go back" leads. */
+    val previousRelease: ReleaseRef? = null,
+)
+
+/** A release by the three things the screens say about it. */
+data class ReleaseRef(
+    val releaseId: String,
+    val harnessVersion: String,
+    val sequence: Long,
 )
 
 /** A release newer than what is installed, found by a check. */
 data class AvailableRuntimeUpdate(
     val releaseId: String,
     val harnessVersion: String,
-    /** Bytes to download: only the layers whose id changed. */
+    /** Bytes to download: only the layers that changed (id or archive). */
     val downloadBytes: Long,
     val baseChanges: Boolean,
     val harnessChanges: Boolean,
-)
+    /** The release's `sequence`, which orders releases: what "skipped" and "notified" compare. */
+    val sequence: Long = 0,
+) {
+    val ref: ReleaseRef get() = ReleaseRef(releaseId, harnessVersion, sequence)
+}
 
 /** Download progress over every layer this install or update fetches. */
 data class DownloadProgress(
@@ -124,8 +137,32 @@ sealed interface RuntimeFailure {
     data class PortInUse(val port: Int) : RuntimeFailure
 }
 
-/** A harness-only update whose new harness never became ready; the previous one was put back. */
-data class RolledBackUpdate(val failedVersion: String, val reason: RuntimeFailure)
+/** An update whose new release never became ready; the previous one was put back. */
+data class RolledBackUpdate(
+    val failedVersion: String,
+    val reason: RuntimeFailure,
+    /** The release that did not start, so automatic updates do not try it again. */
+    val failedReleaseId: String = "",
+    val failedSequence: Long = 0,
+)
+
+/**
+ * How the last update (or the person's "go back") ended, for the control page and for the
+ * notification that tells the person afterwards what changed.
+ */
+sealed interface UpdateOutcome {
+    val from: ReleaseRef
+    val to: ReleaseRef
+
+    /** The new release is installed. [wentBack] when the person chose an older one. */
+    data class Applied(override val from: ReleaseRef, override val to: ReleaseRef, val wentBack: Boolean = false) : UpdateOutcome
+
+    /** The new release never started, so [from] is back. [reason] has the end of its log. */
+    data class RolledBack(override val from: ReleaseRef, override val to: ReleaseRef, val reason: RuntimeFailure) : UpdateOutcome
+
+    /** The update stopped before anything changed: what is installed is still [from]. */
+    data class Failed(override val from: ReleaseRef, override val to: ReleaseRef, val reason: RuntimeFailure, val wentBack: Boolean = false) : UpdateOutcome
+}
 
 /** What the built-in runtime is doing, or last did. */
 sealed interface RuntimeState {
@@ -164,8 +201,17 @@ sealed interface RuntimeState {
 
     data class Stopping(val port: Int, val installed: InstalledRuntime) : RuntimeState
 
-    /** Updating an installed runtime; [installed] is what runs until the switch. */
-    data class Updating(val phase: UpdatePhase, val installed: InstalledRuntime) : RuntimeState
+    /**
+     * Updating an installed runtime; [installed] is what runs until the switch. [target] is the
+     * release being installed once its manifest is read, and [goingBack] says the person chose an
+     * older one.
+     */
+    data class Updating(
+        val phase: UpdatePhase,
+        val installed: InstalledRuntime,
+        val target: ReleaseRef? = null,
+        val goingBack: Boolean = false,
+    ) : RuntimeState
 
     /** The last operation failed; [installed] is what is still on the device, if anything. */
     data class Failed(val reason: RuntimeFailure, val installed: InstalledRuntime?) : RuntimeState

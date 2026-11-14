@@ -27,7 +27,16 @@ data class RuntimeManifest(
     val node: Node = Node(),
     val runtime: Runtime,
     val archs: Map<String, Arch>,
+    /** The release before this one (README "How updates reach the app"); absent in the first release. */
+    val previous: Previous? = null,
 ) {
+    /**
+     * Where "go back to the previous version" leads. Fetched and verified like any manifest, and
+     * installed only when the person asks for it: its `sequence` is lower than this one's.
+     */
+    @Serializable
+    data class Previous(val releaseId: String, val harnessVersion: String = "", val sequence: Long, val manifestUrl: String)
+
     @Serializable
     data class Signing(val algorithm: String, val keyId: String, val signatureFile: String = "manifest.json.sig")
 
@@ -110,6 +119,12 @@ data class RuntimeManifest(
         }
         if (!runtime.entrypoint.startsWith("/")) throw ManifestException("entrypoint ${runtime.entrypoint}")
         if (runtime.readinessPrefix.isBlank()) throw ManifestException("readinessPrefix is empty")
+        previous?.let { p ->
+            if (!p.manifestUrl.startsWith("https://") || !p.manifestUrl.endsWith("/manifest.json")) {
+                throw ManifestException("previous.manifestUrl must be an https URL of a manifest.json")
+            }
+            if (p.sequence >= sequence) throw ManifestException("previous.sequence ${p.sequence} is not below $sequence")
+        }
         for (proc in runtime.fakeProc) {
             if (!isGuestPath(proc.source) || !isGuestPath(proc.target) || !proc.target.startsWith("/proc/")) {
                 throw ManifestException("fakeProc ${proc.source} -> ${proc.target}")

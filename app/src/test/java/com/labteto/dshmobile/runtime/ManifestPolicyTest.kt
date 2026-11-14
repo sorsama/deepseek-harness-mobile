@@ -63,6 +63,21 @@ class ManifestPolicyTest {
     }
 
     @Test
+    fun `a lower sequence is accepted only for the person's own go back`() {
+        val newer = installed(base = "x", harness = "y", sequence = manifest.sequence + 1)
+        val goBack = ManifestPolicy.decide(manifest, "0.22.0", listOf("x86_64"), newer, allowOlder = true)
+        assertTrue(goBack is ManifestPolicy.Decision.Install)
+        // Every other path (the default) still refuses it.
+        assertTrue(ManifestPolicy.decide(manifest, "0.22.0", listOf("x86_64"), newer) is ManifestPolicy.Decision.Refused)
+        assertTrue(ManifestPolicy.decide(manifest, "0.22.0", listOf("x86_64"), newer, allowOlder = false) is ManifestPolicy.Decision.Refused)
+        // Going back does not get past the other checks: an app too old for it is still refused.
+        assertEquals(
+            ManifestPolicy.Decision.Refused(RuntimeFailure.AppTooOld(manifest.minAppVersion)),
+            ManifestPolicy.decide(manifest, "0.21.1", listOf("x86_64"), newer, allowOlder = true),
+        )
+    }
+
+    @Test
     fun `only changed layers are fetched`() {
         val base = manifest.layer("x86_64", "base")!!
         val harness = manifest.layer("x86_64", "harness")!!

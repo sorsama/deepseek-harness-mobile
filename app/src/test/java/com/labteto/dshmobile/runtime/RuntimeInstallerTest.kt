@@ -41,7 +41,7 @@ class RuntimeInstallerTest {
     private fun assertOnlyCommitted(record: InstalledRecord?) {
         val names = fx.layout.root.list().orEmpty().toSet()
         val layerDirs = names.filter { it.startsWith("base-") || it.startsWith("harness-") || it.startsWith(".staging-") }.toSet()
-        val expected = listOfNotNull(record?.base?.dir, record?.harness?.dir, record?.previousHarness?.dir).toSet()
+        val expected = record?.layerDirs().orEmpty()
         assertEquals(expected, layerDirs)
         assertEquals(record != null, fx.layout.installedFile.exists())
     }
@@ -56,7 +56,7 @@ class RuntimeInstallerTest {
 
         assertEquals("test-100", record.releaseId)
         assertEquals("1.0.0", record.harnessVersion)
-        assertNull(record.previousHarness)
+        assertNull(record.trial)
         assertEquals(record, InstalledStore(fx.layout).read())
         assertOnlyCommitted(record)
 
@@ -201,15 +201,15 @@ class RuntimeInstallerTest {
 
         assertEquals(1, fx.assetRequests(base).size) // only by the first install
         assertEquals(first.base, updated.base)
-        assertEquals(first.harness, updated.previousHarness)
-        assertEquals("1.0.0", updated.previousHarnessVersion)
+        assertEquals(first.harness, updated.trial!!.harness)
+        assertEquals("1.0.0", updated.trial!!.harnessVersion)
         assertTrue(updated.onTrial)
         assertTrue(updated.toInstalledRuntime().harnessOnTrial)
         assertOnlyCommitted(updated)
 
         // Ready once: the previous harness goes.
         val committed = installer.commitTrial()!!
-        assertNull(committed.previousHarness)
+        assertNull(committed.trial)
         assertEquals("2.0.0", committed.harnessVersion)
         assertFalse(File(fx.layout.root, first.harness.dir).exists())
         assertOnlyCommitted(committed)
@@ -225,7 +225,7 @@ class RuntimeInstallerTest {
         val updated = install(fx.installer())
         assertEquals(first.harness.id, updated.harness.id)
         assertTrue(first.harness.dir != updated.harness.dir)
-        assertEquals(first.harness, updated.previousHarness)
+        assertEquals(first.harness, updated.trial?.harness)
         assertTrue(File(fx.layout.root, first.harness.dir).isDirectory)
         assertTrue(File(File(fx.layout.root, updated.harness.dir), "opt/dsh/runtime-pack/index").isFile)
         assertOnlyCommitted(updated)
@@ -243,7 +243,10 @@ class RuntimeInstallerTest {
         val rolledBack = fx.installer().rollbackTrial()!!
         assertEquals(first.harness, rolledBack.harness)
         assertEquals("1.0.0", rolledBack.harnessVersion)
-        assertNull(rolledBack.previousHarness)
+        // The whole release comes back, not only its harness: the next check offers the update again.
+        assertEquals(first.releaseId, rolledBack.releaseId)
+        assertEquals(100, rolledBack.sequence)
+        assertNull(rolledBack.trial)
         assertFalse(File(fx.layout.root, updated.harness.dir).exists())
         assertTrue(File(fx.layout.root, first.harness.dir).isDirectory)
         assertOnlyCommitted(rolledBack)
@@ -261,10 +264,106 @@ class RuntimeInstallerTest {
         val updated = install(fx.installer())
         assertEquals("base-b", updated.base.id)
         assertEquals(first.harness, updated.harness)
-        assertNull(updated.previousHarness)
+        // A base change goes on trial too: the old base stays until the new one has started once.
+        assertEquals(first.base, updated.trial!!.base)
+        assertTrue(File(fx.layout.root, first.base.dir).isDirectory)
+        assertOnlyCommitted(updated)
+
+        val committed = fx.installer().commitTrial()!!
         assertFalse(File(fx.layout.root, first.base.dir).exists())
         assertEquals("{\"apiKey\":\"kept\"}", File(fx.layout.home, "settings.json").readText())
-        assertOnlyCommitted(updated)
+        assertOnlyCommitted(committed)
+    }
+
+    @Test
+    fun `a base and harness update that never starts is rolled back whole and user data stays`() = runBlocking {
+        fx.publish(fx.baseLayer("base-a"), fx.harnessLayer("1.0.0"), sequence = 100)
+        val first = install(fx.installer())
+        fx.layout.home.mkdirs()
+        File(fx.layout.home, "sessions.json").writeText("[1]")
+
+        fx.publish(fx.baseLayer("base-b"), fx.harnessLayer("2.0.0"), sequence = 101)
+        val updated = install(fx.installer())
+        assertEquals(setOf("base-b", "dsh-2.0.0"), setOf(updated.base.id, updated.harness.id))
+
+        val back = fx.installer().rollbackTrial()!!
+        assertEquals(first.base, back.base)
+        assertEquals(first.harness, back.harness)
+        assertEquals(first.releaseId, back.releaseId)
+        assertFalse(File(fx.layout.root, updated.base.dir).exists())
+        assertFalse(File(fx.layout.root, updated.harness.dir).exists())
+        assertEquals("[1]", File(fx.layout.home, "sessions.json").readText())
+        assertOnlyCommitted(back)
+    }
+
+    @Test
+    fun `only the changed layers count toward the download size`() {
+        val base = fx.baseLayer()
+        fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100)
+        val fresh = available(fx.installer())
+        assertEquals(base.bytes.size.toLong() + fx.harnessLayer("1.0.0").bytes.size, fresh.toUpdate().downloadBytes)
+        install(fx.installer())
+
+        val v2 = fx.harnessLayer("2.0.0")
+        fx.publish(base, v2, sequence = 101)
+        val update = available(fx.installer()).toUpdate()
+        assertEquals(v2.bytes.size.toLong(), update.downloadBytes)
+        assertFalse(update.baseChanges)
+        assertEquals(101, update.sequence)
+
+        // A layer still on the device (the release kept for a rollback) is not fetched again.
+        val layers = available(fx.installer()).decision.layers
+        assertEquals(0, RuntimeInstaller.changedDownloadBytes(layers) { true })
+        assertEquals(v2.bytes.size.toLong(), RuntimeInstaller.changedDownloadBytes(layers) { false })
+    }
+
+    @Test
+    fun `going back fetches the previous manifest, accepts its lower sequence and checks it is that release`() = runBlocking {
+        val base = fx.baseLayer()
+        fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100, dir = "r100")
+        fx.publish(base, fx.harnessLayer("2.0.0"), sequence = 101, previous = "r100" to 100L)
+        val latest = install(fx.installer())
+        assertEquals(100, latest.previousRelease!!.sequence)
+        assertEquals(fx.manifestUrlOf("r100"), latest.previousRelease!!.manifestUrl)
+        fx.installer().commitTrial()
+
+        // The ordinary check still refuses the older release, even fetched from its own URL.
+        assertEquals(
+            RuntimeInstaller.CheckResult.Refused(RuntimeFailure.OlderRelease(101, 100)),
+            fx.installer().check(fx.manifestUrlOf("r100")),
+        )
+
+        val back = fx.installer().checkPrevious() as RuntimeInstaller.CheckResult.Available
+        assertEquals(100, back.manifest.sequence)
+        assertEquals(listOf("harness"), back.decision.layers.map { it.name })
+        val record = fx.installer().apply(back.manifest, back.decision, onEvent = {})
+        assertEquals(100, record.sequence)
+        assertEquals("1.0.0", record.harnessVersion)
+        assertNull(record.previousRelease)
+        assertTrue(record.onTrial)
+
+        // A pointer whose manifest is another release is refused.
+        fx.publish(base, fx.harnessLayer("3.0.0"), sequence = 102, previous = "r100" to 100L)
+        install(fx.installer())
+        fx.installer().commitTrial()
+        fx.publish(base, fx.harnessLayer("1.5.0"), sequence = 99, dir = "r100")
+        assertTrue(fx.installer().checkPrevious() is RuntimeInstaller.CheckResult.Refused)
+    }
+
+    @Test
+    fun `a previous manifest signed by another key is refused`() = runBlocking {
+        val base = fx.baseLayer()
+        fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100, dir = "r100", signer = TestSigningKey())
+        fx.publish(base, fx.harnessLayer("2.0.0"), sequence = 101, previous = "r100" to 100L)
+        install(fx.installer())
+        assertEquals(RuntimeInstaller.CheckResult.Refused(RuntimeFailure.BadSignature), fx.installer().checkPrevious())
+    }
+
+    @Test
+    fun `without a previous pointer there is nothing to go back to`() = runBlocking {
+        fx.publish(fx.baseLayer(), fx.harnessLayer("1.0.0"), sequence = 100)
+        install(fx.installer())
+        assertTrue(fx.installer().checkPrevious() is RuntimeInstaller.CheckResult.Refused)
     }
 
     @Test

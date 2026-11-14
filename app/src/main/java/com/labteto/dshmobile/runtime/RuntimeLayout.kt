@@ -26,8 +26,9 @@ import java.io.IOException
  * ```
  *
  * The layers are kept in separate directories and the harness is bound into the base at start,
- * rather than unpacked over it, so that a harness update can sit next to the previous harness
- * until it has proved it starts, and user data never sits inside a directory an update replaces.
+ * rather than unpacked over it, so that an update (harness, base or both) can sit next to the
+ * layers it replaces until it has proved it starts, and user data never sits inside a directory an
+ * update replaces.
  */
 class RuntimeLayout(val root: File, val cache: File) {
     val installedFile = File(root, "installed.json")
@@ -55,11 +56,7 @@ class RuntimeLayout(val root: File, val cache: File) {
             add(workspaces.name)
             add(run.name)
             add(logs.name)
-            if (record != null) {
-                add(File(record.base.dir).name)
-                add(File(record.harness.dir).name)
-                record.previousHarness?.let { add(File(it.dir).name) }
-            }
+            if (record != null) record.layerDirs().forEach { add(File(it).name) }
         }
         return root.listFiles().orEmpty().filter { it.name !in keep && (it.name.startsWith("base-") || it.name.startsWith("harness-") || it.name.startsWith(STAGING_PREFIX) || it.name.startsWith("installed.json.")) }
     }
@@ -92,15 +89,37 @@ data class InstalledRecord(
     val nodeVersion: String,
     val base: LayerRecord,
     val harness: LayerRecord,
-    /** The harness before a harness-only update, kept until [harness] has been ready once. */
-    val previousHarness: LayerRecord? = null,
-    val previousHarnessVersion: String? = null,
     val entrypoint: String,
     val readinessPrefix: String,
     val fakeProc: List<RuntimeManifest.FakeProc>,
     val resolvConf: String,
+    /** The installed manifest's `previous`: the release "Go back" installs. */
+    val previousRelease: RuntimeManifest.Previous? = null,
+    /**
+     * What was installed before this update, kept (its layer directories included) until this
+     * release has been ready once. A start that never gets there puts it back. Null when nothing
+     * is on trial.
+     */
+    val trial: PriorInstall? = null,
 ) {
-    val onTrial: Boolean get() = previousHarness != null
+    val onTrial: Boolean get() = trial != null
+
+    /** Every layer directory this record needs on disk, the one on trial's predecessor included. */
+    fun layerDirs(): Set<String> = buildSet {
+        add(base.dir)
+        add(harness.dir)
+        trial?.let {
+            add(it.base.dir)
+            add(it.harness.dir)
+        }
+    }
+
+    fun ref() = ReleaseRef(releaseId, harnessVersion, sequence)
+
+    /** This record as the state to come back to if the next one does not start. */
+    fun asPrior() = PriorInstall(
+        releaseId, sequence, harnessVersion, nodeVersion, base, harness, entrypoint, readinessPrefix, fakeProc, resolvConf, previousRelease,
+    )
 
     fun toInstalledRuntime() = InstalledRuntime(
         releaseId = releaseId,
@@ -110,6 +129,40 @@ data class InstalledRecord(
         baseId = base.id,
         harnessId = harness.id,
         harnessOnTrial = onTrial,
+        previousRelease = previousRelease?.let { ReleaseRef(it.releaseId, it.harnessVersion, it.sequence) },
+    )
+}
+
+/** An installed release as [InstalledRecord] keeps it while its successor is on trial. */
+@Serializable
+data class PriorInstall(
+    val releaseId: String,
+    val sequence: Long,
+    val harnessVersion: String,
+    val nodeVersion: String,
+    val base: LayerRecord,
+    val harness: LayerRecord,
+    val entrypoint: String,
+    val readinessPrefix: String,
+    val fakeProc: List<RuntimeManifest.FakeProc>,
+    val resolvConf: String,
+    val previousRelease: RuntimeManifest.Previous? = null,
+) {
+    fun ref() = ReleaseRef(releaseId, harnessVersion, sequence)
+
+    fun restore(abi: String) = InstalledRecord(
+        releaseId = releaseId,
+        sequence = sequence,
+        abi = abi,
+        harnessVersion = harnessVersion,
+        nodeVersion = nodeVersion,
+        base = base,
+        harness = harness,
+        entrypoint = entrypoint,
+        readinessPrefix = readinessPrefix,
+        fakeProc = fakeProc,
+        resolvConf = resolvConf,
+        previousRelease = previousRelease,
     )
 }
 

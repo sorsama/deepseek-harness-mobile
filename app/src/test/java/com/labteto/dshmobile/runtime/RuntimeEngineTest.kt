@@ -197,6 +197,79 @@ class RuntimeEngineTest {
     }
 
     @Test
+    fun `a failed start after an update while running rolls back and says why`() {
+        val base = fx.baseLayer()
+        fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100)
+        engine.install()
+        await("installed") { it is RuntimeState.Stopped }
+        engine.start(3080)
+        await("running v1") { it is RuntimeState.Running }
+
+        // A base and harness update whose harness cannot start: the whole release comes back.
+        fx.publish(fx.baseLayer("trixie-test-r2"), fx.harnessLayer("4.0.0"), sequence = 103)
+        broken += "4.0.0"
+        assertTrue(engine.install())
+        val back = await("running v1 again") { it is RuntimeState.Running && it.rolledBack != null } as RuntimeState.Running
+        assertEquals("1.0.0", back.harnessVersion)
+        assertEquals("test-100", back.installed.releaseId)
+        assertEquals("test-103", back.rolledBack!!.failedReleaseId)
+        val outcome = runBlocking { withTimeout(5_000) { engine.outcomes.first() } } as UpdateOutcome.RolledBack
+        assertEquals("test-103", outcome.to.releaseId)
+        assertEquals("test-100", outcome.from.releaseId)
+        assertTrue((outcome.reason as RuntimeFailure.ExitedBeforeReady).logTail.contains("missing-native.node"))
+        assertFalse(layerDir("base-trixie-test-r2"))
+        assertTrue(layerDir("base-trixie-test-r1"))
+    }
+
+    @Test
+    fun `go back installs the previous release while running and the next update is offered again`() {
+        val base = fx.baseLayer()
+        fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100, dir = "r100")
+        fx.publish(base, fx.harnessLayer("2.0.0"), sequence = 101, previous = "r100" to 100L)
+        engine.install()
+        await("installed v2") { it is RuntimeState.Stopped }
+        engine.start(3080)
+        val up = await("running v2") { it is RuntimeState.Running } as RuntimeState.Running
+        assertEquals(100, up.installed.previousRelease!!.sequence)
+
+        assertTrue(engine.goBack())
+        val going = await("going back") { it is RuntimeState.Updating && it.target != null } as RuntimeState.Updating
+        assertTrue(going.goingBack)
+        assertEquals("test-100", going.target!!.releaseId)
+        val back = await("running v1") { it is RuntimeState.Running && it.harnessVersion == "1.0.0" } as RuntimeState.Running
+        assertEquals(100, back.installed.sequence)
+        assertNull(back.installed.previousRelease)
+        val outcome = runBlocking { withTimeout(5_000) { engine.outcomes.first() } } as UpdateOutcome.Applied
+        assertTrue(outcome.wentBack)
+        assertEquals("test-101", outcome.from.releaseId)
+        // No previous pointer now: nothing further to go back to.
+        assertFalse(engine.goBack())
+        // The newer release is an ordinary update again.
+        val check = runBlocking { engine.checkForUpdate() }
+        assertEquals(101, (check as RuntimeInstaller.CheckResult.Available).manifest.sequence)
+    }
+
+    @Test
+    fun `an update that cannot be fetched reports a failed outcome and the harness keeps running`() {
+        val base = fx.baseLayer()
+        fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100)
+        engine.install()
+        await("installed") { it is RuntimeState.Stopped }
+        engine.start(3080)
+        await("running") { it is RuntimeState.Running }
+
+        val v5 = fx.harnessLayer("5.0.0")
+        fx.publish(base, v5, sequence = 105)
+        fx.release.files.remove("rel/assets/${v5.file}")
+        assertTrue(engine.install())
+        val outcome = runBlocking { withTimeout(15_000) { engine.outcomes.first { it is UpdateOutcome.Failed } } } as UpdateOutcome.Failed
+        assertEquals("test-105", outcome.to.releaseId)
+        assertTrue(outcome.reason is RuntimeFailure.Network)
+        val still = await("still running") { it is RuntimeState.Running } as RuntimeState.Running
+        assertEquals("1.0.0", still.harnessVersion)
+    }
+
+    @Test
     fun `operations in the wrong state are refused, not queued`() {
         assertFalse(engine.start(3080)) // nothing installed
         assertFalse(engine.stop())

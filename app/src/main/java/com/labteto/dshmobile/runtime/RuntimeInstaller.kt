@@ -52,25 +52,37 @@ class RuntimeInstaller(
     sealed interface CheckResult {
         data class Refused(val failure: RuntimeFailure) : CheckResult
         data class UpToDate(val manifest: RuntimeManifest) : CheckResult
-        data class Available(val manifest: RuntimeManifest, val decision: ManifestPolicy.Decision.Install) : CheckResult {
+        /**
+         * [downloadBytes] is what an install of [decision] fetches: the changed layers, less any
+         * that are still on the device from before (the release kept for a rollback).
+         */
+        data class Available(
+            val manifest: RuntimeManifest,
+            val decision: ManifestPolicy.Decision.Install,
+            val downloadBytes: Long = decision.downloadBytes,
+        ) : CheckResult {
             fun toUpdate() = AvailableRuntimeUpdate(
                 releaseId = manifest.releaseId,
                 harnessVersion = manifest.harness.version,
-                downloadBytes = decision.downloadBytes,
+                downloadBytes = downloadBytes,
                 baseChanges = decision.baseChanges,
                 harnessChanges = decision.harnessChanges,
+                sequence = manifest.sequence,
             )
         }
     }
 
     fun installed(): InstalledRecord? = store.read()
 
-    /** Fetch the latest manifest, check its signature before reading a byte of it, and decide. */
-    suspend fun check(): CheckResult = withContext(Dispatchers.IO) {
+    /**
+     * Fetch the latest manifest (or the one at [url]), check its signature before reading a byte of
+     * it, and decide. [allowOlder] is for the person's own "go back" only: see [ManifestPolicy.decide].
+     */
+    suspend fun check(url: String? = null, allowOlder: Boolean = false): CheckResult = withContext(Dispatchers.IO) {
         val manifestBytes: ByteArray
         val signature: ByteArray
         try {
-            val url = manifestUrl()
+            val url = url ?: manifestUrl()
             manifestBytes = fetchSmall(url)
             signature = fetchSmall(url.substringBeforeLast('/') + "/" + SIGNATURE_FILE)
         } catch (e: InstallException) {
@@ -82,11 +94,46 @@ class RuntimeInstaller(
         } catch (e: ManifestException) {
             return@withContext CheckResult.Refused(RuntimeFailure.BadManifest(e.message ?: "unreadable"))
         }
-        when (val decision = ManifestPolicy.decide(manifest, appVersion(), deviceAbis, store.read())) {
+        val installed = store.read()
+        when (val decision = ManifestPolicy.decide(manifest, appVersion(), deviceAbis, installed, allowOlder)) {
             is ManifestPolicy.Decision.Refused -> CheckResult.Refused(decision.failure)
             is ManifestPolicy.Decision.UpToDate -> CheckResult.UpToDate(manifest)
-            is ManifestPolicy.Decision.Install -> CheckResult.Available(manifest, decision)
+            is ManifestPolicy.Decision.Install -> {
+                val sameAbi = installed?.takeIf { it.abi == decision.abi }
+                CheckResult.Available(
+                    manifest,
+                    decision,
+                    downloadBytes = changedDownloadBytes(decision.layers) { reusable(it, sameAbi) != null },
+                )
+            }
         }
+    }
+
+    /**
+     * The installed release's `previous`, fetched and verified with the same pinned key: what
+     * "go back to the previous version" would install. A lower sequence is accepted here and only
+     * here, and the manifest must be the release the pointer names.
+     */
+    suspend fun checkPrevious(): CheckResult {
+        val pointer = store.read()?.previousRelease
+            ?: return CheckResult.Refused(RuntimeFailure.BadManifest("no previous release"))
+        val result = check(pointer.manifestUrl, allowOlder = true)
+        val manifest = when (result) {
+            is CheckResult.Available -> result.manifest
+            is CheckResult.UpToDate -> result.manifest
+            is CheckResult.Refused -> return result
+        }
+        if (manifest.releaseId != pointer.releaseId || manifest.sequence != pointer.sequence) {
+            return CheckResult.Refused(RuntimeFailure.BadManifest("previous is ${manifest.releaseId}, expected ${pointer.releaseId}"))
+        }
+        return result
+    }
+
+    /** A layer of the release kept for a rollback that [layer] names, still unpacked on disk. */
+    private fun reusable(layer: RuntimeManifest.Layer, installed: InstalledRecord?): LayerRecord? {
+        val prior = installed?.trial ?: return null
+        val candidate = if (layer.name == LAYER_BASE) prior.base else prior.harness
+        return candidate.takeIf { it.isLayer(layer) && File(layout.root, it.dir).isDirectory }
     }
 
     /**
@@ -107,8 +154,8 @@ class RuntimeInstaller(
         layout.downloads.mkdirs()
         val installed = store.read()?.takeIf { it.abi == decision.abi }
         val layers = decision.layers
-        val reuse = layers.filter { it.name == LAYER_HARNESS && installed?.previousHarness.isLayer(it) && File(layout.root, installed!!.previousHarness!!.dir).isDirectory }
-        val toUnpack = layers - reuse.toSet()
+        val reuse = layers.mapNotNull { layer -> reusable(layer, installed)?.let { layer to it } }
+        val toUnpack = layers - reuse.map { it.first }.toSet()
         val assets = toUnpack.map { asset(manifest, it) }
 
         // Before any byte is fetched: is there room for the download and for what it unpacks to?
@@ -138,21 +185,20 @@ class RuntimeInstaller(
             unpacked.values.forEach { FsTree.delete(fs, File(layout.root, it.dir)) }
             throw e
         }
-        reuse.forEach { unpacked[it.name] = installed!!.previousHarness!! }
+        reuse.forEach { (layer, record) -> unpacked[layer.name] = record }
 
         val base = unpacked[LAYER_BASE] ?: installed?.base ?: throw InstallException(RuntimeFailure.BadManifest("no base layer to install"))
         val harness = unpacked[LAYER_HARNESS] ?: installed?.harness ?: throw InstallException(RuntimeFailure.BadManifest("no harness layer to install"))
-        val harnessOnly = installed != null && unpacked.keys == setOf(LAYER_HARNESS)
-        val previous = when {
-            !harnessOnly -> null
-            harness == installed!!.previousHarness -> null // the update is the old one: a rollback
-            installed.previousHarness != null -> installed.previousHarness // keep the last one known to work
-            else -> installed.harness
-        }
-        val previousVersion = when {
-            previous == null -> null
-            previous == installed?.previousHarness -> installed.previousHarnessVersion
-            else -> installed?.harnessVersion
+        // Every update over an installed runtime goes on trial, a base change as much as a harness
+        // one: the layers it replaces stay on disk until the new release has been ready once.
+        val kept = installed?.trial
+        val trial = when {
+            installed == null -> null
+            // The update is exactly the release kept for a rollback: there is nothing left to try.
+            kept != null && kept.base == base && kept.harness == harness -> null
+            // Keep the last release known to work, not the one still on trial.
+            kept != null -> kept
+            else -> installed.asPrior()
         }
         val record = InstalledRecord(
             releaseId = manifest.releaseId,
@@ -162,12 +208,12 @@ class RuntimeInstaller(
             nodeVersion = manifest.node.version,
             base = base,
             harness = harness,
-            previousHarness = previous,
-            previousHarnessVersion = previousVersion,
             entrypoint = manifest.runtime.entrypoint,
             readinessPrefix = manifest.runtime.readinessPrefix,
             fakeProc = manifest.runtime.fakeProc,
             resolvConf = manifest.runtime.resolvConf,
+            previousRelease = manifest.previous,
+            trial = trial,
         )
         beforeCommit()
         store.write(record)
@@ -176,28 +222,26 @@ class RuntimeInstaller(
         record
     }
 
-    /** The harness on trial reached readiness: forget the previous one. */
+    /** The release on trial reached readiness: forget the one before it and free its layers. */
     fun commitTrial(): InstalledRecord? {
         val record = store.read() ?: return null
-        val previous = record.previousHarness ?: return record
-        val next = record.copy(previousHarness = null, previousHarnessVersion = null)
+        if (record.trial == null) return record
+        val next = record.copy(trial = null)
         store.write(next)
-        if (previous.dir != next.harness.dir) FsTree.delete(fs, File(layout.root, previous.dir))
+        cleanOrphans()
         return next
     }
 
-    /** The harness on trial never became ready: put the previous one back and delete the new one. */
+    /**
+     * The release on trial never became ready: put the one before it back, whole (release id,
+     * sequence, both layers, its command line), and delete what only the new one used.
+     */
     fun rollbackTrial(): InstalledRecord? {
         val record = store.read() ?: return null
-        val previous = record.previousHarness ?: return record
-        val next = record.copy(
-            harness = previous,
-            harnessVersion = record.previousHarnessVersion ?: record.harnessVersion,
-            previousHarness = null,
-            previousHarnessVersion = null,
-        )
+        val prior = record.trial ?: return record
+        val next = prior.restore(record.abi)
         store.write(next)
-        if (record.harness.dir != previous.dir) FsTree.delete(fs, File(layout.root, record.harness.dir))
+        cleanOrphans()
         return next
     }
 
@@ -322,6 +366,10 @@ class RuntimeInstaller(
         private const val READ_BUFFER = 1 shl 20
         private const val HEADROOM = 128L shl 20
         private const val LOW_SPACE = 16L shl 20
+
+        /** Bytes an install of [layers] downloads: every layer but those [onDevice] says are already there. */
+        fun changedDownloadBytes(layers: List<RuntimeManifest.Layer>, onDevice: (RuntimeManifest.Layer) -> Boolean): Long =
+            layers.filterNot(onDevice).sumOf { it.size }
 
         /** Disk an unpack needs: the README's 1.3 times the file bytes, plus headroom. */
         fun unpackNeed(layers: List<RuntimeManifest.Layer>): Long =
