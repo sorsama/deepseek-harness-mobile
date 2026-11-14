@@ -542,7 +542,8 @@ private fun UpdateSection(
             when {
                 runtime is RuntimeState.Updating -> {
                     val progress = updateProgress(runtime.phase, update?.takeIf { !runtime.goingBack }, null)
-                    val target = runtime.target
+                    // The offer being installed is known before its manifest is read again.
+                    val target = runtime.target ?: update?.ref?.takeIf { !runtime.goingBack }
                     Text(
                         when {
                             target == null -> stringResource(R.string.runtime_card_updating)
