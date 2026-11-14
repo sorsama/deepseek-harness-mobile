@@ -7,6 +7,15 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ### Fixed
 
+- **One compaction is one row in the chat, not a stack of identical ones.** The transcript showed
+  a "Compacted: Summary" row for every event the harness writes around a compaction: one when it
+  starts, one with the summary, one when it ends, plus another for each model-free prune. Only the
+  summary row had anything to open, so a long conversation filled with look-alike rows, two thirds
+  of them empty (closes #98). Now only the summary draws, so a compaction is a single row you can
+  open to read what was kept, and starts, ends and prunes stay out of the way. A summary the
+  harness sent without any text keeps its row but no longer offers an empty expansion. The session
+  history is untouched: every event is still in the log and in Trajectory.
+
 - **Goal actions stay reachable with long text.** A long goal now scrolls inside a capped region
   in the chat dock and the details panel, so Pause, Edit and Clear stay on screen. The Edit Goal
   dialog keeps Cancel and OK visible above the keyboard, and every confirm dialog (including Clear

@@ -113,7 +113,7 @@ internal fun ChatNode.rendersContent(
     // Always draws.
     is ToolCallNode -> true
     is PlanModeNode -> true
-    is CompactionNode -> true
+    is CompactionNode -> drawsInTranscript()
     is RetryNode -> true
     is TurnErrorNode -> true
     is CommandNode -> true
@@ -136,6 +136,26 @@ internal fun ChatNode.rendersContent(
  * the renderer cannot disagree. Trajectory does not use it: it is where a skipped record is found.
  */
 internal fun OtherNode.drawsInTranscript(): Boolean = type !in STRUCTURAL_EVENT_TYPES && !isSkippableUnknown
+
+/** The compaction event type that carries the summary, the only one with anything to read. */
+internal const val COMPACTION_SUMMARY_KIND = "compaction/summary"
+
+/**
+ * Whether the transcript draws a [CompactionNode].
+ *
+ * One compaction is several events: `compaction/start` and `compaction/end` bracket it (they share
+ * a `compactionId`) and `compaction/summary` between them holds the text; a model-free
+ * `compaction/prune` has no text at all. Drawing every one of them put three look-alike
+ * "Compacted: Summary" rows in the transcript per compaction, two of them empty, plus another empty
+ * one per prune. Only the summary draws, so a compaction is one row, as in the harness's own client.
+ *
+ * A `compaction/end` that carries an `error` stays out too. Nothing in this build reports an
+ * automatic compaction that failed, but the row it used to draw said "Compacted", which was untrue,
+ * and a `/compact` that fails already says so in its own system line.
+ *
+ * The nodes themselves stay in the fold, so the journal and Trajectory still have every event.
+ */
+internal fun CompactionNode.drawsInTranscript(): Boolean = kind == COMPACTION_SUMMARY_KIND
 
 /** The `turn/end` reasons [ChatNodeItem] draws something for. */
 internal val DRAWN_TURN_END_KINDS = setOf("aborted", "interrupted", "error", "max-tokens")
