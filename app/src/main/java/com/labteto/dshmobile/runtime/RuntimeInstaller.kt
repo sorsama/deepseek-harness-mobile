@@ -356,6 +356,10 @@ class RuntimeInstaller(
             throw e
         } catch (e: IOException) {
             throw InstallException(RuntimeFailure.Network(e.message ?: e.javaClass.simpleName), e)
+        } catch (e: IllegalArgumentException) {
+            // OkHttp refuses a URL it cannot parse with an unchecked exception; that is a bad
+            // address to read a manifest from, never a reason to take the app down.
+            throw InstallException(RuntimeFailure.BadManifest("not a manifest URL"), e)
         }
     }
 

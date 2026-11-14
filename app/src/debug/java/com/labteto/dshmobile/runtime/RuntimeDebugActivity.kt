@@ -31,7 +31,7 @@ import javax.inject.Inject
  *
  * | op | extras | does |
  * |---|---|---|
- * | `install`, `update` | `--es appVersion 0.22.0`, `--es manifestUrl <url>` ("" for the latest) | install or update to the latest (or that) release |
+ * | `install`, `update` | `--es appVersion 0.22.0`, `--es manifestUrl <url>` (`latest` for the latest) | install or update to the latest (or that) release |
  * | `check` | `--es appVersion` | look for an update, log the result |
  * | `cancel` | | abandon an install or a start |
  * | `start` | `--ei port 3080` | start the harness |
@@ -42,6 +42,11 @@ import javax.inject.Inject
  * | `wakelock` | `--ez on false` | the wake-lock switch |
  * | `probe` | `--ei port 3080` | `POST /api/session/list` without and with the stored cookie; status codes only |
  * | `orphan` | `--ei port 3080` | leave an untracked proot holding the port, as an earlier app process could |
+ * | `goback` | | install the installed manifest's `previous` release (the control page's "Go back") |
+ * | `failtrial` | `--ez on true` | the next start of a release on trial fails before readiness (node loads a missing module) |
+ * | `checknow` | | the control page's "Check for updates" (marks the release as told about) |
+ * | `bgcheck` | `--ez reset true` | the daily background check; `reset` forgets when the last check ran |
+ * | `updateprefs` | `--ez notify`, `--ez auto`, `--ez clear true` | show or change what harness updates remember |
  *
  * Everything is logged to logcat (tag `DshRuntimeDebug`) and to `files/runtime-debug.log`
  * (`run-as com.labteto.dshmobile.debug cat files/runtime-debug.log`). State changes are logged as
@@ -54,6 +59,7 @@ class RuntimeDebugActivity : ComponentActivity() {
     @Inject lateinit var hosts: HostsStore
     @Inject lateinit var sessions: HarnessSessionStore
     @Inject lateinit var http: OkHttpClient
+    @Inject lateinit var updates: RuntimeUpdates
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +67,8 @@ class RuntimeDebugActivity : ComponentActivity() {
         log.follow(controller)
         val op = intent.getStringExtra("op").orEmpty()
         intent.getStringExtra("appVersion")?.let { controller.appVersionOverride = it }
-        intent.getStringExtra("manifestUrl")?.let { controller.manifestUrlOverride = it.ifEmpty { null } }
+        // "latest" (an empty extra does not survive `adb shell`) goes back to the latest release.
+        intent.getStringExtra("manifestUrl")?.let { controller.manifestUrlOverride = it.takeIf { url -> url.startsWith("https://") } }
         val port = intent.getIntExtra("port", 3080)
         log.write("op=$op")
         when (op) {
@@ -82,6 +89,28 @@ class RuntimeDebugActivity : ComponentActivity() {
             "logtail" -> log.write("log tail:\n" + controller.logTail(intent.getIntExtra("lines", 40)))
             "probe" -> log.scope.launch { probe(log, port) }
             "orphan" -> log.write("orphan: ${spawnOrphan(port)}")
+            "goback" -> log.write("goback accepted=${controller.goBack()}")
+            "failtrial" -> {
+                controller.failNextTrialStart = intent.getBooleanExtra("on", true)
+                log.write("failNextTrialStart=${controller.failNextTrialStart}")
+            }
+            "checknow" -> log.scope.launch { log.write("checknow: ${summary(updates.checkNow())}") }
+            "bgcheck" -> log.scope.launch {
+                if (intent.getBooleanExtra("reset", false)) controller.updatePreferences.lastCheckAt = 0
+                log.write("bgcheck: ${updates.onBackground()?.let(::summary) ?: "skipped (checked recently, switch off, or nothing installed)"}")
+            }
+            "updateprefs" -> {
+                val prefs = controller.updatePreferences
+                if (intent.hasExtra("notify")) prefs.setNotify(intent.getBooleanExtra("notify", true))
+                if (intent.hasExtra("auto")) prefs.setAutoInstall(intent.getBooleanExtra("auto", false))
+                if (intent.getBooleanExtra("clear", false)) {
+                    prefs.setSkipped(null)
+                    prefs.setFailed(null)
+                    prefs.notifiedSequence = 0
+                    prefs.lastCheckAt = 0
+                }
+                log.write("updateprefs: notify=${prefs.notify.value} auto=${prefs.autoInstall.value} skipped=${prefs.skipped.value} failed=${prefs.failed.value} notified=${prefs.notifiedSequence} lastCheckAt=${prefs.lastCheckAt}")
+            }
             else -> log.write("unknown op '$op'")
         }
         finish()
@@ -107,6 +136,13 @@ class RuntimeDebugActivity : ComponentActivity() {
         val process = builder.start()
         RuntimeDebugLog.orphans += process
         return "started an untracked proot ($process) listening on $port"
+    }
+
+    /** A check result without the whole manifest. */
+    private fun summary(result: RuntimeInstaller.CheckResult): String = when (result) {
+        is RuntimeInstaller.CheckResult.Available -> "available ${result.manifest.releaseId} seq=${result.manifest.sequence} download=${result.downloadBytes} layers=${result.decision.layers.map { it.name }}"
+        is RuntimeInstaller.CheckResult.UpToDate -> "up to date (${result.manifest.releaseId})"
+        is RuntimeInstaller.CheckResult.Refused -> "refused ${result.failure}"
     }
 
     private suspend fun probe(log: RuntimeDebugLog, port: Int) {
@@ -144,6 +180,7 @@ class RuntimeDebugLog private constructor(private val file: File) {
     /** Log state changes; progress only when the phase changes or every tenth of the way. */
     fun follow(controller: HarnessRuntimeController) {
         if (!following.compareAndSet(false, true)) return
+        scope.launch { controller.outcomes.collect { write("outcome: $it") } }
         scope.launch {
             var lastKey = ""
             controller.state.collect { state ->

@@ -360,6 +360,13 @@ class RuntimeInstallerTest {
     }
 
     @Test
+    fun `an address that is not a URL is refused instead of crashing`() = runBlocking {
+        fx.publish(fx.baseLayer(), fx.harnessLayer("1.0.0"), sequence = 100)
+        val result = fx.installer().check("--es")
+        assertTrue(result is RuntimeInstaller.CheckResult.Refused && result.failure is RuntimeFailure.BadManifest)
+    }
+
+    @Test
     fun `without a previous pointer there is nothing to go back to`() = runBlocking {
         fx.publish(fx.baseLayer(), fx.harnessLayer("1.0.0"), sequence = 100)
         install(fx.installer())
