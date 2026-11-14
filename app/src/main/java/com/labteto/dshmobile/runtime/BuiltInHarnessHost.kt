@@ -212,7 +212,7 @@ class BuiltInHarnessHost @Inject constructor(
         val f = flow.value
         if (!f.settingUp) return
         when (runtime) {
-            is RuntimeState.Stopped -> controller.start(f.port)
+            is RuntimeState.Stopped -> startAfterInstall(f.port)
             is RuntimeState.Running -> flow.update { it.copy(settingUp = false, waitingForNetwork = false) }
             is RuntimeState.Failed -> if (runtime.reason is RuntimeFailure.Network && runtime.installed == null) {
                 waitForNetwork()
@@ -221,6 +221,23 @@ class BuiltInHarnessHost @Inject constructor(
                 flow.update { it.copy(settingUp = false, waitingForNetwork = false) }
             }
             else -> Unit
+        }
+    }
+
+    /**
+     * Start the harness a set-up has just installed.
+     *
+     * The engine publishes Stopped as the install's last step, a moment before that operation
+     * ends, and refuses a start while one is still in flight. So the first try can be refused;
+     * keep trying for a little while, as long as the set-up still wants it.
+     */
+    private fun startAfterInstall(port: Int) {
+        scope.launch {
+            repeat(START_TRIES) {
+                if (!flow.value.settingUp || controller.state.value !is RuntimeState.Stopped) return@launch
+                if (controller.start(port)) return@launch
+                delay(START_RETRY_MS)
+            }
         }
     }
 
@@ -291,6 +308,8 @@ class BuiltInHarnessHost @Inject constructor(
         const val RELEASE_CHECK_INTERVAL_MS = 10 * 60_000L
         val RETRY_DELAYS_MS = longArrayOf(3_000, 10_000, 30_000)
         const val NETWORK_SETTLE_MS = 1_500L
+        const val START_TRIES = 50
+        const val START_RETRY_MS = 100L
     }
 }
 
