@@ -527,10 +527,9 @@
     <string name="hold_replace_draft_confirm">Reemplazar</string>
 
     <!-- Provider usage -->
-    <string name="quota_title">Límites y saldo</string>
+    <string name="quota_title">Uso</string>
     <string name="quota_short">5 h</string>
     <string name="quota_week">Semana</string>
-    <string name="quota_unknown">Sin datos de límites</string>
     <string name="quota_refresh">Volver a comprobar</string>
     <string name="quota_checked">Comprobado: %1$s</string>
     <string name="quota_all">Todos los proveedores</string>
@@ -546,6 +545,19 @@
     <string name="quota_compact_minute">min</string>
     <string name="quota_other">Otro límite</string>
     <string name="quota_remaining_percent">Restante: %1$s</string>
+    <string name="quota_session_title">Esta sesión</string>
+    <string name="quota_tokens_input">Entrada</string>
+    <string name="quota_tokens_output">Salida</string>
+    <string name="quota_tokens_cache">Aciertos de caché</string>
+    <string name="quota_tokens_total">Total</string>
+    <string name="quota_session_empty">Aún no se han usado tokens</string>
+    <string name="quota_balance_title">Saldo de DeepSeek</string>
+    <string name="quota_balance_bonus">Bono: %1$s</string>
+    <string name="quota_balance_failed">No se pudo cargar el saldo</string>
+    <string name="quota_limit_reached">Límite de uso alcanzado</string>
+    <string name="quota_rate_limited">Demasiadas solicitudes, inténtalo de nuevo en un momento</string>
+    <string name="quota_limit_short">Límite alcanzado</string>
+    <string name="quota_rate_short">Límite de solicitudes</string>
     <string name="permission_preset_read_only">Sólo lectura</string>
     <string name="permission_preset_workspace_write">Escritura en el espacio de trabajo</string>
     <string name="permission_preset_full_access">Acceso completo</string>

@@ -16,6 +16,19 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ### Fixed
 
+- **The usage card shows real numbers on every provider.** The card in the session details said "No
+  quota data" for everything except a DeepSeek account: it asked the harness for subscription limits
+  that no harness serves, and only for five hard-coded providers, so OpenCode and the rest never got
+  an answer. It now starts with the session's own usage on any provider: the model, input and output
+  tokens, the cache hit rate and the total, as short counts such as 12.4k in the reader's own digits.
+  A signed-in DeepSeek account shows its balance whichever provider the session runs on, with bonus
+  credit on its own line, exact for values like `0E-16`, and a short "Couldn't load the balance" when
+  the lookup fails; signed out, the row is simply not there. When a provider turns a request away for
+  quota or rate limit, the card and the composer footer say so, and the line clears as soon as a
+  request goes through. The subscription-limit bars are asked for once per connection: a harness
+  without them is remembered and left alone, and the bars appear by themselves if one ever serves
+  them. The token totals that sat in the Context card moved into this one.
+
 - **Permission presets read in the app's language.** The permission sheet, the composer's permission
   chip and the session details panel showed Read Only, Workspace Write, Full access and Auto review
   in English whatever language the app was set to: the harness sends those four names as they are

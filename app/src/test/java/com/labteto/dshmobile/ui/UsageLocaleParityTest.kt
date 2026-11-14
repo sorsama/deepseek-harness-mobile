@@ -15,7 +15,9 @@ class UsageLocaleParityTest {
                 .associate { it.attributes.getNamedItem("name").nodeValue to it.textContent }
         }
         val baseline=strings(File(res,"values"))
-        assertEquals(19,baseline.size)
+        assertEquals(31,baseline.size)
+        // The card never prints "no data": an unknown state is simply not drawn.
+        assertFalse(baseline.containsKey("quota_unknown"))
         val locales=res.listFiles()!!.filter { File(it,"strings.xml").exists() }
         assertEquals(11,locales.size)
         val argument=Regex("%[0-9]+[$][sd]")

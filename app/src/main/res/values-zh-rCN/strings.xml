@@ -527,10 +527,9 @@
     <string name="hold_replace_draft_confirm">替换</string>
 
     <!-- Provider usage -->
-    <string name="quota_title">限额与余额</string>
+    <string name="quota_title">用量</string>
     <string name="quota_short">5小时</string>
     <string name="quota_week">每周</string>
-    <string name="quota_unknown">暂无限额数据</string>
     <string name="quota_refresh">重新检查</string>
     <string name="quota_checked">已检查：%1$s</string>
     <string name="quota_all">所有提供商</string>
@@ -546,6 +545,19 @@
     <string name="quota_compact_minute">分</string>
     <string name="quota_other">其他限额</string>
     <string name="quota_remaining_percent">剩余：%1$s</string>
+    <string name="quota_session_title">本次会话</string>
+    <string name="quota_tokens_input">输入</string>
+    <string name="quota_tokens_output">输出</string>
+    <string name="quota_tokens_cache">缓存命中</string>
+    <string name="quota_tokens_total">合计</string>
+    <string name="quota_session_empty">还没有使用任何 token</string>
+    <string name="quota_balance_title">DeepSeek 余额</string>
+    <string name="quota_balance_bonus">赠金：%1$s</string>
+    <string name="quota_balance_failed">无法加载余额</string>
+    <string name="quota_limit_reached">已达到用量上限</string>
+    <string name="quota_rate_limited">请求太频繁，请稍后再试</string>
+    <string name="quota_limit_short">已达上限</string>
+    <string name="quota_rate_short">请求受限</string>
     <string name="permission_preset_read_only">仅可查看</string>
     <string name="permission_preset_workspace_write">工作区内修改</string>
     <string name="permission_preset_full_access">完全权限</string>

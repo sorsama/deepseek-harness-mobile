@@ -45,6 +45,8 @@ import com.labteto.dshmobile.core.wire.dto.PluginInventorySnapshot
 import com.labteto.dshmobile.core.wire.dto.PromptContentPart
 import com.labteto.dshmobile.core.wire.dto.QUESTION_CANCELLED
 import com.labteto.dshmobile.core.wire.dto.QueueAction
+import com.labteto.dshmobile.core.usage.toUsageFetch
+import com.labteto.dshmobile.core.wire.dto.ModelSelection
 import com.labteto.dshmobile.core.wire.dto.ModelSelectionProjection
 import kotlinx.coroutines.flow.combine
 import com.labteto.dshmobile.core.wire.dto.ModelCatalog
@@ -556,21 +558,28 @@ class SessionStore @Inject constructor(
     val quotaStatus = quotaRepository.state
 
     /** Do not use `models.current`: that view prefers a queued next choice while a turn runs. */
-    fun quotaProvider(): String? = modelSelection.value?.let {
-        if (currentConversation.value?.running == true) it.lastUsed?.provider else (it.next ?: it.lastUsed)?.provider
-    }
+    fun quotaSelection(): ModelSelection? =
+        com.labteto.dshmobile.core.usage.quotaSelectionOf(modelSelection.value, currentConversation.value?.running == true)
 
-    private fun quotaIdentity(): String? {
+    fun quotaProvider(): String? = quotaSelection()?.provider
+
+    /** The connection the account balance and the "no subscriptions-auth" evidence belong to. */
+    private fun quotaHostKey(): String? {
         if (connectionManager.state.value.phase != ConnectionPhase.CONNECTED) return null
         val generation = connectionManager.generation ?: return null
         val host = connectionManager.state.value.host ?: return null
+        return "${host.id}|${host.baseUrl}|${generation.clientId}"
+    }
+
+    private fun quotaIdentity(): String? {
+        val host = quotaHostKey() ?: return null
         val sid = currentSessionId.value ?: return null
-        return "${host.id}|${host.baseUrl}|${generation.clientId}|$sid|${quotaProvider()}"
+        return "$host|$sid|${quotaProvider()}"
     }
 
     suspend fun refreshQuota(includeAll: Boolean = false, recheck: Boolean = false) = kotlinx.coroutines.withContext(Dispatchers.Main.immediate) {
         val identity = quotaIdentity()
-        quotaRepository.bind(identity)
+        quotaRepository.bind(identity, quotaHostKey())
         if (identity == null) return@withContext
         val api = connectionManager.connectedApi ?: return@withContext
         val metadata = com.labteto.dshmobile.core.wire.dto.AccountUiMetadata(
@@ -580,13 +589,13 @@ class SessionStore @Inject constructor(
         try {
             kotlinx.coroutines.withTimeoutOrNull(60_000) {
                 quotaRepository.refresh(identity, object : com.labteto.dshmobile.core.usage.UsageSource {
-                    override suspend fun status() = (api.subscriptionStatus() as? RpcResult.Ok)?.value
-                    override suspend fun quota(provider: String, account: String) = (api.subscriptionUsage(provider, account) as? RpcResult.Ok)?.value
-                    override suspend fun wallet() = (api.accountBalance(metadata) as? RpcResult.Ok)?.value
+                    override suspend fun status() = api.subscriptionStatus().toUsageFetch()
+                    override suspend fun quota(provider: String, account: String) = api.subscriptionUsage(provider, account).toUsageFetch()
+                    override suspend fun wallet() = api.accountBalance(metadata).toUsageFetch()
                 }, quotaProvider(), includeAll, recheck)
             }
         } finally {
-            if (quotaIdentity() != identity) quotaRepository.bind(quotaIdentity())
+            if (quotaIdentity() != identity) quotaRepository.bind(quotaIdentity(), quotaHostKey())
         }
     }
 
@@ -741,7 +750,7 @@ class SessionStore @Inject constructor(
         }
         scope.launch(Dispatchers.Main.immediate) {
             combine(connectionManager.state, currentSessionId, modelSelection, currentConversation) { _, _, _, _ -> quotaIdentity() }
-                .collect { quotaRepository.bind(it) }
+                .collect { quotaRepository.bind(it, quotaHostKey()) }
         }
         observeConnection()
         observeEvents()

@@ -79,6 +79,9 @@ import com.labteto.dshmobile.core.session.PlanModeNode
 import com.labteto.dshmobile.core.session.QueueItem
 import com.labteto.dshmobile.core.session.WorkflowNode
 import com.labteto.dshmobile.core.session.effectiveWorkingDirectory
+import com.labteto.dshmobile.core.usage.limitHit
+import com.labteto.dshmobile.core.usage.routeLabel
+import com.labteto.dshmobile.core.usage.tokensFromNodes
 import com.labteto.dshmobile.core.wire.dto.AgentPresetListValue
 import com.labteto.dshmobile.core.wire.dto.ContextBreakdownView
 import com.labteto.dshmobile.core.wire.dto.ContextPressureView
@@ -115,7 +118,6 @@ import com.labteto.dshmobile.ui.components.MascotState
 import com.labteto.dshmobile.ui.components.StateDot
 import com.labteto.dshmobile.ui.components.StateDotState
 import com.labteto.dshmobile.ui.components.formatDurationMs
-import com.labteto.dshmobile.ui.components.formatTokens
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.rememberSessionStore
@@ -407,7 +409,14 @@ fun DetailsPanel(
                                 if (conv != null) {
                                     ContextCard(breakdown, pressure, usage, stats)
 
-                                    UsageCard(quota, quotaProvider, quotaNow, onExpanded = { quotaExpanded = it }, onRefresh = { scope.launch { store.refreshQuota(quotaExpanded, recheck = true) } })
+                                    UsageCard(
+                                        quota, quotaProvider, quotaNow,
+                                        route = routeLabel(models, store.quotaSelection()),
+                                        tokens = remember(conv.nodes, usage) { usage ?: tokensFromNodes(conv.nodes) },
+                                        limit = remember(conv.nodes) { limitHit(conv.nodes) },
+                                        onExpanded = { quotaExpanded = it },
+                                        onRefresh = { scope.launch { store.refreshQuota(quotaExpanded, recheck = true) } },
+                                    )
                                     PanelSection(stringResource(R.string.ink_panel_model_permission))
                                     ModelPermissionCard(
                                         models = models,
@@ -917,10 +926,8 @@ private fun ContextCard(
                 LegendDot(stringResource(R.string.chat_context_messages), Ds.MeterMessages)
             }
         }
+        // Token totals and the cache hit rate live in the Usage card below; saying them twice in one panel is noise.
         val meta = buildList {
-            usage?.let {
-                add(stringResource(R.string.chat_stats_tokens, formatTokens(it.inputTokens), formatTokens(it.outputTokens)))
-            }
             stats?.let {
                 add(stringResource(R.string.chat_stats_timing, formatDurationMs(it.llmMs), formatDurationMs(it.toolMs)))
             }
@@ -932,14 +939,6 @@ private fun ContextCard(
                 color = colors.labelTertiary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-            )
-        }
-        usage?.cacheHitRatio?.let { ratio ->
-            Text(
-                stringResource(R.string.chat_stats_cache, (ratio * 100).toInt()),
-                style = DsType.caption11,
-                color = colors.labelCaption,
-                maxLines = 1,
             )
         }
     }

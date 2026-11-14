@@ -527,10 +527,9 @@
     <string name="hold_replace_draft_confirm">แทนที่</string>
 
     <!-- Provider usage -->
-    <string name="quota_title">ขีดจำกัดและยอดคงเหลือ</string>
+    <string name="quota_title">การใช้งาน</string>
     <string name="quota_short">5 ชม.</string>
     <string name="quota_week">สัปดาห์</string>
-    <string name="quota_unknown">ไม่มีข้อมูลขีดจำกัด</string>
     <string name="quota_refresh">ตรวจสอบอีกครั้ง</string>
     <string name="quota_checked">ตรวจสอบแล้ว: %1$s</string>
     <string name="quota_all">ผู้ให้บริการทั้งหมด</string>
@@ -546,6 +545,19 @@
     <string name="quota_compact_minute">นาที</string>
     <string name="quota_other">ขีดจำกัดอื่น</string>
     <string name="quota_remaining_percent">คงเหลือ: %1$s</string>
+    <string name="quota_session_title">เซสชันนี้</string>
+    <string name="quota_tokens_input">อินพุต</string>
+    <string name="quota_tokens_output">เอาต์พุต</string>
+    <string name="quota_tokens_cache">แคชฮิต</string>
+    <string name="quota_tokens_total">รวม</string>
+    <string name="quota_session_empty">ยังไม่มีการใช้โทเคน</string>
+    <string name="quota_balance_title">ยอดเงิน DeepSeek</string>
+    <string name="quota_balance_bonus">โบนัส: %1$s</string>
+    <string name="quota_balance_failed">โหลดยอดเงินไม่สำเร็จ</string>
+    <string name="quota_limit_reached">ถึงขีดจำกัดการใช้งานแล้ว</string>
+    <string name="quota_rate_limited">ส่งคำขอถี่เกินไป ลองใหม่อีกครั้งในอีกสักครู่</string>
+    <string name="quota_limit_short">ถึงขีดจำกัดแล้ว</string>
+    <string name="quota_rate_short">ถูกจำกัดคำขอ</string>
     <string name="permission_preset_read_only">อ่านอย่างเดียว</string>
     <string name="permission_preset_workspace_write">เขียนในเวิร์กสเปซ</string>
     <string name="permission_preset_full_access">เข้าถึงทั้งหมด</string>
