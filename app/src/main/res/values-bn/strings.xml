@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">সেটিংস খুলুন</string>
     <string name="shortcuts_close">শিট বা ডায়ালগ বন্ধ করুন</string>
     <string name="chat_drop_hint">সংযুক্ত করতে ফাইলগুলো এখানে ছেড়ে দিন</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">এই ফোনে harness সেট আপ হচ্ছে</string>
+    <string name="runtime_notif_downloading">ডাউনলোড হচ্ছে, %1$d%% সম্পন্ন</string>
+    <string name="runtime_notif_unpacking">ফাইলগুলো খোলা হচ্ছে</string>
+    <string name="runtime_notif_starting">এই ফোনে harness চালু হচ্ছে</string>
+    <string name="runtime_notif_running">এই ফোনে harness চলছে</string>
+    <string name="runtime_notif_running_text">পোর্ট %1$d-এ শুনছে</string>
 </resources>

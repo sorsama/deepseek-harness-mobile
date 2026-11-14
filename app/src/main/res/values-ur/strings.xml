@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">سیٹنگز کھولیں</string>
     <string name="shortcuts_close">شیٹ یا ڈائیلاگ بند کریں</string>
     <string name="chat_drop_hint">منسلک کرنے کے لیے فائلیں یہاں چھوڑ دیں</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">اس فون پر harness سیٹ اپ ہو رہا ہے</string>
+    <string name="runtime_notif_downloading">ڈاؤن لوڈ ہو رہا ہے، %1$d%% مکمل</string>
+    <string name="runtime_notif_unpacking">فائلیں کھولی جا رہی ہیں</string>
+    <string name="runtime_notif_starting">اس فون پر harness شروع ہو رہا ہے</string>
+    <string name="runtime_notif_running">اس فون پر harness چل رہا ہے</string>
+    <string name="runtime_notif_running_text">پورٹ %1$d پر سن رہا ہے</string>
 </resources>

@@ -588,4 +588,11 @@
     <string name="shortcuts_settings">Open settings</string>
     <string name="shortcuts_close">Close a sheet or dialog</string>
     <string name="chat_drop_hint">Drop files here to attach them</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">Setting up the harness on this phone</string>
+    <string name="runtime_notif_downloading">Downloading, %1$d%% done</string>
+    <string name="runtime_notif_unpacking">Unpacking files</string>
+    <string name="runtime_notif_starting">Starting the harness on this phone</string>
+    <string name="runtime_notif_running">Harness running on this phone</string>
+    <string name="runtime_notif_running_text">Listening on port %1$d</string>
 </resources>

@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">打开设置</string>
     <string name="shortcuts_close">关闭面板或对话框</string>
     <string name="chat_drop_hint">将文件拖到这里即可添加</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">正在本机上安装 harness</string>
+    <string name="runtime_notif_downloading">正在下载，已完成 %1$d%%</string>
+    <string name="runtime_notif_unpacking">正在解压文件</string>
+    <string name="runtime_notif_starting">正在本机上启动 harness</string>
+    <string name="runtime_notif_running">harness 正在本机上运行</string>
+    <string name="runtime_notif_running_text">正在监听端口 %1$d</string>
 </resources>

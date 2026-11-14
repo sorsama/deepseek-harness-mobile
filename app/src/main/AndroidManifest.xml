@@ -47,6 +47,14 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!--
+        The built-in harness runtime: a local server the person starts and expects to keep running
+        for hours. `specialUse` because no other type describes it, and `dataSync` is capped at 6
+        hours a day from Android 15. The wake lock keeps a long agent turn going with the screen off;
+        it is held only while the harness runs.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!--
         Haptic feedback. A normal permission, granted at install with no prompt. Without it the app
         could only ask the system to play a stock touch effect; with it the app plays its own, chosen
         for what the phone's motor can do (see HapticEngine). Vibration is always played as touch
@@ -150,6 +158,20 @@
             android:name=".connection.ConnectionService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <!--
+            Runs the built-in harness (proot and Node.js, started from nativeLibraryDir) and keeps it
+            alive; also covers the runtime download and unpack. Not exported: only the app starts it,
+            and its notification actions are PendingIntents this app minted.
+        -->
+        <service
+            android:name=".runtime.HarnessRuntimeService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Runs the DeepSeek Harness, a local developer tool server the user started, on 127.0.0.1 inside the app until the user stops it." />
+        </service>
 
         <!--
             Where Termux reports a command's exit code and output. Not exported: the result travels

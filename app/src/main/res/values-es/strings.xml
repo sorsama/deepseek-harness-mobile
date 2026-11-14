@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">Abrir ajustes</string>
     <string name="shortcuts_close">Cerrar hoja o diálogo</string>
     <string name="chat_drop_hint">Suelta los archivos aquí para adjuntarlos</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">Preparando el harness en este teléfono</string>
+    <string name="runtime_notif_downloading">Descargando, %1$d%% listo</string>
+    <string name="runtime_notif_unpacking">Descomprimiendo archivos</string>
+    <string name="runtime_notif_starting">Iniciando el harness en este teléfono</string>
+    <string name="runtime_notif_running">Harness en marcha en este teléfono</string>
+    <string name="runtime_notif_running_text">Escuchando en el puerto %1$d</string>
 </resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!--
+            Debug builds only: drives the built-in harness runtime from adb for the device tests
+            (there is no runtime UI yet). Exported so `adb shell am start` can reach it; it does not
+            exist in a release build. See RuntimeDebugActivity for the commands.
+        -->
+        <activity
+            android:name=".runtime.RuntimeDebugActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+    </application>
+</manifest>

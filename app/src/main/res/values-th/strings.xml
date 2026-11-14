@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">เปิดการตั้งค่า</string>
     <string name="shortcuts_close">ปิดแผ่นหรือกล่องโต้ตอบ</string>
     <string name="chat_drop_hint">วางไฟล์ที่นี่เพื่อแนบ</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">กำลังติดตั้ง harness บนเครื่องนี้</string>
+    <string name="runtime_notif_downloading">กำลังดาวน์โหลด เสร็จแล้ว %1$d%%</string>
+    <string name="runtime_notif_unpacking">กำลังแตกไฟล์</string>
+    <string name="runtime_notif_starting">กำลังเริ่ม harness บนเครื่องนี้</string>
+    <string name="runtime_notif_running">harness ทำงานอยู่บนเครื่องนี้</string>
+    <string name="runtime_notif_running_text">รอการเชื่อมต่อที่พอร์ต %1$d</string>
 </resources>
