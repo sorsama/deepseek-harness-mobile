@@ -185,6 +185,40 @@
             android:exported="false" />
 
         <!--
+            The built-in harness's project folder (`workspaces`, and nothing else of the runtime) in
+            the system Files app and every app's file picker. Exported because the system document
+            UI must reach it, and guarded by MANAGE_DOCUMENTS, which only that system UI holds: other
+            apps get a single document or a folder only when the person picks it there. Disabled
+            here and enabled at start on devices that can run the runtime (WorkspacesProvider.syncEnabled).
+            See docs/SECURITY.md, "Projects in the Files app".
+        -->
+        <provider
+            android:name=".runtime.workspace.WorkspacesProvider"
+            android:authorities="${applicationId}.workspaces"
+            android:enabled="false"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
+        <!--
+            A project's zip for the share sheet, from the app's cache (exports/ only). Not exported:
+            the app grants read access to one file at a time with the share intent.
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.exports"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/export_paths" />
+        </provider>
+
+        <!--
             Opts into AppCompat's own storage for the per-app language. Below API 33 the framework
             has no LocaleManager to remember the choice, and without this the library only holds it
             in memory: the app re-applies its saved tag on launch, but any AppCompat-managed context

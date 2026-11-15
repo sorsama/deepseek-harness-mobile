@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the zips "Share as .zip" writes; nothing else of the cache is shareable. -->
+<paths>
+    <cache-path
+        name="exports"
+        path="exports/" />
+</paths>
