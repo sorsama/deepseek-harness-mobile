@@ -224,9 +224,22 @@ private fun ModelsBody(state: ModelsState, controller: ModelsController, hostLab
                 Text(stringResource(R.string.models_add_hint), style = DsType.small13, color = colors.labelTertiary)
                 var query by remember { mutableStateOf("") }
                 if (directory.addable.size > 8) DsSearchField(query, { query = it }, stringResource(R.string.common_search))
-                directory.addable
+                val shown = directory.addable
                     .filter { query.isBlank() || it.displayName.contains(query.trim(), ignoreCase = true) || it.provider.contains(query.trim(), ignoreCase = true) }
-                    .forEach { row -> ProviderCard(row, state, controller, hostLabel) }
+                // One plate for the whole catalog: a card per entry made a long list of identical boxes.
+                if (shown.isNotEmpty()) Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = DsShapes.block,
+                    color = DsTheme.colors.bgLayer1,
+                    border = BorderStroke(1.dp, DsTheme.colors.borderL2),
+                ) {
+                    Column {
+                        shown.forEachIndexed { index, row ->
+                            if (index > 0) androidx.compose.material3.HorizontalDivider(color = DsTheme.colors.borderL1, thickness = 1.dp)
+                            ProviderCard(row, state, controller, hostLabel, grouped = true)
+                        }
+                    }
+                }
             }
         }
     }
@@ -241,7 +254,7 @@ private fun noticeText(notice: ModelsNotice): String = when (notice) {
 
 /** One provider: its state in a line, and, once opened, its editor in the same card. */
 @Composable
-private fun ProviderCard(row: ProviderRow, state: ModelsState, controller: ModelsController, hostLabel: String) {
+private fun ProviderCard(row: ProviderRow, state: ModelsState, controller: ModelsController, hostLabel: String, grouped: Boolean = false) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     val open = state.editor?.provider == row.provider
@@ -255,15 +268,15 @@ private fun ProviderCard(row: ProviderRow, state: ModelsState, controller: Model
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = DsShapes.block,
-            color = colors.bgLayer1,
-            border = BorderStroke(1.dp, if (open) colors.accent else colors.borderL2),
+            shape = if (grouped) androidx.compose.ui.graphics.RectangleShape else DsShapes.block,
+            color = if (grouped && !open) androidx.compose.ui.graphics.Color.Transparent else colors.bgLayer1,
+            border = if (grouped) null else BorderStroke(1.dp, if (open) colors.accent else colors.borderL2),
         ) {
             Column {
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .heightIn(min = DsSpacing.touchTarget + DsSpacing.small)
+                        .heightIn(min = if (grouped) DsSpacing.touchTarget else DsSpacing.touchTarget + DsSpacing.small)
                         .let { base ->
                             if (!canOpen) base else base.clickable(role = Role.Button, onClickLabel = row.displayName) {
                                 haptics.tap()
@@ -286,7 +299,7 @@ private fun ProviderCard(row: ProviderRow, state: ModelsState, controller: Model
                     Spacer(Modifier.width(DsSpacing.compact))
                     Column(Modifier.weight(1f)) {
                         Text(row.displayName, style = DsType.std14Strong, color = colors.labelPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        Text(
+                        if (!grouped || status != ProviderStatus.NotSetUp) Text(
                             statusText,
                             style = DsType.small13,
                             color = when (status) {

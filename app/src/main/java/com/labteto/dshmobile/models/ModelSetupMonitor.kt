@@ -114,10 +114,14 @@ class ModelSetupMonitor @Inject constructor(
         return readiness
     }
 
-    /** Something changed on a harness: every remembered answer is stale. */
+    /**
+     * Something changed on a harness: every remembered answer is stale, so ask again. The old
+     * answers stay on screen until the new ones land, rather than flashing back to "not known".
+     */
     fun changed() {
-        _builtIn.value = emptyMap()
         refreshConnected()
+        val ports = _builtIn.value.keys
+        if (ports.isNotEmpty()) scope.launch { ports.forEach { probeBuiltIn(it) } }
     }
 
     /** The connected harness, when there is one. */
