@@ -141,6 +141,32 @@ broken connection, so the client maps them to `capability-unavailable`,
 `forbidden` and `unauthenticated` and either hides the feature or asks the user
 to pair, rather than reporting a transport failure.
 
+### Models and API keys
+
+The Models screen (`sharedUi/.../models/`) reads and writes model providers the way the
+harness's own Models page does (`packages/client/ui-settings-models`, 0.2.2-rc.1):
+
+- **Read:** `llm/listProviders` (live routes), `llm/listConfigurableProviders` (the
+  directory, with `defaultBaseURL`, `baseURLEnv`, `nativeAuth` and `error` since 0.2.1),
+  `settings/describe` (the namespace each provider is configured in), then one
+  `credentials/describe` over the key references, at most 64 per call. A profile names its
+  key with `apiKeyEnv`; one that names none uses `<ROUTE>_API_KEY`. The account route is
+  listed only while `session/modelCatalog` has models for it.
+- **Write:** profile fields as `settings/mutate` path ops fenced on the namespace
+  `expectedRevision` (`settings/conflict` when stale), then `credentials/set {ref, value}`.
+  Removing a key is `credentials/unset {ref}`; removing an added provider unsets its key
+  first, then its profile path.
+- **Check:** `llm/discoverModels {settingsNs, request}` is registered only by the pi-ai
+  family. The app sends it without `provider`, so the harness asks the endpoint rather than
+  answering from its own catalog, and offers it only for a profile with a base URL and a
+  protocol. DeepSeek has no check.
+- **Turn failures** that send people to the screen are read from the `turn/end` error
+  code only, never its message: `MISSING_CREDENTIAL`, `INVALID_CREDENTIAL`,
+  `ACCOUNT_SIGN_IN_REQUIRED`, `NO_ADAPTER`.
+
+The key crosses the wire in `credentials/set` (and in a check's `apiKey`) and nowhere else;
+the app keeps no copy.
+
 ### Error codes
 
 Every business code is namespaced since 0.1.3, `<service>/<fault>`. The ones
