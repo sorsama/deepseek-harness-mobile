@@ -165,9 +165,38 @@ contract (manifest schema, unpacking rules, proot command line).
   `workspaces/` (bound at `/workspaces`), per-start files in `run/`, the log in `logs/`.
   `installed.json` is the commit record, written last with an atomic rename; a layer
   directory it does not name is deleted. Updates never touch `home/` or `workspaces/`.
-- **Updates**: only layers whose id changed are fetched. A harness-only update keeps the
-  previous harness directory until the new one has printed its readiness line once; if it
-  never does, the previous one is put back and started (`RuntimeState.Running.rolledBack`).
+- **Updates**: only layers whose id or SHA-256 changed are fetched. Every update goes on trial:
+  the replaced layers stay until the new release has printed its readiness line once; if it
+  never does, the whole previous release (both layers, release id, command line) is put back
+  and started (`UpdateOutcome.RolledBack`). "Go back" installs the manifest's `previous`
+  release after verifying it with the same key; `ManifestPolicy.decide(allowOlder)` accepts a
+  lower sequence only on that path. `RuntimeUpdateCoordinator` (plain Kotlin, wired by
+  `RuntimeUpdates`) decides when to check (on app open at most every four hours, and a daily
+  WorkManager job, `RuntimeUpdateWorker`, scheduled only while a runtime is installed), when to
+  notify (once per release, on the "Harness updates" channel), and when an automatic install
+  may run (opt-in, unmetered network, nothing in a turn, conditions held for 30 s). A release
+  the person went back from, or one that already failed to start here, is never installed by
+  itself. The control page asks before a hand-started update on a metered network.
+- **App updates are separate.** The app's own update check (`UpdateChecker`) and the in-app
+  updater (`update/InAppUpdater`: download, SHA-256 against `SHA256SUMS.txt`, signer and version
+  checks, `PackageInstaller` session) know nothing about the runtime. Their optional daily
+  background check rides on `KeepAliveWorker`; their notification has its own "App updates"
+  channel. A harness release that needs a newer app sends the person to the app's update check,
+  so the in-app updater offers the install.
+- **Commands on a phone**: Android allows no kernel sandbox, so the runtime adds two presets
+  (README "Shell commands and permissions on Android"). `CommandPermission` is the person's
+  choice of default ("Run it" is `danger-full-access`, "Ask me first" is `ask-commands`),
+  passed as `DSH_RUNTIME_DEFAULT_PERMISSION` on the next start, only when the installed manifest
+  has `runtime.permissions`. `InstalledRuntime.commandPermissionsVersion` carries its version;
+  below 2 (approval text cut at 2,000 characters) the control page says to update before relying
+  on "Ask me first". In `:core`, `permissionDenialOf` reads a gate denial from the tool result's
+  `error.code` (falling back to the version 1 sentence for the subagent case only), and
+  `sandboxRefusalShown` recognises the sandbox refusal by `SANDBOX_UNAVAILABLE`, or on the
+  built-in harness by the README's documented sentence when the harness dropped the code.
+- **Models and API keys**: the screen (`ui/screens/models`, flows in `:sharedUi` `models/`) talks
+  only to the connected harness (`llm/*`, `settings/*`, `credentials/*`). The key lives in the
+  field's composition and is handed to one `credentials/set` call; the harness stores it in its
+  home (`/root/.dsh` on the built-in harness).
 - **Running**: proot is started through `/system/bin/sh -c "echo $; exec ..."` so the first
   output line is its pid. The base is the root; the harness layer, `home/`, `workspaces/`,
   a `resolv.conf` written from the active network's DNS and a `/proc/stat` with the real CPU
@@ -181,7 +210,13 @@ contract (manifest schema, unpacking rules, proot command line).
 - **Process and power**: `HarnessRuntimeService` (type `specialUse`) keeps the process in the
   foreground while the runtime installs or runs and holds a partial wake lock while it does
   (`HarnessRuntimeController.setHoldWakeLock` turns it off). Everything runs in the app
-  process; there is no second process.
+  process; there is no second process. Both foreground services (this one and the
+  keep-connected `ConnectionService`, type `dataSync`) are asked for through
+  `RuntimeServiceStarter`: `startService` while an activity is visible (no foreground clock),
+  `startForegroundService` otherwise, one request at a time, and a refusal by Android 12+
+  background limits retried when the app is next visible. Each service calls `startForeground`
+  first in `onCreate` and `onStartCommand`. `ConnectionService` also handles Android 15's
+  `onTimeout` (six hours a day for `dataSync`) by leaving the foreground at once.
 - **UI**: the controller exposes `StateFlow<RuntimeState>` (types in `:sharedUi`).
   `BuiltInHarnessHost` (app-scoped) adds the set-up flow on top: install then start, a
   download that broke off with the network resumed when it comes back, a cancel that deletes
@@ -194,6 +229,9 @@ contract (manifest schema, unpacking rules, proot command line).
   (`ui/screens/runtime`): the card in "This phone" mode, the set-up page and the control page
   (also reached from Settings, "Harness on this phone"). The controller never connects; the
   Connect screen's own "connect when ready" rules do, the same as after a Termux start.
+- **First run**: with no mode stored, `firstRunConnectMode` opens the Connect screen on "This
+  phone" when the phone can run the built-in harness (or has Termux) and remembers no harness;
+  Local network otherwise. A stored mode always wins.
 - **Settings of its own**: `RuntimePreferences` keeps the wake-lock switch and "fast start"
   (the runtime's module pack; off sets `DSH_RUNTIME_MODULE_PACK=0` in the guest on the next
   start). Starting the harness when the app opens is an app setting beside Termux's

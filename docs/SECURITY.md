@@ -49,43 +49,111 @@ harness: found by probing loopback, signed in by pasting its startup line once.
 
 ## This phone (built-in harness)
 
-The app can also run the harness itself, with no Termux. The trust model is the
-Termux one above: the harness binds `127.0.0.1`, and whoever holds the phone
-unlocked holds the agent. What is different is that the app downloads and runs
-the software.
+The app can run the harness itself, with no computer and no Termux. This section covers all of
+it: what is downloaded and how it is checked, what runs and with what reach, commands, API
+keys, updates, the background service, and project files.
 
-- **What is downloaded.** A Debian base with Node.js and the DeepSeek Harness, as
-  two layer archives from the releases of
-  [`sorsama/dsh-mobile-runtime`](https://github.com/sorsama/dsh-mobile-runtime),
-  over HTTPS, only when you install or update. Nothing is downloaded otherwise.
-- **How it is verified.** Each release has a `manifest.json` signed with an
-  Ed25519 key whose public half is compiled into the app (`ManifestVerifier`).
-  The signature is checked over the manifest's exact bytes before any of it is
-  read; a manifest signed by anything else is refused. The manifest names every
-  layer's size and SHA-256, and a downloaded layer that does not match is deleted
-  before it is unpacked. A release with a lower sequence number than the one
-  installed is refused, so an old release cannot be replayed. Unpacking refuses
-  any entry that would land outside the runtime's directory (absolute names,
-  `..`, a path through a symlink). The signing key's private half exists only in
-  the runtime repository's secrets and an offline backup; replacing it needs an
-  app update first.
-- **What runs.** `proot` and its loader, shipped inside the APK
-  (`jniLibs`, built from `termux/proot` by the runtime repository, hashes
-  recorded in `app/third_party/proot`), run the harness inside the downloaded
-  Debian tree. They run as this app's own Linux user with this app's
-  permissions, in the app's sandbox: proot fakes root inside the tree, it gives
-  nothing outside it. The harness can do anything this app can: read and write
-  the app's private files, use the network.
-- **Where it lives.** Everything is under the app's no-backup directory, so it
-  is never part of a device backup: the harness's own state (`/root` inside the
-  runtime, where it keeps provider keys) included. Uninstalling the runtime, or
-  the app, deletes it.
-- **The loopback port is shared.** Any app on the phone can connect to
-  `127.0.0.1:<port>`. The guard is the launch token: the harness prints it once
-  per start, the app reads it from the process it started and exchanges it at
-  once for the session cookie, like the Termux path. The token is never written
-  to disk or to the system log (the harness output log has it masked), and
-  without it or the cookie every `/api` call answers 401.
+The trust model is the Termux one above: the harness binds `127.0.0.1`, and whoever holds the
+phone unlocked holds the agent. What is different is that the app downloads and runs the
+software, and that a phone has no kernel sandbox for the agent's commands.
+
+### What is downloaded, and how it is checked
+
+- **What.** A Debian base with Node.js and the DeepSeek Harness, as two layer archives from the
+  releases of [`sorsama/dsh-mobile-runtime`](https://github.com/sorsama/dsh-mobile-runtime),
+  over HTTPS. About 155 MB the first time on an arm64 phone; an update usually fetches only the
+  harness layer (about 85 MB). Nothing is downloaded until you tap Set up or Update, except the
+  small signed manifest the app reads to see whether there is an update (see **What DSH Mobile
+  connects to**).
+- **The signature.** Each release has a `manifest.json` signed with an Ed25519 key whose public
+  half is compiled into the app (`ManifestVerifier`). The signature is checked over the
+  manifest's exact bytes before any of it is read; a manifest signed by anything else is
+  refused. The manifest names every layer's size and SHA-256, and a downloaded layer that does
+  not match is deleted before it is unpacked. The signing key's private half exists only in the
+  runtime repository's secrets and an offline backup; replacing it needs an app update first.
+- **No replay.** A release with a lower sequence number than the one installed is refused, so
+  an old release cannot be pushed back onto the phone. The one exception is **Go back**, which
+  you tap yourself: it installs the release the installed manifest names as `previous`, after
+  checking that manifest with the same key and that it is the release named.
+- **Unpacking.** Files, folders and symlinks only; an entry that would land outside the
+  runtime's directory (absolute names, `..`, a path through a symlink) stops the unpack. Each
+  layer unpacks into a staging folder and is renamed into place, and `installed.json` is written
+  last, so a phone that dies mid-update keeps the release it had.
+
+### What runs, and what it can reach
+
+- `proot` and its loader ship inside the APK (`jniLibs`, built from `termux/proot` by the
+  runtime repository, hashes recorded in `app/third_party/proot`) and run the harness inside the
+  downloaded Debian tree. They run as this app's own Linux user, inside the app's sandbox. proot
+  fakes root inside the tree; it gives nothing outside it.
+- **Android still keeps apart:** your photos, files in shared storage, contacts, messages, and
+  other apps and their data. The harness cannot reach them, whatever its commands do.
+- **Android does not keep apart:** the network (a command can download and upload anything),
+  and everything the app itself owns: the projects, the harness's home with your sessions,
+  settings and stored API keys, and the runtime's own files. A command can read, change or
+  delete any of that.
+- Everything lives under the app's no-backup directory, so it is never part of a device backup.
+  Removing the runtime keeps the harness's home and projects unless you choose **Delete
+  everything**; uninstalling the app deletes it all.
+- **The loopback port is shared.** Any app on the phone can connect to `127.0.0.1:<port>`. The
+  guard is the launch token: the harness prints it once per start, the app reads it from the
+  process it started and exchanges it at once for the session cookie, like the Termux path. The
+  token is never written to disk or to the system log (the harness log on the control page has
+  it masked), and without it or the cookie every `/api` call answers 401.
+
+### Commands
+
+On a computer the harness runs the agent's shell commands in a kernel sandbox (bubblewrap or
+Landlock). Android allows neither inside an app, so upstream's default mode would refuse every
+command. The runtime adds two settings of its own, and the app shows them as a choice for new
+chats ("When the agent wants to run a command"):
+
+- **Run it** (the runtime's "Full access", the default): commands and file changes run without
+  asking. Everything in the list above that Android does not keep apart is within reach.
+- **Ask me first** (the runtime's "Ask before commands"): every shell command, every program the
+  agent's code mode wants to run, and every file change outside the chat's project waits for
+  Allow or Reject, with the whole text shown in a selectable, scrolling block. A command that
+  is too long to show (over 256 KB) is not asked about and does not run.
+
+"Ask me first" is a question, not a sandbox. A command you allow has the same reach as under
+"Run it", and the file tools can still change anything inside the project without asking. A
+helper agent (subagent) cannot ask anyone, so in an "Ask me first" chat its commands are
+refused, and the chat says so. The runtime's permissions version 1 (release `2026.11.15-1`) cut
+the question's text at 2,000 characters; the app says to update the harness before relying on
+"Ask me first" there. Each chat keeps the setting it started with and can be switched from its
+permission button. The full rules, including what is not gated (the web page's own terminal,
+MCP servers you add), are in the runtime README, "What Ask before commands gates".
+
+Separately, a project you clone is cloned by the app itself (see **Getting projects in and
+out**); you typed that command, so it is not asked about.
+
+### API keys
+
+The Models screen sends a key to the harness once (`credentials/set`) and keeps nothing: the key
+lives in the text field while the screen is open, is never saved, logged or copied, and the
+screen is a `FLAG_SECURE` window (blank in screenshots and in Recents) with copy and cut removed.
+The harness stores the key in its home on the phone. A command, or the harness's own `read`
+tool, can read that file in either command setting, as on a computer. A key sent to a harness
+over plain HTTP on another device asks first.
+
+### Updates of the harness
+
+The app looks for a new runtime release when it opens (at most every four hours) and once a day
+in the background while a runtime is installed, if **Check for updates** is on. A new release is
+announced once, on the "Harness updates" notification channel. It is installed when you tap
+Update (asking first on a metered network), or by itself only if you turned on **Install updates
+by themselves**: then only on an unmetered network and only while no chat is in a turn. Every
+update is on trial until the new release has started once; if it does not, the previous release
+is put back by itself. A release you went back from, or one that failed to start here, is never
+installed by itself.
+
+### In the background
+
+`HarnessRuntimeService` keeps the app in the foreground (with a notification and a Stop action)
+while the runtime installs or runs, and holds a partial wake lock unless you turn **Keep the
+phone awake** off. Both foreground services are asked for so that Android cannot kill the app
+for a slow start, and a start Android refuses is tried again when the app is next on screen.
+Nothing else runs in the background.
 
 ### Projects in the Files app
 
@@ -358,19 +426,25 @@ with one exception:
 - **The update check.** On start the app asks `api.github.com` for this
   repository's latest release, over HTTPS, so it can tell you when a newer APK
   exists. It sends no identifying information beyond what any HTTPS request
-  carries, and it is the only request the app itself makes that leaves your
-  network. Turn it off in **Settings → About → Check for updates**. With
-  **Notify me about new versions** on (off by default), the same request is also
-  made in the background, at most once a day.
+  carries. Apart from the built-in harness's own update check (below), which the
+  same switch controls, it is the only request the app itself makes that leaves
+  your network. Turn both off in **Settings → About → Check for updates**. With
+  **Notify me about new app versions** on (off by default), the app's request is
+  also made in the background, at most once a day.
 - **Download and install**, when you tap it: the release APK and its checksum
   file from GitHub, as described in **Updating inside the app**.
 - **Install via Termux**, when you tap it. Termux — not the app — downloads the
   release APK and `SHA256SUMS.txt` from `github.com` with `curl`, verifies the
   file, and opens Android's package installer, which asks you before anything
   is installed. Nothing is downloaded unless you tap the button.
-- **The built-in harness runtime**, when you install or update it: the signed
-  manifest and the layer archives from `github.com` (GitHub's release CDN). The
-  harness it runs then makes the requests you ask it to, like any harness.
+- **The built-in harness runtime.** While a runtime is installed and **Check for
+  updates** is on, the app reads the latest release's signed manifest from
+  `github.com` when it opens (at most every four hours) and once a day in the
+  background. The layer archives (GitHub's release CDN) are fetched only when you
+  set up, update or go back, or by themselves if you turned on automatic installs.
+  The harness it runs then makes the requests you ask it to, like any harness:
+  the model provider you configured, `git clone` addresses you type, and whatever
+  the agent's commands fetch.
 - **Scanning** probes only your own device's IPv4 /24 — with a TCP connect
   followed by one argument-free `session/canOpenWorkspacePath` call in
   local-network mode, or by `/relay/health` in relay mode. Relay mode browses mDNS `_dsh._tcp` first and only sweeps if that

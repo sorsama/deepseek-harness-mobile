@@ -6,13 +6,21 @@ product
 
 ## Users
 
-DeepSeek Harness operators using an Android phone to follow sessions, send prompts,
-review approvals and plans, and manage their host while away from its desktop.
+Two groups, served by the same app:
+
+- DeepSeek Harness operators using an Android phone to follow sessions, send prompts,
+  review approvals and plans, and manage their host while away from its desktop.
+- People with only a phone. The app runs the harness on the phone itself (the built-in
+  harness), so someone with no computer, no Termux and no command line can set it up,
+  add a model key, bring in a project and have the agent work on it.
 
 ## Product Purpose
 
 Provide a native mobile companion to the Harness web GUI, with reliable live state,
-reconnection, and access over local networks or the authenticated relay.
+reconnection, and access over local networks or the authenticated relay; and, where the
+phone supports it, the harness itself, running inside the app, so the phone needs no
+computer at all. A phone-only user should never need a terminal: setting up, models,
+commands, projects, files and updates all have a screen.
 
 ## Brand Personality
 

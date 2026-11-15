@@ -60,6 +60,20 @@ against a live host.
 - Do not interchange 0.10 and 0.9 on harness 0.1.3 and 0.1.2: live replies and command arguments changed. Upgrade both app and harness, or neither.
 - 0.9.0 cannot speak the 0.1.1 protocol; the handshake fails.
 
+## Built-in harness runtime
+
+The harness the app can run on the phone comes from [`sorsama/dsh-mobile-runtime`](https://github.com/sorsama/dsh-mobile-runtime),
+a third versioned contract. Each runtime release states the lowest app version that may install it
+(`minAppVersion`); an older app says so and offers its own update. Harness updates arrive without
+an app update as long as they keep that number.
+
+| DSH Mobile | Runtime releases | Harness | Notes |
+|---|---|---|---|
+| Unreleased (0.22.0) | `2026.11.14-1` to `2026.11.15-2` | 0.2.2-rc.1, Node.js 24.22.3 | All of these ask for app 0.22.0. `2026.11.15-1` adds the Android command presets (`runtime.permissions` version 1). `2026.11.15-2` (version 2) sends an approval's whole text, refuses one above 256 KiB, and puts a code on every denial; the app asks for version 2 before "Ask me first" is relied on. Releases `-1` and `-2` of 2026.11.14 reused a layer id for different content; the app matches layers on id and SHA-256, so they update correctly |
+
+Tested on x86_64 emulators (API 30, API 34 desktop and API 35). arm64 phones run the same releases
+built for `arm64-v8a`, but no arm64 device has run them yet.
+
 ## Relay
 
 [`dsh-relay`](https://github.com/sorsama/deepseek-harness-relay) is a separate versioned contract.

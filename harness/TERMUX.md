@@ -1,4 +1,10 @@
-# The harness on the phone itself (Termux) — companion setup for DSH Mobile
+# The harness on the phone itself (Termux): companion setup for DSH Mobile
+
+> **Most people want the built-in harness instead.** DSH Mobile can run the harness inside the
+> app, with no Termux and no command line: choose **This phone** and tap **Set up**. See
+> [`ON-DEVICE.md`](ON-DEVICE.md). This page is the alternative path, for people who already run
+> Termux, want their own Node and harness versions, or use a phone the built-in harness does not
+> support (32-bit).
 
 The DeepSeek Harness is a Node program, and Termux runs Node, so the harness can run on the
 same phone as the app. That is the zero-configuration setup: no LAN patch, no relay, no
@@ -36,7 +42,8 @@ Everything below is run **in Termux**.
    installation as a supported one-command setup. The commands below describe the native path,
    not a guarantee that its dependencies support your device.
 
-   Node.js 22.19 or newer, then the harness CLI:
+   Node.js 24.9 or newer (harness 0.2.2 needs it; 0.2.1 and older ran on 22.19), then the
+   harness CLI:
 
    ```sh
    pkg update && pkg install nodejs
@@ -180,7 +187,7 @@ another app gets no login shell.
 ### "The harness exited before it was ready"
 
 `dsh web` started and died. The card shows the last lines of `~/.dsh/dsh-mobile-web.log`; the
-usual causes are a port already in use, a Node older than 22.19, or a harness not yet configured.
+usual causes are a port already in use, a Node older than 24.9 (harness 0.2.2), or a harness not yet configured.
 Run `dsh web --no-open` in a Termux session to see the whole output.
 
 ### "The harness did not become ready within a minute"
