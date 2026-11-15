@@ -663,7 +663,7 @@ private fun UpdateSection(
 /**
  * Release and harness, from what is installed to what an update brings. Each label sits above its
  * "from → to": two release ids side by side do not leave a label room beside them on a narrow
- * screen with large text.
+ * screen with large text. An unchanged harness version is shown once.
  */
 @Composable
 private fun FromTo(fromRelease: String, toRelease: String, fromHarness: String, toHarness: String) {
@@ -671,9 +671,14 @@ private fun FromTo(fromRelease: String, toRelease: String, fromHarness: String, 
         stringResource(R.string.runtime_info_release),
         stringResource(R.string.runtime_update_versions, technicalDisplay(fromRelease), technicalDisplay(toRelease)),
     )
+    // A release that only changes the system layer keeps the same harness: one value, not "x → x".
     StackedValue(
         stringResource(R.string.runtime_info_harness),
-        stringResource(R.string.runtime_update_versions, technicalDisplay(fromHarness), technicalDisplay(toHarness)),
+        if (fromHarness == toHarness) {
+            technicalDisplay(toHarness)
+        } else {
+            stringResource(R.string.runtime_update_versions, technicalDisplay(fromHarness), technicalDisplay(toHarness))
+        },
     )
 }
 
