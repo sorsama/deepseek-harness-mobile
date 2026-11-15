@@ -7,6 +7,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 /**
  * The keep-connected service ([ConnectionService]) asked for the way [ConnectionManager] does it:
@@ -88,15 +89,32 @@ class ConnectionServiceStartTest {
     }
 
     @Test
-    fun `Android 15's daily limit stops the service, and it comes back when the app is next visible`() {
+    fun `a service that left the foreground after a refusal comes back when the app is next visible`() {
         starter.ensureStarted()
         starter.onServiceForeground()
-        // onTimeout: the service reports a refusal and stops.
         starter.onServiceRefused()
         starter.onServiceStopped()
         assertFalse(starter.isForeground)
         android.visible = true
         assertEquals(Result.STARTED, starter.onAppVisible())
+    }
+
+    /**
+     * Both services are `specialUse` with a subtype, and `dataSync` (six hours a day on Android 15)
+     * is gone together with its permission. A plain text scan: the manifest is small and stable.
+     */
+    @Test
+    fun `both foreground services are specialUse and dataSync is gone`() {
+        val manifest = (File("src/main/AndroidManifest.xml").takeIf { it.isFile } ?: File("app/src/main/AndroidManifest.xml")).readText()
+        assertFalse("dataSync" in manifest.replace(Regex("(?s)<!--.*?-->"), ""))
+        assertFalse("FOREGROUND_SERVICE_DATA_SYNC" in manifest)
+        assertTrue("android.permission.FOREGROUND_SERVICE_SPECIAL_USE" in manifest)
+        for (service in listOf(".connection.ConnectionService", ".runtime.HarnessRuntimeService")) {
+            val block = Regex("""(?s)<service\s+android:name="${Regex.escape(service)}".*?</service>""").find(manifest)?.value
+            assertTrue("$service has no <service> block with a body", block != null)
+            assertTrue("$service is not specialUse", "android:foregroundServiceType=\"specialUse\"" in block!!)
+            assertTrue("$service has no subtype", "android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" in block)
+        }
     }
 
     @Test

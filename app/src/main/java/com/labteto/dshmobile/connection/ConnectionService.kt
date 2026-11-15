@@ -25,10 +25,13 @@ import javax.inject.Inject
  * Started by [ConnectionManager.serviceStarter], with the same rules as the built-in harness's
  * service: it enters the foreground first thing in [onCreate] and again first in
  * [onStartCommand], so any request made with `startForegroundService` is answered at once, and a
- * refusal (Android 12+ background limits, or Android 15's daily limit for `dataSync`) stops the
- * service quietly instead of killing the app. On Android 15 the system ends a `dataSync` service
- * after six hours in a day ([onTimeout]); it then stops, and is asked for again the next time the
- * app is on screen, which also resets that clock.
+ * refusal (Android 12+ background limits) stops the service quietly instead of killing the app,
+ * and it is asked for again the next time the app is on screen.
+ *
+ * Type `specialUse`, like the built-in harness's service: it holds a live connection to the
+ * person's own harness open for as long as they asked. It used to be `dataSync`, which Android 15
+ * caps at six hours a day and then ends with `onTimeout`; `specialUse` has no such limit, so
+ * there is no timeout to handle.
  */
 @AndroidEntryPoint
 class ConnectionService : Service() {
@@ -60,17 +63,6 @@ class ConnectionService : Service() {
         return START_STICKY
     }
 
-    /**
-     * Android 15: this `dataSync` service has used its six hours for the day. It must leave the
-     * foreground within seconds or the app is killed. The connection stays open without it.
-     */
-    override fun onTimeout(startId: Int, fgsType: Int) {
-        Log.w(TAG, "foreground time used up for type $fgsType; stopping the service")
-        connectionManager.serviceStarter.onServiceRefused()
-        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
-        stopSelf()
-    }
-
     override fun onDestroy() {
         // The service dying does not tear the connection down; the manager owns it.
         connectionManager.serviceStarter.onServiceStopped()
@@ -78,14 +70,15 @@ class ConnectionService : Service() {
     }
 
     private fun enterForeground(): Boolean {
-        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC else 0
+        // The constant exists from API 34, where the type became mandatory. Below it 0 means "the
+        // types in the manifest", as for the built-in harness's service.
+        val type = if (Build.VERSION.SDK_INT >= 34) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
         return try {
             ServiceCompat.startForeground(this, NOTIFICATION_ID, buildNotification(), type)
             connectionManager.serviceStarter.onServiceForeground()
             true
         } catch (e: IllegalStateException) {
-            // ForegroundServiceStartNotAllowedException (API 31+), including a dataSync service
-            // whose daily time is used up (API 35).
+            // ForegroundServiceStartNotAllowedException (API 31+).
             Log.w(TAG, "foreground refused: ${e.javaClass.simpleName}")
             connectionManager.serviceStarter.onServiceRefused()
             false

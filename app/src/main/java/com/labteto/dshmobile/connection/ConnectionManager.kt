@@ -243,8 +243,7 @@ class ConnectionManager @Inject constructor(
      * How [ConnectionService] is asked for, by the same rules as the built-in harness's service
      * (#110): `startService` while the app is on screen, so no foreground clock runs against a busy
      * main thread; `startForegroundService` otherwise; a refusal (Android 12+ refuses most
-     * background starts, and Android 15 refuses a `dataSync` service whose daily time is used up)
-     * is not a crash but a request made again when the app is next visible. The connection itself
+     * background starts) is not a crash but a request made again when the app is next visible. The connection itself
      * never depended on the service, only its protection from being killed.
      *
      * `onConnected` runs on every reconnect, including ones in the background (a network change, the

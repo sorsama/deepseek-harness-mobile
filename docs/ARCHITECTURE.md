@@ -211,12 +211,13 @@ contract (manifest schema, unpacking rules, proot command line).
   foreground while the runtime installs or runs and holds a partial wake lock while it does
   (`HarnessRuntimeController.setHoldWakeLock` turns it off). Everything runs in the app
   process; there is no second process. Both foreground services (this one and the
-  keep-connected `ConnectionService`, type `dataSync`) are asked for through
+  keep-connected `ConnectionService`, also `specialUse`) are asked for through
   `RuntimeServiceStarter`: `startService` while an activity is visible (no foreground clock),
   `startForegroundService` otherwise, one request at a time, and a refusal by Android 12+
   background limits retried when the app is next visible. Each service calls `startForeground`
-  first in `onCreate` and `onStartCommand`. `ConnectionService` also handles Android 15's
-  `onTimeout` (six hours a day for `dataSync`) by leaving the foreground at once.
+  first in `onCreate` and `onStartCommand`. `ConnectionService` was `dataSync` until 0.22.0;
+  it moved to `specialUse` so Android 15's six hours a day limit (and its `onTimeout`) no
+  longer applies.
 - **UI**: the controller exposes `StateFlow<RuntimeState>` (types in `:sharedUi`).
   `BuiltInHarnessHost` (app-scoped) adds the set-up flow on top: install then start, a
   download that broke off with the network resumed when it comes back, a cancel that deletes

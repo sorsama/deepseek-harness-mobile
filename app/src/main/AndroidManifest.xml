@@ -45,11 +45,11 @@
         android:name="android.hardware.camera.front"
         android:required="false" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!--
-        The built-in harness runtime: a local server the person starts and expects to keep running
-        for hours. `specialUse` because no other type describes it, and `dataSync` is capped at 6
-        hours a day from Android 15. The wake lock keeps a long agent turn going with the screen off;
+        Both foreground services are `specialUse`. The built-in harness runtime is a local server
+        the person starts and expects to keep running for hours; the keep-connected service holds
+        the person's own harness connection open for as long as they asked. No other type describes
+        either, and `dataSync` is capped at 6 hours a day from Android 15. The wake lock keeps a long agent turn going with the screen off;
         it is held only while the runtime installs, updates or runs, and is a switch in the app.
     -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -175,7 +175,11 @@
         <service
             android:name=".connection.ConnectionService"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the user's live connection to their own DeepSeek Harness (a developer tool server on their computer, phone or network) open in the background, only while the user has turned on Keep connected in background and a connection is open." />
+        </service>
 
         <!--
             Runs the built-in harness (proot and Node.js, started from nativeLibraryDir) and keeps it
