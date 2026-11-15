@@ -96,6 +96,10 @@ class RuntimeEngineTest {
     @Before
     fun setUp() {
         fx = RuntimeFixture(tmp)
+        engine = newEngine()
+    }
+
+    private fun newEngine(pacer: ProgressPacer = ProgressPacer()): RuntimeEngine {
         val supervisor = HarnessSupervisor(
             scope,
             launcher,
@@ -103,10 +107,59 @@ class RuntimeEngineTest {
             RotatingLog(File(fx.layout.logs, "harness.log")),
             HarnessSupervisor.Timing(readyTimeoutMs = 10_000, termGraceMs = 200, quitGraceMs = 500, killGraceMs = 500, pollMs = 20, drainMs = 500),
         )
-        engine = RuntimeEngine(scope, fx.layout, fx.installer(), supervisor, fx.fs, platform, signIn = { line, port ->
+        return RuntimeEngine(scope, fx.layout, fx.installer(), supervisor, fx.fs, platform, signIn = { line, port ->
             signIns += line to port
             StartSignIn.SIGNED_IN
-        })
+        }, progressPacer = pacer)
+    }
+
+    /** Install a release whose harness layer has [files] files, and return every state published on the way. */
+    private fun statesDuringInstall(files: Int, pacer: ProgressPacer): List<RuntimeState> {
+        engine = newEngine(pacer)
+        val seen = java.util.Collections.synchronizedList(mutableListOf<RuntimeState>())
+        // Unconfined: the collector runs on the publishing thread, so no state is conflated away.
+        val watcher = scope.launch(Dispatchers.Unconfined) { engine.state.collect { seen += it } }
+        // Not 7 + files: the layer's own header and directories count too, and the manifest says so.
+        val harness = fx.harnessLayer("1.0.0") { repeat(files) { file("opt/dsh/f$it", "x") } }.let { it.copy(entries = it.entries + files) }
+        fx.publish(fx.baseLayer(), harness, sequence = 100)
+        assertTrue(engine.install())
+        await("installed") { it is RuntimeState.Stopped }
+        watcher.cancel()
+        return seen.toList()
+    }
+
+    private fun List<RuntimeState>.unpacking(layer: String) =
+        filterIsInstance<RuntimeState.Unpacking>().filter { it.progress.layer == layer }
+
+    @Test
+    fun `without pacing every progress event of an unpack becomes a state`() {
+        val states = statesDuringInstall(1200, ProgressPacer(minIntervalMs = 0))
+        // The start (0 entries), every 256 entries, and the end.
+        assertEquals(6, states.unpacking(LAYER_HARNESS).size)
+    }
+
+    @Test
+    fun `an unpack publishes its first and last progress and the pace in between`() {
+        // A clock that never moves: nothing in between is due, only the first and the last.
+        val states = statesDuringInstall(1200, ProgressPacer(minIntervalMs = 60_000, nowMs = { 0L }))
+        val harness = states.unpacking(LAYER_HARNESS)
+        assertEquals(2, harness.size)
+        assertEquals(0, harness.first().progress.entriesDone)
+        assertEquals(harness.last().progress.entriesTotal, harness.last().progress.entriesDone)
+        // The step changes are never held back: every layer still shows up, in order.
+        val steps = states.map { it::class.simpleName }.distinct()
+        assertTrue(steps.indexOf("Downloading") < steps.indexOf("Verifying"))
+        assertTrue(steps.indexOf("Verifying") < steps.indexOf("Unpacking"))
+        assertTrue(states.unpacking(LAYER_BASE).isNotEmpty())
+    }
+
+    @Test
+    fun `a download publishes its first and last progress and the pace in between`() {
+        val states = statesDuringInstall(10, ProgressPacer(minIntervalMs = 60_000, nowMs = { 0L }))
+        val downloads = states.filterIsInstance<RuntimeState.Downloading>().filter { it.progress.layer == LAYER_HARNESS }
+        // The first report (nothing yet), at most the end; never a state per 256 KB.
+        assertTrue("states: ${downloads.map { it.progress.bytesDone }}", downloads.size in 1..2)
+        assertEquals(downloads.last().progress.bytesTotal, downloads.last().progress.bytesDone)
     }
 
     @After

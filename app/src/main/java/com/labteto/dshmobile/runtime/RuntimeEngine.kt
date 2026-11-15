@@ -37,6 +37,8 @@ class RuntimeEngine(
     private val platform: Platform,
     private val signIn: suspend (launchLine: String, port: Int) -> StartSignIn,
     private val wallClock: () -> Long = System::currentTimeMillis,
+    /** Paces the download and unpack progress states; see [ProgressPacer]. */
+    private val progressPacer: ProgressPacer = ProgressPacer(),
 ) {
     /** What the engine needs from the device. */
     interface Platform {
@@ -238,6 +240,7 @@ class RuntimeEngine(
 
     private suspend fun runInstall(op: Op, goBack: Boolean) {
         platform.keepAlive()
+        progressPacer.reset()
         val before = installer.installed()
         val installed = before?.toInstalledRuntime()
         val wasRunning = (_state.value as? RuntimeState.Running)?.port
@@ -269,11 +272,26 @@ class RuntimeEngine(
                         check.manifest,
                         check.decision,
                         onEvent = { event ->
+                            // Bytes and entries arrive far faster than anything can show them; only a
+                            // paced share becomes a state (see ProgressPacer). A change of step always does.
                             when (event) {
                                 InstallEvent.Checking -> Unit
-                                is InstallEvent.Downloading -> progress(UpdatePhase.Downloading(event.progress), RuntimeState.Downloading(event.progress))
-                                is InstallEvent.Verifying -> progress(UpdatePhase.Verifying(event.layer), RuntimeState.Verifying(event.layer))
-                                is InstallEvent.Unpacking -> progress(UpdatePhase.Unpacking(event.progress), RuntimeState.Unpacking(event.progress))
+                                is InstallEvent.Downloading -> {
+                                    val p = event.progress
+                                    if (progressPacer.admit("download:${p.layer}", last = p.bytesTotal > 0 && p.bytesDone >= p.bytesTotal)) {
+                                        progress(UpdatePhase.Downloading(p), RuntimeState.Downloading(p))
+                                    }
+                                }
+                                is InstallEvent.Verifying -> {
+                                    progressPacer.admit("verify:${event.layer}", last = true)
+                                    progress(UpdatePhase.Verifying(event.layer), RuntimeState.Verifying(event.layer))
+                                }
+                                is InstallEvent.Unpacking -> {
+                                    val p = event.progress
+                                    if (progressPacer.admit("unpack:${p.layer}", last = p.entriesTotal > 0 && p.entriesDone >= p.entriesTotal)) {
+                                        progress(UpdatePhase.Unpacking(p), RuntimeState.Unpacking(p))
+                                    }
+                                }
                             }
                         },
                         beforeCommit = {
