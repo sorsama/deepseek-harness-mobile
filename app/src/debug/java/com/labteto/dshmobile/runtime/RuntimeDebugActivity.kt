@@ -47,6 +47,8 @@ import javax.inject.Inject
  * | `checknow` | | the control page's "Check for updates" (marks the release as told about) |
  * | `bgcheck` | `--ez reset true` | the daily background check; `reset` forgets when the last check ran |
  * | `updateprefs` | `--ez notify`, `--ez auto`, `--ez clear true` | show or change what harness updates remember |
+ * | `mainstats` | `--ez reset true` | how long the main thread took to reach a posted message since the last reset ([MainThreadProbe]), with the number of states and notification posts |
+ * | `jankinstall` | `--ei ms 12000` | block the main thread for `ms` while an install asks for the service (needs a cleared runtime); the foreground-service start timeout on purpose |
  *
  * Everything is logged to logcat (tag `DshRuntimeDebug`) and to `files/runtime-debug.log`
  * (`run-as com.labteto.dshmobile.debug cat files/runtime-debug.log`). State changes are logged as
@@ -65,6 +67,7 @@ class RuntimeDebugActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val log = RuntimeDebugLog.get(this)
         log.follow(controller)
+        MainThreadProbe.start()
         val op = intent.getStringExtra("op").orEmpty()
         intent.getStringExtra("appVersion")?.let { controller.appVersionOverride = it }
         // "latest" (an empty extra does not survive `adb shell`) goes back to the latest release.
@@ -85,6 +88,32 @@ class RuntimeDebugActivity : ComponentActivity() {
                 log.write("update: ${controller.availableUpdate.value}")
                 log.write("processes: ${controller.runtimeProcesses()}")
                 log.write("storage: ${controller.storageUsage()}")
+            }
+            "jankinstall" -> {
+                // Reproduces the worst moment on purpose: the install asks for the service from its
+                // own thread, and this (main) thread is then unavailable for `ms` milliseconds, as
+                // it is when frames back to back leave no room for the service's start.
+                // The block starts 2 s from now, after the window has settled (a block while an
+                // input or focus event is pending is the window's own ANR, not the service's), and
+                // the install starts half a second into it.
+                val ms = intent.getIntExtra("ms", 12_000)
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    log.write("main thread blocked for $ms ms from here")
+                    Thread.sleep(ms.toLong())
+                    log.write("main thread free again")
+                }, 2_000)
+                log.scope.launch {
+                    kotlinx.coroutines.delay(2_500)
+                    log.write("install accepted=${controller.install()}")
+                }
+            }
+            "mainstats" -> {
+                log.write("mainstats: ${MainThreadProbe.summary()} notifications=${HarnessRuntimeService.notifyCount.get()} states=${log.stateCount.get()}")
+                if (intent.getBooleanExtra("reset", false)) {
+                    MainThreadProbe.reset()
+                    HarnessRuntimeService.notifyCount.set(0)
+                    log.stateCount.set(0)
+                }
             }
             "logtail" -> log.write("log tail:\n" + controller.logTail(intent.getIntExtra("lines", 40)))
             "probe" -> log.scope.launch { probe(log, port) }
@@ -168,6 +197,7 @@ class RuntimeDebugActivity : ComponentActivity() {
 class RuntimeDebugLog private constructor(private val file: File) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val following = AtomicBoolean(false)
+    val stateCount = java.util.concurrent.atomic.AtomicInteger()
     private val stamp = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
 
     @Synchronized
@@ -181,6 +211,8 @@ class RuntimeDebugLog private constructor(private val file: File) {
     fun follow(controller: HarnessRuntimeController) {
         if (!following.compareAndSet(false, true)) return
         scope.launch { controller.outcomes.collect { write("outcome: $it") } }
+        // States a fast collector sees: what a screen could be asked to redraw for.
+        scope.launch(Dispatchers.Default) { controller.state.collect { stateCount.incrementAndGet() } }
         scope.launch {
             var lastKey = ""
             controller.state.collect { state ->
