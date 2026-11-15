@@ -13,7 +13,7 @@
     <string name="projects_space_label">Space used</string>
     <string name="projects_space_used">%1$s used</string>
     <string name="projects_counting">Counting…</string>
-    <string name="projects_row_detail">%1$s · changed %2$s</string>
+    <string name="projects_row_detail">%1$s · %2$s</string>
     <string name="projects_empty">No projects yet. Start one above, or bring one in from your phone.</string>
     <string name="projects_more_for">More for %1$s</string>
     <string name="projects_manage">Manage projects</string>
