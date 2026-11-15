@@ -106,6 +106,8 @@ class DshNotifications @Inject constructor(
             .setSmallIcon(R.drawable.ic_notification_whale)
             .setContentTitle(title)
             .setContentText(text)
+            // A command waiting for approval runs to several lines; expanded, it shows them.
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setContentIntent(pending)
             .setAutoCancel(true)
             .setPriority(if (channel == CHANNEL_ACTION) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)

@@ -169,10 +169,18 @@ class NotificationObserver @Inject constructor(
             }
             is CompletionEvent.ReviewRequested -> {
                 if (!settings.notifyNeedsAction) return
+                // A command from the built-in harness's "Ask before commands": the question and the
+                // command itself, so the person knows what waits before opening the app.
+                val prompt = com.labteto.dshmobile.core.permission.approvalPromptOf(event.toolName, event.reason)
                 Spec(
                     channel = DshNotifications.CHANNEL_ACTION,
-                    title = context.getString(R.string.notif_review_requested, event.toolName),
+                    title = if (prompt.kind == com.labteto.dshmobile.core.permission.ApprovalPrompt.Kind.Command && event.toolName == "bash") {
+                        context.getString(R.string.approval_command_title)
+                    } else {
+                        context.getString(R.string.notif_review_requested, event.toolName)
+                    },
                     actionLabel = context.getString(R.string.notif_open),
+                    text = prompt.detail?.take(NOTIFICATION_DETAIL_CHARS),
                 )
             }
             is CompletionEvent.QuestionRequested -> {
@@ -193,7 +201,7 @@ class NotificationObserver @Inject constructor(
 
         if (isDuplicate(event.dedupKey)) return
 
-        val text = context.getString(R.string.notif_open)
+        val text = spec.text ?: context.getString(R.string.notif_open)
         val id = notificationId(event.sessionId, spec.channel)
         notifications.postSession(spec.channel, id, spec.title, text, event.sessionId, spec.actionLabel)
     }
@@ -202,6 +210,8 @@ class NotificationObserver @Inject constructor(
         val channel: String,
         val title: String,
         val actionLabel: String? = null,
+        /** The body; "Open" when null. */
+        val text: String? = null,
     )
 
     private fun sessionTitle(sessionId: String): String? =
@@ -239,5 +249,8 @@ class NotificationObserver @Inject constructor(
         const val CHANNEL_COMPLETIONS_OFFSET = 1000
         const val CHANNEL_ACTION_OFFSET = 2000
         const val CHANNEL_CONNECTION_OFFSET = 3000
+
+        /** Enough of a command to recognise it; the app shows all of it. */
+        const val NOTIFICATION_DETAIL_CHARS = 400
     }
 }

@@ -638,7 +638,11 @@ fun ChatListDrawer(
                     NeedsYouCard(
                         session = session,
                         approvalTool = approval?.toolName,
-                        approvalReason = approval?.reason,
+                        // The command alone, not "Run this command?" in front of it.
+                        approvalReason = approval?.let {
+                            val prompt = com.labteto.dshmobile.core.permission.approvalPromptOf(it.toolName, it.rawReason, it.reason)
+                            prompt.detail ?: prompt.text
+                        },
                         onReview = { openSession(session.sessionId) },
                         onApprove = approval?.let {
                             approve@{
