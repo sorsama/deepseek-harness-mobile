@@ -8,6 +8,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.After
@@ -274,6 +275,96 @@ class RuntimeEngineTest {
         assertFalse(engine.start(3080)) // nothing installed
         assertFalse(engine.stop())
         assertFalse(engine.restart())
+    }
+
+    /**
+     * Fires [trigger], and in the very step that publishes a state matching [terminal] (the collector
+     * is unconfined, so it runs on the publishing thread, inside the operation) calls [next].
+     * Returns what [next] answered: true when the engine was ready for it the instant the state was
+     * observable. This is the worst case of "start as soon as the state flips", with no luck needed.
+     */
+    private fun acceptedAtOnce(terminal: (RuntimeState) -> Boolean, trigger: () -> Boolean, next: () -> Boolean): Boolean {
+        val answer = CompletableDeferred<Boolean>()
+        val watcher = CoroutineScope(Dispatchers.Unconfined).launch {
+            engine.state.first(terminal)
+            answer.complete(next())
+        }
+        assertTrue(trigger())
+        try {
+            return runBlocking { withTimeout(30_000) { answer.await() } }
+        } finally {
+            watcher.cancel()
+        }
+    }
+
+    @Test
+    fun `a state that ends an install can be followed at once by a start`() {
+        fx.publish(fx.baseLayer(), fx.harnessLayer("1.0.0"), sequence = 100)
+        assertTrue(acceptedAtOnce({ it is RuntimeState.Stopped }, { engine.install() }, { engine.start(3080) }))
+        await("running") { it is RuntimeState.Running }
+    }
+
+    @Test
+    fun `a state that ends a start or a stop can be followed at once by the next one`() {
+        fx.publish(fx.baseLayer(), fx.harnessLayer("1.0.0"), sequence = 100)
+        engine.install()
+        await("installed") { it is RuntimeState.Stopped }
+        repeat(10) {
+            assertTrue(acceptedAtOnce({ it is RuntimeState.Running }, { engine.start(3080) }, { engine.stop() }))
+            assertTrue(acceptedAtOnce({ it is RuntimeState.Stopped }, { true }, { engine.start(3080) }))
+            await("running again") { it is RuntimeState.Running }
+            assertTrue(acceptedAtOnce({ it is RuntimeState.Stopped }, { engine.stop() }, { true }))
+        }
+    }
+
+    @Test
+    fun `a state that ends a failed start can be followed at once by another start`() {
+        fx.publish(fx.baseLayer(), fx.harnessLayer("1.0.0"), sequence = 100)
+        broken += "1.0.0"
+        engine.install()
+        await("installed") { it is RuntimeState.Stopped }
+        assertTrue(acceptedAtOnce({ it is RuntimeState.Failed }, { engine.start(3080) }, { engine.start(3080) }))
+    }
+
+    @Test
+    fun `a state that ends an uninstall can be followed at once by an install`() {
+        fx.publish(fx.baseLayer(), fx.harnessLayer("1.0.0"), sequence = 100)
+        engine.install()
+        await("installed") { it is RuntimeState.Stopped }
+        assertTrue(acceptedAtOnce({ it is RuntimeState.NotInstalled }, { engine.uninstall() }, { engine.install() }))
+        await("installed again") { it is RuntimeState.Stopped }
+    }
+
+    @Test
+    fun `a state that ends an update or a go back can be followed at once by a stop`() {
+        val base = fx.baseLayer()
+        fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100, dir = "r100")
+        fx.publish(base, fx.harnessLayer("2.0.0"), sequence = 101, previous = "r100" to 100L)
+        engine.install()
+        await("installed v2") { it is RuntimeState.Stopped }
+        engine.start(3080)
+        await("running v2") { it is RuntimeState.Running }
+        assertTrue(acceptedAtOnce({ it is RuntimeState.Running && it.harnessVersion == "1.0.0" }, { engine.goBack() }, { engine.stop() }))
+        await("stopped") { it is RuntimeState.Stopped }
+
+        // An ordinary update while running: the newer release comes back as one.
+        engine.start(3080)
+        await("running v1") { it is RuntimeState.Running }
+        assertTrue(acceptedAtOnce({ it is RuntimeState.Running && it.harnessVersion == "2.0.0" }, { engine.install() }, { engine.stop() }))
+        await("stopped again") { it is RuntimeState.Stopped }
+    }
+
+    @Test
+    fun `a state that ends a failed update can be followed at once by a start`() {
+        val base = fx.baseLayer()
+        fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100)
+        engine.install()
+        await("installed") { it is RuntimeState.Stopped }
+        val v5 = fx.harnessLayer("5.0.0")
+        fx.publish(base, v5, sequence = 105)
+        fx.release.files.remove("rel/assets/${v5.file}")
+        assertTrue(acceptedAtOnce({ it is RuntimeState.Failed }, { engine.install() }, { engine.start(3080) }))
+        await("running") { it is RuntimeState.Running }
     }
 
     @Test

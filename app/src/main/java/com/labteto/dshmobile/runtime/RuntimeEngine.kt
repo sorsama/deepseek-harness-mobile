@@ -18,6 +18,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * The built-in runtime's state machine: install, update, start, stop, uninstall.
@@ -75,15 +76,34 @@ class RuntimeEngine(
     val outcomes: SharedFlow<UpdateOutcome> = _outcomes.asSharedFlow()
 
     private val transition = Mutex()
+    @Volatile
     private var job: Job? = null
+
+    /**
+     * The operation in flight, claimed before it starts and released in the same step that publishes
+     * its terminal state ([Op.finish]), release first. So whoever sees a terminal state can start
+     * the next operation at once: a state that has been published is never refused as "still busy".
+     * (The mutex above only serialises the bodies; it is released a moment after the last state.)
+     */
+    private val claim = AtomicReference<Op?>(null)
+
+    private inner class Op {
+        /**
+         * Release the claim, then publish [terminal]. Dropped when the claim is no longer this
+         * operation's: a stop that took over a start in flight owns the state from then on.
+         */
+        fun finish(terminal: RuntimeState) {
+            if (claim.compareAndSet(this, null)) _state.value = terminal
+        }
+    }
 
     init {
         if (platform.unsupported == null) scope.launch { runCatching { installer.cleanOrphans() } }
     }
 
     /** Install the latest release, or update to it; resumes a broken-off download. */
-    fun install(): Boolean = launchOp(allowWhen = { it is RuntimeState.NotInstalled || it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed }) {
-        runInstall(goBack = false)
+    fun install(): Boolean = launchOp(allowWhen = { it is RuntimeState.NotInstalled || it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed }) { op ->
+        runInstall(op, goBack = false)
     }
 
     /**
@@ -93,8 +113,8 @@ class RuntimeEngine(
      */
     fun goBack(): Boolean {
         if (installer.installed()?.previousRelease == null) return false
-        return launchOp(allowWhen = { it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed && it.installed != null }) {
-            runInstall(goBack = true)
+        return launchOp(allowWhen = { it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed && it.installed != null }) { op ->
+            runInstall(op, goBack = true)
         }
     }
 
@@ -111,8 +131,8 @@ class RuntimeEngine(
         }
     }
 
-    fun start(port: Int): Boolean = launchOp(allowWhen = { it is RuntimeState.Stopped || it is RuntimeState.Failed }) {
-        runStart(port, rolledBack = null)
+    fun start(port: Int): Boolean = launchOp(allowWhen = { it is RuntimeState.Stopped || it is RuntimeState.Failed }) { op ->
+        runStart(op, port, rolledBack = null)
     }
 
     /** Stop the harness; also abandons a start that has not reached readiness yet. */
@@ -123,39 +143,58 @@ class RuntimeEngine(
             is RuntimeState.Starting -> current.port
             else -> return false
         }
+        val op = Op()
+        // A running harness has no operation in flight, or the stop is refused; a start in flight is
+        // taken over, so its own late writes are dropped.
+        val claimed = if (current is RuntimeState.Starting) {
+            claim.set(op)
+            true
+        } else {
+            claim.compareAndSet(null, op)
+        }
+        if (!claimed) return false
         val starting = job.takeIf { current is RuntimeState.Starting }
-        val installed = installer.installed()?.toInstalledRuntime() ?: return false
+        val installed = installer.installed()?.toInstalledRuntime()
+        if (installed == null) {
+            claim.compareAndSet(op, null)
+            return false
+        }
         _state.value = RuntimeState.Stopping(port, installed)
         job = scope.launch {
-            starting?.cancelAndJoin()
-            supervisor.stop()
-            _state.value = RuntimeState.Stopped(installer.installed()?.toInstalledRuntime() ?: installed)
+            try {
+                starting?.cancelAndJoin()
+                supervisor.stop()
+                op.finish(RuntimeState.Stopped(installer.installed()?.toInstalledRuntime() ?: installed))
+            } finally {
+                claim.compareAndSet(op, null)
+            }
         }
         return true
     }
 
     fun restart(): Boolean {
         val current = _state.value as? RuntimeState.Running ?: return false
-        return launchOp(allowWhen = { it is RuntimeState.Running }) {
+        return launchOp(allowWhen = { it is RuntimeState.Running }) { op ->
             val installed = installer.installed()?.toInstalledRuntime() ?: return@launchOp
             _state.value = RuntimeState.Stopping(current.port, installed)
             supervisor.stop()
-            runStart(current.port, rolledBack = null)
+            runStart(op, current.port, rolledBack = null)
         }
     }
 
     /** Remove the runtime. [keepUserData] keeps the harness's `/root` and the workspaces. */
     fun uninstall(keepUserData: Boolean = false): Boolean =
-        launchOp(allowWhen = { it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed || it is RuntimeState.NotInstalled }) {
+        launchOp(allowWhen = { it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed || it is RuntimeState.NotInstalled }) { op ->
             supervisor.stop()
             supervisor.cleanupStale()
-            try {
+            val terminal = try {
                 installer.uninstall(keepUserData)
-                _state.value = RuntimeState.NotInstalled
+                RuntimeState.NotInstalled
             } catch (e: IOException) {
-                _state.value = RuntimeState.Failed(RuntimeFailure.Storage(e.message), installer.installed()?.toInstalledRuntime())
+                RuntimeState.Failed(RuntimeFailure.Storage(e.message), installer.installed()?.toInstalledRuntime())
             }
             _availableUpdate.value = null
+            op.finish(terminal)
         }
 
     /** Look for a newer release without installing it; the result is also in [availableUpdate]. */
@@ -176,18 +215,28 @@ class RuntimeEngine(
         )
     }
 
-    private fun launchOp(allowWhen: (RuntimeState) -> Boolean, block: suspend () -> Unit): Boolean {
+    private fun launchOp(allowWhen: (RuntimeState) -> Boolean, block: suspend (Op) -> Unit): Boolean {
         if (platform.unsupported != null) return false
+        val op = Op()
+        if (!claim.compareAndSet(null, op)) return false
         val current = _state.value
-        if (current.busy || !allowWhen(current)) return false
-        if (job?.isActive == true) return false
+        if (current.busy || !allowWhen(current)) {
+            claim.compareAndSet(op, null)
+            return false
+        }
         job = scope.launch {
-            transition.withLock { block() }
+            try {
+                transition.withLock { block(op) }
+            } finally {
+                // Normally already released by [Op.finish]; this covers an operation that ends
+                // without a terminal state (a restart with nothing installed, a failure not handled).
+                claim.compareAndSet(op, null)
+            }
         }
         return true
     }
 
-    private suspend fun runInstall(goBack: Boolean) {
+    private suspend fun runInstall(op: Op, goBack: Boolean) {
         platform.keepAlive()
         val before = installer.installed()
         val installed = before?.toInstalledRuntime()
@@ -205,12 +254,12 @@ class RuntimeEngine(
             when (val check = result) {
                 is RuntimeInstaller.CheckResult.Refused -> {
                     failed(check.failure)
-                    _state.value = afterFailure(check.failure, wasRunning)
+                    op.finish(afterFailure(check.failure, wasRunning))
                     return
                 }
                 is RuntimeInstaller.CheckResult.UpToDate -> {
                     if (!goBack) _availableUpdate.value = null
-                    _state.value = restore(wasRunning)
+                    op.finish(restore(wasRunning))
                     return
                 }
                 is RuntimeInstaller.CheckResult.Available -> {
@@ -239,24 +288,24 @@ class RuntimeEngine(
                     if (before != null) _outcomes.tryEmit(UpdateOutcome.Applied(before.ref(), target!!, wentBack = goBack))
                     val restartOn = switchedPort
                     if (restartOn != null) {
-                        runStart(restartOn, rolledBack = null)
+                        runStart(op, restartOn, rolledBack = null)
                     } else {
-                        _state.value = RuntimeState.Stopped(installer.installed()!!.toInstalledRuntime())
+                        op.finish(RuntimeState.Stopped(installer.installed()!!.toInstalledRuntime()))
                     }
                 }
             }
         } catch (e: CancellationException) {
-            _state.value = restore(wasRunning)
+            op.finish(restore(wasRunning))
             throw e
         } catch (e: InstallException) {
             failed(e.failure)
-            _state.value = afterFailure(e.failure, wasRunning)
+            op.finish(afterFailure(e.failure, wasRunning))
         } catch (e: DownloadException) {
             failed(e.failure)
-            _state.value = afterFailure(e.failure, wasRunning)
+            op.finish(afterFailure(e.failure, wasRunning))
         } catch (e: IOException) {
             failed(RuntimeFailure.Storage(e.message))
-            _state.value = afterFailure(RuntimeFailure.Storage(e.message), wasRunning)
+            op.finish(afterFailure(RuntimeFailure.Storage(e.message), wasRunning))
         }
     }
 
@@ -278,10 +327,10 @@ class RuntimeEngine(
     @Volatile
     private var _runningSnapshot: RuntimeState.Running? = null
 
-    private suspend fun runStart(port: Int, rolledBack: RolledBackUpdate?) {
+    private suspend fun runStart(op: Op, port: Int, rolledBack: RolledBackUpdate?) {
         val record = installer.installed()
         if (record == null) {
-            _state.value = RuntimeState.NotInstalled
+            op.finish(RuntimeState.NotInstalled)
             return
         }
         val installed = record.toInstalledRuntime()
@@ -317,7 +366,7 @@ class RuntimeEngine(
                             rolledBack = rolledBack,
                         )
                         _runningSnapshot = running
-                        _state.value = running
+                        op.finish(running)
                         return
                     }
                     is HarnessSupervisor.StartOutcome.Exited -> RuntimeFailure.ExitedBeforeReady(outcome.exitCode, outcome.tail)
@@ -333,10 +382,10 @@ class RuntimeEngine(
             // The new release never became ready: put the previous one back and start that instead.
             val restored = installer.rollbackTrial()
             if (restored != null) _outcomes.tryEmit(UpdateOutcome.RolledBack(restored.ref(), record.ref(), failure))
-            runStart(port, RolledBackUpdate(record.harnessVersion, failure, record.releaseId, record.sequence))
+            runStart(op, port, RolledBackUpdate(record.harnessVersion, failure, record.releaseId, record.sequence))
             return
         }
-        _state.value = RuntimeState.Failed(failure, installed)
+        op.finish(RuntimeState.Failed(failure, installed))
     }
 
     private fun onExitAfterReady(exitCode: Int, tail: String) {
