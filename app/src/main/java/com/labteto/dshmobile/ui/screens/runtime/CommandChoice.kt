@@ -261,20 +261,15 @@ private fun ExplainRow(icon: ImageVector, tint: Color, label: String, text: Stri
  * make yet, only the update that brings it.
  */
 @Composable
-internal fun CommandChoiceUnsupported(state: BuiltInHarnessState, checking: Boolean, onUpdate: () -> Unit, onCheck: () -> Unit) {
+internal fun CommandChoiceUnsupported(state: BuiltInHarnessState, onUpdate: () -> Unit) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth().padding(vertical = DsSpacing.small), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
         Text(stringResource(R.string.cmdperm_unsupported), style = DsType.small13, color = colors.labelSecondary)
+        // The update itself, once a check has found one. Until then the check is the Update
+        // section's, right under this one; a second "Check for updates" here would only repeat it.
         val canUpdate = state.update != null && state.updateNeedsApp == null && !state.runtime.busy
         if (canUpdate) {
             DsConnectButton(text = stringResource(R.string.runtime_update_button), onClick = onUpdate)
-        } else {
-            DsConnectButton(
-                text = stringResource(if (checking) R.string.runtime_update_checking else R.string.runtime_update_check),
-                onClick = onCheck,
-                enabled = !checking && !state.runtime.busy,
-                variant = ConnectButtonVariant.Outline,
-            )
         }
     }
 }

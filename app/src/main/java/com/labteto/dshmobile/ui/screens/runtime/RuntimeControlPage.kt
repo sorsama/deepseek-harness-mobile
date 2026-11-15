@@ -259,7 +259,7 @@ internal fun RuntimeControlPage(
                                         modifier = Modifier.padding(vertical = DsSpacing.small),
                                     )
                                 } else {
-                                    CommandChoiceUnsupported(state, checking, onUpdate = ::updateNow, onCheck = ::checkNow)
+                                    CommandChoiceUnsupported(state, onUpdate = ::updateNow)
                                 }
                             }
 
