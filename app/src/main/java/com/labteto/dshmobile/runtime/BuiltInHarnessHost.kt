@@ -189,6 +189,7 @@ class BuiltInHarnessHost @Inject constructor(
                         harnessVersion = result.manifest.harness.version,
                         layers = result.decision.layers.map { ReleaseLayerPlan(it.name, it.size, it.unpackedSize, it.entries) },
                         commandPermissions = result.manifest.runtime.permissions != null,
+                        commandPermissionsVersion = result.manifest.runtime.permissions?.version ?: 0,
                     ),
                     releaseProblem = null,
                 )

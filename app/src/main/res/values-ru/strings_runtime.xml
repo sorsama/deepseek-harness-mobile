@@ -146,4 +146,6 @@
     <string name="runtime_chat_restarting">Запускаем harness на этом телефоне…</string>
     <string name="runtime_chat_updating">Обновляем harness на этом телефоне. Чат вернётся, когда всё закончится.</string>
     <string name="runtime_update_nothing_to_download">Скачивать ничего не нужно: она ещё есть на телефоне.</string>
+    <string name="runtime_update_metered_body">У вас лимитное подключение. Это обновление скачает %1$s.</string>
+    <string name="cmdperm_v1_update">Эта версия harness может обрезать длинную команду, когда спрашивает вас, и вы увидите не всё. Обновите harness, прежде чем полагаться на «Сначала спрашивать».</string>
 </resources>

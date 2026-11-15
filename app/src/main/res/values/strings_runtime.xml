@@ -147,4 +147,6 @@
     <string name="runtime_chat_restarting">Starting the harness on this phone…</string>
     <string name="runtime_chat_updating">Updating the harness on this phone. The chat comes back when it\'s done.</string>
     <string name="runtime_update_nothing_to_download">Nothing to download: it\'s still on the phone from before.</string>
+    <string name="runtime_update_metered_body">You\'re on a metered connection. This update downloads %1$s.</string>
+    <string name="cmdperm_v1_update">This harness version can shorten a long command when it asks you, so you might not see all of it. Update the harness before you rely on “Ask me first”.</string>
 </resources>

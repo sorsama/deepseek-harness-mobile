@@ -146,4 +146,6 @@
     <string name="runtime_chat_restarting">Iniciando o harness deste celular…</string>
     <string name="runtime_chat_updating">Atualizando o harness deste celular. O chat volta quando terminar.</string>
     <string name="runtime_update_nothing_to_download">Nada para baixar: ainda está no celular de antes.</string>
+    <string name="runtime_update_metered_body">Você está em uma conexão limitada. Esta atualização baixa %1$s.</string>
+    <string name="cmdperm_v1_update">Esta versão do harness pode encurtar um comando longo ao perguntar, então talvez você não o veja inteiro. Atualize o harness antes de confiar em “Perguntar antes”.</string>
 </resources>

@@ -146,4 +146,6 @@
     <string name="runtime_chat_restarting">正在启动这台手机上的 harness…</string>
     <string name="runtime_chat_updating">正在更新这台手机上的 harness。完成后聊天会自动恢复。</string>
     <string name="runtime_update_nothing_to_download">无需下载：之前的文件还在手机上。</string>
+    <string name="runtime_update_metered_body">你正在使用按流量计费的网络。这次更新要下载 %1$s。</string>
+    <string name="cmdperm_v1_update">这个版本的 harness 询问你时可能会截短较长的命令，你可能看不到全部内容。在依赖“先问我”之前，请先更新 harness。</string>
 </resources>

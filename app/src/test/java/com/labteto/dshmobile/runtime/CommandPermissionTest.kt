@@ -100,6 +100,26 @@ class CommandPermissionTest {
         assertEquals(withPresets.runtime.permissions, prior.restore("x86_64").permissions)
     }
 
+    @Test
+    fun `Ask me first is trusted only from permissions version 2`() {
+        // 2026.11.15-1 published version 1: an approval's text was cut at 2,000 characters.
+        val v1 = withPresets.runtime.permissions!!
+        assertEquals(1, v1.version)
+        val installedV1 = record(v1).toInstalledRuntime()
+        assertEquals(1, installedV1.commandPermissionsVersion)
+        assertTrue(installedV1.commandPermissions)
+        assertFalse(installedV1.askFirstTrusted)
+        // Version 2 (2026.11.15-2 and later) sends the whole text.
+        val v2Text = resource("release-2026.11.15-1.manifest.json").decodeToString().replace("\"version\": 1,", "\"version\": 2,")
+        val v2 = RuntimeManifest.parse(v2Text.toByteArray()).runtime.permissions!!
+        assertEquals(2, v2.version)
+        assertTrue(record(v2).toInstalledRuntime().askFirstTrusted)
+        // No block at all: neither the choice nor the trust.
+        val none = record(null).toInstalledRuntime()
+        assertEquals(0, none.commandPermissionsVersion)
+        assertFalse(none.askFirstTrusted)
+    }
+
     // ---- The guest environment -------------------------------------------------------------------
 
     @Test

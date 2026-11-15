@@ -150,6 +150,8 @@ internal fun RuntimeControlPage(
     var confirmRemove by remember { mutableStateOf(false) }
     var confirmDeleteAll by remember { mutableStateOf(false) }
     var confirmGoBack by remember { mutableStateOf(false) }
+    // A hand-started update on a metered network asks first, as a set-up does.
+    var askMeteredUpdate by remember { mutableStateOf(false) }
     var projectsOpen by rememberSaveable { mutableStateOf(false) }
     val projectsVm: ProjectsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
     // Storage and the log follow the state: re-read whenever it changes, and the log every few
@@ -243,6 +245,12 @@ internal fun RuntimeControlPage(
                                 }
                             }
                             fun updateNow() {
+                                // Nothing to ask about when the update is still on the phone (0 bytes).
+                                if (host.isMetered() && (state.update?.downloadBytes ?: 1L) > 0L) {
+                                    haptics.tap()
+                                    askMeteredUpdate = true
+                                    return
+                                }
                                 haptics.confirm()
                                 host.dismissOutcome()
                                 host.update()
@@ -260,6 +268,9 @@ internal fun RuntimeControlPage(
                                         place = CommandChoicePlace.Control,
                                         onRestart = onRestart,
                                         modifier = Modifier.padding(vertical = DsSpacing.small),
+                                        onUpdate = ::updateNow,
+                                        onCheck = ::checkNow,
+                                        checking = checking,
                                     )
                                 } else {
                                     CommandChoiceUnsupported(state, onUpdate = ::updateNow)
@@ -404,6 +415,32 @@ internal fun RuntimeControlPage(
                         confirmRemove = false
                         haptics.confirm()
                         onUninstall(true)
+                    },
+                )
+            },
+        )
+    }
+    if (askMeteredUpdate) {
+        DsDialog(
+            title = stringResource(R.string.runtime_setup_metered_title),
+            onDismiss = { askMeteredUpdate = false },
+            body = {
+                Text(
+                    stringResource(R.string.runtime_update_metered_body, state.update?.let { formatBytes(it.downloadBytes) } ?: "…"),
+                    style = DsType.std14,
+                    color = colors.labelSecondary,
+                )
+            },
+            actions = {
+                DialogButtons(
+                    dismiss = stringResource(R.string.common_cancel),
+                    confirm = stringResource(R.string.runtime_setup_metered_confirm),
+                    onDismiss = { askMeteredUpdate = false },
+                    onConfirm = {
+                        askMeteredUpdate = false
+                        haptics.confirm()
+                        host.dismissOutcome()
+                        host.update()
                     },
                 )
             },

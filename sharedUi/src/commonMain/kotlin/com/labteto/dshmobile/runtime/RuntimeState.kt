@@ -23,7 +23,19 @@ data class InstalledRuntime(
      * choose whether commands run straight away or ask first. False for older releases.
      */
     val commandPermissions: Boolean = false,
-)
+    /**
+     * `runtime.permissions.version`, 0 without the field. Version 2 and later send the whole text of
+     * every approval and a code with every denial; version 1 cut a long command at 2,000 characters,
+     * so "Ask me first" cannot be relied on there ([askFirstTrusted]).
+     */
+    val commandPermissionsVersion: Int = 0,
+) {
+    /** The runtime asks with the whole command, so "Ask me first" shows what it is asking about. */
+    val askFirstTrusted: Boolean get() = commandPermissions && commandPermissionsVersion >= ASK_FIRST_MIN_PERMISSIONS_VERSION
+}
+
+/** The first `runtime.permissions.version` that sends an approval's text uncut (release 2026.11.15-2). */
+const val ASK_FIRST_MIN_PERMISSIONS_VERSION = 2
 
 /** A release by the three things the screens say about it. */
 data class ReleaseRef(

@@ -22,6 +22,8 @@ data class RuntimeReleaseInfo(
     val layers: List<ReleaseLayerPlan>,
     /** The release has the Android permission presets (see [InstalledRuntime.commandPermissions]). */
     val commandPermissions: Boolean = false,
+    /** `runtime.permissions.version` of the release (see [InstalledRuntime.commandPermissionsVersion]). */
+    val commandPermissionsVersion: Int = 0,
 ) {
     val downloadBytes: Long get() = layers.sumOf { it.downloadBytes }
     val unpackedBytes: Long get() = layers.sumOf { it.unpackedBytes }

@@ -77,6 +77,11 @@ internal fun CommandChoiceBlock(
     modifier: Modifier = Modifier,
     /** "Got it" was tapped; the set-up page folds the whole block away then. */
     onDone: () -> Unit = {},
+    /** Install the update a check found (control page only). */
+    onUpdate: (() -> Unit)? = null,
+    /** Look for an update (control page only). */
+    onCheck: (() -> Unit)? = null,
+    checking: Boolean = false,
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
@@ -117,6 +122,28 @@ internal fun CommandChoiceBlock(
             modifier = Modifier.padding(top = DsSpacing.xsmall).semantics { heading() },
         )
         CommandChoiceCards(choice = choice, onPick = ::pick)
+        // A runtime with permissions version 1 cut an approval's text at 2,000 characters: "Ask me
+        // first" could then ask about a command whose end the person never sees. Say so, and offer
+        // the update (version 2 sends the whole text, release 2026.11.15-2).
+        val installed = state.installed
+        if (installed != null && installed.commandPermissions && !installed.askFirstTrusted) {
+            Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+                Text(stringResource(R.string.cmdperm_v1_update), style = DsType.small13, color = colors.warnLabel)
+                val canUpdate = state.update != null && state.updateNeedsApp == null && !state.runtime.busy
+                when {
+                    canUpdate && onUpdate != null -> DsConnectButton(
+                        text = stringResource(R.string.runtime_update_button),
+                        onClick = onUpdate,
+                    )
+                    state.update == null && onCheck != null -> DsConnectButton(
+                        text = stringResource(if (checking) R.string.runtime_update_checking else R.string.runtime_update_check),
+                        onClick = onCheck,
+                        variant = ConnectButtonVariant.Outline,
+                        enabled = !checking && !state.runtime.busy,
+                    )
+                }
+            }
+        }
         // Changed while the harness runs, and the restart was put off: say what is still in force.
         val pending = offersCommandPermissionRestart(state.runtime, startedWith, choice)
         AnimatedVisibility(

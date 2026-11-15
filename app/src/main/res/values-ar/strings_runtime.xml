@@ -146,4 +146,6 @@
     <string name="runtime_chat_restarting">جارٍ تشغيل harness على هذا الهاتف…</string>
     <string name="runtime_chat_updating">جارٍ تحديث harness على هذا الهاتف. ستعود المحادثة عند الانتهاء.</string>
     <string name="runtime_update_nothing_to_download">لا شيء للتنزيل: ما زال على الهاتف من قبل.</string>
+    <string name="runtime_update_metered_body">أنت على اتصال محدود البيانات. ينزّل هذا التحديث %1$s.</string>
+    <string name="cmdperm_v1_update">قد يختصر هذا الإصدار من harness الأمر الطويل عندما يسألك، فلا ترى كل نصه. حدّث harness قبل أن تعتمد على «اسألني أولًا».</string>
 </resources>

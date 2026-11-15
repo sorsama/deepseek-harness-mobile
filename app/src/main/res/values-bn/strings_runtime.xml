@@ -146,4 +146,6 @@
     <string name="runtime_chat_restarting">এই ফোনের harness চালু হচ্ছে…</string>
     <string name="runtime_chat_updating">এই ফোনের harness আপডেট হচ্ছে। শেষ হলে চ্যাট ফিরে আসবে।</string>
     <string name="runtime_update_nothing_to_download">কিছু ডাউনলোড করতে হবে না: এটি আগে থেকেই ফোনে আছে।</string>
+    <string name="runtime_update_metered_body">আপনি মিটারযুক্ত সংযোগে আছেন। এই আপডেটে %1$s ডাউনলোড হবে।</string>
+    <string name="cmdperm_v1_update">harness-এর এই সংস্করণ জিজ্ঞেস করার সময় লম্বা কমান্ড ছোট করে দেখাতে পারে, তাই পুরোটা নাও দেখতে পারেন। “আগে আমাকে জিজ্ঞেস করুন”-এর ওপর ভরসা করার আগে harness আপডেট করুন।</string>
 </resources>

@@ -133,6 +133,7 @@ data class InstalledRecord(
         harnessOnTrial = onTrial,
         previousRelease = previousRelease?.let { ReleaseRef(it.releaseId, it.harnessVersion, it.sequence) },
         commandPermissions = permissions != null,
+        commandPermissionsVersion = permissions?.version ?: 0,
     )
 }
 
