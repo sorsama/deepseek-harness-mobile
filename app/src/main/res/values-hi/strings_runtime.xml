@@ -5,7 +5,7 @@
 
     <string name="runtime_card_title">बिल्ट-इन harness</string>
     <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
-    <string name="runtime_card_intro">harness को DSH के अंदर ही चलाएँ, बिना कंप्यूटर और बिना Termux के।</string>
+    <string name="runtime_card_intro">शुरू करने का सबसे आसान तरीका: harness इसी ऐप के अंदर चलता है, बिना कंप्यूटर और बिना Termux के।</string>
     <string name="runtime_card_sizes">%1$s डाउनलोड, फ़ोन पर लगभग %2$s</string>
     <string name="runtime_card_setting_up">सेट अप हो रहा है…</string>
     <string name="runtime_card_stopped">इंस्टॉल है और शुरू करने के लिए तैयार है।</string>

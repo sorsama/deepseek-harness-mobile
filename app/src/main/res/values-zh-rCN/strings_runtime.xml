@@ -5,7 +5,7 @@
 
     <string name="runtime_card_title">内置 harness</string>
     <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
-    <string name="runtime_card_intro">在 DSH 里直接运行 harness，不需要电脑，也不需要 Termux。</string>
+    <string name="runtime_card_intro">最简单的开始方式：harness 直接在这个应用里运行，不需要电脑，也不需要 Termux。</string>
     <string name="runtime_card_sizes">需下载 %1$s，在手机上约占 %2$s</string>
     <string name="runtime_card_setting_up">正在设置…</string>
     <string name="runtime_card_stopped">已安装，可以启动。</string>

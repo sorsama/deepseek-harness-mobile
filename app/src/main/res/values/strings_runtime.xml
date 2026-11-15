@@ -6,7 +6,7 @@
 
     <string name="runtime_card_title">Built-in harness</string>
     <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
-    <string name="runtime_card_intro">Run the harness inside DSH, with no computer and no Termux.</string>
+    <string name="runtime_card_intro">The easiest way to start: the harness runs inside this app, with no computer and no Termux.</string>
     <string name="runtime_card_sizes">%1$s to download, about %2$s on the phone</string>
     <string name="runtime_card_setting_up">Setting up…</string>
     <string name="runtime_card_stopped">Installed and ready to start.</string>

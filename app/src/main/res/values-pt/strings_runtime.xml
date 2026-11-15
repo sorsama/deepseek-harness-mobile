@@ -5,7 +5,7 @@
 
     <string name="runtime_card_title">Harness integrado</string>
     <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
-    <string name="runtime_card_intro">Rode o harness dentro do DSH, sem computador e sem Termux.</string>
+    <string name="runtime_card_intro">O jeito mais fácil de começar: o harness roda dentro deste app, sem computador e sem Termux.</string>
     <string name="runtime_card_sizes">%1$s para baixar, cerca de %2$s no telefone</string>
     <string name="runtime_card_setting_up">Configurando…</string>
     <string name="runtime_card_stopped">Instalado e pronto para iniciar.</string>

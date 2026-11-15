@@ -5,7 +5,7 @@
 
     <string name="runtime_card_title">بلٹ اِن harness</string>
     <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
-    <string name="runtime_card_intro">harness کو DSH کے اندر ہی چلائیں، کمپیوٹر اور Termux کے بغیر۔</string>
+    <string name="runtime_card_intro">شروع کرنے کا سب سے آسان طریقہ: harness اسی ایپ کے اندر چلتا ہے، کمپیوٹر اور Termux کے بغیر۔</string>
     <string name="runtime_card_sizes">%1$s ڈاؤن لوڈ، فون پر تقریباً %2$s</string>
     <string name="runtime_card_setting_up">سیٹ اپ ہو رہا ہے…</string>
     <string name="runtime_card_stopped">انسٹال ہے اور شروع کرنے کے لیے تیار ہے۔</string>

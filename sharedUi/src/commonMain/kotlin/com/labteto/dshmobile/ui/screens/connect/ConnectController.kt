@@ -188,12 +188,11 @@ class ConnectController(
 
     init {
         scope.launch {
-            // First run only. A phone with Termux and no remembered harness is, far more often
-            // than not, the harness's own phone. A stored mode always wins, so this decides
-            // nothing for an install that has been used even once.
-            store.setConnectModeIfUnset {
-                if (loopbackHarness.installed && store.hosts.first().isEmpty()) ConnectMode.LOOPBACK else ConnectMode.LAN
-            }
+            // First run only. A phone that can run the built-in harness, or has Termux, and
+            // remembers no harness opens on "This phone": it is the one way to start that needs
+            // nothing else, and the other modes stay one tap away. A stored mode always wins, so
+            // this decides nothing for an install that has been used even once.
+            store.setConnectModeIfUnset { firstRunMode() }
             val settings = store.settings()
             val loopbackHost = store.hosts.first().firstOrNull { it.isLoopback && !it.isRelay }
             _state.update {
@@ -901,6 +900,12 @@ class ConnectController(
 
     fun clearError() = _state.update { it.copy(failure = null) }
 
+    private suspend fun firstRunMode(): String = firstRunConnectMode(
+        builtInSupported = builtInHarness.state.value.supported,
+        termuxInstalled = loopbackHarness.installed,
+        rememberedHosts = store.hosts.first().size,
+    )
+
     private companion object {
         const val LOOPBACK = "127.0.0.1"
         const val DEFAULT_PORT = 3080
@@ -909,3 +914,11 @@ class ConnectController(
         const val WATCH_INTERVAL_MS = 2_000L
     }
 }
+
+/**
+ * The mode a fresh install opens on, before the person has picked one: "This phone" when the phone
+ * can run a harness itself (the built-in one, or Termux) and no harness is remembered yet; Local
+ * network otherwise. Only ever used while no mode is stored.
+ */
+internal fun firstRunConnectMode(builtInSupported: Boolean, termuxInstalled: Boolean, rememberedHosts: Int): String =
+    if ((builtInSupported || termuxInstalled) && rememberedHosts == 0) ConnectMode.LOOPBACK else ConnectMode.LAN

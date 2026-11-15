@@ -5,7 +5,7 @@
 
     <string name="runtime_card_title">বিল্ট-ইন harness</string>
     <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
-    <string name="runtime_card_intro">কম্পিউটার বা Termux ছাড়াই DSH-এর ভেতরে harness চালান।</string>
+    <string name="runtime_card_intro">শুরু করার সবচেয়ে সহজ উপায়: কম্পিউটার বা Termux ছাড়াই harness এই অ্যাপের ভেতরেই চলে।</string>
     <string name="runtime_card_sizes">%1$s ডাউনলোড, ফোনে প্রায় %2$s</string>
     <string name="runtime_card_setting_up">সেট আপ হচ্ছে…</string>
     <string name="runtime_card_stopped">ইনস্টল করা আছে, চালু করার জন্য তৈরি।</string>
