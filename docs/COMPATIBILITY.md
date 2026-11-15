@@ -6,6 +6,8 @@ DSH Mobile speaks the DeepSeek Harness web-client protocol over `/api`. The prot
 
 | DSH Mobile | Harness | Notes |
 |---|---|---|
+| 0.22.0 | 0.2.2-rc.1 | The built-in harness (Beta) runs harness 0.2.2-rc.1 from runtime release 2026.11.15-2, whose `minAppVersion` is 0.22.0. On emulators it ran chats, commands (Run it and Ask me first), clones and harness updates; a Local network demo harness on 0.2.1-rc.2 still connected and listed its sessions. Same protocol baseline label as 0.19.0 |
+| 0.20.0 | 0.2.2-rc.1 | Same harness and protocol baseline as 0.19.1, with no wire changes: pull-to-refresh in Sessions, session-list resync, dialog scrim dismissal and the split Commands/Skills sheet |
 | 0.19.1 | 0.2.2-rc.1 | Same protocol baseline and the same harness as 0.19.0, with no wire changes. The sessions drawer fix (#70) was also checked against 0.2.1-rc.2 |
 | 0.19.0 | 0.2.2-rc.1 | All 15 real-host conformance scenarios pass on 0.2.2-rc.1, which changed live state frames, schedule edits, subagent chat addresses and image reads. Saving or deleting an automation needs a 0.2.2 host, because `schedule/edit` replaces `schedule/update` and `schedule/delete`. The in-app protocol baseline label still names the 0.2.1-rc.2 fixture until that fixture is regenerated |
 | 0.18.0 | 0.2.1-rc.2 | Same protocol baseline as 0.17.0. Rewind to this message, from holding a sent message, needs dsh-rewind-plugin on the host |

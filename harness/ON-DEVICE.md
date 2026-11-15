@@ -7,6 +7,11 @@ is the simplest way to use the app, and on a phone that supports it, a new insta
 The other ways stay as they were: a harness on your computer (Local network, Relay, USB), or the
 harness in Termux ([`TERMUX.md`](TERMUX.md)).
 
+**Beta.** The built-in harness is new in 0.22.0 and the app labels it Beta. It was tested on
+emulators (Android 11, 15 and a desktop image) and one Samsung phone, so it may not work on every
+phone yet. If it gives you trouble, the ways above still work, and an issue with your phone's model
+and Android version helps a lot.
+
 ## What it is
 
 - **A small Linux inside the app.** A Debian base with Node.js and the harness, run with `proot`
@@ -115,6 +120,9 @@ Sessions and settings live in the harness's home, which is not shown in Files.
 - **The app.** Settings, About shows a newer DSH Mobile with **Download and install**: the app
   downloads it, checks it and hands it to Android's installer. The first time, Android asks you to
   allow installs from this app. These are two separate updates, with separate notifications.
+  Installing an app update closes the app and the harness with it. If the harness was running (or
+  is set to start with the app), it starts again by itself once the update is in. If Android does
+  not let it start in the background, it starts the next time you open the app.
 
 ## Keeping it running
 

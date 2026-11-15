@@ -92,12 +92,14 @@ Le [site du projet](https://dshm.zyphite.com) présente l'application sur une se
 
 Le [journal des modifications](CHANGELOG.md) indique ce qui a changé dans chaque version.
 
-## Pas besoin d'ordinateur : le harness sur votre téléphone
+## Pas besoin d'ordinateur : le harness sur votre téléphone (bêta)
 
 | Connexion | Installation | Page du harness | Projets | Approbation |
 |:--:|:--:|:--:|:--:|:--:|
 | <img src="docs/images/on-device/connect.png" width="160" alt="L'écran Connexion en mode Ce téléphone, avec la carte du harness intégré et son bouton Installer"> | <img src="docs/images/on-device/setup.png" width="160" alt="La page d'installation en train de décompresser, avec l'explication du fonctionnement des commandes sur un téléphone"> | <img src="docs/images/on-device/control.png" width="160" alt="La page du harness avec le choix des commandes, les projets et les mises à jour du harness"> | <img src="docs/images/on-device/projects.png" width="160" alt="Les projets sur ce téléphone, avec un dépôt cloné"> | <img src="docs/images/on-device/approval.png" width="160" alt="Une commande affichée en entier, qui attend votre autorisation ou votre refus"> |
 | Une nouvelle installation s'ouvre ici. | Télécharger, vérifier, décompresser, démarrer, se connecter. | Démarrer, arrêter, commandes, mises à jour, stockage, journal. | Cloner, importer, partager et ouvrir dans Fichiers. | Avec Me demander d'abord, chaque commande vous attend. |
+
+**Bêta.** Le harness intégré est nouveau dans la 0.22.0 et a été testé sur des émulateurs et un téléphone Samsung, il ne marche donc peut-être pas encore sur tous les téléphones. Un harness sur votre ordinateur (Réseau local, Relais) ou dans Termux fonctionne toujours comme avant.
 
 L'application peut faire tourner le DeepSeek Harness en son sein : un petit système Linux avec Node.js
 et le harness, téléchargé une fois, vérifié par une signature et lancé avec `proot`. C'est le même

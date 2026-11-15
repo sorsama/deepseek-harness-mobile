@@ -86,12 +86,14 @@ The [project site](https://dshm.zyphite.com) has a one-page overview, and the
 
 The [changelog](CHANGELOG.md) lists what changed in each release.
 
-## No computer needed: the harness on your phone
+## No computer needed: the harness on your phone (Beta)
 
 | Connect | Set-up | Harness page | Projects | Approval |
 |:--:|:--:|:--:|:--:|:--:|
 | <img src="docs/images/on-device/connect.png" width="160" alt="The Connect screen on This phone, with the built-in harness card and its Set up button"> | <img src="docs/images/on-device/setup.png" width="160" alt="The set-up page unpacking, with the explanation of how commands work on a phone"> | <img src="docs/images/on-device/control.png" width="160" alt="The harness page with the command choice, projects and harness updates"> | <img src="docs/images/on-device/projects.png" width="160" alt="Projects on this phone, with a cloned repository"> | <img src="docs/images/on-device/approval.png" width="160" alt="A command waiting for Allow once or Don't allow, shown in full"> |
 | A new install opens here. | Download, check, unpack, start, sign in. | Start, stop, commands, updates, storage, log. | Clone, import, share and open in Files. | With Ask me first, every command waits for you. |
+
+**Beta.** The built-in harness is new in 0.22.0 and was tested on emulators and one Samsung phone, so it may not work on every phone yet. A harness on your computer (Local network, Relay) or in Termux works as before.
 
 The app can run the DeepSeek Harness inside itself: a small Linux system with Node.js and the
 harness, downloaded once, checked against a signature, and run with `proot`. It is the same harness

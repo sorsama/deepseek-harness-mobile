@@ -5,9 +5,16 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-11-16
+
+![The built-in harness on a phone: the Connect card, the set-up page and the harness page, each marked Beta](docs/images/releases/0.22.0/devices/hero-built-in-harness.png)
+
 ### Added
 
-- **The harness on the phone itself: no computer needed.** On a 64-bit phone with Android 8.0 or
+- **The harness on the phone itself: no computer needed (Beta).** This is new, so the app marks it
+  **Beta** on the Connect card, the set-up page and the harness page. It was tested on emulators
+  (Android 11, 15 and a desktop image) and on one Samsung phone, and it may not work on every phone
+  yet; a harness on your computer or in Termux works as before. On a 64-bit phone with Android 8.0 or
   newer, **This phone** now offers **Set up**: the app downloads a small Linux system with Node.js
   and the DeepSeek Harness (about 155 MB, about 1.1 GB on the phone), checks its signature and every
   file, unpacks it, starts it and signs in, with no Termux and no command line. A new install on such
@@ -16,9 +23,15 @@ All notable changes to DSH Mobile are documented here. Format based on
   stop and restart, versions and uptime, storage, the log, and a **Keep it running** checklist. The
   guide is [`harness/ON-DEVICE.md`](harness/ON-DEVICE.md).
 
-  <img src="docs/images/on-device/connect.png" alt="The Connect screen on This phone, with the built-in harness card and Set up" width="200">
-  <img src="docs/images/on-device/setup.png" alt="The set-up page unpacking, with the explanation of commands on a phone" width="200">
-  <img src="docs/images/on-device/control.png" alt="The harness page with the command choice, projects and harness updates" width="200">
+  <img src="docs/images/releases/0.22.0/devices/beta-connect-card-phone.png" alt="The Connect screen on This phone, with the built-in harness card, its Beta tag and Set up" width="260">
+  <img src="docs/images/releases/0.22.0/devices/beta-setup-phone.png" alt="The set-up page with the Beta tag and the sentence saying it is new" width="260">
+  <img src="docs/images/releases/0.22.0/devices/beta-control-page-arabic-phone.png" alt="The harness page in Arabic, right to left, with the Beta tag next to the title" width="260">
+
+- **The harness comes back after an app update.** Installing an app update from inside the app
+  closes the app, and the harness with it. If the harness was running (or is set to start with the
+  app), it now starts again by itself once the update is in, without opening the app. If Android
+  does not allow that in the background, it starts the next time you open the app. A harness you
+  stopped stays stopped.
 
 - **Harness updates without an app update.** The app checks for a new harness release when it
   opens and once a day, tells you once, and installs it when you tap Update (it asks first on a
@@ -58,8 +71,10 @@ All notable changes to DSH Mobile are documented here. Format based on
 - **Keeping the connection in the background could crash the app on Android 12 and newer.** The
   keep-connected service was started the strict way on every reconnect, including ones in the
   background where Android refuses it. It now starts the same safe way as the built-in harness's
-  service, and on Android 15 it stops cleanly when the system's six-hours-a-day limit for its kind of
-  service is used up instead of the app being killed.
+  service. A refusal is no longer a crash; the app asks again the next time it is on screen.
+- **Keep connected in background stopped after six hours a day on Android 15.** Its service was
+  of a kind Android 15 limits to six hours a day. It is now the same kind as the built-in harness's
+  service, which has no such limit.
 - **A tool call with a huge argument could freeze the app.** A command of a few hundred KB made
   the chat row lay out the whole text and the app run out of memory. Rows and cards now show the
   start of it; the call keeps every byte.

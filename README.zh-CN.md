@@ -68,12 +68,14 @@ DeepSeek Harness 是一个运行在你电脑上的 AI 编程代理，自带网�
 
 [更新日志](CHANGELOG.md)列出了每个版本的改动。
 
-## 不需要电脑：手机上的 harness
+## 不需要电脑：手机上的 harness（测试版）
 
 | 连接 | 设置 | harness 页面 | 项目 | 审批 |
 |:--:|:--:|:--:|:--:|:--:|
 | <img src="docs/images/on-device/connect.png" width="160" alt="本机模式下的连接页面，内置 harness 卡片和设置按钮"> | <img src="docs/images/on-device/setup.png" width="160" alt="正在解包的设置页面，以及手机上命令如何运行的说明"> | <img src="docs/images/on-device/control.png" width="160" alt="harness 页面，包含命令选择、项目和 harness 更新"> | <img src="docs/images/on-device/projects.png" width="160" alt="这台手机上的项目，有一个克隆下来的仓库"> | <img src="docs/images/on-device/approval.png" width="160" alt="一条等待允许或拒绝的命令，完整显示"> |
 | 新安装的应用会打开这里。 | 下载、校验、解包、启动、登录。 | 启动、停止、命令、更新、存储、日志。 | 克隆、导入、分享，或在文件应用中打开。 | 选了先问我，每条命令都会等你。 |
+
+**测试版。** 内置 harness 是 0.22.0 的新功能，只在模拟器和一台三星手机上测试过，所以可能还不能在每台手机上正常运行。电脑上的 harness（局域网、中继）或 Termux 里的 harness 仍然和以前一样可用。
 
 应用可以在自己内部运行 DeepSeek Harness：一个带 Node.js 和 harness 的小型 Linux 系统，只下载一次，按签名校验，用 `proot` 运行。它和你在电脑上运行的是同一个 harness，会话和工具都一样。
 
