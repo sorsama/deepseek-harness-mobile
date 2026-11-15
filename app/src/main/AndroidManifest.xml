@@ -250,6 +250,19 @@
             android:exported="false" />
 
         <!--
+            After this app was replaced by a newer build: starts the built-in harness again when it
+            was running before an in-app update (runtime/ResumeAfterUpdate). Not exported: only the
+            system sends MY_PACKAGE_REPLACED, and only to this package.
+        -->
+        <receiver
+            android:name=".runtime.AppUpdatedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!--
             Opts into AppCompat's own storage for the per-app language. Below API 33 the framework
             has no LocaleManager to remember the choice, and without this the library only holds it
             in memory: the app re-applies its saved tag on launch, but any AppCompat-managed context

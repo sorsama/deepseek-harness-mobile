@@ -31,7 +31,7 @@ import javax.inject.Inject
  *
  * | op | extras | does |
  * |---|---|---|
- * | `install`, `update` | `--es appVersion 0.22.0`, `--es manifestUrl <url>` (`latest` for the latest) | install or update to the latest (or that) release |
+ * | `install`, `update` | `--es appVersion <x.y.z>` (only for a release cut for a newer app than this build), `--es manifestUrl <url>` (`latest` for the latest) | install or update to the latest (or that) release |
  * | `check` | `--es appVersion` | look for an update, log the result |
  * | `cancel` | | abandon an install or a start |
  * | `start` | `--ei port 3080` | start the harness |
@@ -43,6 +43,7 @@ import javax.inject.Inject
  * | `probe` | `--ei port 3080` | `POST /api/session/list` without and with the stored cookie; status codes only |
  * | `orphan` | `--ei port 3080` | leave an untracked proot holding the port, as an earlier app process could |
  * | `goback` | | install the installed manifest's `previous` release (the control page's "Go back") |
+ * | `beforeupdate` | | what the in-app updater does right before it installs an app update: remember whether the harness should start again after it (then `adb install -r` a build with a higher version code) |
  * | `failtrial` | `--ez on true` | the next start of a release on trial fails before readiness (node loads a missing module) |
  * | `permission` | `--es value full\|ask`, `--ez explained false` | show or change the command choice and whether its explanation was seen |
  * | `mobilepatch` | `--ez off true` | the next start leaves the runtime's Android permission patch out (upstream's presets) |
@@ -121,6 +122,12 @@ class RuntimeDebugActivity : ComponentActivity() {
             "probe" -> log.scope.launch { probe(log, port) }
             "orphan" -> log.write("orphan: ${spawnOrphan(port)}")
             "goback" -> log.write("goback accepted=${controller.goBack()}")
+            // What the in-app updater does right before it commits an install (SelfUpdateHooks), so
+            // an `adb install -r` of a newer build can stand in for the update itself.
+            "beforeupdate" -> log.scope.launch {
+                controller.rememberForAppUpdate(hosts.settingsOnce().autoStartBuiltInHarness)
+                log.write("beforeupdate: state=${controller.state.value::class.simpleName}")
+            }
             "failtrial" -> {
                 controller.failNextTrialStart = intent.getBooleanExtra("on", true)
                 log.write("failNextTrialStart=${controller.failNextTrialStart}")

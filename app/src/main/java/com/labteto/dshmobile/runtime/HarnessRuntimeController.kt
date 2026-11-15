@@ -71,7 +71,9 @@ class HarnessRuntimeController @Inject constructor(
 
     /**
      * Debug builds only: the version the release's `minAppVersion` is compared with. Lets the
-     * device tests install a release cut for the next app version. Ignored in release builds.
+     * device tests install a release cut for the next app version (the first runtime releases
+     * needed 0.22.0 before the app was 0.22.0). Ignored in release builds, which always compare
+     * [BuildConfig.VERSION_NAME].
      */
     @Volatile
     var appVersionOverride: String? = null
@@ -262,6 +264,49 @@ class HarnessRuntimeController @Inject constructor(
 
     fun uninstall(keepUserData: Boolean = false): Boolean = engine.uninstall(keepUserData)
 
+    // ---- Coming back after an app update (see ResumeAfterUpdate) ------------------------------
+
+    private val resumeStore: ResumeAfterUpdate.Store =
+        ResumeAfterUpdate.SharedStore(context.getSharedPreferences(ResumeAfterUpdate.SharedStore.FILE, Context.MODE_PRIVATE))
+
+    /**
+     * Called by the in-app updater right before it hands this app's update to the system: remember
+     * whether the harness should come back afterwards. [autoStart] is the "start with the app" switch.
+     */
+    fun rememberForAppUpdate(autoStart: Boolean) {
+        val port = ResumeAfterUpdate.portToResume(state.value, autoStart, resumeStore.lastPort())
+        resumeStore.write(port?.let { ResumeAfterUpdate.Marker(it, BuildConfig.VERSION_CODE.toLong(), System.currentTimeMillis()) })
+        Log.i(HarnessRuntimeService.TAG, "before app update: ${if (port != null) "start again on $port afterwards" else "leave it stopped"}")
+    }
+
+    /** The update was refused or cancelled: this process goes on, and so does the harness. */
+    fun forgetAppUpdate() = resumeStore.write(null)
+
+    /**
+     * After an app update: start the harness again when it was running before. Quiet on every
+     * refusal; whatever is left pending is tried again when the app is next opened. True when a
+     * start was made.
+     */
+    fun resumeAfterAppUpdate(trigger: String): Boolean {
+        val marker = resumeStore.read() ?: return false
+        fun decide() = ResumeAfterUpdate.decide(marker, BuildConfig.VERSION_CODE.toLong(), System.currentTimeMillis(), state.value)
+        val decision = decide()
+        Log.i(HarnessRuntimeService.TAG, "after app update ($trigger): $decision")
+        when (decision) {
+            is ResumeAfterUpdate.Decision.Start -> {
+                if (engine.start(decision.port)) {
+                    resumeStore.write(null)
+                    return true
+                }
+                // Someone else started it in between (the Connect screen), or it became busy.
+                if (decide() == ResumeAfterUpdate.Decision.Drop) resumeStore.write(null)
+            }
+            ResumeAfterUpdate.Decision.Drop -> resumeStore.write(null)
+            ResumeAfterUpdate.Decision.Wait, null -> Unit
+        }
+        return false
+    }
+
     suspend fun checkForUpdate(): RuntimeInstaller.CheckResult = engine.checkForUpdate()
 
     suspend fun storageUsage(): RuntimeStorageUsage = engine.storageUsage()
@@ -316,7 +361,11 @@ class HarnessRuntimeController @Inject constructor(
                 override fun onActivityStarted(activity: Activity) {
                     if (startedActivities.incrementAndGet() == 1) {
                         // Off the main thread: the start is a binder call.
-                        scope.launch { serviceStarter.onAppVisible() }
+                        scope.launch {
+                            serviceStarter.onAppVisible()
+                            // The fallback for an app update the receiver could not resume after.
+                            resumeAfterAppUpdate("app opened")
+                        }
                     }
                 }
 
@@ -335,6 +384,8 @@ class HarnessRuntimeController @Inject constructor(
 
     init {
         trackVisibility()
+        // The port an update brings the harness back on when it was set to start with the app.
+        scope.launch { engine.state.collect { if (it is RuntimeState.Running) resumeStore.rememberPort(it.port) } }
     }
 
     private fun isPortFree(port: Int): Boolean = try {

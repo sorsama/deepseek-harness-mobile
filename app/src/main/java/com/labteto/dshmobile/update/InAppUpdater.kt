@@ -156,6 +156,7 @@ class InAppUpdater @Inject constructor(
     private val device: DeviceConditions,
     private val checker: UpdateChecker,
     justUpdated: AppJustUpdatedTracker,
+    private val hooks: SelfUpdateHooks,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val store = DownloadStore(File(context.cacheDir, "updates"))
@@ -292,6 +293,7 @@ class InAppUpdater @Inject constructor(
             }
             is InstallOutcome.Failed -> {
                 tracker.clear()
+                hooks.installFailed()
                 if (update == null) return
                 if (outcome.failure.discardFile) store.clear(update.version)
                 _state.value = UpdaterState.InstallFailed(update, outcome.failure, outcome.detail)
@@ -443,12 +445,15 @@ class InAppUpdater @Inject constructor(
         // Written before the commit: replacing the app ends this process, and the next launch reads
         // this to say "Updated to …".
         tracker.markPending(UpdateMarker(version, candidate?.versionCode ?: 0, update.notes, update.url))
+        // And whether the built-in harness, which ends with this process, should come back.
+        runCatching { hooks.beforeInstall() }
         try {
             withContext(Dispatchers.IO) { installer.commit(file) }
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
             tracker.clear()
+            hooks.installFailed()
             val failure = if (error is IOException && error.message.orEmpty().contains("space", ignoreCase = true)) {
                 InstallFailure.Storage
             } else {
