@@ -613,8 +613,12 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         // the refused path, or the tool's own message. The generic string is only the fallback
         // for a result that genuinely carries no prose.
         val failure = remember(result?.content) { toolFailureMessage(result?.content) }
+        // A subagent of an "Ask before commands" session cannot ask anyone, so the built-in
+        // runtime refuses its commands with an English sentence written for the model; the reader
+        // gets the reason in their own words instead.
+        val subagentDenied = remember(result) { result != null && com.labteto.dshmobile.core.permission.isSubagentCommandDenial(result) }
         Text(
-            failure ?: stringResource(R.string.common_error),
+            if (subagentDenied) stringResource(R.string.subagent_command_denied) else failure ?: stringResource(R.string.common_error),
             style = DsType.caption11,
             color = colors.error,
             modifier = Modifier.padding(start = 26.dp),

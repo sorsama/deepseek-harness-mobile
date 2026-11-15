@@ -681,6 +681,17 @@ fun ChatScreen(
 
             if (connected) com.labteto.dshmobile.ui.screens.models.ChatModelSetupNotice(setupProblem)
 
+            // A command refused for want of a sandbox (SANDBOX_UNAVAILABLE): this session is on a
+            // mode a phone cannot give it. On the built-in harness, one tap switches it.
+            if (connected && currentSubagent == null) {
+                com.labteto.dshmobile.ui.screens.runtime.SandboxRefusalNotice(
+                    nodes = conversation?.nodes.orEmpty(),
+                    permissions = permissions,
+                    pending = pendingPermission,
+                    onSwitch = { value -> scope.launch { reportPermission(store.setPermissionPreset(value)) } },
+                )
+            }
+
             val nodeContext = ChatNodeContext(
                 nodes = conversation?.nodes ?: emptyList(),
                 eventTimes = eventTimes,
@@ -872,6 +883,9 @@ fun ChatScreen(
                         modifier = Modifier.padding(horizontal = gutter),
                         toolName = approval.toolName,
                         reason = approval.reason,
+                        rawReason = approval.rawReason,
+                        requestKey = approval.approvalId,
+                        waitingAfter = approval.waitingAfter,
                         onAllow = { decide(true) },
                         onReject = { decide(false) },
                     )

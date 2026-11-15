@@ -227,29 +227,50 @@ internal fun RuntimeControlPage(
                                 ) { host.setModulePack(!modulePack) }
                             }
 
+                            fun checkNow() {
+                                haptics.tap()
+                                checking = true
+                                scope.launch {
+                                    checkResult = runCatching { controls.checkNow() }.getOrNull()
+                                    checking = false
+                                    when (checkResult) {
+                                        is RuntimeInstaller.CheckResult.Refused -> haptics.reject()
+                                        else -> haptics.confirm()
+                                    }
+                                }
+                            }
+                            fun updateNow() {
+                                haptics.confirm()
+                                host.dismissOutcome()
+                                host.update()
+                            }
+
+                            // What the agent's commands do. No troubleshooting switch for the
+                            // runtime's DSH_RUNTIME_MOBILE_PATCH=0: it gives back upstream's presets,
+                            // under which no command can run on a phone, and a release that does not
+                            // start already goes back to the one before by itself.
+                            Section(stringResource(R.string.runtime_section_commands)) {
+                                if (state.installed?.commandPermissions == true) {
+                                    CommandChoiceBlock(
+                                        host = host,
+                                        state = state,
+                                        place = CommandChoicePlace.Control,
+                                        onRestart = onRestart,
+                                        modifier = Modifier.padding(vertical = DsSpacing.small),
+                                    )
+                                } else {
+                                    CommandChoiceUnsupported(state, checking, onUpdate = ::updateNow, onCheck = ::checkNow)
+                                }
+                            }
+
                             UpdateSection(
                                 state = state,
                                 checking = checking,
                                 checkResult = checkResult,
                                 notify = notifyUpdates,
                                 autoInstall = autoInstallUpdates,
-                                onCheck = {
-                                    haptics.tap()
-                                    checking = true
-                                    scope.launch {
-                                        checkResult = runCatching { controls.checkNow() }.getOrNull()
-                                        checking = false
-                                        when (checkResult) {
-                                            is RuntimeInstaller.CheckResult.Refused -> haptics.reject()
-                                            else -> haptics.confirm()
-                                        }
-                                    }
-                                },
-                                onUpdate = {
-                                    haptics.confirm()
-                                    host.dismissOutcome()
-                                    host.update()
-                                },
+                                onCheck = ::checkNow,
+                                onUpdate = ::updateNow,
                                 onCancel = host::cancelUpdate,
                                 onGoBack = { confirmGoBack = true },
                                 onUpdateApp = { controls.updateApp(context) },

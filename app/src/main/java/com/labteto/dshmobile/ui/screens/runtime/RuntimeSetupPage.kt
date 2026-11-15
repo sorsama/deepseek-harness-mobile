@@ -243,6 +243,28 @@ internal fun RuntimeSetupPage(
                     RuntimeIssueBlock(issue = issue, onAction = onAction, showActions = false, showLog = true)
                 }
 
+                // The command choice, explained once, while the download runs: there is time to
+                // read it then, and nothing waits on it (the default stands until it is changed).
+                val explained by host.commandPermissionExplained.collectAsStateWithLifecycle()
+                var choiceHere by rememberSaveable { mutableStateOf(false) }
+                val choiceMoment = (phase == SetupPhase.Working || phase == SetupPhase.Done) && commandChoiceSupported(state)
+                LaunchedEffect(choiceMoment, explained) {
+                    if (choiceMoment && !explained) choiceHere = true
+                }
+                AnimatedVisibility(
+                    visible = choiceHere && phase != SetupPhase.Failed && phase != SetupPhase.NoSpace,
+                    enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
+                    exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
+                ) {
+                    CommandChoiceBlock(
+                        host = host,
+                        state = state,
+                        place = CommandChoicePlace.SetUp,
+                        onRestart = host::restart,
+                        onDone = { choiceHere = false },
+                    )
+                }
+
                 // The one thing the harness needs besides itself: a model provider it can use. Asked
                 // of the harness as soon as it is up and signed in, with the way to add a key.
                 com.labteto.dshmobile.ui.screens.models.BuiltInModelsHint(
