@@ -40,4 +40,9 @@
     <string name="sandbox_notice_switch">สลับเป็น “%1$s”</string>
     <string name="sandbox_notice_other">คำสั่งนั้นไม่ได้รัน เพราะการตั้งค่าของแชตนี้ต้องมี sandbox แต่ harness ไม่มีในที่ที่มันทำงาน เลือกการตั้งค่าอื่นได้จากปุ่มสิทธิ์ของแชต</string>
     <string name="subagent_command_denied">เอเจนต์ผู้ช่วยถามคุณไม่ได้ คำสั่งนี้จึงไม่ได้รัน</string>
+    <string name="command_denied_rejected">คุณตอบไม่ จึงไม่ได้รันคำสั่งนี้</string>
+    <string name="command_denied_cancelled">คำถามถูกยกเลิกก่อนที่คุณจะตอบ จึงไม่ได้รัน</string>
+    <string name="command_denied_nobody">ไม่มีใครตอบคำถาม จึงไม่ได้รัน ให้แอปเชื่อมต่ออยู่ระหว่างที่เอเจนต์ทำงาน</string>
+    <string name="command_denied_too_large">ยาวเกินกว่าจะแสดงให้คุณดูได้ครบ (จำกัดที่ 256 KB) จึงไม่ได้ถามคุณและไม่ได้รัน เอเจนต์ได้รับแจ้งให้แบ่งเป็นส่วนเล็กลง</string>
+    <string name="command_denied_other">การตรวจคำสั่งบนโทรศัพท์นี้หยุดไว้ จึงไม่ได้รัน</string>
 </resources>

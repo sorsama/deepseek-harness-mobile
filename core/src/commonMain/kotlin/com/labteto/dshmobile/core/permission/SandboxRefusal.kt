@@ -23,15 +23,18 @@ val PRESETS_WITHOUT_SANDBOX = setOf("danger-full-access", "ask-commands")
  * sandbox, and the session is not on a preset that would have run it. The notice goes when the
  * person sends the next message, or when the session is switched to such a preset.
  *
- * The refusal is read from the code, never from the message text (which changes between releases):
- * a tool result since the last message the person sent that carries [SANDBOX_UNAVAILABLE].
+ * The runtime's README ("What the app has to do", point 5) documents the two shapes the refusal
+ * takes with harness 0.2.2-rc.1, and this reads both:
+ *  - a runner was picked but could not start the command: the result carries
+ *    `error.code` [SANDBOX_UNAVAILABLE]. That counts on any harness;
+ *  - no runner is usable at all (what a phone meets): `tool-bash` re-throws the job's failure as a
+ *    plain `Error`, so the result has no `error` at all, only the harness's sentence. On the
+ *    built-in harness ([hostWithoutSandbox]) an error result of a shell tool that starts with that
+ *    documented sentence counts too ([isSandboxRefusalText]). Elsewhere the words are not trusted.
  *
- * Harness 0.2.2-rc.1 loses that code on its usual path: the web profile runs a foreground `bash`
- * call as a job, and a job whose start failed is re-thrown as a plain error with the message only
- * (`tool-bash`, `waitOnJob`). So where the host is known to have no sandbox at all
- * ([hostWithoutSandbox]: the built-in harness, where Android allows none), a failed shell call in a
- * session on a sandboxed preset counts as that refusal: on such a host no command can run under
- * those presets, so the call cannot have failed any other way.
+ * Earlier (#111) the built-in harness counted every failed shell call in a session on a sandboxed
+ * preset, because the shape without a code had not been written down. The README now names it, so
+ * that guess is gone: a command that started and then failed is not reported as a refusal.
  *
  * @param currentPreset the session's preset now (the `permissions` projection's `currentValue`).
  * @param hostWithoutSandbox the harness runs where no kernel sandbox can work (the phone's own).
@@ -41,29 +44,89 @@ fun sandboxRefusalShown(nodes: List<ChatNode>, currentPreset: String?, hostWitho
     for (i in nodes.indices.reversed()) {
         when (val node = nodes[i]) {
             is UserMessageNode -> return false
-            is ToolResultNode -> {
-                if (node.errorCode == SANDBOX_UNAVAILABLE) return true
-                if (hostWithoutSandbox && node.isError && shellCallOf(nodes, node.callId)) return true
-            }
+            is ToolResultNode -> if (isSandboxRefusal(nodes, node, hostWithoutSandbox)) return true
             else -> Unit
         }
     }
     return false
 }
 
+private fun isSandboxRefusal(nodes: List<ChatNode>, node: ToolResultNode, hostWithoutSandbox: Boolean): Boolean {
+    if (node.errorCode == SANDBOX_UNAVAILABLE) return true
+    if (!hostWithoutSandbox || !node.isError || node.errorCode != null) return false
+    return shellCallOf(nodes, node.callId) && isSandboxRefusalText(resultText(node))
+}
+
+/**
+ * The harness's sentence for a command refused because no sandbox is usable, as the runtime's README
+ * quotes it: `Error: sandbox mode "<mode>" is requested but no sandbox backend is usable on this
+ * host; ...`. The mode is any of the sandboxed ones, so only the parts around it are compared.
+ */
+fun isSandboxRefusalText(text: String): Boolean {
+    val body = text.trimStart().removePrefix("Error: ")
+    return body.startsWith(SANDBOX_REFUSAL_PREFIX) && body.contains(SANDBOX_REFUSAL_MIDDLE)
+}
+
+internal const val SANDBOX_REFUSAL_PREFIX = "sandbox mode \""
+internal const val SANDBOX_REFUSAL_MIDDLE = "is requested but no sandbox backend is usable on this host"
+
 private fun shellCallOf(nodes: List<ChatNode>, callId: String): Boolean =
     nodes.any { it is ToolCallNode && it.callId == callId && it.name in ApprovalPrompt.COMMAND_TOOLS }
 
+/** Whether this is the built-in runtime's denial of a subagent's gated call ([PermissionDenial.SubagentCannotAsk]). */
+fun isSubagentCommandDenial(node: ToolResultNode): Boolean = permissionDenialOf(node) == PermissionDenial.SubagentCannotAsk
+
 /**
- * The built-in runtime's denial of a subagent's gated call in an "Ask before commands" session.
- *
- * A subagent cannot ask anyone, so the runtime's gate refuses its commands and says why in English
- * (`permission.mjs`, `denied(...)`), without a structured code. The marker is that fixed sentence of
- * our own runtime, not wording of the harness's; when the runtime adds a code for it, match that.
+ * Why the built-in runtime's "Ask before commands" gate did not run a call, in the reader's terms.
+ * The runtime's README lists the codes ("Denial codes"); the rare ones share [Other].
  */
-fun isSubagentCommandDenial(node: ToolResultNode): Boolean {
-    if (!node.isError) return false
-    return resultText(node).contains(SUBAGENT_DENIAL_MARKER)
+enum class PermissionDenial {
+    /** `APPROVAL_NOT_AVAILABLE_TO_SUBAGENT`: a helper agent cannot ask anyone. */
+    SubagentCannotAsk,
+
+    /** `APPROVAL_REJECTED_BY_USER`. */
+    Rejected,
+
+    /** `APPROVAL_CANCELLED`: the question was withdrawn while the turn went on. */
+    Cancelled,
+
+    /** `APPROVAL_UNAVAILABLE`: nobody was there to answer. */
+    NobodyToAsk,
+
+    /** `APPROVAL_TEXT_TOO_LARGE`: the text was over the runtime's limit, so nothing was asked. */
+    TextTooLarge,
+
+    /** Any other code of the gate (unreadable arguments, the gate's own failure, and the rest). */
+    Other,
+}
+
+/** `error.name` on every denial of the runtime's gate (permissions version 2 and later). */
+const val PERMISSION_DENIED_ERROR_NAME = "DshMobilePermissionDenied"
+
+/** The runtime's limit for one approval's text, in bytes (`runtime.permissions.approvalTextLimitBytes`). */
+const val APPROVAL_TEXT_LIMIT_BYTES = 262_144
+
+/**
+ * Why the runtime's gate refused this call, or null when it did not.
+ *
+ * Read from `error.code` (`runtime.permissions.version` 2 and later), never from the sentence the
+ * model reads, which the README says may be reworded. A runtime with version 1 gave no code; for
+ * it, and only for the subagent case the app explains, the gate's own fixed sentence is the
+ * fallback ([SUBAGENT_DENIAL_MARKER]). A result with a code from somewhere else is not a denial.
+ */
+fun permissionDenialOf(node: ToolResultNode): PermissionDenial? {
+    if (!node.isError) return null
+    when (node.errorCode) {
+        "APPROVAL_NOT_AVAILABLE_TO_SUBAGENT" -> return PermissionDenial.SubagentCannotAsk
+        "APPROVAL_REJECTED_BY_USER" -> return PermissionDenial.Rejected
+        "APPROVAL_CANCELLED" -> return PermissionDenial.Cancelled
+        "APPROVAL_UNAVAILABLE" -> return PermissionDenial.NobodyToAsk
+        "APPROVAL_TEXT_TOO_LARGE" -> return PermissionDenial.TextTooLarge
+        null -> Unit
+        else -> return if (node.errorName == PERMISSION_DENIED_ERROR_NAME) PermissionDenial.Other else null
+    }
+    // Version 1: no code at all. Our own runtime's fixed sentence, for the one case worth explaining.
+    return if (resultText(node).contains(SUBAGENT_DENIAL_MARKER)) PermissionDenial.SubagentCannotAsk else null
 }
 
 internal const val SUBAGENT_DENIAL_MARKER = "this is a subagent, and the session that started it asks before commands"

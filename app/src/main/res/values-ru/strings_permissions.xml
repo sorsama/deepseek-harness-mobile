@@ -43,4 +43,9 @@
     <string name="sandbox_notice_switch">Переключить на «%1$s»</string>
     <string name="sandbox_notice_other">Команда не выполнилась: настройке этого чата нужна песочница, а у harness её нет там, где он работает. Другую настройку можно выбрать кнопкой разрешений чата.</string>
     <string name="subagent_command_denied">Вспомогательный агент не может спросить вас, поэтому команда не выполнилась.</string>
+    <string name="command_denied_rejected">Вы отказали, поэтому это не выполнялось.</string>
+    <string name="command_denied_cancelled">Вопрос сняли до вашего ответа, поэтому это не выполнялось.</string>
+    <string name="command_denied_nobody">Ответить на вопрос было некому, поэтому это не выполнялось. Не отключайте приложение, пока агент работает.</string>
+    <string name="command_denied_too_large">Это слишком длинно, чтобы показать целиком (предел 256 КБ), поэтому вас не спросили и это не выполнялось. Агенту сказали разбить это на части поменьше.</string>
+    <string name="command_denied_other">Проверка команд на этом телефоне остановила это, поэтому оно не выполнялось.</string>
 </resources>

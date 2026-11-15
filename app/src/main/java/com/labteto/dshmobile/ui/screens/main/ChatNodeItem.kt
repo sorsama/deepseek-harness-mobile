@@ -613,12 +613,12 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         // the refused path, or the tool's own message. The generic string is only the fallback
         // for a result that genuinely carries no prose.
         val failure = remember(result?.content) { toolFailureMessage(result?.content) }
-        // A subagent of an "Ask before commands" session cannot ask anyone, so the built-in
-        // runtime refuses its commands with an English sentence written for the model; the reader
-        // gets the reason in their own words instead.
-        val subagentDenied = remember(result) { result != null && com.labteto.dshmobile.core.permission.isSubagentCommandDenial(result) }
+        // The built-in runtime's "Ask before commands" gate refuses a call with an English sentence
+        // written for the model and a stable code (permissions version 2); the reader gets the
+        // reason in their own words, chosen by the code (see permissionDenialOf).
+        val denial = remember(result) { result?.let { com.labteto.dshmobile.core.permission.permissionDenialOf(it) } }
         Text(
-            if (subagentDenied) stringResource(R.string.subagent_command_denied) else failure ?: stringResource(R.string.common_error),
+            denial?.let { stringResource(permissionDenialText(it)) } ?: failure ?: stringResource(R.string.common_error),
             style = DsType.caption11,
             color = colors.error,
             modifier = Modifier.padding(start = 26.dp),
@@ -841,3 +841,13 @@ private fun ToolSetChangeRow(node: DeveloperMessageNode) {
     }
 }
 
+
+/** What the chat says for a call the built-in runtime's command check did not run. */
+internal fun permissionDenialText(denial: com.labteto.dshmobile.core.permission.PermissionDenial): Int = when (denial) {
+    com.labteto.dshmobile.core.permission.PermissionDenial.SubagentCannotAsk -> R.string.subagent_command_denied
+    com.labteto.dshmobile.core.permission.PermissionDenial.Rejected -> R.string.command_denied_rejected
+    com.labteto.dshmobile.core.permission.PermissionDenial.Cancelled -> R.string.command_denied_cancelled
+    com.labteto.dshmobile.core.permission.PermissionDenial.NobodyToAsk -> R.string.command_denied_nobody
+    com.labteto.dshmobile.core.permission.PermissionDenial.TextTooLarge -> R.string.command_denied_too_large
+    com.labteto.dshmobile.core.permission.PermissionDenial.Other -> R.string.command_denied_other
+}

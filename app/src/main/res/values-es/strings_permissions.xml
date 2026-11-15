@@ -42,4 +42,9 @@
     <string name="sandbox_notice_switch">Cambiar a «%1$s»</string>
     <string name="sandbox_notice_other">Ese comando no se ejecutó porque el ajuste de este chat necesita un sandbox y el harness no tiene ninguno donde funciona. Puedes elegir otro ajuste desde el botón de permisos del chat.</string>
     <string name="subagent_command_denied">Un agente auxiliar no puede preguntarte, así que este comando no se ejecutó.</string>
+    <string name="command_denied_rejected">Dijiste que no, así que no se ejecutó.</string>
+    <string name="command_denied_cancelled">La pregunta se retiró antes de que respondieras, así que no se ejecutó.</string>
+    <string name="command_denied_nobody">No había nadie para responder la pregunta, así que no se ejecutó. Mantén la app conectada mientras trabaja el agente.</string>
+    <string name="command_denied_too_large">Era demasiado largo para mostrártelo entero (el límite es 256 KB), así que no se te preguntó y no se ejecutó. Al agente se le pidió dividirlo en partes más pequeñas.</string>
+    <string name="command_denied_other">La revisión de comandos de este teléfono lo detuvo, así que no se ejecutó.</string>
 </resources>

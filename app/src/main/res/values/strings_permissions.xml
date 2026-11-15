@@ -43,4 +43,9 @@
     <string name="sandbox_notice_switch">Switch to “%1$s”</string>
     <string name="sandbox_notice_other">That command didn\'t run because this chat\'s setting needs a sandbox and the harness has none where it runs. You can pick another setting from the chat\'s permission button.</string>
     <string name="subagent_command_denied">A helper agent can\'t ask you, so this command didn\'t run.</string>
+    <string name="command_denied_rejected">You said no, so this didn\'t run.</string>
+    <string name="command_denied_cancelled">The question was withdrawn before you answered, so this didn\'t run.</string>
+    <string name="command_denied_nobody">Nobody was there to answer the question, so this didn\'t run. Keep the app connected while the agent works.</string>
+    <string name="command_denied_too_large">This was too long to show you in full (the limit is 256 KB), so you weren\'t asked and it didn\'t run. The agent was told to split it into smaller parts.</string>
+    <string name="command_denied_other">The command check on this phone stopped this, so it didn\'t run.</string>
 </resources>

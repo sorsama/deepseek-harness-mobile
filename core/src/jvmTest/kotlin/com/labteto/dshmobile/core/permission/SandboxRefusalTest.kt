@@ -59,19 +59,43 @@ class SandboxRefusalTest {
         assertFalse(sandboxRefusalShown(wordsOnly, "workspace-write"))
     }
 
-    @Test fun onTheBuiltInHarnessAFailedShellCallWithoutTheCodeCounts() {
+    /** The sentence the runtime README quotes for the shape without a code (harness 0.2.2-rc.1). */
+    private val documentedSentence = "Error: sandbox mode \"workspace-write\" is requested but no sandbox backend is usable on this host; " +
+        "refusing to run the command unconfined. Install bubblewrap or run a Landlock-enforcing kernel (Linux), ensure sandbox-exec " +
+        "is usable (macOS), or ensure the ACL restricted-token runner can start (Windows) — otherwise switch the consumer to danger-full-access."
+
+    @Test fun onTheBuiltInHarnessTheDocumentedSentenceWithoutTheCodeCounts() {
         // Harness 0.2.2-rc.1 runs foreground bash as a job and re-throws a start failure without
-        // its code; on a host with no sandbox at all the failed shell call is still the refusal.
-        val codeLost = nodes(user(0), call(1, "c1"), result(2, "c1", null, "Error: sandbox mode \"workspace-write\" is requested"))
+        // its code: the result has no `error`, only the sentence.
+        val codeLost = nodes(user(0), call(1, "c1"), result(2, "c1", null, documentedSentence))
         assertTrue(sandboxRefusalShown(codeLost, "workspace-write", hostWithoutSandbox = true))
         assertTrue(sandboxRefusalShown(codeLost, "custom", hostWithoutSandbox = true))
+        // Any sandboxed mode: only the words around the mode are compared.
+        val readOnly = nodes(user(0), call(1, "c1"), result(2, "c1", null, documentedSentence.replace("workspace-write", "read-only")))
+        assertTrue(sandboxRefusalShown(readOnly, "read-only", hostWithoutSandbox = true))
         // Elsewhere only the code counts.
         assertFalse(sandboxRefusalShown(codeLost, "workspace-write", hostWithoutSandbox = false))
-        // A command that ran and failed on a preset that runs commands is just a failed command.
+        // On a preset that runs commands there is nothing to explain.
         assertFalse(sandboxRefusalShown(codeLost, "danger-full-access", hostWithoutSandbox = true))
-        // A failed file tool is not a refused command.
+        // The same words from a file tool are not a refused command.
         val write = event("tool/call", 1, """{"turn":1,"step":1,"callId":"w1","name":"write","arguments":"{}"}""")
-        assertFalse(sandboxRefusalShown(nodes(user(0), write, result(2, "w1", null, "Error: no such file")), "workspace-write", hostWithoutSandbox = true))
+        assertFalse(sandboxRefusalShown(nodes(user(0), write, result(2, "w1", null, documentedSentence)), "workspace-write", hostWithoutSandbox = true))
+    }
+
+    @Test fun aShellCallThatFailedForAnotherReasonIsNotTheRefusal() {
+        // #111 counted every failed shell call on a sandboxed preset; with the shape documented,
+        // a command that failed in its own way is left as a failed command.
+        val failed = nodes(user(0), call(1, "c1"), result(2, "c1", null, "Error: bash: exit code 1\nls: cannot access 'nope'"))
+        assertFalse(sandboxRefusalShown(failed, "workspace-write", hostWithoutSandbox = true))
+        assertFalse(isSandboxRefusalText("Error: bash: exit code 1"))
+        assertTrue(isSandboxRefusalText(documentedSentence))
+        assertTrue(isSandboxRefusalText(documentedSentence.removePrefix("Error: ")))
+    }
+
+    @Test fun theCodedShapeCountsWithTheRunnerFailureAppended() {
+        val coded = nodes(user(0), call(1, "c1"), result(2, "c1", SANDBOX_UNAVAILABLE, "$documentedSentence Runner failure: spawn EPERM"))
+        assertTrue(sandboxRefusalShown(coded, "workspace-write"))
+        assertTrue(sandboxRefusalShown(coded, "workspace-write", hostWithoutSandbox = true))
     }
 
     @Test fun switchingTheSessionOrSendingAgainClearsIt() {
@@ -79,6 +103,47 @@ class SandboxRefusalTest {
         assertFalse(sandboxRefusalShown(nodes(*refused), "danger-full-access"))
         assertFalse(sandboxRefusalShown(nodes(*refused), "ask-commands"))
         assertFalse(sandboxRefusalShown(nodes(*refused, user(3)), "workspace-write"))
+    }
+
+    /** A denial of the runtime's gate, permissions version 2: `error` = `{ name: DshMobilePermissionDenied, code }`. */
+    private fun denial(seq: Long, id: String, code: String, text: String = "Error: some sentence for the model") = event(
+        "tool/result", seq,
+        """{"turn":1,"step":1,"error":{"name":"$PERMISSION_DENIED_ERROR_NAME","code":"$code"},
+           "message":{"id":"m$seq","role":"tool","source":{"kind":"tool","callId":"$id"},"toolCallId":"$id","isError":true,
+             "content":[{"type":"text","text":${Json.encodeToString(String.serializer(), text)}}]}}""",
+    )
+
+    private fun single(vararg events: SessionEventEnvelope) = nodes(*events).filterIsInstance<ToolResultNode>().single()
+
+    @Test fun denialsAreReadFromTheCodeNotTheSentence() {
+        assertEquals(PERMISSION_DENIED_ERROR_NAME, single(call(1, "c1"), denial(2, "c1", "APPROVAL_REJECTED_BY_USER")).errorName)
+        val cases = mapOf(
+            "APPROVAL_NOT_AVAILABLE_TO_SUBAGENT" to PermissionDenial.SubagentCannotAsk,
+            "APPROVAL_REJECTED_BY_USER" to PermissionDenial.Rejected,
+            "APPROVAL_CANCELLED" to PermissionDenial.Cancelled,
+            "APPROVAL_UNAVAILABLE" to PermissionDenial.NobodyToAsk,
+            "APPROVAL_TEXT_TOO_LARGE" to PermissionDenial.TextTooLarge,
+            "APPROVAL_TEXT_UNREADABLE" to PermissionDenial.Other,
+            "PERMISSION_GATE_ERROR" to PermissionDenial.Other,
+            "APPROVAL_SWITCHED_OFF" to PermissionDenial.Other,
+            "APPROVAL_OWNER_SESSION_GONE" to PermissionDenial.Other,
+            "A_CODE_FROM_A_LATER_RUNTIME" to PermissionDenial.Other,
+        )
+        for ((code, expected) in cases) {
+            // The sentence is reworded on purpose: only the code decides.
+            assertEquals(code, expected, permissionDenialOf(single(call(1, "c1"), denial(2, "c1", code, "Error: reworded"))))
+        }
+        // The subagent code wins over a sentence that says something else.
+        assertTrue(isSubagentCommandDenial(single(call(1, "c1"), denial(2, "c1", "APPROVAL_NOT_AVAILABLE_TO_SUBAGENT", "Error: nope"))))
+    }
+
+    @Test fun aCodeFromSomethingElseIsNotADenial() {
+        assertNull(permissionDenialOf(single(call(1, "c1"), result(2, "c1", SANDBOX_UNAVAILABLE))))
+        assertNull(permissionDenialOf(single(call(1, "c1"), result(2, "c1", "TOOL_FAILED"))))
+        assertNull(permissionDenialOf(single(call(1, "c1"), result(2, "c1", null, "ok"))))
+        // Even a version 1 subagent sentence does not count when another code is present.
+        val text = "Error: bash: this is a subagent, and the session that started it asks before commands, so ..."
+        assertNull(permissionDenialOf(single(call(1, "c1"), result(2, "c1", "TOOL_FAILED", text))))
     }
 
     @Test fun theSubagentDenialOfTheRuntimeGateIsRecognised() {

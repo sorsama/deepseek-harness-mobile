@@ -41,4 +41,9 @@
     <string name="sandbox_notice_switch">“%1$s” पर बदलें</string>
     <string name="sandbox_notice_other">वह कमांड नहीं चली क्योंकि इस चैट की सेटिंग को sandbox चाहिए और harness जहाँ चलता है वहाँ कोई नहीं है। आप चैट के अनुमति बटन से दूसरी सेटिंग चुन सकते हैं।</string>
     <string name="subagent_command_denied">सहायक एजेंट आपसे पूछ नहीं सकता, इसलिए यह कमांड नहीं चली।</string>
+    <string name="command_denied_rejected">आपने मना किया, इसलिए यह नहीं चला।</string>
+    <string name="command_denied_cancelled">आपके जवाब से पहले सवाल वापस ले लिया गया, इसलिए यह नहीं चला।</string>
+    <string name="command_denied_nobody">सवाल का जवाब देने के लिए कोई नहीं था, इसलिए यह नहीं चला। एजेंट के काम करते समय ऐप को जुड़ा रखें।</string>
+    <string name="command_denied_too_large">यह आपको पूरा दिखाने के लिए बहुत लंबा था (सीमा 256 KB है), इसलिए आपसे पूछा नहीं गया और यह नहीं चला। एजेंट से इसे छोटे हिस्सों में बांटने को कहा गया।</string>
+    <string name="command_denied_other">इस फ़ोन की कमांड जांच ने इसे रोक दिया, इसलिए यह नहीं चला।</string>
 </resources>

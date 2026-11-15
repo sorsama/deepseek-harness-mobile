@@ -40,4 +40,9 @@
     <string name="sandbox_notice_switch">切换到“%1$s”</string>
     <string name="sandbox_notice_other">那条命令没有运行，因为这个聊天的设置需要沙盒，而 harness 所在的环境没有沙盒。你可以用聊天的权限按钮换一个设置。</string>
     <string name="subagent_command_denied">辅助智能体无法询问你，所以这条命令没有运行。</string>
+    <string name="command_denied_rejected">你拒绝了，所以没有运行。</string>
+    <string name="command_denied_cancelled">你回答之前问题已撤回，所以没有运行。</string>
+    <string name="command_denied_nobody">没有人回答这个问题，所以没有运行。智能体工作时请保持应用连接。</string>
+    <string name="command_denied_too_large">内容太长，无法完整显示给你（上限 256 KB），所以没有询问你，也没有运行。已让智能体拆成更小的部分。</string>
+    <string name="command_denied_other">这台手机上的命令检查拦下了它，所以没有运行。</string>
 </resources>

@@ -45,4 +45,9 @@
     <string name="sandbox_notice_switch">التبديل إلى «%1$s»</string>
     <string name="sandbox_notice_other">لم يعمل ذلك الأمر لأن إعداد هذه المحادثة يحتاج إلى بيئة معزولة وليست لدى harness واحدة حيث يعمل. يمكنك اختيار إعداد آخر من زر الإذن في المحادثة.</string>
     <string name="subagent_command_denied">لا يستطيع الوكيل المساعد سؤالك، لذلك لم يعمل هذا الأمر.</string>
+    <string name="command_denied_rejected">رفضتَ ذلك، لذا لم يُنفَّذ.</string>
+    <string name="command_denied_cancelled">سُحب السؤال قبل أن تجيب، لذا لم يُنفَّذ.</string>
+    <string name="command_denied_nobody">لم يكن أحد موجودًا للإجابة عن السؤال، لذا لم يُنفَّذ. أبقِ التطبيق متصلًا أثناء عمل الوكيل.</string>
+    <string name="command_denied_too_large">كان هذا أطول من أن يُعرض عليك كاملًا (الحد 256 كيلوبايت)، لذا لم تُسأل ولم يُنفَّذ. طُلب من الوكيل تقسيمه إلى أجزاء أصغر.</string>
+    <string name="command_denied_other">أوقف فحص الأوامر على هذا الهاتف ذلك، لذا لم يُنفَّذ.</string>
 </resources>

@@ -42,4 +42,9 @@
     <string name="sandbox_notice_switch">Mudar para “%1$s”</string>
     <string name="sandbox_notice_other">Esse comando não rodou porque a configuração desta conversa precisa de um sandbox e o harness não tem um onde está rodando. Você pode escolher outra configuração pelo botão de permissão da conversa.</string>
     <string name="subagent_command_denied">Um agente auxiliar não pode te perguntar, então este comando não rodou.</string>
+    <string name="command_denied_rejected">Você disse não, então isso não foi executado.</string>
+    <string name="command_denied_cancelled">A pergunta foi retirada antes da sua resposta, então isso não foi executado.</string>
+    <string name="command_denied_nobody">Não havia ninguém para responder a pergunta, então isso não foi executado. Mantenha o app conectado enquanto o agente trabalha.</string>
+    <string name="command_denied_too_large">Era longo demais para mostrar inteiro (o limite é 256 KB), então você não foi consultado e isso não foi executado. O agente foi orientado a dividir em partes menores.</string>
+    <string name="command_denied_other">A verificação de comandos deste telefone barrou isso, então não foi executado.</string>
 </resources>
