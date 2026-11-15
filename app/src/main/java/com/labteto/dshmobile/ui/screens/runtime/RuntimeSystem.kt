@@ -8,7 +8,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.app.NotificationManagerCompat
-import com.labteto.dshmobile.update.UpdateChecker
+import com.labteto.dshmobile.update.UpdateFeed
 
 // The system screens the built-in harness's pages open, and what they read back from the system.
 // Each opener falls back to the app's own settings page when a device does not have the screen.
@@ -53,8 +53,8 @@ internal object RuntimeSystem {
 
     fun openStorageSettings(context: Context) = open(context, Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS))
 
-    /** Where this app is updated from: its releases page. */
-    fun openAppUpdate(context: Context) = open(context, Intent(Intent.ACTION_VIEW, Uri.parse(UpdateChecker.RELEASES_URL)))
+    /** Where this app is updated from when the in-app updater has nothing to offer: its releases page. */
+    fun openAppUpdate(context: Context) = open(context, Intent(Intent.ACTION_VIEW, Uri.parse(UpdateFeed.GitHub.releasesPageUrl)))
 
     fun share(context: Context, text: String, title: String) {
         val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)

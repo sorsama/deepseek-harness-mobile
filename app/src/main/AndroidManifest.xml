@@ -68,6 +68,24 @@
         Stop or Install is tapped — never on launch. Meaningless on a phone without Termux.
     -->
     <uses-permission android:name="com.termux.permission.RUN_COMMAND" />
+    <!--
+        Lets the app hand a downloaded update to Android's package installer, so updating never
+        means leaving for a browser or a file manager. It is not granted by installing the app: the
+        first time an update is installed, Android shows its own "Install unknown apps" switch for
+        this app and the person turns it on there (or not). The app uses it for one thing only, an
+        APK of itself that it downloaded from this project's GitHub release, checked against the
+        release's SHA256SUMS.txt and confirmed to be a newer build signed with the same key.
+        Android checks the signature again before it replaces anything. See docs/SECURITY.md.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!--
+        Android 12 and newer: lets an update this app installs go through without the system's
+        "Do you want to update this app?" prompt, but only when this app is already the one that
+        installed itself (the installer of record) and only for this app's own package. A normal
+        permission, granted at install. The first in-app update after installing from a browser or
+        a file manager still shows the prompt, and Android may ask anyway when it sees a reason to.
+    -->
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 
     <!--
         Package visibility (API 30+): without this the app cannot see whether Termux is installed,
@@ -217,6 +235,15 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/export_paths" />
         </provider>
+
+        <!--
+            Where Android's package installer reports what happened to an update this app handed
+            it: waiting for the person to confirm, installed, or why not. Not exported, for the same
+            reason as the Termux receiver: the status travels in a PendingIntent this app minted.
+        -->
+        <receiver
+            android:name=".update.UpdateInstallReceiver"
+            android:exported="false" />
 
         <!--
             Opts into AppCompat's own storage for the per-app language. Below API 33 the framework

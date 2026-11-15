@@ -54,6 +54,7 @@ class HostsStore @Inject constructor(
         val UNGROUPED_ORDER = stringPreferencesKey("ungrouped_session_order_json")
         val COLLAPSED_PROJECTS = stringPreferencesKey("collapsed_projects_json")
         val UPDATE_CHECK = booleanPreferencesKey("update_check")
+        val UPDATE_NOTIFY = booleanPreferencesKey("update_notify")
         val DISMISSED_UPDATE = stringPreferencesKey("dismissed_update")
         val FOLLOW_STREAMING = booleanPreferencesKey("follow_streaming")
         val DEFAULT_DELIVERY_MODE = stringPreferencesKey("default_delivery_mode")
@@ -97,6 +98,7 @@ class HostsStore @Inject constructor(
             localeOverride = prefs[Keys.LOCALE],
             knownPorts = ports,
             updateCheckEnabled = prefs[Keys.UPDATE_CHECK] ?: true,
+            updateNotifyEnabled = prefs[Keys.UPDATE_NOTIFY] ?: false,
             dismissedUpdate = prefs[Keys.DISMISSED_UPDATE],
             followStreamingReply = prefs[Keys.FOLLOW_STREAMING] ?: true,
             defaultDeliveryMode = normalizeDeliveryMode(prefs[Keys.DEFAULT_DELIVERY_MODE] ?: DELIVERY_QUEUE),
@@ -302,6 +304,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.HAPTICS] = next.hapticsEnabled
             prefs[Keys.HAPTIC_STRENGTH] = next.hapticStrength
             prefs[Keys.UPDATE_CHECK] = next.updateCheckEnabled
+            prefs[Keys.UPDATE_NOTIFY] = next.updateNotifyEnabled
             prefs[Keys.FOLLOW_STREAMING] = next.followStreamingReply
             prefs[Keys.DEFAULT_DELIVERY_MODE] = normalizeDeliveryMode(next.defaultDeliveryMode)
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)

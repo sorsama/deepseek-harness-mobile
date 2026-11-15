@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,7 +79,11 @@ import com.labteto.dshmobile.ui.theme.HapticStrength
 import com.labteto.dshmobile.ui.theme.ThemeCustomization
 import com.labteto.dshmobile.ui.theme.ThemePreference
 import com.labteto.dshmobile.ui.theme.resolveCustomAccent
-import com.labteto.dshmobile.update.AvailableUpdate
+import com.labteto.dshmobile.ui.update.LocalUpdateUi
+import com.labteto.dshmobile.ui.update.UpdateDialog
+import com.labteto.dshmobile.ui.update.UpdateUiController
+import com.labteto.dshmobile.ui.update.UpdatedDialog
+import com.labteto.dshmobile.update.UpdaterState
 import kotlinx.coroutines.delay
 
 /** Application root: theme + locale-aware shell, connect vs. main routing. */
@@ -136,6 +141,54 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
             }
         }
         var showSettings by rememberSaveable { mutableStateOf(false) }
+
+        // ---- In-app update: the launchers live here, above any dialog or card that starts them,
+        // because the system pages they open outlast both.
+        val updaterState by viewModel.updaterState.collectAsStateWithLifecycle()
+        val uriHandler = LocalUriHandler.current
+        val installPermissionLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+        ) { viewModel.installPermissionReturned() }
+        val installPromptLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+        ) { viewModel.installPromptReturned() }
+        val updateUi = remember(viewModel) {
+            UpdateUiController(
+                state = viewModel.updaterState,
+                latest = viewModel.latestUpdate,
+                download = viewModel::downloadUpdate,
+                cancel = viewModel::cancelUpdate,
+                installAnyway = viewModel::installUpdateAnyway,
+                install = viewModel::installUpdate,
+                requestPermission = {
+                    viewModel.installPermissionRequested()
+                    runCatching { installPermissionLauncher.launch(viewModel.installPermissionIntent()) }
+                        .onFailure { viewModel.installPermissionReturned() }
+                },
+                acknowledge = viewModel::acknowledgeUpdate,
+                openUrl = { url -> runCatching { uriHandler.openUri(url) } },
+            )
+        }
+        // The system's own "Do you want to install this update?" Collected only while the app is
+        // in front, so a prompt that arrives in the background waits until the person is back.
+        LaunchedEffect(updaterState) {
+            val installing = updaterState as? UpdaterState.Installing ?: return@LaunchedEffect
+            val prompt = installing.confirm ?: return@LaunchedEffect
+            if (installing.confirmShown) return@LaunchedEffect
+            viewModel.installPromptShown()
+            runCatching { installPromptLauncher.launch(prompt) }.onFailure { viewModel.installPromptReturned() }
+        }
+        // A step that needs the person (a question, a refusal, a failure) brings a hidden dialog
+        // back, unless Settings is open: its About card shows the same panel.
+        LaunchedEffect(updaterState::class) {
+            val needsPerson = updaterState is UpdaterState.ConfirmMetered ||
+                updaterState is UpdaterState.ConfirmUnverified ||
+                updaterState is UpdaterState.NeedsPermission ||
+                updaterState is UpdaterState.Rejected ||
+                updaterState is UpdaterState.InstallFailed ||
+                (updaterState as? UpdaterState.Paused)?.reason?.let { it != com.labteto.dshmobile.update.PauseReason.Interrupted } == true
+            if (needsPerson && !showSettings) updateHidden = false
+        }
         // Pairing is a detour off the connect screen rather than a mode of it: it owns the camera,
         // it can succeed against an address the connect screen never listed, and it ends by
         // connecting — at which point the routing below carries on as if the relay had always been
@@ -161,6 +214,7 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
             splashVisible = false
         }
 
+        CompositionLocalProvider(LocalUpdateUi provides updateUi) {
         Box(Modifier.fillMaxSize().background(DsTheme.colors.bgBase)) {
             // One motion for every top-level change: the new screen settles in from slightly
             // smaller while the old one gets out of the way. Connecting used to cut straight from
@@ -217,13 +271,16 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
         // Models and API keys, over whatever is on screen and across a route change underneath it.
         com.labteto.dshmobile.ui.screens.models.ModelsScreenHost()
 
-        // Offered over whatever is on screen, and only once per release: dismissing records the
-        // version, so the next launch is quiet until there is a newer one.
+        // Offered over whatever is on screen, and only once per release: "Later" records the
+        // version, so the next launch is quiet until there is a newer one. Closing the dialog
+        // while a download runs only hides it.
         update?.takeIf { !updateHidden }?.let { available ->
             val installStarted = stringResource(R.string.update_install_started)
             val copied = stringResource(R.string.common_copied)
             UpdateDialog(
                 update = available,
+                state = updaterState,
+                ui = updateUi,
                 installCommand = viewModel.installCommand(available),
                 onInstallViaTermux = if (viewModel.termuxInstalled && available.apk != null) {
                     {
@@ -236,8 +293,18 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
                 },
                 hasTermuxPermission = viewModel::hasTermuxPermission,
                 onCopied = { toast.second(copied) },
-                onDismiss = { viewModel.dismissUpdate(available.version) },
+                onLater = { viewModel.dismissUpdate(available.version) },
+                onHide = {
+                    updateHidden = true
+                    viewModel.acknowledgeUpdate()
+                },
             )
+        }
+
+        val justUpdated by viewModel.justUpdated.collectAsStateWithLifecycle()
+        justUpdated?.let { updated ->
+            UpdatedDialog(updated, onOpenUrl = updateUi.openUrl, onDismiss = viewModel::dismissJustUpdated)
+        }
         }
     }
 }
@@ -344,74 +411,3 @@ private fun SplashProgress(progress: Float) {
 
 /** The top-level screens [AppRoot] switches between. */
 private enum class RootRoute { Connect, Main, Settings, Pair }
-
-/**
- * "There is a newer release."
- *
- * The app still cannot update itself: the release page is a link out. What it can do, on a phone
- * with Termux, is hand Termux the download — `curl` the APK, check it against the published
- * `SHA256SUMS.txt`, and open the package installer — which needs no install permission of its
- * own. The same command is offered for the clipboard, for a phone administered over SSH.
- */
-@Composable
-private fun UpdateDialog(
-    update: AvailableUpdate,
-    installCommand: String?,
-    onInstallViaTermux: (() -> Unit)?,
-    hasTermuxPermission: () -> Boolean,
-    onCopied: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val colors = DsTheme.colors
-    val uriHandler = LocalUriHandler.current
-    val clipboard = LocalClipboardManager.current
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { granted -> if (granted) onInstallViaTermux?.invoke() }
-    DsDialog(title = stringResource(R.string.update_available_title), onDismiss = onDismiss) {
-        Text(
-            stringResource(R.string.update_available_body, update.version, BuildConfig.VERSION_NAME),
-            style = DsType.std14,
-            color = colors.labelSecondary,
-            modifier = Modifier.padding(bottom = DsSpacing.medium),
-        )
-        Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
-            if (onInstallViaTermux != null) {
-                DsButton(
-                    text = stringResource(R.string.update_install_termux),
-                    onClick = {
-                        if (hasTermuxPermission()) onInstallViaTermux() else permissionLauncher.launch(TermuxPaths.PERMISSION)
-                    },
-                    variant = DsButtonVariant.Info,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-            DsButton(
-                text = stringResource(R.string.update_open),
-                onClick = {
-                    runCatching { uriHandler.openUri(update.url) }
-                    onDismiss()
-                },
-                variant = if (onInstallViaTermux == null) DsButtonVariant.Info else DsButtonVariant.Outline,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            if (installCommand != null) {
-                DsButton(
-                    text = stringResource(R.string.update_copy_command),
-                    onClick = {
-                        clipboard.setText(AnnotatedString(installCommand))
-                        onCopied()
-                    },
-                    variant = DsButtonVariant.Ghost,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-            DsButton(
-                text = stringResource(R.string.update_later),
-                onClick = onDismiss,
-                variant = DsButtonVariant.Ghost,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
-}

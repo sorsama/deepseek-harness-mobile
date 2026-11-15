@@ -6,6 +6,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.labteto.dshmobile.update.BackgroundUpdateCheck
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -17,6 +18,10 @@ import java.util.concurrent.TimeUnit
  * if the app still wants a connection (keepConnectedInBackground) and the
  * loop died in the background, this re-establishes it. Runs at most every
  * 15 minutes (WorkManager minimum interval).
+ *
+ * It is also the only periodic job the app has, so the optional "a new version is out"
+ * notification rides on it rather than scheduling a second one: [BackgroundUpdateCheck] does
+ * nothing unless that setting is on, and asks GitHub at most once a day.
  */
 class KeepAliveWorker(
     appContext: Context,
@@ -28,11 +33,13 @@ class KeepAliveWorker(
     interface WorkerEntryPoint {
         fun connectionManager(): ConnectionManager
         fun hostsStore(): HostsStore
+        fun backgroundUpdateCheck(): BackgroundUpdateCheck
     }
 
     override suspend fun doWork(): Result {
         val entry = EntryPointAccessors.fromApplication(applicationContext, WorkerEntryPoint::class.java)
         val settings = entry.hostsStore().settingsOnce()
+        runCatching { entry.backgroundUpdateCheck().runIfDue() }
         if (!settings.keepConnectedInBackground) return Result.success()
         val manager = entry.connectionManager()
         val state = manager.state.value

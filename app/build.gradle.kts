@@ -175,7 +175,8 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
-    // The runtime installer tests serve a signed release over HTTPS from a local server.
+    // A real HTTP server for two kinds of tests: the runtime installer serves a signed release
+    // over HTTPS from it, and the in-app updater tests ranges, redirects and dropped connections.
     testImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.okhttp.tls)
     // The mock harness carries this project's port of the host's answer-acceptance law. The
