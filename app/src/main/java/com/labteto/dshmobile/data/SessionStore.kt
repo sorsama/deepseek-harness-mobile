@@ -2830,6 +2830,26 @@ class SessionStore @Inject constructor(
         }
     }
 
+    /**
+     * Register [path] as a workspace (the harness answers the existing one for a known path) and
+     * open a session in it: "open this project" in one step. False when not connected or refused.
+     */
+    suspend fun openWorkspaceSession(path: String): Boolean {
+        val api = apiOrNull() ?: return false
+        val workspaceId = when (val r = api.workspaceCreate(WorkspaceCreateRequest(path))) {
+            is RpcResult.Ok -> {
+                upsertWorkspace(r.value.workspace)
+                r.value.workspace.workspaceId
+            }
+            is RpcResult.Err -> {
+                setConnectionError(r.error.message)
+                return false
+            }
+        }
+        createSession(workspaceId = workspaceId)
+        return true
+    }
+
     suspend fun renameWorkspace(id: String, title: String) {
         val api = apiOrNull() ?: return
         when (val r = api.workspaceRename(WorkspaceRenameRequest(id, title))) {
