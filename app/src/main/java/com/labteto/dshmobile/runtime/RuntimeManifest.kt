@@ -52,10 +52,39 @@ data class RuntimeManifest(
         val readinessPrefix: String,
         val fakeProc: List<FakeProc> = emptyList(),
         val resolvConf: String = "/etc/resolv.conf",
+        /**
+         * The Android permission presets and the switch for their default (release `2026.11.15-1`
+         * and later; README "Shell commands and permissions on Android"). Null in older releases,
+         * which have neither, so the app passes no `DSH_RUNTIME_*` variable for them.
+         */
+        val permissions: Permissions? = null,
     )
 
     @Serializable
     data class FakeProc(val source: String, val target: String)
+
+    /** `runtime.permissions`: the presets this harness layer adds and the variables that steer them. */
+    @Serializable
+    data class Permissions(
+        val version: Int = 1,
+        val catalogMethod: String = "permissionPresets/catalog",
+        val presets: List<PermissionPreset> = emptyList(),
+        /** The guest variable that picks the preset new sessions start on. */
+        val defaultEnv: String = "DSH_RUNTIME_DEFAULT_PERMISSION",
+        /** The values [defaultEnv] takes (`full`, `ask`). */
+        val defaultEnvValues: List<String> = emptyList(),
+        val defaultWhenUnset: String = "",
+        val disableEnv: String = "DSH_RUNTIME_MOBILE_PATCH",
+        val disableValue: String = "0",
+    )
+
+    @Serializable
+    data class PermissionPreset(
+        val id: String,
+        val name: String = "",
+        val envValue: String = "",
+        val asksBeforeCommands: Boolean = false,
+    )
 
     @Serializable
     data class Arch(
@@ -125,6 +154,15 @@ data class RuntimeManifest(
             }
             if (p.sequence >= sequence) throw ManifestException("previous.sequence ${p.sequence} is not below $sequence")
         }
+        // These end up as `NAME=value` words of the guest's `env -i` list: plain names and values only.
+        runtime.permissions?.let { p ->
+            if (!GUEST_ENV_NAME.matches(p.defaultEnv) || !GUEST_ENV_NAME.matches(p.disableEnv)) {
+                throw ManifestException("permissions: variable names ${p.defaultEnv}, ${p.disableEnv}")
+            }
+            if ((p.defaultEnvValues + p.presets.map { it.envValue } + p.disableValue).any { it.isNotEmpty() && !GUEST_ENV_VALUE.matches(it) }) {
+                throw ManifestException("permissions: a variable value is not a plain word")
+            }
+        }
         for (proc in runtime.fakeProc) {
             if (!isGuestPath(proc.source) || !isGuestPath(proc.target) || !proc.target.startsWith("/proc/")) {
                 throw ManifestException("fakeProc ${proc.source} -> ${proc.target}")
@@ -156,6 +194,8 @@ const val LAYER_BASE = "base"
 const val LAYER_HARNESS = "harness"
 
 private val SHA256_HEX = Regex("[0-9a-f]{64}")
+private val GUEST_ENV_NAME = Regex("[A-Z_][A-Z0-9_]{0,63}")
+private val GUEST_ENV_VALUE = Regex("[A-Za-z0-9._-]{1,64}")
 
 internal fun isPlainFileName(name: String): Boolean =
     name.isNotEmpty() && name.length <= 200 && name != "." && name != ".." &&

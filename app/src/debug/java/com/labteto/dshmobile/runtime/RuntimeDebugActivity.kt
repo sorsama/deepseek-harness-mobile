@@ -44,6 +44,8 @@ import javax.inject.Inject
  * | `orphan` | `--ei port 3080` | leave an untracked proot holding the port, as an earlier app process could |
  * | `goback` | | install the installed manifest's `previous` release (the control page's "Go back") |
  * | `failtrial` | `--ez on true` | the next start of a release on trial fails before readiness (node loads a missing module) |
+ * | `permission` | `--es value full\|ask`, `--ez explained false` | show or change the command choice and whether its explanation was seen |
+ * | `mobilepatch` | `--ez off true` | the next start leaves the runtime's Android permission patch out (upstream's presets) |
  * | `checknow` | | the control page's "Check for updates" (marks the release as told about) |
  * | `bgcheck` | `--ez reset true` | the daily background check; `reset` forgets when the last check ran |
  * | `updateprefs` | `--ez notify`, `--ez auto`, `--ez clear true` | show or change what harness updates remember |
@@ -122,6 +124,15 @@ class RuntimeDebugActivity : ComponentActivity() {
             "failtrial" -> {
                 controller.failNextTrialStart = intent.getBooleanExtra("on", true)
                 log.write("failNextTrialStart=${controller.failNextTrialStart}")
+            }
+            "permission" -> {
+                intent.getStringExtra("value")?.let { controller.setCommandPermission(CommandPermission.fromStored(it)) }
+                if (intent.hasExtra("explained")) controller.setCommandPermissionExplained(intent.getBooleanExtra("explained", false))
+                log.write("permission: choice=${controller.commandPermission.value} explained=${controller.commandPermissionExplained.value} startedWith=${controller.startedWithCommandPermission.value}")
+            }
+            "mobilepatch" -> {
+                controller.mobilePatchOff = intent.getBooleanExtra("off", false)
+                log.write("mobilePatchOff=${controller.mobilePatchOff} (applies at the next start)")
             }
             "checknow" -> log.scope.launch { log.write("checknow: ${summary(updates.checkNow())}") }
             "bgcheck" -> log.scope.launch {

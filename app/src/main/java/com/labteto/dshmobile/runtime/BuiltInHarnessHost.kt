@@ -172,6 +172,7 @@ class BuiltInHarnessHost @Inject constructor(
                         releaseId = result.manifest.releaseId,
                         harnessVersion = result.manifest.harness.version,
                         layers = result.decision.layers.map { ReleaseLayerPlan(it.name, it.size, it.unpackedSize, it.entries) },
+                        commandPermissions = result.manifest.runtime.permissions != null,
                     ),
                     releaseProblem = null,
                 )
@@ -230,6 +231,19 @@ class BuiltInHarnessHost @Inject constructor(
     val modulePack: StateFlow<Boolean> get() = controller.modulePack
 
     fun setModulePack(enabled: Boolean) = controller.setModulePack(enabled)
+
+    /** "When the agent wants to run a command": the preset new sessions start on, from the next start. */
+    val commandPermission: StateFlow<CommandPermission> get() = controller.commandPermission
+
+    fun setCommandPermission(choice: CommandPermission) = controller.setCommandPermission(choice)
+
+    /** The choice the running harness was started with (null on a release without the presets). */
+    val startedWithCommandPermission: StateFlow<CommandPermission?> get() = controller.startedWithCommandPermission
+
+    /** The one-time explanation of the choice has been seen (on the set-up page or the control page). */
+    val commandPermissionExplained: StateFlow<Boolean> get() = controller.commandPermissionExplained
+
+    fun markCommandPermissionExplained() = controller.setCommandPermissionExplained(true)
 
     /** Whether a download now would count against a data plan. */
     fun isMetered(): Boolean {

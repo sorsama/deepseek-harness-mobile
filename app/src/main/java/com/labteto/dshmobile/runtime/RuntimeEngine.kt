@@ -58,6 +58,12 @@ class RuntimeEngine(
         val modulePack: Boolean get() = true
 
         /**
+         * What new sessions do when the agent wants to run a command, for a start of [record]. Read
+         * once per start; the controller remembers it as what the running harness was started with.
+         */
+        fun commandPermission(record: InstalledRecord): CommandPermission = CommandPermission.DEFAULT
+
+        /**
          * Extra guest variables for a start of [record]. Empty in release builds; debug builds use it
          * to make a release on trial fail its start, for the device test of the rollback.
          */
@@ -368,6 +374,7 @@ class RuntimeEngine(
                         record,
                         port,
                         modulePack = platform.modulePack,
+                        commandPermission = platform.commandPermission(record),
                         extraEnvironment = platform.guestEnvironment(record),
                     ),
                 )

@@ -23,6 +23,11 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
          * `node_modules` tree instead; it exists for a pack that misbehaves on some device.
          */
         val modulePack: Boolean = true,
+        /**
+         * The preset new sessions start on. Passed as the release's `runtime.permissions.defaultEnv`
+         * only when the installed release has that field (see [commandPermissionEnvironment]).
+         */
+        val commandPermission: CommandPermission = CommandPermission.DEFAULT,
         /** More guest variables, after the fixed ones (debug builds' fault injection; empty otherwise). */
         val extraEnvironment: Map<String, String> = emptyMap(),
     )
@@ -84,6 +89,7 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
                 add("PATH=$GUEST_PATH")
                 add("LANG=C.UTF-8"); add("TERM=dumb"); add("TMPDIR=/tmp")
                 if (!inputs.modulePack) add("$MODULE_PACK_ENV=0")
+                commandPermissionEnvironment(record.permissions, inputs.commandPermission)?.let { (name, value) -> add("$name=$value") }
                 inputs.extraEnvironment.forEach { (name, value) -> add("$name=$value") }
                 add("/bin/bash"); add("-c")
                 // umask: the app's is 077, which would leave everything the guest writes unreadable

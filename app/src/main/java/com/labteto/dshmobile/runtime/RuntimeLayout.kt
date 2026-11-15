@@ -95,6 +95,8 @@ data class InstalledRecord(
     val resolvConf: String,
     /** The installed manifest's `previous`: the release "Go back" installs. */
     val previousRelease: RuntimeManifest.Previous? = null,
+    /** The installed manifest's `runtime.permissions`; null for a release without the presets. */
+    val permissions: RuntimeManifest.Permissions? = null,
     /**
      * What was installed before this update, kept (its layer directories included) until this
      * release has been ready once. A start that never gets there puts it back. Null when nothing
@@ -118,7 +120,7 @@ data class InstalledRecord(
 
     /** This record as the state to come back to if the next one does not start. */
     fun asPrior() = PriorInstall(
-        releaseId, sequence, harnessVersion, nodeVersion, base, harness, entrypoint, readinessPrefix, fakeProc, resolvConf, previousRelease,
+        releaseId, sequence, harnessVersion, nodeVersion, base, harness, entrypoint, readinessPrefix, fakeProc, resolvConf, previousRelease, permissions,
     )
 
     fun toInstalledRuntime() = InstalledRuntime(
@@ -130,6 +132,7 @@ data class InstalledRecord(
         harnessId = harness.id,
         harnessOnTrial = onTrial,
         previousRelease = previousRelease?.let { ReleaseRef(it.releaseId, it.harnessVersion, it.sequence) },
+        commandPermissions = permissions != null,
     )
 }
 
@@ -147,6 +150,7 @@ data class PriorInstall(
     val fakeProc: List<RuntimeManifest.FakeProc>,
     val resolvConf: String,
     val previousRelease: RuntimeManifest.Previous? = null,
+    val permissions: RuntimeManifest.Permissions? = null,
 ) {
     fun ref() = ReleaseRef(releaseId, harnessVersion, sequence)
 
@@ -163,6 +167,7 @@ data class PriorInstall(
         fakeProc = fakeProc,
         resolvConf = resolvConf,
         previousRelease = previousRelease,
+        permissions = permissions,
     )
 }
 

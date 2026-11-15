@@ -12,6 +12,8 @@ class RuntimePreferencesTest {
         override fun putBoolean(key: String, value: Boolean) {
             values[key] = value
         }
+        override fun getString(key: String): String? = null
+        override fun putString(key: String, value: String) = Unit
     }
 
     @Test

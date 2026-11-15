@@ -20,6 +20,8 @@ data class RuntimeReleaseInfo(
     val harnessVersion: String,
     /** The layers this device would fetch, in the order the installer fetches them. */
     val layers: List<ReleaseLayerPlan>,
+    /** The release has the Android permission presets (see [InstalledRuntime.commandPermissions]). */
+    val commandPermissions: Boolean = false,
 ) {
     val downloadBytes: Long get() = layers.sumOf { it.downloadBytes }
     val unpackedBytes: Long get() = layers.sumOf { it.unpackedBytes }

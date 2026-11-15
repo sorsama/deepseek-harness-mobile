@@ -18,6 +18,11 @@ data class InstalledRuntime(
     val harnessOnTrial: Boolean = false,
     /** The release before this one, from the installed manifest's `previous`: where "Go back" leads. */
     val previousRelease: ReleaseRef? = null,
+    /**
+     * The release has the Android permission presets (`runtime.permissions`), so the app can
+     * choose whether commands run straight away or ask first. False for older releases.
+     */
+    val commandPermissions: Boolean = false,
 )
 
 /** A release by the three things the screens say about it. */

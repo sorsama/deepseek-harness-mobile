@@ -15,7 +15,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import okhttp3.OkHttpClient
@@ -111,12 +113,37 @@ class HarnessRuntimeController @Inject constructor(
             serviceStarter.ensureStarted()
         }
         override val modulePack: Boolean get() = preferences.modulePack.value
+        override fun commandPermission(record: InstalledRecord): CommandPermission {
+            val choice = preferences.commandPermission.value
+            _startedWith.value = choice.takeIf { record.permissions != null }
+            return choice
+        }
         override fun guestEnvironment(record: InstalledRecord): Map<String, String> {
-            if (!BuildConfig.DEBUG || !record.onTrial || !failNextTrialStart) return emptyMap()
-            failNextTrialStart = false
-            return mapOf("NODE_OPTIONS" to "--require=/opt/dsh-fault-injection/missing-module.js")
+            if (!BuildConfig.DEBUG) return emptyMap()
+            val extra = mutableMapOf<String, String>()
+            // Debug only: start the harness exactly as upstream ships it, to make a session on the
+            // harness's own Workspace Write (the one that refuses every command on a phone).
+            val patch = record.permissions
+            if (mobilePatchOff && patch != null) extra[patch.disableEnv] = patch.disableValue
+            if (record.onTrial && failNextTrialStart) {
+                failNextTrialStart = false
+                extra["NODE_OPTIONS"] = "--require=/opt/dsh-fault-injection/missing-module.js"
+            }
+            return extra
         }
     }
+
+    /** Debug builds only: start without the runtime's Android permission patch (its `disableEnv`). */
+    @Volatile
+    var mobilePatchOff: Boolean = false
+
+    private val _startedWith = MutableStateFlow<CommandPermission?>(null)
+
+    /**
+     * The command choice the harness was last started with; null when that start was on a release
+     * without the presets. Compared with [commandPermission] to offer a restart.
+     */
+    val startedWithCommandPermission: StateFlow<CommandPermission?> = _startedWith.asStateFlow()
 
     private val engine: RuntimeEngine = RuntimeEngine(
         scope = scope,
@@ -146,6 +173,16 @@ class HarnessRuntimeController @Inject constructor(
     val modulePack: StateFlow<Boolean> get() = preferences.modulePack
 
     fun setModulePack(enabled: Boolean) = preferences.setModulePack(enabled)
+
+    /** What new sessions do when the agent wants to run a command. Persisted; takes effect on the next start. */
+    val commandPermission: StateFlow<CommandPermission> get() = preferences.commandPermission
+
+    fun setCommandPermission(choice: CommandPermission) = preferences.setCommandPermission(choice)
+
+    /** Whether the person has seen the one-time explanation of [commandPermission]. */
+    val commandPermissionExplained: StateFlow<Boolean> get() = preferences.commandPermissionExplained
+
+    fun setCommandPermissionExplained(seen: Boolean) = preferences.setCommandPermissionExplained(seen)
 
     fun install(): Boolean = engine.install()
 

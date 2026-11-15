@@ -218,6 +218,7 @@ class RuntimeInstaller(
             fakeProc = manifest.runtime.fakeProc,
             resolvConf = manifest.runtime.resolvConf,
             previousRelease = manifest.previous,
+            permissions = manifest.runtime.permissions,
             trial = trial,
         )
         beforeCommit()
