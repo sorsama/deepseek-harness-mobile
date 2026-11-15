@@ -54,7 +54,7 @@
 
     <string name="runtime_section_status">Состояние</string>
     <string name="runtime_section_options">Параметры</string>
-    <string name="runtime_section_update">Обновление</string>
+    <string name="runtime_section_update">Обновления harness</string>
     <string name="runtime_section_storage">Хранилище</string>
     <string name="runtime_section_log">Журнал</string>
     <string name="runtime_section_reliability">Чтобы он не выключался</string>
@@ -130,7 +130,7 @@
     <string name="runtime_update_go_back">Вернуться</string>
     <string name="runtime_go_back_title">Вернуться к версии %1$s?</string>
     <string name="runtime_go_back_body">Harness вернётся к версии %1$s. Если он запущен, он перезапустится, а приложение подключится заново само. Ваши сессии и настройки останутся. Версия %2$s не установится сама, пока не выйдет более новая.</string>
-    <string name="runtime_switch_notify_updates">Сообщать о новых версиях</string>
+    <string name="runtime_switch_notify_updates">Сообщать о новых версиях harness</string>
     <string name="runtime_switch_notify_updates_hint">Одно уведомление на каждую новую версию.</string>
     <string name="runtime_switch_auto_update">Устанавливать обновления самостоятельно</string>
     <string name="runtime_switch_auto_update_hint">Только по Wi-Fi или другой безлимитной сети и только когда harness остановлен или ничем не занят. Потом вы узнаете, что изменилось.</string>

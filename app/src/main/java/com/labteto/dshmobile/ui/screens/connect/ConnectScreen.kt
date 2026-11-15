@@ -86,7 +86,7 @@ fun ConnectScreen(
                 setupOpen = true
             }
             RuntimeAction.FreeSpace -> RuntimeSystem.openStorageSettings(context)
-            RuntimeAction.UpdateApp -> RuntimeSystem.openAppUpdate(context)
+            RuntimeAction.UpdateApp -> viewModel.builtIn.updateApp { RuntimeSystem.openAppUpdate(context) }
             RuntimeAction.UseOtherPort -> controller.startBuiltInOn(nextPort(state.loopbackPort))
             RuntimeAction.OpenControls, RuntimeAction.ShowLog -> {
                 controlsAtLog = action == RuntimeAction.ShowLog

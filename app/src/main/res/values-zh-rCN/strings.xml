@@ -304,7 +304,7 @@
     <string name="update_open">查看新版本</string>
     <string name="update_later">稍后</string>
     <string name="settings_update_check">检查更新</string>
-    <string name="settings_update_check_hint">应用启动时会向 GitHub 查询最新版本，隔几个小时再回到应用时也会查询一次。</string>
+    <string name="settings_update_check_hint">向 GitHub 查询应用有没有新版本；如果这台手机上设置了 harness，也会查询它。应用启动时查询一次，隔几个小时再回到应用时再查询一次。</string>
     <string name="connect_mode_lan">局域网</string>
     <string name="connect_mode_relay">中继</string>
     <string name="pair_title">配对中继</string>

@@ -304,7 +304,7 @@
     <string name="update_open">रिलीज़ देखें</string>
     <string name="update_later">बाद में</string>
     <string name="settings_update_check">अपडेट जाँचें</string>
-    <string name="settings_update_check_hint">ऐप खुलने पर GitHub से सबसे नई रिलीज़ पूछता है, और कुछ घंटे बाद ऐप पर लौटने पर भी।</string>
+    <string name="settings_update_check_hint">GitHub से ऐप का नया वर्शन पूछता है, और अगर इस फ़ोन पर harness सेट है तो उसका भी। ऐप खुलने पर, और कुछ घंटे बाद ऐप पर लौटने पर फिर से।</string>
     <string name="connect_mode_lan">लोकल नेटवर्क</string>
     <string name="connect_mode_relay">रिले</string>
     <string name="pair_title">रिले पेयर करें</string>

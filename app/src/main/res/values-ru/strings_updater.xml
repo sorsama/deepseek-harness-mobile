@@ -58,9 +58,9 @@
     <string name="update_updated_body">Теперь у вас новая версия.</string>
     <string name="update_view_changes">Что изменилось</string>
     <string name="update_done">Готово</string>
-    <string name="update_settings_available">Доступна версия %1$s.</string>
+    <string name="update_settings_available">Доступен DSH Mobile %1$s.</string>
     <string name="update_no_apk">В этом релизе нет APK для загрузки. Откройте страницу релиза.</string>
-    <string name="settings_update_notify">Сообщать о новых версиях</string>
+    <string name="settings_update_notify">Сообщать о новых версиях приложения</string>
     <string name="settings_update_notify_hint">Раз в день проверяет в фоне и присылает уведомление, когда выходит новая версия.</string>
     <string name="notif_channel_updates">Обновления приложения</string>
     <string name="notif_update_title">Вышел DSH Mobile %1$s</string>

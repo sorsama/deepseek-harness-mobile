@@ -124,7 +124,7 @@ internal fun BuiltInSettingsEntry(
                 setupOpen = true
             }
             RuntimeAction.FreeSpace -> RuntimeSystem.openStorageSettings(context)
-            RuntimeAction.UpdateApp -> RuntimeSystem.openAppUpdate(context)
+            RuntimeAction.UpdateApp -> host.updateApp { RuntimeSystem.openAppUpdate(context) }
             RuntimeAction.OpenControls -> controlsOpen = true
             RuntimeAction.ShowLog -> {
                 controlsAtLog = true

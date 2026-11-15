@@ -54,7 +54,7 @@
 
     <string name="runtime_section_status">Estado</string>
     <string name="runtime_section_options">Opciones</string>
-    <string name="runtime_section_update">Actualización</string>
+    <string name="runtime_section_update">Actualizaciones del harness</string>
     <string name="runtime_section_storage">Almacenamiento</string>
     <string name="runtime_section_log">Registro</string>
     <string name="runtime_section_reliability">Que siga funcionando</string>
@@ -130,7 +130,7 @@
     <string name="runtime_update_go_back">Volver</string>
     <string name="runtime_go_back_title">¿Volver a la versión %1$s?</string>
     <string name="runtime_go_back_body">El harness vuelve a la versión %1$s. Si está en marcha, se reinicia y la app se vuelve a conectar sola. Tus sesiones y ajustes se quedan. La versión %2$s no se instalará sola hasta que salga una más nueva.</string>
-    <string name="runtime_switch_notify_updates">Avisarme de las versiones nuevas</string>
+    <string name="runtime_switch_notify_updates">Avisarme de las versiones nuevas del harness</string>
     <string name="runtime_switch_notify_updates_hint">Un aviso por cada versión nueva.</string>
     <string name="runtime_switch_auto_update">Instalar las actualizaciones solas</string>
     <string name="runtime_switch_auto_update_hint">Solo con Wi-Fi u otra red sin límite de datos, y solo cuando el harness esté parado o sin trabajo. Te diremos qué cambió.</string>

@@ -54,7 +54,7 @@
 
     <string name="runtime_section_status">حالت</string>
     <string name="runtime_section_options">اختیارات</string>
-    <string name="runtime_section_update">اپ ڈیٹ</string>
+    <string name="runtime_section_update">harness اپ ڈیٹس</string>
     <string name="runtime_section_storage">اسٹوریج</string>
     <string name="runtime_section_log">لاگ</string>
     <string name="runtime_section_reliability">چلتا رکھیں</string>
@@ -130,7 +130,7 @@
     <string name="runtime_update_go_back">واپس جائیں</string>
     <string name="runtime_go_back_title">ریلیز %1$s پر واپس جائیں؟</string>
     <string name="runtime_go_back_body">harness ورژن %1$s پر واپس چلا جائے گا۔ اگر یہ چل رہا ہے تو دوبارہ شروع ہوگا، اور ایپ خود سے دوبارہ جڑ جائے گی۔ آپ کے سیشن اور سیٹنگز برقرار رہیں گی۔ جب تک کوئی نئی ریلیز نہیں آتی، ریلیز %2$s خود سے انسٹال نہیں ہوگی۔</string>
-    <string name="runtime_switch_notify_updates">نئے ورژن کے بارے میں بتائیں</string>
+    <string name="runtime_switch_notify_updates">harness کے نئے ورژن کے بارے میں بتائیں</string>
     <string name="runtime_switch_notify_updates_hint">ہر نئی ریلیز کے لیے ایک اطلاع۔</string>
     <string name="runtime_switch_auto_update">اپ ڈیٹس خود سے انسٹال کریں</string>
     <string name="runtime_switch_auto_update_hint">صرف Wi-Fi یا کسی اور اَن میٹرڈ نیٹ ورک پر، اور صرف تب جب harness بند ہو یا فارغ ہو۔ بعد میں بتایا جائے گا کہ کیا بدلا۔</string>

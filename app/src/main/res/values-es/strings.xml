@@ -304,7 +304,7 @@
     <string name="update_open">Ver la versión</string>
     <string name="update_later">Más tarde</string>
     <string name="settings_update_check">Buscar actualizaciones</string>
-    <string name="settings_update_check_hint">Consulta en GitHub la última versión al iniciar la app y de nuevo cuando vuelves a ella pasadas unas horas.</string>
+    <string name="settings_update_check_hint">Consulta en GitHub si hay una app más nueva, y un harness más nuevo si hay uno configurado en este teléfono. Al iniciar la app y de nuevo cuando vuelves a ella pasadas unas horas.</string>
     <string name="connect_mode_lan">Red local</string>
     <string name="connect_mode_relay">Relay</string>
     <string name="pair_title">Emparejar un relay</string>

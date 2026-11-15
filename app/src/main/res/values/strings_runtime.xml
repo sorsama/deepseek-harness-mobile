@@ -55,7 +55,7 @@
 
     <string name="runtime_section_status">Status</string>
     <string name="runtime_section_options">Options</string>
-    <string name="runtime_section_update">Update</string>
+    <string name="runtime_section_update">Harness updates</string>
     <string name="runtime_section_storage">Storage</string>
     <string name="runtime_section_log">Log</string>
     <string name="runtime_section_reliability">Keep it running</string>
@@ -131,7 +131,7 @@
     <string name="runtime_update_go_back">Go back</string>
     <string name="runtime_go_back_title">Go back to release %1$s?</string>
     <string name="runtime_go_back_body">The harness goes back to version %1$s. If it\'s running, it restarts and the app reconnects by itself. Your sessions and settings stay. Release %2$s won\'t install by itself until a newer one comes out.</string>
-    <string name="runtime_switch_notify_updates">Tell me about new versions</string>
+    <string name="runtime_switch_notify_updates">Tell me about new harness versions</string>
     <string name="runtime_switch_notify_updates_hint">One notification for each new release.</string>
     <string name="runtime_switch_auto_update">Install updates by themselves</string>
     <string name="runtime_switch_auto_update_hint">Only on Wi-Fi or another unmetered network, and only while the harness is stopped or idle. You\'ll be told what changed.</string>

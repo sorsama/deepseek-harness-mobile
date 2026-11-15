@@ -54,7 +54,7 @@
 
     <string name="runtime_section_status">สถานะ</string>
     <string name="runtime_section_options">ตัวเลือก</string>
-    <string name="runtime_section_update">อัปเดต</string>
+    <string name="runtime_section_update">อัปเดต harness</string>
     <string name="runtime_section_storage">พื้นที่จัดเก็บ</string>
     <string name="runtime_section_log">บันทึก</string>
     <string name="runtime_section_reliability">ให้ทำงานต่อเนื่อง</string>
@@ -130,7 +130,7 @@
     <string name="runtime_update_go_back">ย้อนกลับ</string>
     <string name="runtime_go_back_title">กลับไปใช้รุ่น %1$s ไหม</string>
     <string name="runtime_go_back_body">harness จะกลับไปเป็นเวอร์ชัน %1$s ถ้ากำลังทำงานอยู่ จะเริ่มใหม่และแอปจะเชื่อมต่อใหม่เอง เซสชันและการตั้งค่าของคุณยังอยู่ครบ รุ่น %2$s จะไม่ติดตั้งเองจนกว่าจะมีรุ่นที่ใหม่กว่าออกมา</string>
-    <string name="runtime_switch_notify_updates">แจ้งฉันเมื่อมีเวอร์ชันใหม่</string>
+    <string name="runtime_switch_notify_updates">แจ้งฉันเมื่อมี harness เวอร์ชันใหม่</string>
     <string name="runtime_switch_notify_updates_hint">แจ้งเตือนครั้งเดียวต่อหนึ่งรุ่นใหม่</string>
     <string name="runtime_switch_auto_update">ติดตั้งอัปเดตเอง</string>
     <string name="runtime_switch_auto_update_hint">เฉพาะเมื่อใช้ Wi-Fi หรือเครือข่ายอื่นที่ไม่จำกัดปริมาณ และเฉพาะตอนที่ harness หยุดอยู่หรือว่างอยู่ แล้วจะแจ้งให้ทราบว่ามีอะไรเปลี่ยน</string>

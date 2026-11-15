@@ -54,7 +54,7 @@
 
     <string name="runtime_section_status">الحالة</string>
     <string name="runtime_section_options">الخيارات</string>
-    <string name="runtime_section_update">التحديث</string>
+    <string name="runtime_section_update">تحديثات harness</string>
     <string name="runtime_section_storage">التخزين</string>
     <string name="runtime_section_log">السجل</string>
     <string name="runtime_section_reliability">إبقاؤه يعمل</string>
@@ -130,7 +130,7 @@
     <string name="runtime_update_go_back">الرجوع</string>
     <string name="runtime_go_back_title">الرجوع إلى الإصدار %1$s؟</string>
     <string name="runtime_go_back_body">سيعود harness إلى النسخة %1$s. إن كان يعمل فسيُعاد تشغيله وسيعيد التطبيق الاتصال تلقائيًا. تبقى جلساتك وإعداداتك كما هي. لن يُثبَّت الإصدار %2$s تلقائيًا حتى يصدر إصدار أحدث منه.</string>
-    <string name="runtime_switch_notify_updates">أعلمني بالنسخ الجديدة</string>
+    <string name="runtime_switch_notify_updates">أعلمني بنسخ harness الجديدة</string>
     <string name="runtime_switch_notify_updates_hint">إشعار واحد لكل إصدار جديد.</string>
     <string name="runtime_switch_auto_update">تثبيت التحديثات تلقائيًا</string>
     <string name="runtime_switch_auto_update_hint">فقط على Wi-Fi أو شبكة أخرى غير محدودة، وفقط حين يكون harness متوقفًا أو غير مشغول. ستعرف بعدها ما الذي تغيّر.</string>

@@ -54,7 +54,7 @@
 
     <string name="runtime_section_status">状态</string>
     <string name="runtime_section_options">选项</string>
-    <string name="runtime_section_update">更新</string>
+    <string name="runtime_section_update">harness 更新</string>
     <string name="runtime_section_storage">存储</string>
     <string name="runtime_section_log">日志</string>
     <string name="runtime_section_reliability">保持运行</string>
@@ -130,7 +130,7 @@
     <string name="runtime_update_go_back">退回</string>
     <string name="runtime_go_back_title">退回到版本 %1$s？</string>
     <string name="runtime_go_back_body">harness 会退回到 %1$s。如果正在运行，它会重启，应用会自动重新连接。你的会话和设置都会保留。在有更新的版本发布之前，版本 %2$s 不会自动安装。</string>
-    <string name="runtime_switch_notify_updates">有新版本时通知我</string>
+    <string name="runtime_switch_notify_updates">harness 有新版本时通知我</string>
     <string name="runtime_switch_notify_updates_hint">每个新版本只通知一次。</string>
     <string name="runtime_switch_auto_update">自动安装更新</string>
     <string name="runtime_switch_auto_update_hint">只在 Wi-Fi 或其他不按流量计费的网络下，并且只在 harness 已停止或空闲时进行。之后会告诉你改了什么。</string>

@@ -304,7 +304,7 @@
     <string name="update_open">Открыть релиз</string>
     <string name="update_later">Позже</string>
     <string name="settings_update_check">Проверять обновления</string>
-    <string name="settings_update_check_hint">При запуске приложения и при возвращении в него через несколько часов проверяет на GitHub последний релиз.</string>
+    <string name="settings_update_check_hint">Проверяет на GitHub, есть ли новая версия приложения, а также harness, если он настроен на этом телефоне. При запуске приложения и при возвращении в него через несколько часов.</string>
     <string name="connect_mode_lan">Локальная сеть</string>
     <string name="connect_mode_relay">Реле</string>
     <string name="pair_title">Сопряжение с реле</string>

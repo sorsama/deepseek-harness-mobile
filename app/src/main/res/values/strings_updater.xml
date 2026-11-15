@@ -59,9 +59,9 @@
     <string name="update_updated_body">You\'re on the new version now.</string>
     <string name="update_view_changes">See what changed</string>
     <string name="update_done">Done</string>
-    <string name="update_settings_available">Version %1$s is available.</string>
+    <string name="update_settings_available">DSH Mobile %1$s is available.</string>
     <string name="update_no_apk">This release has no APK to download. Open the release page instead.</string>
-    <string name="settings_update_notify">Notify me about new versions</string>
+    <string name="settings_update_notify">Notify me about new app versions</string>
     <string name="settings_update_notify_hint">Checks once a day in the background and shows a notification when a new version is out.</string>
     <string name="notif_channel_updates">App updates</string>
     <string name="notif_update_title">DSH Mobile %1$s is out</string>

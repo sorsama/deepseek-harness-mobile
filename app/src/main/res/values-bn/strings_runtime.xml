@@ -54,7 +54,7 @@
 
     <string name="runtime_section_status">অবস্থা</string>
     <string name="runtime_section_options">বিকল্প</string>
-    <string name="runtime_section_update">আপডেট</string>
+    <string name="runtime_section_update">harness আপডেট</string>
     <string name="runtime_section_storage">স্টোরেজ</string>
     <string name="runtime_section_log">লগ</string>
     <string name="runtime_section_reliability">চালু রাখা</string>
@@ -130,7 +130,7 @@
     <string name="runtime_update_go_back">ফিরে যান</string>
     <string name="runtime_go_back_title">রিলিজ %1$s-এ ফিরে যাবেন?</string>
     <string name="runtime_go_back_body">harness সংস্করণ %1$s-এ ফিরে যাবে। চালু থাকলে এটি আবার চালু হবে, আর অ্যাপ নিজে থেকে আবার সংযোগ করবে। আপনার সেশন আর সেটিংস থাকবে। আরও নতুন রিলিজ না আসা পর্যন্ত রিলিজ %2$s নিজে থেকে ইনস্টল হবে না।</string>
-    <string name="runtime_switch_notify_updates">নতুন সংস্করণ এলে জানান</string>
+    <string name="runtime_switch_notify_updates">harness-এর নতুন সংস্করণ এলে জানান</string>
     <string name="runtime_switch_notify_updates_hint">প্রতিটি নতুন রিলিজের জন্য একটি নোটিফিকেশন।</string>
     <string name="runtime_switch_auto_update">আপডেট নিজে থেকে ইনস্টল করুন</string>
     <string name="runtime_switch_auto_update_hint">শুধু Wi-Fi বা অন্য আনমিটারড নেটওয়ার্কে, আর শুধু যখন harness বন্ধ বা অলস থাকে। কী বদলাল তা পরে জানানো হবে।</string>

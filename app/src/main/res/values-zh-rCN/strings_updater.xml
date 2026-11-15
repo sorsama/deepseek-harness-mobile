@@ -58,9 +58,9 @@
     <string name="update_updated_body">你现在使用的是新版本。</string>
     <string name="update_view_changes">查看更改内容</string>
     <string name="update_done">完成</string>
-    <string name="update_settings_available">版本 %1$s 已推出。</string>
+    <string name="update_settings_available">DSH Mobile %1$s 已推出。</string>
     <string name="update_no_apk">此版本没有可下载的 APK。请改为打开发布页面。</string>
-    <string name="settings_update_notify">有新版本时通知我</string>
+    <string name="settings_update_notify">应用有新版本时通知我</string>
     <string name="settings_update_notify_hint">每天在后台检查一次，有新版本时显示通知。</string>
     <string name="notif_channel_updates">应用更新</string>
     <string name="notif_update_title">DSH Mobile %1$s 已发布</string>

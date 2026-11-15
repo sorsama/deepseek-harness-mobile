@@ -58,9 +58,9 @@
     <string name="update_updated_body">अब आप नए वर्ज़न पर हैं।</string>
     <string name="update_view_changes">देखें क्या बदला</string>
     <string name="update_done">हो गया</string>
-    <string name="update_settings_available">वर्ज़न %1$s उपलब्ध है।</string>
+    <string name="update_settings_available">DSH Mobile %1$s उपलब्ध है।</string>
     <string name="update_no_apk">इस रिलीज़ में डाउनलोड के लिए कोई APK नहीं है। इसके बजाय रिलीज़ पेज खोलें।</string>
-    <string name="settings_update_notify">नए वर्ज़न की सूचना दें</string>
+    <string name="settings_update_notify">ऐप के नए वर्ज़न की सूचना दें</string>
     <string name="settings_update_notify_hint">दिन में एक बार बैकग्राउंड में जाँच करता है और नया वर्ज़न आने पर सूचना दिखाता है।</string>
     <string name="notif_channel_updates">ऐप अपडेट</string>
     <string name="notif_update_title">DSH Mobile %1$s आ गया है</string>

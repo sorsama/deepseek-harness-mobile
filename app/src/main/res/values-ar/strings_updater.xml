@@ -58,9 +58,9 @@
     <string name="update_updated_body">أنت الآن على الإصدار الجديد.</string>
     <string name="update_view_changes">عرض ما تغيّر</string>
     <string name="update_done">تم</string>
-    <string name="update_settings_available">الإصدار %1$s متاح.</string>
+    <string name="update_settings_available">DSH Mobile %1$s متاح.</string>
     <string name="update_no_apk">لا يحتوي هذا الإصدار على حزمة APK للتنزيل. افتح صفحة الإصدار بدلًا من ذلك.</string>
-    <string name="settings_update_notify">إشعاري بالإصدارات الجديدة</string>
+    <string name="settings_update_notify">إشعاري بإصدارات التطبيق الجديدة</string>
     <string name="settings_update_notify_hint">يتحقق مرة واحدة يوميًا في الخلفية ويعرض إشعارًا عند صدور إصدار جديد.</string>
     <string name="notif_channel_updates">تحديثات التطبيق</string>
     <string name="notif_update_title">صدر DSH Mobile %1$s</string>

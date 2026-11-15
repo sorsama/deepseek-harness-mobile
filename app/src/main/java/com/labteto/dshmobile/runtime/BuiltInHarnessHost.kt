@@ -44,9 +44,25 @@ import javax.inject.Singleton
 class BuiltInHarnessHost @Inject constructor(
     @ApplicationContext private val context: Context,
     val controller: HarnessRuntimeController,
+    private val updateChecker: com.labteto.dshmobile.update.UpdateChecker,
 ) : BuiltInHarness {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /**
+     * "Update the app", for a harness release that needs a newer app. The app's own update check
+     * runs first: when it finds a newer version, the in-app update dialog offers the download and
+     * install. Only when it finds nothing (no release yet, or GitHub unreachable) does the releases
+     * page open in the browser.
+     */
+    fun updateApp(onNothingFound: () -> Unit) {
+        scope.launch {
+            val outcome = runCatching { updateChecker.checkNow(com.labteto.dshmobile.BuildConfig.VERSION_NAME) }.getOrNull()
+            if (outcome !is com.labteto.dshmobile.update.UpdateChecker.CheckOutcome.Available) {
+                kotlinx.coroutines.withContext(Dispatchers.Main) { onNothingFound() }
+            }
+        }
+    }
 
     private data class SetupFlow(
         val release: RuntimeReleaseInfo? = null,

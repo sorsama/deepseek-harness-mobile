@@ -58,9 +58,9 @@
     <string name="update_updated_body">ตอนนี้คุณใช้เวอร์ชันใหม่แล้ว</string>
     <string name="update_view_changes">ดูว่ามีอะไรเปลี่ยนไป</string>
     <string name="update_done">เสร็จ</string>
-    <string name="update_settings_available">มีเวอร์ชัน %1$s ให้ใช้แล้ว</string>
+    <string name="update_settings_available">มี DSH Mobile %1$s ให้ใช้แล้ว</string>
     <string name="update_no_apk">รุ่นนี้ไม่มี APK ให้ดาวน์โหลด ให้เปิดหน้ารุ่นแทน</string>
-    <string name="settings_update_notify">แจ้งเตือนเมื่อมีเวอร์ชันใหม่</string>
+    <string name="settings_update_notify">แจ้งเตือนเมื่อมีแอปเวอร์ชันใหม่</string>
     <string name="settings_update_notify_hint">ตรวจสอบในเบื้องหลังวันละครั้ง และแจ้งเตือนเมื่อมีเวอร์ชันใหม่ออกมา</string>
     <string name="notif_channel_updates">อัปเดตแอป</string>
     <string name="notif_update_title">DSH Mobile %1$s ออกแล้ว</string>
