@@ -35,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -149,6 +150,8 @@ internal fun RuntimeControlPage(
     var confirmRemove by remember { mutableStateOf(false) }
     var confirmDeleteAll by remember { mutableStateOf(false) }
     var confirmGoBack by remember { mutableStateOf(false) }
+    var projectsOpen by rememberSaveable { mutableStateOf(false) }
+    val projectsVm: ProjectsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
     // Storage and the log follow the state: re-read whenever it changes, and the log every few
     // seconds while the harness runs, so a start can be watched as it happens.
     LaunchedEffect(runtime::class, state.installed) {
@@ -263,6 +266,43 @@ internal fun RuntimeControlPage(
                                 }
                             }
 
+                            Section(stringResource(R.string.projects_title)) {
+                                val projectList by projectsVm.operations.projects.collectAsStateWithLifecycle()
+                                LaunchedEffect(Unit) { projectsVm.operations.refresh() }
+                                val total = projectsVm.operations.totalBytes()
+                                ValueRow(
+                                    stringResource(R.string.projects_section_list),
+                                    androidx.compose.ui.res.pluralStringResource(R.plurals.projects_count, projectList.size, projectList.size),
+                                )
+                                ValueRow(stringResource(R.string.projects_space_label), total?.let { formatBytes(it) } ?: "…")
+                                Text(
+                                    stringResource(R.string.projects_files_hint, stringResource(R.string.app_name)),
+                                    style = DsType.small13,
+                                    color = colors.labelSecondary,
+                                    modifier = Modifier.padding(vertical = DsSpacing.xsmall),
+                                )
+                                RowOfButtons {
+                                    DsConnectButton(
+                                        text = stringResource(R.string.projects_manage),
+                                        onClick = {
+                                            haptics.tap()
+                                            projectsOpen = true
+                                        },
+                                        variant = ConnectButtonVariant.Outline,
+                                    )
+                                    val noFiles = stringResource(R.string.projects_no_files_app)
+                                    DsConnectButton(
+                                        text = stringResource(R.string.projects_open_files),
+                                        onClick = {
+                                            haptics.tap()
+                                            if (!openInFiles(context)) toast.second(noFiles)
+                                        },
+                                        variant = ConnectButtonVariant.Outline,
+                                    )
+                                }
+                                Spacer(Modifier.height(DsSpacing.xsmall))
+                            }
+
                             UpdateSection(
                                 state = state,
                                 checking = checking,
@@ -339,6 +379,10 @@ internal fun RuntimeControlPage(
             }
             DsToastHost(toast, modifier = Modifier.fillMaxWidth())
         }
+    }
+
+    if (projectsOpen) {
+        ProjectsPage(projectsVm.operations, onClose = { projectsOpen = false })
     }
 
     if (confirmRemove) {
