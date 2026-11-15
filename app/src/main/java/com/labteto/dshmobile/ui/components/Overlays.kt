@@ -167,7 +167,9 @@ private fun DsDialogScaffold(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         title?.let {
-                            Text(it, style = DsType.large20, color = colors.labelPrimary)
+                            // Full width for the same reason as DsBottomSheet's title: Arabic with
+                            // negative letter spacing shapes wider than it measures.
+                            Text(it, style = DsType.large20, color = colors.labelPrimary, modifier = Modifier.fillMaxWidth())
                         }
                         Column(
                             modifier = Modifier

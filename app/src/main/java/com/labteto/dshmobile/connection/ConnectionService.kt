@@ -7,7 +7,9 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import com.labteto.dshmobile.MainActivity
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.notify.DshNotifications
@@ -19,6 +21,14 @@ import javax.inject.Inject
  * is backgrounded (user opt-in via settings). The ConnectionManager owns the
  * actual connection; this service only pins the process with an ongoing
  * notification while it is running.
+ *
+ * Started by [ConnectionManager.serviceStarter], with the same rules as the built-in harness's
+ * service: it enters the foreground first thing in [onCreate] and again first in
+ * [onStartCommand], so any request made with `startForegroundService` is answered at once, and a
+ * refusal (Android 12+ background limits, or Android 15's daily limit for `dataSync`) stops the
+ * service quietly instead of killing the app. On Android 15 the system ends a `dataSync` service
+ * after six hours in a day ([onTimeout]); it then stops, and is asked for again the next time the
+ * app is on screen, which also resets that clock.
  */
 @AndroidEntryPoint
 class ConnectionService : Service() {
@@ -28,18 +38,62 @@ class ConnectionService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    override fun onCreate() {
+        super.onCreate()
+        notifications.ensureChannels()
+        enterForeground()
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP) {
+        // First, whatever the action: a request made with startForegroundService is answered here.
+        val inForeground = enterForeground()
+        if (!inForeground || intent?.action == ACTION_STOP) {
             stopSelf()
             return START_NOT_STICKY
         }
-        startForeground(NOTIFICATION_ID, buildNotification())
+        // Restarted by the system after the process died (a sticky restart has no intent): nothing
+        // is connected in this new process, so a "Connected" notification would not be true.
+        if (intent == null && !connectionManager.serviceStillWanted()) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
         return START_STICKY
+    }
+
+    /**
+     * Android 15: this `dataSync` service has used its six hours for the day. It must leave the
+     * foreground within seconds or the app is killed. The connection stays open without it.
+     */
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        Log.w(TAG, "foreground time used up for type $fgsType; stopping the service")
+        connectionManager.serviceStarter.onServiceRefused()
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
     override fun onDestroy() {
         // The service dying does not tear the connection down; the manager owns it.
+        connectionManager.serviceStarter.onServiceStopped()
         super.onDestroy()
+    }
+
+    private fun enterForeground(): Boolean {
+        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC else 0
+        return try {
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, buildNotification(), type)
+            connectionManager.serviceStarter.onServiceForeground()
+            true
+        } catch (e: IllegalStateException) {
+            // ForegroundServiceStartNotAllowedException (API 31+), including a dataSync service
+            // whose daily time is used up (API 35).
+            Log.w(TAG, "foreground refused: ${e.javaClass.simpleName}")
+            connectionManager.serviceStarter.onServiceRefused()
+            false
+        } catch (e: SecurityException) {
+            Log.w(TAG, "foreground refused: ${e.javaClass.simpleName}")
+            connectionManager.serviceStarter.onServiceRefused()
+            false
+        }
     }
 
     private fun buildNotification(): Notification {
@@ -66,5 +120,6 @@ class ConnectionService : Service() {
     companion object {
         const val ACTION_STOP = "com.labteto.dshmobile.connection.STOP"
         private const val NOTIFICATION_ID = 10
+        private const val TAG = "ConnectionService"
     }
 }

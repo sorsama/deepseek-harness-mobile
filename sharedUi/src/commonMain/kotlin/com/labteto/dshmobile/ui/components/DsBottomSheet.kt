@@ -122,7 +122,11 @@ fun DsBottomSheet(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(Modifier.weight(1f)) {
-                        Text(title, style = DsType.large20, color = colors.labelPrimary)
+                        // The whole width, not the title's measured one: Compose lays text out at
+                        // its measured width, and with the style's negative letter spacing Arabic
+                        // shapes a few pixels wider than it measures, so "السجل" broke before its
+                        // last letter. fillMaxWidth makes the layout width the column's.
+                        Text(title, style = DsType.large20, color = colors.labelPrimary, modifier = Modifier.fillMaxWidth())
                         if (subtitle != null) {
                             Text(subtitle, style = DsType.small13, color = colors.labelTertiary)
                         }
