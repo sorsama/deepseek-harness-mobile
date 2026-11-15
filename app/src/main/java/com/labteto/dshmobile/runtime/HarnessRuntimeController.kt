@@ -1,7 +1,12 @@
 package com.labteto.dshmobile.runtime
 
+import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
+import android.os.SystemClock
+import android.util.Log
 import androidx.core.content.ContextCompat
 import com.github.luben.zstd.ZstdInputStream
 import com.labteto.dshmobile.BuildConfig
@@ -11,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import okhttp3.OkHttpClient
 import java.io.File
@@ -18,6 +24,7 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -94,13 +101,15 @@ class HarnessRuntimeController @Inject constructor(
 
     private val supervisor = HarnessSupervisor(scope, JvmProcessLauncher, AndroidProcessTable, log)
 
-    private val platform = object : RuntimeEngine.Platform {
+    private val platform: RuntimeEngine.Platform = object : RuntimeEngine.Platform {
         override val unsupported: RuntimeUnsupported? = system.unsupportedReason()
         override val nativeLibraryDir: File get() = system.nativeLibraryDir
         override fun dnsServers(): List<String> = system.dnsServers()
         override val cpuCount: Int get() = system.cpuCount
         override fun portFree(port: Int): Boolean = isPortFree(port)
-        override fun keepAlive() = startService(null)
+        override fun keepAlive() {
+            serviceStarter.ensureStarted()
+        }
         override val modulePack: Boolean get() = preferences.modulePack.value
         override fun guestEnvironment(record: InstalledRecord): Map<String, String> {
             if (!BuildConfig.DEBUG || !record.onTrial || !failNextTrialStart) return emptyMap()
@@ -109,7 +118,7 @@ class HarnessRuntimeController @Inject constructor(
         }
     }
 
-    private val engine = RuntimeEngine(
+    private val engine: RuntimeEngine = RuntimeEngine(
         scope = scope,
         layout = layout,
         installer = installer,
@@ -173,19 +182,65 @@ class HarnessRuntimeController @Inject constructor(
         return (proots + proots.flatMap { all.descendantsOf(it.pid) }).distinctBy { it.pid }
     }
 
-    internal fun startService(action: String?) {
-        // Already in the foreground: it follows the state by itself, and a second start from the
-        // background (an update's restart while the app is not visible) could be refused.
-        if (action == null && HarnessRuntimeService.inForeground) return
-        val intent = Intent(context, HarnessRuntimeService::class.java).setAction(action)
-        try {
-            ContextCompat.startForegroundService(context, intent)
+    /** Activities of this app that are started; above zero, the app is visible. */
+    private val startedActivities = AtomicInteger()
+
+    /**
+     * How the app asks for [HarnessRuntimeService]; the service reports back to it. Operations are
+     * started from the UI, so a refusal (Android 12+ refuses a service start from the background)
+     * is a restart or an update nobody is looking at: it still runs, without the service's
+     * protection, and the request is made again when the app is next visible.
+     */
+    internal val serviceStarter: RuntimeServiceStarter = RuntimeServiceStarter(object : RuntimeServiceStarter.Platform {
+        override val appVisible: Boolean get() = startedActivities.get() > 0
+
+        override fun wanted(): Boolean = engine.state.value.needsService()
+
+        override fun startService(): Boolean = launchService(foreground = false)
+
+        override fun startForegroundService(): Boolean = launchService(foreground = true)
+    })
+
+    private fun launchService(foreground: Boolean): Boolean {
+        val intent = Intent(context, HarnessRuntimeService::class.java)
+        HarnessRuntimeService.lastRequestAt = SystemClock.uptimeMillis()
+        Log.i(HarnessRuntimeService.TAG, "asking for the service with ${if (foreground) "startForegroundService" else "startService"}, app visible=${startedActivities.get() > 0}, on ${Thread.currentThread().name}")
+        return try {
+            if (foreground) ContextCompat.startForegroundService(context, intent) else context.startService(intent)
+            true
         } catch (e: IllegalStateException) {
-            // Android 12+ refuses a foreground-service start from the background. Operations are
-            // started from the UI, so this is a restart nobody is looking at; it still runs, only
-            // without the service's protection.
-            android.util.Log.w("DshRuntime", "foreground service not started: ${e.javaClass.simpleName}")
+            // Not allowed from the background (ForegroundServiceStartNotAllowedException and
+            // BackgroundServiceStartNotAllowedException are both this).
+            Log.w(HarnessRuntimeService.TAG, "service start refused: ${e.javaClass.simpleName}")
+            false
         }
+    }
+
+    private fun trackVisibility() {
+        (context as? Application)?.registerActivityLifecycleCallbacks(
+            object : Application.ActivityLifecycleCallbacks {
+                override fun onActivityStarted(activity: Activity) {
+                    if (startedActivities.incrementAndGet() == 1) {
+                        // Off the main thread: the start is a binder call.
+                        scope.launch { serviceStarter.onAppVisible() }
+                    }
+                }
+
+                override fun onActivityStopped(activity: Activity) {
+                    startedActivities.decrementAndGet()
+                }
+
+                override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+                override fun onActivityResumed(activity: Activity) {}
+                override fun onActivityPaused(activity: Activity) {}
+                override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+                override fun onActivityDestroyed(activity: Activity) {}
+            },
+        )
+    }
+
+    init {
+        trackVisibility()
     }
 
     private fun isPortFree(port: Int): Boolean = try {
