@@ -117,6 +117,8 @@ class RecordingFsOps : FsOps {
         chmods += file.absoluteFile.path to mode
     }
 
+    override fun readlink(file: File): String? = linkTarget(file)
+
     fun linkTarget(file: File): String? {
         if (!file.isFile || file.length() < MAGIC.size) return null
         val bytes = file.readBytes()

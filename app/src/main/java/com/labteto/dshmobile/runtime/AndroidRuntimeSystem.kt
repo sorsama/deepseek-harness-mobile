@@ -40,6 +40,12 @@ object AndroidFsOps : FsOps {
             throw java.io.IOException("chmod ${file.name}: ${e.message}", e)
         }
     }
+
+    override fun readlink(file: File): String? = try {
+        Os.readlink(file.path)
+    } catch (e: ErrnoException) {
+        null
+    }
 }
 
 /**

@@ -11,6 +11,9 @@ import java.io.File
  */
 data class ProotCommand(val argv: List<String>, val environment: Map<String, String>, val removeFromEnvironment: Set<String>) {
 
+    /** Names only: a guest command's environment may hold a secret (see [buildGuest]). */
+    override fun toString() = "ProotCommand(argv=$argv, environment=${environment.keys})"
+
     data class Inputs(
         val nativeLibraryDir: File,
         val layout: RuntimeLayout,
@@ -150,5 +153,64 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
         }
 
         private val CPU_N = Regex("^cpu\\d+ ")
+
+        /** The fixed script a guest command runs under: umask, then the program itself, from "$@". */
+        const val GUEST_WRAPPER = "umask 022; exec \"\$@\""
+
+        /**
+         * The command line for a [GuestCommand]: the harness's root file system and binds, then
+         * `/bin/sh -c '<GUEST_WRAPPER>' sh <argv...>`. The program's arguments are never part of a
+         * script; they reach it as its own `argv`.
+         *
+         * The guest environment is the process environment rather than an `env -i` list, so a
+         * secret (a clone's token) is never on a command line, where `ps` would show it: the caller
+         * clears everything inherited from Android ([GuestCommandRunner] passes every inherited
+         * name in `removeFromEnvironment`) and proot hands the rest to the guest unchanged.
+         */
+        fun buildGuest(nativeLibraryDir: File, layout: RuntimeLayout, record: InstalledRecord, command: GuestCommand): ProotCommand {
+            val rootfs = File(layout.root, record.base.dir)
+            val harness = File(layout.root, record.harness.dir)
+            val argv = buildList {
+                add("/system/bin/sh")
+                add("-c")
+                add("echo \$\$; exec \"\$@\"")
+                add("sh")
+                add(File(nativeLibraryDir, PROOT).path)
+                add("--kill-on-exit")
+                add("--link2symlink")
+                add("-0")
+                add("-r"); add(rootfs.path)
+                add("-b"); add("/dev")
+                add("-b"); add("/proc")
+                add("-b"); add("/sys")
+                add("-b"); add("/proc/self/fd:/dev/fd")
+                add("-b"); add("${File(rootfs, "tmp").path}:/dev/shm")
+                for (fake in record.fakeProc) {
+                    val source = if (fake.target == "/proc/stat") File(layout.run, GENERATED_PROC_STAT) else File(rootfs, fake.source.removePrefix("/"))
+                    add("-b"); add("${source.path}:${fake.target}")
+                }
+                add("-b"); add("${File(layout.run, GENERATED_RESOLV).path}:${record.resolvConf}")
+                add("-b"); add("${layout.home.path}:$GUEST_HOME")
+                add("-b"); add("${layout.workspaces.path}:$GUEST_WORKSPACES")
+                add("-b"); add("${File(harness, "opt/dsh").path}:/opt/dsh")
+                add("-w"); add(command.workingDirectory)
+                add("/bin/sh"); add("-c"); add(GUEST_WRAPPER); add("sh")
+                addAll(command.argv)
+            }
+            val environment = linkedMapOf(
+                "PROOT_LOADER" to File(nativeLibraryDir, LOADER).path,
+                "PROOT_TMP_DIR" to layout.prootTmp.path,
+                "HOME" to GUEST_HOME,
+                "USER" to "root",
+                "LOGNAME" to "root",
+                "PATH" to GUEST_PATH,
+                "LANG" to "C.UTF-8",
+                "TERM" to "dumb",
+                "TMPDIR" to "/tmp",
+            )
+            environment.putAll(command.environment)
+            environment.putAll(command.secretEnvironment)
+            return ProotCommand(argv, environment, setOf("PROOT_NO_SECCOMP", "LD_PRELOAD"))
+        }
     }
 }

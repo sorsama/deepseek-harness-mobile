@@ -37,6 +37,10 @@ class HarnessSupervisor(
     private val log: RotatingLog,
     private val timing: Timing = Timing(),
     private val clock: () -> Long = { System.nanoTime() / 1_000_000 },
+    /** proot pids that are not harnesses: the app's own guest commands ([GuestCommandRunner.activePids]). */
+    private val notHarnesses: () -> Set<Int> = { emptySet() },
+    /** Whether a guest command is running or about to ([GuestCommandRunner.running] above zero). */
+    private val guestsActive: () -> Boolean = { false },
 ) {
     data class Timing(
         val readyTimeoutMs: Long = 240_000,
@@ -206,7 +210,13 @@ class HarnessSupervisor(
      */
     suspend fun cleanupStale(): List<StopReport> = lock.withLock {
         val own = running?.pid
-        val stale = procs.snapshot().filter { it.argv0.endsWith("/" + ProotCommand.PROOT) && it.pid != own }
+        // A guest command's proot is this process's child too, but before its first line of output
+        // its pid is not in notHarnesses yet; a live child of this process is never "left by an
+        // earlier run", so it is left alone either way.
+        val guests = notHarnesses()
+        val stale = procs.snapshot().filter {
+            it.argv0.endsWith("/" + ProotCommand.PROOT) && it.pid != own && it.pid !in guests && !(guestsActive() && it.ppid == procs.selfPid)
+        }
         // Only the top of each tree: a proot under another proot is stopped with its parent.
         val pids = stale.map { it.pid }.toSet()
         val roots = stale.filter { it.ppid !in pids }

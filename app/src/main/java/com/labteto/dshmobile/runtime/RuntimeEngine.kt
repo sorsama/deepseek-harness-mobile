@@ -110,7 +110,7 @@ class RuntimeEngine(
     }
 
     /** Install the latest release, or update to it; resumes a broken-off download. */
-    fun install(): Boolean = launchOp(allowWhen = { it is RuntimeState.NotInstalled || it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed }) { op ->
+    fun install(): Boolean = launchOp(allowWhen = { it is RuntimeState.NotInstalled || it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed }, changesLayers = true) { op ->
         runInstall(op, goBack = false)
     }
 
@@ -121,7 +121,7 @@ class RuntimeEngine(
      */
     fun goBack(): Boolean {
         if (installer.installed()?.previousRelease == null) return false
-        return launchOp(allowWhen = { it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed && it.installed != null }) { op ->
+        return launchOp(allowWhen = { it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed && it.installed != null }, changesLayers = true) { op ->
             runInstall(op, goBack = true)
         }
     }
@@ -192,7 +192,7 @@ class RuntimeEngine(
 
     /** Remove the runtime. [keepUserData] keeps the harness's `/root` and the workspaces. */
     fun uninstall(keepUserData: Boolean = false): Boolean =
-        launchOp(allowWhen = { it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed || it is RuntimeState.NotInstalled }) { op ->
+        launchOp(allowWhen = { it is RuntimeState.Stopped || it is RuntimeState.Running || it is RuntimeState.Failed || it is RuntimeState.NotInstalled }, changesLayers = true) { op ->
             supervisor.stop()
             supervisor.cleanupStale()
             val terminal = try {
@@ -223,7 +223,35 @@ class RuntimeEngine(
         )
     }
 
-    private fun launchOp(allowWhen: (RuntimeState) -> Boolean, block: suspend (Op) -> Unit): Boolean {
+    /**
+     * Guest commands (a clone) running now. They use the installed layers, so an install, an
+     * update, a go-back and an uninstall wait for none to be running: [beginGuestCommand] and
+     * [launchOp] each publish their own flag before reading the other's, so at most one of the
+     * two goes ahead.
+     */
+    private val guestCommands = java.util.concurrent.atomic.AtomicInteger()
+
+    @Volatile
+    private var layersChanging = false
+
+    /**
+     * Ask to run a guest command now. False while the runtime is being installed, updated or
+     * removed, or when nothing is installed; true means [endGuestCommand] must follow.
+     */
+    fun beginGuestCommand(): Boolean {
+        guestCommands.incrementAndGet()
+        if (layersChanging || !_state.value.hasInstall() || _state.value.busy && _state.value !is RuntimeState.Starting && _state.value !is RuntimeState.Stopping) {
+            guestCommands.decrementAndGet()
+            return false
+        }
+        return true
+    }
+
+    fun endGuestCommand() {
+        guestCommands.decrementAndGet()
+    }
+
+    private fun launchOp(allowWhen: (RuntimeState) -> Boolean, changesLayers: Boolean = false, block: suspend (Op) -> Unit): Boolean {
         if (platform.unsupported != null) return false
         val op = Op()
         if (!claim.compareAndSet(null, op)) return false
@@ -232,10 +260,19 @@ class RuntimeEngine(
             claim.compareAndSet(op, null)
             return false
         }
+        if (changesLayers) {
+            layersChanging = true
+            if (guestCommands.get() > 0) {
+                layersChanging = false
+                claim.compareAndSet(op, null)
+                return false
+            }
+        }
         job = scope.launch {
             try {
                 transition.withLock { block(op) }
             } finally {
+                if (changesLayers) layersChanging = false
                 // Normally already released by [Op.finish]; this covers an operation that ends
                 // without a terminal state (a restart with nothing installed, a failure not handled).
                 claim.compareAndSet(op, null)

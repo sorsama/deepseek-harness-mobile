@@ -21,6 +21,9 @@ interface FsOps {
     fun lstat(file: File): FileKind
     fun symlink(target: String, link: File)
     fun chmod(file: File, mode: Int)
+
+    /** The target a symlink at [file] holds, as written; null when [file] is not a symlink. */
+    fun readlink(file: File): String?
 }
 
 /** `java.nio.file`: exact on Linux and macOS; on Windows symlinks need Developer Mode and modes are ignored. */
@@ -41,6 +44,14 @@ object NioFsOps : FsOps {
 
     override fun symlink(target: String, link: File) {
         Files.createSymbolicLink(link.toPath(), Paths.get(target))
+    }
+
+    override fun readlink(file: File): String? = try {
+        Files.readSymbolicLink(file.toPath()).toString()
+    } catch (e: IOException) {
+        null
+    } catch (e: UnsupportedOperationException) {
+        null
     }
 
     override fun chmod(file: File, mode: Int) {

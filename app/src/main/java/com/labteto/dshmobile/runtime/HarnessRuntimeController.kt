@@ -101,7 +101,64 @@ class HarnessRuntimeController @Inject constructor(
         decoder = { ZstdInputStream(it) },
     )
 
-    private val supervisor = HarnessSupervisor(scope, JvmProcessLauncher, AndroidProcessTable, log)
+    private val supervisor = HarnessSupervisor(
+        scope,
+        JvmProcessLauncher,
+        AndroidProcessTable,
+        log,
+        notHarnesses = { guestRunner.activePids },
+        guestsActive = { guestRunner.running.value > 0 },
+    )
+
+    private val installedStore = InstalledStore(layout)
+
+    /** The app's own commands in the runtime (a clone); see [runGuestCommand]. */
+    private val guestRunner: GuestCommandRunner by lazy {
+        GuestCommandRunner(
+            launcher = JvmProcessLauncher,
+            procs = AndroidProcessTable,
+            build = { command ->
+                installedStore.read()?.let { record ->
+                    prepareGuestRun()
+                    ProotCommand.buildGuest(system.nativeLibraryDir, layout, record, command)
+                }
+            },
+            workDir = layout.root,
+        )
+    }
+
+    /** Guest commands running now, for screens that say "a clone is still running". */
+    val guestCommandsRunning: StateFlow<Int> get() = guestRunner.running
+
+    /**
+     * Run [command] inside the runtime, with the harness running or stopped. Refused (null) while
+     * the runtime is being installed, updated or removed; an install or update waits for this to end.
+     * Only the app's own builders make a [GuestCommand]; nothing outside the app reaches this.
+     */
+    suspend fun runGuestCommand(command: GuestCommand, timeoutMs: Long, onLine: (String) -> Unit): GuestCommandRunner.Outcome? {
+        if (system.unsupportedReason() != null) return null
+        if (!engine.beginGuestCommand()) return null
+        return try {
+            guestRunner.run(command, timeoutMs, onLine)
+        } finally {
+            engine.endGuestCommand()
+        }
+    }
+
+    /** The files a start writes (DNS, CPU count), for a guest command run with the harness stopped. */
+    private fun prepareGuestRun() {
+        layout.run.mkdirs()
+        layout.prootTmp.mkdirs()
+        layout.workspaces.mkdirs()
+        layout.home.mkdirs()
+        val resolv = java.io.File(layout.run, ProotCommand.GENERATED_RESOLV)
+        resolv.writeText(ProotCommand.resolvConf(system.dnsServers()))
+        val stat = java.io.File(layout.run, ProotCommand.GENERATED_PROC_STAT)
+        if (!stat.isFile) stat.writeText(ProotCommand.procStat(null, system.cpuCount))
+    }
+
+    /** Whether the device can run the runtime at all (the documents provider is enabled only then). */
+    val supported: Boolean get() = system.unsupportedReason() == null
 
     private val platform: RuntimeEngine.Platform = object : RuntimeEngine.Platform {
         override val unsupported: RuntimeUnsupported? = system.unsupportedReason()
