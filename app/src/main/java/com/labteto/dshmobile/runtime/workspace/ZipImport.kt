@@ -32,7 +32,9 @@ class TransferCancelled : IOException("cancelled")
 
 /** Progress of a copy: work done of work known (files and bytes). */
 data class TransferProgress(val files: Int, val filesTotal: Int, val bytes: Long, val bytesTotal: Long) {
+    /** The mean of the byte share and the file share: a thousand tiny files move the bar as much as one big one. */
     val fraction: Float? get() = when {
+        bytesTotal > 0 && filesTotal > 0 -> ((bytes.toDouble() / bytesTotal + files.toDouble() / filesTotal) / 2).toFloat().coerceIn(0f, 1f)
         bytesTotal > 0 -> (bytes.toDouble() / bytesTotal).toFloat().coerceIn(0f, 1f)
         filesTotal > 0 -> (files.toDouble() / filesTotal).toFloat().coerceIn(0f, 1f)
         else -> null

@@ -574,4 +574,4 @@ fun openInFiles(context: Context, documentId: String = WorkspaceTree.ROOT_ID): B
  * Latin name inside an Arabic or Urdu sentence keeps its own order, and a full stop after it stays
  * at the end of the sentence.
  */
-internal fun isolated(text: String): String = "⁦" + text + "⁩"
+internal fun isolated(text: String): String = "\u2066" + text + "\u2069"
