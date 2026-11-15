@@ -116,6 +116,11 @@ data class ToolResultNode(
     val turn: Int,
     val step: Int,
     val meta: JsonElement? = null,
+    /**
+     * The structured failure code of a tool that threw (`tool/result`'s `error.code`, such as
+     * `SANDBOX_UNAVAILABLE`); null when the call succeeded or the harness gave no code.
+     */
+    val errorCode: String? = null,
 ) : ChatNode
 
 /**
