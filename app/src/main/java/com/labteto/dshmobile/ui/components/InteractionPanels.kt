@@ -158,9 +158,11 @@ fun ApprovalPanel(
 /**
  * The command, program or path of an "Ask before commands" request, and the two answers.
  *
- * The text is never cut without a way to see it: it wraps (so no line runs off the side), scrolls
- * inside the card, and "Show all" lifts the height cap when it is taller than that. It can be
- * selected, to copy a part of it. A command reads left to right in every language.
+ * The text is never cut without a way to see it: it wraps (so no line runs off the side) and
+ * scrolls inside a box capped well below the window, so Allow and Reject always stay above the
+ * composer. When it is taller than the box, "Show all" opens it whole in a sheet that has the two
+ * answers too. It can be selected, to copy a part of it. A command reads left to right in every
+ * language.
  */
 @Composable
 private fun CommandApprovalPanel(
@@ -173,9 +175,13 @@ private fun CommandApprovalPanel(
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
-    val detail = prompt.detail.orEmpty()
-    var expanded by rememberSaveable(requestKey) { mutableStateOf(false) }
+    var showAll by rememberSaveable(requestKey) { mutableStateOf(false) }
     val scroll = rememberScrollState()
+    // The card is not height-bound by the screen around it, so the box keeps to a fraction of the
+    // window: a short window (landscape, a desktop window, large text) keeps room for the buttons.
+    val windowHeight = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp
+    val cap = minOf(ApprovalCommandMaxHeight, windowHeight * 0.25f)
+    val question = approvalQuestion(prompt)
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = DsShapes.approvalCard,
@@ -194,12 +200,7 @@ private fun CommandApprovalPanel(
                 Icon(Icons.Filled.WarningAmber, contentDescription = null, tint = colors.warn, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    when (prompt.kind) {
-                        com.labteto.dshmobile.core.permission.ApprovalPrompt.Kind.FileChange -> stringResource(R.string.approval_file_title)
-                        com.labteto.dshmobile.core.permission.ApprovalPrompt.Kind.Command ->
-                            if (prompt.toolName == "bash") stringResource(R.string.approval_command_title) else stringResource(R.string.approval_tool_title, prompt.toolName)
-                        else -> stringResource(R.string.approval_tool_title, prompt.toolName)
-                    },
+                    question,
                     style = DsType.small13Strong,
                     color = colors.warnText,
                     modifier = Modifier.weight(1f).semantics { heading() },
@@ -209,30 +210,7 @@ private fun CommandApprovalPanel(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
             ) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth().weight(1f, fill = false),
-                    shape = DsShapes.code,
-                    color = colors.bgLayer2,
-                    border = BorderStroke(1.dp, colors.borderL1),
-                ) {
-                    androidx.compose.runtime.CompositionLocalProvider(
-                        androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr,
-                    ) {
-                        androidx.compose.foundation.text.selection.SelectionContainer(
-                            Modifier
-                                .fillMaxWidth()
-                                .then(if (expanded) Modifier else Modifier.heightIn(max = ApprovalCommandMaxHeight))
-                                .verticalScroll(scroll),
-                        ) {
-                            Text(
-                                detail,
-                                style = DsType.mono13.copy(textDirection = androidx.compose.ui.text.style.TextDirection.Ltr),
-                                color = colors.labelPrimary,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                            )
-                        }
-                    }
-                }
+                CommandText(prompt.detail.orEmpty(), Modifier.heightIn(max = cap), scroll)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         if (prompt.shortened) {
@@ -240,39 +218,94 @@ private fun CommandApprovalPanel(
                         }
                         if (waitingAfter > 0) WaitingLine(waitingAfter)
                     }
-                    // Taller than the box: the rest is a scroll away, and "Show all" gives it the room.
-                    if (scroll.maxValue > 0 || expanded) {
+                    // Taller than the box: the rest is a scroll away, or all of it in the sheet.
+                    if (scroll.maxValue > 0) {
                         DsButton(
-                            text = stringResource(if (expanded) R.string.approval_show_less else R.string.approval_show_all),
+                            text = stringResource(R.string.approval_show_all),
                             onClick = {
                                 haptics.tap()
-                                expanded = !expanded
+                                showAll = true
                             },
                             variant = DsButtonVariant.Ghost,
                             size = DsButtonSize.Small,
                         )
                     }
                 }
-                Row(Modifier.fillMaxWidth().padding(top = DsSpacing.xsmall), horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
-                    // Reject at the start, Allow at the end, both full size: the decision the turn
-                    // waits on gets the biggest targets on the card.
-                    DsButton(
-                        text = stringResource(R.string.approval_reject),
-                        onClick = { haptics.reject(); onReject() },
-                        variant = DsButtonVariant.Danger,
-                        allowWrap = true,
-                        modifier = Modifier.weight(1f),
-                    )
-                    DsButton(
-                        text = stringResource(R.string.approval_allow_once),
-                        onClick = { haptics.confirm(); onAllow() },
-                        variant = DsButtonVariant.Attention,
-                        allowWrap = true,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
+                ApprovalAnswers(onAllow = onAllow, onReject = onReject)
             }
         }
+    }
+    if (showAll) {
+        DsBottomSheet(title = question, onDismiss = { showAll = false }) {
+            val hide = LocalDsSheetHide.current
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+                CommandText(prompt.detail.orEmpty(), Modifier.weight(1f, fill = false), rememberScrollState())
+                if (prompt.shortened) {
+                    Text(stringResource(R.string.approval_shortened), style = DsType.caption11, color = colors.warnLabel)
+                }
+                ApprovalAnswers(
+                    onAllow = { hide { showAll = false; onAllow() } },
+                    onReject = { hide { showAll = false; onReject() } },
+                    modifier = Modifier.padding(bottom = DsSpacing.small),
+                )
+            }
+        }
+    }
+}
+
+/** The question a gated request asks, in the app's words. */
+@Composable
+private fun approvalQuestion(prompt: com.labteto.dshmobile.core.permission.ApprovalPrompt): String = when (prompt.kind) {
+    com.labteto.dshmobile.core.permission.ApprovalPrompt.Kind.FileChange -> stringResource(R.string.approval_file_title)
+    com.labteto.dshmobile.core.permission.ApprovalPrompt.Kind.Command ->
+        if (prompt.toolName == "bash") stringResource(R.string.approval_command_title) else stringResource(R.string.approval_tool_title, prompt.toolName)
+    else -> stringResource(R.string.approval_tool_title, prompt.toolName)
+}
+
+/** The command in monospace, left to right, wrapping, selectable, scrolling inside [modifier]'s bounds. */
+@Composable
+private fun CommandText(text: String, modifier: Modifier, scroll: androidx.compose.foundation.ScrollState) {
+    val colors = DsTheme.colors
+    Surface(
+        modifier = Modifier.fillMaxWidth().then(modifier),
+        shape = DsShapes.code,
+        color = colors.bgLayer2,
+        border = BorderStroke(1.dp, colors.borderL1),
+    ) {
+        androidx.compose.runtime.CompositionLocalProvider(
+            androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr,
+        ) {
+            androidx.compose.foundation.text.selection.SelectionContainer(Modifier.fillMaxWidth().verticalScroll(scroll)) {
+                Text(
+                    text,
+                    style = DsType.mono13.copy(textDirection = androidx.compose.ui.text.style.TextDirection.Ltr),
+                    color = colors.labelPrimary,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                )
+            }
+        }
+    }
+}
+
+/** Reject at the start, Allow at the end, both full size: the decision the turn waits on. */
+@Composable
+private fun ApprovalAnswers(onAllow: () -> Unit, onReject: () -> Unit, modifier: Modifier = Modifier) {
+    val haptics = rememberDsHaptics()
+    Row(modifier.fillMaxWidth().padding(top = DsSpacing.xsmall), horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+        DsButton(
+            text = stringResource(R.string.approval_reject),
+            onClick = { haptics.reject(); onReject() },
+            variant = DsButtonVariant.Danger,
+            allowWrap = true,
+            modifier = Modifier.weight(1f),
+        )
+        DsButton(
+            text = stringResource(R.string.approval_allow_once),
+            onClick = { haptics.confirm(); onAllow() },
+            variant = DsButtonVariant.Attention,
+            allowWrap = true,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 
