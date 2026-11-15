@@ -70,6 +70,8 @@ object GitClone {
         if (b.length > 255 || b.startsWith("-") || b.startsWith("/") || b.endsWith("/") || b.endsWith(".") || b.endsWith(".lock")) return false
         if (b == "@" || ".." in b || "@{" in b || "//" in b) return false
         if (b.any { it.isISOControl() || it.isWhitespace() || it in "~^:?*[\\" }) return false
+        // Stricter than git: shell punctuation is legal in a ref but never in a branch a person types.
+        if (b.any { !(it.isLetterOrDigit() || it in "._-/+@#,=%") }) return false
         if (b.split('/').any { it.isEmpty() || it.startsWith(".") }) return false
         return true
     }
@@ -162,7 +164,7 @@ object GitClone {
             "could not read username" in text || "terminal prompts disabled" in text || "repository not found" in text || ("not found" in text && "repository" in text) -> Failure.NOT_FOUND_OR_PRIVATE
             "could not resolve host" in text || "failed to connect" in text || "connection timed out" in text || "network is unreachable" in text ||
                 "connection refused" in text || "ssl" in text || "tls" in text || "couldn't connect" in text -> Failure.NETWORK
-            "not a git repository" in text || "does not appear to be a git repository" in text || "dumb http transport" in text ||
+            "not a git repository" in text || "does not appear to be a git repository" in text || "is this a git repository" in text || "dumb http transport" in text ||
                 "unexpected" in text && "content-type" in text -> Failure.NOT_A_REPOSITORY
             else -> Failure.OTHER
         }

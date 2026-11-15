@@ -181,6 +181,29 @@ class RuntimeEngineTest {
     }
 
     @Test
+    fun `a guest command needs an install and holds off updates and removal while it runs`() {
+        assertFalse("nothing installed", engine.beginGuestCommand())
+        val base = fx.baseLayer()
+        fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100)
+        assertTrue(engine.install())
+        await("installed") { it is RuntimeState.Stopped }
+
+        assertTrue(engine.beginGuestCommand())
+        fx.publish(base, fx.harnessLayer("2.0.0"), sequence = 101)
+        assertFalse("no update under a running clone", engine.install())
+        assertFalse("no removal under a running clone", engine.uninstall())
+        // Starting and stopping the harness itself is fine next to it.
+        assertTrue(engine.start(3080))
+        await("Running") { it is RuntimeState.Running }
+        assertTrue(engine.stop())
+        await("Stopped") { it is RuntimeState.Stopped }
+        engine.endGuestCommand()
+
+        assertTrue(engine.install())
+        await("updated") { it is RuntimeState.Stopped && it.installed.harnessVersion == "2.0.0" }
+    }
+
+    @Test
     fun `install, start, stop, then an update whose harness fails is rolled back and the old one runs`() {
         val base = fx.baseLayer()
         fx.publish(base, fx.harnessLayer("1.0.0"), sequence = 100)
