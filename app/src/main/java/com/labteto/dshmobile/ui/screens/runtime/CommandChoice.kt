@@ -161,22 +161,27 @@ internal fun CommandChoiceBlock(
     }
 
     if (askRestart) {
-        DsDialog(title = stringResource(R.string.cmdperm_restart_title), onDismiss = { askRestart = false }) {
-            Text(stringResource(R.string.cmdperm_restart_body), style = DsType.std14, color = colors.labelSecondary)
-            DialogButtons(
-                dismiss = stringResource(R.string.cmdperm_later),
-                confirm = stringResource(R.string.cmdperm_restart_now),
-                onDismiss = {
-                    haptics.tap()
-                    askRestart = false
-                },
-                onConfirm = {
-                    askRestart = false
-                    haptics.confirm()
-                    onRestart()
-                },
-            )
-        }
+        DsDialog(
+            title = stringResource(R.string.cmdperm_restart_title), onDismiss = { askRestart = false },
+            body = {
+                Text(stringResource(R.string.cmdperm_restart_body), style = DsType.std14, color = colors.labelSecondary)
+            },
+            actions = {
+                DialogButtons(
+                    dismiss = stringResource(R.string.cmdperm_later),
+                    confirm = stringResource(R.string.cmdperm_restart_now),
+                    onDismiss = {
+                        haptics.tap()
+                        askRestart = false
+                    },
+                    onConfirm = {
+                        askRestart = false
+                        haptics.confirm()
+                        onRestart()
+                    },
+                )
+            },
+        )
     }
 }
 

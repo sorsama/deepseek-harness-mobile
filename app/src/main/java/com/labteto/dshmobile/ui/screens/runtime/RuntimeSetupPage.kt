@@ -334,39 +334,49 @@ internal fun RuntimeSetupPage(
     }
 
     if (askMetered) {
-        DsDialog(title = stringResource(R.string.runtime_setup_metered_title), onDismiss = { askMetered = false }) {
-            Text(
-                stringResource(R.string.runtime_setup_metered_body, state.release?.let { formatBytes(it.downloadBytes) } ?: "150 MB"),
-                style = DsType.std14,
-                color = colors.labelSecondary,
-            )
-            DialogButtons(
-                dismiss = stringResource(R.string.common_cancel),
-                confirm = stringResource(R.string.runtime_setup_metered_confirm),
-                onDismiss = { askMetered = false },
-                onConfirm = {
-                    askMetered = false
-                    haptics.confirm()
-                    onSetUp()
-                },
-            )
-        }
+        DsDialog(
+            title = stringResource(R.string.runtime_setup_metered_title), onDismiss = { askMetered = false },
+            body = {
+                Text(
+                    stringResource(R.string.runtime_setup_metered_body, state.release?.let { formatBytes(it.downloadBytes) } ?: "150 MB"),
+                    style = DsType.std14,
+                    color = colors.labelSecondary,
+                )
+            },
+            actions = {
+                DialogButtons(
+                    dismiss = stringResource(R.string.common_cancel),
+                    confirm = stringResource(R.string.runtime_setup_metered_confirm),
+                    onDismiss = { askMetered = false },
+                    onConfirm = {
+                        askMetered = false
+                        haptics.confirm()
+                        onSetUp()
+                    },
+                )
+            },
+        )
     }
     if (askCancel) {
-        DsDialog(title = stringResource(R.string.runtime_setup_cancel_title), onDismiss = { askCancel = false }) {
-            Text(stringResource(R.string.runtime_setup_cancel_body), style = DsType.std14, color = colors.labelSecondary)
-            DialogButtons(
-                dismiss = stringResource(R.string.runtime_setup_keep_going),
-                confirm = stringResource(R.string.runtime_setup_cancel_confirm),
-                danger = true,
-                onDismiss = { askCancel = false },
-                onConfirm = {
-                    askCancel = false
-                    haptics.reject()
-                    host.cancelSetUp()
-                },
-            )
-        }
+        DsDialog(
+            title = stringResource(R.string.runtime_setup_cancel_title), onDismiss = { askCancel = false },
+            body = {
+                Text(stringResource(R.string.runtime_setup_cancel_body), style = DsType.std14, color = colors.labelSecondary)
+            },
+            actions = {
+                DialogButtons(
+                    dismiss = stringResource(R.string.runtime_setup_keep_going),
+                    confirm = stringResource(R.string.runtime_setup_cancel_confirm),
+                    danger = true,
+                    onDismiss = { askCancel = false },
+                    onConfirm = {
+                        askCancel = false
+                        haptics.reject()
+                        host.cancelSetUp()
+                    },
+                )
+            },
+        )
     }
 }
 

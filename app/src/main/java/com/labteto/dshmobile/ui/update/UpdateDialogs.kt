@@ -61,8 +61,10 @@ fun UpdateDialog(
             style = DsType.std14,
             color = colors.labelSecondary,
         )
-        update.notes?.let { ReleaseNotes(it) }
+        // The panel (with the one primary action) comes before the notes: opening a long "What's
+        // new" then grows below the action instead of pushing it out of sight.
         UpdatePanel(update, ownState, ui, onHide = onHide, feedback = true)
+        update.notes?.let { ReleaseNotes(it) }
         if (idle) {
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                 if (onInstallViaTermux != null) {
@@ -117,24 +119,31 @@ fun UpdateDialog(
 @Composable
 fun UpdatedDialog(updated: JustUpdated, onOpenUrl: (String) -> Unit, onDismiss: () -> Unit) {
     val colors = DsTheme.colors
-    DsDialog(title = stringResource(R.string.update_updated_title, updated.version), onDismiss = onDismiss) {
-        Text(stringResource(R.string.update_updated_body), style = DsType.std14, color = colors.labelSecondary)
-        updated.notes?.let { ReleaseNotes(it, title = stringResource(R.string.update_view_changes)) }
-        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
-            DsButton(
-                text = stringResource(R.string.update_done),
-                onClick = onDismiss,
-                variant = DsButtonVariant.Info,
-                allowWrap = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            DsButton(
-                text = stringResource(R.string.update_open),
-                onClick = { onOpenUrl(updated.releaseUrl) },
-                variant = DsButtonVariant.Ghost,
-                allowWrap = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
+    DsDialog(
+        title = stringResource(R.string.update_updated_title, updated.version),
+        onDismiss = onDismiss,
+        body = {
+            Text(stringResource(R.string.update_updated_body), style = DsType.std14, color = colors.labelSecondary)
+            updated.notes?.let { ReleaseNotes(it, title = stringResource(R.string.update_view_changes)) }
+        },
+        // Pinned: the notes can be long once opened, and Done must stay in reach.
+        actions = {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+                DsButton(
+                    text = stringResource(R.string.update_done),
+                    onClick = onDismiss,
+                    variant = DsButtonVariant.Info,
+                    allowWrap = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                DsButton(
+                    text = stringResource(R.string.update_open),
+                    onClick = { onOpenUrl(updated.releaseUrl) },
+                    variant = DsButtonVariant.Ghost,
+                    allowWrap = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+    )
 }

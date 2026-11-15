@@ -130,50 +130,55 @@ private fun NewEmptyProjectDialog(operations: ProjectOperations, open: Boolean, 
     var busy by remember { mutableStateOf(false) }
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
-    DsDialog(title = stringResource(R.string.projects_new_empty), onDismiss = onDismiss) {
-        TextField(
-            value = name,
-            onValueChange = {
-                name = it
-                problem = null
-                failed = false
-            },
-            modifier = Modifier.fillMaxWidth().inkFieldFrame().focusRequester(focus),
-            singleLine = true,
-            label = { Text(stringResource(R.string.projects_name_label), style = DsType.std14) },
-            isError = problem != null,
-            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, imeAction = ImeAction.Done),
-            colors = dialogTextFieldColors(),
-            shape = DsShapes.control,
-        )
-        problem?.let { Text(nameProblemText(it), style = DsType.small13, color = colors.error) }
-        if (failed) Text(stringResource(R.string.projects_change_failed), style = DsType.small13, color = colors.error)
-        DialogButtons(
-            confirm = stringResource(R.string.projects_create),
-            enabled = name.isNotBlank() && !busy,
-            onDismiss = onDismiss,
-            onConfirm = {
-                busy = true
-                scope.launch {
-                    when (val r = operations.createEmpty(name, open)) {
-                        is ProjectOperations.CreateResult.Created -> {
-                            haptics.confirm()
-                            onCreated(r.project.name)
+    DsDialog(
+        title = stringResource(R.string.projects_new_empty), onDismiss = onDismiss,
+        body = {
+            TextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    problem = null
+                    failed = false
+                },
+                modifier = Modifier.fillMaxWidth().inkFieldFrame().focusRequester(focus),
+                singleLine = true,
+                label = { Text(stringResource(R.string.projects_name_label), style = DsType.std14) },
+                isError = problem != null,
+                keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, imeAction = ImeAction.Done),
+                colors = dialogTextFieldColors(),
+                shape = DsShapes.control,
+            )
+            problem?.let { Text(nameProblemText(it), style = DsType.small13, color = colors.error) }
+            if (failed) Text(stringResource(R.string.projects_change_failed), style = DsType.small13, color = colors.error)
+        },
+        actions = {
+            DialogButtons(
+                confirm = stringResource(R.string.projects_create),
+                enabled = name.isNotBlank() && !busy,
+                onDismiss = onDismiss,
+                onConfirm = {
+                    busy = true
+                    scope.launch {
+                        when (val r = operations.createEmpty(name, open)) {
+                            is ProjectOperations.CreateResult.Created -> {
+                                haptics.confirm()
+                                onCreated(r.project.name)
+                            }
+                            is ProjectOperations.CreateResult.Problem -> {
+                                haptics.reject()
+                                problem = r.problem
+                            }
+                            is ProjectOperations.CreateResult.Failed -> {
+                                haptics.reject()
+                                failed = true
+                            }
                         }
-                        is ProjectOperations.CreateResult.Problem -> {
-                            haptics.reject()
-                            problem = r.problem
-                        }
-                        is ProjectOperations.CreateResult.Failed -> {
-                            haptics.reject()
-                            failed = true
-                        }
+                        busy = false
                     }
-                    busy = false
-                }
-            },
-        )
-    }
+                },
+            )
+        },
+    )
 }
 
 @Composable
@@ -197,113 +202,118 @@ private fun CloneDialog(operations: ProjectOperations, open: Boolean, onDismiss:
     LaunchedEffect(check) {
         if (!nameEdited && check is GitClone.UrlCheck.Ok) name = check.suggestedName
     }
-    DsDialog(title = stringResource(R.string.projects_clone), onDismiss = onDismiss) {
-        if (private) SecureContent()
-        TextField(
-            value = url,
-            onValueChange = {
-                url = it
-                refused = false
-            },
-            modifier = Modifier.fillMaxWidth().inkFieldFrame().focusRequester(focus),
-            singleLine = true,
-            label = { Text(stringResource(R.string.projects_clone_url), style = DsType.std14) },
-            placeholder = { Text("https://github.com/owner/repo", style = DsType.mono12) },
-            isError = tried && check is GitClone.UrlCheck.Bad,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, autoCorrectEnabled = false, imeAction = ImeAction.Next),
-            textStyle = DsType.mono13.copy(color = colors.labelPrimary),
-            colors = dialogTextFieldColors(),
-            shape = DsShapes.control,
-        )
-        val bad = check as? GitClone.UrlCheck.Bad
-        if (bad != null && (tried || bad.problem == GitClone.UrlProblem.SSH_NOT_SUPPORTED || bad.problem == GitClone.UrlProblem.CREDENTIALS_IN_URL) && bad.problem != GitClone.UrlProblem.EMPTY) {
-            Text(urlProblemText(bad.problem), style = DsType.small13, color = colors.error)
-        }
-        TextField(
-            value = branch,
-            onValueChange = { branch = it },
-            modifier = Modifier.fillMaxWidth().inkFieldFrame(),
-            singleLine = true,
-            label = { Text(stringResource(R.string.projects_clone_branch), style = DsType.std14) },
-            isError = !branchOk,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, autoCorrectEnabled = false, imeAction = ImeAction.Next),
-            textStyle = DsType.mono13.copy(color = colors.labelPrimary),
-            colors = dialogTextFieldColors(),
-            shape = DsShapes.control,
-        )
-        if (!branchOk) Text(stringResource(R.string.projects_clone_bad_branch), style = DsType.small13, color = colors.error)
-        TextField(
-            value = name,
-            onValueChange = {
-                name = it
-                nameEdited = true
-            },
-            modifier = Modifier.fillMaxWidth().inkFieldFrame(),
-            singleLine = true,
-            label = { Text(stringResource(R.string.projects_name_label), style = DsType.std14) },
-            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, imeAction = ImeAction.Next),
-            colors = dialogTextFieldColors(),
-            shape = DsShapes.control,
-        )
-        ToggleRow(stringResource(R.string.projects_clone_private), private, stringResource(R.string.projects_clone_private_hint)) {
-            private = !private
-            if (!private) token = ""
-        }
-        if (private) {
-            val toolbar = LocalTextToolbar.current
-            val safeToolbar = remember(toolbar) { NoCopyTextToolbar(toolbar) }
-            CompositionLocalProvider(LocalTextToolbar provides safeToolbar) {
-                TextField(
-                    value = token,
-                    onValueChange = { token = it },
-                    modifier = Modifier.fillMaxWidth().inkFieldFrame(),
-                    singleLine = true,
-                    label = { Text(stringResource(R.string.projects_clone_token), style = DsType.std14) },
-                    visualTransformation = if (tokenShown) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false, imeAction = ImeAction.Done),
-                    trailingIcon = {
-                        DsIconButton(
-                            icon = if (tokenShown) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                            contentDescription = stringResource(if (tokenShown) R.string.models_key_hide else R.string.models_key_show),
-                            onClick = {
-                                haptics.tap()
-                                tokenShown = !tokenShown
-                            },
-                            tint = colors.labelTertiary,
-                        )
-                    },
-                    textStyle = DsType.mono13.copy(color = colors.labelPrimary),
-                    colors = dialogTextFieldColors(),
-                    shape = DsShapes.control,
-                )
+    DsDialog(
+        title = stringResource(R.string.projects_clone), onDismiss = onDismiss,
+        body = {
+            if (private) SecureContent()
+            TextField(
+                value = url,
+                onValueChange = {
+                    url = it
+                    refused = false
+                },
+                modifier = Modifier.fillMaxWidth().inkFieldFrame().focusRequester(focus),
+                singleLine = true,
+                label = { Text(stringResource(R.string.projects_clone_url), style = DsType.std14) },
+                placeholder = { Text("https://github.com/owner/repo", style = DsType.mono12) },
+                isError = tried && check is GitClone.UrlCheck.Bad,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, autoCorrectEnabled = false, imeAction = ImeAction.Next),
+                textStyle = DsType.mono13.copy(color = colors.labelPrimary),
+                colors = dialogTextFieldColors(),
+                shape = DsShapes.control,
+            )
+            val bad = check as? GitClone.UrlCheck.Bad
+            if (bad != null && (tried || bad.problem == GitClone.UrlProblem.SSH_NOT_SUPPORTED || bad.problem == GitClone.UrlProblem.CREDENTIALS_IN_URL) && bad.problem != GitClone.UrlProblem.EMPTY) {
+                Text(urlProblemText(bad.problem), style = DsType.small13, color = colors.error)
             }
-            Text(stringResource(R.string.projects_clone_token_hint), style = DsType.small13, color = colors.labelSecondary)
-        }
-        if (refused) Text(stringResource(R.string.projects_in_use), style = DsType.small13, color = colors.error)
-        DialogButtons(
-            confirm = stringResource(R.string.projects_clone_start),
-            enabled = url.isNotBlank() && branchOk && name.isNotBlank(),
-            onDismiss = onDismiss,
-            onConfirm = {
-                tried = true
-                val ok = check as? GitClone.UrlCheck.Ok
-                if (ok == null) {
-                    haptics.reject()
-                    return@DialogButtons
+            TextField(
+                value = branch,
+                onValueChange = { branch = it },
+                modifier = Modifier.fillMaxWidth().inkFieldFrame(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.projects_clone_branch), style = DsType.std14) },
+                isError = !branchOk,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, autoCorrectEnabled = false, imeAction = ImeAction.Next),
+                textStyle = DsType.mono13.copy(color = colors.labelPrimary),
+                colors = dialogTextFieldColors(),
+                shape = DsShapes.control,
+            )
+            if (!branchOk) Text(stringResource(R.string.projects_clone_bad_branch), style = DsType.small13, color = colors.error)
+            TextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    nameEdited = true
+                },
+                modifier = Modifier.fillMaxWidth().inkFieldFrame(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.projects_name_label), style = DsType.std14) },
+                keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, imeAction = ImeAction.Next),
+                colors = dialogTextFieldColors(),
+                shape = DsShapes.control,
+            )
+            ToggleRow(stringResource(R.string.projects_clone_private), private, stringResource(R.string.projects_clone_private_hint)) {
+                private = !private
+                if (!private) token = ""
+            }
+            if (private) {
+                val toolbar = LocalTextToolbar.current
+                val safeToolbar = remember(toolbar) { NoCopyTextToolbar(toolbar) }
+                CompositionLocalProvider(LocalTextToolbar provides safeToolbar) {
+                    TextField(
+                        value = token,
+                        onValueChange = { token = it },
+                        modifier = Modifier.fillMaxWidth().inkFieldFrame(),
+                        singleLine = true,
+                        label = { Text(stringResource(R.string.projects_clone_token), style = DsType.std14) },
+                        visualTransformation = if (tokenShown) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false, imeAction = ImeAction.Done),
+                        trailingIcon = {
+                            DsIconButton(
+                                icon = if (tokenShown) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                contentDescription = stringResource(if (tokenShown) R.string.models_key_hide else R.string.models_key_show),
+                                onClick = {
+                                    haptics.tap()
+                                    tokenShown = !tokenShown
+                                },
+                                tint = colors.labelTertiary,
+                            )
+                        },
+                        textStyle = DsType.mono13.copy(color = colors.labelPrimary),
+                        colors = dialogTextFieldColors(),
+                        shape = DsShapes.control,
+                    )
                 }
-                val secret = if (private && token.isNotEmpty()) token.toCharArray() else null
-                if (operations.clone(ok, branch, name, secret, open)) {
-                    token = ""
-                    haptics.confirm()
-                    onStarted()
-                } else {
-                    secret?.fill('\u0000')
-                    haptics.reject()
-                    refused = true
-                }
-            },
-        )
-    }
+                Text(stringResource(R.string.projects_clone_token_hint), style = DsType.small13, color = colors.labelSecondary)
+            }
+            if (refused) Text(stringResource(R.string.projects_in_use), style = DsType.small13, color = colors.error)
+        },
+        actions = {
+            DialogButtons(
+                confirm = stringResource(R.string.projects_clone_start),
+                enabled = url.isNotBlank() && branchOk && name.isNotBlank(),
+                onDismiss = onDismiss,
+                onConfirm = {
+                    tried = true
+                    val ok = check as? GitClone.UrlCheck.Ok
+                    if (ok == null) {
+                        haptics.reject()
+                        return@DialogButtons
+                    }
+                    val secret = if (private && token.isNotEmpty()) token.toCharArray() else null
+                    if (operations.clone(ok, branch, name, secret, open)) {
+                        token = ""
+                        haptics.confirm()
+                        onStarted()
+                    } else {
+                        secret?.fill('\u0000')
+                        haptics.reject()
+                        refused = true
+                    }
+                },
+            )
+        },
+    )
 }
 
 /** "Share as .zip" and "Save a copy to the phone": which folders go along, then the zip or the picker. */
@@ -322,31 +332,34 @@ fun ExportDialog(operations: ProjectOperations, project: String, saveCopy: Boole
     DsDialog(
         title = stringResource(if (saveCopy) R.string.projects_save_title else R.string.projects_share_title, project),
         onDismiss = onDismiss,
-    ) {
-        ToggleRow(stringResource(R.string.projects_export_skip), skipHeavy, stringResource(R.string.projects_export_skip_hint)) { skipHeavy = !skipHeavy }
-        ToggleRow(stringResource(R.string.projects_export_git), includeGit, stringResource(R.string.projects_export_git_hint)) { includeGit = !includeGit }
-        Text(
-            stringResource(if (saveCopy) R.string.projects_save_note else R.string.projects_export_note),
-            style = DsType.small13,
-            color = colors.labelSecondary,
-        )
-        if (refused) Text(stringResource(R.string.projects_in_use), style = DsType.small13, color = colors.error)
-        DialogButtons(
-            confirm = stringResource(if (saveCopy) R.string.projects_save_choose else R.string.projects_export_make),
-            enabled = true,
-            onDismiss = onDismiss,
-            onConfirm = {
-                haptics.tap()
-                if (saveCopy) {
-                    runCatching { picker.launch(null) }
-                } else if (operations.exportZip(project, filter)) {
-                    onStarted()
-                } else {
-                    refused = true
-                }
-            },
-        )
-    }
+        body = {
+            ToggleRow(stringResource(R.string.projects_export_skip), skipHeavy, stringResource(R.string.projects_export_skip_hint)) { skipHeavy = !skipHeavy }
+            ToggleRow(stringResource(R.string.projects_export_git), includeGit, stringResource(R.string.projects_export_git_hint)) { includeGit = !includeGit }
+            Text(
+                stringResource(if (saveCopy) R.string.projects_save_note else R.string.projects_export_note),
+                style = DsType.small13,
+                color = colors.labelSecondary,
+            )
+            if (refused) Text(stringResource(R.string.projects_in_use), style = DsType.small13, color = colors.error)
+        },
+        actions = {
+            DialogButtons(
+                confirm = stringResource(if (saveCopy) R.string.projects_save_choose else R.string.projects_export_make),
+                enabled = true,
+                onDismiss = onDismiss,
+                onConfirm = {
+                    haptics.tap()
+                    if (saveCopy) {
+                        runCatching { picker.launch(null) }
+                    } else if (operations.exportZip(project, filter)) {
+                        onStarted()
+                    } else {
+                        refused = true
+                    }
+                },
+            )
+        },
+    )
 }
 
 /** Progress and result of the one project operation, with Cancel, Share and Open. */
@@ -364,16 +377,17 @@ fun ProjectJobDialog(operations: ProjectOperations, job: ProjectJob, onHide: () 
             else -> Unit
         }
     }
-    DsDialog(title = jobTitle(job), onDismiss = {
-        if (job !is ProjectJob.Running) operations.dismiss()
-        onHide()
-    }) {
-        ProjectJobBody(job)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+    DsDialog(
+        title = jobTitle(job),
+        onDismiss = {
+            if (job !is ProjectJob.Running) operations.dismiss()
+            onHide()
+        },
+        body = { ProjectJobBody(job) },
+        actions = {
             when (job) {
                 is ProjectJob.Running -> {
                     DsButton(stringResource(R.string.projects_job_hide), onClick = onHide, variant = DsButtonVariant.Ghost)
-                    Spacer(Modifier.width(DsSpacing.small))
                     DsButton(stringResource(R.string.common_cancel), onClick = {
                         haptics.tap()
                         operations.cancel()
@@ -385,13 +399,11 @@ fun ProjectJobDialog(operations: ProjectOperations, job: ProjectJob, onHide: () 
                         onHide()
                     }, variant = DsButtonVariant.Ghost)
                     if (job.kind == JobKind.EXPORT_ZIP && job.shareUri != null) {
-                        Spacer(Modifier.width(DsSpacing.small))
                         DsButton(stringResource(R.string.projects_job_share), onClick = {
                             shared = true
                             shareZip(context, job.shareUri, job.name)
                         }, variant = DsButtonVariant.Info)
                     } else if (job.kind in CREATING && operations.onBuiltIn()) {
-                        Spacer(Modifier.width(DsSpacing.small))
                         DsButton(stringResource(R.string.projects_action_session), onClick = {
                             scope.launch {
                                 operations.openSession(WorkspaceTree.GUEST_ROOT + "/" + job.name)
@@ -406,8 +418,8 @@ fun ProjectJobDialog(operations: ProjectOperations, job: ProjectJob, onHide: () 
                     onHide()
                 }, variant = DsButtonVariant.Ghost)
             }
-        }
-    }
+        },
+    )
     // The zip is what the person asked for: offer the share sheet at once, once.
     LaunchedEffect(job) {
         if (job is ProjectJob.Done && job.kind == JobKind.EXPORT_ZIP && job.shareUri != null && !shared) {
@@ -527,9 +539,14 @@ private fun urlProblemText(problem: GitClone.UrlProblem): String = stringResourc
 
 @Composable
 internal fun DialogButtons(confirm: String, enabled: Boolean, onDismiss: () -> Unit, onConfirm: () -> Unit, danger: Boolean = false) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+    // A FlowRow, so two long labels at 320 dp with large text go on two lines instead of squeezing.
+    @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+    androidx.compose.foundation.layout.FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small, androidx.compose.ui.Alignment.End),
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+    ) {
         DsButton(text = stringResource(R.string.common_cancel), onClick = onDismiss, variant = DsButtonVariant.Ghost)
-        Spacer(Modifier.width(DsSpacing.small))
         DsButton(text = confirm, onClick = onConfirm, variant = if (danger) DsButtonVariant.Danger else DsButtonVariant.Info, enabled = enabled)
     }
 }

@@ -386,67 +386,80 @@ internal fun RuntimeControlPage(
     }
 
     if (confirmRemove) {
-        DsDialog(title = stringResource(R.string.runtime_remove_title), onDismiss = { confirmRemove = false }) {
-            Text(
-                stringResource(R.string.runtime_remove_body, storage?.let { formatBytes(it.layersBytes + it.cacheBytes) } ?: "…"),
-                style = DsType.std14,
-                color = colors.labelSecondary,
-            )
-            DialogButtons(
-                dismiss = stringResource(R.string.common_cancel),
-                confirm = stringResource(R.string.runtime_remove),
-                onDismiss = { confirmRemove = false },
-                onConfirm = {
-                    confirmRemove = false
-                    haptics.confirm()
-                    onUninstall(true)
-                },
-            )
-        }
+        DsDialog(
+            title = stringResource(R.string.runtime_remove_title), onDismiss = { confirmRemove = false },
+            body = {
+                Text(
+                    stringResource(R.string.runtime_remove_body, storage?.let { formatBytes(it.layersBytes + it.cacheBytes) } ?: "…"),
+                    style = DsType.std14,
+                    color = colors.labelSecondary,
+                )
+            },
+            actions = {
+                DialogButtons(
+                    dismiss = stringResource(R.string.common_cancel),
+                    confirm = stringResource(R.string.runtime_remove),
+                    onDismiss = { confirmRemove = false },
+                    onConfirm = {
+                        confirmRemove = false
+                        haptics.confirm()
+                        onUninstall(true)
+                    },
+                )
+            },
+        )
     }
     val goBackTo = state.installed?.previousRelease
     if (confirmGoBack && goBackTo != null) {
         DsDialog(
             title = stringResource(R.string.runtime_go_back_title, technicalDisplay(goBackTo.releaseId)),
             onDismiss = { confirmGoBack = false },
-        ) {
-            Text(
-                stringResource(
-                    R.string.runtime_go_back_body,
-                    technicalDisplay(goBackTo.harnessVersion),
-                    technicalDisplay(state.installed?.releaseId.orEmpty()),
-                ),
-                style = DsType.std14,
-                color = colors.labelSecondary,
-            )
-            DialogButtons(
-                dismiss = stringResource(R.string.common_cancel),
-                confirm = stringResource(R.string.runtime_update_go_back),
-                onDismiss = { confirmGoBack = false },
-                onConfirm = {
-                    confirmGoBack = false
-                    haptics.confirm()
-                    host.dismissOutcome()
-                    host.goBack()
-                },
-            )
-        }
+            body = {
+                Text(
+                    stringResource(
+                        R.string.runtime_go_back_body,
+                        technicalDisplay(goBackTo.harnessVersion),
+                        technicalDisplay(state.installed?.releaseId.orEmpty()),
+                    ),
+                    style = DsType.std14,
+                    color = colors.labelSecondary,
+                )
+            },
+            actions = {
+                DialogButtons(
+                    dismiss = stringResource(R.string.common_cancel),
+                    confirm = stringResource(R.string.runtime_update_go_back),
+                    onDismiss = { confirmGoBack = false },
+                    onConfirm = {
+                        confirmGoBack = false
+                        haptics.confirm()
+                        host.dismissOutcome()
+                        host.goBack()
+                    },
+                )
+            },
+        )
     }
     if (confirmDeleteAll) {
-        DsDialog(title = stringResource(R.string.runtime_delete_all_title), onDismiss = { confirmDeleteAll = false }) {
-            Text(stringResource(R.string.runtime_delete_all_body), style = DsType.std14, color = colors.labelSecondary)
-            DialogButtons(
-                dismiss = stringResource(R.string.common_cancel),
-                confirm = stringResource(R.string.runtime_delete_all),
-                danger = true,
-                onDismiss = { confirmDeleteAll = false },
-                onConfirm = {
-                    confirmDeleteAll = false
-                    haptics.reject()
-                    onUninstall(false)
-                },
-            )
-        }
+        DsDialog(
+            title = stringResource(R.string.runtime_delete_all_title), onDismiss = { confirmDeleteAll = false },
+            body = {
+                Text(stringResource(R.string.runtime_delete_all_body), style = DsType.std14, color = colors.labelSecondary)
+            },
+            actions = {
+                DialogButtons(
+                    dismiss = stringResource(R.string.common_cancel),
+                    confirm = stringResource(R.string.runtime_delete_all),
+                    danger = true,
+                    onDismiss = { confirmDeleteAll = false },
+                    onConfirm = {
+                        confirmDeleteAll = false
+                        haptics.reject()
+                        onUninstall(false)
+                    },
+                )
+            },
+        )
     }
 }
 

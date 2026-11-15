@@ -321,51 +321,56 @@ private fun RenameProjectDialog(
     val scope = rememberCoroutineScope()
     var name by rememberSaveable { mutableStateOf(current) }
     var problem by remember { mutableStateOf<ProjectList.NameProblem?>(null) }
-    DsDialog(title = stringResource(R.string.projects_rename_title), onDismiss = onDismiss) {
-        TextField(
-            value = name,
-            onValueChange = {
-                name = it
-                problem = null
-            },
-            modifier = Modifier.fillMaxWidth().inkFieldFrame(),
-            singleLine = true,
-            label = { Text(stringResource(R.string.projects_name_label), style = DsType.std14) },
-            isError = problem != null,
-            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, imeAction = ImeAction.Done),
-            colors = dialogTextFieldColors(),
-            shape = DsShapes.control,
-        )
-        problem?.let { Text(nameProblemText(it), style = DsType.small13, color = colors.error) }
-        Text(stringResource(R.string.projects_rename_note), style = DsType.small13, color = colors.labelSecondary)
-        DialogButtons(
-            confirm = stringResource(R.string.common_save),
-            enabled = name.isNotBlank(),
-            onDismiss = onDismiss,
-            onConfirm = {
-                scope.launch {
-                    when (val r = operations.rename(current, name)) {
-                        ProjectOperations.ChangeResult.Done -> {
-                            haptics.confirm()
-                            onResult(null)
-                        }
-                        is ProjectOperations.ChangeResult.Problem -> {
-                            haptics.reject()
-                            problem = r.problem
-                        }
-                        ProjectOperations.ChangeResult.InUse -> {
-                            haptics.reject()
-                            onResult(inUse)
-                        }
-                        ProjectOperations.ChangeResult.Failed -> {
-                            haptics.reject()
-                            onResult(failed)
+    DsDialog(
+        title = stringResource(R.string.projects_rename_title), onDismiss = onDismiss,
+        body = {
+            TextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    problem = null
+                },
+                modifier = Modifier.fillMaxWidth().inkFieldFrame(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.projects_name_label), style = DsType.std14) },
+                isError = problem != null,
+                keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, imeAction = ImeAction.Done),
+                colors = dialogTextFieldColors(),
+                shape = DsShapes.control,
+            )
+            problem?.let { Text(nameProblemText(it), style = DsType.small13, color = colors.error) }
+            Text(stringResource(R.string.projects_rename_note), style = DsType.small13, color = colors.labelSecondary)
+        },
+        actions = {
+            DialogButtons(
+                confirm = stringResource(R.string.common_save),
+                enabled = name.isNotBlank(),
+                onDismiss = onDismiss,
+                onConfirm = {
+                    scope.launch {
+                        when (val r = operations.rename(current, name)) {
+                            ProjectOperations.ChangeResult.Done -> {
+                                haptics.confirm()
+                                onResult(null)
+                            }
+                            is ProjectOperations.ChangeResult.Problem -> {
+                                haptics.reject()
+                                problem = r.problem
+                            }
+                            ProjectOperations.ChangeResult.InUse -> {
+                                haptics.reject()
+                                onResult(inUse)
+                            }
+                            ProjectOperations.ChangeResult.Failed -> {
+                                haptics.reject()
+                                onResult(failed)
+                            }
                         }
                     }
-                }
-            },
-        )
-    }
+                },
+            )
+        },
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)

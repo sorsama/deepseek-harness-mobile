@@ -558,51 +558,66 @@ private fun ProviderEditor(row: ProviderRow, state: ModelsState, controller: Mod
     }
 
     if (editor.askCleartext != null) {
-        DsDialog(title = stringResource(R.string.models_cleartext_title), onDismiss = { controller.answerCleartext(send = false, key = "") }) {
-            Text(stringResource(R.string.models_cleartext_body, technicalDisplay(hostLabel)), style = DsType.std14, color = colors.labelSecondary)
-            DialogButtons(
-                dismiss = stringResource(R.string.common_cancel),
-                confirm = stringResource(R.string.models_cleartext_send),
-                danger = true,
-                onDismiss = { controller.answerCleartext(send = false, key = "") },
-                onConfirm = {
-                    haptics.tap()
-                    controller.answerCleartext(send = true, key = key)
-                },
-            )
-        }
+        DsDialog(
+            title = stringResource(R.string.models_cleartext_title), onDismiss = { controller.answerCleartext(send = false, key = "") },
+            body = {
+                Text(stringResource(R.string.models_cleartext_body, technicalDisplay(hostLabel)), style = DsType.std14, color = colors.labelSecondary)
+            },
+            actions = {
+                DialogButtons(
+                    dismiss = stringResource(R.string.common_cancel),
+                    confirm = stringResource(R.string.models_cleartext_send),
+                    danger = true,
+                    onDismiss = { controller.answerCleartext(send = false, key = "") },
+                    onConfirm = {
+                        haptics.tap()
+                        controller.answerCleartext(send = true, key = key)
+                    },
+                )
+            },
+        )
     }
     if (confirmRemoveKey) {
-        DsDialog(title = stringResource(R.string.models_remove_key_title, row.displayName), onDismiss = { confirmRemoveKey = false }) {
-            Text(stringResource(R.string.models_remove_key_body, row.displayName), style = DsType.std14, color = colors.labelSecondary)
-            DialogButtons(
-                dismiss = stringResource(R.string.common_cancel),
-                confirm = stringResource(R.string.models_remove_key),
-                danger = true,
-                onDismiss = { confirmRemoveKey = false },
-                onConfirm = {
-                    confirmRemoveKey = false
-                    haptics.reject()
-                    controller.removeKey()
-                },
-            )
-        }
+        DsDialog(
+            title = stringResource(R.string.models_remove_key_title, row.displayName), onDismiss = { confirmRemoveKey = false },
+            body = {
+                Text(stringResource(R.string.models_remove_key_body, row.displayName), style = DsType.std14, color = colors.labelSecondary)
+            },
+            actions = {
+                DialogButtons(
+                    dismiss = stringResource(R.string.common_cancel),
+                    confirm = stringResource(R.string.models_remove_key),
+                    danger = true,
+                    onDismiss = { confirmRemoveKey = false },
+                    onConfirm = {
+                        confirmRemoveKey = false
+                        haptics.reject()
+                        controller.removeKey()
+                    },
+                )
+            },
+        )
     }
     if (confirmRemoveProvider) {
-        DsDialog(title = stringResource(R.string.models_remove_provider_title, row.displayName), onDismiss = { confirmRemoveProvider = false }) {
-            Text(stringResource(R.string.models_remove_provider_body), style = DsType.std14, color = colors.labelSecondary)
-            DialogButtons(
-                dismiss = stringResource(R.string.common_cancel),
-                confirm = stringResource(R.string.models_remove_provider),
-                danger = true,
-                onDismiss = { confirmRemoveProvider = false },
-                onConfirm = {
-                    confirmRemoveProvider = false
-                    haptics.reject()
-                    controller.removeProvider()
-                },
-            )
-        }
+        DsDialog(
+            title = stringResource(R.string.models_remove_provider_title, row.displayName), onDismiss = { confirmRemoveProvider = false },
+            body = {
+                Text(stringResource(R.string.models_remove_provider_body), style = DsType.std14, color = colors.labelSecondary)
+            },
+            actions = {
+                DialogButtons(
+                    dismiss = stringResource(R.string.common_cancel),
+                    confirm = stringResource(R.string.models_remove_provider),
+                    danger = true,
+                    onDismiss = { confirmRemoveProvider = false },
+                    onConfirm = {
+                        confirmRemoveProvider = false
+                        haptics.reject()
+                        controller.removeProvider()
+                    },
+                )
+            },
+        )
     }
 }
 
