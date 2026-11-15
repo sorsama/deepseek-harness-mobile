@@ -59,6 +59,21 @@ class SandboxRefusalTest {
         assertFalse(sandboxRefusalShown(wordsOnly, "workspace-write"))
     }
 
+    @Test fun onTheBuiltInHarnessAFailedShellCallWithoutTheCodeCounts() {
+        // Harness 0.2.2-rc.1 runs foreground bash as a job and re-throws a start failure without
+        // its code; on a host with no sandbox at all the failed shell call is still the refusal.
+        val codeLost = nodes(user(0), call(1, "c1"), result(2, "c1", null, "Error: sandbox mode \"workspace-write\" is requested"))
+        assertTrue(sandboxRefusalShown(codeLost, "workspace-write", hostWithoutSandbox = true))
+        assertTrue(sandboxRefusalShown(codeLost, "custom", hostWithoutSandbox = true))
+        // Elsewhere only the code counts.
+        assertFalse(sandboxRefusalShown(codeLost, "workspace-write", hostWithoutSandbox = false))
+        // A command that ran and failed on a preset that runs commands is just a failed command.
+        assertFalse(sandboxRefusalShown(codeLost, "danger-full-access", hostWithoutSandbox = true))
+        // A failed file tool is not a refused command.
+        val write = event("tool/call", 1, """{"turn":1,"step":1,"callId":"w1","name":"write","arguments":"{}"}""")
+        assertFalse(sandboxRefusalShown(nodes(user(0), write, result(2, "w1", null, "Error: no such file")), "workspace-write", hostWithoutSandbox = true))
+    }
+
     @Test fun switchingTheSessionOrSendingAgainClearsIt() {
         val refused = arrayOf(user(0), call(1, "c1"), result(2, "c1", SANDBOX_UNAVAILABLE))
         assertFalse(sandboxRefusalShown(nodes(*refused), "danger-full-access"))

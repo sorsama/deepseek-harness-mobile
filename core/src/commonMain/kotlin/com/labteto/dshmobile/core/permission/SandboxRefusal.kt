@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.core.permission
 
 import com.labteto.dshmobile.core.session.ChatNode
+import com.labteto.dshmobile.core.session.ToolCallNode
 import com.labteto.dshmobile.core.session.ToolResultNode
 import com.labteto.dshmobile.core.session.UserMessageNode
 import kotlinx.serialization.json.JsonArray
@@ -19,24 +20,39 @@ val PRESETS_WITHOUT_SANDBOX = setOf("danger-full-access", "ask-commands")
 
 /**
  * Whether the chat should explain that the last request's command was refused for want of a
- * sandbox: a tool result since the last message the person sent carries [SANDBOX_UNAVAILABLE]
- * (the code, never the message text, which changes between releases), and the session is not on a
- * preset that would have run it. The notice goes when the person sends the next message, or when
- * the session is switched to such a preset.
+ * sandbox, and the session is not on a preset that would have run it. The notice goes when the
+ * person sends the next message, or when the session is switched to such a preset.
+ *
+ * The refusal is read from the code, never from the message text (which changes between releases):
+ * a tool result since the last message the person sent that carries [SANDBOX_UNAVAILABLE].
+ *
+ * Harness 0.2.2-rc.1 loses that code on its usual path: the web profile runs a foreground `bash`
+ * call as a job, and a job whose start failed is re-thrown as a plain error with the message only
+ * (`tool-bash`, `waitOnJob`). So where the host is known to have no sandbox at all
+ * ([hostWithoutSandbox]: the built-in harness, where Android allows none), a failed shell call in a
+ * session on a sandboxed preset counts as that refusal: on such a host no command can run under
+ * those presets, so the call cannot have failed any other way.
  *
  * @param currentPreset the session's preset now (the `permissions` projection's `currentValue`).
+ * @param hostWithoutSandbox the harness runs where no kernel sandbox can work (the phone's own).
  */
-fun sandboxRefusalShown(nodes: List<ChatNode>, currentPreset: String?): Boolean {
+fun sandboxRefusalShown(nodes: List<ChatNode>, currentPreset: String?, hostWithoutSandbox: Boolean = false): Boolean {
     if (currentPreset in PRESETS_WITHOUT_SANDBOX) return false
     for (i in nodes.indices.reversed()) {
         when (val node = nodes[i]) {
             is UserMessageNode -> return false
-            is ToolResultNode -> if (node.errorCode == SANDBOX_UNAVAILABLE) return true
+            is ToolResultNode -> {
+                if (node.errorCode == SANDBOX_UNAVAILABLE) return true
+                if (hostWithoutSandbox && node.isError && shellCallOf(nodes, node.callId)) return true
+            }
             else -> Unit
         }
     }
     return false
 }
+
+private fun shellCallOf(nodes: List<ChatNode>, callId: String): Boolean =
+    nodes.any { it is ToolCallNode && it.callId == callId && it.name in ApprovalPrompt.COMMAND_TOOLS }
 
 /**
  * The built-in runtime's denial of a subagent's gated call in an "Ask before commands" session.

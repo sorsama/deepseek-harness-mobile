@@ -67,9 +67,11 @@ fun SandboxRefusalNotice(
     val connection by viewModel.connection.collectAsStateWithLifecycle()
     val port by viewModel.port.collectAsStateWithLifecycle()
     val chosen by viewModel.host.commandPermission.collectAsStateWithLifecycle()
-    val shown = remember(nodes, permissions?.currentValue) { sandboxRefusalShown(nodes, permissions?.currentValue) }
     val active = connection.host
     val onBuiltIn = active != null && active.isLoopback && !active.isRelay && active.port == port && viewModel.host.servedThisProcess(port)
+    // The phone's own harness can never sandbox a command, which also tells a refusal apart there
+    // when the harness drops its code (see sandboxRefusalShown).
+    val shown = remember(nodes, permissions?.currentValue, onBuiltIn) { sandboxRefusalShown(nodes, permissions?.currentValue, hostWithoutSandbox = onBuiltIn) }
     val target = sandboxNoticeTarget(onBuiltIn, chosen, permissions?.selectable?.map { it.value }.orEmpty())
 
     AnimatedVisibility(
