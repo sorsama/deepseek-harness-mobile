@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="projects_provider_summary">বিল্ট-ইন harness-এর প্রজেক্ট</string>
-    <string name="projects_title">প্রজেক্ট</string>
+    <string name="projects_title">এই ফোনের প্রজেক্ট</string>
     <string name="projects_intro">এই ফোনে আপনার প্রজেক্ট ফোল্ডার। Files অ্যাপে %1$s-এর নিচেও এগুলো দেখা যায়।</string>
     <string name="projects_files_hint">আপনার প্রজেক্ট ফোল্ডার Files অ্যাপে %1$s-এর নিচেও দেখা যায়, যাতে ফাইল ভেতরে-বাইরে কপি করতে পারেন।</string>
     <string name="projects_section_list">প্রজেক্ট</string>
@@ -110,4 +110,5 @@
     <string name="projects_fail_clone_timeout">ক্লোন করতে খুব বেশি সময় লেগেছে, তাই থামানো হয়েছে।</string>
     <string name="projects_fail_clone_other">Git এই রিপোজিটরি ক্লোন করতে পারেনি।</string>
     <string name="projects_fail_git_said">Git-এর বার্তা: %1$s</string>
+    <string name="projects_session_folder_gone">এই সেশনের ফোল্ডারটি আর নেই। সেটি মুছে ফেলা হয়েছে বা নাম বদলানো হয়েছে। কাজ চালিয়ে যেতে কোনো প্রজেক্টে নতুন সেশন শুরু করুন।</string>
 </resources>

@@ -87,6 +87,63 @@ the software.
   to disk or to the system log (the harness output log has it masked), and
   without it or the cookie every `/api` call answers 401.
 
+### Projects in the Files app
+
+The built-in harness's project folder (`workspaces`, the guest's `/workspaces`) is a
+storage location in the system Files app and in every app's file picker, named after the
+app (`WorkspacesProvider`, a `DocumentsProvider`).
+
+- **What it exposes:** that one folder and what is in it, nothing else. Not the runtime's
+  root file system, not the harness home (`/root`, where the API keys and session history
+  live), not the app's other files. It works with the harness stopped: it reads the folder
+  directly.
+- **Who can reach it:** the provider is protected by `MANAGE_DOCUMENTS`, a permission only
+  the system's document UI holds, so no app can query it on its own. Another app gets
+  access only through the system picker, when the person picks a file there (one document)
+  or grants a folder (that folder's tree). This is the platform's rule for document
+  providers; the app adds no other way in. The person holding the phone unlocked can browse,
+  copy, change and delete project files from the Files app, which is the point.
+- **Paths:** a document id is `workspaces/<path>`. It is never used as a path as it is:
+  `WorkspaceTree` splits it into names, refuses an empty name, `.`, `..` and NUL, and walks
+  down one name at a time, requiring a real folder at every step (never a symlink). Before a
+  file descriptor is handed out, its real path (`/proc/self/fd`) is checked once more to be
+  inside the folder. `WorkspaceTreeTest` tries to escape (`..`, absolute ids, ids through a
+  link, links to the API key).
+- **Symlinks** are never followed out of the folder and never walked through. A link to a
+  regular file inside the folder (relative, or an absolute guest path under `/workspaces`)
+  is shown as that file and opened as its target. Every other link is skipped: links to
+  folders (they would show a tree twice or loop), links out of the folder, links to links,
+  broken links. Deleting or renaming a shown link changes the link, never its target.
+- **Not covered:** the agent can write anything into a project, including a file another
+  app later opens; what a file contains is the project's business. Files changed through
+  the Files app are seen by the agent at once (one folder).
+
+### Getting projects in and out
+
+- **Clone** runs `git clone` inside the runtime through the app's own guest-command runner
+  (`GuestCommandRunner`), not through the harness and not through a shell: the URL, branch
+  and folder are separate arguments after `--`. Only `https://` and `http://` are allowed,
+  also for submodules and redirects (`protocol.allow=never` with those two allowed), so a
+  `file://` URL cannot copy the harness home into a project. No exported component runs a
+  guest command; it is not a way for another app to run anything. The person typed the
+  command, so the command choice ("Ask before commands") does not ask about it.
+- **A token for a private repository** is used for that clone only. It goes to git as an
+  `Authorization` header through git's environment (`GIT_CONFIG_*`), scoped to the
+  repository's own origin; never on a command line (where `ps` would show it), never in the
+  URL (git would write it into `.git/config`), never in the app's preferences or logs, and
+  `credential.helper` is emptied so no helper stores it. The field is a password field in a
+  `FLAG_SECURE` window, with copy and cut removed, as on the Models screen. While the clone
+  runs, the environment of its processes is readable by this app's own user id only (the
+  harness's processes included), which is the same boundary as the stored API key.
+- **Zips** are checked before anything is written: an entry that is absolute, has a drive
+  letter or a `..` refuses the whole zip; an entry that inflates past its declared size stops
+  the import; links are made last and only when they stay inside the project. Imports and
+  clones are built in a staging folder and moved into place when complete; a failed or
+  cancelled one leaves nothing.
+- **Exports** (share as zip, save a copy) leave links out and, by default, dependency
+  folders, caches, ignored build output and `.git`. The share sheet gets read access to one
+  zip in the app's cache through a `FileProvider` that serves that folder only.
+
 ## Local network mode
 
 The harness web server (`dsh web`) serves plain HTTP with a *trust fence*, not

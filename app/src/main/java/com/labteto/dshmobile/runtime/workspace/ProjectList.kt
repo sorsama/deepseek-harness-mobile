@@ -80,4 +80,14 @@ object ProjectList {
     }
 
     enum class NameProblem { INVALID, TAKEN }
+
+    /**
+     * Whether a harness error says the session's working folder is gone (a project deleted or
+     * renamed under it): `working-directory: directory does not exist: "/workspaces/x"`. The chat
+     * then says so in plain words instead of the harness's own.
+     */
+    fun isMissingFolderError(message: String?): Boolean {
+        val text = message?.lowercase() ?: return false
+        return text.contains("working-directory") && (text.contains("does not exist") || text.contains("not a directory"))
+    }
 }

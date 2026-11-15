@@ -242,7 +242,7 @@ fun ChatListDrawer(
     val onBuiltInHarness by projectOps.onBuiltInState.collectAsStateWithLifecycle()
     val projectJob by projectOps.job.collectAsStateWithLifecycle()
     var projectJobShown by remember { mutableStateOf(false) }
-    var projectsPageOpen by remember { mutableStateOf(false) }
+    var projectsPageOpen by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     val projectStarters = com.labteto.dshmobile.ui.screens.runtime.rememberProjectStarters(
         projectOps,
         open = true,

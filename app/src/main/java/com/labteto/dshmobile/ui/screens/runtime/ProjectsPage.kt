@@ -60,7 +60,7 @@ import com.labteto.dshmobile.ui.screens.connect.ConnectButtonVariant
 import com.labteto.dshmobile.ui.screens.connect.DsConnectButton
 import com.labteto.dshmobile.ui.screens.main.ConfirmDialog
 import com.labteto.dshmobile.ui.screens.main.dialogTextFieldColors
-import com.labteto.dshmobile.runtime.formatBytes
+import com.labteto.dshmobile.ui.screens.main.preview.formatBytes
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -124,7 +124,7 @@ internal fun ProjectsPage(operations: ProjectOperations, onClose: () -> Unit) {
                         verticalArrangement = Arrangement.spacedBy(DsSpacing.comfortable),
                     ) {
                         Text(
-                            stringResource(R.string.projects_intro, stringResource(R.string.app_name)),
+                            stringResource(R.string.projects_intro, isolated(stringResource(R.string.app_name))),
                             style = DsType.std14,
                             color = colors.labelSecondary,
                         )
@@ -160,7 +160,7 @@ internal fun ProjectsPage(operations: ProjectOperations, onClose: () -> Unit) {
                                 stringResource(R.string.projects_section_list)
                             } else {
                                 pluralStringResource(R.plurals.projects_count, projects.size, projects.size) + " · " +
-                                    (total?.let { stringResource(R.string.projects_space_used, formatBytes(it)) } ?: stringResource(R.string.projects_counting))
+                                    (total?.let { stringResource(R.string.projects_space_used, isolated(formatBytes(it))) } ?: stringResource(R.string.projects_counting))
                             },
                         ) {
                             if (projects.isEmpty()) {
@@ -269,7 +269,7 @@ private fun ProjectRow(
     onDelete: () -> Unit,
 ) {
     val colors = DsTheme.colors
-    val size = project.sizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.projects_counting)
+    val size = project.sizeBytes?.let { isolated(formatBytes(it)) } ?: stringResource(R.string.projects_counting)
     val changed = relativeTime(project.lastChange)
     val more = stringResource(R.string.projects_more_for, project.name)
     Row(

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="projects_provider_summary">बिल्ट-इन harness के प्रोजेक्ट</string>
-    <string name="projects_title">प्रोजेक्ट</string>
+    <string name="projects_title">इस फ़ोन पर प्रोजेक्ट</string>
     <string name="projects_intro">इस फ़ोन पर आपके प्रोजेक्ट फ़ोल्डर। ये Files ऐप में %1$s के नीचे भी दिखते हैं।</string>
     <string name="projects_files_hint">आपके प्रोजेक्ट फ़ोल्डर Files ऐप में %1$s के नीचे भी दिखते हैं, ताकि आप फ़ाइलें अंदर और बाहर कॉपी कर सकें।</string>
     <string name="projects_section_list">प्रोजेक्ट</string>
@@ -110,4 +110,5 @@
     <string name="projects_fail_clone_timeout">क्लोन में बहुत देर लगी, इसलिए रोक दिया गया।</string>
     <string name="projects_fail_clone_other">Git इस रिपॉज़िटरी को क्लोन नहीं कर पाया।</string>
     <string name="projects_fail_git_said">Git का संदेश: %1$s</string>
+    <string name="projects_session_folder_gone">इस सेशन का फ़ोल्डर अब नहीं है। उसे मिटाया गया या उसका नाम बदला गया। काम जारी रखने के लिए किसी प्रोजेक्ट में नया सेशन शुरू करें।</string>
 </resources>

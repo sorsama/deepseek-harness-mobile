@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="projects_provider_summary">Проекты встроенного harness</string>
-    <string name="projects_title">Проекты</string>
+    <string name="projects_title">Проекты на этом телефоне</string>
     <string name="projects_intro">Папки ваших проектов на этом телефоне. Их также видно в приложении «Файлы», в разделе %1$s.</string>
     <string name="projects_files_hint">Папки ваших проектов также видны в приложении «Файлы», в разделе %1$s: туда можно копировать файлы и забирать их оттуда.</string>
     <string name="projects_section_list">Проекты</string>
@@ -112,4 +112,5 @@
     <string name="projects_fail_clone_timeout">Клонирование заняло слишком много времени и было остановлено.</string>
     <string name="projects_fail_clone_other">Git не смог клонировать этот репозиторий.</string>
     <string name="projects_fail_git_said">Сообщение Git: %1$s</string>
+    <string name="projects_session_folder_gone">Папки этого сеанса больше нет: её удалили или переименовали. Начните новый сеанс в проекте, чтобы продолжить.</string>
 </resources>

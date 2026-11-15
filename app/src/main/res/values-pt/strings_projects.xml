@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="projects_provider_summary">Projetos do harness integrado</string>
-    <string name="projects_title">Projetos</string>
+    <string name="projects_title">Projetos neste telefone</string>
     <string name="projects_intro">As pastas dos seus projetos neste telefone. Você também as vê no app Arquivos, em %1$s.</string>
     <string name="projects_files_hint">As pastas dos seus projetos também aparecem no app Arquivos, em %1$s, para copiar arquivos nos dois sentidos.</string>
     <string name="projects_section_list">Projetos</string>
@@ -111,4 +111,5 @@
     <string name="projects_fail_clone_timeout">A clonagem demorou demais e foi interrompida.</string>
     <string name="projects_fail_clone_other">O Git não conseguiu clonar este repositório.</string>
     <string name="projects_fail_git_said">O Git disse: %1$s</string>
+    <string name="projects_session_folder_gone">A pasta desta sessão não existe mais. Ela foi excluída ou renomeada. Inicie uma nova sessão em um projeto para continuar.</string>
 </resources>

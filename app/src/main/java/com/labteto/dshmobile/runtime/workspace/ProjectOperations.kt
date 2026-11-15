@@ -349,6 +349,7 @@ class ProjectOperations @Inject constructor(
         val ok = projectDirOrNull(project)?.renameTo(File(root, target)) == true
         WorkspacesProvider.notifyChanged(context)
         refresh()
+        if (ok) moveRegistrations(WorkspaceTree.GUEST_ROOT + "/" + project, WorkspaceTree.GUEST_ROOT + "/" + target)
         if (ok) ChangeResult.Done else ChangeResult.Failed
     }
 
@@ -358,7 +359,26 @@ class ProjectOperations @Inject constructor(
         val ok = runCatching { FsTree.delete(fs, dir) }.isSuccess
         WorkspacesProvider.notifyChanged(context)
         refresh()
+        if (ok) moveRegistrations(WorkspaceTree.GUEST_ROOT + "/" + project, null)
         if (ok) ChangeResult.Done else ChangeResult.Failed
+    }
+
+    /**
+     * The harness's own workspace list names folders by path. After a project is deleted its
+     * entries go (the folder is gone; their sessions stay, and say the folder is gone when used);
+     * after a rename they are registered again under the new path. Only on the connected built-in
+     * harness; quietly skipped otherwise.
+     */
+    private suspend fun moveRegistrations(oldPath: String, newPath: String?) {
+        if (!onBuiltIn()) return
+        runCatching {
+            val store = sessions.get()
+            val affected = store.workspaces.value.filter { it.path == oldPath || it.path.startsWith("$oldPath/") }
+            for (workspace in affected) {
+                store.deleteWorkspace(workspace.workspaceId)
+                if (newPath != null) store.createWorkspace(newPath + workspace.path.removePrefix(oldPath))
+            }
+        }
     }
 
     /** Total bytes of all projects as last counted. */
@@ -379,6 +399,7 @@ class ProjectOperations @Inject constructor(
             if (_job.value is ProjectJob.Running) return false
             val name = if (uniqueName) ProjectList.uniqueName(root.also { it.mkdirs() }, fs, wanted) ?: "project" else wanted
             _job.value = ProjectJob.Running(kind, name, null)
+            val started = android.os.SystemClock.elapsedRealtime()
             running = scope.launch(start = CoroutineStart.LAZY) {
                 val end = try {
                     block(name)
@@ -397,6 +418,15 @@ class ProjectOperations @Inject constructor(
                     ProjectJob.Failed(kind, name, JobFailure.Other(e.javaClass.simpleName))
                 }
                 _job.value = end
+                // Debug builds only, for the device timings: what ran, how it ended, how long it took. No names, no paths.
+                if (com.labteto.dshmobile.BuildConfig.DEBUG) {
+                    val detail = when (end) {
+                        is ProjectJob.Failed -> end.failure.toString().take(120)
+                        is ProjectJob.Done -> "files=${end.files} skippedLinks=${end.skippedLinks}"
+                        else -> ""
+                    }
+                    Log.i(TAG, "job ${kind.name} -> ${end.javaClass.simpleName} in ${android.os.SystemClock.elapsedRealtime() - started} ms $detail")
+                }
                 if (end is ProjectJob.Done || kind == JobKind.CLONE || kind == JobKind.IMPORT_FOLDER || kind == JobKind.IMPORT_ZIP) refresh()
             }
             running?.start()

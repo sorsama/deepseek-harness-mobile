@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="projects_provider_summary">内置 harness 的项目</string>
-    <string name="projects_title">项目</string>
+    <string name="projects_title">这部手机上的项目</string>
     <string name="projects_intro">你在这部手机上的项目文件夹。在“文件”应用的 %1$s 下也能看到它们。</string>
     <string name="projects_files_hint">你的项目文件夹也会出现在“文件”应用的 %1$s 下，方便把文件拷进拷出。</string>
     <string name="projects_section_list">项目</string>
@@ -109,4 +109,5 @@
     <string name="projects_fail_clone_timeout">克隆耗时太久，已停止。</string>
     <string name="projects_fail_clone_other">Git 无法克隆这个仓库。</string>
     <string name="projects_fail_git_said">Git 的信息：%1$s</string>
+    <string name="projects_session_folder_gone">这个会话的文件夹已经不在了，它被删除或重命名了。请在一个项目中开始新会话后继续。</string>
 </resources>

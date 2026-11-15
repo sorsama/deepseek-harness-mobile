@@ -193,6 +193,13 @@ class ProjectTransferTest {
     }
 
     @Test
+    fun `a session whose folder is gone is recognised from the harness error`() {
+        assertTrue(ProjectList.isMissingFolderError("working-directory: directory does not exist: \"/workspaces/Spoon-Knife\""))
+        assertFalse(ProjectList.isMissingFolderError("llm-deepseek: no API key for provider route"))
+        assertFalse(ProjectList.isMissingFolderError(null))
+    }
+
+    @Test
     fun `free space is checked with a margin`() {
         requireSpace(available = SPACE_MARGIN_BYTES + 100, needed = 100)
         try {

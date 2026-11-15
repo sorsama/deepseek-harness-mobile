@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="projects_provider_summary">بلٹ اِن harness کے پروجیکٹ</string>
-    <string name="projects_title">پروجیکٹ</string>
+    <string name="projects_title">اس فون پر پروجیکٹ</string>
     <string name="projects_intro">اس فون پر آپ کے پروجیکٹ فولڈر۔ یہ Files ایپ میں %1$s کے نیچے بھی نظر آتے ہیں۔</string>
     <string name="projects_files_hint">آپ کے پروجیکٹ فولڈر Files ایپ میں %1$s کے نیچے بھی نظر آتے ہیں، تاکہ آپ فائلیں اندر اور باہر کاپی کر سکیں۔</string>
     <string name="projects_section_list">پروجیکٹ</string>
@@ -110,4 +110,5 @@
     <string name="projects_fail_clone_timeout">کلون میں بہت دیر لگی، اس لیے روک دیا گیا۔</string>
     <string name="projects_fail_clone_other">Git اس ریپوزیٹری کو کلون نہیں کر سکا۔</string>
     <string name="projects_fail_git_said">Git کا پیغام: %1$s</string>
+    <string name="projects_session_folder_gone">اس سیشن کا فولڈر اب موجود نہیں۔ اسے حذف کیا گیا یا اس کا نام بدلا گیا۔ کام جاری رکھنے کے لیے کسی پروجیکٹ میں نیا سیشن شروع کریں۔</string>
 </resources>

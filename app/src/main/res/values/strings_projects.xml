@@ -2,7 +2,7 @@
 <resources>
     <!-- Projects of the built-in harness: the Files app root, the Projects page, new, clone, import, export. -->
     <string name="projects_provider_summary">Projects of the built-in harness</string>
-    <string name="projects_title">Projects</string>
+    <string name="projects_title">Projects on this phone</string>
     <string name="projects_intro">Your project folders on this phone. You can also see them in the Files app under %1$s.</string>
     <string name="projects_files_hint">Your project folders also show up in the Files app under %1$s, for copying files in and out.</string>
     <string name="projects_section_list">Projects</string>
@@ -111,4 +111,5 @@
     <string name="projects_fail_clone_timeout">The clone took too long and was stopped.</string>
     <string name="projects_fail_clone_other">Git could not clone this repository.</string>
     <string name="projects_fail_git_said">Git said: %1$s</string>
+    <string name="projects_session_folder_gone">This session\'s folder is gone. It was deleted or renamed. Start a new session in a project to keep working.</string>
 </resources>

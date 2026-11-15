@@ -29,6 +29,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.stringResource
@@ -59,7 +61,7 @@ import com.labteto.dshmobile.ui.components.ToggleRow
 import com.labteto.dshmobile.ui.components.inkFieldFrame
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.screens.main.dialogTextFieldColors
-import com.labteto.dshmobile.runtime.formatBytes
+import com.labteto.dshmobile.ui.screens.main.preview.formatBytes
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -126,6 +128,8 @@ private fun NewEmptyProjectDialog(operations: ProjectOperations, open: Boolean, 
     var problem by remember { mutableStateOf<ProjectList.NameProblem?>(null) }
     var failed by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
     DsDialog(title = stringResource(R.string.projects_new_empty), onDismiss = onDismiss) {
         TextField(
             value = name,
@@ -134,7 +138,7 @@ private fun NewEmptyProjectDialog(operations: ProjectOperations, open: Boolean, 
                 problem = null
                 failed = false
             },
-            modifier = Modifier.fillMaxWidth().inkFieldFrame(),
+            modifier = Modifier.fillMaxWidth().inkFieldFrame().focusRequester(focus),
             singleLine = true,
             label = { Text(stringResource(R.string.projects_name_label), style = DsType.std14) },
             isError = problem != null,
@@ -186,6 +190,8 @@ private fun CloneDialog(operations: ProjectOperations, open: Boolean, onDismiss:
     var tokenShown by remember { mutableStateOf(false) }
     var tried by remember { mutableStateOf(false) }
     var refused by remember { mutableStateOf(false) }
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
     val check = GitClone.checkUrl(url, withToken = private && token.isNotEmpty())
     val branchOk = GitClone.branchOk(branch)
     LaunchedEffect(check) {
@@ -199,7 +205,7 @@ private fun CloneDialog(operations: ProjectOperations, open: Boolean, onDismiss:
                 url = it
                 refused = false
             },
-            modifier = Modifier.fillMaxWidth().inkFieldFrame(),
+            modifier = Modifier.fillMaxWidth().inkFieldFrame().focusRequester(focus),
             singleLine = true,
             label = { Text(stringResource(R.string.projects_clone_url), style = DsType.std14) },
             placeholder = { Text("https://github.com/owner/repo", style = DsType.mono12) },
@@ -419,7 +425,7 @@ internal fun ProjectJobBody(job: ProjectJob) {
             is ProjectJob.Running -> {
                 RuntimeProgressBar(job.fraction, Modifier.fillMaxWidth())
                 val detail = job.clonePhase?.let { clonePhaseText(it) }
-                    ?: job.progress?.takeIf { it.bytesTotal > 0 }?.let { stringResource(R.string.projects_job_bytes, formatBytes(it.bytes), formatBytes(it.bytesTotal)) }
+                    ?: job.progress?.takeIf { it.bytesTotal > 0 }?.let { stringResource(R.string.projects_job_bytes, isolated(formatBytes(it.bytes)), isolated(formatBytes(it.bytesTotal))) }
                     ?: stringResource(R.string.projects_job_preparing)
                 Text(detail, style = DsType.small13, color = colors.labelSecondary)
             }
@@ -562,3 +568,10 @@ fun openInFiles(context: Context, documentId: String = WorkspaceTree.ROOT_ID): B
     }
     return false
 }
+
+/**
+ * [text] as a left-to-right island (U+2066 ... U+2069): a size such as `29.9 KB` or the app's
+ * Latin name inside an Arabic or Urdu sentence keeps its own order, and a full stop after it stays
+ * at the end of the sentence.
+ */
+internal fun isolated(text: String): String = "⁦" + text + "⁩"

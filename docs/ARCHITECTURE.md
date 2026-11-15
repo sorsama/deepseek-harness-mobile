@@ -200,6 +200,34 @@ contract (manifest schema, unpacking rules, proot command line).
   (`AppSettings.autoStartBuiltInHarness`).
 - Debug builds can drive the controller from adb through `RuntimeDebugActivity` (`app/src/debug`).
 
+### Projects (the `workspaces` folder)
+
+`runtime/workspace/` is everything about the person's project files on the built-in harness.
+
+- **`WorkspaceTree`** (plain Kotlin over `FsOps`) is the folder as documents: id mapping,
+  listing, MIME types (`MimeTypes`), create, rename, copy, move, delete, search and recent
+  files, with the symlink and escape rules in its class comment. **`WorkspacesProvider`** is the
+  `DocumentsProvider` over it (cursors, file descriptors, `FileObserver` change notifications for
+  folders being looked at). It is disabled in the manifest and enabled at start on devices that
+  can run the runtime; its root is listed once a runtime is installed.
+- **`GuestCommandRunner`** runs one program inside the runtime for the app itself, as an
+  argument list (`ProotCommand.buildGuest`: the harness's binds, a clean environment, umask 022),
+  with streamed and redacted output, a timeout and cancellation that kills the process tree.
+  `HarnessRuntimeController.runGuestCommand` is the only door; `RuntimeEngine` refuses an
+  install, update, go-back or uninstall while one runs, and the supervisor's stale-proot sweep
+  leaves these proots alone. Today it runs `git clone` (`GitClone` builds the arguments and reads
+  git's progress). The clone uses this rather than the harness's API because it must work with the
+  harness stopped, needs no session, and takes an argument list with no shell anywhere.
+- **`ProjectOperations`** (app-scoped) is the one long project operation at a time (clone,
+  import a folder or a zip, share as zip, save a copy) with progress, cancel and clean-up, plus
+  the project list (`ProjectList`), new empty projects, rename and delete. Imports and clones are
+  built in a `.dsh-incoming-*` staging folder and renamed into place. `ZipImporter` and
+  `ProjectTransfer` are plain Kotlin and unit-tested.
+- **UI** (`ui/screens/runtime/ProjectsPage.kt`, `ProjectDialogs.kt`): the Projects page (from the
+  control page and, on the built-in harness, from the chat list's menu), the four ways to start a
+  project in the new-session dialog (which then opens a session in it), and Files, zip and copy
+  for a project's workspace in the workspace list. Nothing of this shows on any other harness.
+
 ## Key invariants
 
 - The wire layer never crashes on unknown data: unknown keys are ignored,

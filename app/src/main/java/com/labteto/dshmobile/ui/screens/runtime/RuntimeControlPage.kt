@@ -274,9 +274,9 @@ internal fun RuntimeControlPage(
                                     stringResource(R.string.projects_section_list),
                                     androidx.compose.ui.res.pluralStringResource(R.plurals.projects_count, projectList.size, projectList.size),
                                 )
-                                ValueRow(stringResource(R.string.projects_space_label), total?.let { formatBytes(it) } ?: "…")
+                                ValueRow(stringResource(R.string.projects_space_label), total?.let { isolated(com.labteto.dshmobile.ui.screens.main.preview.formatBytes(it)) } ?: "…")
                                 Text(
-                                    stringResource(R.string.projects_files_hint, stringResource(R.string.app_name)),
+                                    stringResource(R.string.projects_files_hint, isolated(stringResource(R.string.app_name))),
                                     style = DsType.small13,
                                     color = colors.labelSecondary,
                                     modifier = Modifier.padding(vertical = DsSpacing.xsmall),

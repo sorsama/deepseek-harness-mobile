@@ -667,9 +667,12 @@ fun ChatScreen(
             // and offers Restart. The stream error and the plain "Reconnecting" strip would only
             // say half of that, in transport words, so they stand aside while it shows.
             com.labteto.dshmobile.ui.screens.runtime.BuiltInChatNotice {
+                val folderGone = stringResource(R.string.projects_session_folder_gone)
                 AnimatedPresence(shownError) {
                     ConnectionBanner(
-                        message = it,
+                        // The session's folder was deleted or renamed (a project removed on the phone):
+                        // said plainly rather than as the harness's working-directory error.
+                        message = if (com.labteto.dshmobile.runtime.workspace.ProjectList.isMissingFolderError(it)) folderGone else it,
                         actionLabel = stringResource(R.string.common_retry),
                         onAction = { store.retryConnection() },
                     )

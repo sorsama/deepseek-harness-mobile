@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="projects_provider_summary">โปรเจกต์ของ harness ในตัว</string>
-    <string name="projects_title">โปรเจกต์</string>
+    <string name="projects_title">โปรเจกต์ในโทรศัพท์เครื่องนี้</string>
     <string name="projects_intro">โฟลเดอร์โปรเจกต์ของคุณบนโทรศัพท์เครื่องนี้ คุณยังเห็นได้ในแอป Files ใต้ %1$s</string>
     <string name="projects_files_hint">โฟลเดอร์โปรเจกต์ของคุณยังแสดงในแอป Files ใต้ %1$s ด้วย เพื่อคัดลอกไฟล์เข้าและออกได้</string>
     <string name="projects_section_list">โปรเจกต์</string>
@@ -109,4 +109,5 @@
     <string name="projects_fail_clone_timeout">การโคลนใช้เวลานานเกินไปจึงถูกหยุด</string>
     <string name="projects_fail_clone_other">Git โคลนรีโพนี้ไม่ได้</string>
     <string name="projects_fail_git_said">ข้อความจาก Git: %1$s</string>
+    <string name="projects_session_folder_gone">โฟลเดอร์ของเซสชันนี้ไม่มีแล้ว อาจถูกลบหรือเปลี่ยนชื่อ เริ่มเซสชันใหม่ในโปรเจกต์เพื่อทำงานต่อ</string>
 </resources>
