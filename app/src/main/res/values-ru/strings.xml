@@ -304,7 +304,7 @@
     <string name="update_open">Открыть релиз</string>
     <string name="update_later">Позже</string>
     <string name="settings_update_check">Проверять обновления</string>
-    <string name="settings_update_check_hint">При запуске приложения и при возвращении в него через несколько часов проверяет на GitHub последний релиз.</string>
+    <string name="settings_update_check_hint">Проверяет на GitHub, есть ли новая версия приложения, а также harness, если он настроен на этом телефоне. При запуске приложения и при возвращении в него через несколько часов.</string>
     <string name="connect_mode_lan">Локальная сеть</string>
     <string name="connect_mode_relay">Реле</string>
     <string name="pair_title">Сопряжение с реле</string>
@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">Открыть настройки</string>
     <string name="shortcuts_close">Закрыть панель или диалог</string>
     <string name="chat_drop_hint">Перетащите файлы сюда, чтобы прикрепить</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">Установка harness на этот телефон</string>
+    <string name="runtime_notif_downloading">Загрузка, готово %1$d%%</string>
+    <string name="runtime_notif_unpacking">Распаковка файлов</string>
+    <string name="runtime_notif_starting">Запуск harness на этом телефоне</string>
+    <string name="runtime_notif_running">Harness работает на этом телефоне</string>
+    <string name="runtime_notif_running_text">Ожидает подключений на порту %1$d</string>
 </resources>

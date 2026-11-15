@@ -988,7 +988,10 @@ private fun ModelPermissionCard(
     }
     val permissionHint = permissions?.let { select ->
         val effective = pendingPermission ?: select.currentValue
-        select.selectable.firstOrNull { it.value == effective }?.description
+        val option = select.selectable.firstOrNull { it.value == effective }
+        // The app's own words for the presets it owns, as in the permission sheet.
+        permissionPresetDescriptionRes(effective, option?.name)?.let { stringResource(it) }
+            ?: option?.description
             ?: panelPermissionDescription(effective)
     }
     val presetLabel = session.agentPreset?.let { agentPresetLabel(it, presets) }

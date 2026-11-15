@@ -27,7 +27,9 @@
 
 DeepSeek Harness 是一个运行在你电脑上的 AI 编程代理，自带网页界面。DSH Mobile 连接到这个 harness，把同样的操作搬进原生 Android 应用。你可以在电脑前开始一个任务，然后在手机上跟进进度、回答它的提问、批准它要执行的命令。
 
-这是一个非官方的社区应用。它需要连上一个正在运行的 harness：可以在你的电脑上，也可以通过 Termux 跑在手机本身。
+你不需要电脑。在大多数 Android 手机上，应用可以自己运行 harness：点一次**设置**，手机就有了自己的 harness。如果你已经在电脑上运行 harness，应用也可以连接它，通过家里的 Wi-Fi，或者通过中继在任何地方连接。
+
+这是一个非官方的社区应用。
 
 [项目主页](https://dshm.zyphite.com)用一页做了概览，完整的用户指南在 [wiki](https://github.com/sorsama/deepseek-harness-mobile/wiki)。
 
@@ -62,8 +64,30 @@ DeepSeek Harness 是一个运行在你电脑上的 AI 编程代理，自带网�
 - 管理 harness 本身：模型、代理预设、插件、定时任务和已归档的会话。
 - 把应用调成你喜欢的样子。Ink 设计有浅色和深色两种，可选强调色预设或自定义颜色，OLED 屏幕可用纯黑，文字大小也能调。
 - 应用界面支持英语、中文、印地语、西班牙语、法语、阿拉伯语、孟加拉语、葡萄牙语、俄语、乌尔都语和泰语，也支持从右到左书写的语言。
+- 在应用里直接更新应用：它会下载新版本、做校验，再交给 Android 的安装程序。
 
 [更新日志](CHANGELOG.md)列出了每个版本的改动。
+
+## 不需要电脑：手机上的 harness（测试版）
+
+| 连接 | 设置 | harness 页面 | 项目 | 审批 |
+|:--:|:--:|:--:|:--:|:--:|
+| <img src="docs/images/on-device/connect.png" width="160" alt="本机模式下的连接页面，内置 harness 卡片和设置按钮"> | <img src="docs/images/on-device/setup.png" width="160" alt="正在解包的设置页面，以及手机上命令如何运行的说明"> | <img src="docs/images/on-device/control.png" width="160" alt="harness 页面，包含命令选择、项目和 harness 更新"> | <img src="docs/images/on-device/projects.png" width="160" alt="这台手机上的项目，有一个克隆下来的仓库"> | <img src="docs/images/on-device/approval.png" width="160" alt="一条等待允许或拒绝的命令，完整显示"> |
+| 新安装的应用会打开这里。 | 下载、校验、解包、启动、登录。 | 启动、停止、命令、更新、存储、日志。 | 克隆、导入、分享，或在文件应用中打开。 | 选了先问我，每条命令都会等你。 |
+
+**测试版。** 内置 harness 是 0.22.0 的新功能，只在模拟器和一台三星手机上测试过，所以可能还不能在每台手机上正常运行。电脑上的 harness（局域网、中继）或 Termux 里的 harness 仍然和以前一样可用。
+
+应用可以在自己内部运行 DeepSeek Harness：一个带 Node.js 和 harness 的小型 Linux 系统，只下载一次，按签名校验，用 `proot` 运行。它和你在电脑上运行的是同一个 harness，会话和工具都一样。
+
+- **代价。** 第一次大约下载 155 MB，在手机上占用约 1.1 GB（设置过程中需要约 1.4 GB 可用空间）。运行时 harness 大约占用 300 到 400 MB 内存。需要 Android 8.0 或更高版本的 64 位手机，以及一个模型服务商的 API 密钥，在应用里添加（设置，模型）。
+- **能做什么。** 对话、代理和子代理、文件和 shell 命令（`git`、`node`、`npm`、`curl`，更多工具可用 `apt-get` 安装）、克隆 Git 仓库，以及应用连接电脑上的 harness 时能做的一切。
+- **不能做什么。** 在沙箱里运行命令（Android 不允许应用内有沙箱），访问你的照片、下载或其他应用，或在手机上运行模型。它通过互联网连接你的模型服务商。
+- **命令。** 你来决定代理要运行命令时怎么办：**直接运行**，或**先问我**，后者会完整显示每条命令，等你允许或拒绝。无论哪种，harness 都留在应用内部；命令可以上网，也能修改 harness 自己的文件和项目。
+- **你的文件。** 项目保存在应用里，并在系统文件应用中以 **DSH Mobile** 显示，你可以打开它们、复制文件进出，或把项目打包成 zip 分享。
+- **更新。** harness 的新版本不需要更新应用就能获得：应用只提醒你一次，你点更新时安装（如果打开了自动安装，也可以在 Wi-Fi 下自己装）。新版本启动不了时，会自动换回之前的版本。应用本身在**设置，关于**里更新。这两者是分开的。
+- **保持运行。** Android 会停止后台工作。harness 页面有一个检查清单（通知、电池、后台进程限制），有些手机厂商还需要单独设置。
+
+完整指南（含按应用提示整理的疑难解答）见 [`harness/ON-DEVICE.md`](harness/ON-DEVICE.md)（英文）。
 
 ## 快速开始
 
@@ -73,7 +97,7 @@ DeepSeek Harness 是一个运行在你电脑上的 AI 编程代理，自带网�
 
 ### 2. 让 harness 可以被访问
 
-harness 默认只在它自己的电脑上监听。根据手机会在哪里使用，选择对应的方式。
+使用内置 harness（见上文）时这里什么都不用设置：选择**本机**，点**设置**即可。如果要用电脑上的 harness，它默认只在自己的电脑上监听。根据手机会在哪里使用，选择对应的方式。
 
 #### 和电脑连着同一个 Wi-Fi
 
@@ -95,7 +119,9 @@ dsh web --host 192.168.1.20
 
 #### 在手机上运行
 
-harness 可以在 [Termux](https://f-droid.org/packages/com.termux/) 里运行。选择**本机**，应用就能替你启动和停止 harness，并自动登录。在 Termux 里配置 Node 目前还不是每台设备都能成功，请先阅读 [`harness/TERMUX.md`](harness/TERMUX.md)。
+选择**本机**，点**设置**：应用会自己下载并运行 harness，然后登录。见 [`harness/ON-DEVICE.md`](harness/ON-DEVICE.md)。
+
+如果你想用自己的 Node 和 harness 版本，harness 也可以在 [Termux](https://f-droid.org/packages/com.termux/) 里运行（在同一页面展开**改用 Termux**），应用可以替你启动和停止它并自动登录。在 Termux 里配置 Node 目前还不是每台设备都能成功，请先阅读 [`harness/TERMUX.md`](harness/TERMUX.md)。
 
 #### 你自己的 HTTPS 反向代理
 
@@ -112,6 +138,7 @@ harness 可以在 [Termux](https://f-droid.org/packages/com.termux/) 里运行�
 - 局域网模式会检查登录令牌，但不做任何加密。只在你信任的网络上使用。
 - 中继模式加上了加密和固定证书，在你的网络之外也能用。
 - 不要把 `dsh web` 链接给别人。拿到链接的人在 harness 重启之前都能登录。
+- 内置 harness 留在应用内部，看不到你的照片、联系人或其他应用，但它的命令没有沙箱：命令可以上网，也能修改 harness 自己的文件、设置和保存的 API 密钥。选择**先问我**，就能在每条命令运行前先看一遍。
 
 ## 兼容性
 
@@ -140,7 +167,7 @@ DSH_HARNESS_SRC=/path/to/deepseek-harness ./gradlew :conformance:test
 | `conformance/` | 启动真实 harness 并检查应用发出的每一个调用的测试 |
 | `mock-harness/` | 供测试使用的小型模拟 harness 服务端 |
 | `tools/capture/` | 把真实 harness 的流量录制成测试夹具 |
-| `harness/` | 局域网和 Termux 的设置指南 |
+| `harness/` | 内置 harness、局域网和 Termux 的设置指南 |
 | `docs/` | [架构](docs/ARCHITECTURE.md)、[协议说明](docs/PROTOCOL.md)、[兼容性](docs/COMPATIBILITY.md)、[安全](docs/SECURITY.md) |
 
 中继插件在单独的仓库里：

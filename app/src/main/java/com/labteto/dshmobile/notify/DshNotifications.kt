@@ -37,6 +37,41 @@ class DshNotifications @Inject constructor(
         manager.createNotificationChannel(
             NotificationChannel(CHANNEL_CONNECTION, context.getString(R.string.notif_channel_connection), NotificationManager.IMPORTANCE_LOW),
         )
+        // Two quiet channels, kept apart so a person can mute one without the other: a new app
+        // version ("App updates") and a new release of the built-in harness ("Harness updates").
+        manager.createNotificationChannel(
+            NotificationChannel(CHANNEL_UPDATES, context.getString(R.string.notif_channel_updates), NotificationManager.IMPORTANCE_LOW),
+        )
+        manager.createNotificationChannel(
+            NotificationChannel(CHANNEL_RUNTIME_UPDATES, context.getString(R.string.runtime_notif_channel_updates), NotificationManager.IMPORTANCE_LOW),
+        )
+    }
+
+    /**
+     * A notification about a harness update (one available, one installed, one that did not
+     * start). Tapping it opens the harness's control page. One [id] per kind, so a newer one
+     * replaces the last instead of piling up.
+     */
+    @android.annotation.SuppressLint("MissingPermission")
+    fun postRuntimeUpdate(id: Int, title: String, text: String) {
+        ensureChannels()
+        if (!canPost()) return
+        val open = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(EXTRA_OPEN, OPEN_RUNTIME_CONTROLS)
+        }
+        val pending = PendingIntent.getActivity(context, id, open, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val notification = NotificationCompat.Builder(context, CHANNEL_RUNTIME_UPDATES)
+            .setSmallIcon(R.drawable.ic_notification_whale)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(pending)
+            .setAutoCancel(true)
+            .setOnlyAlertOnce(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+        NotificationManagerCompat.from(context).notify(id, notification)
     }
 
     fun canPost(): Boolean =
@@ -75,6 +110,8 @@ class DshNotifications @Inject constructor(
             .setSmallIcon(R.drawable.ic_notification_whale)
             .setContentTitle(title)
             .setContentText(text)
+            // A command waiting for approval runs to several lines; expanded, it shows them.
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setContentIntent(pending)
             .setAutoCancel(true)
             .setPriority(if (channel == CHANNEL_ACTION) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
@@ -84,10 +121,45 @@ class DshNotifications @Inject constructor(
         NotificationManagerCompat.from(context).notify(id, builder.build())
     }
 
+    /**
+     * "Version [version] is out": opens the app, where the update dialog offers the download.
+     * Quiet (a low-importance channel): it is news, not something waiting on the person.
+     */
+    @android.annotation.SuppressLint("MissingPermission")
+    fun postUpdateAvailable(version: String) {
+        if (!canPost()) return
+        ensureChannels()
+        val open = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pending = PendingIntent.getActivity(
+            context,
+            UPDATE_NOTIFICATION_ID,
+            open,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = NotificationCompat.Builder(context, CHANNEL_UPDATES)
+            .setSmallIcon(R.drawable.ic_notification_whale)
+            .setContentTitle(context.getString(R.string.notif_update_title, version))
+            .setContentText(context.getString(R.string.notif_update_text))
+            .setContentIntent(pending)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+        NotificationManagerCompat.from(context).notify(UPDATE_NOTIFICATION_ID, notification)
+    }
+
     companion object {
+        const val CHANNEL_UPDATES = "updates"
+        private const val UPDATE_NOTIFICATION_ID = 0x0D5_0001
         const val CHANNEL_COMPLETIONS = "completions"
         const val CHANNEL_ACTION = "needs_action"
         const val CHANNEL_CONNECTION = "connection"
+        const val CHANNEL_RUNTIME_UPDATES = "harness_updates"
         const val EXTRA_SESSION_ID = "dsh_session_id"
+
+        /** Where a notification wants the app to open; [OPEN_RUNTIME_CONTROLS] is the only value so far. */
+        const val EXTRA_OPEN = "dsh_open"
+        const val OPEN_RUNTIME_CONTROLS = "runtime_controls"
     }
 }

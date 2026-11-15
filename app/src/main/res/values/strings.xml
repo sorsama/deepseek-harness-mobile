@@ -305,7 +305,7 @@
     <string name="update_open">View release</string>
     <string name="update_later">Later</string>
     <string name="settings_update_check">Check for updates</string>
-    <string name="settings_update_check_hint">Asks GitHub for the latest release when the app starts, and again when you come back to it after a few hours.</string>
+    <string name="settings_update_check_hint">Asks GitHub for a newer app, and for a newer harness if one is set up on this phone. When the app starts, and again when you come back to it after a few hours.</string>
     <!-- Relay: choosing how to connect, pairing, and the failures that need a different fix. -->
     <string name="connect_mode_lan">Local network</string>
     <string name="connect_mode_relay">Relay</string>
@@ -588,4 +588,11 @@
     <string name="shortcuts_settings">Open settings</string>
     <string name="shortcuts_close">Close a sheet or dialog</string>
     <string name="chat_drop_hint">Drop files here to attach them</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">Setting up the harness on this phone</string>
+    <string name="runtime_notif_downloading">Downloading, %1$d%% done</string>
+    <string name="runtime_notif_unpacking">Unpacking files</string>
+    <string name="runtime_notif_starting">Starting the harness on this phone</string>
+    <string name="runtime_notif_running">Harness running on this phone</string>
+    <string name="runtime_notif_running_text">Listening on port %1$d</string>
 </resources>

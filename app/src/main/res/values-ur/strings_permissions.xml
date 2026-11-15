@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_section_commands">کمانڈز</string>
+    <string name="cmdperm_title">جب ایجنٹ کوئی کمانڈ چلانا چاہے</string>
+    <string name="cmdperm_run">چلا دیں</string>
+    <string name="cmdperm_run_desc">کمانڈز فوراً چلتی ہیں، آپ سے پوچھا نہیں جاتا۔</string>
+    <string name="cmdperm_ask">پہلے مجھ سے پوچھیں</string>
+    <string name="cmdperm_ask_desc">آپ ہر کمانڈ دیکھتے ہیں اور اسے اجازت دینے یا رد کرنے کا فیصلہ کرتے ہیں۔</string>
+    <string name="cmdperm_explain_title">فون پر کمانڈز مختلف طرح کام کرتی ہیں</string>
+    <string name="cmdperm_explain_body">کمپیوٹر پر harness کمانڈز کو sandbox میں چلا سکتا ہے۔ Android اس کی اجازت نہیں دیتا، اس لیے یہاں کمانڈ harness کی اپنی اسٹوریج میں کچھ بھی بدل سکتی ہے۔</string>
+    <string name="cmdperm_explain_safe_label">اب بھی محفوظ</string>
+    <string name="cmdperm_explain_safe">harness اسی ایپ کے اندر رہتا ہے۔ یہ آپ کی تصاویر، رابطے، پیغامات یا دوسری ایپس نہیں دیکھ سکتا۔</string>
+    <string name="cmdperm_explain_risk_label">محفوظ نہیں</string>
+    <string name="cmdperm_explain_risk">یہ انٹرنیٹ استعمال کر سکتا ہے، اور کوئی کمانڈ آپ کا ورک اسپیس یا harness کی سیٹنگز اور محفوظ API کیز مٹا سکتی ہے۔</string>
+    <string name="cmdperm_explain_later">آپ اسے بعد میں harness کے صفحے پر بدل سکتے ہیں، اور کسی بھی چیٹ کو اس کے اجازت والے بٹن سے بدل سکتے ہیں۔</string>
+    <string name="cmdperm_got_it">ٹھیک ہے</string>
+    <string name="cmdperm_restart_title">harness دوبارہ شروع کریں؟</string>
+    <string name="cmdperm_restart_body">آپ کا انتخاب ان چیٹس پر لاگو ہوگا جو آپ دوبارہ شروع کرنے کے بعد کھولیں گے۔ موجودہ چیٹس اپنی سیٹنگ رکھتی ہیں، اور آپ کسی کو بھی اس کے اجازت والے بٹن سے بدل سکتے ہیں۔</string>
+    <string name="cmdperm_restart_now">ابھی دوبارہ شروع کریں</string>
+    <string name="cmdperm_later">بعد میں</string>
+    <string name="cmdperm_pending">harness اب بھی “%1$s” کے ساتھ چل رہا ہے۔ اسے دوبارہ شروع کریں تاکہ نئی چیٹس آپ کا انتخاب استعمال کریں۔</string>
+    <string name="cmdperm_unsupported">harness کا یہ ورژن کمانڈ سے پہلے پوچھ نہیں سکتا۔ اپ ڈیٹ کریں تاکہ آپ چن سکیں کہ کمانڈز فوراً چلیں یا پہلے آپ سے پوچھیں۔</string>
+
+    <string name="permission_preset_ask_commands">کمانڈ سے پہلے پوچھیں</string>
+    <string name="permission_preset_ask_commands_desc">ہر کمانڈ سے پہلے اور ورک اسپیس سے باہر ہر تبدیلی سے پہلے آپ سے پوچھتا ہے۔</string>
+    <string name="permission_preset_full_access_desc">بغیر پوچھے کمانڈز چلاتا ہے اور فائلیں بدلتا ہے۔</string>
+
+    <string name="approval_command_title">یہ کمانڈ چلائیں؟</string>
+    <string name="approval_file_title">ورک اسپیس سے باہر کی فائل بدلیں؟</string>
+    <string name="approval_tool_title">%1$s کی اجازت دیں؟</string>
+    <string name="approval_shortened">harness نے صرف پہلے 2,000 حروف بھیجے۔</string>
+    <string name="approval_show_all">سب دکھائیں</string>
+    <string name="approval_show_less">کم دکھائیں</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">%1$d اور درخواست انتظار میں ہے</item>
+        <item quantity="other">%1$d اور درخواستیں انتظار میں ہیں</item>
+    </plurals>
+
+    <string name="sandbox_notice_builtin">یہ چیٹ ایسی سیٹنگ پر ہے جسے sandbox چاہیے، اور فون یہ نہیں دے سکتا، اس لیے وہ کمانڈ نہیں چلی۔ چیٹ کی سیٹنگ بدلیں، پھر دوبارہ کہیں۔</string>
+    <string name="sandbox_notice_switch">“%1$s” پر بدلیں</string>
+    <string name="sandbox_notice_other">وہ کمانڈ نہیں چلی کیونکہ اس چیٹ کی سیٹنگ کو sandbox چاہیے اور harness جہاں چلتا ہے وہاں کوئی نہیں ہے۔ آپ چیٹ کے اجازت والے بٹن سے دوسری سیٹنگ چن سکتے ہیں۔</string>
+    <string name="subagent_command_denied">مددگار ایجنٹ آپ سے پوچھ نہیں سکتا، اس لیے یہ کمانڈ نہیں چلی۔</string>
+    <string name="command_denied_rejected">آپ نے منع کیا، اس لیے یہ نہیں چلا۔</string>
+    <string name="command_denied_cancelled">آپ کے جواب سے پہلے سوال واپس لے لیا گیا، اس لیے یہ نہیں چلا۔</string>
+    <string name="command_denied_nobody">سوال کا جواب دینے کے لیے کوئی نہیں تھا، اس لیے یہ نہیں چلا۔ ایجنٹ کے کام کے دوران ایپ کو جڑا رکھیں۔</string>
+    <string name="command_denied_too_large">یہ پورا دکھانے کے لیے بہت لمبا تھا (حد 256 KB ہے)، اس لیے آپ سے پوچھا نہیں گیا اور یہ نہیں چلا۔ ایجنٹ کو اسے چھوٹے حصوں میں بانٹنے کو کہا گیا۔</string>
+    <string name="command_denied_other">اس فون کی کمانڈ جانچ نے اسے روک دیا، اس لیے یہ نہیں چلا۔</string>
+</resources>

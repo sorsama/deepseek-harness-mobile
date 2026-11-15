@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="projects_provider_summary">बिल्ट-इन harness के प्रोजेक्ट</string>
+    <string name="projects_title">इस फ़ोन पर प्रोजेक्ट</string>
+    <string name="projects_intro">इस फ़ोन पर आपके प्रोजेक्ट फ़ोल्डर। ये Files ऐप में %1$s के नीचे भी दिखते हैं।</string>
+    <string name="projects_files_hint">आपके प्रोजेक्ट फ़ोल्डर Files ऐप में %1$s के नीचे भी दिखते हैं, ताकि आप फ़ाइलें अंदर और बाहर कॉपी कर सकें।</string>
+    <string name="projects_section_list">प्रोजेक्ट</string>
+    <plurals name="projects_count">
+        <item quantity="one">%1$d प्रोजेक्ट</item>
+        <item quantity="other">%1$d प्रोजेक्ट</item>
+    </plurals>
+    <string name="projects_space_label">इस्तेमाल हुई जगह</string>
+    <string name="projects_space_used">%1$s इस्तेमाल हुए</string>
+    <string name="projects_counting">गिनती हो रही है…</string>
+    <string name="projects_row_detail">%1$s · %2$s</string>
+    <string name="projects_empty">अभी कोई प्रोजेक्ट नहीं है। ऊपर से नया शुरू करें, या अपने फ़ोन से कोई लाएँ।</string>
+    <string name="projects_more_for">%1$s के लिए और विकल्प</string>
+    <string name="projects_manage">प्रोजेक्ट मैनेज करें</string>
+    <string name="projects_open_files">Files में खोलें</string>
+    <string name="projects_no_files_app">इस फ़ोन पर कोई Files ऐप नहीं मिला।</string>
+
+    <string name="projects_start_header">प्रोजेक्ट शुरू करें</string>
+    <string name="projects_new_empty">नया खाली प्रोजेक्ट</string>
+    <string name="projects_new_empty_hint">नई शुरुआत के लिए एक खाली फ़ोल्डर</string>
+    <string name="projects_clone">Git रिपॉज़िटरी क्लोन करें</string>
+    <string name="projects_clone_hint">GitHub या किसी और होस्ट से रिपॉज़िटरी कॉपी करें</string>
+    <string name="projects_import_folder">फ़ोल्डर इंपोर्ट करें</string>
+    <string name="projects_import_folder_hint">इस फ़ोन का एक फ़ोल्डर ऐप में कॉपी करता है</string>
+    <string name="projects_import_zip">.zip इंपोर्ट करें</string>
+    <string name="projects_import_zip_hint">zip फ़ाइल को नए प्रोजेक्ट में खोलता है</string>
+
+    <string name="projects_name_label">प्रोजेक्ट का नाम</string>
+    <string name="projects_name_taken">इस नाम का प्रोजेक्ट पहले से है।</string>
+    <string name="projects_name_invalid">ऐसा नाम रखें जिसमें स्लैश न हो।</string>
+    <string name="projects_create">बनाएँ</string>
+    <string name="projects_change_failed">यह नहीं हो पाया। फिर से कोशिश करें।</string>
+    <string name="projects_in_use">प्रोजेक्ट का एक और काम अभी चल रहा है। उसके खत्म होने तक रुकें।</string>
+
+    <string name="projects_clone_url">रिपॉज़िटरी का पता</string>
+    <string name="projects_clone_branch">ब्रांच या टैग (वैकल्पिक)</string>
+    <string name="projects_clone_private">प्राइवेट रिपॉज़िटरी</string>
+    <string name="projects_clone_private_hint">इसे पढ़ सकने वाला ऐक्सेस टोकन चाहिए</string>
+    <string name="projects_clone_token">ऐक्सेस टोकन</string>
+    <string name="projects_clone_token_hint">सिर्फ़ इस क्लोन के लिए इस्तेमाल होता है। यह कहीं सेव नहीं होता, और Git भी इसे नहीं रखता।</string>
+    <string name="projects_clone_start">क्लोन करें</string>
+    <string name="projects_clone_bad_url">रिपॉज़िटरी का वेब पता डालें, जो https:// से शुरू होता है</string>
+    <string name="projects_clone_ssh">SSH पते अभी काम नहीं करते। रिपॉज़िटरी का https:// पता इस्तेमाल करें।</string>
+    <string name="projects_clone_credentials">पते से यूज़र नेम और पासवर्ड हटा दें। प्राइवेट रिपॉज़िटरी के लिए टोकन वाला फ़ील्ड इस्तेमाल करें।</string>
+    <string name="projects_clone_token_https">टोकन सिर्फ़ https:// पते पर भेजा जा सकता है।</string>
+    <string name="projects_clone_bad_branch">Git इसे ब्रांच या टैग के नाम के रूप में नहीं मानता।</string>
+
+    <string name="projects_share_title">%1$s को .zip के रूप में शेयर करें</string>
+    <string name="projects_save_title">%1$s की कॉपी सेव करें</string>
+    <string name="projects_export_skip">भारी फ़ोल्डर छोड़ें</string>
+    <string name="projects_export_skip_hint">node_modules, कैश और नज़रअंदाज़ किया गया बिल्ड आउटपुट शामिल नहीं होता। इन्हें फिर से बनाया जा सकता है।</string>
+    <string name="projects_export_git">Git हिस्ट्री शामिल करें</string>
+    <string name="projects_export_git_hint">.git फ़ोल्डर। यह प्रोजेक्ट से कहीं बड़ा हो सकता है।</string>
+    <string name="projects_export_note">zip में फ़ाइलें और फ़ोल्डर रहते हैं। लिंक और फ़ाइल अनुमतियाँ नहीं रहतीं।</string>
+    <string name="projects_save_note">आप फ़ोन पर एक फ़ोल्डर चुनते हैं और प्रोजेक्ट की कॉपी उसमें चली जाती है। बाद के बदलाव सिंक नहीं होते।</string>
+    <string name="projects_export_make">zip बनाएँ</string>
+    <string name="projects_save_choose">फ़ोल्डर चुनें</string>
+    <string name="projects_share_chooser">%1$s शेयर करें</string>
+    <string name="projects_action_session">यहाँ सेशन शुरू करें</string>
+    <string name="projects_action_share_zip">.zip के रूप में शेयर करें</string>
+    <string name="projects_action_save_copy">फ़ोन पर कॉपी सेव करें</string>
+
+    <string name="projects_rename_title">प्रोजेक्ट का नाम बदलें</string>
+    <string name="projects_rename_note">इस फ़ोल्डर का इस्तेमाल करने वाले सेशन पुराना नाम ही रखते हैं, और नाम बदलने के बाद इसे नहीं ढूँढ पाएँगे।</string>
+    <string name="projects_delete_title">%1$s मिटाएँ?</string>
+    <string name="projects_delete_body">इससे यह फ़ोल्डर और इसकी हर फ़ाइल इस फ़ोन से मिट जाएगी। इसका इस्तेमाल करने वाले सेशन सूची में रहेंगे, पर वे इसमें काम नहीं कर पाएँगे। इसे वापस नहीं किया जा सकता।</string>
+
+    <string name="projects_job_clone">%1$s क्लोन हो रहा है</string>
+    <string name="projects_job_import_folder">%1$s ऐप में कॉपी हो रहा है</string>
+    <string name="projects_job_import_zip">%1$s खोला जा रहा है</string>
+    <string name="projects_job_export">%1$s.zip बन रहा है</string>
+    <string name="projects_job_save">%1$s की कॉपी सेव हो रही है</string>
+    <string name="projects_job_preparing">तैयारी हो रही है…</string>
+    <string name="projects_job_bytes">%2$s में से %1$s</string>
+    <string name="projects_job_hide">बैकग्राउंड में चलने दें</string>
+    <string name="projects_job_share">शेयर करें</string>
+    <string name="projects_job_cancelled">रोक दिया गया। कुछ भी अधूरा नहीं छूटा।</string>
+    <string name="projects_job_skipped_links">प्रोजेक्ट से बाहर की ओर जाने वाले लिंक छोड़ दिए गए: %1$d</string>
+    <string name="projects_phase_connecting">कनेक्ट हो रहा है…</string>
+    <string name="projects_phase_counting">फ़ाइलों की सूची ली जा रही है…</string>
+    <string name="projects_phase_receiving">डाउनलोड हो रहा है…</string>
+    <string name="projects_phase_resolving">हिस्ट्री जोड़ी जा रही है…</string>
+    <string name="projects_phase_writing">फ़ाइलें लिखी जा रही हैं…</string>
+
+    <string name="projects_done_clone">%1$s में क्लोन हो गया।</string>
+    <string name="projects_done_import_folder">%1$s में कॉपी हो गया। यह एक कॉपी है, इसलिए यहाँ के बदलाव मूल फ़ोल्डर को नहीं बदलते।</string>
+    <string name="projects_done_import_zip">%1$s में खोल दिया गया।</string>
+    <string name="projects_done_export">%1$s.zip तैयार है।</string>
+    <string name="projects_done_save">%1$s की कॉपी सेव हो गई।</string>
+
+    <string name="projects_fail_no_space">इस फ़ोन पर इसके लिए खाली जगह काफ़ी नहीं है।</string>
+    <string name="projects_fail_not_zip">यह फ़ाइल zip नहीं है, या खराब है।</string>
+    <string name="projects_fail_unsafe_zip">यह zip अपने फ़ोल्डर से बाहर फ़ाइलें रखने की कोशिश करता है, इसलिए कुछ भी नहीं खोला गया।</string>
+    <string name="projects_fail_unsupported_zip">यह zip एन्क्रिप्टेड है या ऐसा फ़ॉर्मैट इस्तेमाल करता है जिसे ऐप नहीं पढ़ सकता।</string>
+    <string name="projects_fail_damaged_zip">यह zip खराब है, या इसकी सामग्री इसके बताए से मेल नहीं खाती।</string>
+    <string name="projects_fail_too_many">इस zip में यहाँ खोलने के लिए बहुत ज़्यादा फ़ाइलें हैं।</string>
+    <string name="projects_fail_not_readable">ऐप इसे पढ़ नहीं पाया। इसे फिर से चुनें।</string>
+    <string name="projects_fail_not_writable">ऐप वहाँ लिख नहीं पाया।</string>
+    <string name="projects_fail_runtime_busy">बिल्ट-इन harness इंस्टॉल, अपडेट या हटाया जा रहा है। उसके बाद फिर कोशिश करें।</string>
+    <string name="projects_fail_other">कुछ गड़बड़ हो गई। फिर से कोशिश करें।</string>
+    <string name="projects_fail_clone_not_found">रिपॉज़िटरी नहीं मिली। अगर यह प्राइवेट है, तो प्राइवेट रिपॉज़िटरी चालू करें और टोकन जोड़ें।</string>
+    <string name="projects_fail_clone_auth">टोकन स्वीकार नहीं हुआ। जाँचें कि यह इस रिपॉज़िटरी को पढ़ सकता है।</string>
+    <string name="projects_fail_clone_network">सर्वर तक नहीं पहुँच सके। कनेक्शन और पता जाँचें।</string>
+    <string name="projects_fail_clone_branch">इस रिपॉज़िटरी में इस नाम की कोई ब्रांच या टैग नहीं है।</string>
+    <string name="projects_fail_clone_not_repo">यह पता Git रिपॉज़िटरी नहीं है।</string>
+    <string name="projects_fail_clone_timeout">क्लोन में बहुत देर लगी, इसलिए रोक दिया गया।</string>
+    <string name="projects_fail_clone_other">Git इस रिपॉज़िटरी को क्लोन नहीं कर पाया।</string>
+    <string name="projects_fail_git_said">Git का संदेश: %1$s</string>
+    <string name="projects_session_folder_gone">इस सेशन का फ़ोल्डर अब नहीं है। उसे मिटाया गया या उसका नाम बदला गया। काम जारी रखने के लिए किसी प्रोजेक्ट में नया सेशन शुरू करें।</string>
+</resources>

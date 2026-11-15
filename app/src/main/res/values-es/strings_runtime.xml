@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_action_show_progress_label">abrir la página de configuración</string>
+
+    <string name="runtime_card_title">Harness integrado</string>
+    <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
+    <string name="runtime_card_intro">La forma más fácil de empezar: el harness se ejecuta dentro de esta app, sin ordenador y sin Termux.</string>
+    <string name="runtime_card_sizes">%1$s de descarga, unos %2$s en el teléfono</string>
+    <string name="runtime_card_setting_up">Configurando…</string>
+    <string name="runtime_card_stopped">Instalado y listo para iniciar.</string>
+    <string name="runtime_card_starting">Iniciando el harness…</string>
+    <string name="runtime_card_stopping">Deteniendo el harness…</string>
+    <string name="runtime_card_running">Funcionando en el puerto %1$s</string>
+    <string name="runtime_card_signed_out">Está funcionando, pero la app no ha iniciado sesión. Un reinicio lo arregla.</string>
+    <string name="runtime_card_update">Actualización disponible</string>
+    <string name="runtime_card_updating">Actualizando…</string>
+    <string name="runtime_card_rolled_back">La última actualización no arrancó, así que ha vuelto la versión anterior.</string>
+    <string name="runtime_use_termux">Usar Termux en su lugar</string>
+    <string name="runtime_state_expanded">Desplegado</string>
+    <string name="runtime_state_collapsed">Plegado</string>
+
+
+    <string name="runtime_step_done">Hecho</string>
+    <string name="runtime_step_active">En curso</string>
+    <string name="runtime_step_pending">Sin empezar</string>
+    <string name="runtime_step_failed">No terminó</string>
+
+    <string name="runtime_progress_speed">%1$s por segundo</string>
+    <string name="runtime_progress_minutes_left">quedan unos %1$s min</string>
+    <string name="runtime_progress_seconds_left">quedan unos %1$s s</string>
+
+    <string name="runtime_setup_title">Configurar el harness integrado</string>
+    <string name="runtime_setup_intro">DSH descarga un pequeño sistema Linux con el harness dentro y lo ejecuta en la app. Todo se queda en este teléfono, salvo lo que envíes a tu proveedor de modelos.</string>
+    <string name="runtime_beta_badge">Beta</string>
+    <string name="runtime_setup_beta_note">Es nuevo y puede que todavía no funcione en todos los teléfonos. Ejecutar el harness en tu ordenador o en Termux sigue funcionando como antes.</string>
+    <string name="runtime_setup_start">Descargar y configurar</string>
+    <string name="runtime_setup_start_sized">Descargar y configurar (%1$s)</string>
+    <string name="runtime_setup_working_title">Configurando</string>
+    <string name="runtime_setup_leave_hint">Puedes salir de esta página. La configuración sigue en segundo plano.</string>
+    <string name="runtime_setup_no_space_title">No hay espacio suficiente</string>
+    <string name="runtime_setup_failed_title">La configuración se detuvo</string>
+    <string name="runtime_setup_failed_body">No ha quedado nada a medias.</string>
+    <string name="runtime_setup_done_title">Tu harness está listo</string>
+    <string name="runtime_setup_done_body">Funciona en este teléfono siempre que lo necesites.</string>
+    <string name="runtime_setup_connecting">Conectando…</string>
+    <string name="runtime_setup_metered_title">¿Usar datos móviles?</string>
+    <string name="runtime_setup_metered_body">Estás en una conexión de uso medido. La configuración descarga %1$s.</string>
+    <string name="runtime_setup_metered_confirm">Descargar igualmente</string>
+    <string name="runtime_setup_cancel_title">¿Dejar de configurar?</string>
+    <string name="runtime_setup_cancel_body">Se borrará lo descargado hasta ahora. Puedes volver a configurarlo cuando quieras.</string>
+    <string name="runtime_setup_cancel_confirm">Detener y borrar</string>
+    <string name="runtime_setup_keep_going">Seguir</string>
+    <string name="runtime_space_needed">Necesario</string>
+    <string name="runtime_space_free">Libre ahora</string>
+
+    <string name="runtime_section_status">Estado</string>
+    <string name="runtime_section_options">Opciones</string>
+    <string name="runtime_section_update">Actualizaciones del harness</string>
+    <string name="runtime_section_storage">Almacenamiento</string>
+    <string name="runtime_section_log">Registro</string>
+    <string name="runtime_section_reliability">Que siga funcionando</string>
+    <string name="runtime_status_not_set_up">Sin configurar</string>
+    <string name="runtime_status_stopped">Detenido</string>
+    <string name="runtime_status_needs_attention">Necesita revisión</string>
+    <string name="runtime_info_uptime">Funcionando desde hace</string>
+    <string name="runtime_info_harness">Harness</string>
+    <string name="runtime_info_release">Versión del entorno</string>
+    <string name="runtime_info_port">Puerto</string>
+    <string name="runtime_uptime_just_now">Menos de un minuto</string>
+    <string name="runtime_uptime_minutes">%1$s min</string>
+    <string name="runtime_uptime_hours">%1$s h %2$s min</string>
+
+    <string name="runtime_switch_auto_start">Iniciar el harness integrado al abrir la app</string>
+    <string name="runtime_switch_auto_start_hint">Solo en el modo Este teléfono y solo si no está funcionando ya.</string>
+    <string name="runtime_switch_wake_lock">Mantener el teléfono activo mientras funciona</string>
+    <string name="runtime_switch_wake_lock_hint">Las respuestas largas siguen con la pantalla apagada. Gasta más batería.</string>
+    <string name="runtime_switch_fast_start">Inicio rápido</string>
+    <string name="runtime_switch_fast_start_hint">Carga el harness desde un paquete comprimido. Desactívalo si falla al arrancar. Se aplica la próxima vez que se inicie.</string>
+
+    <string name="runtime_update_available">Harness %1$s disponible</string>
+    <string name="runtime_update_what_harness">Actualiza el harness. %1$s de descarga.</string>
+    <string name="runtime_update_what_both">Actualiza el sistema y el harness. %1$s de descarga.</string>
+    <string name="runtime_update_versions">%1$s → %2$s</string>
+    <string name="runtime_update_button">Actualizar</string>
+    <string name="runtime_update_check">Buscar actualizaciones</string>
+    <string name="runtime_update_checking">Buscando…</string>
+    <string name="runtime_update_none">Lo tienes al día.</string>
+    <string name="runtime_update_rolled_back">El harness %1$s no arrancó, así que ha vuelto la versión anterior.</string>
+
+    <string name="runtime_storage_runtime">Entorno</string>
+    <string name="runtime_storage_data">Sesiones y ajustes</string>
+    <string name="runtime_storage_other">Descargas y registros</string>
+    <string name="runtime_remove">Quitar el entorno</string>
+    <string name="runtime_remove_title">¿Quitar el entorno?</string>
+    <string name="runtime_remove_body">Libera unos %1$s. Tus sesiones y los ajustes del harness se quedan, así que al configurarlo otra vez sigues donde lo dejaste.</string>
+    <string name="runtime_delete_all">Borrar todo</string>
+    <string name="runtime_delete_all_title">¿Borrar todo?</string>
+    <string name="runtime_delete_all_body">Esto quita el entorno y todas las sesiones, ajustes y espacios de trabajo del harness en este teléfono. No se puede deshacer.</string>
+
+    <string name="runtime_log_empty">Aún no hay nada en el registro.</string>
+    <string name="runtime_log_share">Compartir</string>
+    <string name="runtime_log_copied">Registro copiado</string>
+
+    <string name="runtime_check_notifications">Notificaciones</string>
+    <string name="runtime_check_notifications_on">Activadas. Verás cuándo está funcionando el harness.</string>
+    <string name="runtime_check_notifications_off">Desactivadas. Actívalas para ver cuándo está funcionando el harness.</string>
+    <string name="runtime_check_battery">Optimización de batería</string>
+    <string name="runtime_check_battery_on">Sin restricciones.</string>
+    <string name="runtime_check_battery_off">Restringida. Android puede detener el harness en segundo plano.</string>
+    <string name="runtime_check_child">Límite de procesos en segundo plano</string>
+    <string name="runtime_check_child_body_12">Android 12 y 13 pueden detener apps que ejecutan muchos procesos en segundo plano. Si el harness se detiene solo, mantén DSH abierta mientras trabaja.</string>
+    <string name="runtime_check_child_body_14">Android puede detener apps que ejecutan muchos procesos. Si el harness se detiene solo, activa \"Inhabilitar restricciones de procesos secundarios\" en Opciones para desarrolladores.</string>
+    <string name="runtime_check_child_off">Las restricciones de procesos secundarios están desactivadas.</string>
+    <string name="runtime_check_open">abrir el ajuste del sistema</string>
+    <string name="runtime_check_footer">Cada fila abre la pantalla del sistema donde se cambia.</string>
+
+    <string name="runtime_termux_heading">Harness en Termux</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">Actualizando a la versión del entorno %1$s…</string>
+    <string name="runtime_update_going_back_to">Volviendo a la versión del entorno %1$s…</string>
+    <string name="runtime_update_rolled_back_title">La versión nueva no arrancó, así que ha vuelto la anterior.</string>
+    <string name="runtime_update_rolled_back_detail">La versión %1$s no se volverá a instalar sola. Estás en la versión %2$s.</string>
+    <string name="runtime_update_needs_app_title">Una actualización del harness necesita una app más reciente</string>
+    <string name="runtime_update_skipped">Volviste desde la versión %1$s</string>
+    <string name="runtime_update_skipped_hint">No se instalará sola ni te avisará. Las versiones más nuevas se ofrecerán como siempre.</string>
+    <string name="runtime_update_anyway">Actualizar de todos modos</string>
+    <string name="runtime_update_done">Ahora estás en la versión %1$s.</string>
+    <string name="runtime_update_went_back_done">Has vuelto a la versión %1$s.</string>
+    <string name="runtime_update_previous">Versión anterior</string>
+    <string name="runtime_update_go_back">Volver</string>
+    <string name="runtime_go_back_title">¿Volver a la versión %1$s?</string>
+    <string name="runtime_go_back_body">El harness vuelve a la versión %1$s. Si está en marcha, se reinicia y la app se vuelve a conectar sola. Tus sesiones y ajustes se quedan. La versión %2$s no se instalará sola hasta que salga una más nueva.</string>
+    <string name="runtime_switch_notify_updates">Avisarme de las versiones nuevas del harness</string>
+    <string name="runtime_switch_notify_updates_hint">Un aviso por cada versión nueva.</string>
+    <string name="runtime_switch_auto_update">Instalar las actualizaciones solas</string>
+    <string name="runtime_switch_auto_update_hint">Solo con Wi-Fi u otra red sin límite de datos, y solo cuando el harness esté parado o sin trabajo. Te diremos qué cambió.</string>
+    <string name="runtime_notif_channel_updates">Actualizaciones del harness</string>
+    <string name="runtime_notif_update_title">Hay una actualización del harness</string>
+    <string name="runtime_notif_update_text">Versión %1$s, harness %2$s. Toca para ver qué cambia.</string>
+    <string name="runtime_notif_updated_title">Harness actualizado</string>
+    <string name="runtime_notif_updated_text">Ahora en la versión %1$s, harness %2$s.</string>
+    <string name="runtime_notif_rolled_back_title">La actualización del harness no arrancó</string>
+    <string name="runtime_notif_rolled_back_text">Ha vuelto la versión %1$s. Toca para ver por qué.</string>
+    <string name="runtime_chat_crashed">El harness de este teléfono se detuvo de forma inesperada. Tus sesiones están a salvo.</string>
+    <string name="runtime_chat_stopped">El harness de este teléfono no está en marcha.</string>
+    <string name="runtime_chat_restarting">Iniciando el harness de este teléfono…</string>
+    <string name="runtime_chat_updating">Actualizando el harness de este teléfono. El chat vuelve cuando termine.</string>
+    <string name="runtime_update_nothing_to_download">No hay nada que descargar: sigue en el teléfono desde antes.</string>
+    <string name="runtime_update_metered_body">Estás en una conexión medida. Esta actualización descarga %1$s.</string>
+    <string name="cmdperm_v1_update">Esta versión del harness puede acortar un comando largo al preguntarte, así que quizá no lo veas entero. Actualiza el harness antes de fiarte de «Preguntarme antes».</string>
+</resources>

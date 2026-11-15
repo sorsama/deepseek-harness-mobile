@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="projects_provider_summary">Проекты встроенного harness</string>
+    <string name="projects_title">Проекты на этом телефоне</string>
+    <string name="projects_intro">Папки ваших проектов на этом телефоне. Их также видно в приложении «Файлы», в разделе %1$s.</string>
+    <string name="projects_files_hint">Папки ваших проектов также видны в приложении «Файлы», в разделе %1$s: туда можно копировать файлы и забирать их оттуда.</string>
+    <string name="projects_section_list">Проекты</string>
+    <plurals name="projects_count">
+        <item quantity="one">%1$d проект</item>
+        <item quantity="few">%1$d проекта</item>
+        <item quantity="many">%1$d проектов</item>
+        <item quantity="other">%1$d проекта</item>
+    </plurals>
+    <string name="projects_space_label">Занято места</string>
+    <string name="projects_space_used">Занято %1$s</string>
+    <string name="projects_counting">Подсчёт…</string>
+    <string name="projects_row_detail">%1$s · %2$s</string>
+    <string name="projects_empty">Проектов пока нет. Начните новый выше или перенесите проект с телефона.</string>
+    <string name="projects_more_for">Ещё для %1$s</string>
+    <string name="projects_manage">Управлять проектами</string>
+    <string name="projects_open_files">Открыть в «Файлах»</string>
+    <string name="projects_no_files_app">На этом телефоне не найдено приложение для файлов.</string>
+
+    <string name="projects_start_header">Начать проект</string>
+    <string name="projects_new_empty">Новый пустой проект</string>
+    <string name="projects_new_empty_hint">Пустая папка, чтобы начать с нуля</string>
+    <string name="projects_clone">Клонировать репозиторий Git</string>
+    <string name="projects_clone_hint">Скопировать репозиторий с GitHub или другого сервера</string>
+    <string name="projects_import_folder">Импортировать папку</string>
+    <string name="projects_import_folder_hint">Копирует папку с этого телефона в приложение</string>
+    <string name="projects_import_zip">Импортировать .zip</string>
+    <string name="projects_import_zip_hint">Распаковывает zip в новый проект</string>
+
+    <string name="projects_name_label">Название проекта</string>
+    <string name="projects_name_taken">Проект с таким названием уже есть.</string>
+    <string name="projects_name_invalid">Используйте название без косой черты.</string>
+    <string name="projects_create">Создать</string>
+    <string name="projects_change_failed">Не получилось. Попробуйте ещё раз.</string>
+    <string name="projects_in_use">Другая задача с проектами ещё выполняется. Дождитесь её окончания.</string>
+
+    <string name="projects_clone_url">Адрес репозитория</string>
+    <string name="projects_clone_branch">Ветка или тег (необязательно)</string>
+    <string name="projects_clone_private">Закрытый репозиторий</string>
+    <string name="projects_clone_private_hint">Нужен токен доступа, который может его читать</string>
+    <string name="projects_clone_token">Токен доступа</string>
+    <string name="projects_clone_token_hint">Используется только для этого клонирования. Нигде не сохраняется, и Git его не запоминает.</string>
+    <string name="projects_clone_start">Клонировать</string>
+    <string name="projects_clone_bad_url">Введите веб-адрес репозитория, начиная с https://</string>
+    <string name="projects_clone_ssh">Адреса SSH пока не поддерживаются. Используйте адрес репозитория https://.</string>
+    <string name="projects_clone_credentials">Уберите имя пользователя и пароль из адреса. Для закрытого репозитория используйте поле токена.</string>
+    <string name="projects_clone_token_https">Токен можно отправить только на адрес https://.</string>
+    <string name="projects_clone_bad_branch">Git не принимает такое название ветки или тега.</string>
+
+    <string name="projects_share_title">Поделиться %1$s в виде .zip</string>
+    <string name="projects_save_title">Сохранить копию %1$s</string>
+    <string name="projects_export_skip">Пропустить тяжёлые папки</string>
+    <string name="projects_export_skip_hint">Не включает node_modules, кэши и игнорируемые результаты сборки. Их можно создать заново.</string>
+    <string name="projects_export_git">Включить историю Git</string>
+    <string name="projects_export_git_hint">Папка .git. Она бывает намного больше самого проекта.</string>
+    <string name="projects_export_note">В zip попадут файлы и папки. Ссылки и права доступа к файлам не сохраняются.</string>
+    <string name="projects_save_note">Вы выбираете папку на телефоне, и в неё кладётся копия проекта. Последующие изменения не синхронизируются.</string>
+    <string name="projects_export_make">Создать zip</string>
+    <string name="projects_save_choose">Выбрать папку</string>
+    <string name="projects_share_chooser">Поделиться %1$s</string>
+    <string name="projects_action_session">Начать сеанс здесь</string>
+    <string name="projects_action_share_zip">Поделиться в виде .zip</string>
+    <string name="projects_action_save_copy">Сохранить копию на телефон</string>
+
+    <string name="projects_rename_title">Переименовать проект</string>
+    <string name="projects_rename_note">Сеансы, которые используют эту папку, сохранят старое название и не найдут её после переименования.</string>
+    <string name="projects_delete_title">Удалить %1$s?</string>
+    <string name="projects_delete_body">Папка и все файлы в ней будут удалены с этого телефона. Сеансы, которые её использовали, останутся в списке, но больше не смогут в ней работать. Отменить это нельзя.</string>
+
+    <string name="projects_job_clone">Клонирование %1$s</string>
+    <string name="projects_job_import_folder">Копирование %1$s в приложение</string>
+    <string name="projects_job_import_zip">Распаковка %1$s</string>
+    <string name="projects_job_export">Создание %1$s.zip</string>
+    <string name="projects_job_save">Сохранение копии %1$s</string>
+    <string name="projects_job_preparing">Подготовка…</string>
+    <string name="projects_job_bytes">%1$s из %2$s</string>
+    <string name="projects_job_hide">Продолжить в фоне</string>
+    <string name="projects_job_share">Поделиться</string>
+    <string name="projects_job_cancelled">Остановлено. Ничего лишнего не осталось.</string>
+    <string name="projects_job_skipped_links">Ссылки, которые вели за пределы проекта и были пропущены: %1$d</string>
+    <string name="projects_phase_connecting">Подключение…</string>
+    <string name="projects_phase_counting">Получение списка файлов…</string>
+    <string name="projects_phase_receiving">Загрузка…</string>
+    <string name="projects_phase_resolving">Сборка истории…</string>
+    <string name="projects_phase_writing">Запись файлов…</string>
+
+    <string name="projects_done_clone">Клонировано в %1$s.</string>
+    <string name="projects_done_import_folder">Скопировано в %1$s. Это копия: изменения здесь не меняют исходную папку.</string>
+    <string name="projects_done_import_zip">Распаковано в %1$s.</string>
+    <string name="projects_done_export">Файл %1$s.zip готов.</string>
+    <string name="projects_done_save">Копия %1$s сохранена.</string>
+
+    <string name="projects_fail_no_space">На этом телефоне не хватает свободного места.</string>
+    <string name="projects_fail_not_zip">Этот файл не zip или он повреждён.</string>
+    <string name="projects_fail_unsafe_zip">Этот zip пытается положить файлы за пределы своей папки, поэтому ничего не распаковано.</string>
+    <string name="projects_fail_unsupported_zip">Этот zip зашифрован или использует формат, который приложение не умеет читать.</string>
+    <string name="projects_fail_damaged_zip">Этот zip повреждён, или его содержимое не совпадает с тем, что в нём указано.</string>
+    <string name="projects_fail_too_many">В этом zip слишком много файлов, чтобы распаковать его здесь.</string>
+    <string name="projects_fail_not_readable">Приложению не удалось это прочитать. Выберите ещё раз.</string>
+    <string name="projects_fail_not_writable">Приложению не удалось записать туда.</string>
+    <string name="projects_fail_runtime_busy">Встроенный harness сейчас устанавливается, обновляется или удаляется. Попробуйте, когда это закончится.</string>
+    <string name="projects_fail_other">Что-то пошло не так. Попробуйте ещё раз.</string>
+    <string name="projects_fail_clone_not_found">Репозиторий не найден. Если он закрытый, включите «Закрытый репозиторий» и добавьте токен.</string>
+    <string name="projects_fail_clone_auth">Токен не принят. Проверьте, что он может читать этот репозиторий.</string>
+    <string name="projects_fail_clone_network">Не удалось связаться с сервером. Проверьте подключение и адрес.</string>
+    <string name="projects_fail_clone_branch">В этом репозитории нет ветки или тега с таким названием.</string>
+    <string name="projects_fail_clone_not_repo">По этому адресу нет репозитория Git.</string>
+    <string name="projects_fail_clone_timeout">Клонирование заняло слишком много времени и было остановлено.</string>
+    <string name="projects_fail_clone_other">Git не смог клонировать этот репозиторий.</string>
+    <string name="projects_fail_git_said">Сообщение Git: %1$s</string>
+    <string name="projects_session_folder_gone">Папки этого сеанса больше нет: её удалили или переименовали. Начните новый сеанс в проекте, чтобы продолжить.</string>
+</resources>

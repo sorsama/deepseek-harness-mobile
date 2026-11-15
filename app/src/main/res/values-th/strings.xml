@@ -304,7 +304,7 @@
     <string name="update_open">ดูรุ่นใหม่</string>
     <string name="update_later">ไว้ทีหลัง</string>
     <string name="settings_update_check">ตรวจหาอัปเดต</string>
-    <string name="settings_update_check_hint">เช็กกับ GitHub หาเวอร์ชันล่าสุดตอนเปิดแอป และเช็กอีกครั้งเมื่อกลับมาใช้แอปหลังผ่านไปหลายชั่วโมง</string>
+    <string name="settings_update_check_hint">เช็กกับ GitHub ว่ามีแอปเวอร์ชันใหม่ไหม และ harness เวอร์ชันใหม่ถ้าตั้งค่าไว้บนโทรศัพท์นี้ ตอนเปิดแอป และอีกครั้งเมื่อกลับมาใช้แอปหลังผ่านไปหลายชั่วโมง</string>
     <string name="connect_mode_lan">เครือข่ายภายใน</string>
     <string name="connect_mode_relay">รีเลย์</string>
     <string name="pair_title">จับคู่รีเลย์</string>
@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">เปิดการตั้งค่า</string>
     <string name="shortcuts_close">ปิดแผ่นหรือกล่องโต้ตอบ</string>
     <string name="chat_drop_hint">วางไฟล์ที่นี่เพื่อแนบ</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">กำลังติดตั้ง harness บนเครื่องนี้</string>
+    <string name="runtime_notif_downloading">กำลังดาวน์โหลด เสร็จแล้ว %1$d%%</string>
+    <string name="runtime_notif_unpacking">กำลังแตกไฟล์</string>
+    <string name="runtime_notif_starting">กำลังเริ่ม harness บนเครื่องนี้</string>
+    <string name="runtime_notif_running">harness ทำงานอยู่บนเครื่องนี้</string>
+    <string name="runtime_notif_running_text">รอการเชื่อมต่อที่พอร์ต %1$d</string>
 </resources>

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_action_show_progress_label">فتح صفحة الإعداد</string>
+
+    <string name="runtime_card_title">harness المدمج</string>
+    <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
+    <string name="runtime_card_intro">أسهل طريقة للبدء: يعمل harness داخل هذا التطبيق، بلا كمبيوتر وبلا Termux.</string>
+    <string name="runtime_card_sizes">تنزيل %1$s، ونحو %2$s على الهاتف</string>
+    <string name="runtime_card_setting_up">جارٍ الإعداد…</string>
+    <string name="runtime_card_stopped">مثبّت وجاهز للتشغيل.</string>
+    <string name="runtime_card_starting">جارٍ تشغيل harness…</string>
+    <string name="runtime_card_stopping">جارٍ إيقاف harness…</string>
+    <string name="runtime_card_running">يعمل على المنفذ %1$s</string>
+    <string name="runtime_card_signed_out">إنه يعمل، لكن التطبيق لم يسجّل الدخول. إعادة التشغيل تحل ذلك.</string>
+    <string name="runtime_card_update">يتوفر تحديث</string>
+    <string name="runtime_card_updating">جارٍ التحديث…</string>
+    <string name="runtime_card_rolled_back">لم يبدأ التحديث الأخير، فعاد الإصدار الذي قبله.</string>
+    <string name="runtime_use_termux">استخدام Termux بدلًا من ذلك</string>
+    <string name="runtime_state_expanded">مفتوح</string>
+    <string name="runtime_state_collapsed">مطوي</string>
+
+
+    <string name="runtime_step_done">تم</string>
+    <string name="runtime_step_active">جارٍ</string>
+    <string name="runtime_step_pending">لم يبدأ</string>
+    <string name="runtime_step_failed">لم يكتمل</string>
+
+    <string name="runtime_progress_speed">%1$s في الثانية</string>
+    <string name="runtime_progress_minutes_left">بقي نحو %1$s دقيقة</string>
+    <string name="runtime_progress_seconds_left">بقي نحو %1$s ثانية</string>
+
+    <string name="runtime_setup_title">إعداد harness المدمج</string>
+    <string name="runtime_setup_intro">ينزّل DSH نظام Linux صغيرًا فيه harness ويشغّله داخل التطبيق. يبقى كل شيء على هذا الهاتف، باستثناء ما ترسله إلى مزوّد النماذج.</string>
+    <string name="runtime_beta_badge">تجريبي</string>
+    <string name="runtime_setup_beta_note">هذه الميزة جديدة وقد لا تعمل على كل الهواتف بعد. تشغيل harness على حاسوبك أو في Termux ما زال يعمل كما كان.</string>
+    <string name="runtime_setup_start">تنزيل وإعداد</string>
+    <string name="runtime_setup_start_sized">تنزيل وإعداد (%1$s)</string>
+    <string name="runtime_setup_working_title">جارٍ الإعداد</string>
+    <string name="runtime_setup_leave_hint">يمكنك مغادرة هذه الصفحة، فالإعداد يستمر في الخلفية.</string>
+    <string name="runtime_setup_no_space_title">المساحة غير كافية</string>
+    <string name="runtime_setup_failed_title">توقف الإعداد</string>
+    <string name="runtime_setup_failed_body">لم يُترك أي شيء غير مكتمل.</string>
+    <string name="runtime_setup_done_title">harness جاهز</string>
+    <string name="runtime_setup_done_body">يعمل على هذا الهاتف متى احتجت إليه.</string>
+    <string name="runtime_setup_connecting">جارٍ الاتصال…</string>
+    <string name="runtime_setup_metered_title">استخدام بيانات الجوال؟</string>
+    <string name="runtime_setup_metered_body">أنت على اتصال محدود الاستخدام. سينزّل الإعداد %1$s.</string>
+    <string name="runtime_setup_metered_confirm">التنزيل على أي حال</string>
+    <string name="runtime_setup_cancel_title">إيقاف الإعداد؟</string>
+    <string name="runtime_setup_cancel_body">سيُحذف ما نُزّل حتى الآن. يمكنك الإعداد من جديد في أي وقت.</string>
+    <string name="runtime_setup_cancel_confirm">إيقاف وحذف</string>
+    <string name="runtime_setup_keep_going">متابعة</string>
+    <string name="runtime_space_needed">المطلوب</string>
+    <string name="runtime_space_free">المتاح الآن</string>
+
+    <string name="runtime_section_status">الحالة</string>
+    <string name="runtime_section_options">الخيارات</string>
+    <string name="runtime_section_update">تحديثات harness</string>
+    <string name="runtime_section_storage">التخزين</string>
+    <string name="runtime_section_log">السجل</string>
+    <string name="runtime_section_reliability">إبقاؤه يعمل</string>
+    <string name="runtime_status_not_set_up">غير مُعدّ</string>
+    <string name="runtime_status_stopped">متوقف</string>
+    <string name="runtime_status_needs_attention">يحتاج إلى نظرة</string>
+    <string name="runtime_info_uptime">يعمل منذ</string>
+    <string name="runtime_info_harness">harness</string>
+    <string name="runtime_info_release">إصدار بيئة التشغيل</string>
+    <string name="runtime_info_port">المنفذ</string>
+    <string name="runtime_uptime_just_now">أقل من دقيقة</string>
+    <string name="runtime_uptime_minutes">%1$s د</string>
+    <string name="runtime_uptime_hours">%1$s س %2$s د</string>
+
+    <string name="runtime_switch_auto_start">تشغيل harness المدمج عند فتح التطبيق</string>
+    <string name="runtime_switch_auto_start_hint">في وضع هذا الهاتف فقط، وفقط إن لم يكن يعمل بالفعل.</string>
+    <string name="runtime_switch_wake_lock">إبقاء الهاتف مستيقظًا أثناء عمله</string>
+    <string name="runtime_switch_wake_lock_hint">تستمر الردود الطويلة والشاشة مطفأة. يستهلك بطارية أكثر.</string>
+    <string name="runtime_switch_fast_start">تشغيل سريع</string>
+    <string name="runtime_switch_fast_start_hint">يحمّل harness من حزمة مضغوطة. أوقفه إن فشل التشغيل. يسري في المرة القادمة التي يبدأ فيها.</string>
+
+    <string name="runtime_update_available">يتوفر harness %1$s</string>
+    <string name="runtime_update_what_harness">يحدّث harness. تنزيل %1$s.</string>
+    <string name="runtime_update_what_both">يحدّث النظام وharness. تنزيل %1$s.</string>
+    <string name="runtime_update_versions">%1$s ← %2$s</string>
+    <string name="runtime_update_button">تحديث</string>
+    <string name="runtime_update_check">البحث عن تحديثات</string>
+    <string name="runtime_update_checking">جارٍ البحث…</string>
+    <string name="runtime_update_none">كل شيء محدّث.</string>
+    <string name="runtime_update_rolled_back">لم يبدأ harness %1$s، فعاد الإصدار الذي قبله.</string>
+
+    <string name="runtime_storage_runtime">بيئة التشغيل</string>
+    <string name="runtime_storage_data">الجلسات والإعدادات</string>
+    <string name="runtime_storage_other">التنزيلات والسجلات</string>
+    <string name="runtime_remove">إزالة بيئة التشغيل</string>
+    <string name="runtime_remove_title">إزالة بيئة التشغيل؟</string>
+    <string name="runtime_remove_body">يحرّر هذا نحو %1$s. تبقى جلساتك وإعدادات harness، فإذا أعددته من جديد تكمل من حيث توقفت.</string>
+    <string name="runtime_delete_all">حذف كل شيء</string>
+    <string name="runtime_delete_all_title">حذف كل شيء؟</string>
+    <string name="runtime_delete_all_body">يزيل هذا بيئة التشغيل وكل جلسات harness وإعداداته ومساحات العمل على هذا الهاتف. لا يمكن التراجع عنه.</string>
+
+    <string name="runtime_log_empty">لا شيء في السجل بعد.</string>
+    <string name="runtime_log_share">مشاركة</string>
+    <string name="runtime_log_copied">تم نسخ السجل</string>
+
+    <string name="runtime_check_notifications">الإشعارات</string>
+    <string name="runtime_check_notifications_on">مفعّلة. سترى متى يعمل harness.</string>
+    <string name="runtime_check_notifications_off">غير مفعّلة. فعّلها لترى متى يعمل harness.</string>
+    <string name="runtime_check_battery">تحسين البطارية</string>
+    <string name="runtime_check_battery_on">بلا قيود.</string>
+    <string name="runtime_check_battery_off">مقيّد. قد يوقف Android تشغيل harness في الخلفية.</string>
+    <string name="runtime_check_child">حد العمليات في الخلفية</string>
+    <string name="runtime_check_child_body_12">قد يوقف Android 12 و13 التطبيقات التي تشغّل عمليات كثيرة في الخلفية. إذا توقف harness من تلقاء نفسه، فأبقِ DSH مفتوحًا أثناء عمله.</string>
+    <string name="runtime_check_child_body_14">قد يوقف Android التطبيقات التي تشغّل عمليات كثيرة. إذا توقف harness من تلقاء نفسه، ففعّل \"إيقاف القيود على العمليات الثانوية\" في خيارات المطورين.</string>
+    <string name="runtime_check_child_off">القيود على العمليات الثانوية متوقفة.</string>
+    <string name="runtime_check_open">فتح إعداد النظام</string>
+    <string name="runtime_check_footer">كل صف يفتح شاشة النظام التي يُغيَّر منها.</string>
+
+    <string name="runtime_termux_heading">harness في Termux</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">جارٍ التحديث إلى الإصدار %1$s…</string>
+    <string name="runtime_update_going_back_to">جارٍ الرجوع إلى الإصدار %1$s…</string>
+    <string name="runtime_update_rolled_back_title">لم يبدأ الإصدار الجديد، فعاد الإصدار السابق.</string>
+    <string name="runtime_update_rolled_back_detail">لن يُثبَّت الإصدار %1$s تلقائيًا مرة أخرى. أنت الآن على الإصدار %2$s.</string>
+    <string name="runtime_update_needs_app_title">تحديث harness يحتاج إلى تطبيق أحدث</string>
+    <string name="runtime_update_skipped">رجعت من الإصدار %1$s</string>
+    <string name="runtime_update_skipped_hint">لن يُثبَّت تلقائيًا ولن يصلك إشعار عنه. ستُعرض الإصدارات الأحدث كالمعتاد.</string>
+    <string name="runtime_update_anyway">التحديث على أي حال</string>
+    <string name="runtime_update_done">أنت الآن على الإصدار %1$s.</string>
+    <string name="runtime_update_went_back_done">رجعت إلى الإصدار %1$s.</string>
+    <string name="runtime_update_previous">الإصدار السابق</string>
+    <string name="runtime_update_go_back">الرجوع</string>
+    <string name="runtime_go_back_title">الرجوع إلى الإصدار %1$s؟</string>
+    <string name="runtime_go_back_body">سيعود harness إلى النسخة %1$s. إن كان يعمل فسيُعاد تشغيله وسيعيد التطبيق الاتصال تلقائيًا. تبقى جلساتك وإعداداتك كما هي. لن يُثبَّت الإصدار %2$s تلقائيًا حتى يصدر إصدار أحدث منه.</string>
+    <string name="runtime_switch_notify_updates">أعلمني بنسخ harness الجديدة</string>
+    <string name="runtime_switch_notify_updates_hint">إشعار واحد لكل إصدار جديد.</string>
+    <string name="runtime_switch_auto_update">تثبيت التحديثات تلقائيًا</string>
+    <string name="runtime_switch_auto_update_hint">فقط على Wi-Fi أو شبكة أخرى غير محدودة، وفقط حين يكون harness متوقفًا أو غير مشغول. ستعرف بعدها ما الذي تغيّر.</string>
+    <string name="runtime_notif_channel_updates">تحديثات harness</string>
+    <string name="runtime_notif_update_title">يتوفر تحديث لـ harness</string>
+    <string name="runtime_notif_update_text">الإصدار %1$s مع harness %2$s. اضغط لترى ما الذي سيتغيّر.</string>
+    <string name="runtime_notif_updated_title">تم تحديث harness</string>
+    <string name="runtime_notif_updated_text">أنت الآن على الإصدار %1$s مع harness %2$s.</string>
+    <string name="runtime_notif_rolled_back_title">لم يبدأ تحديث harness</string>
+    <string name="runtime_notif_rolled_back_text">عاد الإصدار %1$s. اضغط لترى السبب.</string>
+    <string name="runtime_chat_crashed">توقّف harness على هذا الهاتف بشكل غير متوقع. جلساتك محفوظة.</string>
+    <string name="runtime_chat_stopped">harness على هذا الهاتف لا يعمل.</string>
+    <string name="runtime_chat_restarting">جارٍ تشغيل harness على هذا الهاتف…</string>
+    <string name="runtime_chat_updating">جارٍ تحديث harness على هذا الهاتف. ستعود المحادثة عند الانتهاء.</string>
+    <string name="runtime_update_nothing_to_download">لا شيء للتنزيل: ما زال على الهاتف من قبل.</string>
+    <string name="runtime_update_metered_body">أنت على اتصال محدود البيانات. ينزّل هذا التحديث %1$s.</string>
+    <string name="cmdperm_v1_update">قد يختصر هذا الإصدار من harness الأمر الطويل عندما يسألك، فلا ترى كل نصه. حدّث harness قبل أن تعتمد على «اسألني أولًا».</string>
+</resources>

@@ -230,17 +230,54 @@ class ConnectionManager @Inject constructor(
         )
     }
 
-    private fun maybeStartService() {
-        val settings = runBlockingRead { hostsStore.settingsOnce() }
-        if (settings.keepConnectedInBackground) startService()
+    /** The person wants the connection kept in the background and one is open (or reopening). */
+    @Volatile
+    private var serviceWanted = false
+
+    private val startedActivities = StartedActivities(context) {
+        // Off the main thread: the start is a binder call.
+        scope.launch { serviceStarter.onAppVisible() }
     }
 
-    private fun startService() {
+    /**
+     * How [ConnectionService] is asked for, by the same rules as the built-in harness's service
+     * (#110): `startService` while the app is on screen, so no foreground clock runs against a busy
+     * main thread; `startForegroundService` otherwise; a refusal (Android 12+ refuses most
+     * background starts) is not a crash but a request made again when the app is next visible. The connection itself
+     * never depended on the service, only its protection from being killed.
+     *
+     * `onConnected` runs on every reconnect, including ones in the background (a network change, the
+     * periodic job), which is where the old `startForegroundService` call could throw.
+     */
+    internal val serviceStarter: com.labteto.dshmobile.runtime.RuntimeServiceStarter =
+        com.labteto.dshmobile.runtime.RuntimeServiceStarter(object : com.labteto.dshmobile.runtime.RuntimeServiceStarter.Platform {
+            override val appVisible: Boolean get() = startedActivities.visible
+
+            override fun wanted(): Boolean = serviceWanted && activeHost != null
+
+            override fun startService(): Boolean = launchService(foreground = false)
+
+            override fun startForegroundService(): Boolean = launchService(foreground = true)
+        })
+
+    /** Whether the service still has a connection to cover; the service asks when the system restarts it. */
+    internal fun serviceStillWanted(): Boolean = serviceWanted && activeHost != null
+
+    private fun maybeStartService() {
+        val settings = runBlockingRead { hostsStore.settingsOnce() }
+        serviceWanted = settings.keepConnectedInBackground
+        if (serviceWanted) serviceStarter.ensureStarted()
+    }
+
+    private fun launchService(foreground: Boolean): Boolean {
         val intent = Intent(context, ConnectionService::class.java)
-        ContextCompat.startForegroundService(context, intent)
+        return serviceStartAccepted(onRefused = { android.util.Log.w("ConnectionService", "service start refused: ${it.javaClass.simpleName}") }) {
+            if (foreground) ContextCompat.startForegroundService(context, intent) else context.startService(intent)
+        }
     }
 
     private fun stopService() {
+        serviceWanted = false
         context.stopService(Intent(context, ConnectionService::class.java))
     }
 

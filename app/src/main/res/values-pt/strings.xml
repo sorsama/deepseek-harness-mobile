@@ -304,7 +304,7 @@
     <string name="update_open">Ver versão</string>
     <string name="update_later">Depois</string>
     <string name="settings_update_check">Procurar atualizações</string>
-    <string name="settings_update_check_hint">Consulta no GitHub a versão mais recente ao iniciar o app e de novo quando você volta a ele depois de algumas horas.</string>
+    <string name="settings_update_check_hint">Consulta no GitHub se há um app mais novo, e um harness mais novo se houver um configurado neste telefone. Ao iniciar o app e de novo quando você volta a ele depois de algumas horas.</string>
     <string name="connect_mode_lan">Rede local</string>
     <string name="connect_mode_relay">Relay</string>
     <string name="pair_title">Parear um relay</string>
@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">Abrir configurações</string>
     <string name="shortcuts_close">Fechar painel ou caixa de diálogo</string>
     <string name="chat_drop_hint">Solte os arquivos aqui para anexá-los</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">Preparando o harness neste telefone</string>
+    <string name="runtime_notif_downloading">Baixando, %1$d%% concluído</string>
+    <string name="runtime_notif_unpacking">Descompactando arquivos</string>
+    <string name="runtime_notif_starting">Iniciando o harness neste telefone</string>
+    <string name="runtime_notif_running">Harness rodando neste telefone</string>
+    <string name="runtime_notif_running_text">Escutando na porta %1$d</string>
 </resources>

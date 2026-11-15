@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_section_commands">命令</string>
+    <string name="cmdperm_title">当智能体想运行命令时</string>
+    <string name="cmdperm_run">直接运行</string>
+    <string name="cmdperm_run_desc">命令会立即运行，不会询问你。</string>
+    <string name="cmdperm_ask">先问我</string>
+    <string name="cmdperm_ask_desc">每条命令你都能看到，再决定允许还是拒绝。</string>
+    <string name="cmdperm_explain_title">在手机上，命令的运行方式不一样</string>
+    <string name="cmdperm_explain_body">在电脑上，harness 可以在沙盒里运行命令。Android 不允许这样做，所以在这里，命令可以改动 harness 自己存储里的任何内容。</string>
+    <string name="cmdperm_explain_safe_label">仍受保护</string>
+    <string name="cmdperm_explain_safe">harness 只在这个应用里运行，看不到你的照片、联系人、短信或其他应用。</string>
+    <string name="cmdperm_explain_risk_label">不受保护</string>
+    <string name="cmdperm_explain_risk">它可以上网，命令也可能删除你的工作区，或删除 harness 的设置和已保存的 API 密钥。</string>
+    <string name="cmdperm_explain_later">之后可以在 harness 页面修改，也可以用每个聊天的权限按钮单独切换。</string>
+    <string name="cmdperm_got_it">知道了</string>
+    <string name="cmdperm_restart_title">要重启 harness 吗？</string>
+    <string name="cmdperm_restart_body">你的选择只对重启后新开的聊天生效。已有的聊天保留原来的设置，你可以用它的权限按钮切换。</string>
+    <string name="cmdperm_restart_now">立即重启</string>
+    <string name="cmdperm_later">稍后</string>
+    <string name="cmdperm_pending">harness 仍在按“%1$s”运行。重启后，新聊天才会用你的选择。</string>
+    <string name="cmdperm_unsupported">这个版本的 harness 不能在运行命令前询问。更新后就能选择命令是直接运行还是先问你。</string>
+
+    <string name="permission_preset_ask_commands">运行命令前询问</string>
+    <string name="permission_preset_ask_commands_desc">每条命令前都会问你，修改工作区以外的文件前也会问。</string>
+    <string name="permission_preset_full_access_desc">直接运行命令和修改文件，不询问。</string>
+
+    <string name="approval_command_title">运行这条命令？</string>
+    <string name="approval_file_title">修改工作区以外的文件？</string>
+    <string name="approval_tool_title">允许 %1$s？</string>
+    <string name="approval_shortened">harness 只发来了前 2000 个字符。</string>
+    <string name="approval_show_all">显示全部</string>
+    <string name="approval_show_less">收起</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="other">还有 %1$d 个请求在等待</item>
+    </plurals>
+
+    <string name="sandbox_notice_builtin">这个聊天的设置需要沙盒，而手机无法提供，所以那条命令没有运行。切换设置后再让它试一次。</string>
+    <string name="sandbox_notice_switch">切换到“%1$s”</string>
+    <string name="sandbox_notice_other">那条命令没有运行，因为这个聊天的设置需要沙盒，而 harness 所在的环境没有沙盒。你可以用聊天的权限按钮换一个设置。</string>
+    <string name="subagent_command_denied">辅助智能体无法询问你，所以这条命令没有运行。</string>
+    <string name="command_denied_rejected">你拒绝了，所以没有运行。</string>
+    <string name="command_denied_cancelled">你回答之前问题已撤回，所以没有运行。</string>
+    <string name="command_denied_nobody">没有人回答这个问题，所以没有运行。智能体工作时请保持应用连接。</string>
+    <string name="command_denied_too_large">内容太长，无法完整显示给你（上限 256 KB），所以没有询问你，也没有运行。已让智能体拆成更小的部分。</string>
+    <string name="command_denied_other">这台手机上的命令检查拦下了它，所以没有运行。</string>
+</resources>

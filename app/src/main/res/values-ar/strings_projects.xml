@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="projects_provider_summary">مشاريع الـ harness المدمج</string>
+    <string name="projects_title">المشاريع على هذا الهاتف</string>
+    <string name="projects_intro">مجلدات مشاريعك على هذا الهاتف. تراها أيضًا في تطبيق الملفات تحت %1$s.</string>
+    <string name="projects_files_hint">تظهر مجلدات مشاريعك أيضًا في تطبيق الملفات تحت %1$s، لتنسخ الملفات إليها ومنها.</string>
+    <string name="projects_section_list">المشاريع</string>
+    <plurals name="projects_count">
+        <item quantity="zero">لا مشاريع</item>
+        <item quantity="one">مشروع واحد</item>
+        <item quantity="two">مشروعان</item>
+        <item quantity="few">%1$d مشاريع</item>
+        <item quantity="many">%1$d مشروعًا</item>
+        <item quantity="other">%1$d مشروع</item>
+    </plurals>
+    <string name="projects_space_label">المساحة المستخدمة</string>
+    <string name="projects_space_used">مستخدم %1$s</string>
+    <string name="projects_counting">جارٍ العدّ…</string>
+    <string name="projects_row_detail">%1$s · %2$s</string>
+    <string name="projects_empty">لا توجد مشاريع بعد. ابدأ واحدًا من الأعلى، أو أحضر واحدًا من هاتفك.</string>
+    <string name="projects_more_for">المزيد لـ %1$s</string>
+    <string name="projects_manage">إدارة المشاريع</string>
+    <string name="projects_open_files">فتح في الملفات</string>
+    <string name="projects_no_files_app">لم يُعثر على تطبيق ملفات على هذا الهاتف.</string>
+
+    <string name="projects_start_header">ابدأ مشروعًا</string>
+    <string name="projects_new_empty">مشروع فارغ جديد</string>
+    <string name="projects_new_empty_hint">مجلد فارغ لبداية جديدة</string>
+    <string name="projects_clone">استنساخ مستودع Git</string>
+    <string name="projects_clone_hint">انسخ مستودعًا من GitHub أو من مضيف آخر</string>
+    <string name="projects_import_folder">استيراد مجلد</string>
+    <string name="projects_import_folder_hint">ينسخ مجلدًا من هذا الهاتف إلى التطبيق</string>
+    <string name="projects_import_zip">استيراد ملف ‎.zip</string>
+    <string name="projects_import_zip_hint">يفك ضغط ملف zip في مشروع جديد</string>
+
+    <string name="projects_name_label">اسم المشروع</string>
+    <string name="projects_name_taken">يوجد مشروع بهذا الاسم بالفعل.</string>
+    <string name="projects_name_invalid">استخدم اسمًا بلا شرطة مائلة.</string>
+    <string name="projects_create">إنشاء</string>
+    <string name="projects_change_failed">لم ينجح ذلك. حاول مرة أخرى.</string>
+    <string name="projects_in_use">ما زالت مهمة مشاريع أخرى قيد التشغيل. انتظر حتى تنتهي.</string>
+
+    <string name="projects_clone_url">عنوان المستودع</string>
+    <string name="projects_clone_branch">الفرع أو الوسم (اختياري)</string>
+    <string name="projects_clone_private">مستودع خاص</string>
+    <string name="projects_clone_private_hint">يحتاج إلى رمز وصول يمكنه قراءته</string>
+    <string name="projects_clone_token">رمز الوصول</string>
+    <string name="projects_clone_token_hint">يُستخدم لهذا الاستنساخ فقط. لا يُحفظ في أي مكان، ولا يحتفظ به Git.</string>
+    <string name="projects_clone_start">استنساخ</string>
+    <string name="projects_clone_bad_url">أدخل عنوان الويب للمستودع، ويبدأ بـ https://</string>
+    <string name="projects_clone_ssh">عناوين SSH غير مدعومة بعد. استخدم عنوان https:// للمستودع.</string>
+    <string name="projects_clone_credentials">أزل اسم المستخدم وكلمة المرور من العنوان. للمستودع الخاص، استخدم حقل الرمز.</string>
+    <string name="projects_clone_token_https">لا يمكن إرسال الرمز إلا إلى عنوان https://.</string>
+    <string name="projects_clone_bad_branch">لا يقبل Git هذا الاسم لفرع أو وسم.</string>
+
+    <string name="projects_share_title">مشاركة %1$s كملف ‎.zip</string>
+    <string name="projects_save_title">حفظ نسخة من %1$s</string>
+    <string name="projects_export_skip">تخطي المجلدات الثقيلة</string>
+    <string name="projects_export_skip_hint">يستبعد node_modules والذاكرات المؤقتة ومخرجات البناء المتجاهلة. يمكن إنشاؤها من جديد.</string>
+    <string name="projects_export_git">تضمين سجل Git</string>
+    <string name="projects_export_git_hint">مجلد ‎.git. قد يكون أكبر بكثير من المشروع نفسه.</string>
+    <string name="projects_export_note">يحفظ ملف zip الملفات والمجلدات. لا تُحفظ الروابط وأذونات الملفات.</string>
+    <string name="projects_save_note">تختار مجلدًا على الهاتف فتوضع فيه نسخة من المشروع. التغييرات اللاحقة لا تُزامَن.</string>
+    <string name="projects_export_make">إنشاء ملف zip</string>
+    <string name="projects_save_choose">اختيار مجلد</string>
+    <string name="projects_share_chooser">مشاركة %1$s</string>
+    <string name="projects_action_session">بدء جلسة هنا</string>
+    <string name="projects_action_share_zip">مشاركة كملف ‎.zip</string>
+    <string name="projects_action_save_copy">حفظ نسخة على الهاتف</string>
+
+    <string name="projects_rename_title">إعادة تسمية المشروع</string>
+    <string name="projects_rename_note">الجلسات التي تستخدم هذا المجلد تحتفظ بالاسم القديم ولن تجده بعد إعادة التسمية.</string>
+    <string name="projects_delete_title">حذف %1$s؟</string>
+    <string name="projects_delete_body">سيحذف هذا المجلد وكل ما فيه من ملفات من هذا الهاتف. تبقى الجلسات التي استخدمته في القائمة، لكنها لن تستطيع العمل فيه بعد ذلك. لا يمكن التراجع عن هذا.</string>
+
+    <string name="projects_job_clone">جارٍ استنساخ %1$s</string>
+    <string name="projects_job_import_folder">جارٍ نسخ %1$s إلى التطبيق</string>
+    <string name="projects_job_import_zip">جارٍ فك ضغط %1$s</string>
+    <string name="projects_job_export">جارٍ إنشاء %1$s.zip</string>
+    <string name="projects_job_save">جارٍ حفظ نسخة من %1$s</string>
+    <string name="projects_job_preparing">جارٍ التحضير…</string>
+    <string name="projects_job_bytes">%1$s من %2$s</string>
+    <string name="projects_job_hide">المتابعة في الخلفية</string>
+    <string name="projects_job_share">مشاركة</string>
+    <string name="projects_job_cancelled">توقف. لم يبقَ شيء ناقص.</string>
+    <string name="projects_job_skipped_links">روابط كانت تشير إلى خارج المشروع فاستُبعدت: %1$d</string>
+    <string name="projects_phase_connecting">جارٍ الاتصال…</string>
+    <string name="projects_phase_counting">جارٍ جلب قائمة الملفات…</string>
+    <string name="projects_phase_receiving">جارٍ التنزيل…</string>
+    <string name="projects_phase_resolving">جارٍ تجميع السجل…</string>
+    <string name="projects_phase_writing">جارٍ كتابة الملفات…</string>
+
+    <string name="projects_done_clone">تم الاستنساخ في %1$s.</string>
+    <string name="projects_done_import_folder">تم النسخ إلى %1$s. هذه نسخة، فالتغييرات هنا لا تغيّر المجلد الأصلي.</string>
+    <string name="projects_done_import_zip">تم فك الضغط في %1$s.</string>
+    <string name="projects_done_export">ملف %1$s.zip جاهز.</string>
+    <string name="projects_done_save">حُفظت نسخة من %1$s.</string>
+
+    <string name="projects_fail_no_space">لا توجد مساحة فارغة كافية على هذا الهاتف لهذا.</string>
+    <string name="projects_fail_not_zip">هذا الملف ليس zip، أو أنه تالف.</string>
+    <string name="projects_fail_unsafe_zip">يحاول ملف zip هذا وضع ملفات خارج مجلده، لذا لم يُفك ضغط أي شيء.</string>
+    <string name="projects_fail_unsupported_zip">ملف zip هذا مشفّر أو يستخدم صيغة لا يستطيع التطبيق قراءتها.</string>
+    <string name="projects_fail_damaged_zip">ملف zip هذا تالف، أو محتواه لا يطابق ما يذكره.</string>
+    <string name="projects_fail_too_many">في ملف zip هذا ملفات أكثر من أن يُفك ضغطها هنا.</string>
+    <string name="projects_fail_not_readable">لم يتمكن التطبيق من قراءة ذلك. اختره مرة أخرى.</string>
+    <string name="projects_fail_not_writable">لم يتمكن التطبيق من الكتابة هناك.</string>
+    <string name="projects_fail_runtime_busy">يجري تثبيت الـ harness المدمج أو تحديثه أو إزالته. حاول مجددًا عندما ينتهي.</string>
+    <string name="projects_fail_other">حدث خطأ ما. حاول مرة أخرى.</string>
+    <string name="projects_fail_clone_not_found">لم يُعثر على المستودع. إن كان خاصًا، فشغّل مستودع خاص وأضف رمزًا.</string>
+    <string name="projects_fail_clone_auth">لم يُقبل الرمز. تأكد من أنه يستطيع قراءة هذا المستودع.</string>
+    <string name="projects_fail_clone_network">تعذّر الوصول إلى الخادم. تحقق من الاتصال والعنوان.</string>
+    <string name="projects_fail_clone_branch">لا يوجد في هذا المستودع فرع أو وسم بهذا الاسم.</string>
+    <string name="projects_fail_clone_not_repo">هذا العنوان ليس مستودع Git.</string>
+    <string name="projects_fail_clone_timeout">استغرق الاستنساخ وقتًا طويلًا فأوقف.</string>
+    <string name="projects_fail_clone_other">لم يتمكن Git من استنساخ هذا المستودع.</string>
+    <string name="projects_fail_git_said">رسالة Git: %1$s</string>
+    <string name="projects_session_folder_gone">لم يعد مجلد هذه الجلسة موجودًا، فقد حُذف أو غُيّر اسمه. ابدأ جلسة جديدة في مشروع لتتابع العمل.</string>
+</resources>

@@ -43,6 +43,7 @@ class AndroidConnectStore(private val hostsStore: HostsStore) : ConnectStore {
                 autoConnectLoopback = next.autoConnectLoopback,
                 autoConnectRelay = next.autoConnectRelay,
                 autoStartLoopbackHarness = next.autoStartLoopbackHarness,
+                autoStartBuiltInHarness = next.autoStartBuiltInHarness,
             )
         }
     }
@@ -85,6 +86,7 @@ private fun AppSettings.toConnectSettings() = ConnectSettings(
     autoConnectLoopback = autoConnectLoopback,
     autoConnectRelay = autoConnectRelay,
     autoStartLoopbackHarness = autoStartLoopbackHarness,
+    autoStartBuiltInHarness = autoStartBuiltInHarness,
     knownPorts = knownPorts,
 )
 

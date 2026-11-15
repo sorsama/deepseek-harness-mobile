@@ -105,6 +105,23 @@ data class LlmConfigurableProvider(
     @SerialName("active") val active: Boolean = false,
     /** Present when the adapter draws a shipped-vs-declared distinction. */
     @SerialName("declared") val declared: Boolean? = null,
+    /** Endpoint the route uses when its profile sets no `baseURL` (0.2.1+); absent when it has none. */
+    @SerialName("defaultBaseURL") val defaultBaseURL: String? = null,
+    /** Environment variables the adapter builds an endpoint from (0.2.1+); absent when none are reported. */
+    @SerialName("baseURLEnv") val baseURLEnv: List<String>? = null,
+    /** How the route authenticates when its profile names no credential reference (0.2.1+). */
+    @SerialName("nativeAuth") val nativeAuth: LlmNativeAuth? = null,
+    /** Configuration diagnostic for repair (0.2.1+); unaffected models may still be served. */
+    @SerialName("error") val error: String? = null,
+)
+
+/** Authentication a provider route performs without a credential reference in its profile. */
+@Serializable
+data class LlmNativeAuth(
+    /** Environment variables the route's authentication reads, in lookup order. */
+    @SerialName("env") val env: List<String> = emptyList(),
+    /** Whether a stored sign-in (OAuth) can authenticate the route. */
+    @SerialName("oauth") val oauth: Boolean = false,
 )
 
 /**

@@ -1,5 +1,6 @@
 package com.labteto.dshmobile.ui.screens.connect
 
+import com.labteto.dshmobile.connection.ConnectMode
 import com.labteto.dshmobile.connection.ProbeOutcome
 import com.labteto.dshmobile.core.wire.dto.HostDescription
 import com.labteto.dshmobile.testing.assertEquals
@@ -44,5 +45,23 @@ class LoopbackStatusTest {
         )) {
             assertEquals(LoopbackStatus.Foreign(outcome), outcome.toLoopbackStatus())
         }
+    }
+}
+
+class FirstRunConnectModeTest {
+    @Test
+    fun aFreshPhoneThatCanRunTheBuiltInHarnessOpensOnThisPhone() {
+        kotlin.test.assertEquals(ConnectMode.LOOPBACK, firstRunConnectMode(builtInSupported = true, termuxInstalled = false, rememberedHosts = 0))
+    }
+
+    @Test
+    fun termuxAloneStillOpensOnThisPhoneAsBefore() {
+        kotlin.test.assertEquals(ConnectMode.LOOPBACK, firstRunConnectMode(builtInSupported = false, termuxInstalled = true, rememberedHosts = 0))
+    }
+
+    @Test
+    fun aRememberedHarnessOrNoWayToRunOneHereOpensOnLocalNetwork() {
+        kotlin.test.assertEquals(ConnectMode.LAN, firstRunConnectMode(builtInSupported = true, termuxInstalled = true, rememberedHosts = 1))
+        kotlin.test.assertEquals(ConnectMode.LAN, firstRunConnectMode(builtInSupported = false, termuxInstalled = false, rememberedHosts = 0))
     }
 }

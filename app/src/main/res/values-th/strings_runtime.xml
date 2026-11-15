@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_action_show_progress_label">เปิดหน้าการตั้งค่า</string>
+
+    <string name="runtime_card_title">harness ในตัว</string>
+    <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
+    <string name="runtime_card_intro">วิธีเริ่มที่ง่ายที่สุด: harness ทำงานในแอปนี้เลย ไม่ต้องใช้คอมพิวเตอร์และไม่ต้องใช้ Termux</string>
+    <string name="runtime_card_sizes">ดาวน์โหลด %1$s ใช้พื้นที่ในเครื่องประมาณ %2$s</string>
+    <string name="runtime_card_setting_up">กำลังตั้งค่า…</string>
+    <string name="runtime_card_stopped">ติดตั้งแล้ว พร้อมเริ่ม</string>
+    <string name="runtime_card_starting">กำลังเริ่ม harness…</string>
+    <string name="runtime_card_stopping">กำลังหยุด harness…</string>
+    <string name="runtime_card_running">กำลังทำงานที่พอร์ต %1$s</string>
+    <string name="runtime_card_signed_out">ทำงานอยู่ แต่แอปยังไม่ได้ลงชื่อเข้าใช้ เริ่มใหม่สักครั้งก็หาย</string>
+    <string name="runtime_card_update">มีอัปเดต</string>
+    <string name="runtime_card_updating">กำลังอัปเดต…</string>
+    <string name="runtime_card_rolled_back">อัปเดตล่าสุดเริ่มไม่ได้ จึงกลับไปใช้เวอร์ชันก่อนหน้า</string>
+    <string name="runtime_use_termux">ใช้ Termux แทน</string>
+    <string name="runtime_state_expanded">ขยายอยู่</string>
+    <string name="runtime_state_collapsed">ยุบอยู่</string>
+
+
+    <string name="runtime_step_done">เสร็จแล้ว</string>
+    <string name="runtime_step_active">กำลังทำ</string>
+    <string name="runtime_step_pending">ยังไม่เริ่ม</string>
+    <string name="runtime_step_failed">ไม่เสร็จ</string>
+
+    <string name="runtime_progress_speed">วินาทีละ %1$s</string>
+    <string name="runtime_progress_minutes_left">เหลืออีกประมาณ %1$s นาที</string>
+    <string name="runtime_progress_seconds_left">เหลืออีกประมาณ %1$s วินาที</string>
+
+    <string name="runtime_setup_title">ตั้งค่า harness ในตัว</string>
+    <string name="runtime_setup_intro">DSH จะดาวน์โหลดระบบ Linux ขนาดเล็กที่มี harness อยู่ข้างใน แล้วรันในแอป ทุกอย่างอยู่ในเครื่องนี้ ยกเว้นสิ่งที่คุณส่งไปให้ผู้ให้บริการโมเดล</string>
+    <string name="runtime_beta_badge">เบต้า</string>
+    <string name="runtime_setup_beta_note">ฟีเจอร์นี้ยังใหม่ อาจยังใช้ไม่ได้กับทุกเครื่อง การรัน harness บนคอมพิวเตอร์หรือใน Termux ยังใช้ได้เหมือนเดิม</string>
+    <string name="runtime_setup_start">ดาวน์โหลดและตั้งค่า</string>
+    <string name="runtime_setup_start_sized">ดาวน์โหลดและตั้งค่า (%1$s)</string>
+    <string name="runtime_setup_working_title">กำลังตั้งค่า</string>
+    <string name="runtime_setup_leave_hint">ออกจากหน้านี้ได้เลย การตั้งค่าจะทำต่อในเบื้องหลัง</string>
+    <string name="runtime_setup_no_space_title">พื้นที่ไม่พอ</string>
+    <string name="runtime_setup_failed_title">การตั้งค่าหยุดลง</string>
+    <string name="runtime_setup_failed_body">ไม่มีอะไรค้างไว้ครึ่งๆ กลางๆ</string>
+    <string name="runtime_setup_done_title">harness ของคุณพร้อมแล้ว</string>
+    <string name="runtime_setup_done_body">รันบนเครื่องนี้ได้ทุกเมื่อที่ต้องการ</string>
+    <string name="runtime_setup_connecting">กำลังเชื่อมต่อ…</string>
+    <string name="runtime_setup_metered_title">ใช้อินเทอร์เน็ตมือถือไหม</string>
+    <string name="runtime_setup_metered_body">ตอนนี้คุณใช้การเชื่อมต่อแบบคิดตามปริมาณข้อมูล การตั้งค่าจะดาวน์โหลด %1$s</string>
+    <string name="runtime_setup_metered_confirm">ดาวน์โหลดเลย</string>
+    <string name="runtime_setup_cancel_title">หยุดการตั้งค่าไหม</string>
+    <string name="runtime_setup_cancel_body">สิ่งที่ดาวน์โหลดไปแล้วจะถูกลบ ตั้งค่าใหม่ได้ทุกเมื่อ</string>
+    <string name="runtime_setup_cancel_confirm">หยุดและลบ</string>
+    <string name="runtime_setup_keep_going">ทำต่อ</string>
+    <string name="runtime_space_needed">ต้องใช้</string>
+    <string name="runtime_space_free">ว่างตอนนี้</string>
+
+    <string name="runtime_section_status">สถานะ</string>
+    <string name="runtime_section_options">ตัวเลือก</string>
+    <string name="runtime_section_update">อัปเดต harness</string>
+    <string name="runtime_section_storage">พื้นที่จัดเก็บ</string>
+    <string name="runtime_section_log">บันทึก</string>
+    <string name="runtime_section_reliability">ให้ทำงานต่อเนื่อง</string>
+    <string name="runtime_status_not_set_up">ยังไม่ได้ตั้งค่า</string>
+    <string name="runtime_status_stopped">หยุดอยู่</string>
+    <string name="runtime_status_needs_attention">ต้องตรวจสอบ</string>
+    <string name="runtime_info_uptime">ทำงานมาแล้ว</string>
+    <string name="runtime_info_harness">harness</string>
+    <string name="runtime_info_release">รุ่นของรันไทม์</string>
+    <string name="runtime_info_port">พอร์ต</string>
+    <string name="runtime_uptime_just_now">ไม่ถึงนาที</string>
+    <string name="runtime_uptime_minutes">%1$s นาที</string>
+    <string name="runtime_uptime_hours">%1$s ชม. %2$s นาที</string>
+
+    <string name="runtime_switch_auto_start">เริ่ม harness ในตัวเมื่อเปิดแอป</string>
+    <string name="runtime_switch_auto_start_hint">เฉพาะในโหมดเครื่องนี้ และเฉพาะเมื่อยังไม่ได้ทำงานอยู่</string>
+    <string name="runtime_switch_wake_lock">ไม่ให้เครื่องหลับขณะทำงาน</string>
+    <string name="runtime_switch_wake_lock_hint">คำตอบยาวๆ ยังทำต่อได้แม้ปิดหน้าจอ แต่กินแบตมากขึ้น</string>
+    <string name="runtime_switch_fast_start">เริ่มเร็ว</string>
+    <string name="runtime_switch_fast_start_hint">โหลด harness จากไฟล์ที่แพ็กไว้ ถ้าเริ่มไม่ขึ้นให้ปิดตัวเลือกนี้ มีผลในการเริ่มครั้งถัดไป</string>
+
+    <string name="runtime_update_available">มี harness %1$s แล้ว</string>
+    <string name="runtime_update_what_harness">อัปเดต harness ต้องดาวน์โหลด %1$s</string>
+    <string name="runtime_update_what_both">อัปเดตระบบและ harness ต้องดาวน์โหลด %1$s</string>
+    <string name="runtime_update_versions">%1$s → %2$s</string>
+    <string name="runtime_update_button">อัปเดต</string>
+    <string name="runtime_update_check">ตรวจหาอัปเดต</string>
+    <string name="runtime_update_checking">กำลังตรวจหา…</string>
+    <string name="runtime_update_none">เป็นเวอร์ชันล่าสุดแล้ว</string>
+    <string name="runtime_update_rolled_back">harness %1$s เริ่มไม่ได้ จึงกลับไปใช้เวอร์ชันก่อนหน้า</string>
+
+    <string name="runtime_storage_runtime">รันไทม์</string>
+    <string name="runtime_storage_data">เซสชันและการตั้งค่า</string>
+    <string name="runtime_storage_other">ไฟล์ดาวน์โหลดและบันทึก</string>
+    <string name="runtime_remove">ลบรันไทม์</string>
+    <string name="runtime_remove_title">ลบรันไทม์ไหม</string>
+    <string name="runtime_remove_body">จะได้พื้นที่คืนประมาณ %1$s เซสชันและการตั้งค่าของ harness ยังอยู่ ตั้งค่าใหม่เมื่อไหร่ก็ใช้ต่อจากเดิมได้</string>
+    <string name="runtime_delete_all">ลบทั้งหมด</string>
+    <string name="runtime_delete_all_title">ลบทั้งหมดไหม</string>
+    <string name="runtime_delete_all_body">จะลบรันไทม์ รวมทั้งเซสชัน การตั้งค่า และพื้นที่ทำงานทั้งหมดของ harness ในเครื่องนี้ ย้อนกลับไม่ได้</string>
+
+    <string name="runtime_log_empty">ยังไม่มีบันทึก</string>
+    <string name="runtime_log_share">แชร์</string>
+    <string name="runtime_log_copied">คัดลอกบันทึกแล้ว</string>
+
+    <string name="runtime_check_notifications">การแจ้งเตือน</string>
+    <string name="runtime_check_notifications_on">เปิดอยู่ คุณจะเห็นเมื่อ harness ทำงาน</string>
+    <string name="runtime_check_notifications_off">ปิดอยู่ เปิดไว้เพื่อให้เห็นว่า harness ทำงานอยู่ตอนไหน</string>
+    <string name="runtime_check_battery">การเพิ่มประสิทธิภาพแบตเตอรี่</string>
+    <string name="runtime_check_battery_on">ไม่ถูกจำกัด</string>
+    <string name="runtime_check_battery_off">ถูกจำกัด Android อาจหยุด harness ตอนอยู่เบื้องหลัง</string>
+    <string name="runtime_check_child">ขีดจำกัดโปรเซสเบื้องหลัง</string>
+    <string name="runtime_check_child_body_12">Android 12 และ 13 อาจหยุดแอปที่รันโปรเซสเบื้องหลังจำนวนมาก ถ้า harness หยุดไปเอง ให้เปิด DSH ค้างไว้ขณะที่มันทำงาน</string>
+    <string name="runtime_check_child_body_14">Android อาจหยุดแอปที่รันโปรเซสจำนวนมาก ถ้า harness หยุดไปเอง ให้เปิด \"ปิดใช้ข้อจำกัดของกระบวนการย่อย\" ในตัวเลือกสำหรับนักพัฒนาซอฟต์แวร์</string>
+    <string name="runtime_check_child_off">ปิดข้อจำกัดของกระบวนการย่อยแล้ว</string>
+    <string name="runtime_check_open">เปิดการตั้งค่าระบบ</string>
+    <string name="runtime_check_footer">แต่ละแถวจะเปิดหน้าการตั้งค่าระบบที่ใช้เปลี่ยนค่านั้น</string>
+
+    <string name="runtime_termux_heading">harness ใน Termux</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">กำลังอัปเดตเป็นรุ่น %1$s…</string>
+    <string name="runtime_update_going_back_to">กำลังกลับไปใช้รุ่น %1$s…</string>
+    <string name="runtime_update_rolled_back_title">เวอร์ชันใหม่เริ่มไม่ได้ จึงกลับไปใช้เวอร์ชันก่อนหน้า</string>
+    <string name="runtime_update_rolled_back_detail">รุ่น %1$s จะไม่ติดตั้งเองอีก ตอนนี้คุณใช้รุ่น %2$s</string>
+    <string name="runtime_update_needs_app_title">อัปเดต harness ต้องใช้แอปที่ใหม่กว่านี้</string>
+    <string name="runtime_update_skipped">คุณกลับมาจากรุ่น %1$s</string>
+    <string name="runtime_update_skipped_hint">รุ่นนี้จะไม่ติดตั้งเองและจะไม่แจ้งเตือน ส่วนรุ่นที่ใหม่กว่าจะแสดงตามปกติ</string>
+    <string name="runtime_update_anyway">อัปเดตเลย</string>
+    <string name="runtime_update_done">ตอนนี้ใช้รุ่น %1$s</string>
+    <string name="runtime_update_went_back_done">คุณกลับมาใช้รุ่น %1$s แล้ว</string>
+    <string name="runtime_update_previous">เวอร์ชันก่อนหน้า</string>
+    <string name="runtime_update_go_back">ย้อนกลับ</string>
+    <string name="runtime_go_back_title">กลับไปใช้รุ่น %1$s ไหม</string>
+    <string name="runtime_go_back_body">harness จะกลับไปเป็นเวอร์ชัน %1$s ถ้ากำลังทำงานอยู่ จะเริ่มใหม่และแอปจะเชื่อมต่อใหม่เอง เซสชันและการตั้งค่าของคุณยังอยู่ครบ รุ่น %2$s จะไม่ติดตั้งเองจนกว่าจะมีรุ่นที่ใหม่กว่าออกมา</string>
+    <string name="runtime_switch_notify_updates">แจ้งฉันเมื่อมี harness เวอร์ชันใหม่</string>
+    <string name="runtime_switch_notify_updates_hint">แจ้งเตือนครั้งเดียวต่อหนึ่งรุ่นใหม่</string>
+    <string name="runtime_switch_auto_update">ติดตั้งอัปเดตเอง</string>
+    <string name="runtime_switch_auto_update_hint">เฉพาะเมื่อใช้ Wi-Fi หรือเครือข่ายอื่นที่ไม่จำกัดปริมาณ และเฉพาะตอนที่ harness หยุดอยู่หรือว่างอยู่ แล้วจะแจ้งให้ทราบว่ามีอะไรเปลี่ยน</string>
+    <string name="runtime_notif_channel_updates">อัปเดต harness</string>
+    <string name="runtime_notif_update_title">มีอัปเดต harness</string>
+    <string name="runtime_notif_update_text">รุ่น %1$s, harness %2$s แตะเพื่อดูว่าอะไรจะเปลี่ยน</string>
+    <string name="runtime_notif_updated_title">อัปเดต harness แล้ว</string>
+    <string name="runtime_notif_updated_text">ตอนนี้ใช้รุ่น %1$s, harness %2$s</string>
+    <string name="runtime_notif_rolled_back_title">อัปเดต harness เริ่มไม่ได้</string>
+    <string name="runtime_notif_rolled_back_text">กลับมาใช้รุ่น %1$s แล้ว แตะเพื่อดูสาเหตุ</string>
+    <string name="runtime_chat_crashed">harness บนโทรศัพท์เครื่องนี้หยุดไปกะทันหัน เซสชันของคุณยังอยู่ครบ</string>
+    <string name="runtime_chat_stopped">harness บนโทรศัพท์เครื่องนี้ไม่ได้ทำงานอยู่</string>
+    <string name="runtime_chat_restarting">กำลังเริ่ม harness บนโทรศัพท์เครื่องนี้…</string>
+    <string name="runtime_chat_updating">กำลังอัปเดต harness บนโทรศัพท์เครื่องนี้ แชตจะกลับมาเมื่อเสร็จ</string>
+    <string name="runtime_update_nothing_to_download">ไม่ต้องดาวน์โหลด ยังมีอยู่ในโทรศัพท์จากก่อนหน้านี้</string>
+    <string name="runtime_update_metered_body">คุณใช้การเชื่อมต่อแบบจำกัดปริมาณ อัปเดตนี้จะดาวน์โหลด %1$s</string>
+    <string name="cmdperm_v1_update">harness เวอร์ชันนี้อาจตัดคำสั่งที่ยาวให้สั้นลงตอนถามคุณ คุณจึงอาจเห็นไม่ครบ อัปเดต harness ก่อนจะวางใจ “ถามฉันก่อน”</string>
+</resources>

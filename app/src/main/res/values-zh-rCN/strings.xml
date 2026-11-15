@@ -304,7 +304,7 @@
     <string name="update_open">查看新版本</string>
     <string name="update_later">稍后</string>
     <string name="settings_update_check">检查更新</string>
-    <string name="settings_update_check_hint">应用启动时会向 GitHub 查询最新版本，隔几个小时再回到应用时也会查询一次。</string>
+    <string name="settings_update_check_hint">向 GitHub 查询应用有没有新版本；如果这台手机上设置了 harness，也会查询它。应用启动时查询一次，隔几个小时再回到应用时再查询一次。</string>
     <string name="connect_mode_lan">局域网</string>
     <string name="connect_mode_relay">中继</string>
     <string name="pair_title">配对中继</string>
@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">打开设置</string>
     <string name="shortcuts_close">关闭面板或对话框</string>
     <string name="chat_drop_hint">将文件拖到这里即可添加</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">正在本机上安装 harness</string>
+    <string name="runtime_notif_downloading">正在下载，已完成 %1$d%%</string>
+    <string name="runtime_notif_unpacking">正在解压文件</string>
+    <string name="runtime_notif_starting">正在本机上启动 harness</string>
+    <string name="runtime_notif_running">harness 正在本机上运行</string>
+    <string name="runtime_notif_running_text">正在监听端口 %1$d</string>
 </resources>

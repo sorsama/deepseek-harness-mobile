@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_section_commands">কমান্ড</string>
+    <string name="cmdperm_title">এজেন্ট যখন কোনো কমান্ড চালাতে চায়</string>
+    <string name="cmdperm_run">চালিয়ে দিন</string>
+    <string name="cmdperm_run_desc">কমান্ড সঙ্গে সঙ্গে চলে, আপনাকে জিজ্ঞেস করা হয় না।</string>
+    <string name="cmdperm_ask">আগে আমাকে জিজ্ঞেস করুন</string>
+    <string name="cmdperm_ask_desc">আপনি প্রতিটি কমান্ড দেখে ঠিক করেন সেটির অনুমতি দেবেন নাকি বাতিল করবেন।</string>
+    <string name="cmdperm_explain_title">ফোনে কমান্ড অন্যভাবে চলে</string>
+    <string name="cmdperm_explain_body">কম্পিউটারে harness কমান্ডকে sandbox-এর ভেতরে চালাতে পারে। Android তা করতে দেয় না, তাই এখানে একটি কমান্ড harness-এর নিজের স্টোরেজের যেকোনো কিছু বদলাতে পারে।</string>
+    <string name="cmdperm_explain_safe_label">এখনও সুরক্ষিত</string>
+    <string name="cmdperm_explain_safe">harness এই অ্যাপের ভেতরেই থাকে। এটি আপনার ছবি, পরিচিতি, মেসেজ বা অন্য অ্যাপ দেখতে পারে না।</string>
+    <string name="cmdperm_explain_risk_label">সুরক্ষিত নয়</string>
+    <string name="cmdperm_explain_risk">এটি ইন্টারনেট ব্যবহার করতে পারে, আর কোনো কমান্ড আপনার ওয়ার্কস্পেস বা harness-এর সেটিংস ও সংরক্ষিত API কী মুছে দিতে পারে।</string>
+    <string name="cmdperm_explain_later">পরে harness পেজে এটি বদলাতে পারবেন, আর যেকোনো চ্যাট তার অনুমতি বোতাম থেকে বদলাতে পারবেন।</string>
+    <string name="cmdperm_got_it">বুঝেছি</string>
+    <string name="cmdperm_restart_title">harness আবার চালু করবেন?</string>
+    <string name="cmdperm_restart_body">আবার চালু করার পরে যে চ্যাট শুরু করবেন সেগুলোতে আপনার পছন্দ খাটবে। আগের চ্যাটগুলো নিজের সেটিং রাখে, আর যেকোনোটি তার অনুমতি বোতাম থেকে বদলাতে পারবেন।</string>
+    <string name="cmdperm_restart_now">এখনই আবার চালু করুন</string>
+    <string name="cmdperm_later">পরে</string>
+    <string name="cmdperm_pending">harness এখনও “%1$s” দিয়ে চলছে। নতুন চ্যাটে আপনার পছন্দ পেতে এটি আবার চালু করুন।</string>
+    <string name="cmdperm_unsupported">harness-এর এই সংস্করণ কমান্ডের আগে জিজ্ঞেস করতে পারে না। আপডেট করলে বেছে নিতে পারবেন কমান্ড সঙ্গে সঙ্গে চলবে নাকি আগে আপনাকে জিজ্ঞেস করবে।</string>
+
+    <string name="permission_preset_ask_commands">কমান্ডের আগে জিজ্ঞেস করুন</string>
+    <string name="permission_preset_ask_commands_desc">প্রতিটি কমান্ডের আগে এবং ওয়ার্কস্পেসের বাইরে কোনো পরিবর্তনের আগে আপনাকে জিজ্ঞেস করে।</string>
+    <string name="permission_preset_full_access_desc">জিজ্ঞেস না করেই কমান্ড চালায় ও ফাইল বদলায়।</string>
+
+    <string name="approval_command_title">এই কমান্ড চালাবেন?</string>
+    <string name="approval_file_title">ওয়ার্কস্পেসের বাইরের ফাইল বদলাবেন?</string>
+    <string name="approval_tool_title">%1$s-এর অনুমতি দেবেন?</string>
+    <string name="approval_shortened">harness শুধু প্রথম ২,০০০ অক্ষর পাঠিয়েছে।</string>
+    <string name="approval_show_all">সব দেখান</string>
+    <string name="approval_show_less">কম দেখান</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">আরও %1$dটি অনুরোধ অপেক্ষায় আছে</item>
+        <item quantity="other">আরও %1$dটি অনুরোধ অপেক্ষায় আছে</item>
+    </plurals>
+
+    <string name="sandbox_notice_builtin">এই চ্যাটের সেটিংয়ের sandbox দরকার, আর ফোন সেটা দিতে পারে না, তাই ওই কমান্ড চলেনি। চ্যাটের সেটিং বদলে আবার বলুন।</string>
+    <string name="sandbox_notice_switch">“%1$s”-এ বদলান</string>
+    <string name="sandbox_notice_other">ওই কমান্ড চলেনি, কারণ এই চ্যাটের সেটিংয়ের sandbox দরকার আর harness যেখানে চলে সেখানে কোনো sandbox নেই। চ্যাটের অনুমতি বোতাম থেকে অন্য সেটিং বেছে নিতে পারেন।</string>
+    <string name="subagent_command_denied">সহকারী এজেন্ট আপনাকে জিজ্ঞেস করতে পারে না, তাই এই কমান্ড চলেনি।</string>
+    <string name="command_denied_rejected">আপনি না বলেছেন, তাই এটি চলেনি।</string>
+    <string name="command_denied_cancelled">আপনি উত্তর দেওয়ার আগেই প্রশ্নটি তুলে নেওয়া হয়েছে, তাই এটি চলেনি।</string>
+    <string name="command_denied_nobody">প্রশ্নের উত্তর দেওয়ার কেউ ছিল না, তাই এটি চলেনি। এজেন্ট কাজ করার সময় অ্যাপ সংযুক্ত রাখুন।</string>
+    <string name="command_denied_too_large">এটি পুরোটা দেখানোর জন্য খুব লম্বা ছিল (সীমা 256 KB), তাই আপনাকে জিজ্ঞেস করা হয়নি এবং এটি চলেনি। এজেন্টকে এটি ছোট ছোট ভাগে করতে বলা হয়েছে।</string>
+    <string name="command_denied_other">এই ফোনের কমান্ড চেক এটি থামিয়েছে, তাই এটি চলেনি।</string>
+</resources>

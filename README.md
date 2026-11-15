@@ -30,8 +30,11 @@ DSH Mobile connects to that harness and gives you the same controls in a native 
 start a task at your desk, then follow it, answer its questions and approve its commands from
 your phone.
 
-This is an unofficial, community-built app. It needs a harness running somewhere it can reach: on
-your computer, or on the phone itself through Termux.
+You do not need a computer. On most Android phones the app can run the harness itself: tap
+**Set up** once and the phone has its own harness. If you already run the harness on a computer,
+the app connects to that one instead, over your Wi-Fi or from anywhere through a relay.
+
+This is an unofficial, community-built app.
 
 The [project site](https://dshm.zyphite.com) has a one-page overview, and the
 [wiki](https://github.com/sorsama/deepseek-harness-mobile/wiki) has the full user guide.
@@ -78,8 +81,50 @@ The [project site](https://dshm.zyphite.com) has a one-page overview, and the
   own, true black for OLED screens and a text size you can change.
 - Use the app in English, Chinese, Hindi, Spanish, French, Arabic, Bengali, Portuguese,
   Russian, Urdu or Thai. Right-to-left languages are supported.
+- Update the app from inside the app: it downloads the new version, checks it, and hands it to
+  Android's installer.
 
 The [changelog](CHANGELOG.md) lists what changed in each release.
+
+## No computer needed: the harness on your phone (Beta)
+
+| Connect | Set-up | Harness page | Projects | Approval |
+|:--:|:--:|:--:|:--:|:--:|
+| <img src="docs/images/on-device/connect.png" width="160" alt="The Connect screen on This phone, with the built-in harness card and its Set up button"> | <img src="docs/images/on-device/setup.png" width="160" alt="The set-up page unpacking, with the explanation of how commands work on a phone"> | <img src="docs/images/on-device/control.png" width="160" alt="The harness page with the command choice, projects and harness updates"> | <img src="docs/images/on-device/projects.png" width="160" alt="Projects on this phone, with a cloned repository"> | <img src="docs/images/on-device/approval.png" width="160" alt="A command waiting for Allow once or Don't allow, shown in full"> |
+| A new install opens here. | Download, check, unpack, start, sign in. | Start, stop, commands, updates, storage, log. | Clone, import, share and open in Files. | With Ask me first, every command waits for you. |
+
+**Beta.** The built-in harness is new in 0.22.0 and was tested on emulators and one Samsung phone, so it may not work on every phone yet. A harness on your computer (Local network, Relay) or in Termux works as before.
+
+The app can run the DeepSeek Harness inside itself: a small Linux system with Node.js and the
+harness, downloaded once, checked against a signature, and run with `proot`. It is the same harness
+you would run on a computer, with the same sessions and tools.
+
+- **What it costs.** About 155 MB to download the first time and about 1.1 GB on the phone (1.4 GB
+  free while it sets up). The harness uses about 300 to 400 MB of memory while it runs. It needs a
+  64-bit phone with Android 8.0 or newer, and an API key for a model provider, which you add in the
+  app (Settings, Models).
+- **What it can do.** Chats, agents and subagents, files and shell commands (`git`, `node`,
+  `npm`, `curl`, more through `apt-get`), cloning Git repositories, and everything the app does with
+  a harness on a computer.
+- **What it cannot do.** Run commands in a sandbox (Android allows none inside an app), reach your
+  photos, downloads or other apps, or run a model on the phone. It talks to your model provider over
+  the internet.
+- **Commands.** You choose what happens when the agent wants to run a command: **Run it**, or **Ask
+  me first**, which shows each command in full and waits for Allow or Reject. Either way the harness
+  stays inside the app; a command can use the internet and change the harness's own files and
+  projects.
+- **Your files.** Projects live in the app and show up in the system Files app under **DSH Mobile**,
+  so you can open them, copy files in and out, or share a project as a zip.
+- **Updates.** New harness versions arrive without an app update: the app tells you once and
+  installs them when you tap Update (or by itself on Wi-Fi, if you turn that on). If a new version
+  does not start, the previous one comes back. The app itself updates from **Settings, About**.
+  The two are separate.
+- **Keeping it running.** Android stops background work. The harness page has a checklist
+  (notifications, battery, the background process limit), and some phone makers need their own
+  setting.
+
+The full guide, with troubleshooting by the messages the app shows, is
+[`harness/ON-DEVICE.md`](harness/ON-DEVICE.md).
 
 ## Getting started
 
@@ -90,8 +135,9 @@ and install it. You need Android 8.0 or newer.
 
 ### 2. Make the harness reachable
 
-The harness only listens on its own computer by default. Pick the setup that matches where your
-phone will be.
+With the built-in harness (above) there is nothing to set up here: choose **This phone** and tap
+**Set up**. To use a harness on a computer instead, it only listens on that computer by default.
+Pick the setup that matches where your phone will be.
 
 #### Same Wi-Fi as the computer
 
@@ -122,10 +168,13 @@ the app, choose **This phone** and sign in with the link `dsh web` printed.
 
 #### On the phone itself
 
-The harness can run in [Termux](https://f-droid.org/packages/com.termux/).
-Choose **This phone**, and the app can start and stop the harness and sign in for you. Setting up
-Node in Termux does not work on every device yet; read [`harness/TERMUX.md`](harness/TERMUX.md)
-first.
+Choose **This phone** and tap **Set up**: the app downloads and runs the harness itself, then signs
+in. See [`harness/ON-DEVICE.md`](harness/ON-DEVICE.md).
+
+If you prefer your own Node and harness versions, the harness can also run in
+[Termux](https://f-droid.org/packages/com.termux/) (open **Use Termux instead** on the same
+screen), and the app can start and stop it and sign in for you. Setting up Node in Termux does not
+work on every device yet; read [`harness/TERMUX.md`](harness/TERMUX.md) first.
 
 #### Your own HTTPS reverse proxy
 
@@ -150,6 +199,10 @@ giving out shell access.
   network you trust.
 - Relay mode adds encryption and a pinned certificate, and works from outside your network.
 - Keep the `dsh web` link private. Anyone who has it can sign in until the harness restarts.
+- The built-in harness stays inside the app and cannot see your photos, contacts or other apps,
+  but there is no sandbox for its commands: a command can use the internet and change the
+  harness's own files, settings and saved API keys. Choose **Ask me first** to read each command
+  before it runs.
 
 ## Compatibility
 
@@ -181,7 +234,7 @@ development loop, the module layout and the release steps.
 | `conformance/` | Tests that start a real harness and check every call the app makes |
 | `mock-harness/` | A small fake harness server for tests |
 | `tools/capture/` | Records real harness traffic as test fixtures |
-| `harness/` | Setup guides for local network and Termux |
+| `harness/` | Setup guides for the built-in harness, local network and Termux |
 | `docs/` | [Architecture](docs/ARCHITECTURE.md), [protocol notes](docs/PROTOCOL.md), [compatibility](docs/COMPATIBILITY.md), [security](docs/SECURITY.md) |
 
 The relay plugin lives in its own repository,

@@ -304,7 +304,7 @@
     <string name="update_open">عرض الإصدار</string>
     <string name="update_later">لاحقًا</string>
     <string name="settings_update_check">التحقق من التحديثات</string>
-    <string name="settings_update_check_hint">يسأل GitHub عن أحدث إصدار عند بدء التطبيق، ومرة أخرى عند عودتك إليه بعد ساعات.</string>
+    <string name="settings_update_check_hint">يسأل GitHub عن إصدار أحدث من التطبيق، وعن harness أحدث إن كان مُعدًّا على هذا الهاتف. عند بدء التطبيق، ومرة أخرى عند عودتك إليه بعد ساعات.</string>
     <string name="connect_mode_lan">الشبكة المحلية</string>
     <string name="connect_mode_relay">مُرحِّل</string>
     <string name="pair_title">اقتران بمُرحِّل</string>
@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">فتح الإعدادات</string>
     <string name="shortcuts_close">إغلاق النافذة أو الحوار</string>
     <string name="chat_drop_hint">أفلت الملفات هنا لإرفاقها</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">جارٍ إعداد harness على هذا الهاتف</string>
+    <string name="runtime_notif_downloading">جارٍ التنزيل، اكتمل %1$d%%</string>
+    <string name="runtime_notif_unpacking">جارٍ فك الملفات</string>
+    <string name="runtime_notif_starting">جارٍ بدء harness على هذا الهاتف</string>
+    <string name="runtime_notif_running">harness يعمل على هذا الهاتف</string>
+    <string name="runtime_notif_running_text">يستمع على المنفذ %1$d</string>
 </resources>

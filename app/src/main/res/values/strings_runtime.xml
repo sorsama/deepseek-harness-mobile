@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The built-in harness: the Connect card, the set-up page and the control page. -->
+<resources>
+
+    <string name="runtime_action_show_progress_label">open the set-up page</string>
+
+    <string name="runtime_card_title">Built-in harness</string>
+    <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
+    <string name="runtime_card_intro">The easiest way to start: the harness runs inside this app, with no computer and no Termux.</string>
+    <string name="runtime_card_sizes">%1$s to download, about %2$s on the phone</string>
+    <string name="runtime_card_setting_up">Setting up…</string>
+    <string name="runtime_card_stopped">Installed and ready to start.</string>
+    <string name="runtime_card_starting">Starting the harness…</string>
+    <string name="runtime_card_stopping">Stopping the harness…</string>
+    <string name="runtime_card_running">Running on port %1$s</string>
+    <string name="runtime_card_signed_out">It\'s running, but the app isn\'t signed in. A restart fixes that.</string>
+    <string name="runtime_card_update">Update available</string>
+    <string name="runtime_card_updating">Updating…</string>
+    <string name="runtime_card_rolled_back">The last update didn\'t start, so the version before it is back.</string>
+    <string name="runtime_use_termux">Use Termux instead</string>
+    <string name="runtime_state_expanded">Expanded</string>
+    <string name="runtime_state_collapsed">Collapsed</string>
+
+
+    <string name="runtime_step_done">Done</string>
+    <string name="runtime_step_active">In progress</string>
+    <string name="runtime_step_pending">Not started</string>
+    <string name="runtime_step_failed">Didn\'t finish</string>
+
+    <string name="runtime_progress_speed">%1$s per second</string>
+    <string name="runtime_progress_minutes_left">about %1$s min left</string>
+    <string name="runtime_progress_seconds_left">about %1$s s left</string>
+
+    <string name="runtime_setup_title">Set up the built-in harness</string>
+    <string name="runtime_setup_intro">DSH downloads a small Linux system with the harness in it and runs it inside the app. It all stays on this phone, apart from what you send to your model provider.</string>
+    <string name="runtime_beta_badge">Beta</string>
+    <string name="runtime_setup_beta_note">This is new and may not work on every phone yet. Running the harness on your computer or in Termux still works as before.</string>
+    <string name="runtime_setup_start">Download and set up</string>
+    <string name="runtime_setup_start_sized">Download and set up (%1$s)</string>
+    <string name="runtime_setup_working_title">Setting up</string>
+    <string name="runtime_setup_leave_hint">You can leave this page. Setting up carries on in the background.</string>
+    <string name="runtime_setup_no_space_title">Not enough space</string>
+    <string name="runtime_setup_failed_title">Setting up stopped</string>
+    <string name="runtime_setup_failed_body">Nothing half-finished was left behind.</string>
+    <string name="runtime_setup_done_title">Your harness is ready</string>
+    <string name="runtime_setup_done_body">It runs on this phone whenever you need it.</string>
+    <string name="runtime_setup_connecting">Connecting…</string>
+    <string name="runtime_setup_metered_title">Use mobile data?</string>
+    <string name="runtime_setup_metered_body">You\'re on a metered connection. Setting up downloads %1$s.</string>
+    <string name="runtime_setup_metered_confirm">Download anyway</string>
+    <string name="runtime_setup_cancel_title">Stop setting up?</string>
+    <string name="runtime_setup_cancel_body">What\'s been downloaded so far will be deleted. You can set it up again any time.</string>
+    <string name="runtime_setup_cancel_confirm">Stop and delete</string>
+    <string name="runtime_setup_keep_going">Keep going</string>
+    <string name="runtime_space_needed">Needed</string>
+    <string name="runtime_space_free">Free now</string>
+
+    <string name="runtime_section_status">Status</string>
+    <string name="runtime_section_options">Options</string>
+    <string name="runtime_section_update">Harness updates</string>
+    <string name="runtime_section_storage">Storage</string>
+    <string name="runtime_section_log">Log</string>
+    <string name="runtime_section_reliability">Keep it running</string>
+    <string name="runtime_status_not_set_up">Not set up</string>
+    <string name="runtime_status_stopped">Stopped</string>
+    <string name="runtime_status_needs_attention">Needs a look</string>
+    <string name="runtime_info_uptime">Running for</string>
+    <string name="runtime_info_harness">Harness</string>
+    <string name="runtime_info_release">Runtime release</string>
+    <string name="runtime_info_port">Port</string>
+    <string name="runtime_uptime_just_now">Under a minute</string>
+    <string name="runtime_uptime_minutes">%1$s min</string>
+    <string name="runtime_uptime_hours">%1$s h %2$s min</string>
+
+    <string name="runtime_switch_auto_start">Start the built-in harness when the app opens</string>
+    <string name="runtime_switch_auto_start_hint">Only in This phone mode, and only if it isn\'t running already.</string>
+    <string name="runtime_switch_wake_lock">Keep the phone awake while it runs</string>
+    <string name="runtime_switch_wake_lock_hint">Long replies keep going with the screen off. Uses more battery.</string>
+    <string name="runtime_switch_fast_start">Fast start</string>
+    <string name="runtime_switch_fast_start_hint">Loads the harness from a packed bundle. Turn it off if starting fails. Takes effect the next time it starts.</string>
+
+    <string name="runtime_update_available">Harness %1$s is available</string>
+    <string name="runtime_update_what_harness">Updates the harness. %1$s to download.</string>
+    <string name="runtime_update_what_both">Updates the system and the harness. %1$s to download.</string>
+    <string name="runtime_update_versions">%1$s → %2$s</string>
+    <string name="runtime_update_button">Update</string>
+    <string name="runtime_update_check">Check for updates</string>
+    <string name="runtime_update_checking">Checking…</string>
+    <string name="runtime_update_none">You\'re up to date.</string>
+    <string name="runtime_update_rolled_back">Harness %1$s didn\'t start, so the version before it is back.</string>
+
+    <string name="runtime_storage_runtime">Runtime</string>
+    <string name="runtime_storage_data">Sessions and settings</string>
+    <string name="runtime_storage_other">Downloads and logs</string>
+    <string name="runtime_remove">Remove runtime</string>
+    <string name="runtime_remove_title">Remove the runtime?</string>
+    <string name="runtime_remove_body">This frees about %1$s. Your sessions and harness settings stay, so setting it up again picks up where you left off.</string>
+    <string name="runtime_delete_all">Delete everything</string>
+    <string name="runtime_delete_all_title">Delete everything?</string>
+    <string name="runtime_delete_all_body">This removes the runtime and all of the harness\'s sessions, settings and workspaces on this phone. You can\'t undo it.</string>
+
+    <string name="runtime_log_empty">Nothing logged yet.</string>
+    <string name="runtime_log_share">Share</string>
+    <string name="runtime_log_copied">Log copied</string>
+
+    <string name="runtime_check_notifications">Notifications</string>
+    <string name="runtime_check_notifications_on">On. You\'ll see when the harness is running.</string>
+    <string name="runtime_check_notifications_off">Off. Turn them on to see when the harness is running.</string>
+    <string name="runtime_check_battery">Battery optimisation</string>
+    <string name="runtime_check_battery_on">Not restricted.</string>
+    <string name="runtime_check_battery_off">Restricted. Android may stop the harness in the background.</string>
+    <string name="runtime_check_child">Background process limit</string>
+    <string name="runtime_check_child_body_12">Android 12 and 13 can stop apps that run many processes in the background. If the harness stops on its own, keep DSH open while it works.</string>
+    <string name="runtime_check_child_body_14">Android can stop apps that run many processes. If the harness stops on its own, turn on \"Disable child process restrictions\" in Developer options.</string>
+    <string name="runtime_check_child_off">Child process restrictions are off.</string>
+    <string name="runtime_check_open">open the system setting</string>
+    <string name="runtime_check_footer">Each row opens the system screen where it\'s changed.</string>
+
+    <string name="runtime_termux_heading">Harness in Termux</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">Updating to release %1$s…</string>
+    <string name="runtime_update_going_back_to">Going back to release %1$s…</string>
+    <string name="runtime_update_rolled_back_title">The new version didn\'t start, so the previous one is back.</string>
+    <string name="runtime_update_rolled_back_detail">Release %1$s won\'t install by itself again. You\'re on release %2$s.</string>
+    <string name="runtime_update_needs_app_title">A harness update needs a newer app</string>
+    <string name="runtime_update_skipped">You went back from release %1$s</string>
+    <string name="runtime_update_skipped_hint">It won\'t install by itself or notify you. Newer releases are offered as usual.</string>
+    <string name="runtime_update_anyway">Update anyway</string>
+    <string name="runtime_update_done">Now on release %1$s.</string>
+    <string name="runtime_update_went_back_done">You\'re back on release %1$s.</string>
+    <string name="runtime_update_previous">Previous version</string>
+    <string name="runtime_update_go_back">Go back</string>
+    <string name="runtime_go_back_title">Go back to release %1$s?</string>
+    <string name="runtime_go_back_body">The harness goes back to version %1$s. If it\'s running, it restarts and the app reconnects by itself. Your sessions and settings stay. Release %2$s won\'t install by itself until a newer one comes out.</string>
+    <string name="runtime_switch_notify_updates">Tell me about new harness versions</string>
+    <string name="runtime_switch_notify_updates_hint">One notification for each new release.</string>
+    <string name="runtime_switch_auto_update">Install updates by themselves</string>
+    <string name="runtime_switch_auto_update_hint">Only on Wi-Fi or another unmetered network, and only while the harness is stopped or idle. You\'ll be told what changed.</string>
+    <string name="runtime_notif_channel_updates">Harness updates</string>
+    <string name="runtime_notif_update_title">Harness update available</string>
+    <string name="runtime_notif_update_text">Release %1$s, harness %2$s. Tap to see what changes.</string>
+    <string name="runtime_notif_updated_title">Harness updated</string>
+    <string name="runtime_notif_updated_text">Now on release %1$s, harness %2$s.</string>
+    <string name="runtime_notif_rolled_back_title">The harness update didn\'t start</string>
+    <string name="runtime_notif_rolled_back_text">Release %1$s is back. Tap to see why.</string>
+    <string name="runtime_chat_crashed">The harness on this phone stopped unexpectedly. Your sessions are safe.</string>
+    <string name="runtime_chat_stopped">The harness on this phone isn\'t running.</string>
+    <string name="runtime_chat_restarting">Starting the harness on this phone…</string>
+    <string name="runtime_chat_updating">Updating the harness on this phone. The chat comes back when it\'s done.</string>
+    <string name="runtime_update_nothing_to_download">Nothing to download: it\'s still on the phone from before.</string>
+    <string name="runtime_update_metered_body">You\'re on a metered connection. This update downloads %1$s.</string>
+    <string name="cmdperm_v1_update">This harness version can shorten a long command when it asks you, so you might not see all of it. Update the harness before you rely on “Ask me first”.</string>
+</resources>

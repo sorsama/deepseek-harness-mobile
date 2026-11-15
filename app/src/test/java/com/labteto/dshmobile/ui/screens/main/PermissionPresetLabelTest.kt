@@ -134,6 +134,33 @@ class PermissionPresetLabelTest {
         assertTrue(zh.getValue("permission_preset_auto_desc").startsWith("无沙箱运行"))
     }
 
+    // ----- the built-in harness's two Android presets -----
+
+    @Test fun `the built-in harness's presets get the app's own labels and descriptions`() {
+        assertEquals(ShippedPermissionPreset.AskCommands, shippedPermissionPreset("ask-commands", "Ask before commands"))
+        assertEquals(ShippedPermissionPreset.AskCommands, shippedPermissionPreset("ask-commands", null))
+        assertEquals(R.string.permission_preset_ask_commands, permissionPresetLabelRes("ask-commands", "Ask before commands"))
+        assertEquals(R.string.permission_preset_full_access, permissionPresetLabelRes("danger-full-access", "Full access"))
+        assertEquals(R.string.permission_preset_ask_commands_desc, permissionPresetDescriptionRes("ask-commands", "Ask before commands"))
+        assertEquals(R.string.permission_preset_full_access_desc, permissionPresetDescriptionRes("danger-full-access", "Full access"))
+    }
+
+    @Test fun `desktop presets keep their labels and the harness's own descriptions`() {
+        assertEquals(R.string.permission_preset_read_only, permissionPresetLabelRes("read-only", "Read Only"))
+        assertEquals(R.string.permission_preset_workspace_write, permissionPresetLabelRes("workspace-write", "Workspace Write"))
+        assertEquals(null, permissionPresetDescriptionRes("read-only", "Read Only"))
+        assertEquals(null, permissionPresetDescriptionRes("workspace-write", "Workspace Write"))
+    }
+
+    @Test fun `unknown ids and renamed presets fall back to the harness's names`() {
+        assertEquals(null, permissionPresetLabelRes("some-org-preset", "Some Org Preset"))
+        assertEquals("Some Org Preset", humanisedPresetLabel("some-org-preset", "Some Org Preset"))
+        assertEquals("Review Commands", humanisedPresetLabel("review-commands", null))
+        // A deployment that renamed the ask preset keeps its own name and description.
+        assertEquals(null, permissionPresetLabelRes("ask-commands", "Approve each command"))
+        assertEquals(null, permissionPresetDescriptionRes("ask-commands", "Approve each command"))
+    }
+
     @Test fun `string resources the composables read exist`() {
         // Guard the R entries the three entry points and the auto description read.
         val names = R.string::class.java.fields.map { it.name }.toSet()

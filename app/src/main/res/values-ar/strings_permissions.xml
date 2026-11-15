@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_section_commands">الأوامر</string>
+    <string name="cmdperm_title">عندما يريد الوكيل تشغيل أمر</string>
+    <string name="cmdperm_run">شغّله</string>
+    <string name="cmdperm_run_desc">تعمل الأوامر فورًا دون أن تُسأل.</string>
+    <string name="cmdperm_ask">اسألني أولًا</string>
+    <string name="cmdperm_ask_desc">ترى كل أمر وتختار السماح به أو رفضه.</string>
+    <string name="cmdperm_explain_title">الأوامر تعمل بطريقة مختلفة على الهاتف</string>
+    <string name="cmdperm_explain_body">على الحاسوب يستطيع harness تشغيل الأوامر داخل بيئة معزولة (sandbox). لا يسمح Android بذلك، لذا يستطيع الأمر هنا تغيير أي شيء في مساحة التخزين الخاصة بـ harness.</string>
+    <string name="cmdperm_explain_safe_label">ما زال محميًا</string>
+    <string name="cmdperm_explain_safe">يبقى harness داخل هذا التطبيق. لا يستطيع رؤية صورك أو جهات اتصالك أو رسائلك أو التطبيقات الأخرى.</string>
+    <string name="cmdperm_explain_risk_label">غير محمي</string>
+    <string name="cmdperm_explain_risk">يستطيع استخدام الإنترنت، وقد يحذف أمرٌ مساحة عملك أو إعدادات harness ومفاتيح API المحفوظة.</string>
+    <string name="cmdperm_explain_later">يمكنك تغيير هذا لاحقًا من صفحة harness، وتبديل أي محادثة من زر الإذن الخاص بها.</string>
+    <string name="cmdperm_got_it">حسنًا</string>
+    <string name="cmdperm_restart_title">إعادة تشغيل harness؟</string>
+    <string name="cmdperm_restart_body">ينطبق اختيارك على المحادثات التي تبدأها بعد إعادة التشغيل. تحتفظ المحادثات الحالية بإعدادها، ويمكنك تبديل أي منها من زر الإذن.</string>
+    <string name="cmdperm_restart_now">إعادة التشغيل الآن</string>
+    <string name="cmdperm_later">لاحقًا</string>
+    <string name="cmdperm_pending">ما زال harness يعمل على «%1$s». أعد تشغيله لتستخدم المحادثات الجديدة اختيارك.</string>
+    <string name="cmdperm_unsupported">لا يستطيع هذا الإصدار من harness السؤال قبل الأوامر. حدّثه لتختار بين تشغيل الأوامر فورًا أو سؤالك أولًا.</string>
+
+    <string name="permission_preset_ask_commands">السؤال قبل الأوامر</string>
+    <string name="permission_preset_ask_commands_desc">يسألك قبل كل أمر وقبل أي تغيير خارج مساحة العمل.</string>
+    <string name="permission_preset_full_access_desc">يشغّل الأوامر ويغيّر الملفات دون سؤال.</string>
+
+    <string name="approval_command_title">تشغيل هذا الأمر؟</string>
+    <string name="approval_file_title">تغيير ملف خارج مساحة العمل؟</string>
+    <string name="approval_tool_title">السماح بـ %1$s؟</string>
+    <string name="approval_shortened">أرسل harness أول 2000 حرف فقط.</string>
+    <string name="approval_show_all">عرض الكل</string>
+    <string name="approval_show_less">عرض أقل</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="zero">لا طلبات أخرى في الانتظار</item>
+        <item quantity="one">طلب واحد آخر في الانتظار</item>
+        <item quantity="two">طلبان آخران في الانتظار</item>
+        <item quantity="few">%1$d طلبات أخرى في الانتظار</item>
+        <item quantity="many">%1$d طلبًا آخر في الانتظار</item>
+        <item quantity="other">%1$d طلب آخر في الانتظار</item>
+    </plurals>
+
+    <string name="sandbox_notice_builtin">هذه المحادثة على إعداد يحتاج إلى بيئة معزولة، والهاتف لا يوفرها، لذلك لم يعمل ذلك الأمر. بدّل إعداد المحادثة ثم اطلب مرة أخرى.</string>
+    <string name="sandbox_notice_switch">التبديل إلى «%1$s»</string>
+    <string name="sandbox_notice_other">لم يعمل ذلك الأمر لأن إعداد هذه المحادثة يحتاج إلى بيئة معزولة وليست لدى harness واحدة حيث يعمل. يمكنك اختيار إعداد آخر من زر الإذن في المحادثة.</string>
+    <string name="subagent_command_denied">لا يستطيع الوكيل المساعد سؤالك، لذلك لم يعمل هذا الأمر.</string>
+    <string name="command_denied_rejected">رفضتَ ذلك، لذا لم يُنفَّذ.</string>
+    <string name="command_denied_cancelled">سُحب السؤال قبل أن تجيب، لذا لم يُنفَّذ.</string>
+    <string name="command_denied_nobody">لم يكن أحد موجودًا للإجابة عن السؤال، لذا لم يُنفَّذ. أبقِ التطبيق متصلًا أثناء عمل الوكيل.</string>
+    <string name="command_denied_too_large">كان هذا أطول من أن يُعرض عليك كاملًا (الحد 256 كيلوبايت)، لذا لم تُسأل ولم يُنفَّذ. طُلب من الوكيل تقسيمه إلى أجزاء أصغر.</string>
+    <string name="command_denied_other">أوقف فحص الأوامر على هذا الهاتف ذلك، لذا لم يُنفَّذ.</string>
+</resources>

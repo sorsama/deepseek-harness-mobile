@@ -281,8 +281,22 @@ data class PendingApproval(
     val approvalId: String,
     val rpcId: String,
     val toolName: String,
+    /** The reason in the reader's language where the harness sent one (`displayReason`), else the raw one. */
     val reason: String?,
+    /** The raw `reason`: the built-in runtime's `<tool>: <command>` format is read from this one. */
+    val rawReason: String? = reason,
+    /** More requests of the same session waiting behind this one; each is shown in turn. */
+    val waitingAfter: Int = 0,
 )
+
+/**
+ * Which open approval the panel shows: the one already on screen while it is open, else the
+ * oldest. A newer request never replaces the one being read.
+ *
+ * @param openIds the open requests' ids, oldest first.
+ */
+internal fun shownApprovalId(shownId: String?, openIds: List<String>): String? =
+    shownId?.takeIf { it in openIds } ?: openIds.firstOrNull()
 
 /** A pending ask_user_question batch (a plan review rides the same channel via its intent). */
 data class PendingQuestions(
@@ -681,7 +695,8 @@ class SessionStore @Inject constructor(
     // Pending Remote Event waterfalls this store can answer. Keyed by the frame's `eventId`,
     // which is both what an answer names and what a `cancel` frame withdraws — 0.1.2 mints no
     // separate approval id.
-    private val approvalRequests = HashMap<String, ApprovalRequest>() // eventId -> request
+    // In arrival order: the panel shows the oldest, and the next one takes its place once answered.
+    private val approvalRequests = LinkedHashMap<String, ApprovalRequest>() // eventId -> request
     private val questionEvents = PendingQuestionRegistry()
 
     // Open-session fold state.
@@ -733,6 +748,7 @@ class SessionStore @Inject constructor(
         val eventId: String,
         val toolName: String,
         val reason: String?,
+        val rawReason: String? = reason,
     )
     private data class ProjectionValue(val seq: Int, val value: JsonElement)
 
@@ -1041,10 +1057,12 @@ class SessionStore @Inject constructor(
         val approval = synchronized(lock) { approvalRequests.remove(eventId) }
         if (approval != null) {
             synchronized(lock) {
-                removePendingLocked(approval.sessionId, "approval")
+                // Another request of the session may still be open: the session still needs you.
+                if (approvalRequests.values.none { it.sessionId == approval.sessionId }) removePendingLocked(approval.sessionId, "approval")
                 emitSessionsLocked()
+                if (_pendingApproval.value?.approvalId == eventId) _pendingApproval.value = null
+                publishApprovalLocked()
             }
-            if (_pendingApproval.value?.approvalId == eventId) _pendingApproval.value = null
             return
         }
         val sessionId = synchronized(lock) {
@@ -1323,19 +1341,35 @@ class SessionStore @Inject constructor(
         val reason = request.reasonFor(java.util.Locale.getDefault().language)
         synchronized(lock) {
             approvalRequests[eventId] =
-                ApprovalRequest(sessionId, eventId, request.toolName, reason)
+                ApprovalRequest(sessionId, eventId, request.toolName, reason, request.reason)
             addPendingLocked(sessionId, "approval")
             emitSessionsLocked()
+            publishApprovalLocked()
         }
-        _pendingApproval.value = PendingApproval(
-            sessionId = sessionId,
-            // The event id is the approval id now: 0.1.2 correlates a pending request by the
-            // frame's own `eventId` and mints nothing separate.
-            approvalId = eventId,
-            rpcId = eventId,
-            toolName = request.toolName,
-            reason = reason,
-        )
+    }
+
+    /**
+     * Show the oldest open request, with how many of its session wait behind it.
+     *
+     * Oldest first, and never replaced by a newer one while it is open: two commands asked for at
+     * once (parallel tool calls) used to swap the panel's text under a thumb already on Allow, and
+     * the first request, no longer shown, could not be answered at all.
+     */
+    private fun publishApprovalLocked() {
+        val shownId = shownApprovalId(_pendingApproval.value?.approvalId, approvalRequests.keys.toList())
+        _pendingApproval.value = shownId?.let { approvalRequests[it] }?.let { request ->
+            PendingApproval(
+                sessionId = request.sessionId,
+                // The event id is the approval id now: 0.1.2 correlates a pending request by the
+                // frame's own `eventId` and mints nothing separate.
+                approvalId = request.eventId,
+                rpcId = request.eventId,
+                toolName = request.toolName,
+                reason = request.reason,
+                rawReason = request.rawReason,
+                waitingAfter = approvalRequests.values.count { it.sessionId == request.sessionId } - 1,
+            )
+        }
     }
 
     private fun handleQuestionRequested(
@@ -2427,7 +2461,10 @@ class SessionStore @Inject constructor(
         if (request == null) {
             log("no pending approval for id $approvalId")
             // Nothing to answer with, so nothing can arrive to take the panel away either.
-            if (_pendingApproval.value?.approvalId == approvalId) _pendingApproval.value = null
+            synchronized(lock) {
+                if (_pendingApproval.value?.approvalId == approvalId) _pendingApproval.value = null
+                publishApprovalLocked()
+            }
             return QuestionOutcome.Refused(NOT_PENDING)
         }
         val clientId = connectionManager.generation?.clientId
@@ -2791,6 +2828,26 @@ class SessionStore @Inject constructor(
             is RpcResult.Ok -> upsertWorkspace(r.value.workspace)
             is RpcResult.Err -> setConnectionError(r.error.message)
         }
+    }
+
+    /**
+     * Register [path] as a workspace (the harness answers the existing one for a known path) and
+     * open a session in it: "open this project" in one step. False when not connected or refused.
+     */
+    suspend fun openWorkspaceSession(path: String): Boolean {
+        val api = apiOrNull() ?: return false
+        val workspaceId = when (val r = api.workspaceCreate(WorkspaceCreateRequest(path))) {
+            is RpcResult.Ok -> {
+                upsertWorkspace(r.value.workspace)
+                r.value.workspace.workspaceId
+            }
+            is RpcResult.Err -> {
+                setConnectionError(r.error.message)
+                return false
+            }
+        }
+        createSession(workspaceId = workspaceId)
+        return true
     }
 
     suspend fun renameWorkspace(id: String, title: String) {

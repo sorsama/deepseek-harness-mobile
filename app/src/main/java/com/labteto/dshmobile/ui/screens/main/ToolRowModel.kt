@@ -128,7 +128,7 @@ internal fun toolRowModel(
     return ToolRowModel(
         variant = variant,
         title = viewTitle?.takeIf { it.isNotBlank() } ?: variant.title,
-        summary = summary,
+        summary = summary?.let(::rowSummaryText),
         filePath = filePathOf(variant, arguments),
     )
 }
@@ -171,4 +171,19 @@ private fun JsonElement?.asSummary(): String? = when (this) {
 private fun parseArguments(argumentsJson: String?): JsonObject? {
     val raw = argumentsJson?.takeIf { it.isNotBlank() } ?: return null
     return runCatching { LENIENT_JSON.parseToJsonElement(raw) as? JsonObject }.getOrNull()
+}
+
+/** The most of a summary a one-line row is given to lay out. */
+internal const val ROW_SUMMARY_MAX_CHARS = 400
+
+/**
+ * A summary cut to what a one-line row can show. The row ellipsizes anyway, but Android shapes the
+ * whole string before it cuts it: a 300 KB command handed to the row in full took the app's native
+ * heap past 3 GB on a phone emulator (the built-in harness's oversized-command check, found in the
+ * integration run). Only the first line is kept, and at most [ROW_SUMMARY_MAX_CHARS] characters of it.
+ */
+internal fun rowSummaryText(summary: String): String {
+    val firstLine = summary.lineSequence().firstOrNull { it.isNotBlank() } ?: summary
+    val cut = if (firstLine.length > ROW_SUMMARY_MAX_CHARS) firstLine.take(ROW_SUMMARY_MAX_CHARS) + "…" else firstLine
+    return if (cut.length < summary.length && !cut.endsWith("…")) "$cut…" else cut
 }

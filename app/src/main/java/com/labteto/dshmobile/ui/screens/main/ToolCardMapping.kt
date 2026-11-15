@@ -158,7 +158,8 @@ private fun terminalCard(
     // A background call has no output to show inline; it becomes a job instead.
     if (shell?.background == true || send?.background == true) return null
 
-    val command = shell?.command ?: send?.text.orEmpty()
+    // Shown, not run: cut a huge command (a model can send hundreds of KB) to what a card can lay out.
+    val command = cardCommandText(shell?.command ?: send?.text.orEmpty())
     val description = shell?.description
     val workdir = resolveTerminalCwd(shell?.workdir, cwd)
 
@@ -512,3 +513,10 @@ private fun mapContentBlock(block: com.labteto.dshmobile.core.wire.dto.ContentBl
             ContentBlockView.TextBlock("↳ result")
         else -> ContentBlockView.TextBlock(block.toString())
     }
+
+/** The most of a command a terminal card lays out; the full text stays in the call (Copy, Trajectory). */
+internal const val CARD_COMMAND_MAX_CHARS = 20_000
+
+/** [command] cut to [CARD_COMMAND_MAX_CHARS], with an ellipsis line saying it goes on. */
+internal fun cardCommandText(command: String): String =
+    if (command.length <= CARD_COMMAND_MAX_CHARS) command else command.take(CARD_COMMAND_MAX_CHARS) + "\n…"

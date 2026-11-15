@@ -116,6 +116,16 @@ data class ToolResultNode(
     val turn: Int,
     val step: Int,
     val meta: JsonElement? = null,
+    /**
+     * The structured failure code of a tool that threw (`tool/result`'s `error.code`, such as
+     * `SANDBOX_UNAVAILABLE`); null when the call succeeded or the harness gave no code.
+     */
+    val errorCode: String? = null,
+    /**
+     * The `name` beside [errorCode] (`tool/result`'s `error.name`), such as `SandboxUnavailableError`
+     * or the built-in runtime's `DshMobilePermissionDenied`; null when the harness gave none.
+     */
+    val errorName: String? = null,
 ) : ChatNode
 
 /**

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="projects_provider_summary">Projets du harness intégré</string>
+    <string name="projects_title">Projets sur ce téléphone</string>
+    <string name="projects_intro">Les dossiers de vos projets sur ce téléphone. Vous les voyez aussi dans l\'app Fichiers, sous %1$s.</string>
+    <string name="projects_files_hint">Les dossiers de vos projets apparaissent aussi dans l\'app Fichiers, sous %1$s, pour y copier des fichiers dans les deux sens.</string>
+    <string name="projects_section_list">Projets</string>
+    <plurals name="projects_count">
+        <item quantity="one">%1$d projet</item>
+        <item quantity="many">%1$d projets</item>
+        <item quantity="other">%1$d projets</item>
+    </plurals>
+    <string name="projects_space_label">Espace utilisé</string>
+    <string name="projects_space_used">%1$s utilisés</string>
+    <string name="projects_counting">Calcul…</string>
+    <string name="projects_row_detail">%1$s · %2$s</string>
+    <string name="projects_empty">Pas encore de projet. Commencez-en un ci-dessus, ou apportez-en un depuis votre téléphone.</string>
+    <string name="projects_more_for">Plus pour %1$s</string>
+    <string name="projects_manage">Gérer les projets</string>
+    <string name="projects_open_files">Ouvrir dans Fichiers</string>
+    <string name="projects_no_files_app">Aucune app de fichiers n\'a été trouvée sur ce téléphone.</string>
+
+    <string name="projects_start_header">Commencer un projet</string>
+    <string name="projects_new_empty">Nouveau projet vide</string>
+    <string name="projects_new_empty_hint">Un dossier vide pour repartir de zéro</string>
+    <string name="projects_clone">Cloner un dépôt Git</string>
+    <string name="projects_clone_hint">Copier un dépôt depuis GitHub ou un autre hébergeur</string>
+    <string name="projects_import_folder">Importer un dossier</string>
+    <string name="projects_import_folder_hint">Copie un dossier de ce téléphone dans l\'app</string>
+    <string name="projects_import_zip">Importer un .zip</string>
+    <string name="projects_import_zip_hint">Décompresse un zip dans un nouveau projet</string>
+
+    <string name="projects_name_label">Nom du projet</string>
+    <string name="projects_name_taken">Un projet porte déjà ce nom.</string>
+    <string name="projects_name_invalid">Choisissez un nom sans barre oblique.</string>
+    <string name="projects_create">Créer</string>
+    <string name="projects_change_failed">Ça n\'a pas marché. Réessayez.</string>
+    <string name="projects_in_use">Une autre tâche de projet est en cours. Attendez qu\'elle se termine.</string>
+
+    <string name="projects_clone_url">Adresse du dépôt</string>
+    <string name="projects_clone_branch">Branche ou tag (facultatif)</string>
+    <string name="projects_clone_private">Dépôt privé</string>
+    <string name="projects_clone_private_hint">Il faut un jeton d\'accès qui peut le lire</string>
+    <string name="projects_clone_token">Jeton d\'accès</string>
+    <string name="projects_clone_token_hint">Utilisé pour ce clonage uniquement. Il n\'est enregistré nulle part et Git ne le garde pas.</string>
+    <string name="projects_clone_start">Cloner</string>
+    <string name="projects_clone_bad_url">Saisissez l\'adresse web du dépôt, qui commence par https://</string>
+    <string name="projects_clone_ssh">Les adresses SSH ne sont pas encore prises en charge. Utilisez l\'adresse https:// du dépôt.</string>
+    <string name="projects_clone_credentials">Retirez le nom d\'utilisateur et le mot de passe de l\'adresse. Pour un dépôt privé, utilisez le champ du jeton.</string>
+    <string name="projects_clone_token_https">Un jeton ne peut être envoyé qu\'à une adresse https://.</string>
+    <string name="projects_clone_bad_branch">Git n\'accepte pas ce nom de branche ou de tag.</string>
+
+    <string name="projects_share_title">Partager %1$s en .zip</string>
+    <string name="projects_save_title">Enregistrer une copie de %1$s</string>
+    <string name="projects_export_skip">Ignorer les dossiers lourds</string>
+    <string name="projects_export_skip_hint">Laisse de côté node_modules, les caches et les sorties de compilation ignorées. On peut les recréer.</string>
+    <string name="projects_export_git">Inclure l\'historique Git</string>
+    <string name="projects_export_git_hint">Le dossier .git. Il peut être bien plus gros que le projet.</string>
+    <string name="projects_export_note">Le zip garde les fichiers et les dossiers. Les liens et les droits des fichiers ne sont pas conservés.</string>
+    <string name="projects_save_note">Vous choisissez un dossier du téléphone et une copie du projet y est placée. Les changements suivants ne sont pas synchronisés.</string>
+    <string name="projects_export_make">Créer le zip</string>
+    <string name="projects_save_choose">Choisir un dossier</string>
+    <string name="projects_share_chooser">Partager %1$s</string>
+    <string name="projects_action_session">Démarrer une session ici</string>
+    <string name="projects_action_share_zip">Partager en .zip</string>
+    <string name="projects_action_save_copy">Enregistrer une copie sur le téléphone</string>
+
+    <string name="projects_rename_title">Renommer le projet</string>
+    <string name="projects_rename_note">Les sessions qui utilisent ce dossier gardent l\'ancien nom et ne le trouveront plus après le changement.</string>
+    <string name="projects_delete_title">Supprimer %1$s ?</string>
+    <string name="projects_delete_body">Le dossier et tous ses fichiers seront supprimés de ce téléphone. Les sessions qui l\'utilisaient restent dans la liste, mais ne peuvent plus y travailler. C\'est définitif.</string>
+
+    <string name="projects_job_clone">Clonage de %1$s</string>
+    <string name="projects_job_import_folder">Copie de %1$s dans l\'app</string>
+    <string name="projects_job_import_zip">Décompression de %1$s</string>
+    <string name="projects_job_export">Création de %1$s.zip</string>
+    <string name="projects_job_save">Enregistrement d\'une copie de %1$s</string>
+    <string name="projects_job_preparing">Préparation…</string>
+    <string name="projects_job_bytes">%1$s sur %2$s</string>
+    <string name="projects_job_hide">Continuer en arrière-plan</string>
+    <string name="projects_job_share">Partager</string>
+    <string name="projects_job_cancelled">Arrêté. Rien n\'a été laissé derrière.</string>
+    <string name="projects_job_skipped_links">Liens qui pointaient hors du projet et ont été laissés de côté : %1$d</string>
+    <string name="projects_phase_connecting">Connexion…</string>
+    <string name="projects_phase_counting">Récupération de la liste des fichiers…</string>
+    <string name="projects_phase_receiving">Téléchargement…</string>
+    <string name="projects_phase_resolving">Assemblage de l\'historique…</string>
+    <string name="projects_phase_writing">Écriture des fichiers…</string>
+
+    <string name="projects_done_clone">Cloné dans %1$s.</string>
+    <string name="projects_done_import_folder">Copié dans %1$s. C\'est une copie : les changements faits ici ne modifient pas le dossier d\'origine.</string>
+    <string name="projects_done_import_zip">Décompressé dans %1$s.</string>
+    <string name="projects_done_export">%1$s.zip est prêt.</string>
+    <string name="projects_done_save">Une copie de %1$s est enregistrée.</string>
+
+    <string name="projects_fail_no_space">Il n\'y a pas assez d\'espace libre sur ce téléphone pour ça.</string>
+    <string name="projects_fail_not_zip">Ce fichier n\'est pas un zip, ou il est abîmé.</string>
+    <string name="projects_fail_unsafe_zip">Ce zip essaie de placer des fichiers hors de son propre dossier, donc rien n\'a été décompressé.</string>
+    <string name="projects_fail_unsupported_zip">Ce zip est chiffré ou utilise un format que l\'app ne sait pas lire.</string>
+    <string name="projects_fail_damaged_zip">Ce zip est abîmé, ou son contenu ne correspond pas à ce qu\'il annonce.</string>
+    <string name="projects_fail_too_many">Ce zip contient trop de fichiers pour être décompressé ici.</string>
+    <string name="projects_fail_not_readable">L\'app n\'a pas pu le lire. Choisissez-le à nouveau.</string>
+    <string name="projects_fail_not_writable">L\'app n\'a pas pu écrire à cet endroit.</string>
+    <string name="projects_fail_runtime_busy">Le harness intégré est en cours d\'installation, de mise à jour ou de suppression. Réessayez quand ce sera fini.</string>
+    <string name="projects_fail_other">Un problème est survenu. Réessayez.</string>
+    <string name="projects_fail_clone_not_found">Le dépôt est introuvable. S\'il est privé, activez Dépôt privé et ajoutez un jeton.</string>
+    <string name="projects_fail_clone_auth">Le jeton a été refusé. Vérifiez qu\'il peut lire ce dépôt.</string>
+    <string name="projects_fail_clone_network">Impossible de joindre le serveur. Vérifiez la connexion et l\'adresse.</string>
+    <string name="projects_fail_clone_branch">Ce dépôt n\'a aucune branche ni aucun tag de ce nom.</string>
+    <string name="projects_fail_clone_not_repo">Cette adresse n\'est pas un dépôt Git.</string>
+    <string name="projects_fail_clone_timeout">Le clonage a pris trop de temps et a été arrêté.</string>
+    <string name="projects_fail_clone_other">Git n\'a pas pu cloner ce dépôt.</string>
+    <string name="projects_fail_git_said">Message de Git : %1$s</string>
+    <string name="projects_session_folder_gone">Le dossier de cette session n\'existe plus. Il a été supprimé ou renommé. Démarrez une nouvelle session dans un projet pour continuer.</string>
+</resources>

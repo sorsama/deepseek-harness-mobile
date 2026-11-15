@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="projects_provider_summary">โปรเจกต์ของ harness ในตัว</string>
+    <string name="projects_title">โปรเจกต์ในโทรศัพท์เครื่องนี้</string>
+    <string name="projects_intro">โฟลเดอร์โปรเจกต์ของคุณบนโทรศัพท์เครื่องนี้ คุณยังเห็นได้ในแอป Files ใต้ %1$s</string>
+    <string name="projects_files_hint">โฟลเดอร์โปรเจกต์ของคุณยังแสดงในแอป Files ใต้ %1$s ด้วย เพื่อคัดลอกไฟล์เข้าและออกได้</string>
+    <string name="projects_section_list">โปรเจกต์</string>
+    <plurals name="projects_count">
+        <item quantity="other">%1$d โปรเจกต์</item>
+    </plurals>
+    <string name="projects_space_label">พื้นที่ที่ใช้</string>
+    <string name="projects_space_used">ใช้ไป %1$s</string>
+    <string name="projects_counting">กำลังนับ…</string>
+    <string name="projects_row_detail">%1$s · %2$s</string>
+    <string name="projects_empty">ยังไม่มีโปรเจกต์ เริ่มใหม่จากด้านบน หรือนำเข้ามาจากโทรศัพท์ของคุณ</string>
+    <string name="projects_more_for">เพิ่มเติมสำหรับ %1$s</string>
+    <string name="projects_manage">จัดการโปรเจกต์</string>
+    <string name="projects_open_files">เปิดใน Files</string>
+    <string name="projects_no_files_app">ไม่พบแอปจัดการไฟล์บนโทรศัพท์เครื่องนี้</string>
+
+    <string name="projects_start_header">เริ่มโปรเจกต์</string>
+    <string name="projects_new_empty">โปรเจกต์ว่างใหม่</string>
+    <string name="projects_new_empty_hint">โฟลเดอร์ว่างสำหรับเริ่มต้นใหม่</string>
+    <string name="projects_clone">โคลนรีโพซิทอรี Git</string>
+    <string name="projects_clone_hint">คัดลอกรีโพซิทอรีจาก GitHub หรือที่อื่น</string>
+    <string name="projects_import_folder">นำเข้าโฟลเดอร์</string>
+    <string name="projects_import_folder_hint">คัดลอกโฟลเดอร์จากโทรศัพท์เครื่องนี้เข้ามาในแอป</string>
+    <string name="projects_import_zip">นำเข้าไฟล์ .zip</string>
+    <string name="projects_import_zip_hint">แตกไฟล์ zip เป็นโปรเจกต์ใหม่</string>
+
+    <string name="projects_name_label">ชื่อโปรเจกต์</string>
+    <string name="projects_name_taken">มีโปรเจกต์ชื่อนี้อยู่แล้ว</string>
+    <string name="projects_name_invalid">ใช้ชื่อที่ไม่มีเครื่องหมายทับ</string>
+    <string name="projects_create">สร้าง</string>
+    <string name="projects_change_failed">ไม่สำเร็จ ลองอีกครั้ง</string>
+    <string name="projects_in_use">ยังมีงานโปรเจกต์อื่นทำอยู่ รอให้เสร็จก่อน</string>
+
+    <string name="projects_clone_url">ที่อยู่รีโพซิทอรี</string>
+    <string name="projects_clone_branch">สาขาหรือแท็ก (ไม่บังคับ)</string>
+    <string name="projects_clone_private">รีโพซิทอรีส่วนตัว</string>
+    <string name="projects_clone_private_hint">ต้องใช้โทเค็นการเข้าถึงที่อ่านรีโพนี้ได้</string>
+    <string name="projects_clone_token">โทเค็นการเข้าถึง</string>
+    <string name="projects_clone_token_hint">ใช้เฉพาะการโคลนครั้งนี้ ไม่ถูกบันทึกไว้ที่ไหน และ Git ก็ไม่เก็บไว้</string>
+    <string name="projects_clone_start">โคลน</string>
+    <string name="projects_clone_bad_url">ใส่ที่อยู่เว็บของรีโพซิทอรี โดยขึ้นต้นด้วย https://</string>
+    <string name="projects_clone_ssh">ยังไม่รองรับที่อยู่ SSH ใช้ที่อยู่ https:// ของรีโพซิทอรีแทน</string>
+    <string name="projects_clone_credentials">เอาชื่อผู้ใช้และรหัสผ่านออกจากที่อยู่ ถ้าเป็นรีโพส่วนตัว ให้ใช้ช่องโทเค็นด้านล่าง</string>
+    <string name="projects_clone_token_https">ส่งโทเค็นได้เฉพาะไปยังที่อยู่ https:// เท่านั้น</string>
+    <string name="projects_clone_bad_branch">Git ไม่รับชื่อสาขาหรือแท็กนี้</string>
+
+    <string name="projects_share_title">แชร์ %1$s เป็น .zip</string>
+    <string name="projects_save_title">บันทึกสำเนาของ %1$s</string>
+    <string name="projects_export_skip">ข้ามโฟลเดอร์ขนาดใหญ่</string>
+    <string name="projects_export_skip_hint">ไม่รวม node_modules แคช และผลลัพธ์บิลด์ที่ถูกละเว้น ซึ่งสร้างใหม่ได้</string>
+    <string name="projects_export_git">รวมประวัติ Git</string>
+    <string name="projects_export_git_hint">โฟลเดอร์ .git ซึ่งอาจใหญ่กว่าตัวโปรเจกต์มาก</string>
+    <string name="projects_export_note">zip จะเก็บไฟล์และโฟลเดอร์ แต่ไม่เก็บลิงก์และสิทธิ์ของไฟล์</string>
+    <string name="projects_save_note">คุณเลือกโฟลเดอร์บนโทรศัพท์ แล้วสำเนาของโปรเจกต์จะถูกใส่ลงไป การเปลี่ยนแปลงหลังจากนั้นจะไม่ซิงค์</string>
+    <string name="projects_export_make">สร้าง zip</string>
+    <string name="projects_save_choose">เลือกโฟลเดอร์</string>
+    <string name="projects_share_chooser">แชร์ %1$s</string>
+    <string name="projects_action_session">เริ่มเซสชันที่นี่</string>
+    <string name="projects_action_share_zip">แชร์เป็น .zip</string>
+    <string name="projects_action_save_copy">บันทึกสำเนาลงโทรศัพท์</string>
+
+    <string name="projects_rename_title">เปลี่ยนชื่อโปรเจกต์</string>
+    <string name="projects_rename_note">เซสชันที่ใช้โฟลเดอร์นี้ยังจำชื่อเดิม และจะหาไม่เจอหลังเปลี่ยนชื่อ</string>
+    <string name="projects_delete_title">ลบ %1$s ไหม</string>
+    <string name="projects_delete_body">การนี้จะลบโฟลเดอร์และไฟล์ทั้งหมดในนั้นออกจากโทรศัพท์ เซสชันที่เคยใช้ยังอยู่ในรายการ แต่จะทำงานในนั้นไม่ได้อีก และย้อนกลับไม่ได้</string>
+
+    <string name="projects_job_clone">กำลังโคลน %1$s</string>
+    <string name="projects_job_import_folder">กำลังคัดลอก %1$s เข้าแอป</string>
+    <string name="projects_job_import_zip">กำลังแตกไฟล์ %1$s</string>
+    <string name="projects_job_export">กำลังสร้าง %1$s.zip</string>
+    <string name="projects_job_save">กำลังบันทึกสำเนาของ %1$s</string>
+    <string name="projects_job_preparing">กำลังเตรียม…</string>
+    <string name="projects_job_bytes">%1$s จาก %2$s</string>
+    <string name="projects_job_hide">ทำต่อในเบื้องหลัง</string>
+    <string name="projects_job_share">แชร์</string>
+    <string name="projects_job_cancelled">หยุดแล้ว ไม่มีอะไรค้างไว้</string>
+    <string name="projects_job_skipped_links">ลิงก์ที่ชี้ออกนอกโปรเจกต์และถูกข้ามไป: %1$d</string>
+    <string name="projects_phase_connecting">กำลังเชื่อมต่อ…</string>
+    <string name="projects_phase_counting">กำลังรับรายการไฟล์…</string>
+    <string name="projects_phase_receiving">กำลังดาวน์โหลด…</string>
+    <string name="projects_phase_resolving">กำลังรวมประวัติ…</string>
+    <string name="projects_phase_writing">กำลังเขียนไฟล์…</string>
+
+    <string name="projects_done_clone">โคลนไว้ที่ %1$s แล้ว</string>
+    <string name="projects_done_import_folder">คัดลอกไว้ที่ %1$s แล้ว นี่เป็นสำเนา การแก้ไขที่นี่จึงไม่เปลี่ยนโฟลเดอร์ต้นฉบับ</string>
+    <string name="projects_done_import_zip">แตกไฟล์ไว้ที่ %1$s แล้ว</string>
+    <string name="projects_done_export">%1$s.zip พร้อมแล้ว</string>
+    <string name="projects_done_save">บันทึกสำเนาของ %1$s แล้ว</string>
+
+    <string name="projects_fail_no_space">พื้นที่ว่างบนโทรศัพท์เครื่องนี้ไม่พอ</string>
+    <string name="projects_fail_not_zip">ไฟล์นี้ไม่ใช่ zip หรือเสียหาย</string>
+    <string name="projects_fail_unsafe_zip">zip นี้พยายามวางไฟล์ไว้นอกโฟลเดอร์ของตัวเอง จึงไม่ได้แตกไฟล์ใดเลย</string>
+    <string name="projects_fail_unsupported_zip">zip นี้เข้ารหัสไว้ หรือใช้รูปแบบที่แอปอ่านไม่ได้</string>
+    <string name="projects_fail_damaged_zip">zip นี้เสียหาย หรือเนื้อหาไม่ตรงกับที่ระบุไว้</string>
+    <string name="projects_fail_too_many">zip นี้มีไฟล์มากเกินกว่าจะแตกที่นี่ได้</string>
+    <string name="projects_fail_not_readable">แอปอ่านไม่ได้ ลองเลือกใหม่อีกครั้ง</string>
+    <string name="projects_fail_not_writable">แอปเขียนลงที่นั่นไม่ได้</string>
+    <string name="projects_fail_runtime_busy">harness ในตัวกำลังติดตั้ง อัปเดต หรือถูกลบอยู่ ลองใหม่เมื่อเสร็จแล้ว</string>
+    <string name="projects_fail_other">มีบางอย่างผิดพลาด ลองอีกครั้ง</string>
+    <string name="projects_fail_clone_not_found">ไม่พบรีโพซิทอรี ถ้าเป็นรีโพส่วนตัว ให้เปิด รีโพซิทอรีส่วนตัว แล้วใส่โทเค็น</string>
+    <string name="projects_fail_clone_auth">โทเค็นไม่ผ่าน ตรวจดูว่าอ่านรีโพนี้ได้</string>
+    <string name="projects_fail_clone_network">ติดต่อเซิร์ฟเวอร์ไม่ได้ ตรวจการเชื่อมต่อและที่อยู่</string>
+    <string name="projects_fail_clone_branch">รีโพนี้ไม่มีสาขาหรือแท็กชื่อนี้</string>
+    <string name="projects_fail_clone_not_repo">ที่อยู่นี้ไม่ใช่รีโพซิทอรี Git</string>
+    <string name="projects_fail_clone_timeout">การโคลนใช้เวลานานเกินไปจึงถูกหยุด</string>
+    <string name="projects_fail_clone_other">Git โคลนรีโพนี้ไม่ได้</string>
+    <string name="projects_fail_git_said">ข้อความจาก Git: %1$s</string>
+    <string name="projects_session_folder_gone">โฟลเดอร์ของเซสชันนี้ไม่มีแล้ว อาจถูกลบหรือเปลี่ยนชื่อ เริ่มเซสชันใหม่ในโปรเจกต์เพื่อทำงานต่อ</string>
+</resources>

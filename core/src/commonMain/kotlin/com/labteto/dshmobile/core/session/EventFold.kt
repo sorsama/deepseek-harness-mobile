@@ -270,7 +270,11 @@ private class FoldState(private val sessionId: String) {
                 val result = toolResultOf(data.jsonObject["message"] as? JsonObject)
                 val turn = data.jsonObject["turn"]?.jsonPrimitive?.intOrNull ?: 0
                 val step = data.jsonObject["step"]?.jsonPrimitive?.intOrNull ?: 0
-                nodes.add(ToolResultNode(event.seq, result.callId, result.content, result.isError, turn, step, data.jsonObject["meta"]))
+                // The harness records a thrown error's `{ name, code }` beside the message.
+                val error = data.jsonObject["error"] as? JsonObject
+                val errorCode = (error?.get("code") as? JsonPrimitive)?.contentOrNull
+                val errorName = (error?.get("name") as? JsonPrimitive)?.contentOrNull
+                nodes.add(ToolResultNode(event.seq, result.callId, result.content, result.isError, turn, step, data.jsonObject["meta"], errorCode, errorName))
             }
 
             // Harness 0.1.7: the agent's tool set changed mid-session. Model-visible context, not

@@ -7,7 +7,9 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import com.labteto.dshmobile.MainActivity
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.notify.DshNotifications
@@ -19,6 +21,17 @@ import javax.inject.Inject
  * is backgrounded (user opt-in via settings). The ConnectionManager owns the
  * actual connection; this service only pins the process with an ongoing
  * notification while it is running.
+ *
+ * Started by [ConnectionManager.serviceStarter], with the same rules as the built-in harness's
+ * service: it enters the foreground first thing in [onCreate] and again first in
+ * [onStartCommand], so any request made with `startForegroundService` is answered at once, and a
+ * refusal (Android 12+ background limits) stops the service quietly instead of killing the app,
+ * and it is asked for again the next time the app is on screen.
+ *
+ * Type `specialUse`, like the built-in harness's service: it holds a live connection to the
+ * person's own harness open for as long as they asked. It used to be `dataSync`, which Android 15
+ * caps at six hours a day and then ends with `onTimeout`; `specialUse` has no such limit, so
+ * there is no timeout to handle.
  */
 @AndroidEntryPoint
 class ConnectionService : Service() {
@@ -28,18 +41,52 @@ class ConnectionService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    override fun onCreate() {
+        super.onCreate()
+        notifications.ensureChannels()
+        enterForeground()
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP) {
+        // First, whatever the action: a request made with startForegroundService is answered here.
+        val inForeground = enterForeground()
+        if (!inForeground || intent?.action == ACTION_STOP) {
             stopSelf()
             return START_NOT_STICKY
         }
-        startForeground(NOTIFICATION_ID, buildNotification())
+        // Restarted by the system after the process died (a sticky restart has no intent): nothing
+        // is connected in this new process, so a "Connected" notification would not be true.
+        if (intent == null && !connectionManager.serviceStillWanted()) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
         return START_STICKY
     }
 
     override fun onDestroy() {
         // The service dying does not tear the connection down; the manager owns it.
+        connectionManager.serviceStarter.onServiceStopped()
         super.onDestroy()
+    }
+
+    private fun enterForeground(): Boolean {
+        // The constant exists from API 34, where the type became mandatory. Below it 0 means "the
+        // types in the manifest", as for the built-in harness's service.
+        val type = if (Build.VERSION.SDK_INT >= 34) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
+        return try {
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, buildNotification(), type)
+            connectionManager.serviceStarter.onServiceForeground()
+            true
+        } catch (e: IllegalStateException) {
+            // ForegroundServiceStartNotAllowedException (API 31+).
+            Log.w(TAG, "foreground refused: ${e.javaClass.simpleName}")
+            connectionManager.serviceStarter.onServiceRefused()
+            false
+        } catch (e: SecurityException) {
+            Log.w(TAG, "foreground refused: ${e.javaClass.simpleName}")
+            connectionManager.serviceStarter.onServiceRefused()
+            false
+        }
     }
 
     private fun buildNotification(): Notification {
@@ -66,5 +113,6 @@ class ConnectionService : Service() {
     companion object {
         const val ACTION_STOP = "com.labteto.dshmobile.connection.STOP"
         private const val NOTIFICATION_ID = 10
+        private const val TAG = "ConnectionService"
     }
 }

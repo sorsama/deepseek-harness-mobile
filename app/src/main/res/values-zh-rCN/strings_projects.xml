@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="projects_provider_summary">内置 harness 的项目</string>
+    <string name="projects_title">这部手机上的项目</string>
+    <string name="projects_intro">你在这部手机上的项目文件夹。在“文件”应用的 %1$s 下也能看到它们。</string>
+    <string name="projects_files_hint">你的项目文件夹也会出现在“文件”应用的 %1$s 下，方便把文件拷进拷出。</string>
+    <string name="projects_section_list">项目</string>
+    <plurals name="projects_count">
+        <item quantity="other">%1$d 个项目</item>
+    </plurals>
+    <string name="projects_space_label">已用空间</string>
+    <string name="projects_space_used">已用 %1$s</string>
+    <string name="projects_counting">正在计算…</string>
+    <string name="projects_row_detail">%1$s · %2$s</string>
+    <string name="projects_empty">还没有项目。在上面新建一个，或从手机里导入一个。</string>
+    <string name="projects_more_for">%1$s 的更多操作</string>
+    <string name="projects_manage">管理项目</string>
+    <string name="projects_open_files">在“文件”中打开</string>
+    <string name="projects_no_files_app">这部手机上没有找到文件管理应用。</string>
+
+    <string name="projects_start_header">开始一个项目</string>
+    <string name="projects_new_empty">新建空项目</string>
+    <string name="projects_new_empty_hint">一个空文件夹，从头开始</string>
+    <string name="projects_clone">克隆 Git 仓库</string>
+    <string name="projects_clone_hint">从 GitHub 或其他托管平台复制一个仓库</string>
+    <string name="projects_import_folder">导入文件夹</string>
+    <string name="projects_import_folder_hint">把手机上的一个文件夹复制到应用里</string>
+    <string name="projects_import_zip">导入 .zip</string>
+    <string name="projects_import_zip_hint">把 zip 文件解压成一个新项目</string>
+
+    <string name="projects_name_label">项目名称</string>
+    <string name="projects_name_taken">已经有同名的项目了。</string>
+    <string name="projects_name_invalid">名称里不能有斜杠。</string>
+    <string name="projects_create">创建</string>
+    <string name="projects_change_failed">没有成功，请再试一次。</string>
+    <string name="projects_in_use">另一个项目任务还在进行，请等它完成。</string>
+
+    <string name="projects_clone_url">仓库地址</string>
+    <string name="projects_clone_branch">分支或标签（可选）</string>
+    <string name="projects_clone_private">私有仓库</string>
+    <string name="projects_clone_private_hint">需要一个能读取它的访问令牌</string>
+    <string name="projects_clone_token">访问令牌</string>
+    <string name="projects_clone_token_hint">只用于这次克隆。不会保存在任何地方，Git 也不会记住它。</string>
+    <string name="projects_clone_start">克隆</string>
+    <string name="projects_clone_bad_url">请输入仓库的网页地址，以 https:// 开头</string>
+    <string name="projects_clone_ssh">暂不支持 SSH 地址。请使用仓库的 https:// 地址。</string>
+    <string name="projects_clone_credentials">请把用户名和密码从地址中去掉。私有仓库请使用下面的令牌字段。</string>
+    <string name="projects_clone_token_https">令牌只能发送到 https:// 地址。</string>
+    <string name="projects_clone_bad_branch">Git 不接受这个分支或标签名称。</string>
+
+    <string name="projects_share_title">将 %1$s 分享为 .zip</string>
+    <string name="projects_save_title">保存 %1$s 的副本</string>
+    <string name="projects_export_skip">跳过体积大的文件夹</string>
+    <string name="projects_export_skip_hint">不包括 node_modules、缓存和被忽略的构建产物。这些都可以重新生成。</string>
+    <string name="projects_export_git">包括 Git 历史</string>
+    <string name="projects_export_git_hint">即 .git 文件夹，它可能比项目本身大得多。</string>
+    <string name="projects_export_note">zip 会保留文件和文件夹，但不保留链接和文件权限。</string>
+    <string name="projects_save_note">你选一个手机上的文件夹，项目的副本会放进去。之后的修改不会同步。</string>
+    <string name="projects_export_make">生成 zip</string>
+    <string name="projects_save_choose">选择文件夹</string>
+    <string name="projects_share_chooser">分享 %1$s</string>
+    <string name="projects_action_session">在这里开始会话</string>
+    <string name="projects_action_share_zip">分享为 .zip</string>
+    <string name="projects_action_save_copy">保存副本到手机</string>
+
+    <string name="projects_rename_title">重命名项目</string>
+    <string name="projects_rename_note">使用这个文件夹的会话仍记着旧名称，重命名后会找不到它。</string>
+    <string name="projects_delete_title">删除 %1$s？</string>
+    <string name="projects_delete_body">这会从手机上删除这个文件夹及其中所有文件。用过它的会话仍会留在列表里，但不能再在里面工作。此操作无法撤销。</string>
+
+    <string name="projects_job_clone">正在克隆 %1$s</string>
+    <string name="projects_job_import_folder">正在把 %1$s 复制到应用</string>
+    <string name="projects_job_import_zip">正在解压 %1$s</string>
+    <string name="projects_job_export">正在生成 %1$s.zip</string>
+    <string name="projects_job_save">正在保存 %1$s 的副本</string>
+    <string name="projects_job_preparing">正在准备…</string>
+    <string name="projects_job_bytes">%1$s / %2$s</string>
+    <string name="projects_job_hide">在后台继续</string>
+    <string name="projects_job_share">分享</string>
+    <string name="projects_job_cancelled">已停止，没有留下任何残余。</string>
+    <string name="projects_job_skipped_links">指向项目外部而被略过的链接：%1$d</string>
+    <string name="projects_phase_connecting">正在连接…</string>
+    <string name="projects_phase_counting">正在获取文件列表…</string>
+    <string name="projects_phase_receiving">正在下载…</string>
+    <string name="projects_phase_resolving">正在整理历史…</string>
+    <string name="projects_phase_writing">正在写入文件…</string>
+
+    <string name="projects_done_clone">已克隆到 %1$s。</string>
+    <string name="projects_done_import_folder">已复制到 %1$s。这是一份副本，在这里的修改不会影响原文件夹。</string>
+    <string name="projects_done_import_zip">已解压到 %1$s。</string>
+    <string name="projects_done_export">%1$s.zip 已准备好。</string>
+    <string name="projects_done_save">已保存 %1$s 的副本。</string>
+
+    <string name="projects_fail_no_space">这部手机没有足够的可用空间。</string>
+    <string name="projects_fail_not_zip">这个文件不是 zip，或者已损坏。</string>
+    <string name="projects_fail_unsafe_zip">这个 zip 试图把文件放到自己的文件夹之外，所以什么都没有解压。</string>
+    <string name="projects_fail_unsupported_zip">这个 zip 已加密，或使用了应用无法读取的格式。</string>
+    <string name="projects_fail_damaged_zip">这个 zip 已损坏，或内容与它声明的不一致。</string>
+    <string name="projects_fail_too_many">这个 zip 里的文件太多，无法在这里解压。</string>
+    <string name="projects_fail_not_readable">应用无法读取它。请重新选择。</string>
+    <string name="projects_fail_not_writable">应用无法写入那里。</string>
+    <string name="projects_fail_runtime_busy">内置 harness 正在安装、更新或移除。完成后再试。</string>
+    <string name="projects_fail_other">出了点问题，请再试一次。</string>
+    <string name="projects_fail_clone_not_found">没有找到这个仓库。如果是私有仓库，请打开“私有仓库”并添加令牌。</string>
+    <string name="projects_fail_clone_auth">令牌未被接受。请确认它可以读取这个仓库。</string>
+    <string name="projects_fail_clone_network">无法连接到服务器。请检查网络和地址。</string>
+    <string name="projects_fail_clone_branch">这个仓库里没有这个名称的分支或标签。</string>
+    <string name="projects_fail_clone_not_repo">这个地址不是 Git 仓库。</string>
+    <string name="projects_fail_clone_timeout">克隆耗时太久，已停止。</string>
+    <string name="projects_fail_clone_other">Git 无法克隆这个仓库。</string>
+    <string name="projects_fail_git_said">Git 的信息：%1$s</string>
+    <string name="projects_session_folder_gone">这个会话的文件夹已经不在了，它被删除或重命名了。请在一个项目中开始新会话后继续。</string>
+</resources>

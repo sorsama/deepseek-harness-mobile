@@ -5,7 +5,79 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-11-16
+
+![The built-in harness on a phone: the Connect card, the set-up page and the harness page, each marked Beta](docs/images/releases/0.22.0/devices/hero-built-in-harness.png)
+
+### Added
+
+- **The harness on the phone itself: no computer needed (Beta).** This is new, so the app marks it
+  **Beta** on the Connect card, the set-up page and the harness page. It was tested on emulators
+  (Android 11, 15 and a desktop image) and on one Samsung phone, and it may not work on every phone
+  yet; a harness on your computer or in Termux works as before. On a 64-bit phone with Android 8.0 or
+  newer, **This phone** now offers **Set up**: the app downloads a small Linux system with Node.js
+  and the DeepSeek Harness (about 155 MB, about 1.1 GB on the phone), checks its signature and every
+  file, unpacks it, starts it and signs in, with no Termux and no command line. A new install on such
+  a phone opens on This phone; anyone who already picked a mode keeps it, and Local network, Relay
+  and Termux are where they were. The harness page (Settings, **Harness on this phone**) has start,
+  stop and restart, versions and uptime, storage, the log, and a **Keep it running** checklist. The
+  guide is [`harness/ON-DEVICE.md`](harness/ON-DEVICE.md).
+
+  <img src="docs/images/releases/0.22.0/devices/beta-connect-card-phone.png" alt="The Connect screen on This phone, with the built-in harness card, its Beta tag and Set up" width="260">
+  <img src="docs/images/releases/0.22.0/devices/beta-setup-phone.png" alt="The set-up page with the Beta tag and the sentence saying it is new" width="260">
+  <img src="docs/images/releases/0.22.0/devices/beta-control-page-arabic-phone.png" alt="The harness page in Arabic, right to left, with the Beta tag next to the title" width="260">
+
+- **The harness comes back after an app update.** Installing an app update from inside the app
+  closes the app, and the harness with it. If the harness was running (or is set to start with the
+  app), it now starts again by itself once the update is in, without opening the app. If Android
+  does not allow that in the background, it starts the next time you open the app. A harness you
+  stopped stays stopped.
+
+- **Harness updates without an app update.** The app checks for a new harness release when it
+  opens and once a day, tells you once, and installs it when you tap Update (it asks first on a
+  metered network). **Install updates by themselves** does it on Wi-Fi while no chat is working. A
+  release that does not start is replaced by the one before it on its own, and **Go back** returns
+  to the previous release.
+
+- **Models and API keys in the app.** Settings, **Models** lists the providers the harness knows,
+  with Ready or Needs an API key. Paste a key, optionally a different address, and save; the key goes
+  to the harness and the app keeps no copy. The chat points there when a message could not reach a
+  model.
+
+- **What happens when the agent runs a command.** A phone has no sandbox for the agent's commands,
+  so the built-in harness offers **Run it** or **Ask me first**. Ask me first shows every command
+  whole before it runs (a long one opens in full), and a command too long to show (over 256 KB) is
+  not run. Each refusal says why in your language: you said no, the question was withdrawn, a helper
+  agent cannot ask, nobody was there to answer.
+
+  <img src="docs/images/on-device/approval.png" alt="A command shown in full with Don't allow and Allow once" width="200">
+
+- **Projects on the phone.** Start a session in a new empty project, a cloned Git repository
+  (public, or private with a token used once), an imported folder or a .zip. Projects show up in the
+  system Files app under **DSH Mobile**, and each one can be shared as a zip or saved to the phone.
+
+  <img src="docs/images/on-device/projects.png" alt="Projects on this phone, with a cloned repository" width="200">
+
+- **Update the app from inside the app.** The update dialog and Settings, About offer **Download
+  and install**: the APK is downloaded inside the app, checked against the release's `SHA256SUMS.txt`
+  and its signature, and handed to Android's installer. After the first time, later updates can go
+  through without a prompt. **Notify me about new app versions** is an optional daily check.
+  App updates and harness updates have their own switches and their own notification channels.
+
 ### Fixed
+
+- **Every bottom sheet title in Arabic broke before its last letter** ("السجل" read "السج / ل").
+  Sheet and dialog titles now take the full width.
+- **Keeping the connection in the background could crash the app on Android 12 and newer.** The
+  keep-connected service was started the strict way on every reconnect, including ones in the
+  background where Android refuses it. It now starts the same safe way as the built-in harness's
+  service. A refusal is no longer a crash; the app asks again the next time it is on screen.
+- **Keep connected in background stopped after six hours a day on Android 15.** Its service was
+  of a kind Android 15 limits to six hours a day. It is now the same kind as the built-in harness's
+  service, which has no such limit.
+- **A tool call with a huge argument could freeze the app.** A command of a few hundred KB made
+  the chat row lay out the whole text and the app run out of memory. Rows and cards now show the
+  start of it; the call keeps every byte.
 
 - **One compaction is one row in the chat, not a stack of identical ones.** The transcript showed
   a "Compacted: Summary" row for every event the harness writes around a compaction: one when it

@@ -15,7 +15,7 @@ plugins {
  * upgrade at all. The code is derived from the name so it rises with semver on its own; the
  * fallback is what a local `assembleRelease` builds.
  */
-val dshVersionName: String = System.getenv("DSH_VERSION_NAME")?.takeIf { it.isNotBlank() } ?: "0.21.1"
+val dshVersionName: String = System.getenv("DSH_VERSION_NAME")?.takeIf { it.isNotBlank() } ?: "0.22.0"
 
 val dshVersionCode: Int = dshVersionName
     .substringBefore('-')
@@ -90,6 +90,18 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        jniLibs {
+            // The built-in harness runtime execs proot (`libproot.so`, `libproot-loader.so`) from
+            // nativeLibraryDir: the one app-owned place a targetSdk 29+ app may execve() from. That needs
+            // the libraries extracted at install time, which is what legacy packaging does.
+            useLegacyPackaging = true
+            // Vendored and already stripped; their bytes must stay the ones `app/third_party/proot`
+            // records. The loader is a static executable that strip has no business touching.
+            keepDebugSymbols += listOf("**/libproot.so", "**/libproot-loader.so")
+            // zstd-jni ships 32-bit code too, but the runtime has no 32-bit build: a device without a
+            // 64-bit ABI reports NotSupported and never loads it.
+            excludes += listOf("lib/armeabi-v7a/libzstd-jni*.so", "lib/x86/libzstd-jni*.so")
+        }
     }
 
     lint {
@@ -119,6 +131,12 @@ dependencies {
         exclude(group = "io.ktor")
     }
     implementation("org.yaml:snakeyaml:2.5")
+    // The built-in harness runtime: manifest signature (Ed25519 below API 33) and layer decompression.
+    implementation(libs.eddsa)
+    implementation(libs.zstd.jni) {
+        // The AAR, not the desktop jar: that one carries native code for every desktop OS.
+        artifact { type = "aar" }
+    }
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -157,6 +175,10 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    // A real HTTP server for two kinds of tests: the runtime installer serves a signed release
+    // over HTTPS from it, and the in-app updater tests ranges, redirects and dropped connections.
+    testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.okhttp.tls)
     // The mock harness carries this project's port of the host's answer-acceptance law. The
     // conformance test runs the real encoder through it rather than through a copy, because a copy
     // is a second thing to keep in step and the failure it guards against is a silent one.

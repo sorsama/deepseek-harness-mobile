@@ -12,3 +12,7 @@ import androidx.compose.runtime.Composable
  */
 @Composable
 expect fun localizedCount(value: Int): String
+
+/** [value] with exactly [decimals] digits after the separator, in the person's own digits and separator. */
+@Composable
+expect fun localizedDecimal(value: Double, decimals: Int): String

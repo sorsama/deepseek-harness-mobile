@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="projects_provider_summary">বিল্ট-ইন harness-এর প্রজেক্ট</string>
+    <string name="projects_title">এই ফোনের প্রজেক্ট</string>
+    <string name="projects_intro">এই ফোনে আপনার প্রজেক্ট ফোল্ডার। Files অ্যাপে %1$s-এর নিচেও এগুলো দেখা যায়।</string>
+    <string name="projects_files_hint">আপনার প্রজেক্ট ফোল্ডার Files অ্যাপে %1$s-এর নিচেও দেখা যায়, যাতে ফাইল ভেতরে-বাইরে কপি করতে পারেন।</string>
+    <string name="projects_section_list">প্রজেক্ট</string>
+    <plurals name="projects_count">
+        <item quantity="one">%1$dটি প্রজেক্ট</item>
+        <item quantity="other">%1$dটি প্রজেক্ট</item>
+    </plurals>
+    <string name="projects_space_label">ব্যবহৃত জায়গা</string>
+    <string name="projects_space_used">%1$s ব্যবহৃত</string>
+    <string name="projects_counting">গোনা হচ্ছে…</string>
+    <string name="projects_row_detail">%1$s · %2$s</string>
+    <string name="projects_empty">এখনও কোনো প্রজেক্ট নেই। ওপর থেকে নতুন শুরু করুন, বা ফোন থেকে একটি নিয়ে আসুন।</string>
+    <string name="projects_more_for">%1$s-এর জন্য আরও</string>
+    <string name="projects_manage">প্রজেক্ট পরিচালনা</string>
+    <string name="projects_open_files">Files-এ খুলুন</string>
+    <string name="projects_no_files_app">এই ফোনে কোনো Files অ্যাপ পাওয়া যায়নি।</string>
+
+    <string name="projects_start_header">প্রজেক্ট শুরু করুন</string>
+    <string name="projects_new_empty">নতুন খালি প্রজেক্ট</string>
+    <string name="projects_new_empty_hint">নতুন করে শুরু করার জন্য একটি খালি ফোল্ডার</string>
+    <string name="projects_clone">Git রিপোজিটরি ক্লোন করুন</string>
+    <string name="projects_clone_hint">GitHub বা অন্য হোস্ট থেকে রিপোজিটরি কপি করুন</string>
+    <string name="projects_import_folder">ফোল্ডার ইমপোর্ট করুন</string>
+    <string name="projects_import_folder_hint">এই ফোনের একটি ফোল্ডার অ্যাপে কপি করে</string>
+    <string name="projects_import_zip">.zip ইমপোর্ট করুন</string>
+    <string name="projects_import_zip_hint">zip ফাইল খুলে নতুন প্রজেক্ট বানায়</string>
+
+    <string name="projects_name_label">প্রজেক্টের নাম</string>
+    <string name="projects_name_taken">এই নামে একটি প্রজেক্ট আগে থেকেই আছে।</string>
+    <string name="projects_name_invalid">স্ল্যাশ ছাড়া একটি নাম দিন।</string>
+    <string name="projects_create">তৈরি করুন</string>
+    <string name="projects_change_failed">হলো না। আবার চেষ্টা করুন।</string>
+    <string name="projects_in_use">প্রজেক্টের আরেকটি কাজ এখনও চলছে। সেটি শেষ হওয়া পর্যন্ত অপেক্ষা করুন।</string>
+
+    <string name="projects_clone_url">রিপোজিটরির ঠিকানা</string>
+    <string name="projects_clone_branch">ব্রাঞ্চ বা ট্যাগ (ঐচ্ছিক)</string>
+    <string name="projects_clone_private">প্রাইভেট রিপোজিটরি</string>
+    <string name="projects_clone_private_hint">এটি পড়তে পারে এমন অ্যাক্সেস টোকেন লাগবে</string>
+    <string name="projects_clone_token">অ্যাক্সেস টোকেন</string>
+    <string name="projects_clone_token_hint">শুধু এই ক্লোনের জন্য ব্যবহার হয়। কোথাও সেভ হয় না, আর Git-ও এটি রাখে না।</string>
+    <string name="projects_clone_start">ক্লোন করুন</string>
+    <string name="projects_clone_bad_url">রিপোজিটরির ওয়েব ঠিকানা লিখুন, যা https:// দিয়ে শুরু</string>
+    <string name="projects_clone_ssh">SSH ঠিকানা এখনও সমর্থিত নয়। রিপোজিটরির https:// ঠিকানা ব্যবহার করুন।</string>
+    <string name="projects_clone_credentials">ঠিকানা থেকে ইউজারনেম আর পাসওয়ার্ড সরিয়ে দিন। প্রাইভেট রিপোজিটরির জন্য টোকেনের ঘর ব্যবহার করুন।</string>
+    <string name="projects_clone_token_https">টোকেন শুধু https:// ঠিকানায় পাঠানো যায়।</string>
+    <string name="projects_clone_bad_branch">Git এটিকে ব্রাঞ্চ বা ট্যাগের নাম হিসেবে মানে না।</string>
+
+    <string name="projects_share_title">%1$s .zip হিসেবে শেয়ার করুন</string>
+    <string name="projects_save_title">%1$s-এর একটি কপি সেভ করুন</string>
+    <string name="projects_export_skip">ভারী ফোল্ডার বাদ দিন</string>
+    <string name="projects_export_skip_hint">node_modules, ক্যাশ আর উপেক্ষিত বিল্ড আউটপুট বাদ যায়। এগুলো আবার বানানো যায়।</string>
+    <string name="projects_export_git">Git ইতিহাস রাখুন</string>
+    <string name="projects_export_git_hint">.git ফোল্ডার। এটি প্রজেক্টের চেয়ে অনেক বড় হতে পারে।</string>
+    <string name="projects_export_note">zip-এ ফাইল আর ফোল্ডার থাকে। লিংক আর ফাইলের অনুমতি থাকে না।</string>
+    <string name="projects_save_note">আপনি ফোনের একটি ফোল্ডার বেছে নেন, আর প্রজেক্টের কপি তাতে যায়। পরের পরিবর্তন সিঙ্ক হয় না।</string>
+    <string name="projects_export_make">zip বানান</string>
+    <string name="projects_save_choose">ফোল্ডার বেছে নিন</string>
+    <string name="projects_share_chooser">%1$s শেয়ার করুন</string>
+    <string name="projects_action_session">এখানে সেশন শুরু করুন</string>
+    <string name="projects_action_share_zip">.zip হিসেবে শেয়ার করুন</string>
+    <string name="projects_action_save_copy">ফোনে একটি কপি সেভ করুন</string>
+
+    <string name="projects_rename_title">প্রজেক্টের নাম বদলান</string>
+    <string name="projects_rename_note">যে সেশনগুলো এই ফোল্ডার ব্যবহার করে সেগুলো পুরোনো নামই রাখে, আর নাম বদলের পর এটি খুঁজে পাবে না।</string>
+    <string name="projects_delete_title">%1$s মুছবেন?</string>
+    <string name="projects_delete_body">এতে ফোল্ডারটি আর এর সব ফাইল এই ফোন থেকে মুছে যাবে। যে সেশনগুলো এটি ব্যবহার করত সেগুলো তালিকায় থাকবে, কিন্তু আর এতে কাজ করতে পারবে না। এটি ফিরিয়ে আনা যাবে না।</string>
+
+    <string name="projects_job_clone">%1$s ক্লোন হচ্ছে</string>
+    <string name="projects_job_import_folder">%1$s অ্যাপে কপি হচ্ছে</string>
+    <string name="projects_job_import_zip">%1$s খোলা হচ্ছে</string>
+    <string name="projects_job_export">%1$s.zip তৈরি হচ্ছে</string>
+    <string name="projects_job_save">%1$s-এর কপি সেভ হচ্ছে</string>
+    <string name="projects_job_preparing">প্রস্তুত হচ্ছে…</string>
+    <string name="projects_job_bytes">%2$s-এর মধ্যে %1$s</string>
+    <string name="projects_job_hide">ব্যাকগ্রাউন্ডে চলতে দিন</string>
+    <string name="projects_job_share">শেয়ার করুন</string>
+    <string name="projects_job_cancelled">থামানো হয়েছে। কিছুই অর্ধেক রয়ে যায়নি।</string>
+    <string name="projects_job_skipped_links">প্রজেক্টের বাইরে নির্দেশ করা যে লিংকগুলো বাদ গেছে: %1$d</string>
+    <string name="projects_phase_connecting">সংযোগ হচ্ছে…</string>
+    <string name="projects_phase_counting">ফাইলের তালিকা আনা হচ্ছে…</string>
+    <string name="projects_phase_receiving">ডাউনলোড হচ্ছে…</string>
+    <string name="projects_phase_resolving">ইতিহাস সাজানো হচ্ছে…</string>
+    <string name="projects_phase_writing">ফাইল লেখা হচ্ছে…</string>
+
+    <string name="projects_done_clone">%1$s-এ ক্লোন হয়েছে।</string>
+    <string name="projects_done_import_folder">%1$s-এ কপি হয়েছে। এটি একটি কপি, তাই এখানের পরিবর্তন মূল ফোল্ডার বদলায় না।</string>
+    <string name="projects_done_import_zip">%1$s-এ খোলা হয়েছে।</string>
+    <string name="projects_done_export">%1$s.zip তৈরি।</string>
+    <string name="projects_done_save">%1$s-এর একটি কপি সেভ হয়েছে।</string>
+
+    <string name="projects_fail_no_space">এর জন্য এই ফোনে যথেষ্ট খালি জায়গা নেই।</string>
+    <string name="projects_fail_not_zip">এই ফাইলটি zip নয়, অথবা নষ্ট।</string>
+    <string name="projects_fail_unsafe_zip">এই zip নিজের ফোল্ডারের বাইরে ফাইল রাখার চেষ্টা করে, তাই কিছুই খোলা হয়নি।</string>
+    <string name="projects_fail_unsupported_zip">এই zip এনক্রিপ্ট করা, বা এমন ফরম্যাটে যা অ্যাপ পড়তে পারে না।</string>
+    <string name="projects_fail_damaged_zip">এই zip নষ্ট, অথবা এর ভেতরের জিনিস এর দাবির সঙ্গে মেলে না।</string>
+    <string name="projects_fail_too_many">এই zip-এ এখানে খোলার জন্য খুব বেশি ফাইল আছে।</string>
+    <string name="projects_fail_not_readable">অ্যাপ এটি পড়তে পারেনি। আবার বেছে নিন।</string>
+    <string name="projects_fail_not_writable">অ্যাপ সেখানে লিখতে পারেনি।</string>
+    <string name="projects_fail_runtime_busy">বিল্ট-ইন harness ইনস্টল, আপডেট বা সরানো হচ্ছে। শেষ হলে আবার চেষ্টা করুন।</string>
+    <string name="projects_fail_other">কিছু একটা ভুল হয়েছে। আবার চেষ্টা করুন।</string>
+    <string name="projects_fail_clone_not_found">রিপোজিটরি পাওয়া যায়নি। এটি প্রাইভেট হলে প্রাইভেট রিপোজিটরি চালু করে একটি টোকেন দিন।</string>
+    <string name="projects_fail_clone_auth">টোকেন গৃহীত হয়নি। দেখুন এটি এই রিপোজিটরি পড়তে পারে কি না।</string>
+    <string name="projects_fail_clone_network">সার্ভারে পৌঁছানো যায়নি। সংযোগ আর ঠিকানা দেখুন।</string>
+    <string name="projects_fail_clone_branch">এই রিপোজিটরিতে এই নামে কোনো ব্রাঞ্চ বা ট্যাগ নেই।</string>
+    <string name="projects_fail_clone_not_repo">এই ঠিকানাটি কোনো Git রিপোজিটরি নয়।</string>
+    <string name="projects_fail_clone_timeout">ক্লোন করতে খুব বেশি সময় লেগেছে, তাই থামানো হয়েছে।</string>
+    <string name="projects_fail_clone_other">Git এই রিপোজিটরি ক্লোন করতে পারেনি।</string>
+    <string name="projects_fail_git_said">Git-এর বার্তা: %1$s</string>
+    <string name="projects_session_folder_gone">এই সেশনের ফোল্ডারটি আর নেই। সেটি মুছে ফেলা হয়েছে বা নাম বদলানো হয়েছে। কাজ চালিয়ে যেতে কোনো প্রজেক্টে নতুন সেশন শুরু করুন।</string>
+</resources>

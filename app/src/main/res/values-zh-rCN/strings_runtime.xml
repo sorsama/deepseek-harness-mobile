@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_action_show_progress_label">打开设置页面</string>
+
+    <string name="runtime_card_title">内置 harness</string>
+    <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
+    <string name="runtime_card_intro">最简单的开始方式：harness 直接在这个应用里运行，不需要电脑，也不需要 Termux。</string>
+    <string name="runtime_card_sizes">需下载 %1$s，在手机上约占 %2$s</string>
+    <string name="runtime_card_setting_up">正在设置…</string>
+    <string name="runtime_card_stopped">已安装，可以启动。</string>
+    <string name="runtime_card_starting">正在启动 harness…</string>
+    <string name="runtime_card_stopping">正在停止 harness…</string>
+    <string name="runtime_card_running">正在端口 %1$s 上运行</string>
+    <string name="runtime_card_signed_out">它在运行，但应用还没有登录。重启一下就好。</string>
+    <string name="runtime_card_update">有可用更新</string>
+    <string name="runtime_card_updating">正在更新…</string>
+    <string name="runtime_card_rolled_back">上次更新没能启动，已换回之前的版本。</string>
+    <string name="runtime_use_termux">改用 Termux</string>
+    <string name="runtime_state_expanded">已展开</string>
+    <string name="runtime_state_collapsed">已收起</string>
+
+
+    <string name="runtime_step_done">已完成</string>
+    <string name="runtime_step_active">进行中</string>
+    <string name="runtime_step_pending">未开始</string>
+    <string name="runtime_step_failed">未完成</string>
+
+    <string name="runtime_progress_speed">每秒 %1$s</string>
+    <string name="runtime_progress_minutes_left">还剩约 %1$s 分钟</string>
+    <string name="runtime_progress_seconds_left">还剩约 %1$s 秒</string>
+
+    <string name="runtime_setup_title">设置内置 harness</string>
+    <string name="runtime_setup_intro">DSH 会下载一个装有 harness 的小型 Linux 系统，并在应用里运行它。除了你发给模型服务商的内容，一切都留在这台手机上。</string>
+    <string name="runtime_beta_badge">测试版</string>
+    <string name="runtime_setup_beta_note">这是新功能，可能还不能在每台手机上正常运行。在电脑上或 Termux 里运行 harness 仍然和以前一样可用。</string>
+    <string name="runtime_setup_start">下载并设置</string>
+    <string name="runtime_setup_start_sized">下载并设置（%1$s）</string>
+    <string name="runtime_setup_working_title">正在设置</string>
+    <string name="runtime_setup_leave_hint">你可以离开这个页面，设置会在后台继续。</string>
+    <string name="runtime_setup_no_space_title">空间不足</string>
+    <string name="runtime_setup_failed_title">设置已停止</string>
+    <string name="runtime_setup_failed_body">没有留下任何做到一半的东西。</string>
+    <string name="runtime_setup_done_title">你的 harness 已就绪</string>
+    <string name="runtime_setup_done_body">需要时它就在这台手机上运行。</string>
+    <string name="runtime_setup_connecting">正在连接…</string>
+    <string name="runtime_setup_metered_title">要用移动数据吗？</string>
+    <string name="runtime_setup_metered_body">你正在使用按流量计费的网络。设置需要下载 %1$s。</string>
+    <string name="runtime_setup_metered_confirm">仍然下载</string>
+    <string name="runtime_setup_cancel_title">停止设置？</string>
+    <string name="runtime_setup_cancel_body">已下载的内容会被删除。你随时可以重新设置。</string>
+    <string name="runtime_setup_cancel_confirm">停止并删除</string>
+    <string name="runtime_setup_keep_going">继续</string>
+    <string name="runtime_space_needed">需要</string>
+    <string name="runtime_space_free">当前可用</string>
+
+    <string name="runtime_section_status">状态</string>
+    <string name="runtime_section_options">选项</string>
+    <string name="runtime_section_update">harness 更新</string>
+    <string name="runtime_section_storage">存储</string>
+    <string name="runtime_section_log">日志</string>
+    <string name="runtime_section_reliability">保持运行</string>
+    <string name="runtime_status_not_set_up">未设置</string>
+    <string name="runtime_status_stopped">已停止</string>
+    <string name="runtime_status_needs_attention">需要处理</string>
+    <string name="runtime_info_uptime">已运行</string>
+    <string name="runtime_info_harness">harness</string>
+    <string name="runtime_info_release">运行环境版本</string>
+    <string name="runtime_info_port">端口</string>
+    <string name="runtime_uptime_just_now">不到一分钟</string>
+    <string name="runtime_uptime_minutes">%1$s 分钟</string>
+    <string name="runtime_uptime_hours">%1$s 小时 %2$s 分钟</string>
+
+    <string name="runtime_switch_auto_start">打开应用时启动内置 harness</string>
+    <string name="runtime_switch_auto_start_hint">仅在“本机”模式下，且仅当它还没在运行时。</string>
+    <string name="runtime_switch_wake_lock">运行时保持手机唤醒</string>
+    <string name="runtime_switch_wake_lock_hint">关闭屏幕后，较长的回复也会继续。会更耗电。</string>
+    <string name="runtime_switch_fast_start">快速启动</string>
+    <string name="runtime_switch_fast_start_hint">从打包好的模块包加载 harness。如果启动失败，请关闭它。下次启动时生效。</string>
+
+    <string name="runtime_update_available">harness %1$s 可用</string>
+    <string name="runtime_update_what_harness">更新 harness，需下载 %1$s。</string>
+    <string name="runtime_update_what_both">更新系统和 harness，需下载 %1$s。</string>
+    <string name="runtime_update_versions">%1$s → %2$s</string>
+    <string name="runtime_update_button">更新</string>
+    <string name="runtime_update_check">检查更新</string>
+    <string name="runtime_update_checking">正在检查…</string>
+    <string name="runtime_update_none">已是最新版本。</string>
+    <string name="runtime_update_rolled_back">harness %1$s 没能启动，已换回之前的版本。</string>
+
+    <string name="runtime_storage_runtime">运行环境</string>
+    <string name="runtime_storage_data">会话和设置</string>
+    <string name="runtime_storage_other">下载和日志</string>
+    <string name="runtime_remove">移除运行环境</string>
+    <string name="runtime_remove_title">移除运行环境？</string>
+    <string name="runtime_remove_body">可释放约 %1$s。你的会话和 harness 设置会保留，重新设置后可以接着用。</string>
+    <string name="runtime_delete_all">全部删除</string>
+    <string name="runtime_delete_all_title">全部删除？</string>
+    <string name="runtime_delete_all_body">这会移除运行环境，以及这台手机上 harness 的所有会话、设置和工作区。此操作无法撤销。</string>
+
+    <string name="runtime_log_empty">日志里还没有内容。</string>
+    <string name="runtime_log_share">分享</string>
+    <string name="runtime_log_copied">已复制日志</string>
+
+    <string name="runtime_check_notifications">通知</string>
+    <string name="runtime_check_notifications_on">已开启。harness 运行时你会看到。</string>
+    <string name="runtime_check_notifications_off">已关闭。开启后可以看到 harness 何时在运行。</string>
+    <string name="runtime_check_battery">电池优化</string>
+    <string name="runtime_check_battery_on">不受限制。</string>
+    <string name="runtime_check_battery_off">受限制。Android 可能会在后台停止 harness。</string>
+    <string name="runtime_check_child">后台进程限制</string>
+    <string name="runtime_check_child_body_12">Android 12 和 13 可能会停止在后台运行很多进程的应用。如果 harness 自己停止，请在它工作时保持 DSH 打开。</string>
+    <string name="runtime_check_child_body_14">Android 可能会停止运行很多进程的应用。如果 harness 自己停止，请在开发者选项中开启“停用子进程限制”。</string>
+    <string name="runtime_check_child_off">子进程限制已关闭。</string>
+    <string name="runtime_check_open">打开系统设置</string>
+    <string name="runtime_check_footer">每一行都会打开可以更改它的系统页面。</string>
+
+    <string name="runtime_termux_heading">Termux 中的 harness</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">正在更新到运行环境版本 %1$s…</string>
+    <string name="runtime_update_going_back_to">正在退回运行环境版本 %1$s…</string>
+    <string name="runtime_update_rolled_back_title">新版本没能启动，已换回之前的版本。</string>
+    <string name="runtime_update_rolled_back_detail">版本 %1$s 不会再自动安装。你现在用的是版本 %2$s。</string>
+    <string name="runtime_update_needs_app_title">harness 更新需要更新的应用版本</string>
+    <string name="runtime_update_skipped">你已从版本 %1$s 退回</string>
+    <string name="runtime_update_skipped_hint">它不会自动安装，也不会再通知你。更新的版本照常提供。</string>
+    <string name="runtime_update_anyway">仍然更新</string>
+    <string name="runtime_update_done">现在是版本 %1$s。</string>
+    <string name="runtime_update_went_back_done">你已退回版本 %1$s。</string>
+    <string name="runtime_update_previous">上一个版本</string>
+    <string name="runtime_update_go_back">退回</string>
+    <string name="runtime_go_back_title">退回到版本 %1$s？</string>
+    <string name="runtime_go_back_body">harness 会退回到 %1$s。如果正在运行，它会重启，应用会自动重新连接。你的会话和设置都会保留。在有更新的版本发布之前，版本 %2$s 不会自动安装。</string>
+    <string name="runtime_switch_notify_updates">harness 有新版本时通知我</string>
+    <string name="runtime_switch_notify_updates_hint">每个新版本只通知一次。</string>
+    <string name="runtime_switch_auto_update">自动安装更新</string>
+    <string name="runtime_switch_auto_update_hint">只在 Wi-Fi 或其他不按流量计费的网络下，并且只在 harness 已停止或空闲时进行。之后会告诉你改了什么。</string>
+    <string name="runtime_notif_channel_updates">harness 更新</string>
+    <string name="runtime_notif_update_title">有可用的 harness 更新</string>
+    <string name="runtime_notif_update_text">版本 %1$s，harness %2$s。点按查看会有哪些变化。</string>
+    <string name="runtime_notif_updated_title">harness 已更新</string>
+    <string name="runtime_notif_updated_text">现在是版本 %1$s，harness %2$s。</string>
+    <string name="runtime_notif_rolled_back_title">harness 更新没能启动</string>
+    <string name="runtime_notif_rolled_back_text">已换回版本 %1$s。点按查看原因。</string>
+    <string name="runtime_chat_crashed">这台手机上的 harness 意外停止了。你的会话都还在。</string>
+    <string name="runtime_chat_stopped">这台手机上的 harness 没有在运行。</string>
+    <string name="runtime_chat_restarting">正在启动这台手机上的 harness…</string>
+    <string name="runtime_chat_updating">正在更新这台手机上的 harness。完成后聊天会自动恢复。</string>
+    <string name="runtime_update_nothing_to_download">无需下载：之前的文件还在手机上。</string>
+    <string name="runtime_update_metered_body">你正在使用按流量计费的网络。这次更新要下载 %1$s。</string>
+    <string name="cmdperm_v1_update">这个版本的 harness 询问你时可能会截短较长的命令，你可能看不到全部内容。在依赖“先问我”之前，请先更新 harness。</string>
+</resources>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_section_commands">คำสั่ง</string>
+    <string name="cmdperm_title">เมื่อเอเจนต์ต้องการรันคำสั่ง</string>
+    <string name="cmdperm_run">รันเลย</string>
+    <string name="cmdperm_run_desc">คำสั่งจะรันทันทีโดยไม่ถามคุณ</string>
+    <string name="cmdperm_ask">ถามฉันก่อน</string>
+    <string name="cmdperm_ask_desc">คุณจะเห็นทุกคำสั่ง แล้วเลือกได้ว่าจะอนุญาตหรือปฏิเสธ</string>
+    <string name="cmdperm_explain_title">บนโทรศัพท์ คำสั่งทำงานต่างออกไป</string>
+    <string name="cmdperm_explain_body">บนคอมพิวเตอร์ harness รันคำสั่งใน sandbox ได้ แต่ Android ไม่อนุญาต ที่นี่คำสั่งจึงแก้ไขอะไรก็ได้ในพื้นที่เก็บข้อมูลของ harness เอง</string>
+    <string name="cmdperm_explain_safe_label">ยังได้รับการปกป้อง</string>
+    <string name="cmdperm_explain_safe">harness อยู่แค่ในแอปนี้ มองไม่เห็นรูปภาพ รายชื่อติดต่อ ข้อความ หรือแอปอื่นของคุณ</string>
+    <string name="cmdperm_explain_risk_label">ไม่ได้รับการปกป้อง</string>
+    <string name="cmdperm_explain_risk">มันใช้อินเทอร์เน็ตได้ และคำสั่งอาจลบพื้นที่ทำงานของคุณ หรือการตั้งค่าของ harness และคีย์ API ที่บันทึกไว้</string>
+    <string name="cmdperm_explain_later">เปลี่ยนภายหลังได้ที่หน้า harness และสลับแต่ละแชตได้จากปุ่มสิทธิ์ของแชตนั้น</string>
+    <string name="cmdperm_got_it">เข้าใจแล้ว</string>
+    <string name="cmdperm_restart_title">รีสตาร์ต harness ไหม</string>
+    <string name="cmdperm_restart_body">ตัวเลือกของคุณใช้กับแชตที่เริ่มหลังรีสตาร์ต แชตที่มีอยู่แล้วจะใช้การตั้งค่าเดิม และสลับได้จากปุ่มสิทธิ์ของแชตนั้น</string>
+    <string name="cmdperm_restart_now">รีสตาร์ตเลย</string>
+    <string name="cmdperm_later">ไว้ทีหลัง</string>
+    <string name="cmdperm_pending">harness ยังทำงานด้วย “%1$s” อยู่ รีสตาร์ตเพื่อให้แชตใหม่ใช้ตัวเลือกของคุณ</string>
+    <string name="cmdperm_unsupported">harness เวอร์ชันนี้ถามก่อนรันคำสั่งไม่ได้ อัปเดตเพื่อเลือกว่าจะให้รันทันทีหรือถามคุณก่อน</string>
+
+    <string name="permission_preset_ask_commands">ถามก่อนรันคำสั่ง</string>
+    <string name="permission_preset_ask_commands_desc">ถามคุณก่อนทุกคำสั่ง และก่อนแก้ไขไฟล์นอกพื้นที่ทำงาน</string>
+    <string name="permission_preset_full_access_desc">รันคำสั่งและแก้ไขไฟล์โดยไม่ถาม</string>
+
+    <string name="approval_command_title">รันคำสั่งนี้ไหม</string>
+    <string name="approval_file_title">แก้ไขไฟล์นอกพื้นที่ทำงานไหม</string>
+    <string name="approval_tool_title">อนุญาต %1$s ไหม</string>
+    <string name="approval_shortened">harness ส่งมาแค่ 2,000 ตัวอักษรแรก</string>
+    <string name="approval_show_all">แสดงทั้งหมด</string>
+    <string name="approval_show_less">แสดงน้อยลง</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="other">มีอีก %1$d คำขอรออยู่</item>
+    </plurals>
+
+    <string name="sandbox_notice_builtin">แชตนี้ใช้การตั้งค่าที่ต้องมี sandbox แต่โทรศัพท์ให้ไม่ได้ คำสั่งนั้นจึงไม่ได้รัน สลับการตั้งค่าของแชตแล้วลองขออีกครั้ง</string>
+    <string name="sandbox_notice_switch">สลับเป็น “%1$s”</string>
+    <string name="sandbox_notice_other">คำสั่งนั้นไม่ได้รัน เพราะการตั้งค่าของแชตนี้ต้องมี sandbox แต่ harness ไม่มีในที่ที่มันทำงาน เลือกการตั้งค่าอื่นได้จากปุ่มสิทธิ์ของแชต</string>
+    <string name="subagent_command_denied">เอเจนต์ผู้ช่วยถามคุณไม่ได้ คำสั่งนี้จึงไม่ได้รัน</string>
+    <string name="command_denied_rejected">คุณตอบไม่ จึงไม่ได้รันคำสั่งนี้</string>
+    <string name="command_denied_cancelled">คำถามถูกยกเลิกก่อนที่คุณจะตอบ จึงไม่ได้รัน</string>
+    <string name="command_denied_nobody">ไม่มีใครตอบคำถาม จึงไม่ได้รัน ให้แอปเชื่อมต่ออยู่ระหว่างที่เอเจนต์ทำงาน</string>
+    <string name="command_denied_too_large">ยาวเกินกว่าจะแสดงให้คุณดูได้ครบ (จำกัดที่ 256 KB) จึงไม่ได้ถามคุณและไม่ได้รัน เอเจนต์ได้รับแจ้งให้แบ่งเป็นส่วนเล็กลง</string>
+    <string name="command_denied_other">การตรวจคำสั่งบนโทรศัพท์นี้หยุดไว้ จึงไม่ได้รัน</string>
+</resources>

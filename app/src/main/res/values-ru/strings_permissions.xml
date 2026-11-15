@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_section_commands">Команды</string>
+    <string name="cmdperm_title">Когда агент хочет выполнить команду</string>
+    <string name="cmdperm_run">Выполнять</string>
+    <string name="cmdperm_run_desc">Команды выполняются сразу, без вопросов.</string>
+    <string name="cmdperm_ask">Сначала спрашивать</string>
+    <string name="cmdperm_ask_desc">Вы видите каждую команду и сами решаете, разрешить её или отклонить.</string>
+    <string name="cmdperm_explain_title">На телефоне команды работают иначе</string>
+    <string name="cmdperm_explain_body">На компьютере harness может запускать команды в песочнице. Android этого не позволяет, поэтому здесь команда может изменить что угодно в собственном хранилище harness.</string>
+    <string name="cmdperm_explain_safe_label">По-прежнему защищено</string>
+    <string name="cmdperm_explain_safe">Harness остаётся внутри этого приложения. Он не видит ваши фото, контакты, сообщения и другие приложения.</string>
+    <string name="cmdperm_explain_risk_label">Не защищено</string>
+    <string name="cmdperm_explain_risk">Он может выходить в интернет, а команда может удалить рабочую папку или настройки harness и сохранённые API-ключи.</string>
+    <string name="cmdperm_explain_later">Это можно поменять позже на странице harness, а любой чат переключить его кнопкой разрешений.</string>
+    <string name="cmdperm_got_it">Понятно</string>
+    <string name="cmdperm_restart_title">Перезапустить harness?</string>
+    <string name="cmdperm_restart_body">Ваш выбор действует для чатов, начатых после перезапуска. Старые чаты сохраняют свою настройку, и любой из них можно переключить кнопкой разрешений.</string>
+    <string name="cmdperm_restart_now">Перезапустить</string>
+    <string name="cmdperm_later">Позже</string>
+    <string name="cmdperm_pending">Harness всё ещё работает с настройкой «%1$s». Перезапустите его, чтобы новые чаты использовали ваш выбор.</string>
+    <string name="cmdperm_unsupported">Эта версия harness не умеет спрашивать перед командами. Обновите её, чтобы выбрать, выполнять команды сразу или сначала спрашивать вас.</string>
+
+    <string name="permission_preset_ask_commands">Спрашивать перед командами</string>
+    <string name="permission_preset_ask_commands_desc">Спрашивает перед каждой командой и перед изменениями вне рабочей папки.</string>
+    <string name="permission_preset_full_access_desc">Выполняет команды и меняет файлы без вопросов.</string>
+
+    <string name="approval_command_title">Выполнить эту команду?</string>
+    <string name="approval_file_title">Изменить файл вне рабочей папки?</string>
+    <string name="approval_tool_title">Разрешить %1$s?</string>
+    <string name="approval_shortened">Harness прислал только первые 2000 символов.</string>
+    <string name="approval_show_all">Показать всё</string>
+    <string name="approval_show_less">Свернуть</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">Ещё %1$d запрос ждёт</item>
+        <item quantity="few">Ещё %1$d запроса ждут</item>
+        <item quantity="many">Ещё %1$d запросов ждут</item>
+        <item quantity="other">Ещё %1$d запроса ждут</item>
+    </plurals>
+
+    <string name="sandbox_notice_builtin">У этого чата настройка, которой нужна песочница, а телефон не может её дать, поэтому команда не выполнилась. Переключите чат и попросите снова.</string>
+    <string name="sandbox_notice_switch">Переключить на «%1$s»</string>
+    <string name="sandbox_notice_other">Команда не выполнилась: настройке этого чата нужна песочница, а у harness её нет там, где он работает. Другую настройку можно выбрать кнопкой разрешений чата.</string>
+    <string name="subagent_command_denied">Вспомогательный агент не может спросить вас, поэтому команда не выполнилась.</string>
+    <string name="command_denied_rejected">Вы отказали, поэтому это не выполнялось.</string>
+    <string name="command_denied_cancelled">Вопрос сняли до вашего ответа, поэтому это не выполнялось.</string>
+    <string name="command_denied_nobody">Ответить на вопрос было некому, поэтому это не выполнялось. Не отключайте приложение, пока агент работает.</string>
+    <string name="command_denied_too_large">Это слишком длинно, чтобы показать целиком (предел 256 КБ), поэтому вас не спросили и это не выполнялось. Агенту сказали разбить это на части поменьше.</string>
+    <string name="command_denied_other">Проверка команд на этом телефоне остановила это, поэтому оно не выполнялось.</string>
+</resources>

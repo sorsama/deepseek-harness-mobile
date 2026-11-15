@@ -84,10 +84,21 @@ import com.labteto.dshmobile.shared.resources.connect_found_untrusted
 import com.labteto.dshmobile.shared.resources.connect_found_untrusted_hint
 import com.labteto.dshmobile.shared.resources.connect_harness_actions
 import com.labteto.dshmobile.shared.resources.connect_hero_subtitle
+import com.labteto.dshmobile.shared.resources.connect_hero_subtitle_phone
+import com.labteto.dshmobile.shared.resources.connect_hero_subtitle_relay
 import com.labteto.dshmobile.shared.resources.connect_host_hint
 import com.labteto.dshmobile.shared.resources.connect_host_label
 import com.labteto.dshmobile.shared.resources.connect_lan_notice
 import com.labteto.dshmobile.shared.resources.connect_loopback_notice
+import com.labteto.dshmobile.shared.resources.connect_loopback_notice_builtin
+import com.labteto.dshmobile.shared.resources.runtime_button_starting
+import com.labteto.dshmobile.shared.resources.runtime_button_stopping
+import com.labteto.dshmobile.shared.resources.runtime_switch_auto_start
+import com.labteto.dshmobile.shared.resources.runtime_switch_auto_start_hint
+import com.labteto.dshmobile.runtime.BuiltInCard
+import com.labteto.dshmobile.runtime.BuiltInCardPhase
+import com.labteto.dshmobile.runtime.RuntimeAction
+import com.labteto.dshmobile.runtime.runtimeActionLabel
 import com.labteto.dshmobile.shared.resources.connect_loopback_start
 import com.labteto.dshmobile.shared.resources.connect_manual_paste_hint
 import com.labteto.dshmobile.shared.resources.connect_manual_title
@@ -178,6 +189,11 @@ fun ConnectContent(
     onPair: (prefillUrl: String?) -> Unit,
     loopbackCard: @Composable (recordAttempt: (() -> Unit) -> Unit) -> Unit = {},
     initialHost: String = "",
+    /**
+     * Carry out a built-in harness action the pinned button offers (open the set-up page, free
+     * space...). Only called where [ConnectUiState.builtIn] is supported, so iOS never sees it.
+     */
+    onBuiltInAction: (RuntimeAction) -> Unit = {},
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
@@ -259,6 +275,7 @@ fun ConnectContent(
                         features = features,
                         loopbackCard = loopbackCard,
                         onForgetRequest = { forgetTarget = it },
+                        onBuiltInAction = onBuiltInAction,
                     )
                     ConnectSurface.Connecting -> ConnectConnectingSurface(
                         stage = state.stage,
@@ -351,6 +368,7 @@ private fun ConnectForm(
     features: ConnectFeatures,
     loopbackCard: @Composable (recordAttempt: (() -> Unit) -> Unit) -> Unit,
     onForgetRequest: (HostConfig) -> Unit,
+    onBuiltInAction: (RuntimeAction) -> Unit,
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
@@ -366,7 +384,7 @@ private fun ConnectForm(
                 .padding(top = DsSpacing.large, bottom = DsSpacing.large),
             verticalArrangement = Arrangement.spacedBy(DsSpacing.large),
         ) {
-            ConnectHeader(onOpenSettings = onOpenSettings.takeIf { features.settings })
+            ConnectHeader(mode = state.mode, onOpenSettings = onOpenSettings.takeIf { features.settings })
 
             // A switch with one choice on it is not a switch: a platform that offers only the local
             // network (iOS, for now) shows no control and no empty tabs.
@@ -415,7 +433,7 @@ private fun ConnectForm(
                 val modeRelay = mode == ConnectMode.RELAY
                 val modeLoopback = mode == ConnectMode.LOOPBACK
                 Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.large)) {
-                    ModeNotice(mode = mode, onPair = onPair)
+                    ModeNotice(mode = mode, onPair = onPair, builtIn = state.builtIn.supported)
 
                     if (modeLoopback) {
                         loopbackCard(recordAttempt)
@@ -498,6 +516,7 @@ private fun ConnectForm(
             recordAttempt = recordAttempt,
             onPair = onPair,
             controller = controller,
+            onBuiltInAction = onBuiltInAction,
         )
     }
 }
@@ -510,7 +529,7 @@ private fun ConnectForm(
  * also reaches it does not exist yet at that point.
  */
 @Composable
-private fun ConnectHeader(onOpenSettings: (() -> Unit)?) {
+private fun ConnectHeader(mode: String, onOpenSettings: (() -> Unit)?) {
     val colors = DsTheme.colors
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -526,11 +545,24 @@ private fun ConnectHeader(onOpenSettings: (() -> Unit)?) {
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                stringResource(Res.string.connect_hero_subtitle),
-                style = DsType.small13,
-                color = colors.labelTertiary,
-            )
+            // One line for what this mode is for: "your computer" is wrong for the harness on the phone.
+            AnimatedContent(
+                targetState = mode,
+                transitionSpec = { fadeIn(DsAnimations.fade) togetherWith fadeOut(DsAnimations.fade) using SizeTransform(clip = false) },
+                label = "connectSubtitle",
+            ) { shown ->
+                Text(
+                    stringResource(
+                        when (shown) {
+                            ConnectMode.LOOPBACK -> Res.string.connect_hero_subtitle_phone
+                            ConnectMode.RELAY -> Res.string.connect_hero_subtitle_relay
+                            else -> Res.string.connect_hero_subtitle
+                        },
+                    ),
+                    style = DsType.small13,
+                    color = colors.labelTertiary,
+                )
+            }
         }
         if (onOpenSettings != null) {
             DsIconButton(
@@ -549,7 +581,7 @@ private fun ConnectHeader(onOpenSettings: (() -> Unit)?) {
  * neutral for the harness on this phone.
  */
 @Composable
-private fun ModeNotice(mode: String, onPair: (String?) -> Unit) {
+private fun ModeNotice(mode: String, onPair: (String?) -> Unit, builtIn: Boolean = false) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     val shape = DsShapes.buttonLarge
@@ -597,7 +629,8 @@ private fun ModeNotice(mode: String, onPair: (String?) -> Unit) {
         ) {
             NoticeRow(
                 icon = null,
-                text = stringResource(Res.string.connect_loopback_notice),
+                // With the built-in harness, Termux is the second way and not what the mode is.
+                text = stringResource(if (builtIn) Res.string.connect_loopback_notice_builtin else Res.string.connect_loopback_notice),
                 textColor = colors.labelSecondary,
             )
         }
@@ -1129,6 +1162,13 @@ private fun AutoConnectSection(
                             label = stringResource(Res.string.connect_auto_loopback),
                             checked = state.autoConnectLoopback,
                         ) { onAutoChange("loopback", !state.autoConnectLoopback) }
+                        if (state.builtIn.installed != null) {
+                            AutoToggle(
+                                label = stringResource(Res.string.runtime_switch_auto_start),
+                                hint = stringResource(Res.string.runtime_switch_auto_start_hint),
+                                checked = state.autoStartBuiltInHarness,
+                            ) { onAutoChange("autoStartBuiltIn", !state.autoStartBuiltInHarness) }
+                        }
                         if (state.termuxInstalled) {
                             AutoToggle(
                                 label = stringResource(Res.string.connect_auto_start_loopback),
@@ -1179,9 +1219,11 @@ private fun ConnectBottomBar(
     recordAttempt: (() -> Unit) -> Unit,
     onPair: (String?) -> Unit,
     controller: ConnectController,
+    onBuiltInAction: (RuntimeAction) -> Unit,
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
+    val builtIn = state.builtInCard
     val primary = when {
         relayMode -> {
             val target = paired.firstOrNull()
@@ -1197,16 +1239,24 @@ private fun ConnectBottomBar(
             val status = state.loopback
             when {
                 state.harnessControl.busy -> PrimaryAction(stringResource(Res.string.connect_button), false) {}
+                // The built-in harness is up but the app is not signed in to it: only a restart helps.
+                builtIn?.primary == RuntimeAction.Restart -> PrimaryAction(runtimeActionLabel(RuntimeAction.Restart), true) {
+                    recordAttempt(controller::restartBuiltIn)
+                }
                 status is LoopbackStatus.Ready -> PrimaryAction(stringResource(Res.string.connect_button), true) {
                     recordAttempt(controller::connectLoopback)
                 }
                 status is LoopbackStatus.NeedsSignIn -> PrimaryAction(stringResource(Res.string.connect_sign_in), true) {
                     controller.openLoopbackSignIn()
                 }
-                status is LoopbackStatus.Down && state.termuxInstalled && state.termuxPermission ->
+                // Someone who already runs the harness in Termux and has not set up the built-in one
+                // keeps the button they had.
+                status is LoopbackStatus.Down && state.termuxInstalled && state.termuxPermission &&
+                    (builtIn == null || builtIn.phase == BuiltInCardPhase.NotSetUp) ->
                     PrimaryAction(stringResource(Res.string.connect_loopback_start), true) {
                         recordAttempt(controller::startHarness)
                     }
+                builtIn != null -> builtInPrimary(builtIn, recordAttempt, controller, onBuiltInAction)
                 else -> PrimaryAction(stringResource(Res.string.connect_button), false) {}
             }
         }
@@ -1271,6 +1321,33 @@ private fun ConnectBottomBar(
 
 /** What the pinned primary will do; a plain holder so the decision stays in one `when`. */
 private class PrimaryAction(val label: String, val enabled: Boolean, val run: () -> Unit)
+
+/**
+ * The pinned button for the built-in harness: the card's own action, so the two never disagree.
+ * A live state with nothing to press says what is happening on a disabled button.
+ */
+@Composable
+private fun builtInPrimary(
+    card: BuiltInCard,
+    recordAttempt: (() -> Unit) -> Unit,
+    controller: ConnectController,
+    onBuiltInAction: (RuntimeAction) -> Unit,
+): PrimaryAction {
+    val action = card.primary ?: return when (card.phase) {
+        BuiltInCardPhase.Stopping -> PrimaryAction(stringResource(Res.string.runtime_button_stopping), false) {}
+        BuiltInCardPhase.Starting -> PrimaryAction(stringResource(Res.string.runtime_button_starting), false) {}
+        else -> PrimaryAction(stringResource(Res.string.connect_button), false) {}
+    }
+    val label = runtimeActionLabel(action, card.issue)
+    return PrimaryAction(label, true) {
+        when (action) {
+            RuntimeAction.Connect -> recordAttempt(controller::connectLoopback)
+            RuntimeAction.Start, RuntimeAction.RetryStart -> recordAttempt(controller::startBuiltIn)
+            RuntimeAction.Restart -> recordAttempt(controller::restartBuiltIn)
+            else -> onBuiltInAction(action)
+        }
+    }
+}
 
 /**
  * The sign-in step (design 04), as a bottom sheet over the connect form.

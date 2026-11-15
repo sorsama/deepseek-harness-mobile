@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "2026.11.14-1",
+  "sequence": 1794671523,
+  "createdAt": "2026-11-14T15:52:03Z",
+  "minAppVersion": "0.22.0",
+  "signing": {
+    "algorithm": "Ed25519",
+    "keyId": "20edea657d2e377a",
+    "signatureFile": "manifest.json.sig"
+  },
+  "assetBaseUrl": "https://github.com/sorsama/dsh-mobile-runtime/releases/download/2026.11.14-1/",
+  "harness": {
+    "package": "@deepseek-ai/dsh",
+    "version": "0.2.2-rc.1",
+    "license": "MIT"
+  },
+  "node": {
+    "version": "24.22.3",
+    "home": "/opt/node"
+  },
+  "debian": {
+    "suite": "trixie",
+    "snapshot": "20261110T000000Z",
+    "baseId": "trixie-20261110T000000Z-node24.22.3-r1"
+  },
+  "proot": {
+    "repo": "https://github.com/termux/proot",
+    "commit": "52d65a4dc140ca554d241a1438ddd4f6b00c9813",
+    "version": "5.1.107.102",
+    "talloc": "2.5.0",
+    "ndk": "28.2.13676358",
+    "androidApi": 26,
+    "license": "GPL-2.0-or-later (talloc: LGPL-3.0-or-later)",
+    "sources": [
+      {
+        "file": "proot-source-52d65a4dc140ca554d241a1438ddd4f6b00c9813.tar.gz",
+        "size": 375591,
+        "sha256": "895867fce973f050e51f09b949f8a995ce62f4a28be119c791ff0fef3b2cf2b0"
+      },
+      {
+        "file": "talloc-source-2.5.0.tar.gz",
+        "size": 690172,
+        "sha256": "912afa237510ae542a7733998eb18a12bcda35ab6729c8e2ddb43e8d0ebab007"
+      }
+    ]
+  },
+  "runtime": {
+    "entrypoint": "/usr/local/bin/dsh",
+    "readinessPrefix": "dsh web: http://127.0.0.1:",
+    "fakeProc": [
+      {
+        "source": "/opt/dsh-runtime/proc/stat",
+        "target": "/proc/stat"
+      },
+      {
+        "source": "/opt/dsh-runtime/proc/loadavg",
+        "target": "/proc/loadavg"
+      },
+      {
+        "source": "/opt/dsh-runtime/proc/uptime",
+        "target": "/proc/uptime"
+      }
+    ],
+    "resolvConf": "/etc/resolv.conf"
+  },
+  "archs": {
+    "arm64-v8a": {
+      "debianArch": "arm64",
+      "proot": [
+        {
+          "file": "android-arm64-v8a-libproot.so",
+          "size": 279368,
+          "sha256": "829063030a5aee9cbfaf144fe4f5411fbf7dfa00b193ab0dd4d27d154cb5a2bc",
+          "installAs": "libproot.so"
+        },
+        {
+          "file": "android-arm64-v8a-libproot-loader.so",
+          "size": 17624,
+          "sha256": "2ab748a4c576d8befaccba9de1f92179659106d2c77105c1286d33f358143298",
+          "installAs": "libproot-loader.so"
+        }
+      ],
+      "layers": [
+        {
+          "file": "dsh-runtime-base-arm64-v8a.tar.zst",
+          "size": 74011586,
+          "sha256": "10c4611091c435cbf4f85850e5e67ff896adf6210b7d8931a6f98f0123d4f18a",
+          "name": "base",
+          "id": "trixie-20261110T000000Z-node24.22.3-r1",
+          "compression": "zstd",
+          "zstdWindowLog": 27,
+          "format": "tar (GNU)",
+          "unpackedSize": 360490534,
+          "entries": 9116,
+          "owns": [
+            "/"
+          ],
+          "excludes": [
+            "/opt/dsh",
+            "/usr/local/bin/dsh"
+          ]
+        },
+        {
+          "file": "dsh-runtime-harness-arm64-v8a.tar.zst",
+          "size": 85601767,
+          "sha256": "56ae3fceeb4c27c4f469cecf8263b5e5e43a6d35e4f0353b64d849149b5208f5",
+          "name": "harness",
+          "id": "dsh-0.2.2-rc.1",
+          "compression": "zstd",
+          "zstdWindowLog": 27,
+          "format": "tar (GNU)",
+          "unpackedSize": 725428963,
+          "entries": 74917,
+          "owns": [
+            "/opt/dsh",
+            "/usr/local/bin/dsh"
+          ]
+        }
+      ]
+    },
+    "x86_64": {
+      "debianArch": "amd64",
+      "proot": [
+        {
+          "file": "android-x86_64-libproot.so",
+          "size": 294408,
+          "sha256": "fd28ea76b33a59db8de3911c7e31774f5109175762c1dbfe24d60b195c680897",
+          "installAs": "libproot.so"
+        },
+        {
+          "file": "android-x86_64-libproot-loader.so",
+          "size": 17832,
+          "sha256": "4ca6f14810548610501d012144abeb4c27c1530e2e37201cabf30cab2c39a585",
+          "installAs": "libproot-loader.so"
+        }
+      ],
+      "layers": [
+        {
+          "file": "dsh-runtime-base-x86_64.tar.zst",
+          "size": 72834379,
+          "sha256": "885683308945b8abacab9f690ad33ebce6c7b4eaadd9a477b0a6272993e763ec",
+          "name": "base",
+          "id": "trixie-20261110T000000Z-node24.22.3-r1",
+          "compression": "zstd",
+          "zstdWindowLog": 27,
+          "format": "tar (GNU)",
+          "unpackedSize": 338197774,
+          "entries": 9114,
+          "owns": [
+            "/"
+          ],
+          "excludes": [
+            "/opt/dsh",
+            "/usr/local/bin/dsh"
+          ]
+        },
+        {
+          "file": "dsh-runtime-harness-x86_64.tar.zst",
+          "size": 83782773,
+          "sha256": "2a75e0abd8a3ca291f650b82bbb2aeec69194f90e002636e49919887ddb8910d",
+          "name": "harness",
+          "id": "dsh-0.2.2-rc.1",
+          "compression": "zstd",
+          "zstdWindowLog": 27,
+          "format": "tar (GNU)",
+          "unpackedSize": 719356569,
+          "entries": 74917,
+          "owns": [
+            "/opt/dsh",
+            "/usr/local/bin/dsh"
+          ]
+        }
+      ]
+    }
+  }
+}

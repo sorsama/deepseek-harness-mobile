@@ -117,7 +117,11 @@ internal fun ModelsSheet(
             return@DsBottomSheet
         }
         if (models.groups.sumOf { it.models.size } > 4) DsSearchField(query, { query = it }, stringResource(R.string.common_search))
-        if (models.groups.none { group -> group.models.any { modelSearchMatches(query, "${group.id} ${group.name} ${it.id} ${it.name}") } }) {
+        // Nothing to pick at all: say why and lead to the keys, instead of an empty list. The
+        // picker closes first, so the Models screen opens over the chat rather than under a sheet.
+        if (models.groups.none { it.models.isNotEmpty() }) {
+            com.labteto.dshmobile.ui.screens.models.ModelsPickerEntry(onOpened = onDismiss)
+        } else if (models.groups.none { group -> group.models.any { modelSearchMatches(query, "${group.id} ${group.name} ${it.id} ${it.name}") } }) {
             Text(stringResource(R.string.ux_b_no_models), style = DsType.small13, color = colors.labelSecondary)
         }
         val current = models.current

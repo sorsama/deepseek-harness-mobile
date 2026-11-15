@@ -1,5 +1,8 @@
 package com.labteto.dshmobile
 
+import android.content.Intent
+import com.labteto.dshmobile.ui.screens.runtime.OpenRuntimeControls
+
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
@@ -76,11 +79,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        OpenRuntimeControls.from(intent)
+
         setContent {
             CompositionLocalProvider(LocalShortcutRouter provides shortcuts) {
                 AppRoot()
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        OpenRuntimeControls.from(intent)
     }
 
     /**

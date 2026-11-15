@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Commands on the built-in harness: the choice, its one-time explanation, the approval panel's
+     command view, the permission sheet's two Android presets and the chat's sandbox notice. -->
+<resources>
+
+    <string name="runtime_section_commands">Commands</string>
+    <string name="cmdperm_title">When the agent wants to run a command</string>
+    <string name="cmdperm_run">Run it</string>
+    <string name="cmdperm_run_desc">Commands run right away. You won\'t be asked.</string>
+    <string name="cmdperm_ask">Ask me first</string>
+    <string name="cmdperm_ask_desc">You see each command and choose to allow or reject it.</string>
+    <string name="cmdperm_explain_title">Commands work differently on a phone</string>
+    <string name="cmdperm_explain_body">On a computer the harness can run commands in a sandbox. Android doesn\'t allow one, so here a command can change anything in the harness\'s own storage.</string>
+    <string name="cmdperm_explain_safe_label">Still protected</string>
+    <string name="cmdperm_explain_safe">The harness stays inside this app. It can\'t see your photos, contacts, messages or other apps.</string>
+    <string name="cmdperm_explain_risk_label">Not protected</string>
+    <string name="cmdperm_explain_risk">It can use the internet, and a command could delete your workspace or the harness\'s settings and saved API keys.</string>
+    <string name="cmdperm_explain_later">You can change this later on the harness page, and switch any chat from its permission button.</string>
+    <string name="cmdperm_got_it">Got it</string>
+    <string name="cmdperm_restart_title">Restart the harness?</string>
+    <string name="cmdperm_restart_body">Your choice applies to chats you start after a restart. Chats you already have keep their setting, and you can switch one from its permission button.</string>
+    <string name="cmdperm_restart_now">Restart now</string>
+    <string name="cmdperm_later">Later</string>
+    <string name="cmdperm_pending">The harness is still running with “%1$s”. Restart it so new chats use your choice.</string>
+    <string name="cmdperm_unsupported">This harness version can\'t ask before commands. Update it to choose whether commands run right away or ask you first.</string>
+
+    <string name="permission_preset_ask_commands">Ask before commands</string>
+    <string name="permission_preset_ask_commands_desc">Asks you before each command and before changes outside the workspace.</string>
+    <string name="permission_preset_full_access_desc">Runs commands and changes files without asking.</string>
+
+    <string name="approval_command_title">Run this command?</string>
+    <string name="approval_file_title">Change a file outside the workspace?</string>
+    <string name="approval_tool_title">Allow %1$s?</string>
+    <string name="approval_shortened">The harness only sent the first 2,000 characters of this.</string>
+    <string name="approval_show_all">Show all</string>
+    <string name="approval_show_less">Show less</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">%1$d more request is waiting</item>
+        <item quantity="other">%1$d more requests are waiting</item>
+    </plurals>
+
+    <string name="sandbox_notice_builtin">This chat is on a setting that needs a sandbox, and a phone can\'t give it one, so that command didn\'t run. Switch the chat, then ask again.</string>
+    <string name="sandbox_notice_switch">Switch to “%1$s”</string>
+    <string name="sandbox_notice_other">That command didn\'t run because this chat\'s setting needs a sandbox and the harness has none where it runs. You can pick another setting from the chat\'s permission button.</string>
+    <string name="subagent_command_denied">A helper agent can\'t ask you, so this command didn\'t run.</string>
+    <string name="command_denied_rejected">You said no, so this didn\'t run.</string>
+    <string name="command_denied_cancelled">The question was withdrawn before you answered, so this didn\'t run.</string>
+    <string name="command_denied_nobody">Nobody was there to answer the question, so this didn\'t run. Keep the app connected while the agent works.</string>
+    <string name="command_denied_too_large">This was too long to show you in full (the limit is 256 KB), so you weren\'t asked and it didn\'t run. The agent was told to split it into smaller parts.</string>
+    <string name="command_denied_other">The command check on this phone stopped this, so it didn\'t run.</string>
+</resources>

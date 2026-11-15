@@ -11,6 +11,7 @@ import com.labteto.dshmobile.connection.HostsStore
 import com.labteto.dshmobile.connection.ProbeOutcome
 import com.labteto.dshmobile.connection.ProbeTimeouts
 import com.labteto.dshmobile.connection.RelayCredentialStore
+import com.labteto.dshmobile.runtime.BuiltInHarnessHost
 import com.labteto.dshmobile.update.UpdateChecker
 import com.labteto.dshmobile.termux.HarnessControl
 import com.labteto.dshmobile.termux.TermuxHarnessController
@@ -59,6 +60,8 @@ class SettingsViewModel @Inject constructor(
     private val updateChecker: UpdateChecker,
     private val termux: TermuxHarnessController,
     private val discoveryEngine: DiscoveryEngine,
+    /** The built-in harness; its control page opens from the "Harness on this phone" card. */
+    val builtIn: BuiltInHarnessHost,
 ) : ViewModel() {
 
     /** The manual update check; see [UpdateChecker.checkNow]. */
@@ -141,6 +144,28 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun acknowledgeHarnessControl() = termux.acknowledge()
+
+    /** Leave a connection to this phone's port first, for the same reason as [stopHarness]. */
+    private fun leaveLoopback() {
+        val active = connectionManager.state.value.host
+        if (active != null && active.isLoopback && active.port == loopbackPort.value) connectionManager.disconnect()
+    }
+
+    fun startBuiltIn() = builtIn.start(loopbackPort.value)
+
+    fun stopBuiltIn() {
+        leaveLoopback()
+        builtIn.stop()
+    }
+
+    fun restartBuiltIn() = builtIn.restart()
+
+    fun setUpBuiltIn() = builtIn.setUp(loopbackPort.value)
+
+    fun uninstallBuiltIn(keepUserData: Boolean) {
+        leaveLoopback()
+        builtIn.uninstall(keepUserData)
+    }
 
     fun set(transform: (AppSettings) -> AppSettings) {
         viewModelScope.launch {

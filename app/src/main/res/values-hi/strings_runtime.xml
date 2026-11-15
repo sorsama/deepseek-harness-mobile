@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_action_show_progress_label">सेट अप पेज खोलें</string>
+
+    <string name="runtime_card_title">बिल्ट-इन harness</string>
+    <string name="runtime_card_address">127.0.0.1:%1$s · harness %2$s</string>
+    <string name="runtime_card_intro">शुरू करने का सबसे आसान तरीका: harness इसी ऐप के अंदर चलता है, बिना कंप्यूटर और बिना Termux के।</string>
+    <string name="runtime_card_sizes">%1$s डाउनलोड, फ़ोन पर लगभग %2$s</string>
+    <string name="runtime_card_setting_up">सेट अप हो रहा है…</string>
+    <string name="runtime_card_stopped">इंस्टॉल है और शुरू करने के लिए तैयार है।</string>
+    <string name="runtime_card_starting">harness शुरू हो रहा है…</string>
+    <string name="runtime_card_stopping">harness रुक रहा है…</string>
+    <string name="runtime_card_running">पोर्ट %1$s पर चल रहा है</string>
+    <string name="runtime_card_signed_out">यह चल रहा है, पर ऐप साइन इन नहीं है। फिर से शुरू करने पर ठीक हो जाएगा।</string>
+    <string name="runtime_card_update">अपडेट उपलब्ध</string>
+    <string name="runtime_card_updating">अपडेट हो रहा है…</string>
+    <string name="runtime_card_rolled_back">पिछला अपडेट शुरू नहीं हुआ, इसलिए पहले वाला वर्शन वापस आ गया है।</string>
+    <string name="runtime_use_termux">इसके बजाय Termux इस्तेमाल करें</string>
+    <string name="runtime_state_expanded">खुला है</string>
+    <string name="runtime_state_collapsed">बंद है</string>
+
+
+    <string name="runtime_step_done">हो गया</string>
+    <string name="runtime_step_active">चल रहा है</string>
+    <string name="runtime_step_pending">शुरू नहीं हुआ</string>
+    <string name="runtime_step_failed">पूरा नहीं हुआ</string>
+
+    <string name="runtime_progress_speed">%1$s प्रति सेकंड</string>
+    <string name="runtime_progress_minutes_left">लगभग %1$s मिनट बाकी</string>
+    <string name="runtime_progress_seconds_left">लगभग %1$s सेकंड बाकी</string>
+
+    <string name="runtime_setup_title">बिल्ट-इन harness सेट अप करें</string>
+    <string name="runtime_setup_intro">DSH harness वाला एक छोटा Linux सिस्टम डाउनलोड करता है और उसे ऐप के अंदर चलाता है। आप अपने मॉडल प्रोवाइडर को जो भेजते हैं उसके अलावा सब कुछ इसी फ़ोन पर रहता है।</string>
+    <string name="runtime_beta_badge">बीटा</string>
+    <string name="runtime_setup_beta_note">यह नया है और हो सकता है अभी हर फ़ोन पर काम न करे। अपने कंप्यूटर पर या Termux में harness चलाना पहले की तरह काम करता है।</string>
+    <string name="runtime_setup_start">डाउनलोड करें और सेट अप करें</string>
+    <string name="runtime_setup_start_sized">डाउनलोड करें और सेट अप करें (%1$s)</string>
+    <string name="runtime_setup_working_title">सेट अप हो रहा है</string>
+    <string name="runtime_setup_leave_hint">आप यह पेज छोड़ सकते हैं। सेट अप बैकग्राउंड में चलता रहेगा।</string>
+    <string name="runtime_setup_no_space_title">पर्याप्त जगह नहीं है</string>
+    <string name="runtime_setup_failed_title">सेट अप रुक गया</string>
+    <string name="runtime_setup_failed_body">कुछ भी अधूरा नहीं छोड़ा गया।</string>
+    <string name="runtime_setup_done_title">आपका harness तैयार है</string>
+    <string name="runtime_setup_done_body">जब भी ज़रूरत हो, यह इसी फ़ोन पर चलता है।</string>
+    <string name="runtime_setup_connecting">कनेक्ट हो रहा है…</string>
+    <string name="runtime_setup_metered_title">मोबाइल डेटा इस्तेमाल करें?</string>
+    <string name="runtime_setup_metered_body">आप मीटर वाले कनेक्शन पर हैं। सेट अप %1$s डाउनलोड करेगा।</string>
+    <string name="runtime_setup_metered_confirm">फिर भी डाउनलोड करें</string>
+    <string name="runtime_setup_cancel_title">सेट अप रोकें?</string>
+    <string name="runtime_setup_cancel_body">अब तक जो डाउनलोड हुआ है वह मिटा दिया जाएगा। आप जब चाहें फिर से सेट अप कर सकते हैं।</string>
+    <string name="runtime_setup_cancel_confirm">रोकें और मिटाएँ</string>
+    <string name="runtime_setup_keep_going">जारी रखें</string>
+    <string name="runtime_space_needed">चाहिए</string>
+    <string name="runtime_space_free">अभी खाली</string>
+
+    <string name="runtime_section_status">स्थिति</string>
+    <string name="runtime_section_options">विकल्प</string>
+    <string name="runtime_section_update">harness अपडेट</string>
+    <string name="runtime_section_storage">स्टोरेज</string>
+    <string name="runtime_section_log">लॉग</string>
+    <string name="runtime_section_reliability">इसे चालू रखें</string>
+    <string name="runtime_status_not_set_up">सेट अप नहीं है</string>
+    <string name="runtime_status_stopped">रुका हुआ</string>
+    <string name="runtime_status_needs_attention">ध्यान देना होगा</string>
+    <string name="runtime_info_uptime">इतनी देर से चल रहा है</string>
+    <string name="runtime_info_harness">harness</string>
+    <string name="runtime_info_release">रनटाइम रिलीज़</string>
+    <string name="runtime_info_port">पोर्ट</string>
+    <string name="runtime_uptime_just_now">एक मिनट से कम</string>
+    <string name="runtime_uptime_minutes">%1$s मिनट</string>
+    <string name="runtime_uptime_hours">%1$s घंटे %2$s मिनट</string>
+
+    <string name="runtime_switch_auto_start">ऐप खुलने पर बिल्ट-इन harness शुरू करें</string>
+    <string name="runtime_switch_auto_start_hint">सिर्फ़ यह फ़ोन मोड में, और सिर्फ़ तब जब वह पहले से न चल रहा हो।</string>
+    <string name="runtime_switch_wake_lock">चलते समय फ़ोन को जगाए रखें</string>
+    <string name="runtime_switch_wake_lock_hint">स्क्रीन बंद होने पर भी लंबे जवाब चलते रहते हैं। बैटरी ज़्यादा खर्च होती है।</string>
+    <string name="runtime_switch_fast_start">तेज़ शुरुआत</string>
+    <string name="runtime_switch_fast_start_hint">harness को पैक किए गए बंडल से लोड करता है। शुरू होने में दिक्कत हो तो इसे बंद करें। अगली बार शुरू होने पर लागू होगा।</string>
+
+    <string name="runtime_update_available">harness %1$s उपलब्ध है</string>
+    <string name="runtime_update_what_harness">harness अपडेट होगा। %1$s डाउनलोड।</string>
+    <string name="runtime_update_what_both">सिस्टम और harness अपडेट होंगे। %1$s डाउनलोड।</string>
+    <string name="runtime_update_versions">%1$s → %2$s</string>
+    <string name="runtime_update_button">अपडेट करें</string>
+    <string name="runtime_update_check">अपडेट देखें</string>
+    <string name="runtime_update_checking">देख रहे हैं…</string>
+    <string name="runtime_update_none">सब अप टू डेट है।</string>
+    <string name="runtime_update_rolled_back">harness %1$s शुरू नहीं हुआ, इसलिए पहले वाला वर्शन वापस आ गया है।</string>
+
+    <string name="runtime_storage_runtime">रनटाइम</string>
+    <string name="runtime_storage_data">सेशन और सेटिंग</string>
+    <string name="runtime_storage_other">डाउनलोड और लॉग</string>
+    <string name="runtime_remove">रनटाइम हटाएँ</string>
+    <string name="runtime_remove_title">रनटाइम हटाएँ?</string>
+    <string name="runtime_remove_body">इससे लगभग %1$s खाली होगा। आपके सेशन और harness की सेटिंग बनी रहेंगी, इसलिए फिर से सेट अप करने पर आप वहीं से शुरू करेंगे।</string>
+    <string name="runtime_delete_all">सब कुछ मिटाएँ</string>
+    <string name="runtime_delete_all_title">सब कुछ मिटाएँ?</string>
+    <string name="runtime_delete_all_body">इससे रनटाइम और इस फ़ोन पर harness के सारे सेशन, सेटिंग और वर्कस्पेस हट जाएँगे। इसे वापस नहीं किया जा सकता।</string>
+
+    <string name="runtime_log_empty">अभी लॉग में कुछ नहीं है।</string>
+    <string name="runtime_log_share">शेयर करें</string>
+    <string name="runtime_log_copied">लॉग कॉपी हो गया</string>
+
+    <string name="runtime_check_notifications">सूचनाएँ</string>
+    <string name="runtime_check_notifications_on">चालू हैं। harness चलने पर आपको दिखेगा।</string>
+    <string name="runtime_check_notifications_off">बंद हैं। harness कब चल रहा है यह देखने के लिए इन्हें चालू करें।</string>
+    <string name="runtime_check_battery">बैटरी ऑप्टिमाइज़ेशन</string>
+    <string name="runtime_check_battery_on">कोई पाबंदी नहीं।</string>
+    <string name="runtime_check_battery_off">पाबंदी है। Android बैकग्राउंड में harness को रोक सकता है।</string>
+    <string name="runtime_check_child">बैकग्राउंड प्रोसेस की सीमा</string>
+    <string name="runtime_check_child_body_12">Android 12 और 13 उन ऐप को रोक सकते हैं जो बैकग्राउंड में कई प्रोसेस चलाते हैं। अगर harness अपने आप रुक जाए, तो उसके काम करते समय DSH खुला रखें।</string>
+    <string name="runtime_check_child_body_14">Android कई प्रोसेस चलाने वाले ऐप को रोक सकता है। अगर harness अपने आप रुक जाए, तो डेवलपर के लिए सेटिंग और टूल में \"चाइल्ड प्रोसेस की पाबंदियां बंद करें\" चालू करें।</string>
+    <string name="runtime_check_child_off">चाइल्ड प्रोसेस की पाबंदियाँ बंद हैं।</string>
+    <string name="runtime_check_open">सिस्टम सेटिंग खोलें</string>
+    <string name="runtime_check_footer">हर पंक्ति वह सिस्टम स्क्रीन खोलती है जहाँ इसे बदला जाता है।</string>
+
+    <string name="runtime_termux_heading">Termux में harness</string>
+
+    <!-- Harness updates (M3b): the control page, notifications and the chat notice. -->
+    <string name="runtime_update_updating_to">रिलीज़ %1$s पर अपडेट हो रहा है…</string>
+    <string name="runtime_update_going_back_to">रिलीज़ %1$s पर वापस जा रहा है…</string>
+    <string name="runtime_update_rolled_back_title">नया वर्शन शुरू नहीं हुआ, इसलिए पिछला वाला वापस आ गया है।</string>
+    <string name="runtime_update_rolled_back_detail">रिलीज़ %1$s अब अपने आप इंस्टॉल नहीं होगी। आप रिलीज़ %2$s पर हैं।</string>
+    <string name="runtime_update_needs_app_title">harness अपडेट के लिए ऐप का नया वर्शन चाहिए</string>
+    <string name="runtime_update_skipped">आप रिलीज़ %1$s से वापस आए हैं</string>
+    <string name="runtime_update_skipped_hint">यह अपने आप इंस्टॉल नहीं होगी और इसकी सूचना भी नहीं आएगी। नई रिलीज़ पहले की तरह दिखेंगी।</string>
+    <string name="runtime_update_anyway">फिर भी अपडेट करें</string>
+    <string name="runtime_update_done">अब रिलीज़ %1$s चल रही है।</string>
+    <string name="runtime_update_went_back_done">आप फिर से रिलीज़ %1$s पर हैं।</string>
+    <string name="runtime_update_previous">पिछला वर्शन</string>
+    <string name="runtime_update_go_back">वापस जाएं</string>
+    <string name="runtime_go_back_title">रिलीज़ %1$s पर वापस जाएं?</string>
+    <string name="runtime_go_back_body">harness वर्शन %1$s पर वापस चला जाएगा। अगर यह चल रहा है तो फिर से शुरू होगा, और ऐप अपने आप फिर से जुड़ जाएगा। आपके सेशन और सेटिंग्स बनी रहेंगी। जब तक कोई नई रिलीज़ नहीं आती, रिलीज़ %2$s अपने आप इंस्टॉल नहीं होगी।</string>
+    <string name="runtime_switch_notify_updates">harness के नए वर्शन के बारे में बताएं</string>
+    <string name="runtime_switch_notify_updates_hint">हर नई रिलीज़ के लिए एक सूचना।</string>
+    <string name="runtime_switch_auto_update">अपडेट अपने आप इंस्टॉल करें</string>
+    <string name="runtime_switch_auto_update_hint">सिर्फ़ Wi-Fi या किसी और अनमीटर्ड नेटवर्क पर, और सिर्फ़ तब जब harness बंद हो या खाली हो। बाद में बताया जाएगा कि क्या बदला।</string>
+    <string name="runtime_notif_channel_updates">harness अपडेट</string>
+    <string name="runtime_notif_update_title">harness अपडेट उपलब्ध है</string>
+    <string name="runtime_notif_update_text">रिलीज़ %1$s, harness %2$s। क्या बदलेगा, देखने के लिए टैप करें।</string>
+    <string name="runtime_notif_updated_title">harness अपडेट हो गया</string>
+    <string name="runtime_notif_updated_text">अब रिलीज़ %1$s, harness %2$s।</string>
+    <string name="runtime_notif_rolled_back_title">harness अपडेट शुरू नहीं हुआ</string>
+    <string name="runtime_notif_rolled_back_text">रिलीज़ %1$s वापस आ गई है। वजह देखने के लिए टैप करें।</string>
+    <string name="runtime_chat_crashed">इस फ़ोन का harness अचानक बंद हो गया। आपके सेशन सुरक्षित हैं।</string>
+    <string name="runtime_chat_stopped">इस फ़ोन का harness नहीं चल रहा है।</string>
+    <string name="runtime_chat_restarting">इस फ़ोन का harness शुरू हो रहा है…</string>
+    <string name="runtime_chat_updating">इस फ़ोन का harness अपडेट हो रहा है। पूरा होते ही चैट वापस आ जाएगी।</string>
+    <string name="runtime_update_nothing_to_download">कुछ डाउनलोड नहीं करना है: यह पहले से फ़ोन पर है।</string>
+    <string name="runtime_update_metered_body">आप मीटर वाले कनेक्शन पर हैं। यह अपडेट %1$s डाउनलोड करेगा।</string>
+    <string name="cmdperm_v1_update">harness का यह वर्शन पूछते समय लंबी कमांड को छोटा कर सकता है, इसलिए हो सकता है आप पूरी कमांड न देखें। “पहले मुझसे पूछें” पर भरोसा करने से पहले harness अपडेट करें।</string>
+</resources>

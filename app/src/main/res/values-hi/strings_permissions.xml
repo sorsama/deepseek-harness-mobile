@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_section_commands">कमांड</string>
+    <string name="cmdperm_title">जब एजेंट कोई कमांड चलाना चाहे</string>
+    <string name="cmdperm_run">चला दें</string>
+    <string name="cmdperm_run_desc">कमांड तुरंत चलती हैं, आपसे पूछा नहीं जाता।</string>
+    <string name="cmdperm_ask">पहले मुझसे पूछें</string>
+    <string name="cmdperm_ask_desc">आप हर कमांड देखते हैं और तय करते हैं कि उसे अनुमति दें या नहीं।</string>
+    <string name="cmdperm_explain_title">फ़ोन पर कमांड अलग तरह से चलती हैं</string>
+    <string name="cmdperm_explain_body">कंप्यूटर पर harness कमांड को sandbox में चला सकता है। Android इसकी अनुमति नहीं देता, इसलिए यहाँ कोई कमांड harness के अपने स्टोरेज में कुछ भी बदल सकती है।</string>
+    <string name="cmdperm_explain_safe_label">अब भी सुरक्षित</string>
+    <string name="cmdperm_explain_safe">harness इसी ऐप के अंदर रहता है। वह आपकी फ़ोटो, संपर्क, मैसेज या दूसरे ऐप नहीं देख सकता।</string>
+    <string name="cmdperm_explain_risk_label">सुरक्षित नहीं</string>
+    <string name="cmdperm_explain_risk">वह इंटरनेट इस्तेमाल कर सकता है, और कोई कमांड आपका वर्कस्पेस या harness की सेटिंग और सहेजी गई API कुंजियाँ मिटा सकती है।</string>
+    <string name="cmdperm_explain_later">आप इसे बाद में harness पेज पर बदल सकते हैं, और किसी भी चैट को उसके अनुमति बटन से बदल सकते हैं।</string>
+    <string name="cmdperm_got_it">समझ गया</string>
+    <string name="cmdperm_restart_title">harness फिर से शुरू करें?</string>
+    <string name="cmdperm_restart_body">आपकी पसंद उन चैट पर लागू होगी जो आप फिर से शुरू करने के बाद खोलेंगे। मौजूदा चैट अपनी सेटिंग रखती हैं, और आप किसी को भी उसके अनुमति बटन से बदल सकते हैं।</string>
+    <string name="cmdperm_restart_now">अभी फिर से शुरू करें</string>
+    <string name="cmdperm_later">बाद में</string>
+    <string name="cmdperm_pending">harness अभी भी “%1$s” के साथ चल रहा है। इसे फिर से शुरू करें ताकि नई चैट आपकी पसंद इस्तेमाल करें।</string>
+    <string name="cmdperm_unsupported">harness का यह वर्शन कमांड से पहले पूछ नहीं सकता। इसे अपडेट करें, ताकि आप चुन सकें कि कमांड तुरंत चलें या पहले आपसे पूछें।</string>
+
+    <string name="permission_preset_ask_commands">कमांड से पहले पूछें</string>
+    <string name="permission_preset_ask_commands_desc">हर कमांड से पहले और वर्कस्पेस के बाहर किसी बदलाव से पहले आपसे पूछता है।</string>
+    <string name="permission_preset_full_access_desc">बिना पूछे कमांड चलाता है और फ़ाइलें बदलता है।</string>
+
+    <string name="approval_command_title">यह कमांड चलाएँ?</string>
+    <string name="approval_file_title">वर्कस्पेस के बाहर की फ़ाइल बदलें?</string>
+    <string name="approval_tool_title">%1$s की अनुमति दें?</string>
+    <string name="approval_shortened">harness ने सिर्फ़ पहले 2,000 अक्षर भेजे।</string>
+    <string name="approval_show_all">सब दिखाएँ</string>
+    <string name="approval_show_less">कम दिखाएँ</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">%1$d और अनुरोध इंतज़ार में है</item>
+        <item quantity="other">%1$d और अनुरोध इंतज़ार में हैं</item>
+    </plurals>
+
+    <string name="sandbox_notice_builtin">यह चैट ऐसी सेटिंग पर है जिसे sandbox चाहिए, और फ़ोन उसे यह नहीं दे सकता, इसलिए वह कमांड नहीं चली। चैट की सेटिंग बदलें, फिर दोबारा कहें।</string>
+    <string name="sandbox_notice_switch">“%1$s” पर बदलें</string>
+    <string name="sandbox_notice_other">वह कमांड नहीं चली क्योंकि इस चैट की सेटिंग को sandbox चाहिए और harness जहाँ चलता है वहाँ कोई नहीं है। आप चैट के अनुमति बटन से दूसरी सेटिंग चुन सकते हैं।</string>
+    <string name="subagent_command_denied">सहायक एजेंट आपसे पूछ नहीं सकता, इसलिए यह कमांड नहीं चली।</string>
+    <string name="command_denied_rejected">आपने मना किया, इसलिए यह नहीं चला।</string>
+    <string name="command_denied_cancelled">आपके जवाब से पहले सवाल वापस ले लिया गया, इसलिए यह नहीं चला।</string>
+    <string name="command_denied_nobody">सवाल का जवाब देने के लिए कोई नहीं था, इसलिए यह नहीं चला। एजेंट के काम करते समय ऐप को जुड़ा रखें।</string>
+    <string name="command_denied_too_large">यह आपको पूरा दिखाने के लिए बहुत लंबा था (सीमा 256 KB है), इसलिए आपसे पूछा नहीं गया और यह नहीं चला। एजेंट से इसे छोटे हिस्सों में बांटने को कहा गया।</string>
+    <string name="command_denied_other">इस फ़ोन की कमांड जांच ने इसे रोक दिया, इसलिए यह नहीं चला।</string>
+</resources>

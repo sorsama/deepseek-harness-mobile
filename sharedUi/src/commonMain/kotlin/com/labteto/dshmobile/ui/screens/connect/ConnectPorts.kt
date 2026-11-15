@@ -8,8 +8,10 @@ import com.labteto.dshmobile.connection.ProbeOutcome
 import com.labteto.dshmobile.connection.ProbeTimeouts
 import com.labteto.dshmobile.core.wire.SessionExchange
 import com.labteto.dshmobile.core.wire.dto.HostDescription
+import com.labteto.dshmobile.runtime.BuiltInHarnessState
 import com.labteto.dshmobile.termux.HarnessControl
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -33,6 +35,8 @@ data class ConnectSettings(
     val autoConnectLoopback: Boolean = true,
     val autoConnectRelay: Boolean = false,
     val autoStartLoopbackHarness: Boolean = false,
+    /** Start the built-in harness when the app opens in "This phone" mode and finds it stopped. */
+    val autoStartBuiltInHarness: Boolean = false,
     val knownPorts: List<Int> = listOf(3080),
 )
 
@@ -202,4 +206,44 @@ class ConnectFeatures(
         /** Everything the Android app has always offered. */
         val All = ConnectFeatures(thisPhone = true, relay = true, discovery = true, settings = true)
     }
+}
+
+/**
+ * The built-in harness: the one the app runs itself, inside its own storage, with no Termux.
+ *
+ * Android: `BuiltInHarnessHost` over the runtime engine, app-scoped, so a set-up or a start carries
+ * on when the screen that asked for it goes away. iOS cannot run a local process and passes
+ * [NoBuiltInHarness]; so does an Android device without a 64-bit ABI the runtime is built for. Its
+ * state is then [BuiltInHarnessState.Unsupported] and the Connect screen is exactly what it was
+ * before there was a built-in harness.
+ *
+ * None of these calls connects. Like Termux's start, the controller is told the harness is up and
+ * the screen's own "connect when ready" rules decide.
+ */
+interface BuiltInHarness {
+    val state: StateFlow<BuiltInHarnessState>
+
+    /** Download, check and unpack the runtime if it is not there yet, then start it on [port]. */
+    fun setUp(port: Int)
+
+    fun start(port: Int)
+
+    /** Stop the harness; also abandons a start that has not reached readiness. */
+    fun stop()
+
+    /** Stop and start again: a new launch token, so the app signs itself in again. */
+    fun restart()
+}
+
+/** A platform or a device that cannot run the built-in harness. */
+object NoBuiltInHarness : BuiltInHarness {
+    override val state: StateFlow<BuiltInHarnessState> = MutableStateFlow(BuiltInHarnessState.Unsupported)
+
+    override fun setUp(port: Int) = Unit
+
+    override fun start(port: Int) = Unit
+
+    override fun stop() = Unit
+
+    override fun restart() = Unit
 }

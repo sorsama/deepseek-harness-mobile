@@ -304,7 +304,7 @@
     <string name="update_open">ریلیز دیکھیں</string>
     <string name="update_later">بعد میں</string>
     <string name="settings_update_check">اپ ڈیٹس چیک کریں</string>
-    <string name="settings_update_check_hint">ایپ شروع ہونے پر GitHub سے تازہ ترین ریلیز پوچھتا ہے، اور چند گھنٹے بعد ایپ پر واپس آنے پر دوبارہ۔</string>
+    <string name="settings_update_check_hint">GitHub سے ایپ کا نیا ورژن پوچھتا ہے، اور اگر اس فون پر harness سیٹ اپ ہے تو اس کا بھی۔ ایپ شروع ہونے پر، اور چند گھنٹے بعد ایپ پر واپس آنے پر دوبارہ۔</string>
     <string name="connect_mode_lan">مقامی نیٹ ورک</string>
     <string name="connect_mode_relay">ریلے</string>
     <string name="pair_title">ریلے سے پیئر کریں</string>
@@ -580,4 +580,11 @@
     <string name="shortcuts_settings">سیٹنگز کھولیں</string>
     <string name="shortcuts_close">شیٹ یا ڈائیلاگ بند کریں</string>
     <string name="chat_drop_hint">منسلک کرنے کے لیے فائلیں یہاں چھوڑ دیں</string>
+    <!-- ==== Built-in harness runtime (on-device), foreground service notification ==== -->
+    <string name="runtime_notif_installing">اس فون پر harness سیٹ اپ ہو رہا ہے</string>
+    <string name="runtime_notif_downloading">ڈاؤن لوڈ ہو رہا ہے، %1$d%% مکمل</string>
+    <string name="runtime_notif_unpacking">فائلیں کھولی جا رہی ہیں</string>
+    <string name="runtime_notif_starting">اس فون پر harness شروع ہو رہا ہے</string>
+    <string name="runtime_notif_running">اس فون پر harness چل رہا ہے</string>
+    <string name="runtime_notif_running_text">پورٹ %1$d پر سن رہا ہے</string>
 </resources>

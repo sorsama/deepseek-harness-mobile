@@ -36,6 +36,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
@@ -113,11 +115,45 @@ internal fun PermissionMenu(
     }
 }
 
-/** One preset as a card: reach glyph, name, and the harness's own one-line blurb. */
+/**
+ * One preset as a card: reach glyph, name, and a one-line blurb. The app's own text for the two
+ * presets it owns the wording of (see [permissionPresetDescriptionRes]), the harness's for the rest.
+ */
 @Composable
 private fun PermissionCard(option: PresetOption, selected: Boolean, onSelect: () -> Unit) {
+    val own = permissionPresetDescriptionRes(option.value, option.name)
+    ChoiceCard(
+        icon = permissionIcon(option.value),
+        title = permissionPresetLabel(option.value, option.name),
+        description = when {
+            own != null -> stringResource(own)
+            !option.description.isNullOrBlank() -> option.description.orEmpty()
+            else -> permissionFallbackDescription(option.value)
+        },
+        selected = selected,
+        warn = option.value == FULL_ACCESS_PRESET,
+        onSelect = onSelect,
+    )
+}
+
+/**
+ * A radio card: glyph, title, one-line blurb, and the accent border and filled check when it is the
+ * one chosen. The permission sheet's presets, and the built-in harness's command choice.
+ *
+ * @param warn the amber glyph and blurb of an option that removes a question (Full access).
+ */
+@Composable
+internal fun ChoiceCard(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    selected: Boolean,
+    warn: Boolean,
+    onSelect: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val colors = DsTheme.colors
-    val fullAccess = option.value == FULL_ACCESS_PRESET
+    val fullAccess = warn
     val fill by animateColorAsState(
         targetValue = if (selected) colors.accentTertiary else colors.bgModulePlatform,
         animationSpec = DsAnimations.tabSwapColor,
@@ -129,7 +165,7 @@ private fun PermissionCard(option: PresetOption, selected: Boolean, onSelect: ()
         label = "permissionCardStroke",
     )
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = DsShapes.block,
         color = fill,
         border = BorderStroke(1.dp, stroke),
@@ -137,6 +173,7 @@ private fun PermissionCard(option: PresetOption, selected: Boolean, onSelect: ()
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .semantics { this.selected = selected }
                 .clickable(role = Role.RadioButton, onClick = onSelect)
                 .heightIn(min = 64.dp)
                 .padding(horizontal = DsSpacing.medium, vertical = DsSpacing.small),
@@ -144,7 +181,7 @@ private fun PermissionCard(option: PresetOption, selected: Boolean, onSelect: ()
             horizontalArrangement = Arrangement.spacedBy(DsSpacing.medium),
         ) {
             Icon(
-                permissionIcon(option.value),
+                icon,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
                 tint = when {
@@ -155,17 +192,17 @@ private fun PermissionCard(option: PresetOption, selected: Boolean, onSelect: ()
             )
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    permissionPresetLabel(option.value, option.name),
+                    title,
                     style = DsType.rowTitle,
                     color = colors.labelPrimary,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    option.description?.takeIf { it.isNotBlank() } ?: permissionFallbackDescription(option.value),
+                    description,
                     style = DsType.small13,
                     color = if (fullAccess) colors.warnText else colors.labelTertiary,
-                    maxLines = 2,
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -194,6 +231,7 @@ private fun PermissionCard(option: PresetOption, selected: Boolean, onSelect: ()
 /** The glyph that names a preset's reach. Ids are the harness's; unknown ones fall back to a tool. */
 internal fun permissionIcon(value: String): ImageVector = when (value) {
     FULL_ACCESS_PRESET -> FeatherIcons.AlertTriangle
+    ASK_COMMANDS_PRESET -> FeatherIcons.CheckSquare
     "read-only", "read", "readonly" -> FeatherIcons.FileText
     "workspace-write", "workspace", "write" -> FeatherIcons.Edit3
     else -> FeatherIcons.Tool

@@ -30,9 +30,12 @@ d'une interface web. DSH Mobile se connecte à ce harness et vous donne les mêm
 une application Android native. Vous pouvez lancer une tâche depuis votre bureau, puis la suivre,
 répondre à ses questions et approuver ses commandes depuis votre téléphone.
 
-Il s'agit d'une application non officielle, développée par la communauté. Elle a besoin d'un
-harness lancé à un endroit qu'elle peut joindre : sur votre ordinateur, ou sur le téléphone
-lui-même grâce à Termux.
+Vous n'avez pas besoin d'ordinateur. Sur la plupart des téléphones Android, l'application peut faire
+tourner le harness elle-même : touchez **Installer** une fois et le téléphone a son propre harness. Si
+vous faites déjà tourner le harness sur un ordinateur, l'application peut aussi s'y connecter, sur votre
+Wi-Fi ou de n'importe où grâce à un relais.
+
+Il s'agit d'une application non officielle, développée par la communauté.
 
 Le [site du projet](https://dshm.zyphite.com) présente l'application sur une seule page, et le
 [wiki](https://github.com/sorsama/deepseek-harness-mobile/wiki) contient le guide d'utilisation complet.
@@ -84,8 +87,51 @@ Le [site du projet](https://dshm.zyphite.com) présente l'application sur une se
   d'accent prédéfinies ou la vôtre, un noir pur pour les écrans OLED et une taille de texte réglable.
 - Utilisez l'application en anglais, chinois, hindi, espagnol, français, arabe, bengali, portugais,
   russe, ourdou ou thaï. Les langues qui s'écrivent de droite à gauche sont prises en charge.
+- Mettez l'application à jour depuis l'application : elle télécharge la nouvelle version, la vérifie
+  et la confie à l'installateur d'Android.
 
 Le [journal des modifications](CHANGELOG.md) indique ce qui a changé dans chaque version.
+
+## Pas besoin d'ordinateur : le harness sur votre téléphone (bêta)
+
+| Connexion | Installation | Page du harness | Projets | Approbation |
+|:--:|:--:|:--:|:--:|:--:|
+| <img src="docs/images/on-device/connect.png" width="160" alt="L'écran Connexion en mode Ce téléphone, avec la carte du harness intégré et son bouton Installer"> | <img src="docs/images/on-device/setup.png" width="160" alt="La page d'installation en train de décompresser, avec l'explication du fonctionnement des commandes sur un téléphone"> | <img src="docs/images/on-device/control.png" width="160" alt="La page du harness avec le choix des commandes, les projets et les mises à jour du harness"> | <img src="docs/images/on-device/projects.png" width="160" alt="Les projets sur ce téléphone, avec un dépôt cloné"> | <img src="docs/images/on-device/approval.png" width="160" alt="Une commande affichée en entier, qui attend votre autorisation ou votre refus"> |
+| Une nouvelle installation s'ouvre ici. | Télécharger, vérifier, décompresser, démarrer, se connecter. | Démarrer, arrêter, commandes, mises à jour, stockage, journal. | Cloner, importer, partager et ouvrir dans Fichiers. | Avec Me demander d'abord, chaque commande vous attend. |
+
+**Bêta.** Le harness intégré est nouveau dans la 0.22.0 et a été testé sur des émulateurs et un téléphone Samsung, il ne marche donc peut-être pas encore sur tous les téléphones. Un harness sur votre ordinateur (Réseau local, Relais) ou dans Termux fonctionne toujours comme avant.
+
+L'application peut faire tourner le DeepSeek Harness en son sein : un petit système Linux avec Node.js
+et le harness, téléchargé une fois, vérifié par une signature et lancé avec `proot`. C'est le même
+harness que sur un ordinateur, avec les mêmes sessions et les mêmes outils.
+
+- **Ce que ça coûte.** Environ 155 Mo à télécharger la première fois et environ 1,1 Go sur le
+  téléphone (1,4 Go libres pendant l'installation). Le harness utilise environ 300 à 400 Mo de mémoire
+  quand il tourne. Il faut un téléphone 64 bits sous Android 8.0 ou plus récent, et une clé API
+  d'un fournisseur de modèles, que vous ajoutez dans l'application (Paramètres, Models).
+- **Ce qu'il sait faire.** Discussions, agents et sous-agents, fichiers et commandes shell (`git`,
+  `node`, `npm`, `curl`, et plus avec `apt-get`), cloner des dépôts Git, et tout ce que l'application
+  fait avec un harness sur un ordinateur.
+- **Ce qu'il ne sait pas faire.** Lancer des commandes dans un bac à sable (Android n'en permet aucun
+  dans une application), accéder à vos photos, téléchargements ou autres applications, ni faire
+  tourner un modèle sur le téléphone. Il parle à votre fournisseur de modèles par internet.
+- **Commandes.** Vous choisissez ce qui se passe quand l'agent veut lancer une commande : **La
+  lancer**, ou **Me demander d'abord**, qui montre chaque commande en entier et attend votre accord
+  ou votre refus. Dans les deux cas le harness reste dans l'application ; une commande peut utiliser
+  internet et modifier les fichiers et projets du harness lui-même.
+- **Vos fichiers.** Les projets vivent dans l'application et apparaissent dans l'application
+  Fichiers du système sous **DSH Mobile** : vous pouvez les ouvrir, copier des fichiers dans les deux
+  sens ou partager un projet en zip.
+- **Mises à jour.** Les nouvelles versions du harness arrivent sans mise à jour de l'application :
+  elle vous prévient une fois et les installe quand vous touchez Mettre à jour (ou toute seule en
+  Wi-Fi, si vous l'activez). Si une nouvelle version ne démarre pas, la précédente revient.
+  L'application elle-même se met à jour depuis **Paramètres, À propos**. Ce sont deux choses distinctes.
+- **Le garder en marche.** Android arrête le travail en arrière-plan. La page du harness propose une
+  liste de vérifications (notifications, batterie, limite de processus en arrière-plan), et certains
+  fabricants demandent leur propre réglage.
+
+Le guide complet, avec un dépannage classé selon les messages de l'application, se trouve dans
+[`harness/ON-DEVICE.md`](harness/ON-DEVICE.md) (en anglais).
 
 ## Premiers pas
 
@@ -95,6 +141,9 @@ Téléchargez l'APK depuis la [dernière version](https://github.com/sorsama/dee
 et installez-le. Il vous faut Android 8.0 ou plus récent.
 
 ### 2. Rendre le harness accessible
+
+Avec le harness intégré (ci-dessus), rien à configurer ici : choisissez **Ce téléphone** et touchez
+**Installer**. Pour utiliser un harness sur un ordinateur, lisez la suite.
 
 Par défaut, le harness n'écoute que sur son propre ordinateur. Choisissez la configuration qui
 correspond à l'endroit où se trouvera votre téléphone.
@@ -129,10 +178,13 @@ l'application, choisissez **Ce téléphone** et connectez-vous avec le lien affi
 
 #### Sur le téléphone lui-même
 
-Le harness peut tourner dans [Termux](https://f-droid.org/packages/com.termux/).
-Choisissez **Ce téléphone** : l'application peut alors démarrer et arrêter le harness, et vous
-connecter elle-même. L'installation de Node dans Termux ne fonctionne pas encore sur tous les
-appareils ; lisez d'abord [`harness/TERMUX.md`](harness/TERMUX.md).
+Choisissez **Ce téléphone** et touchez **Installer** : l'application télécharge et fait tourner le
+harness elle-même, puis se connecte. Voir [`harness/ON-DEVICE.md`](harness/ON-DEVICE.md).
+
+Si vous préférez vos propres versions de Node et du harness, le harness peut aussi tourner dans
+[Termux](https://f-droid.org/packages/com.termux/) (ouvrez **Utiliser Termux à la place** sur le même
+écran), et l'application peut le démarrer, l'arrêter et se connecter pour vous. Installer Node dans
+Termux ne fonctionne pas encore sur tous les appareils ; lisez d'abord [`harness/TERMUX.md`](harness/TERMUX.md).
 
 #### Votre propre reverse proxy HTTPS
 
@@ -159,6 +211,10 @@ ordinateur. Autoriser une connexion revient à donner un accès shell.
   de votre réseau.
 - Gardez le lien `dsh web` pour vous. Toute personne qui l'a peut se connecter jusqu'au redémarrage
   du harness.
+- Le harness intégré reste dans l'application et ne voit pas vos photos, contacts ou autres
+  applications, mais ses commandes n'ont pas de bac à sable : une commande peut utiliser internet et
+  modifier les fichiers, réglages et clés API enregistrées du harness. Choisissez **Me demander
+  d'abord** pour lire chaque commande avant qu'elle ne s'exécute.
 
 ## Compatibilité
 
@@ -192,7 +248,7 @@ décrit la boucle de développement, l'organisation des modules et les étapes d
 | `conformance/` | Tests qui lancent un vrai harness et vérifient chaque appel de l'application |
 | `mock-harness/` | Un petit faux serveur de harness pour les tests |
 | `tools/capture/` | Enregistre le trafic d'un vrai harness comme fixtures de test |
-| `harness/` | Guides d'installation pour le réseau local et Termux |
+| `harness/` | Guides d'installation pour le harness intégré, le réseau local et Termux |
 | `docs/` | [Architecture](docs/ARCHITECTURE.md), [notes de protocole](docs/PROTOCOL.md), [compatibilité](docs/COMPATIBILITY.md), [sécurité](docs/SECURITY.md) |
 
 Le plugin de relais a son propre dépôt,

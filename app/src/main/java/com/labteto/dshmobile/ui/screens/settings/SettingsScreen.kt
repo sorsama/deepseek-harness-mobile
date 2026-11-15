@@ -21,6 +21,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import com.labteto.dshmobile.ui.components.DsButtonSize
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.update.UpdateChecker
+import com.labteto.dshmobile.ui.update.LocalUpdateUi
+import com.labteto.dshmobile.ui.update.UpdatePanel
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -202,10 +204,14 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         tint = colors.labelPrimary,
                     )
                     Spacer(Modifier.width(DsSpacing.small))
+                    // The rest of the row, not the word's own measured width: with the display
+                    // style's negative letter spacing, Arabic shapes a few pixels wider than it
+                    // measures, and "الإعدادات" broke before its last letter.
                     Text(
                         stringResource(R.string.settings_title),
                         style = DsType.display24,
                         color = colors.labelPrimary,
+                        modifier = Modifier.weight(1f),
                     )
                 }
                 DsSegmented(
@@ -286,6 +292,29 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                     ) { viewModel.set { it.copy(autoConnectLoopback = !it.autoConnectLoopback) } }
                 }
 
+                // What the connected harness answers with, in any connection mode: its providers
+                // and their keys, written to the harness and kept there.
+                if (connectionState.phase == ConnectionPhase.CONNECTED) {
+                    SettingsCard(stringResource(R.string.models_title)) {
+                        com.labteto.dshmobile.ui.screens.models.ModelsSettingsRow()
+                    }
+                }
+
+                // The built-in harness first: on a phone that can run it, it is the main way.
+                val builtInState by viewModel.builtIn.state.collectAsStateWithLifecycle()
+                val builtInPort by viewModel.loopbackPort.collectAsStateWithLifecycle()
+                com.labteto.dshmobile.ui.screens.runtime.BuiltInSettingsEntry(
+                    host = viewModel.builtIn,
+                    port = builtInPort,
+                    autoStart = settings.autoStartBuiltInHarness,
+                    onAutoStartChange = { on -> viewModel.set { it.copy(autoStartBuiltInHarness = on) } },
+                    onStart = viewModel::startBuiltIn,
+                    onStop = viewModel::stopBuiltIn,
+                    onRestart = viewModel::restartBuiltIn,
+                    onSetUp = viewModel::setUpBuiltIn,
+                    onUninstall = viewModel::uninstallBuiltIn,
+                )
+
                 // Only on a phone that has Termux: everything on this card goes through it.
                 if (viewModel.termuxInstalled) {
                     val harnessControl by viewModel.harnessControl.collectAsStateWithLifecycle()
@@ -304,6 +333,8 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                     }
                     LaunchedEffect(Unit) { viewModel.refreshLoopback() }
                     TermuxCard(
+                        // Beside the built-in harness, this card is the Termux one and says so.
+                        title = stringResource(if (builtInState.supported) R.string.runtime_termux_heading else R.string.settings_termux),
                         settings = settings,
                         control = harnessControl,
                         loopback = loopback,
@@ -425,6 +456,13 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         settings.updateCheckEnabled,
                         stringResource(R.string.settings_update_check_hint),
                     ) { viewModel.set { it.copy(updateCheckEnabled = !it.updateCheckEnabled) } }
+                    // Off unless asked for: it makes the check run in the background, once a day.
+                    ToggleRow(
+                        stringResource(R.string.settings_update_notify),
+                        settings.updateCheckEnabled && settings.updateNotifyEnabled,
+                        stringResource(R.string.settings_update_notify_hint),
+                        enabled = settings.updateCheckEnabled,
+                    ) { viewModel.set { it.copy(updateNotifyEnabled = !it.updateNotifyEnabled) } }
                     // The same check, on demand. Every outcome is reported: a button that says
                     // nothing when there is nothing to offer looks broken.
                     var checking by remember { mutableStateOf(false) }
@@ -460,6 +498,20 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                                 modifier = Modifier.weight(1f),
                             )
                             is UpdateChecker.CheckOutcome.Available, is UpdateChecker.CheckOutcome.Dismissed, null -> Unit
+                        }
+                    }
+                    // The in-app update, beside the version it would replace. It stays here after
+                    // "Later" in the dialog, and shows the same progress the dialog does.
+                    LocalUpdateUi.current?.let { updateUi ->
+                        val latest by updateUi.latest.collectAsStateWithLifecycle()
+                        val updaterState by updateUi.state.collectAsStateWithLifecycle()
+                        (updaterState.update ?: latest)?.let { shown ->
+                            Text(
+                                stringResource(R.string.update_settings_available, shown.version),
+                                style = DsType.std14Strong,
+                                color = colors.labelPrimary,
+                            )
+                            UpdatePanel(shown, updaterState, updateUi)
                         }
                     }
                 }
@@ -700,6 +752,7 @@ private fun moduleShortName(moduleName: String): String {
  */
 @Composable
 private fun TermuxCard(
+    title: String,
     settings: AppSettings,
     control: HarnessControl,
     loopback: LoopbackStatus,
@@ -711,7 +764,7 @@ private fun TermuxCard(
     onToggleAutoStart: () -> Unit,
 ) {
     val colors = DsTheme.colors
-    SettingsCard(stringResource(R.string.settings_termux)) {
+    SettingsCard(title) {
         LabelledValue(stringResource(R.string.settings_termux_status), loopbackStatusText(loopback, control, port))
         (control as? HarnessControl.Failed)?.let { failed ->
             Text(harnessFailureMessage(failed.reason), style = DsType.caption11, color = colors.warnLabel)

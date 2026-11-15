@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_section_commands">Commandes</string>
+    <string name="cmdperm_title">Quand l\'agent veut lancer une commande</string>
+    <string name="cmdperm_run">La lancer</string>
+    <string name="cmdperm_run_desc">Les commandes se lancent tout de suite. On ne vous demande rien.</string>
+    <string name="cmdperm_ask">Me demander d\'abord</string>
+    <string name="cmdperm_ask_desc">Vous voyez chaque commande et choisissez de l\'autoriser ou de la refuser.</string>
+    <string name="cmdperm_explain_title">Sur un téléphone, les commandes fonctionnent autrement</string>
+    <string name="cmdperm_explain_body">Sur un ordinateur, le harness peut lancer les commandes dans un sandbox. Android ne le permet pas, donc ici une commande peut modifier tout le stockage propre au harness.</string>
+    <string name="cmdperm_explain_safe_label">Toujours protégé</string>
+    <string name="cmdperm_explain_safe">Le harness reste dans cette app. Il ne voit ni vos photos, ni vos contacts, ni vos messages, ni vos autres apps.</string>
+    <string name="cmdperm_explain_risk_label">Pas protégé</string>
+    <string name="cmdperm_explain_risk">Il peut utiliser Internet, et une commande pourrait supprimer votre espace de travail ou les réglages du harness et les clés d\'API enregistrées.</string>
+    <string name="cmdperm_explain_later">Vous pourrez changer ce choix sur la page du harness, et changer n\'importe quelle conversation depuis son bouton d\'autorisation.</string>
+    <string name="cmdperm_got_it">Compris</string>
+    <string name="cmdperm_restart_title">Redémarrer le harness ?</string>
+    <string name="cmdperm_restart_body">Votre choix s\'applique aux conversations que vous lancez après un redémarrage. Les conversations existantes gardent leur réglage, et vous pouvez en changer une depuis son bouton d\'autorisation.</string>
+    <string name="cmdperm_restart_now">Redémarrer</string>
+    <string name="cmdperm_later">Plus tard</string>
+    <string name="cmdperm_pending">Le harness tourne encore avec « %1$s ». Redémarrez-le pour que les nouvelles conversations suivent votre choix.</string>
+    <string name="cmdperm_unsupported">Cette version du harness ne sait pas demander avant les commandes. Mettez-la à jour pour choisir si elles se lancent tout de suite ou vous demandent d\'abord.</string>
+
+    <string name="permission_preset_ask_commands">Demander avant les commandes</string>
+    <string name="permission_preset_ask_commands_desc">Vous demande avant chaque commande et avant toute modification hors de l\'espace de travail.</string>
+    <string name="permission_preset_full_access_desc">Lance les commandes et modifie les fichiers sans demander.</string>
+
+    <string name="approval_command_title">Lancer cette commande ?</string>
+    <string name="approval_file_title">Modifier un fichier hors de l\'espace de travail ?</string>
+    <string name="approval_tool_title">Autoriser %1$s ?</string>
+    <string name="approval_shortened">Le harness n\'a envoyé que les 2 000 premiers caractères.</string>
+    <string name="approval_show_all">Tout afficher</string>
+    <string name="approval_show_less">Afficher moins</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">%1$d autre demande en attente</item>
+        <item quantity="many">%1$d autres demandes en attente</item>
+        <item quantity="other">%1$d autres demandes en attente</item>
+    </plurals>
+
+    <string name="sandbox_notice_builtin">Cette conversation utilise un réglage qui demande un sandbox, et un téléphone ne peut pas lui en donner, donc la commande n\'a pas été lancée. Changez le réglage, puis redemandez.</string>
+    <string name="sandbox_notice_switch">Passer à « %1$s »</string>
+    <string name="sandbox_notice_other">La commande n\'a pas été lancée parce que le réglage de cette conversation demande un sandbox et que le harness n\'en a pas là où il tourne. Vous pouvez choisir un autre réglage depuis le bouton d\'autorisation.</string>
+    <string name="subagent_command_denied">Un agent auxiliaire ne peut pas vous demander, donc cette commande n\'a pas été lancée.</string>
+    <string name="command_denied_rejected">Vous avez refusé, donc rien n’a été lancé.</string>
+    <string name="command_denied_cancelled">La question a été retirée avant votre réponse, donc rien n’a été lancé.</string>
+    <string name="command_denied_nobody">Personne n’était là pour répondre, donc rien n’a été lancé. Gardez l’app connectée pendant que l’agent travaille.</string>
+    <string name="command_denied_too_large">C’était trop long pour vous être montré en entier (la limite est de 256 Ko), donc la question n’a pas été posée et rien n’a été lancé. L’agent a été invité à le découper en parties plus petites.</string>
+    <string name="command_denied_other">La vérification des commandes de ce téléphone l’a arrêté, donc rien n’a été lancé.</string>
+</resources>

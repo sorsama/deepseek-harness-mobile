@@ -654,15 +654,45 @@ fun ChatScreen(
                 sessionOpen = currentSessionId != null,
             )
 
-            AnimatedPresence(connectionError) {
-                ConnectionBanner(
-                    message = it,
-                    actionLabel = stringResource(R.string.common_retry),
-                    onAction = { store.retryConnection() },
-                )
+            // No model to answer: the last turn's failure code said so, or the harness has no
+            // provider it can use. Only while connected, since the way out is a harness call. Its
+            // calm notice stands in for the raw error the harness reports for that same turn.
+            val connected = connection.phase == com.labteto.dshmobile.connection.ConnectionPhase.CONNECTED
+            val setupProblem = remember(conversation?.nodes) {
+                conversation?.nodes?.let { com.labteto.dshmobile.core.usage.modelSetupProblem(it) }
             }
-            AnimatedPresence(Unit.takeIf { conversation?.gap == true && connectionError == null }) {
-                ConnectionBanner(stringResource(R.string.common_reconnecting), warning = true)
+            val shownError = connectionError.takeIf { setupProblem == null || !connected }
+
+            // When the harness is the one on this phone and it is down, its own notice says why
+            // and offers Restart. The stream error and the plain "Reconnecting" strip would only
+            // say half of that, in transport words, so they stand aside while it shows.
+            com.labteto.dshmobile.ui.screens.runtime.BuiltInChatNotice {
+                val folderGone = stringResource(R.string.projects_session_folder_gone)
+                AnimatedPresence(shownError) {
+                    ConnectionBanner(
+                        // The session's folder was deleted or renamed (a project removed on the phone):
+                        // said plainly rather than as the harness's working-directory error.
+                        message = if (com.labteto.dshmobile.runtime.workspace.ProjectList.isMissingFolderError(it)) folderGone else it,
+                        actionLabel = stringResource(R.string.common_retry),
+                        onAction = { store.retryConnection() },
+                    )
+                }
+                AnimatedPresence(Unit.takeIf { conversation?.gap == true && connectionError == null }) {
+                    ConnectionBanner(stringResource(R.string.common_reconnecting), warning = true)
+                }
+            }
+
+            if (connected) com.labteto.dshmobile.ui.screens.models.ChatModelSetupNotice(setupProblem)
+
+            // A command refused for want of a sandbox (SANDBOX_UNAVAILABLE): this session is on a
+            // mode a phone cannot give it. On the built-in harness, one tap switches it.
+            if (connected && currentSubagent == null) {
+                com.labteto.dshmobile.ui.screens.runtime.SandboxRefusalNotice(
+                    nodes = conversation?.nodes.orEmpty(),
+                    permissions = permissions,
+                    pending = pendingPermission,
+                    onSwitch = { value -> scope.launch { reportPermission(store.setPermissionPreset(value)) } },
+                )
             }
 
             val nodeContext = ChatNodeContext(
@@ -856,6 +886,9 @@ fun ChatScreen(
                         modifier = Modifier.padding(horizontal = gutter),
                         toolName = approval.toolName,
                         reason = approval.reason,
+                        rawReason = approval.rawReason,
+                        requestKey = approval.approvalId,
+                        waitingAfter = approval.waitingAfter,
                         onAllow = { decide(true) },
                         onReject = { decide(false) },
                     )

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Projects of the built-in harness: the Files app root, the Projects page, new, clone, import, export. -->
+    <string name="projects_provider_summary">Projects of the built-in harness</string>
+    <string name="projects_title">Projects on this phone</string>
+    <string name="projects_intro">Your project folders on this phone. You can also see them in the Files app under %1$s.</string>
+    <string name="projects_files_hint">Your project folders also show up in the Files app under %1$s, for copying files in and out.</string>
+    <string name="projects_section_list">Projects</string>
+    <plurals name="projects_count">
+        <item quantity="one">%1$d project</item>
+        <item quantity="other">%1$d projects</item>
+    </plurals>
+    <string name="projects_space_label">Space used</string>
+    <string name="projects_space_used">%1$s used</string>
+    <string name="projects_counting">Counting…</string>
+    <string name="projects_row_detail">%1$s · %2$s</string>
+    <string name="projects_empty">No projects yet. Start one above, or bring one in from your phone.</string>
+    <string name="projects_more_for">More for %1$s</string>
+    <string name="projects_manage">Manage projects</string>
+    <string name="projects_open_files">Open in Files</string>
+    <string name="projects_no_files_app">No Files app was found on this phone.</string>
+
+    <string name="projects_start_header">Start a project</string>
+    <string name="projects_new_empty">New empty project</string>
+    <string name="projects_new_empty_hint">An empty folder for a fresh start</string>
+    <string name="projects_clone">Clone a Git repository</string>
+    <string name="projects_clone_hint">Copy a repository from GitHub or another host</string>
+    <string name="projects_import_folder">Import a folder</string>
+    <string name="projects_import_folder_hint">Copies a folder from this phone into the app</string>
+    <string name="projects_import_zip">Import a .zip</string>
+    <string name="projects_import_zip_hint">Unpacks a zip file into a new project</string>
+
+    <string name="projects_name_label">Project name</string>
+    <string name="projects_name_taken">A project with this name already exists.</string>
+    <string name="projects_name_invalid">Use a name without slashes.</string>
+    <string name="projects_create">Create</string>
+    <string name="projects_change_failed">That did not work. Try again.</string>
+    <string name="projects_in_use">Another project task is still running. Wait for it to finish.</string>
+
+    <string name="projects_clone_url">Repository address</string>
+    <string name="projects_clone_branch">Branch or tag (optional)</string>
+    <string name="projects_clone_private">Private repository</string>
+    <string name="projects_clone_private_hint">Needs an access token that can read it</string>
+    <string name="projects_clone_token">Access token</string>
+    <string name="projects_clone_token_hint">Used for this clone only. It is not saved anywhere, and Git does not keep it.</string>
+    <string name="projects_clone_start">Clone</string>
+    <string name="projects_clone_bad_url">Enter the repository\'s web address, starting with https://</string>
+    <string name="projects_clone_ssh">SSH addresses are not supported yet. Use the repository\'s https:// address.</string>
+    <string name="projects_clone_credentials">Take the user name and password out of the address. For a private repository, use the token field below.</string>
+    <string name="projects_clone_token_https">A token can only be sent to an https:// address.</string>
+    <string name="projects_clone_bad_branch">Git does not accept that as a branch or tag name.</string>
+
+    <string name="projects_share_title">Share %1$s as a .zip</string>
+    <string name="projects_save_title">Save a copy of %1$s</string>
+    <string name="projects_export_skip">Skip heavy folders</string>
+    <string name="projects_export_skip_hint">Leaves out node_modules, caches and ignored build output. They can be made again.</string>
+    <string name="projects_export_git">Include Git history</string>
+    <string name="projects_export_git_hint">The .git folder. It can be much bigger than the project.</string>
+    <string name="projects_export_note">The zip keeps files and folders. Links and file permissions are not kept.</string>
+    <string name="projects_save_note">You pick a folder on the phone, and a copy of the project goes into it. Later changes are not synced.</string>
+    <string name="projects_export_make">Make the zip</string>
+    <string name="projects_save_choose">Choose a folder</string>
+    <string name="projects_share_chooser">Share %1$s</string>
+    <string name="projects_action_session">Start a session here</string>
+    <string name="projects_action_share_zip">Share as .zip</string>
+    <string name="projects_action_save_copy">Save a copy to the phone</string>
+
+    <string name="projects_rename_title">Rename project</string>
+    <string name="projects_rename_note">Sessions that use this folder keep the old name and will not find it after the rename.</string>
+    <string name="projects_delete_title">Delete %1$s?</string>
+    <string name="projects_delete_body">This deletes the folder and every file in it from this phone. Sessions that used it stay in the list, but they cannot work in it any more. This cannot be undone.</string>
+
+    <string name="projects_job_clone">Cloning %1$s</string>
+    <string name="projects_job_import_folder">Copying %1$s into the app</string>
+    <string name="projects_job_import_zip">Unpacking %1$s</string>
+    <string name="projects_job_export">Making %1$s.zip</string>
+    <string name="projects_job_save">Saving a copy of %1$s</string>
+    <string name="projects_job_preparing">Getting ready…</string>
+    <string name="projects_job_bytes">%1$s of %2$s</string>
+    <string name="projects_job_hide">Keep going in the background</string>
+    <string name="projects_job_share">Share</string>
+    <string name="projects_job_cancelled">Stopped. Nothing was left behind.</string>
+    <string name="projects_job_skipped_links">Links that pointed outside the project were left out: %1$d</string>
+    <string name="projects_phase_connecting">Connecting…</string>
+    <string name="projects_phase_counting">Getting the list of files…</string>
+    <string name="projects_phase_receiving">Downloading…</string>
+    <string name="projects_phase_resolving">Putting the history together…</string>
+    <string name="projects_phase_writing">Writing files…</string>
+
+    <string name="projects_done_clone">Cloned into %1$s.</string>
+    <string name="projects_done_import_folder">Copied into %1$s. It is a copy, so changes here do not change the original folder.</string>
+    <string name="projects_done_import_zip">Unpacked into %1$s.</string>
+    <string name="projects_done_export">%1$s.zip is ready.</string>
+    <string name="projects_done_save">A copy of %1$s is saved.</string>
+
+    <string name="projects_fail_no_space">There is not enough free space on this phone for this.</string>
+    <string name="projects_fail_not_zip">This file is not a zip, or it is damaged.</string>
+    <string name="projects_fail_unsafe_zip">This zip tries to put files outside its own folder, so nothing was unpacked.</string>
+    <string name="projects_fail_unsupported_zip">This zip is encrypted or uses a format the app cannot read.</string>
+    <string name="projects_fail_damaged_zip">This zip is damaged, or its contents do not match what it says.</string>
+    <string name="projects_fail_too_many">This zip has too many files to unpack here.</string>
+    <string name="projects_fail_not_readable">The app could not read that. Try picking it again.</string>
+    <string name="projects_fail_not_writable">The app could not write there.</string>
+    <string name="projects_fail_runtime_busy">The built-in harness is being set up, updated or removed. Try again when that is done.</string>
+    <string name="projects_fail_other">Something went wrong. Try again.</string>
+    <string name="projects_fail_clone_not_found">The repository was not found. If it is private, turn on Private repository and add a token.</string>
+    <string name="projects_fail_clone_auth">The token was not accepted. Check that it can read this repository.</string>
+    <string name="projects_fail_clone_network">Could not reach the server. Check the connection and the address.</string>
+    <string name="projects_fail_clone_branch">This repository has no branch or tag with that name.</string>
+    <string name="projects_fail_clone_not_repo">That address is not a Git repository.</string>
+    <string name="projects_fail_clone_timeout">The clone took too long and was stopped.</string>
+    <string name="projects_fail_clone_other">Git could not clone this repository.</string>
+    <string name="projects_fail_git_said">Git said: %1$s</string>
+    <string name="projects_session_folder_gone">This session\'s folder is gone. It was deleted or renamed. Start a new session in a project to keep working.</string>
+</resources>

@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "2026.11.15-1",
+  "sequence": 1794717218,
+  "createdAt": "2026-11-15T04:33:38Z",
+  "minAppVersion": "0.22.0",
+  "signing": {
+    "algorithm": "Ed25519",
+    "keyId": "20edea657d2e377a",
+    "signatureFile": "manifest.json.sig"
+  },
+  "assetBaseUrl": "https://github.com/sorsama/dsh-mobile-runtime/releases/download/2026.11.15-1/",
+  "harness": {
+    "package": "@deepseek-ai/dsh",
+    "version": "0.2.2-rc.1",
+    "license": "MIT"
+  },
+  "node": {
+    "version": "24.22.3",
+    "home": "/opt/node"
+  },
+  "debian": {
+    "suite": "trixie",
+    "snapshot": "20261110T000000Z",
+    "baseId": "trixie-20261110T000000Z-node24.22.3-r1"
+  },
+  "proot": {
+    "repo": "https://github.com/termux/proot",
+    "commit": "52d65a4dc140ca554d241a1438ddd4f6b00c9813",
+    "version": "5.1.107.102",
+    "talloc": "2.5.0",
+    "ndk": "28.2.13676358",
+    "androidApi": 26,
+    "license": "GPL-2.0-or-later (talloc: LGPL-3.0-or-later)",
+    "sources": [
+      {
+        "file": "proot-source-52d65a4dc140ca554d241a1438ddd4f6b00c9813.tar.gz",
+        "size": 375591,
+        "sha256": "895867fce973f050e51f09b949f8a995ce62f4a28be119c791ff0fef3b2cf2b0"
+      },
+      {
+        "file": "talloc-source-2.5.0.tar.gz",
+        "size": 690172,
+        "sha256": "912afa237510ae542a7733998eb18a12bcda35ab6729c8e2ddb43e8d0ebab007"
+      }
+    ]
+  },
+  "runtime": {
+    "entrypoint": "/usr/local/bin/dsh",
+    "readinessPrefix": "dsh web: http://127.0.0.1:",
+    "fakeProc": [
+      {
+        "source": "/opt/dsh-runtime/proc/stat",
+        "target": "/proc/stat"
+      },
+      {
+        "source": "/opt/dsh-runtime/proc/loadavg",
+        "target": "/proc/loadavg"
+      },
+      {
+        "source": "/opt/dsh-runtime/proc/uptime",
+        "target": "/proc/uptime"
+      }
+    ],
+    "resolvConf": "/etc/resolv.conf",
+    "startup": {
+      "modulePack": {
+        "enabledByDefault": true,
+        "disableEnv": "DSH_RUNTIME_MODULE_PACK",
+        "disableValue": "0",
+        "directory": "/opt/dsh/runtime-pack",
+        "buildIdFile": "/opt/dsh/build-id",
+        "mechanism": "node --import preload that uses module.registerHooks; falls back to normal Node.js on any miss",
+        "validatedNodeVersion": "24.22.3"
+      },
+      "dedupe": "identical nested packages (same name, version and content) are symlinks to one shared copy"
+    },
+    "permissions": {
+      "version": 1,
+      "description": "Two permission presets for the built-in harness, because no kernel sandbox can run in an Android app. See the README, 'Shell commands and permissions on Android'.",
+      "patch": "/opt/dsh/mobile/android.patch.yml",
+      "catalogMethod": "permissionPresets/catalog",
+      "presets": [
+        {
+          "id": "danger-full-access",
+          "name": "Full access",
+          "envValue": "full",
+          "approval": "never",
+          "asksBeforeCommands": false
+        },
+        {
+          "id": "ask-commands",
+          "name": "Ask before commands",
+          "envValue": "ask",
+          "approval": "ask",
+          "asksBeforeCommands": true
+        }
+      ],
+      "defaultEnv": "DSH_RUNTIME_DEFAULT_PERMISSION",
+      "defaultEnvValues": [
+        "full",
+        "ask"
+      ],
+      "defaultWhenUnset": "danger-full-access",
+      "defaultForUnknownValue": "ask-commands",
+      "disableEnv": "DSH_RUNTIME_MOBILE_PATCH",
+      "disableValue": "0",
+      "approvalChannel": "approval/request, answered with allowed-once or rejected over the harness client protocol"
+    }
+  },
+  "archs": {
+    "arm64-v8a": {
+      "debianArch": "arm64",
+      "proot": [
+        {
+          "file": "android-arm64-v8a-libproot.so",
+          "size": 279368,
+          "sha256": "829063030a5aee9cbfaf144fe4f5411fbf7dfa00b193ab0dd4d27d154cb5a2bc",
+          "installAs": "libproot.so"
+        },
+        {
+          "file": "android-arm64-v8a-libproot-loader.so",
+          "size": 17624,
+          "sha256": "2ab748a4c576d8befaccba9de1f92179659106d2c77105c1286d33f358143298",
+          "installAs": "libproot-loader.so"
+        }
+      ],
+      "layers": [
+        {
+          "file": "dsh-runtime-base-arm64-v8a.tar.zst",
+          "size": 74011586,
+          "sha256": "10c4611091c435cbf4f85850e5e67ff896adf6210b7d8931a6f98f0123d4f18a",
+          "name": "base",
+          "id": "trixie-20261110T000000Z-node24.22.3-r1-10c4611091c4",
+          "compression": "zstd",
+          "zstdWindowLog": 27,
+          "format": "tar (GNU)",
+          "unpackedSize": 360490534,
+          "entries": 9116,
+          "owns": [
+            "/"
+          ],
+          "excludes": [
+            "/opt/dsh",
+            "/usr/local/bin/dsh"
+          ]
+        },
+        {
+          "file": "dsh-runtime-harness-arm64-v8a.tar.zst",
+          "size": 86054370,
+          "sha256": "6866a922c6a7abf39f97aa106d3dc490ac735f4e350146d686c08533bad67252",
+          "name": "harness",
+          "id": "dsh-0.2.2-rc.1-6866a922c6a7",
+          "compression": "zstd",
+          "zstdWindowLog": 27,
+          "format": "tar (GNU)",
+          "unpackedSize": 490338069,
+          "entries": 33019,
+          "owns": [
+            "/opt/dsh",
+            "/usr/local/bin/dsh"
+          ],
+          "modulePack": {
+            "buildId": "52ce14341d47c7bbef18decb3d88d921",
+            "packBytes": 20299501,
+            "modules": 1437
+          },
+          "dedupe": {
+            "copiesLinked": 63,
+            "filesSaved": 40279,
+            "bytesSaved": 255411699
+          }
+        }
+      ]
+    },
+    "x86_64": {
+      "debianArch": "amd64",
+      "proot": [
+        {
+          "file": "android-x86_64-libproot.so",
+          "size": 294408,
+          "sha256": "fd28ea76b33a59db8de3911c7e31774f5109175762c1dbfe24d60b195c680897",
+          "installAs": "libproot.so"
+        },
+        {
+          "file": "android-x86_64-libproot-loader.so",
+          "size": 17832,
+          "sha256": "4ca6f14810548610501d012144abeb4c27c1530e2e37201cabf30cab2c39a585",
+          "installAs": "libproot-loader.so"
+        }
+      ],
+      "layers": [
+        {
+          "file": "dsh-runtime-base-x86_64.tar.zst",
+          "size": 72834379,
+          "sha256": "885683308945b8abacab9f690ad33ebce6c7b4eaadd9a477b0a6272993e763ec",
+          "name": "base",
+          "id": "trixie-20261110T000000Z-node24.22.3-r1-885683308945",
+          "compression": "zstd",
+          "zstdWindowLog": 27,
+          "format": "tar (GNU)",
+          "unpackedSize": 338197774,
+          "entries": 9114,
+          "owns": [
+            "/"
+          ],
+          "excludes": [
+            "/opt/dsh",
+            "/usr/local/bin/dsh"
+          ]
+        },
+        {
+          "file": "dsh-runtime-harness-x86_64.tar.zst",
+          "size": 84220297,
+          "sha256": "18d56d8f8d5d0417f915029554f034b23bc16092542adc53c3223ed32ef5ec14",
+          "name": "harness",
+          "id": "dsh-0.2.2-rc.1-18d56d8f8d5d",
+          "compression": "zstd",
+          "zstdWindowLog": 27,
+          "format": "tar (GNU)",
+          "unpackedSize": 484265499,
+          "entries": 33019,
+          "owns": [
+            "/opt/dsh",
+            "/usr/local/bin/dsh"
+          ],
+          "modulePack": {
+            "buildId": "2b1c23a244e3287bef07936d828e31c3",
+            "packBytes": 20299325,
+            "modules": 1437
+          },
+          "dedupe": {
+            "copiesLinked": 63,
+            "filesSaved": 40279,
+            "bytesSaved": 255411699
+          }
+        }
+      ]
+    }
+  },
+  "previous": {
+    "releaseId": "2026.11.14-4",
+    "harnessVersion": "0.2.2-rc.1",
+    "sequence": 1794684413,
+    "manifestUrl": "https://github.com/sorsama/dsh-mobile-runtime/releases/download/2026.11.14-4/manifest.json"
+  }
+}

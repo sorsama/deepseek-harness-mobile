@@ -45,7 +45,15 @@
         android:name="android.hardware.camera.front"
         android:required="false" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!--
+        Both foreground services are `specialUse`. The built-in harness runtime is a local server
+        the person starts and expects to keep running for hours; the keep-connected service holds
+        the person's own harness connection open for as long as they asked. No other type describes
+        either, and `dataSync` is capped at 6 hours a day from Android 15. The wake lock keeps a long agent turn going with the screen off;
+        it is held only while the runtime installs, updates or runs, and is a switch in the app.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!--
         Haptic feedback. A normal permission, granted at install with no prompt. Without it the app
         could only ask the system to play a stock touch effect; with it the app plays its own, chosen
@@ -60,6 +68,24 @@
         Stop or Install is tapped — never on launch. Meaningless on a phone without Termux.
     -->
     <uses-permission android:name="com.termux.permission.RUN_COMMAND" />
+    <!--
+        Lets the app hand a downloaded update to Android's package installer, so updating never
+        means leaving for a browser or a file manager. It is not granted by installing the app: the
+        first time an update is installed, Android shows its own "Install unknown apps" switch for
+        this app and the person turns it on there (or not). The app uses it for one thing only, an
+        APK of itself that it downloaded from this project's GitHub release, checked against the
+        release's SHA256SUMS.txt and confirmed to be a newer build signed with the same key.
+        Android checks the signature again before it replaces anything. See docs/SECURITY.md.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!--
+        Android 12 and newer: lets an update this app installs go through without the system's
+        "Do you want to update this app?" prompt, but only when this app is already the one that
+        installed itself (the installer of record) and only for this app's own package. A normal
+        permission, granted at install. The first in-app update after installing from a browser or
+        a file manager still shows the prompt, and Android may ask anyway when it sees a reason to.
+    -->
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 
     <!--
         Package visibility (API 30+): without this the app cannot see whether Termux is installed,
@@ -149,7 +175,25 @@
         <service
             android:name=".connection.ConnectionService"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the user's live connection to their own DeepSeek Harness (a developer tool server on their computer, phone or network) open in the background, only while the user has turned on Keep connected in background and a connection is open." />
+        </service>
+
+        <!--
+            Runs the built-in harness (proot and Node.js, started from nativeLibraryDir) and keeps it
+            alive; also covers the runtime download and unpack. Not exported: only the app starts it,
+            and its notification actions are PendingIntents this app minted.
+        -->
+        <service
+            android:name=".runtime.HarnessRuntimeService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Runs the DeepSeek Harness, a local developer tool server the user started, on 127.0.0.1 inside the app until the user stops it." />
+        </service>
 
         <!--
             Where Termux reports a command's exit code and output. Not exported: the result travels
@@ -161,6 +205,62 @@
         <receiver
             android:name=".termux.TermuxResultReceiver"
             android:exported="false" />
+
+        <!--
+            The built-in harness's project folder (`workspaces`, and nothing else of the runtime) in
+            the system Files app and every app's file picker. Exported because the system document
+            UI must reach it, and guarded by MANAGE_DOCUMENTS, which only that system UI holds: other
+            apps get a single document or a folder only when the person picks it there. Disabled
+            here and enabled at start on devices that can run the runtime (WorkspacesProvider.syncEnabled).
+            See docs/SECURITY.md, "Projects in the Files app".
+        -->
+        <provider
+            android:name=".runtime.workspace.WorkspacesProvider"
+            android:authorities="${applicationId}.workspaces"
+            android:enabled="false"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
+        <!--
+            A project's zip for the share sheet, from the app's cache (exports/ only). Not exported:
+            the app grants read access to one file at a time with the share intent.
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.exports"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/export_paths" />
+        </provider>
+
+        <!--
+            Where Android's package installer reports what happened to an update this app handed
+            it: waiting for the person to confirm, installed, or why not. Not exported, for the same
+            reason as the Termux receiver: the status travels in a PendingIntent this app minted.
+        -->
+        <receiver
+            android:name=".update.UpdateInstallReceiver"
+            android:exported="false" />
+
+        <!--
+            After this app was replaced by a newer build: starts the built-in harness again when it
+            was running before an in-app update (runtime/ResumeAfterUpdate). Not exported: only the
+            system sends MY_PACKAGE_REPLACED, and only to this package.
+        -->
+        <receiver
+            android:name=".runtime.AppUpdatedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
         <!--
             Opts into AppCompat's own storage for the per-app language. Below API 33 the framework

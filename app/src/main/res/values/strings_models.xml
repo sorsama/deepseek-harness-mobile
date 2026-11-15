@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Models and API keys: the screen. -->
+    <string name="models_keys_title">Models and API keys</string>
+    <string name="models_intro">Add an API key for a model provider so the harness can answer. The key goes to the harness and is kept there, not in this app.</string>
+    <string name="models_section_yours">Your providers</string>
+    <string name="models_section_add">Add a provider</string>
+    <string name="models_add_hint">Providers the harness knows that aren\'t set up yet.</string>
+    <string name="models_status_ready">Ready</string>
+    <string name="models_status_needs_key">Needs an API key</string>
+    <string name="models_status_signed_in">Signed in</string>
+    <string name="models_status_not_active">Not available yet</string>
+    <string name="models_status_not_set_up">Not set up</string>
+    <string name="models_provider_error">The harness reports: %1$s</string>
+    <string name="models_key_label">API key</string>
+    <string name="models_key_placeholder">Paste your API key</string>
+    <string name="models_key_placeholder_saved">Leave empty to keep the saved key</string>
+    <string name="models_key_show">Show key</string>
+    <string name="models_key_hide">Hide key</string>
+    <string name="models_key_paste">Paste</string>
+    <string name="models_key_saved_line">A key is saved on the harness.</string>
+    <string name="models_key_blank">That\'s only spaces. Paste the key, or leave the field empty.</string>
+    <string name="models_key_format">That doesn\'t look like an API key. Check it and paste it again.</string>
+    <string name="models_key_from_env">This key comes from the harness\'s own environment, so it can\'t be changed here.</string>
+    <string name="models_endpoint_toggle">Use a different address</string>
+    <string name="models_endpoint_label">Base URL</string>
+    <string name="models_endpoint_hint">Leave empty to use the provider\'s own address.</string>
+    <string name="models_endpoint_default">Leave empty to use %1$s</string>
+    <string name="models_endpoint_invalid">Enter an address that starts with http:// or https://.</string>
+    <string name="models_save">Save</string>
+    <string name="models_saving">Saving…</string>
+    <string name="models_check">Check this address</string>
+    <string name="models_checking">Checking…</string>
+    <string name="models_check_found">The address answered. Models it offers: %1$d</string>
+    <string name="models_check_none">The address answered but listed no models.</string>
+    <string name="models_failed">The harness said: %1$s</string>
+    <string name="models_conflict">These settings were changed somewhere else. Close this and open it again to see them.</string>
+    <string name="models_remove_key">Remove key</string>
+    <string name="models_remove_key_title">Remove the %1$s key?</string>
+    <string name="models_remove_key_body">The harness forgets this key. %1$s stops answering until you add one again.</string>
+    <string name="models_remove_provider">Remove provider</string>
+    <string name="models_remove_provider_title">Remove %1$s?</string>
+    <string name="models_remove_provider_body">This removes its settings and its saved key from the harness.</string>
+    <string name="models_removing">Removing…</string>
+    <string name="models_saved">%1$s is saved.</string>
+    <string name="models_saved_restart">%1$s is saved. The harness uses it after its next restart.</string>
+    <string name="models_key_removed">The %1$s key is removed.</string>
+    <string name="models_provider_removed">%1$s is removed.</string>
+    <string name="models_cleartext_plate">This harness is reached over plain HTTP. A key you send from here crosses your network unencrypted.</string>
+    <string name="models_cleartext_title">Send the key unencrypted?</string>
+    <string name="models_cleartext_body">The link to %1$s is plain HTTP, so anyone on the same network could read the key on its way. Send it anyway?</string>
+    <string name="models_cleartext_send">Send anyway</string>
+    <string name="models_read_only">The harness\'s settings file is read-only here, so only keys can be saved.</string>
+    <string name="models_unsupported">This harness doesn\'t let the app manage models. Add a key on the harness itself.</string>
+    <string name="models_load_failed">Couldn\'t read the providers.</string>
+    <string name="models_empty">The harness lists no model providers.</string>
+    <string name="models_credentials_unknown">Couldn\'t check which keys are saved, so they aren\'t shown.</string>
+
+    <!-- Models and API keys: the ways in. -->
+    <string name="models_open">Set up models</string>
+    <string name="models_hint_none">No model provider is ready yet. Add an API key so the harness can answer.</string>
+    <string name="models_hint_ready">A model provider is ready, so the harness can answer.</string>
+    <string name="models_hint_unknown">Before your first chat, the harness needs an API key for a model provider.</string>
+    <string name="models_chat_missing_key">Your last message didn\'t reach a model because no API key is saved for it.</string>
+    <string name="models_chat_invalid_key">The saved API key isn\'t in a form the provider accepts. Replace it to keep going.</string>
+    <string name="models_chat_sign_in">The DeepSeek account isn\'t signed in on the harness. Sign in there, or add an API key for another provider.</string>
+    <string name="models_chat_no_provider">This chat uses a model provider the harness can\'t reach. Pick another model, or set one up.</string>
+    <string name="models_chat_none_ready">No model provider is ready yet, so messages can\'t be answered. Add an API key first.</string>
+    <string name="models_picker_none">No models are ready. Add an API key for a provider to see its models here.</string>
+    <string name="models_settings_none">No provider is ready yet</string>
+</resources>

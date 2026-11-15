@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="runtime_section_commands">Comandos</string>
+    <string name="cmdperm_title">Cuando el agente quiere ejecutar un comando</string>
+    <string name="cmdperm_run">Ejecutarlo</string>
+    <string name="cmdperm_run_desc">Los comandos se ejecutan al momento. No se te pregunta.</string>
+    <string name="cmdperm_ask">Preguntarme antes</string>
+    <string name="cmdperm_ask_desc">Ves cada comando y decides si lo permites o lo rechazas.</string>
+    <string name="cmdperm_explain_title">En el móvil los comandos funcionan distinto</string>
+    <string name="cmdperm_explain_body">En un ordenador el harness puede ejecutar comandos dentro de un sandbox. Android no lo permite, así que aquí un comando puede cambiar cualquier cosa del almacenamiento propio del harness.</string>
+    <string name="cmdperm_explain_safe_label">Sigue protegido</string>
+    <string name="cmdperm_explain_safe">El harness se queda dentro de esta app. No puede ver tus fotos, contactos, mensajes ni otras apps.</string>
+    <string name="cmdperm_explain_risk_label">No está protegido</string>
+    <string name="cmdperm_explain_risk">Puede usar internet, y un comando podría borrar tu espacio de trabajo o los ajustes del harness y las claves de API guardadas.</string>
+    <string name="cmdperm_explain_later">Puedes cambiarlo luego en la página del harness, y cambiar cualquier chat desde su botón de permisos.</string>
+    <string name="cmdperm_got_it">Entendido</string>
+    <string name="cmdperm_restart_title">¿Reiniciar el harness?</string>
+    <string name="cmdperm_restart_body">Tu elección se aplica a los chats que empieces tras reiniciar. Los chats que ya tienes conservan su ajuste, y puedes cambiar cualquiera desde su botón de permisos.</string>
+    <string name="cmdperm_restart_now">Reiniciar ahora</string>
+    <string name="cmdperm_later">Más tarde</string>
+    <string name="cmdperm_pending">El harness sigue funcionando con «%1$s». Reinícialo para que los chats nuevos usen tu elección.</string>
+    <string name="cmdperm_unsupported">Esta versión del harness no puede preguntar antes de los comandos. Actualízala para elegir si se ejecutan al momento o te preguntan antes.</string>
+
+    <string name="permission_preset_ask_commands">Preguntar antes de comandos</string>
+    <string name="permission_preset_ask_commands_desc">Te pregunta antes de cada comando y antes de cambios fuera del espacio de trabajo.</string>
+    <string name="permission_preset_full_access_desc">Ejecuta comandos y cambia archivos sin preguntar.</string>
+
+    <string name="approval_command_title">¿Ejecutar este comando?</string>
+    <string name="approval_file_title">¿Cambiar un archivo fuera del espacio de trabajo?</string>
+    <string name="approval_tool_title">¿Permitir %1$s?</string>
+    <string name="approval_shortened">El harness solo envió los primeros 2000 caracteres.</string>
+    <string name="approval_show_all">Ver todo</string>
+    <string name="approval_show_less">Ver menos</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">%1$d solicitud más en espera</item>
+        <item quantity="many">%1$d solicitudes más en espera</item>
+        <item quantity="other">%1$d solicitudes más en espera</item>
+    </plurals>
+
+    <string name="sandbox_notice_builtin">Este chat usa un ajuste que necesita un sandbox, y un móvil no puede dárselo, así que ese comando no se ejecutó. Cambia el chat y vuelve a pedirlo.</string>
+    <string name="sandbox_notice_switch">Cambiar a «%1$s»</string>
+    <string name="sandbox_notice_other">Ese comando no se ejecutó porque el ajuste de este chat necesita un sandbox y el harness no tiene ninguno donde funciona. Puedes elegir otro ajuste desde el botón de permisos del chat.</string>
+    <string name="subagent_command_denied">Un agente auxiliar no puede preguntarte, así que este comando no se ejecutó.</string>
+    <string name="command_denied_rejected">Dijiste que no, así que no se ejecutó.</string>
+    <string name="command_denied_cancelled">La pregunta se retiró antes de que respondieras, así que no se ejecutó.</string>
+    <string name="command_denied_nobody">No había nadie para responder la pregunta, así que no se ejecutó. Mantén la app conectada mientras trabaja el agente.</string>
+    <string name="command_denied_too_large">Era demasiado largo para mostrártelo entero (el límite es 256 KB), así que no se te preguntó y no se ejecutó. Al agente se le pidió dividirlo en partes más pequeñas.</string>
+    <string name="command_denied_other">La revisión de comandos de este teléfono lo detuvo, así que no se ejecutó.</string>
+</resources>
