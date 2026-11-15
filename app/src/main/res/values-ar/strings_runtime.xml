@@ -41,7 +41,6 @@
     <string name="runtime_setup_failed_body">لم يُترك أي شيء غير مكتمل.</string>
     <string name="runtime_setup_done_title">harness جاهز</string>
     <string name="runtime_setup_done_body">يعمل على هذا الهاتف متى احتجت إليه.</string>
-    <string name="runtime_setup_provider_hint">قبل أول محادثة، يحتاج harness إلى مفتاح API من مزوّد النماذج. أضفه في إعدادات harness إن لم تفعل بعد.</string>
     <string name="runtime_setup_connecting">جارٍ الاتصال…</string>
     <string name="runtime_setup_metered_title">استخدام بيانات الجوال؟</string>
     <string name="runtime_setup_metered_body">أنت على اتصال محدود الاستخدام. سينزّل الإعداد %1$s.</string>

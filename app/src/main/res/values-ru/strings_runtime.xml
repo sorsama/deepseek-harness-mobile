@@ -41,7 +41,6 @@
     <string name="runtime_setup_failed_body">Ничего недоделанного не осталось.</string>
     <string name="runtime_setup_done_title">Ваш harness готов</string>
     <string name="runtime_setup_done_body">Он работает на этом телефоне, когда вам нужно.</string>
-    <string name="runtime_setup_provider_hint">Перед первым чатом для harness нужен API-ключ вашего поставщика моделей. Добавьте его в настройках harness, если ещё не сделали этого.</string>
     <string name="runtime_setup_connecting">Подключение…</string>
     <string name="runtime_setup_metered_title">Использовать мобильный интернет?</string>
     <string name="runtime_setup_metered_body">Вы подключены к сети с тарификацией трафика. Установка скачает %1$s.</string>

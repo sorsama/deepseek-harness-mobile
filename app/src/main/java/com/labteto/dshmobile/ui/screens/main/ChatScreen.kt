@@ -670,6 +670,15 @@ fun ChatScreen(
                 }
             }
 
+            // No model to answer: the last turn's failure code said so, or the harness has no
+            // provider it can use. Only while connected, since the way out is a harness call.
+            if (connection.phase == com.labteto.dshmobile.connection.ConnectionPhase.CONNECTED) {
+                val setupProblem = remember(conversation?.nodes) {
+                    conversation?.nodes?.let { com.labteto.dshmobile.core.usage.modelSetupProblem(it) }
+                }
+                com.labteto.dshmobile.ui.screens.models.ChatModelSetupNotice(setupProblem)
+            }
+
             val nodeContext = ChatNodeContext(
                 nodes = conversation?.nodes ?: emptyList(),
                 eventTimes = eventTimes,

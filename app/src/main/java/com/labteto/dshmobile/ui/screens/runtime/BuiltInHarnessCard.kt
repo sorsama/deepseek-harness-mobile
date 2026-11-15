@@ -180,6 +180,12 @@ private fun CardBody(
                 if (card.rolledBack) {
                     Text(stringResource(R.string.runtime_card_rolled_back), style = DsType.small13, color = colors.labelTertiary)
                 }
+                // Whether it can answer yet: asked of the harness itself once the app is signed in.
+                com.labteto.dshmobile.ui.screens.models.BuiltInModelsHint(
+                    port = port,
+                    signedIn = !card.signedOut,
+                    modifier = Modifier.padding(top = DsSpacing.xsmall),
+                )
             }
             BuiltInCardPhase.Updating -> {
                 val progress = card.progress

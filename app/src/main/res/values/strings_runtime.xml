@@ -42,7 +42,6 @@
     <string name="runtime_setup_failed_body">Nothing half-finished was left behind.</string>
     <string name="runtime_setup_done_title">Your harness is ready</string>
     <string name="runtime_setup_done_body">It runs on this phone whenever you need it.</string>
-    <string name="runtime_setup_provider_hint">Before your first chat, the harness needs an API key for your model provider. Add it in the harness\'s settings if you haven\'t yet.</string>
     <string name="runtime_setup_connecting">Connecting…</string>
     <string name="runtime_setup_metered_title">Use mobile data?</string>
     <string name="runtime_setup_metered_body">You\'re on a metered connection. Setting up downloads %1$s.</string>

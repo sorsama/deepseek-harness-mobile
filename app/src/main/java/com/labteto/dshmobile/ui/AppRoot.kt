@@ -214,6 +214,9 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
             onClose = com.labteto.dshmobile.ui.screens.runtime.OpenRuntimeControls::done,
         )
 
+        // Models and API keys, over whatever is on screen and across a route change underneath it.
+        com.labteto.dshmobile.ui.screens.models.ModelsScreenHost()
+
         // Offered over whatever is on screen, and only once per release: dismissing records the
         // version, so the next launch is quiet until there is a newer one.
         update?.takeIf { !updateHidden }?.let { available ->

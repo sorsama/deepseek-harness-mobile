@@ -41,7 +41,6 @@
     <string name="runtime_setup_failed_body">No ha quedado nada a medias.</string>
     <string name="runtime_setup_done_title">Tu harness está listo</string>
     <string name="runtime_setup_done_body">Funciona en este teléfono siempre que lo necesites.</string>
-    <string name="runtime_setup_provider_hint">Antes del primer chat, el harness necesita una clave de API de tu proveedor de modelos. Añádela en los ajustes del harness si aún no lo has hecho.</string>
     <string name="runtime_setup_connecting">Conectando…</string>
     <string name="runtime_setup_metered_title">¿Usar datos móviles?</string>
     <string name="runtime_setup_metered_body">Estás en una conexión de uso medido. La configuración descarga %1$s.</string>

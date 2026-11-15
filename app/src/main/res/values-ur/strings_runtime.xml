@@ -41,7 +41,6 @@
     <string name="runtime_setup_failed_body">کچھ بھی ادھورا نہیں چھوڑا گیا۔</string>
     <string name="runtime_setup_done_title">آپ کا harness تیار ہے</string>
     <string name="runtime_setup_done_body">جب بھی ضرورت ہو، یہ اسی فون پر چلتا ہے۔</string>
-    <string name="runtime_setup_provider_hint">پہلی چیٹ سے پہلے harness کو آپ کے ماڈل فراہم کنندہ کی API کلید چاہیے۔ اگر ابھی تک شامل نہیں کی تو harness کی ترتیبات میں شامل کریں۔</string>
     <string name="runtime_setup_connecting">جڑ رہا ہے…</string>
     <string name="runtime_setup_metered_title">موبائل ڈیٹا استعمال کریں؟</string>
     <string name="runtime_setup_metered_body">آپ میٹرڈ کنکشن پر ہیں۔ سیٹ اپ %1$s ڈاؤن لوڈ کرے گا۔</string>

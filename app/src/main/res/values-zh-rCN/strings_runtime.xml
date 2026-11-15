@@ -41,7 +41,6 @@
     <string name="runtime_setup_failed_body">没有留下任何做到一半的东西。</string>
     <string name="runtime_setup_done_title">你的 harness 已就绪</string>
     <string name="runtime_setup_done_body">需要时它就在这台手机上运行。</string>
-    <string name="runtime_setup_provider_hint">开始第一次对话前，harness 需要你的模型服务商的 API 密钥。如果还没添加，请在 harness 的设置里添加。</string>
     <string name="runtime_setup_connecting">正在连接…</string>
     <string name="runtime_setup_metered_title">要用移动数据吗？</string>
     <string name="runtime_setup_metered_body">你正在使用按流量计费的网络。设置需要下载 %1$s。</string>

@@ -41,7 +41,6 @@
     <string name="runtime_setup_failed_body">कुछ भी अधूरा नहीं छोड़ा गया।</string>
     <string name="runtime_setup_done_title">आपका harness तैयार है</string>
     <string name="runtime_setup_done_body">जब भी ज़रूरत हो, यह इसी फ़ोन पर चलता है।</string>
-    <string name="runtime_setup_provider_hint">पहली चैट से पहले harness को आपके मॉडल प्रोवाइडर की API कुंजी चाहिए। अगर अभी तक नहीं जोड़ी है, तो harness की सेटिंग में जोड़ें।</string>
     <string name="runtime_setup_connecting">कनेक्ट हो रहा है…</string>
     <string name="runtime_setup_metered_title">मोबाइल डेटा इस्तेमाल करें?</string>
     <string name="runtime_setup_metered_body">आप मीटर वाले कनेक्शन पर हैं। सेट अप %1$s डाउनलोड करेगा।</string>

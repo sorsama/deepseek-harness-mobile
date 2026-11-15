@@ -290,6 +290,14 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                     ) { viewModel.set { it.copy(autoConnectLoopback = !it.autoConnectLoopback) } }
                 }
 
+                // What the connected harness answers with, in any connection mode: its providers
+                // and their keys, written to the harness and kept there.
+                if (connectionState.phase == ConnectionPhase.CONNECTED) {
+                    SettingsCard(stringResource(R.string.models_title)) {
+                        com.labteto.dshmobile.ui.screens.models.ModelsSettingsRow()
+                    }
+                }
+
                 // The built-in harness first: on a phone that can run it, it is the main way.
                 val builtInState by viewModel.builtIn.state.collectAsStateWithLifecycle()
                 val builtInPort by viewModel.loopbackPort.collectAsStateWithLifecycle()

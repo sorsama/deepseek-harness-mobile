@@ -41,7 +41,6 @@
     <string name="runtime_setup_failed_body">আধা-সম্পূর্ণ কিছুই রেখে যাওয়া হয়নি।</string>
     <string name="runtime_setup_done_title">আপনার harness তৈরি</string>
     <string name="runtime_setup_done_body">যখনই দরকার, এটি এই ফোনেই চলে।</string>
-    <string name="runtime_setup_provider_hint">প্রথম চ্যাটের আগে harness-এর আপনার মডেল প্রোভাইডারের API কী লাগবে। এখনো যোগ না করে থাকলে harness-এর সেটিংসে যোগ করুন।</string>
     <string name="runtime_setup_connecting">সংযোগ হচ্ছে…</string>
     <string name="runtime_setup_metered_title">মোবাইল ডেটা ব্যবহার করবেন?</string>
     <string name="runtime_setup_metered_body">আপনি মিটারযুক্ত সংযোগে আছেন। সেট আপে %1$s ডাউনলোড হবে।</string>

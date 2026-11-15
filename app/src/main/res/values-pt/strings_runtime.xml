@@ -41,7 +41,6 @@
     <string name="runtime_setup_failed_body">Nada ficou pela metade.</string>
     <string name="runtime_setup_done_title">Seu harness está pronto</string>
     <string name="runtime_setup_done_body">Ele roda neste telefone sempre que você precisar.</string>
-    <string name="runtime_setup_provider_hint">Antes do primeiro chat, o harness precisa de uma chave de API do seu provedor de modelos. Adicione nas configurações do harness, se ainda não fez isso.</string>
     <string name="runtime_setup_connecting">Conectando…</string>
     <string name="runtime_setup_metered_title">Usar dados móveis?</string>
     <string name="runtime_setup_metered_body">Você está em uma conexão limitada. A configuração baixa %1$s.</string>

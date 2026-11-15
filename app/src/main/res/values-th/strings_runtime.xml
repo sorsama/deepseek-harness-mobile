@@ -41,7 +41,6 @@
     <string name="runtime_setup_failed_body">ไม่มีอะไรค้างไว้ครึ่งๆ กลางๆ</string>
     <string name="runtime_setup_done_title">harness ของคุณพร้อมแล้ว</string>
     <string name="runtime_setup_done_body">รันบนเครื่องนี้ได้ทุกเมื่อที่ต้องการ</string>
-    <string name="runtime_setup_provider_hint">ก่อนแชตครั้งแรก harness ต้องมีคีย์ API ของผู้ให้บริการโมเดลของคุณ ถ้ายังไม่ได้ใส่ ให้ใส่ในการตั้งค่าของ harness</string>
     <string name="runtime_setup_connecting">กำลังเชื่อมต่อ…</string>
     <string name="runtime_setup_metered_title">ใช้อินเทอร์เน็ตมือถือไหม</string>
     <string name="runtime_setup_metered_body">ตอนนี้คุณใช้การเชื่อมต่อแบบคิดตามปริมาณข้อมูล การตั้งค่าจะดาวน์โหลด %1$s</string>

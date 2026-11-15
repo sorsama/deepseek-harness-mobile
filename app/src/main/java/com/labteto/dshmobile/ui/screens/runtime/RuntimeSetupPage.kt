@@ -243,15 +243,12 @@ internal fun RuntimeSetupPage(
                     RuntimeIssueBlock(issue = issue, onAction = onAction, showActions = false, showLog = true)
                 }
 
-                // The one thing the harness needs that this page cannot do: a model provider's key.
-                // Shown while it starts, so it is read while there is time to read it.
-                AnimatedVisibility(
-                    visible = phase == SetupPhase.Done || phase == SetupPhase.Working && (progress?.step == SetupStep.Start || progress?.step == SetupStep.SignIn),
-                    enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
-                    exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
-                ) {
-                    HintPlate(stringResource(R.string.runtime_setup_provider_hint))
-                }
+                // The one thing the harness needs besides itself: a model provider it can use. Asked
+                // of the harness as soon as it is up and signed in, with the way to add a key.
+                com.labteto.dshmobile.ui.screens.models.BuiltInModelsHint(
+                    port = (runtime as? RuntimeState.Running)?.port ?: 0,
+                    signedIn = phase == SetupPhase.Done && signedIn,
+                )
                 Spacer(Modifier.height(DsSpacing.large))
             }
         }
