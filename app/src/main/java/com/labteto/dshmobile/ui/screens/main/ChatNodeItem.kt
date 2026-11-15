@@ -639,6 +639,16 @@ private fun CompactionRow(node: CompactionNode) {
         }.getOrNull()
     }
     var expanded by remember(node.seq) { mutableStateOf(false) }
+    if (summaryText.isNullOrBlank()) {
+        // A summary the harness sent without text: keep the row as the marker of where the context
+        // was compacted, but give it no chevron, since there is nothing to open.
+        DisclosureRow(
+            title = stringResource(R.string.chat_compaction),
+            summary = stringResource(R.string.chat_compaction_summary),
+            icon = FeatherIcons.Archive,
+        )
+        return
+    }
     DisclosureRow(
         title = stringResource(R.string.chat_compaction),
         summary = stringResource(R.string.chat_compaction_summary),
@@ -646,7 +656,7 @@ private fun CompactionRow(node: CompactionNode) {
         expanded = expanded,
         onToggle = { expanded = !expanded },
     ) {
-        if (!summaryText.isNullOrBlank()) MarkdownText(summaryText)
+        MarkdownText(summaryText)
     }
 }
 

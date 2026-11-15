@@ -151,6 +151,29 @@ class EventFoldTest {
         assertTrue(snapshot.nodes.single() is OtherNode)
     }
 
+    // Issue #98: one compaction writes start, summary and end, and a prune writes its own event.
+    // The fold keeps one node per event (the transcript decides which one is drawn), and a
+    // replayed event is dropped by its seq rather than folded in again.
+    @Test
+    fun compactionEventsFoldToOneNodeEachAndReplaysAreDropped() {
+        val events = listOf(
+            event("compaction/start", 1, buildJsonObject { put("compactionId", "c1") }),
+            event("compaction/summary", 2, buildJsonObject { put("compactionId", "c1") }),
+            event("compaction/end", 3, buildJsonObject { put("compactionId", "c1") }),
+            event("compaction/prune", 4, buildJsonObject { put("shadowedTokenCount", 10) }),
+        )
+        val snapshot = EventFold("s1").fold(events)
+        assertEquals(
+            listOf("compaction/start", "compaction/summary", "compaction/end", "compaction/prune"),
+            snapshot.nodes.filterIsInstance<CompactionNode>().map { it.kind },
+        )
+
+        val incremental = EventFold.Incremental(snapshot, "s1")
+        events.forEach { assertEquals(null, incremental.apply(it)) }
+        val next = incremental.apply(event("compaction/summary", 5, buildJsonObject { put("compactionId", "c2") }))!!
+        assertEquals(5, next.nodes.count { it is CompactionNode })
+    }
+
     private fun pluginRecord(seq: Long, type: String, ignorable: Boolean? = true) =
         SessionEventEnvelope(type, seq, seq, buildJsonObject { put("provider", "deepseek-account") }, ignorable = ignorable)
 
