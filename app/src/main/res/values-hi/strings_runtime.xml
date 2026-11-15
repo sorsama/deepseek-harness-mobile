@@ -32,6 +32,8 @@
 
     <string name="runtime_setup_title">बिल्ट-इन harness सेट अप करें</string>
     <string name="runtime_setup_intro">DSH harness वाला एक छोटा Linux सिस्टम डाउनलोड करता है और उसे ऐप के अंदर चलाता है। आप अपने मॉडल प्रोवाइडर को जो भेजते हैं उसके अलावा सब कुछ इसी फ़ोन पर रहता है।</string>
+    <string name="runtime_beta_badge">बीटा</string>
+    <string name="runtime_setup_beta_note">यह नया है और हो सकता है अभी हर फ़ोन पर काम न करे। अपने कंप्यूटर पर या Termux में harness चलाना पहले की तरह काम करता है।</string>
     <string name="runtime_setup_start">डाउनलोड करें और सेट अप करें</string>
     <string name="runtime_setup_start_sized">डाउनलोड करें और सेट अप करें (%1$s)</string>
     <string name="runtime_setup_working_title">सेट अप हो रहा है</string>

@@ -32,6 +32,8 @@
 
     <string name="runtime_setup_title">设置内置 harness</string>
     <string name="runtime_setup_intro">DSH 会下载一个装有 harness 的小型 Linux 系统，并在应用里运行它。除了你发给模型服务商的内容，一切都留在这台手机上。</string>
+    <string name="runtime_beta_badge">测试版</string>
+    <string name="runtime_setup_beta_note">这是新功能，可能还不能在每台手机上正常运行。在电脑上或 Termux 里运行 harness 仍然和以前一样可用。</string>
     <string name="runtime_setup_start">下载并设置</string>
     <string name="runtime_setup_start_sized">下载并设置（%1$s）</string>
     <string name="runtime_setup_working_title">正在设置</string>

@@ -32,6 +32,8 @@
 
     <string name="runtime_setup_title">বিল্ট-ইন harness সেট আপ করুন</string>
     <string name="runtime_setup_intro">DSH harness সহ একটি ছোট Linux সিস্টেম ডাউনলোড করে অ্যাপের ভেতরেই চালায়। আপনার মডেল প্রোভাইডারকে যা পাঠান তা ছাড়া সবকিছু এই ফোনেই থাকে।</string>
+    <string name="runtime_beta_badge">বিটা</string>
+    <string name="runtime_setup_beta_note">এটি নতুন, তাই এখনো সব ফোনে কাজ নাও করতে পারে। কম্পিউটারে বা Termux-এ harness চালানো আগের মতোই কাজ করে।</string>
     <string name="runtime_setup_start">ডাউনলোড করে সেট আপ করুন</string>
     <string name="runtime_setup_start_sized">ডাউনলোড করে সেট আপ করুন (%1$s)</string>
     <string name="runtime_setup_working_title">সেট আপ হচ্ছে</string>

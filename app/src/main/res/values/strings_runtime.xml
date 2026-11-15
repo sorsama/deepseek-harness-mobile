@@ -33,6 +33,8 @@
 
     <string name="runtime_setup_title">Set up the built-in harness</string>
     <string name="runtime_setup_intro">DSH downloads a small Linux system with the harness in it and runs it inside the app. It all stays on this phone, apart from what you send to your model provider.</string>
+    <string name="runtime_beta_badge">Beta</string>
+    <string name="runtime_setup_beta_note">This is new and may not work on every phone yet. Running the harness on your computer or in Termux still works as before.</string>
     <string name="runtime_setup_start">Download and set up</string>
     <string name="runtime_setup_start_sized">Download and set up (%1$s)</string>
     <string name="runtime_setup_working_title">Setting up</string>

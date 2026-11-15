@@ -32,6 +32,8 @@
 
     <string name="runtime_setup_title">ตั้งค่า harness ในตัว</string>
     <string name="runtime_setup_intro">DSH จะดาวน์โหลดระบบ Linux ขนาดเล็กที่มี harness อยู่ข้างใน แล้วรันในแอป ทุกอย่างอยู่ในเครื่องนี้ ยกเว้นสิ่งที่คุณส่งไปให้ผู้ให้บริการโมเดล</string>
+    <string name="runtime_beta_badge">เบต้า</string>
+    <string name="runtime_setup_beta_note">ฟีเจอร์นี้ยังใหม่ อาจยังใช้ไม่ได้กับทุกเครื่อง การรัน harness บนคอมพิวเตอร์หรือใน Termux ยังใช้ได้เหมือนเดิม</string>
     <string name="runtime_setup_start">ดาวน์โหลดและตั้งค่า</string>
     <string name="runtime_setup_start_sized">ดาวน์โหลดและตั้งค่า (%1$s)</string>
     <string name="runtime_setup_working_title">กำลังตั้งค่า</string>

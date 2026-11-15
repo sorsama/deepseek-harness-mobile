@@ -186,6 +186,7 @@ internal fun RuntimeSetupPage(
                     label = "setupHeading",
                 ) { shown ->
                     Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+                        BetaBadge()
                         Text(
                             stringResource(
                                 when (shown) {
@@ -211,6 +212,11 @@ internal fun RuntimeSetupPage(
                             color = colors.labelSecondary,
                         )
                         if (shown == SetupPhase.Intro) {
+                            Text(
+                                stringResource(R.string.runtime_setup_beta_note),
+                                style = DsType.small13,
+                                color = colors.labelSecondary,
+                            )
                             state.release?.let { release ->
                                 Text(
                                     stringResource(R.string.runtime_card_sizes, formatBytes(release.downloadBytes), formatBytes(release.unpackedBytes)),

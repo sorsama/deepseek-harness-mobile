@@ -416,3 +416,16 @@ internal fun rememberPageVisibility(onClosed: () -> Unit): PageVisibility {
     }
     return page
 }
+
+/**
+ * "Beta" next to the built-in harness's name: on the Connect card, the set-up page and the harness
+ * page. The kit's resting tag (not a control) in the accent wash, so it reads as a label.
+ */
+@Composable
+internal fun BetaBadge(modifier: Modifier = Modifier) {
+    com.labteto.dshmobile.ui.components.DsPill(
+        text = stringResource(R.string.runtime_beta_badge),
+        selected = true,
+        modifier = modifier,
+    )
+}

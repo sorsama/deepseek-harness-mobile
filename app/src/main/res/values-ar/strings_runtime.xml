@@ -32,6 +32,8 @@
 
     <string name="runtime_setup_title">إعداد harness المدمج</string>
     <string name="runtime_setup_intro">ينزّل DSH نظام Linux صغيرًا فيه harness ويشغّله داخل التطبيق. يبقى كل شيء على هذا الهاتف، باستثناء ما ترسله إلى مزوّد النماذج.</string>
+    <string name="runtime_beta_badge">تجريبي</string>
+    <string name="runtime_setup_beta_note">هذه الميزة جديدة وقد لا تعمل على كل الهواتف بعد. تشغيل harness على حاسوبك أو في Termux ما زال يعمل كما كان.</string>
     <string name="runtime_setup_start">تنزيل وإعداد</string>
     <string name="runtime_setup_start_sized">تنزيل وإعداد (%1$s)</string>
     <string name="runtime_setup_working_title">جارٍ الإعداد</string>

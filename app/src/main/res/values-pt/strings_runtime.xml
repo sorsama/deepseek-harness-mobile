@@ -32,6 +32,8 @@
 
     <string name="runtime_setup_title">Configurar o harness integrado</string>
     <string name="runtime_setup_intro">O DSH baixa um pequeno sistema Linux com o harness dentro e o roda no app. Tudo fica neste telefone, exceto o que você envia ao seu provedor de modelos.</string>
+    <string name="runtime_beta_badge">Beta</string>
+    <string name="runtime_setup_beta_note">É novo e talvez ainda não funcione em todos os telefones. Rodar o harness no seu computador ou no Termux continua funcionando como antes.</string>
     <string name="runtime_setup_start">Baixar e configurar</string>
     <string name="runtime_setup_start_sized">Baixar e configurar (%1$s)</string>
     <string name="runtime_setup_working_title">Configurando</string>

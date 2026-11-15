@@ -32,6 +32,8 @@
 
     <string name="runtime_setup_title">Установка встроенного harness</string>
     <string name="runtime_setup_intro">DSH скачивает небольшую систему Linux с harness внутри и запускает её в приложении. Всё остаётся на этом телефоне, кроме того, что вы отправляете своему поставщику моделей.</string>
+    <string name="runtime_beta_badge">Бета</string>
+    <string name="runtime_setup_beta_note">Это новая функция, и пока она может работать не на всех телефонах. Запуск harness на компьютере или в Termux работает как раньше.</string>
     <string name="runtime_setup_start">Скачать и установить</string>
     <string name="runtime_setup_start_sized">Скачать и установить (%1$s)</string>
     <string name="runtime_setup_working_title">Идёт установка</string>

@@ -81,12 +81,16 @@ internal fun BuiltInHarnessCard(
             StateDot(dot, size = 8.dp)
             Spacer(Modifier.width(DsSpacing.compact))
             Column(Modifier.weight(1f)) {
-                Text(
-                    stringResource(R.string.runtime_card_title),
-                    style = DsType.std14Strong,
-                    color = colors.labelPrimary,
-                    modifier = Modifier.semantics { heading() },
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        stringResource(R.string.runtime_card_title),
+                        style = DsType.std14Strong,
+                        color = colors.labelPrimary,
+                        modifier = Modifier.weight(1f, fill = false).semantics { heading() },
+                    )
+                    Spacer(Modifier.width(DsSpacing.small))
+                    BetaBadge()
+                }
                 Text(
                     if (installed != null) {
                         stringResource(

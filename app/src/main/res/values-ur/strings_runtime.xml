@@ -32,6 +32,8 @@
 
     <string name="runtime_setup_title">بلٹ اِن harness سیٹ اپ کریں</string>
     <string name="runtime_setup_intro">DSH ایک چھوٹا Linux سسٹم ڈاؤن لوڈ کرتا ہے جس میں harness ہوتا ہے، اور اسے ایپ کے اندر چلاتا ہے۔ آپ اپنے ماڈل فراہم کنندہ کو جو بھیجتے ہیں اس کے علاوہ سب کچھ اسی فون پر رہتا ہے۔</string>
+    <string name="runtime_beta_badge">بیٹا</string>
+    <string name="runtime_setup_beta_note">یہ نیا ہے اور ہو سکتا ہے ابھی ہر فون پر کام نہ کرے۔ اپنے کمپیوٹر پر یا Termux میں harness چلانا پہلے کی طرح کام کرتا ہے۔</string>
     <string name="runtime_setup_start">ڈاؤن لوڈ اور سیٹ اپ کریں</string>
     <string name="runtime_setup_start_sized">ڈاؤن لوڈ اور سیٹ اپ کریں (%1$s)</string>
     <string name="runtime_setup_working_title">سیٹ اپ ہو رہا ہے</string>

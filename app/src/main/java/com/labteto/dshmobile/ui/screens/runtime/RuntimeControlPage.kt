@@ -191,14 +191,18 @@ internal fun RuntimeControlPage(
                         tint = colors.labelPrimary,
                     )
                     Spacer(Modifier.width(DsSpacing.small))
-                    Text(
-                        stringResource(R.string.runtime_card_title),
-                        style = DsType.large20,
-                        color = colors.labelPrimary,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f).semantics { heading() },
-                    )
+                    Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            stringResource(R.string.runtime_card_title),
+                            style = DsType.large20,
+                            color = colors.labelPrimary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false).semantics { heading() },
+                        )
+                        Spacer(Modifier.width(DsSpacing.small))
+                        BetaBadge()
+                    }
                 }
                 Column(
                     modifier = Modifier
