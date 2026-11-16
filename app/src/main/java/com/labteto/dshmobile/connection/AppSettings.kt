@@ -93,4 +93,10 @@ data class AppSettings(
      * Read it through [WorkStepDisplay.of], which turns anything unknown into the default.
      */
     val workStepDisplay: String = DEFAULT_WORK_STEP_DISPLAY.key,
+    /**
+     * Whether an open reasoning block is translated on its own, with the provider and language the
+     * manual Translate button uses. Off by default: each translation is a request on the reader's own
+     * provider. Per device.
+     */
+    val autoTranslateReasoning: Boolean = false,
 )

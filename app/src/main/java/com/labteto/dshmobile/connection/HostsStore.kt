@@ -58,6 +58,7 @@ class HostsStore @Inject constructor(
         val DISMISSED_UPDATE = stringPreferencesKey("dismissed_update")
         val FOLLOW_STREAMING = booleanPreferencesKey("follow_streaming")
         val DEFAULT_DELIVERY_MODE = stringPreferencesKey("default_delivery_mode")
+        val AUTO_TRANSLATE_REASONING = booleanPreferencesKey("auto_translate_reasoning")
     }
 
     private val hostsSerializer = ListSerializer(HostConfig.serializer())
@@ -103,6 +104,7 @@ class HostsStore @Inject constructor(
             followStreamingReply = prefs[Keys.FOLLOW_STREAMING] ?: true,
             defaultDeliveryMode = normalizeDeliveryMode(prefs[Keys.DEFAULT_DELIVERY_MODE] ?: DELIVERY_QUEUE),
             workStepDisplay = prefs.readWorkStepDisplay(),
+            autoTranslateReasoning = prefs[Keys.AUTO_TRANSLATE_REASONING] ?: false,
         )
     }
 
@@ -309,6 +311,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.FOLLOW_STREAMING] = next.followStreamingReply
             prefs[Keys.DEFAULT_DELIVERY_MODE] = normalizeDeliveryMode(next.defaultDeliveryMode)
             prefs.writeWorkStepDisplay(next.workStepDisplay)
+            prefs[Keys.AUTO_TRANSLATE_REASONING] = next.autoTranslateReasoning
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)
         }
     }

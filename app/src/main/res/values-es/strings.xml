@@ -160,6 +160,11 @@
     <string name="settings_default_delivery_mode_hint">Se usa al enviar mientras hay un turno en curso. Aún puedes elegir otro modo para cada mensaje.</string>
     <string name="settings_work_steps">Pasos de trabajo</string>
     <string name="settings_work_steps_hint">Solo cambia cómo se ve el chat, y solo en este dispositivo. Toca una fila para abrir o cerrar solo esa.</string>
+    <string name="settings_auto_translate_reasoning">Traducir el proceso de pensamiento automáticamente</string>
+    <string name="settings_auto_translate_reasoning_hint">Traduce el proceso de pensamiento cuando lo abres, con el mismo proveedor e idioma que el botón Traducir. Cada traducción es una llamada al modelo de tu propio proveedor y gasta tus tokens.</string>
+    <string name="settings_auto_translate_reasoning_unavailable">Este harness no tiene traducción configurada, así que el interruptor no hace nada aquí. Activa el complemento de traducción y elige un proveedor en el harness.</string>
+    <string name="settings_auto_translate_reasoning_no_host">Conéctate a un harness para ver si puede traducir.</string>
+    <string name="reasoning_translation_failed">No se pudo traducir. El original sigue aquí.</string>
     <string name="work_steps_compact">Compacto</string>
     <string name="work_steps_compact_hint">El trabajo terminado se pliega en una fila. Las llamadas a herramientas quedan en un grupo cerrado.</string>
     <string name="work_steps_standard">Estándar</string>

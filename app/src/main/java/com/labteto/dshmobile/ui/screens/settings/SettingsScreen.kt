@@ -278,6 +278,9 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         selected = com.labteto.dshmobile.connection.WorkStepDisplay.of(settings.workStepDisplay),
                         onSelect = { level -> viewModel.set { it.copy(workStepDisplay = level.key) } },
                     )
+                    AutoTranslateReasoningRow(settings.autoTranslateReasoning) {
+                        viewModel.set { it.copy(autoTranslateReasoning = !it.autoTranslateReasoning) }
+                    }
                 }
 
                 SettingsCard(stringResource(R.string.settings_connection)) {

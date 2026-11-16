@@ -17,6 +17,17 @@ All notable changes to DSH Mobile are documented here. Format based on
   replayed session and to the subagent sheet. Tapping a row still opens or closes just that row, and
   changing the level puts every row back to it. The choice stays on this device and the host's
   settings are not touched. (#115)
+- **Translate a thought process on its own.** Settings, **Chat**, **Auto-translate thought process**
+  (off by default) translates a thought process when you open it, with the same provider and
+  language as the **Translate** button. Each translation is a model call on your own provider and
+  uses your tokens, and the switch says so, and says when the connected harness has no translation
+  set up. Only a thought that is open and has rested on screen for a moment is sent, never a whole
+  history, and at most two requests run at once. A thought already written in your language is
+  skipped when the script makes that clear. Each thought is translated once: translations are kept
+  between opening, scrolling, reconnecting and restarting the app, and the button and the switch
+  share them. The original is one tap away, a failure keeps it with a **Retry**, and a failed
+  thought is not tried again by itself. Leaving the session or turning the switch off stops the
+  requests. The closed row's preview line stays in the original language. (#113)
 
 ### Fixed
 

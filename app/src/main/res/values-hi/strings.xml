@@ -160,6 +160,11 @@
     <string name="settings_default_delivery_mode_hint">किसी टर्न के चलने के दौरान भेजते समय इसका उपयोग होगा। हर संदेश के लिए अलग तरीका चुनना फिर भी संभव है।</string>
     <string name="settings_work_steps">काम के चरण</string>
     <string name="settings_work_steps_hint">यह सिर्फ चैट के दिखने का तरीका बदलता है, और सिर्फ इस डिवाइस पर। किसी पंक्ति को छूकर सिर्फ उसे खोलें या बंद करें।</string>
+    <string name="settings_auto_translate_reasoning">सोच-विचार का अपने-आप अनुवाद</string>
+    <string name="settings_auto_translate_reasoning_hint">सोच-विचार खोलते ही उसका अनुवाद हो जाता है, उसी प्रदाता और भाषा में जो अनुवाद बटन में है। हर अनुवाद आपके अपने प्रदाता पर मॉडल की एक कॉल है और इसमें आपके टोकन खर्च होते हैं।</string>
+    <string name="settings_auto_translate_reasoning_unavailable">इस harness पर अनुवाद सेट नहीं है, इसलिए यहाँ यह स्विच कुछ नहीं करता। harness पर अनुवाद प्लगइन चालू करें और एक प्रदाता चुनें।</string>
+    <string name="settings_auto_translate_reasoning_no_host">यह देखने के लिए कि अनुवाद हो सकता है या नहीं, किसी harness से जुड़ें।</string>
+    <string name="reasoning_translation_failed">अनुवाद नहीं हो सका। मूल पाठ वैसा ही है।</string>
     <string name="work_steps_compact">संक्षिप्त</string>
     <string name="work_steps_compact_hint">पूरा हो चुका काम एक पंक्ति में सिमट जाता है। टूल कॉल बंद समूह में रहते हैं।</string>
     <string name="work_steps_standard">मानक</string>

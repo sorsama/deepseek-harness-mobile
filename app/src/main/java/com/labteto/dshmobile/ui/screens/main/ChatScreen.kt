@@ -583,6 +583,7 @@ fun ChatScreen(
 
     androidx.compose.runtime.CompositionLocalProvider(
         com.labteto.dshmobile.ui.media.LocalAttachmentScope provides (composer.key.host to composer.key.sessionId),
+        LocalAutoTranslateReasoning provides appSettings.autoTranslateReasoning,
         com.labteto.dshmobile.ui.components.LocalFileOpener provides { path: String ->
             store.panels.get(composer.key).open(path); panelKey = composer.key
         },

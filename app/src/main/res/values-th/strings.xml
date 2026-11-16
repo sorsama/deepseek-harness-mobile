@@ -160,6 +160,11 @@
     <string name="settings_default_delivery_mode_hint">ใช้เมื่อส่งข้อความขณะที่เทิร์นกำลังทำงาน คุณยังเลือกโหมดอื่นสำหรับแต่ละข้อความได้</string>
     <string name="settings_work_steps">การแสดงขั้นตอนการทำงาน</string>
     <string name="settings_work_steps_hint">เปลี่ยนแค่หน้าตาของแชท และเฉพาะบนอุปกรณ์เครื่องนี้ แตะแถวใดก็ได้เพื่อเปิดหรือปิดเฉพาะแถวนั้น</string>
+    <string name="settings_auto_translate_reasoning">แปลกระบวนการคิดอัตโนมัติ</string>
+    <string name="settings_auto_translate_reasoning_hint">แปลกระบวนการคิดให้เมื่อคุณเปิดดู โดยใช้ผู้ให้บริการและภาษาเดียวกับปุ่มแปล การแปลแต่ละครั้งคือการเรียกโมเดลของผู้ให้บริการของคุณเอง และใช้โทเคนของคุณ</string>
+    <string name="settings_auto_translate_reasoning_unavailable">harness นี้ยังไม่ได้ตั้งค่าการแปล สวิตช์นี้จึงไม่มีผลที่นี่ เปิดปลั๊กอินแปลและเลือกผู้ให้บริการบน harness</string>
+    <string name="settings_auto_translate_reasoning_no_host">เชื่อมต่อ harness เพื่อดูว่าแปลได้หรือไม่</string>
+    <string name="reasoning_translation_failed">แปลไม่สำเร็จ ข้อความต้นฉบับยังอยู่</string>
     <string name="work_steps_compact">กะทัดรัด</string>
     <string name="work_steps_compact_hint">งานที่เสร็จแล้วจะพับเหลือแถวเดียว การเรียกเครื่องมืออยู่ในกลุ่มที่ปิดไว้</string>
     <string name="work_steps_standard">มาตรฐาน</string>

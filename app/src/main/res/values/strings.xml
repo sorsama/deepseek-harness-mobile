@@ -212,6 +212,11 @@
     <string name="settings_default_delivery_mode_hint">Used when sending while a turn is running. You can still choose a different mode for each message.</string>
     <string name="settings_work_steps">Work steps</string>
     <string name="settings_work_steps_hint">Only changes how the chat looks, and only on this device. Tap a row to open or close just that one.</string>
+    <string name="settings_auto_translate_reasoning">Auto-translate thought process</string>
+    <string name="settings_auto_translate_reasoning_hint">Translates a thought process when you open it, with the same provider and language as the Translate button. Each translation is a model call on your own provider and uses your tokens.</string>
+    <string name="settings_auto_translate_reasoning_unavailable">This harness has no translation set up, so the switch does nothing here. Turn on the translator plugin and pick a provider on the harness.</string>
+    <string name="settings_auto_translate_reasoning_no_host">Connect to a harness to see if it can translate.</string>
+    <string name="reasoning_translation_failed">Couldn\'t translate this. The original is still here.</string>
     <string name="work_steps_compact">Compact</string>
     <string name="work_steps_compact_hint">Finished work folds into one row. Tool calls stay in a closed group.</string>
     <string name="work_steps_standard">Standard</string>

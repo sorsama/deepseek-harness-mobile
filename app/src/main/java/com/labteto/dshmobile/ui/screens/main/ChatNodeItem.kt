@@ -445,7 +445,16 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
                         preview = if (context.presentation.policy.settledReasoningPreview && !streaming && !expanded) {
                             remember(block.text) { firstLinePreview(block.text.orEmpty()) }
                         } else null,
-                        content = { ReasoningContent(block.text.orEmpty(), streaming) },
+                        // A thought is finished once something follows it in the message, even while
+                        // the reply after it is still being written. The block's identity is its
+                        // message's state key plus its index, which replay and reconnects keep.
+                        content = {
+                            ReasoningContent(
+                                block.text.orEmpty(),
+                                complete = !streaming || index < node.blocks.lastIndex,
+                                blockId = "$stateKey#$index",
+                            )
+                        },
                     )
                 }
                 // Show partial arguments until the durable tool card takes over. The list filter
