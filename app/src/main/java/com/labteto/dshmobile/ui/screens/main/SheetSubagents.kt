@@ -98,6 +98,7 @@ internal fun SubagentsSheet(
     entries: List<SubagentListEntry>,
     conversation: ConversationSnapshot?,
     mode: String?,
+    workStepDisplay: com.labteto.dshmobile.connection.WorkStepDisplay,
     onDismiss: () -> Unit,
 ) {
     DisposableEffect(store) { onDispose { store.closeSubagentTranscript() } }
@@ -175,6 +176,7 @@ internal fun SubagentsSheet(
                             child = conversation,
                             store = store,
                             mode = mode,
+                            workStepDisplay = workStepDisplay,
                             running = childRunning,
                             draft = draft,
                             onDraftChange = { draft = it },
@@ -206,6 +208,7 @@ internal fun SubagentsSheet(
                         child = conversation,
                         store = store,
                         mode = mode,
+                        workStepDisplay = workStepDisplay,
                         running = childRunning,
                         draft = draft,
                         onDraftChange = { draft = it },
@@ -334,6 +337,7 @@ private fun ChildBody(
     child: ConversationSnapshot,
     store: SessionStore,
     mode: String?,
+    workStepDisplay: com.labteto.dshmobile.connection.WorkStepDisplay,
     running: Boolean,
     draft: String,
     onDraftChange: (String) -> Unit,
@@ -375,6 +379,16 @@ private fun ChildBody(
                         onOpenWorkspace()
                     },
                 ) {
+                    // The same level as the main transcript. This column is not lazy, so a level
+                    // that opens rows opens only the newest few: everything is composed at once.
+                    val policy = workStepPolicyFor(workStepDisplay)
+                    val taps = remember(childId, workStepDisplay) { RowDisclosureMemory() }
+                    val openFrom = remember(child.nodes, policy) {
+                        if (policy.rowsStartOpen) {
+                            child.nodes.filterIsInstance<com.labteto.dshmobile.core.session.ToolCallNode>()
+                                .takeLast(CHILD_OPEN_ROWS).firstOrNull()?.seq ?: Long.MAX_VALUE
+                        } else Long.MIN_VALUE
+                    }
                     val childContext = ChatNodeContext(
                         child.nodes,
                         child.running,
@@ -382,6 +396,7 @@ private fun ChildBody(
                         onOpenSubagent = {},
                         onBranchFrom = {},
                         onFeedback = { _, _ -> },
+                        presentation = WorkStepPresentation(policy, taps, openFrom),
                     )
                     child.nodes.forEach { node -> ChatNodeItem(node, childContext) }
                 }

@@ -21,7 +21,15 @@ import kotlinx.serialization.json.*
 
 /** Dispatch-start and settlement share one child row; recursion follows declared parent ids. */
 @Composable
-internal fun PtcChildren(parent: String, events: List<OtherNode>, ancestors: Set<String> = emptySet()) {
+internal fun PtcChildren(
+    parent: String,
+    events: List<OtherNode>,
+    ancestors: Set<String> = emptySet(),
+    presentation: WorkStepPresentation = WorkStepPresentation.Default,
+    /** The enclosing row is a level-opened preview: list few children, clip their text. */
+    clip: Boolean = false,
+    onShowAll: () -> Unit = {},
+) {
     if (parent in ancestors || ancestors.size >= 12) return
     val colors = DsTheme.colors
     val children = remember(events, parent) {
@@ -30,19 +38,26 @@ internal fun PtcChildren(parent: String, events: List<OtherNode>, ancestors: Set
             .filter { (it["parentCallId"] as? JsonPrimitive)?.contentOrNull == parent }
             .groupBy { (it["subCallId"] as? JsonPrimitive)?.contentOrNull }
     }
-    children.forEach { (id, records) ->
+    // A code run can dispatch hundreds of calls: a preview lists the first few, "Show all" the rest.
+    val listed = if (clip) children.entries.take(PREVIEW_MAX_ITEMS) else children.entries
+    if (listed.size < children.size) ClippedNote(onShowAll)
+    listed.forEach { (id, records) ->
         if (id == null) return@forEach
         val record = records.last()
-        var expanded by remember(id) { mutableStateOf(false) }
+        // Nested calls follow the level like their parent; a tap on one overrides only that one.
+        val nested = rememberRowDisclosure(presentation, "ptc:$id", Long.MAX_VALUE)
+        val expanded = nested.open
+        // Cut only while the enclosing row is a preview and this call has not been opened by a tap.
+        val clipChild = clip && nested.preview
         DisclosureRow(title = (record["name"] as? JsonPrimitive)?.contentOrNull ?: id,
-            expanded = expanded, onToggle = { expanded = !expanded }) {
+            expanded = expanded, onToggle = nested.toggle) {
             Column(Modifier.padding(start = DsSpacing.medium), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(DsSpacing.xsmall)) {
                 record["arguments"]?.let { args ->
                     val code = (args as? JsonObject)?.get("code") as? JsonPrimitive
                     if (code != null) {
                         SelectionContainer {
                             Text(
-                                code.content,
+                                if (clipChild) clipPreview(code.content) else code.content,
                                 style = DsType.mono12,
                                 color = colors.labelSecondary,
                                 softWrap = true,
@@ -55,10 +70,11 @@ internal fun PtcChildren(parent: String, events: List<OtherNode>, ancestors: Set
                             )
                         }
                     }
+                    if (clipChild && code != null && exceedsPreview(code.content)) ClippedNote(nested.showAll)
                     JsonDisclosure("JSON", args)
                 }
-                record["content"]?.let { ToolResultOutput(it) }
-                PtcChildren(id, events, ancestors + parent)
+                record["content"]?.let { ToolResultOutput(it, clip = clipChild, onShowAll = nested.showAll) }
+                PtcChildren(id, events, ancestors + parent, presentation, clipChild, nested.showAll)
             }
         }
     }

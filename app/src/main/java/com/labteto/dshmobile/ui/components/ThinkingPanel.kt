@@ -36,6 +36,8 @@ fun ThinkingPanel(
     expanded: Boolean,
     onToggle: () -> Unit,
     content: (@Composable () -> Unit)? = null,
+    /** First line of the thought, shown beside the title while the row is closed; null shows none. */
+    preview: String? = null,
 ) {
     if (text.isBlank() && !streaming) return
     val colors = DsTheme.colors
@@ -64,8 +66,19 @@ fun ThinkingPanel(
                 stringResource(if (streaming) R.string.chat_thinking else R.string.chat_thought_process),
                 style = DsType.body15,
                 color = colors.labelSecondary,
-                modifier = Modifier.weight(1f),
+                maxLines = if (preview == null) Int.MAX_VALUE else 1,
+                modifier = if (preview == null) Modifier.weight(1f) else Modifier,
             )
+            if (preview != null) {
+                Text(
+                    preview,
+                    style = DsType.small13,
+                    color = colors.labelTertiary,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+            }
             if (streaming) StateDot(StateDotState.Running, size = 6.dp)
             Icon(
                 FeatherIcons.ChevronRight,

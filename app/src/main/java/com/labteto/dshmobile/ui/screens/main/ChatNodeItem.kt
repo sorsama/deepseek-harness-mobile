@@ -124,6 +124,11 @@ internal data class ChatNodeContext(
      * shipped preset means the name it chose. Empty falls back to the id.
      */
     val permissionNames: Map<String, String> = emptyMap(),
+    /**
+     * The work-step level and the reader's taps on rows (Settings > Chat > Work steps). The default
+     * is the transcript as it looked before the setting existed.
+     */
+    val presentation: WorkStepPresentation = WorkStepPresentation.Default,
 )
 
 /**
@@ -233,10 +238,10 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
         // terminal row. A node that is not theirs keeps the row it always had.
         is CommandNode -> {
             val line = remember(node, context.nodes) { systemLineFor(node, context.nodes) }
-            if (line != null) SystemLineRow(line, context.permissionNames) else CommandRow(node)
+            if (line != null) SystemLineRow(line, context.permissionNames) else CommandRow(node, context)
         }
 
-        is WorkflowNode -> WorkflowRow(node.data, context.onOpenSubagent)
+        is WorkflowNode -> WorkflowRow(node.data, node.seq, context)
 
         is DeveloperMessageNode -> ToolSetChangeRow(node)
 
@@ -436,6 +441,10 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
                         expanded = expanded,
                         onToggle = { reasoningExpanded[index] = !expanded },
                         streaming = streaming,
+                        // The first line beside the title, from Standard up, once the thought is done.
+                        preview = if (context.presentation.policy.settledReasoningPreview && !streaming && !expanded) {
+                            remember(block.text) { firstLinePreview(block.text.orEmpty()) }
+                        } else null,
                         content = { ReasoningContent(block.text.orEmpty(), streaming) },
                     )
                 }
@@ -518,17 +527,16 @@ private fun ActionIcon(
 @Composable
 internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: Boolean = false) {
     val colors = DsTheme.colors
-    val result = context.nodes
-        .filterIsInstance<ToolResultNode>()
-        .firstOrNull { it.callId == node.callId }
+    val result = remember(context.nodes, node.callId) {
+        context.nodes.filterIsInstance<ToolResultNode>().firstOrNull { it.callId == node.callId }
+    }
 
-    val card = buildToolCardView(
-        call = node,
-        result = result,
-        running = result == null && context.running,
-        cwd = context.cwd,
-        home = context.home,
-    )
+    // Remembered: in the flat levels every call on screen builds its card, and the arguments it
+    // parses can be large. The inputs are exactly what the card is derived from.
+    val running = result == null && context.running
+    val card = remember(node, result, running, context.cwd, context.home) {
+        buildToolCardView(call = node, result = result, running = running, cwd = context.cwd, home = context.home)
+    }
     // The row header is derived here rather than taken from the card: only this layer knows the
     // tool's name and the session's cwd, which is what turns an absolute path into `app\build.gradle.kts`.
     val row = toolRowModel(
@@ -538,7 +546,12 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         // Derived from the call itself now: 0.1.2 sends no presenter title to prefer over it.
         viewTitle = null,
     )
-    var expanded by remember(node.callId) { mutableStateOf(false) }
+    // Open or closed by the work-step level; a tap overrides it for this row only (see
+    // RowDisclosureMemory). A row the level opened is a bounded preview until "Show all".
+    val disclosure = rememberRowDisclosure(context.presentation, "tool:${node.callId}", node.seq)
+    val expanded = disclosure.open
+    val preview = disclosure.preview
+    val clippedCard = remember(card, preview) { if (preview) clipCardForPreview(card) else ClippedCard(card, false) }
     var holdOpen by remember(node.callId) { mutableStateOf(false) }
     val holdLabel = stringResource(R.string.hold_tool_actions)
     // The leading slot carries the outcome: a red dot for a failed call, the tool glyph otherwise.
@@ -554,9 +567,9 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
     } else null
     if (!compact && elapsed != null) Text(elapsed, style = DsType.caption11, color = colors.labelCaption)
     ToolCard(
-        view = card,
+        view = clippedCard.view,
         expanded = expanded,
-        onToggle = { expanded = !expanded },
+        onToggle = disclosure.toggle,
         titleOverride = row.title,
         summaryOverride = row.summary,
         iconOverride = row.variant.featherIcon(),
@@ -565,7 +578,7 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         holdLabel = holdLabel,
         header = if (compact) ({
             Row(Modifier.fillMaxWidth().heightIn(min = 32.dp)
-                .clickableWithHold(holdLabel, onHold = { holdOpen = true }, role = Role.Button) { expanded = !expanded }
+                .clickableWithHold(holdLabel, onHold = { holdOpen = true }, role = Role.Button) { disclosure.toggle() }
                 .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                 Icon(if (node.name == "read_image") FeatherIcons.Image else row.variant.featherIcon(), null, Modifier.size(14.dp), tint = colors.labelTertiary)
@@ -597,13 +610,26 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         // diff, a read) already present the result in their body, so there it stays one row down.
         result?.content?.let { content ->
             if (card is com.labteto.dshmobile.ui.components.ToolCardView.GenericCard) {
-                ToolResultOutput(content, label = stringResource(R.string.chat_output_placeholder))
+                ToolResultOutput(
+                    content,
+                    label = stringResource(R.string.chat_output_placeholder),
+                    clip = preview,
+                    onShowAll = disclosure.showAll,
+                )
             } else {
-                ToolResultOutputRow(stringResource(R.string.chat_output_placeholder), content)
+                ToolResultOutputRow(
+                    stringResource(R.string.chat_output_placeholder),
+                    content,
+                    clip = preview,
+                    onShowAll = disclosure.showAll,
+                )
             }
         }
         result?.meta?.let { JsonDisclosure(node.name, it) }
-        PtcChildren(node.callId, context.nodes.filterIsInstance<OtherNode>())
+        val others = remember(context.nodes) { context.nodes.filterIsInstance<OtherNode>() }
+        PtcChildren(node.callId, others, presentation = context.presentation, clip = preview, onShowAll = disclosure.showAll)
+        // The card body was cut to the preview bounds: say so, and let the reader open the rest.
+        if (clippedCard.clipped) ClippedNote(disclosure.showAll)
     } }
     if (result?.isError == true) {
         // The dot is colour-only, so the word stays — but without a second dot beside it.
@@ -680,45 +706,50 @@ private fun RewindMarkerRow() {
 }
 
 @Composable
-private fun CommandRow(node: CommandNode) {
+private fun CommandRow(node: CommandNode, context: ChatNodeContext) {
     val colors = DsTheme.colors
     val data = node.data as? JsonObject
     val name = data?.get("name").asString() ?: node.kind
     val text = data?.get("text").asString()
-    var expanded by remember(node.seq) { mutableStateOf(false) }
+    val disclosure = rememberRowDisclosure(context.presentation, "cmd:${node.seq}", node.seq)
     DisclosureRow(
         title = "/$name",
-        summary = text,
+        summary = text?.let(::rowSummaryText),
         icon = FeatherIcons.Terminal,
-        expanded = expanded,
-        onToggle = { expanded = !expanded },
+        expanded = disclosure.open,
+        onToggle = disclosure.toggle,
     ) {
+        val full = node.data.toString()
+        val shown = if (disclosure.preview) clipPreview(full) else full
         Text(
-            node.data.toString(),
+            shown,
             style = DsType.caption11.copy(fontFamily = DsType.codeFont),
             color = colors.labelCaption,
             modifier = Modifier.padding(start = 28.dp, top = 2.dp),
         )
+        if (shown.length != full.length) ClippedNote(disclosure.showAll)
     }
 }
 
 @Composable
 private fun WorkflowRow(
     data: kotlinx.serialization.json.JsonElement,
-    onOpenMember: (String) -> Unit,
+    seq: Long,
+    context: ChatNodeContext,
 ) {
+    val onOpenMember = context.onOpenSubagent
     val colors = DsTheme.colors
     val obj = data as? JsonObject ?: return
     val name = obj["name"].asString()
     val status = obj["status"].asString() ?: obj["stopReason"].asString() ?: obj["outcome"].asString()
     val members = remember(data) { parseWorkflowMembers(data) }
-    var expanded by remember(data) { mutableStateOf(false) }
+    val disclosure = rememberRowDisclosure(context.presentation, "wf:$seq", seq)
     DisclosureRow(
         title = stringResource(R.string.workflow_title),
         summary = listOfNotNull(name, workflowStatusLabel(status)).joinToString(" · ").ifEmpty { null },
         icon = FeatherIcons.GitBranch,
-        expanded = expanded,
-        onToggle = { expanded = !expanded },
+        expanded = disclosure.open,
+        onToggle = disclosure.toggle,
     ) {
         members.forEach { member ->
             val memberChildId = member.childId

@@ -5,6 +5,19 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **Choose how much of the agent's work the chat shows.** Settings, **Chat**, **Work steps** has the
+  four levels of the web client's work-step setting: **Compact**, **Standard**, **Detailed** and
+  **Fully expanded**, each with a line saying what it changes. Compact is the chat as it was and
+  stays the default. Standard also names the step a running group is on and previews the first line
+  of the thinking. Detailed shows the running turn's tool calls one by one instead of in a group.
+  Fully expanded folds and groups nothing and opens every tool call, nested call and workflow by
+  itself, cutting very long output to its start with **Show all**. It applies to the chat, to a
+  replayed session and to the subagent sheet. Tapping a row still opens or closes just that row, and
+  changing the level puts every row back to it. The choice stays on this device and the host's
+  settings are not touched. (#115)
+
 ### Fixed
 
 - **Archiving a session with work running asks once, and says what is running.** When the app already
