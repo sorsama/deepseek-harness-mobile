@@ -87,4 +87,10 @@ data class AppSettings(
     val followStreamingReply: Boolean = true,
     /** Default delivery for prompts sent while a turn is running: `queue` or `steer`. */
     val defaultDeliveryMode: String = "queue",
+    /**
+     * How much tool-call detail the transcript shows by default: a [WorkStepDisplay] key
+     * (`compact|standard|detailed|verbose`). Per device; the host's settings are not involved.
+     * Read it through [WorkStepDisplay.of], which turns anything unknown into the default.
+     */
+    val workStepDisplay: String = DEFAULT_WORK_STEP_DISPLAY.key,
 )

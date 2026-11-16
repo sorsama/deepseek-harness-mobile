@@ -102,6 +102,7 @@ class HostsStore @Inject constructor(
             dismissedUpdate = prefs[Keys.DISMISSED_UPDATE],
             followStreamingReply = prefs[Keys.FOLLOW_STREAMING] ?: true,
             defaultDeliveryMode = normalizeDeliveryMode(prefs[Keys.DEFAULT_DELIVERY_MODE] ?: DELIVERY_QUEUE),
+            workStepDisplay = prefs.readWorkStepDisplay(),
         )
     }
 
@@ -307,6 +308,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.UPDATE_NOTIFY] = next.updateNotifyEnabled
             prefs[Keys.FOLLOW_STREAMING] = next.followStreamingReply
             prefs[Keys.DEFAULT_DELIVERY_MODE] = normalizeDeliveryMode(next.defaultDeliveryMode)
+            prefs.writeWorkStepDisplay(next.workStepDisplay)
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)
         }
     }

@@ -274,6 +274,10 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         style = DsType.caption11,
                         color = colors.labelTertiary,
                     )
+                    WorkStepDisplayPicker(
+                        selected = com.labteto.dshmobile.connection.WorkStepDisplay.of(settings.workStepDisplay),
+                        onSelect = { level -> viewModel.set { it.copy(workStepDisplay = level.key) } },
+                    )
                 }
 
                 SettingsCard(stringResource(R.string.settings_connection)) {
