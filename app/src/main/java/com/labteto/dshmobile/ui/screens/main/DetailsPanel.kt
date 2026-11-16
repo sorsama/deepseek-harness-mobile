@@ -102,7 +102,9 @@ import com.labteto.dshmobile.data.CommandOutcome
 import com.labteto.dshmobile.data.PermissionSwitchResult
 import com.labteto.dshmobile.data.SessionRow
 import com.labteto.dshmobile.data.SessionStore
+import com.labteto.dshmobile.data.archiveStopDialogFor
 import com.labteto.dshmobile.data.failureNotice
+import com.labteto.dshmobile.data.knownArchiveActivity
 import com.labteto.dshmobile.ui.components.ContextMeter
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonSize
@@ -407,7 +409,14 @@ fun DetailsPanel(
                                             }
                                         }
                                     },
-                                    onArchive = { archiveConfirm = true },
+                                    onArchive = {
+                                        // Work already known to be running goes straight to "Stop and
+                                        // archive"; otherwise the plain confirm, and the host still has its say.
+                                        val stop = currentSessionId?.let {
+                                            archiveStopDialogFor(it, knownArchiveActivity(current?.running == true, jobs, subagents))
+                                        }
+                                        if (stop != null) archiveBusy = stop else archiveConfirm = true
+                                    },
                                     onExport = { exportLauncher.launch("dsh-session-${currentSessionId.orEmpty()}.zip") },
                                 )
 

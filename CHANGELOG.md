@@ -5,6 +5,14 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Fixed
+
+- **Archiving a session with work running asks once, and says what is running.** When the app already
+  knows a turn, a background job or a subagent is running, Archive opens **Stop and archive** straight
+  away instead of a plain confirm first. The dialog lists the running work, with a background job's
+  command line, and says that stopped work will not continue by itself and the session can be
+  resumed from Archived sessions. (#114)
+
 ## [0.22.0] - 2026-11-16
 
 ![The built-in harness on a phone: the Connect card, the set-up page and the harness page, each marked Beta](docs/images/releases/0.22.0/devices/hero-built-in-harness.png)

@@ -363,9 +363,11 @@
     <string name="jobs_stopping">रोका जा रहा है</string>
     <string name="jobs_output_empty">अभी कोई आउटपुट नहीं</string>
     <string name="jobs_output_dropped">पहले का आउटपुट हटा दिया गया</string>
-    <string name="archive_busy_title">अभी भी चल रहा है</string>
-    <string name="archive_busy_body">इस सेशन में अभी भी काम चल रहा है: %1$s। आर्काइव करने से पहले वह काम रोका जाएगा।</string>
+    <string name="archive_busy_title">इस सेशन को रोककर आर्काइव करें?</string>
+    <string name="archive_busy_body">इस सेशन में अभी काम चल रहा है। आर्काइव करने से पहले वह काम रोका जाएगा।</string>
     <string name="archive_busy_confirm">रोकें और आर्काइव करें</string>
+    <string name="archive_busy_after">रोका गया काम अपने आप दोबारा शुरू नहीं होगा। आप इस सेशन को बाद में “आर्काइव किए गए सेशन” में ढूंढकर आगे चला सकते हैं।</string>
+    <string name="archive_activity_more">और %1$d</string>
     <string name="archive_activity_turn">मौजूदा टर्न</string>
     <string name="archive_activity_subagent">सबएजेंट</string>
     <string name="archive_activity_job">बैकग्राउंड काम</string>

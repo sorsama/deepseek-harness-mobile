@@ -363,9 +363,11 @@
     <string name="jobs_stopping">กำลังหยุด</string>
     <string name="jobs_output_empty">ยังไม่มีเอาต์พุต</string>
     <string name="jobs_output_dropped">ตัดเอาต์พุตก่อนหน้านี้ออกแล้ว</string>
-    <string name="archive_busy_title">ยังทำงานอยู่</string>
-    <string name="archive_busy_body">เซสชันนี้ยังมีงานค้างอยู่: %1$s ถ้าเก็บถาวร ระบบจะหยุดงานเหล่านั้นก่อน</string>
+    <string name="archive_busy_title">หยุดและเก็บถาวรเซสชันนี้ไหม</string>
+    <string name="archive_busy_body">เซสชันนี้ยังมีงานทำงานอยู่ การเก็บถาวรจะหยุดงานเหล่านั้นก่อน</string>
     <string name="archive_busy_confirm">หยุดและเก็บถาวร</string>
+    <string name="archive_busy_after">งานที่หยุดจะไม่ทำต่อเอง คุณหาเซสชันนี้ได้ใน “เซสชันที่เก็บถาวร” แล้วเปิดกลับมาทำต่อได้</string>
+    <string name="archive_activity_more">และอีก %1$d</string>
     <string name="archive_activity_turn">เทิร์นปัจจุบัน</string>
     <string name="archive_activity_subagent">ซับเอเจนต์</string>
     <string name="archive_activity_job">งานเบื้องหลัง</string>

@@ -363,9 +363,11 @@
     <string name="jobs_stopping">روکا جا رہا ہے</string>
     <string name="jobs_output_empty">ابھی کوئی آؤٹ پٹ نہیں</string>
     <string name="jobs_output_dropped">پہلے کا آؤٹ پٹ ہٹا دیا گیا</string>
-    <string name="archive_busy_title">ابھی بھی چل رہا ہے</string>
-    <string name="archive_busy_body">اس سیشن میں ابھی بھی کام چل رہا ہے: %1$s۔ آرکائیو کرنے سے پہلے وہ کام روک دیا جائے گا۔</string>
+    <string name="archive_busy_title">اس سیشن کو روک کر آرکائیو کریں؟</string>
+    <string name="archive_busy_body">اس سیشن میں ابھی کام چل رہا ہے۔ آرکائیو کرنے سے پہلے وہ کام روک دیا جائے گا۔</string>
     <string name="archive_busy_confirm">روکیں اور آرکائیو کریں</string>
+    <string name="archive_busy_after">روکا ہوا کام خود بخود دوبارہ شروع نہیں ہوگا۔ آپ یہ سیشن بعد میں «آرکائیو شدہ سیشن» میں ڈھونڈ کر دوبارہ چلا سکتے ہیں۔</string>
+    <string name="archive_activity_more">اور %1$d</string>
     <string name="archive_activity_turn">موجودہ ٹرن</string>
     <string name="archive_activity_subagent">ذیلی ایجنٹ</string>
     <string name="archive_activity_job">پس منظر کے کام</string>
