@@ -161,7 +161,7 @@
     <string name="settings_work_steps">Étapes de travail</string>
     <string name="settings_work_steps_hint">Ne change que l’aspect du chat, et seulement sur cet appareil. Touchez une ligne pour l’ouvrir ou la fermer seule.</string>
     <string name="settings_auto_translate_reasoning">Traduire le raisonnement automatiquement</string>
-    <string name="settings_auto_translate_reasoning_hint">Traduit le raisonnement quand vous l’ouvrez, avec le même fournisseur et la même langue que le bouton Traduire. Chaque traduction est un appel au modèle de votre propre fournisseur et consomme vos jetons.</string>
+    <string name="settings_auto_translate_reasoning_hint">Traduit le raisonnement quand vous l’ouvrez, avec le même fournisseur et la même langue que le bouton Traduire. Chaque traduction envoie le texte à ce fournisseur. Un fournisseur de modèle consomme vos jetons, pas Bing ni Google.</string>
     <string name="settings_auto_translate_reasoning_unavailable">Ce harness n’a pas de traduction configurée, donc ce réglage ne fait rien ici. Activez le plugin de traduction et choisissez un fournisseur sur le harness.</string>
     <string name="settings_auto_translate_reasoning_no_host">Connectez-vous à un harness pour voir s’il peut traduire.</string>
     <string name="reasoning_translation_failed">Impossible de traduire. L’original est toujours là.</string>

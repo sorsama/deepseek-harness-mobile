@@ -161,7 +161,7 @@
     <string name="settings_work_steps">کام کے مراحل</string>
     <string name="settings_work_steps_hint">یہ صرف چیٹ کی ظاہری شکل بدلتا ہے، اور صرف اسی آلے پر۔ کسی قطار کو چھوئیں تو صرف وہی کھلتی یا بند ہوتی ہے۔</string>
     <string name="settings_auto_translate_reasoning">سوچنے کے عمل کا خودکار ترجمہ</string>
-    <string name="settings_auto_translate_reasoning_hint">سوچنے کا عمل کھولتے ہی اس کا ترجمہ ہو جاتا ہے، اسی فراہم کنندہ اور زبان میں جو ترجمے کے بٹن میں ہے۔ ہر ترجمہ آپ کے اپنے فراہم کنندہ پر ماڈل کی ایک کال ہے اور اس میں آپ کے ٹوکن خرچ ہوتے ہیں۔</string>
+    <string name="settings_auto_translate_reasoning_hint">سوچنے کا عمل کھولتے ہی اس کا ترجمہ ہو جاتا ہے، اسی فراہم کنندہ اور زبان میں جو ترجمے کے بٹن میں ہے۔ ہر ترجمے میں متن اسی فراہم کنندہ کو بھیجا جاتا ہے۔ ماڈل والے فراہم کنندہ میں آپ کے ٹوکن خرچ ہوتے ہیں، Bing اور Google میں نہیں۔</string>
     <string name="settings_auto_translate_reasoning_unavailable">اس harness پر ترجمہ سیٹ نہیں ہے، اس لیے یہ سوئچ یہاں کچھ نہیں کرتا۔ harness پر ترجمے کا پلگ ان آن کریں اور ایک فراہم کنندہ چنیں۔</string>
     <string name="settings_auto_translate_reasoning_no_host">یہ دیکھنے کے لیے کہ ترجمہ ہو سکتا ہے یا نہیں، کسی harness سے جڑیں۔</string>
     <string name="reasoning_translation_failed">ترجمہ نہیں ہو سکا۔ اصل متن جوں کا توں ہے۔</string>
