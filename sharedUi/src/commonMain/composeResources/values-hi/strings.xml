@@ -2,6 +2,7 @@
 <resources>
     <string name="common_back">वापस</string>
     <string name="common_cancel">रद्द करें</string>
+    <string name="common_close">बंद करें</string>
     <string name="common_connected">कनेक्टेड</string>
     <string name="common_retry">फिर से कोशिश करें</string>
     <string name="connect_auto_lan">Wi-Fi पर मिले harness से अपने आप कनेक्ट करें</string>

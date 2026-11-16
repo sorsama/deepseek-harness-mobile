@@ -26,12 +26,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.common_close
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Closes the enclosing [DsBottomSheet] the way a swipe does — the sheet slides away — and only then
@@ -45,8 +54,33 @@ import kotlinx.coroutines.launch
 val LocalDsSheetHide = compositionLocalOf<(then: () -> Unit) -> Unit> { { then -> then() } }
 
 /**
+ * Back, when it arrives as a key press, closes the sheet even while a text field in it has focus.
+ *
+ * Seen on Android 11 (key-based back, no predictive back): with the follow-up field of the Subagents
+ * sheet focused, the first back hid the keyboard, the second did nothing at all, and only the third
+ * closed the sheet. The focused field takes the key before the window's own back handling sees it. A
+ * preview handler on the sheet runs before the field does, so the second back closes the sheet. The
+ * first back never gets here with the keyboard up: the keyboard takes that one and hides itself.
+ * Newer Android delivers back as a callback rather than a key, so this never fires there.
+ */
+private fun Modifier.dismissOnBackKey(onDismiss: () -> Unit): Modifier = onPreviewKeyEvent { event ->
+    if (event.key == Key.Back) {
+        if (event.type == KeyEventType.KeyUp) onDismiss()
+        true
+    } else {
+        false
+    }
+}
+
+/** Test tag of the close button every titled [DsBottomSheet] draws at the end of its title row. */
+const val DS_SHEET_CLOSE_TAG = "ds-sheet-close"
+
+/**
  * The app's sheet surface — the design kit's `.sheetbox`: `bgLayer2`, 28dp top corners, a 40×4dp
- * grabber, 16dp gaps and a 20dp side padding. [trailing] holds an optional action beside the title.
+ * grabber, 16dp gaps and a 20dp side padding. [trailing] holds an optional action beside the title;
+ * a close button always follows it at the row's end, so a caller never adds its own. A sheet with no
+ * [title] (the hold menu, the connect screen's pickers) has no header row and so no button: those are
+ * short lists that never fill the screen, and the scrim and back close them.
  *
  * Sheets rather than dialogs for pickers: they arrive from the thumb's end of the screen, size
  * themselves to their content, and let a long list scroll without fighting a fixed-height plate.
@@ -102,6 +136,7 @@ fun DsBottomSheet(
                 .fillMaxWidth()
                 // Escape closes the sheet the way a swipe does, for a person at a keyboard.
                 .dismissOnEscape { hide { onDismiss() } }
+                .dismissOnBackKey { hide { onDismiss() } }
                 .padding(horizontal = DsSpacing.large, vertical = DsSpacing.medium),
             verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
         ) {
@@ -132,6 +167,20 @@ fun DsBottomSheet(
                         }
                     }
                     trailing?.invoke()
+                    // A way out that needs no gesture. Swipe, scrim and back are all still there,
+                    // but a tall sheet leaves no scrim to tap (and none at all with the keyboard
+                    // up), and a swipe from the middle of a long scrolled list scrolls the list
+                    // instead of the sheet. The title row is not part of any scrolling region, so
+                    // this button and a drag on the row are reachable however far the content
+                    // below has been scrolled. It goes through the same slide-away as Escape, and
+                    // `hide` ignores a second tap during the slide, so the owner hears `onDismiss`
+                    // once.
+                    DsIconButton(
+                        icon = DsIcons.Close,
+                        contentDescription = stringResource(Res.string.common_close),
+                        onClick = { hide { onDismiss() } },
+                        modifier = Modifier.testTag(DS_SHEET_CLOSE_TAG),
+                    )
                 }
             }
             CompositionLocalProvider(LocalDsSheetHide provides hide) { content() }

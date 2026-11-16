@@ -36,6 +36,13 @@ All notable changes to DSH Mobile are documented here. Format based on
   away instead of a plain confirm first. The dialog lists the running work, with a background job's
   command line, and says that stopped work will not continue by itself and the session can be
   resumed from Archived sessions. (#114)
+- **The Subagents sheet, and every other sheet, now has a Close button.** A sheet with a long
+  transcript or the keyboard up fills the screen, so there was no dimmed area left to tap, and a swipe
+  down from inside a long list scrolled the list instead of the sheet. Every sheet with a title now
+  has a **Close** button at the end of its title row (the start side in right-to-left languages),
+  still in reach after scrolling to the end and with the keyboard up. The follow-up field no longer
+  swallows a back press either: on Android 11, with the keyboard up, the first back hid the keyboard,
+  the second did nothing and only the third closed the sheet; now the second one does.
 
 ## [0.22.0] - 2026-11-16
 

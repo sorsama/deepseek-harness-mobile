@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
@@ -35,7 +33,6 @@ import com.labteto.dshmobile.ui.components.DsBottomSheet
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsCard
-import com.labteto.dshmobile.ui.components.DsIconButton
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.DsSearchField
@@ -170,16 +167,6 @@ internal fun PopupSelectSheet(
         onDismiss = {
             haptics.tap()
             onDismiss()
-        },
-        trailing = {
-            DsIconButton(
-                Icons.Filled.Close,
-                stringResource(R.string.common_close),
-                {
-                    haptics.tap()
-                    onDismiss()
-                },
-            )
         },
     ) {
         if (step == null && options.size > 8) DsSearchField(search, { search = it }, stringResource(R.string.common_search))

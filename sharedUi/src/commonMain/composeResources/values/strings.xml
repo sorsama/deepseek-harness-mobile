@@ -2,6 +2,7 @@
 <resources>
     <string name="common_back">Back</string>
     <string name="common_cancel">Cancel</string>
+    <string name="common_close">Close</string>
     <string name="common_connected">Connected</string>
     <string name="common_retry">Retry</string>
     <string name="connect_auto_lan">Auto-connect to a harness found on Wi-Fi</string>

@@ -118,6 +118,40 @@ class WindowRulesTest {
         assertTrue("DsDialog must open its window through DsWindow", overlays.contains("DsWindow("))
     }
 
+    /**
+     * The Subagents sheet could not be closed by a person who had scrolled deep into a long child
+     * transcript, or who had the keyboard up: no scrim was left to tap and a swipe scrolled the list.
+     * The fix is one close button in the shared sheet's title row, so every sheet has it. Callers must
+     * not add a second one beside it (`trailing` is for other actions, like Stop or Done).
+     */
+    @Test
+    fun theSharedSheetDrawsTheCloseButtonAndNoCallerAddsASecond() {
+        val sheet = stripCommentsAndStrings(sourceFile(sheetFile).readText())
+        assertTrue("DsBottomSheet no longer draws DsIcons.Close in its title row", sheet.contains("DsIcons.Close"))
+        assertTrue("the close button lost its description", sheet.contains("Res.string.common_close"))
+        assertTrue("the close button must hide the sheet before it dismisses", Regex("""onClick\s*=\s*\{\s*hide\s*\{\s*onDismiss\(\)\s*\}\s*\}""").containsMatchIn(sheet))
+        val doubled = mutableListOf<String>()
+        sourceRoots().flatMap { root -> root.walkTopDown().filter { it.isFile && it.extension == "kt" }.map { root to it }.toList() }
+            .forEach { (root, file) ->
+                val relative = file.relativeTo(root).invariantSeparatorsPath
+                if (relative == sheetFile) return@forEach
+                val code = stripCommentsAndStrings(file.readText())
+                Regex("""DsBottomSheet\s*\(""").findAll(code).forEach { call ->
+                    // The call's own argument list, up to the lambda that holds its content.
+                    val header = code.substring(call.range.first, minOf(code.length, call.range.first + 900))
+                    val trailing = Regex("""trailing\s*=\s*\{""").find(header) ?: return@forEach
+                    val tail = header.substring(trailing.range.last)
+                    // `trailing = { ... }` ends where the sheet's content lambda opens: `) {`.
+                    val body = tail.substringBefore("\n    ) {").substringBefore("\n        ) {")
+                    if (Regex("""Icons\.Filled\.Close|DsIcons\.Close""").containsMatchIn(body)) {
+                        val line = code.substring(0, call.range.first).count { it == '\n' } + 1
+                        doubled += "$relative:$line adds its own close button to a DsBottomSheet"
+                    }
+                }
+            }
+        assertTrue("DsBottomSheet already has a close button; remove the extra one.\n" + doubled.joinToString("\n"), doubled.isEmpty())
+    }
+
     @Test
     fun theScannerSeesCodeAndIgnoresProseAndStrings() {
         val sample = """

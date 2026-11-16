@@ -2,6 +2,7 @@
 <resources>
     <string name="common_back">返回</string>
     <string name="common_cancel">取消</string>
+    <string name="common_close">关闭</string>
     <string name="common_connected">已连接</string>
     <string name="common_retry">重试</string>
     <string name="connect_auto_lan">在 Wi-Fi 下自动连接已发现的 harness</string>

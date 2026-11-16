@@ -277,7 +277,6 @@ internal fun QuestionsPanel(
             DsButton(stringResource(R.string.ux_b_view_questions), { expanded = true }, variant = DsButtonVariant.Ghost)
             DsBottomSheet(
                 title = stringResource(R.string.harness_questions), onDismiss = { expanded = false },
-                trailing = { DsIconButton(Icons.Filled.Close, stringResource(R.string.common_close), { expanded = false }) },
             ) {
                 BoxWithConstraints(Modifier.fillMaxWidth()) {
                     Card(minOf(maxHeight, 600.dp), compact = false, inSheet = true)
