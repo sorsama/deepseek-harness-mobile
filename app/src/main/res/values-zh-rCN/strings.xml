@@ -363,9 +363,11 @@
     <string name="jobs_stopping">正在停止</string>
     <string name="jobs_output_empty">暂无输出</string>
     <string name="jobs_output_dropped">较早的输出已被清除</string>
-    <string name="archive_busy_title">仍在运行</string>
-    <string name="archive_busy_body">此会话还有任务在运行：%1$s。归档会先停止这些任务。</string>
+    <string name="archive_busy_title">停止并归档此会话？</string>
+    <string name="archive_busy_body">此会话还有任务在运行，归档会先停止它们。</string>
     <string name="archive_busy_confirm">停止并归档</string>
+    <string name="archive_busy_after">停止的任务不会自动继续。之后可以在“已归档会话”里找到这个会话，再接着用。</string>
+    <string name="archive_activity_more">还有 %1$d 项</string>
     <string name="archive_activity_turn">当前回合</string>
     <string name="archive_activity_subagent">子智能体</string>
     <string name="archive_activity_job">后台任务</string>

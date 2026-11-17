@@ -96,6 +96,7 @@ import com.labteto.dshmobile.data.SessionRow
 import com.labteto.dshmobile.data.SessionStore
 import com.labteto.dshmobile.data.WorkspaceRow
 import com.labteto.dshmobile.data.anchorAfterMove
+import com.labteto.dshmobile.data.archiveStopDialogFor
 import com.labteto.dshmobile.data.failureNotice
 import com.labteto.dshmobile.data.moveByStep
 import com.labteto.dshmobile.ui.components.DsButton
@@ -1713,7 +1714,14 @@ private fun SessionRowItem(
                             },
                         )
                     } else {
-                        add(HoldAction(stringResource(R.string.chatlist_session_archive), Icons.Outlined.Archive) { archiveConfirmOpen = true })
+                        add(
+                            HoldAction(stringResource(R.string.chatlist_session_archive), Icons.Outlined.Archive) {
+                                // Work this row is known to be running goes straight to "Stop and archive";
+                                // otherwise the plain confirm, and the host's refusal still has its say.
+                                val stop = archiveStopDialogFor(session.sessionId, store.knownActivityOf(session))
+                                if (stop != null) archiveBusy = stop else archiveConfirmOpen = true
+                            },
+                        )
                     }
                 },
             )

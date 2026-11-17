@@ -86,7 +86,6 @@ import com.labteto.dshmobile.core.wire.dto.JobFollowFrameSerializer
 import com.labteto.dshmobile.core.wire.dto.JobFollowRequest
 import com.labteto.dshmobile.core.wire.dto.JobListRequest
 import com.labteto.dshmobile.core.wire.dto.SessionActivity
-import com.labteto.dshmobile.core.wire.dto.WorkspaceSessionActiveDetails
 import com.labteto.dshmobile.core.wire.dto.jobRowsOf
 import com.labteto.dshmobile.core.wire.dto.subagentEntriesFromCatalog
 import com.labteto.dshmobile.core.wire.dto.SubagentPromptRequest
@@ -2223,24 +2222,31 @@ class SessionStore @Inject constructor(
     suspend fun archiveSession(sessionId: String, stopActivity: Boolean = false, report: Boolean = true): ArchiveOutcome {
         val api = apiOrNull() ?: return ArchiveOutcome.Failed
         val request = WorkspaceArchiveSessionRequest(sessionId, stopActivity = stopActivity.takeIf { it })
-        return when (val r = api.workspaceArchiveSession(request)) {
+        val result = api.workspaceArchiveSession(request)
+        val outcome = archiveOutcomeOf(sessionId, stopActivity, result)
+        when (result) {
             is RpcResult.Ok -> {
-                setArchived(r.value.archivedSessionIds)
+                setArchived(result.value.archivedSessionIds)
                 refreshSessions()
-                ArchiveOutcome.Archived
             }
-            is RpcResult.Err -> {
-                if (r.error.code == SESSION_ACTIVE && !stopActivity) {
-                    val details = runCatching {
-                        decodeFromJsonElement(WorkspaceSessionActiveDetails.serializer(), r.error.details)
-                    }.getOrNull()
-                    ArchiveOutcome.Busy(sessionId, details?.activity.orEmpty())
-                } else {
-                    if (report) setConnectionError(r.error.message)
-                    ArchiveOutcome.Failed
-                }
-            }
+            is RpcResult.Err -> if (outcome is ArchiveOutcome.Failed && report) setConnectionError(result.error.message)
         }
+        return outcome
+    }
+
+    /**
+     * What this client already knows about work running in [session], for the Archive dialog: its
+     * turn, and, for the session that is open, the jobs and subagents the panels show. Empty means
+     * nothing known, not idle; the host's refusal still catches the rest.
+     */
+    fun knownActivityOf(session: SessionRow?): List<SessionActivity> {
+        if (session == null) return emptyList()
+        val open = session.sessionId == currentSessionId.value
+        return knownArchiveActivity(
+            turnRunning = session.running,
+            jobs = if (open) _jobs.value else emptyList(),
+            subagents = if (open) _subagents.value else emptyList(),
+        )
     }
 
     /** Pin or unpin one session (harness 0.1.7); the answer is the complete pin set. */
@@ -3336,9 +3342,6 @@ class SessionStore @Inject constructor(
          * `attachment-error` through 0.1.2). Every business code is namespaced now.
          */
         const val ATTACHMENT_INVALID = "session/attachment-invalid"
-
-        /** Harness 0.1.7's refusal to archive a session with running work; see [archiveSession]. */
-        const val SESSION_ACTIVE = "workspace/session-active"
 
         /** [movesInFlight]'s key for a reorder of the workspaces themselves rather than of one's sessions. */
         private const val WORKSPACE_ORDER_KEY = "\u0000workspaces"

@@ -363,9 +363,11 @@
     <string name="jobs_stopping">থামানো হচ্ছে</string>
     <string name="jobs_output_empty">এখনও কোনো আউটপুট নেই</string>
     <string name="jobs_output_dropped">আগের আউটপুট বাদ দেওয়া হয়েছে</string>
-    <string name="archive_busy_title">এখনও চলছে</string>
-    <string name="archive_busy_body">এই সেশনে এখনও কাজ চলছে: %1$s। আর্কাইভ করলে আগে সেই কাজ থামানো হবে।</string>
+    <string name="archive_busy_title">এই সেশন থামিয়ে আর্কাইভ করবেন?</string>
+    <string name="archive_busy_body">এই সেশনে এখনও কাজ চলছে। আর্কাইভ করলে আগে সেই কাজ থামানো হবে।</string>
     <string name="archive_busy_confirm">থামান ও আর্কাইভ করুন</string>
+    <string name="archive_busy_after">থামানো কাজ নিজে থেকে আবার চলবে না। পরে “আর্কাইভ করা সেশন” থেকে সেশনটি খুঁজে নিয়ে আবার চালিয়ে যেতে পারবেন।</string>
+    <string name="archive_activity_more">আরও %1$dটি</string>
     <string name="archive_activity_turn">বর্তমান টার্ন</string>
     <string name="archive_activity_subagent">সাবএজেন্ট</string>
     <string name="archive_activity_job">ব্যাকগ্রাউন্ড কাজ</string>
