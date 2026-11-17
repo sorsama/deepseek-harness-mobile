@@ -5,50 +5,67 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-11-17
+
+![Three phones: the Subagents sheet with its Close button, a chat at Fully expanded, and the Stop and archive dialog](docs/images/releases/0.23.0/devices/hero-whats-new.png)
+
 ### Added
 
-- **Choose how much of the agent's work the chat shows.** Settings, **Chat**, **Work steps** has the
-  four levels of the web client's work-step setting: **Compact**, **Standard**, **Detailed** and
-  **Fully expanded**, each with a line saying what it changes. Compact is the chat as it was and
-  stays the default. Standard also names the step a running group is on and previews the first line
-  of the thinking. Detailed shows the running turn's tool calls one by one instead of in a group.
-  Fully expanded folds and groups nothing and opens every tool call, nested call and workflow by
-  itself, cutting very long output to its start with **Show all**. It applies to the chat, to a
-  replayed session and to the subagent sheet. Tapping a row still opens or closes just that row, and
-  changing the level puts every row back to it. The choice stays on this device and the host's
-  settings are not touched. (#115)
+- **Choose how much of the agent's work the chat shows.** Settings, **Chat**, **Work steps** has four
+  levels: **Compact**, **Standard**, **Detailed** and **Fully expanded**, each with a line saying what
+  it changes. Compact is the chat as it was and stays the default. Standard also names the step a
+  running group is on and shows the first line of the thinking. Detailed shows the running turn's
+  tool calls one by one instead of in a group. Fully expanded folds and groups nothing, opens tool
+  calls by itself and cuts very long output to its start with **Show all**. The level applies to the
+  chat, to a replayed session and to the subagent sheet; the Trajectory tab and the Details panel
+  look the same at every level. Tapping a row still opens or closes just that row. The choice stays
+  on this device and the host's settings are not touched. (#115)
+
+  <img src="docs/images/releases/0.23.0/devices/work-steps-picker-phone.png" alt="Settings, Chat: the Work steps picker with Compact, Standard, Detailed and Fully expanded" width="260">
+  <img src="docs/images/releases/0.23.0/devices/work-steps-compact-vs-fully-expanded.png" alt="The same chat at Compact, where the work is one folded row, and at Fully expanded, where the build command is already open" width="520">
+
 - **Translate a thought process on its own.** Settings, **Chat**, **Auto-translate thought process**
-  (off by default) translates a thought process when you open it, with the same provider and
-  language as the **Translate** button. Each translation sends the text to that provider, and a
-  model provider uses your tokens while Bing and Google do not. The switch says so, and says when
-  the connected harness has no translation set up. Only a thought that is open and has rested on screen for a moment is sent, never a whole
-  history, and at most two requests run at once. A thought already written in your language is
-  skipped when the script makes that clear. Each thought is translated once: translations are kept
-  between opening, scrolling, reconnecting and restarting the app, and the button and the switch
-  share them. The original is one tap away, a failure keeps it with a **Retry**, and a failed
-  thought is not tried again by itself. Leaving the session or turning the switch off stops the
-  requests. The closed row's preview line stays in the original language. (#113)
+  is off by default. When it is on, a thought process you open is translated once it has finished
+  and has stayed on screen for a moment, with the same provider and language as the **Translate**
+  button. Each translation sends the text to that provider; a model provider uses your tokens, Bing
+  and Google do not, and the switch says so. It also says when the connected harness has no
+  translation set up. At most two requests run at once, and a thought already written in your
+  language is skipped when the script makes that clear. Each thought is translated once:
+  translations are kept between opening, scrolling, reconnecting and restarting the app, and the
+  button and the switch share them. The original is one tap away. A failure keeps the original with
+  a **Retry**, and a failed thought is not tried again by itself. Leaving the session or turning the
+  switch off stops the requests. The closed row's preview line stays in the original language. (#113)
+
+  <img src="docs/images/releases/0.23.0/devices/auto-translate-switch-phone.png" alt="Settings with the Auto-translate thought process switch on" width="260">
+  <img src="docs/images/releases/0.23.0/devices/translated-thought-phone.png" alt="An opened thought process shown in English with a Show original link" width="260">
 
 ### Fixed
 
 - **Archiving a session with work running asks once, and says what is running.** When the app already
-  knows a turn, a background job or a subagent is running, Archive opens **Stop and archive** straight
-  away instead of a plain confirm first. The dialog lists the running work, with a background job's
-  command line, and says that stopped work will not continue by itself and the session can be
-  resumed from Archived sessions. (#114)
-- **The Subagents sheet, and every other sheet, now has a Close button.** A sheet with a long
-  transcript or the keyboard up fills the screen, so there was no dimmed area left to tap, and a swipe
-  down from inside a long list scrolled the list instead of the sheet. Every sheet with a title now
+  knows that a turn, a background job or a subagent is running, Archive opens **Stop and archive**
+  straight away instead of a plain confirm first. The dialog lists the running work, with a
+  background job's command line, and says that stopped work will not carry on by itself and that the
+  session can be resumed from Archived sessions. For a chat that is not open, the drawer only knows
+  whether a turn is running. (#114)
+
+  <img src="docs/images/releases/0.23.0/devices/stop-and-archive-phone.png" alt="The Stop and archive dialog listing a background job's command line" width="260">
+
+- **Every sheet has a way out, and short sheets no longer start with an empty band.** A sheet with a
+  long transcript or the keyboard up fills the screen, so no dimmed area is left to tap, and a swipe
+  down from inside a long list scrolls the list instead of the sheet. Every sheet with a title now
   has a **Close** button at the end of its title row (the start side in right-to-left languages),
-  still in reach after scrolling to the end and with the keyboard up. The follow-up field no longer
-  swallows a back press either: on Android 11, with the keyboard up, the first back hid the keyboard,
-  the second did nothing and only the third closed the sheet; now the second one does.
-- **Short sheets no longer start with a wide empty band, and a sheet has one way out.** Every sheet
-  left room above its grabber for the status bar even when it sat halfway down the screen, so a
-  sheet with a single row looked pushed down. The room is now added only when a sheet actually
-  reaches the status bar, as with a long list or the keyboard up, and the title and Close button
-  stay clear of it. The **Done** button in the model picker and the **Cancel** button in the custom
-  accent sheet did the same thing as **Close**, so they are gone; **Apply** stays.
+  still in reach after scrolling to the end and with the keyboard up. Back no longer gets stuck
+  behind a focused text field: on Android 11, with the keyboard up, the first back hid the keyboard,
+  the second did nothing and only the third closed the sheet; now the second one does. Sheets used
+  to leave room above the grabber for the status bar even when they sat halfway down the screen, so
+  a sheet with a single row looked pushed down. That room is now added only when a sheet actually
+  reaches the status bar, and the title and Close button stay clear of it. Close does the same job as
+  the **Done** button in the model picker and the **Cancel** button in the custom accent sheet, so
+  those two are gone; **Apply** stays. Tapping the dimmed strip over the status bar still does not
+  close a sheet, because Android gives that touch to the status bar.
+
+  <img src="docs/images/releases/0.23.0/devices/sheet-close-full-phone.png" alt="The Subagents sheet at full height with its Close button at the end of the title row" width="260">
+  <img src="docs/images/releases/0.23.0/devices/sheet-close-keyboard-phone.png" alt="The same sheet with the keyboard up and the Close button still in reach" width="260">
 
 ## [0.22.0] - 2026-11-16
 
