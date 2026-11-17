@@ -160,6 +160,11 @@
     <string name="settings_default_delivery_mode_hint">Usado ao enviar enquanto um turno está em andamento. Ainda é possível escolher outro modo para cada mensagem.</string>
     <string name="settings_work_steps">Etapas de trabalho</string>
     <string name="settings_work_steps_hint">Só muda a aparência do chat, e só neste dispositivo. Toque em uma linha para abrir ou fechar apenas ela.</string>
+    <string name="settings_auto_translate_reasoning">Traduzir o raciocínio automaticamente</string>
+    <string name="settings_auto_translate_reasoning_hint">Traduz o raciocínio quando você o abre, com o mesmo provedor e idioma do botão Traduzir. Cada tradução é uma chamada ao modelo do seu próprio provedor e usa seus tokens.</string>
+    <string name="settings_auto_translate_reasoning_unavailable">Este harness não tem tradução configurada, então a opção não faz nada aqui. Ative o plugin de tradução e escolha um provedor no harness.</string>
+    <string name="settings_auto_translate_reasoning_no_host">Conecte-se a um harness para ver se ele consegue traduzir.</string>
+    <string name="reasoning_translation_failed">Não foi possível traduzir. O original continua aqui.</string>
     <string name="work_steps_compact">Compacto</string>
     <string name="work_steps_compact_hint">O trabalho concluído se recolhe em uma linha. As chamadas de ferramentas ficam em um grupo fechado.</string>
     <string name="work_steps_standard">Padrão</string>

@@ -160,6 +160,11 @@
     <string name="settings_default_delivery_mode_hint">يُستخدم عند الإرسال أثناء جولة جارية. يمكنك اختيار وضع مختلف لكل رسالة.</string>
     <string name="settings_work_steps">خطوات العمل</string>
     <string name="settings_work_steps_hint">يغيّر شكل المحادثة فقط، وعلى هذا الجهاز وحده. المس أي صف لفتحه أو إغلاقه وحده.</string>
+    <string name="settings_auto_translate_reasoning">ترجمة عملية التفكير تلقائيًا</string>
+    <string name="settings_auto_translate_reasoning_hint">تترجم عملية التفكير عند فتحها، بنفس المزوّد واللغة المستخدمين في زر الترجمة. كل ترجمة هي استدعاء للنموذج لدى مزوّدك الخاص وتستهلك رموزك (tokens).</string>
+    <string name="settings_auto_translate_reasoning_unavailable">لم تُضبط الترجمة على هذا الـ harness، لذلك لا يفعل هذا المفتاح شيئًا هنا. فعّل إضافة الترجمة واختر مزوّدًا على الـ harness.</string>
+    <string name="settings_auto_translate_reasoning_no_host">اتصل بـ harness لتعرف إن كان يستطيع الترجمة.</string>
+    <string name="reasoning_translation_failed">تعذّرت الترجمة. النص الأصلي ما زال موجودًا.</string>
     <string name="work_steps_compact">مختصر</string>
     <string name="work_steps_compact_hint">يُطوى العمل المنتهي في صف واحد، وتبقى استدعاءات الأدوات في مجموعة مغلقة.</string>
     <string name="work_steps_standard">عادي</string>

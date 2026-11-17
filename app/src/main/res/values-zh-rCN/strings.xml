@@ -160,6 +160,11 @@
     <string name="settings_default_delivery_mode_hint">回合进行中发送消息时使用。每条消息仍可单独选择其他方式。</string>
     <string name="settings_work_steps">工作步骤展示</string>
     <string name="settings_work_steps_hint">只影响聊天的显示方式，仅限这台设备。点按某一行可单独展开或收起。</string>
+    <string name="settings_auto_translate_reasoning">思考过程翻译</string>
+    <string name="settings_auto_translate_reasoning_hint">展开思考过程时自动翻译，使用和“翻译”按钮相同的服务和语言。每次翻译都是对你自己服务商的一次模型调用，会消耗你的 token。</string>
+    <string name="settings_auto_translate_reasoning_unavailable">这个 harness 还没有设置翻译，所以这个开关在这里不起作用。请在 harness 上启用翻译插件并选择服务。</string>
+    <string name="settings_auto_translate_reasoning_no_host">连接 harness 后，才能看到它能不能翻译。</string>
+    <string name="reasoning_translation_failed">翻译失败，原文还在。</string>
     <string name="work_steps_compact">简洁</string>
     <string name="work_steps_compact_hint">完成的工作收成一行，工具调用保持在收起的分组里。</string>
     <string name="work_steps_standard">标准</string>

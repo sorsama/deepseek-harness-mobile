@@ -160,6 +160,11 @@
     <string name="settings_default_delivery_mode_hint">কোনো টার্ন চলার সময় পাঠালে এটি ব্যবহার হবে। প্রতিটি বার্তার জন্য আলাদা ধরনও বেছে নিতে পারবেন।</string>
     <string name="settings_work_steps">কাজের ধাপ</string>
     <string name="settings_work_steps_hint">এটি শুধু চ্যাট দেখানোর ধরন বদলায়, আর শুধু এই ডিভাইসে। কোনো সারিতে ট্যাপ করলে শুধু সেটিই খোলে বা বন্ধ হয়।</string>
+    <string name="settings_auto_translate_reasoning">চিন্তার প্রক্রিয়া নিজে থেকে অনুবাদ</string>
+    <string name="settings_auto_translate_reasoning_hint">চিন্তার প্রক্রিয়া খুললে সেটি অনুবাদ হয়, অনুবাদ বোতামের মতো একই প্রদানকারী ও ভাষায়। প্রতিটি অনুবাদ আপনার নিজের প্রদানকারীর কাছে মডেলের একটি কল, আর এতে আপনার টোকেন খরচ হয়।</string>
+    <string name="settings_auto_translate_reasoning_unavailable">এই harness-এ অনুবাদ সেট করা নেই, তাই এখানে এই সুইচ কিছু করে না। harness-এ অনুবাদ প্লাগইন চালু করে একজন প্রদানকারী বেছে নিন।</string>
+    <string name="settings_auto_translate_reasoning_no_host">অনুবাদ করা যায় কি না দেখতে একটি harness-এর সাথে সংযুক্ত হন।</string>
+    <string name="reasoning_translation_failed">অনুবাদ করা গেল না। মূল লেখাটি আগের মতোই আছে।</string>
     <string name="work_steps_compact">সংক্ষিপ্ত</string>
     <string name="work_steps_compact_hint">শেষ হওয়া কাজ এক সারিতে গুটিয়ে যায়। টুল কল বন্ধ গ্রুপে থাকে।</string>
     <string name="work_steps_standard">স্ট্যান্ডার্ড</string>
