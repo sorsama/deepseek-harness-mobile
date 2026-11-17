@@ -26,7 +26,14 @@ import com.labteto.dshmobile.R
 internal sealed interface TranscriptRow {
     val seq: Long
     data class Message(val node: ChatNode) : TranscriptRow { override val seq get() = node.seq }
-    data class Tools(val calls: List<ToolCallNode>) : TranscriptRow { override val seq get() = calls.first().seq }
+    /**
+     * Adjacent tool calls. [grouped] false is one call shown as its own row rather than behind a
+     * "Tool calls" header, which is what the Detailed and Fully expanded levels do (see
+     * [applyStepGrouping]).
+     */
+    data class Tools(val calls: List<ToolCallNode>, val grouped: Boolean = true) : TranscriptRow {
+        override val seq get() = calls.first().seq
+    }
     data class Context(val nodes: List<ChatNode>) : TranscriptRow { override val seq get() = nodes.first().seq }
 
     /**
@@ -60,6 +67,42 @@ internal fun groupToolRows(nodes: List<ChatNode>): List<TranscriptRow> {
     flushContext()
     flush()
     return rows
+}
+
+/**
+ * Take tool calls out of their groups where the level says they are not grouped.
+ *
+ * [StepGrouping.Collapsed] keeps every group. [StepGrouping.None] shows every call as its own row.
+ * [StepGrouping.History] ungroups only the turn that is still running, the way the web client
+ * keeps the live turn flat and folds it into a group once it is over.
+ *
+ * Each call becomes its own list row, which is also what keeps a long flat turn lazy: a group is a
+ * single list item that composes all its calls at once.
+ */
+internal fun applyStepGrouping(
+    rows: List<TranscriptRow>,
+    grouping: StepGrouping,
+    turnStarts: List<Long>,
+    running: Boolean,
+): List<TranscriptRow> {
+    if (grouping == StepGrouping.Collapsed || rows.isEmpty()) return rows
+    val liveTurn = if (grouping == StepGrouping.History && running) turnIndexOf(rows.last().seq, turnStarts) else -1
+    if (grouping == StepGrouping.History && liveTurn < 0) return rows
+    return rows.flatMap { row ->
+        val flat = row is TranscriptRow.Tools && row.grouped &&
+            (grouping == StepGrouping.None || turnIndexOf(row.seq, turnStarts) == liveTurn)
+        if (flat) (row as TranscriptRow.Tools).calls.map { TranscriptRow.Tools(listOf(it), grouped = false) } else listOf(row)
+    }
+}
+
+/**
+ * What a running group is on, for the header: the verb and subject of its newest call that has no
+ * result yet, the way a row names it (`Bash · npm test`). Null when every call has settled.
+ */
+internal fun liveGroupDetail(calls: List<ToolCallNode>, settledCallIds: Set<String>, cwd: String?): String? {
+    val call = calls.lastOrNull { it.callId !in settledCallIds } ?: return null
+    val row = toolRowModel(call.name, call.arguments, cwd)
+    return listOfNotNull(row.title, row.summary).joinToString(" · ")
 }
 
 /**
@@ -159,6 +202,12 @@ private fun foldTurnProcess(rows: List<TranscriptRow>): List<TranscriptRow> {
     return folded
 }
 
+/** A [TranscriptRow.Tools]: behind its group header, or, when the level ungroups it, the bare call. */
+@Composable
+internal fun ToolsRowContent(row: TranscriptRow.Tools, context: ChatNodeContext) {
+    if (row.grouped) ToolGroupRow(row.calls, context) else row.calls.forEach { ToolCallRow(it, context) }
+}
+
 @Composable
 internal fun ToolGroupRow(calls: List<ToolCallNode>, context: ChatNodeContext) {
     var expanded by remember(calls.first().callId) { mutableStateOf(false) }
@@ -177,7 +226,15 @@ internal fun ToolGroupRow(calls: List<ToolCallNode>, context: ChatNodeContext) {
             Icon(FeatherIcons.Tool, null, Modifier.size(14.dp), tint = colors.labelTertiary)
             Text(stringResource(R.string.chat_tool_group_count, calls.size), style = DsType.small13, color = colors.labelSecondary)
             if (failed > 0) Text(stringResource(R.string.chat_tool_group_failed, failed), style = DsType.caption11, color = colors.error)
-            Spacer(Modifier.weight(1f))
+            // Standard and up say which step a running group is on. One line, ellipsized: the
+            // detail is derived from the newest unsettled call only, never from the whole group.
+            val detail = if (running && context.presentation.policy.liveProcessDetail) {
+                liveGroupDetail(calls, results.keys, context.cwd)
+            } else null
+            if (detail != null) {
+                Text(detail, Modifier.weight(1f), style = DsType.caption11, color = colors.labelTertiary,
+                    maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            } else Spacer(Modifier.weight(1f))
             Text(if (running) stringResource(R.string.jobs_running) else elapsed?.let(::formatDurationMs).orEmpty(),
                 style = DsType.caption11, color = if (running) colors.accent else colors.labelCaption)
             Icon(FeatherIcons.ChevronRight, null, Modifier.size(14.dp).graphicsLayer { rotationZ = if (expanded) 90f else 0f }, tint = colors.labelTertiary)
@@ -237,7 +294,7 @@ internal fun ProcessRow(row: TranscriptRow.Process, context: ChatNodeContext) {
                 key(step.seq) {
                     when (step) {
                         is TranscriptRow.Message -> ChatNodeItem(node = step.node, context = context)
-                        is TranscriptRow.Tools -> ToolGroupRow(calls = step.calls, context = context)
+                        is TranscriptRow.Tools -> ToolsRowContent(step, context)
                         is TranscriptRow.Context -> ContextGroupRow(nodes = step.nodes, context = context)
                         is TranscriptRow.Process -> Unit
                     }

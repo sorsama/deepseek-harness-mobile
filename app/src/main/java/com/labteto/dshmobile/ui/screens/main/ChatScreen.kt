@@ -238,6 +238,13 @@ fun ChatScreen(
     // Which thinking panels are open, per message. One per open session: a reply settling replaces
     // its row, and the reader's open panel has to outlive that.
     val assistantMemory = remember(hostKey, currentSessionId) { AssistantMemory() }
+    // The work-step level, and the reader's taps on rows under it. A new level starts a new memory,
+    // so changing the setting puts every row back to what the level says; a tap alone never
+    // touches the setting (it lives only here).
+    val workStepDisplay = com.labteto.dshmobile.connection.WorkStepDisplay.of(appSettings.workStepDisplay)
+    val workStepPresentation = remember(hostKey, currentSessionId, workStepDisplay) {
+        WorkStepPresentation(workStepPolicyFor(workStepDisplay), RowDisclosureMemory())
+    }
     val trajectoryListState = rememberLazyListState()
     val filesListState = rememberLazyListState()
     // The session's changed files, shared by the Files tab label and the tab itself.
@@ -724,6 +731,7 @@ fun ChatScreen(
                 },
                 onMention = if (currentSessionId != null) ({ path, folder -> mention(path, folder) }) else null,
                 assistantMemory = assistantMemory,
+                presentation = workStepPresentation,
                 permissionNames = remember(permissions) {
                     permissions?.options?.associate { it.value to it.name }.orEmpty()
                 },
@@ -1247,6 +1255,7 @@ fun ChatScreen(
             entries = subagents,
             conversation = subagentConversation,
             mode = subagentMode,
+            workStepDisplay = workStepDisplay,
             onDismiss = { sheet = null },
         )
         null -> Unit

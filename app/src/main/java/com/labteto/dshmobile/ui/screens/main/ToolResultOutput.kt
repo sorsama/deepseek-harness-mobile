@@ -38,14 +38,23 @@ import kotlinx.serialization.json.JsonElement
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ToolResultOutput(content: JsonElement, modifier: Modifier = Modifier, label: String? = null) {
+internal fun ToolResultOutput(
+    content: JsonElement,
+    modifier: Modifier = Modifier,
+    label: String? = null,
+    /** A row the work-step level opened: lay out only the start of a long result, with "Show all". */
+    clip: Boolean = false,
+    onShowAll: () -> Unit = {},
+) {
     val reading = remember(content) { readToolResult(content) } ?: return
     var showRaw by remember(content) { mutableStateOf(false) }
     val copy = rememberCopier()
     val raw = reading.rawJson
     val hasText = reading.text.isNotBlank()
     if (!hasText && raw == null) return
-    val shown = if (showRaw && raw != null) raw else reading.text
+    val full = if (showRaw && raw != null) raw else reading.text
+    val shown = if (clip) clipPreview(full) else full
+    val clipped = clip && shown.length != full.length
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {
         // Wraps rather than clips: "Copy raw JSON" and "Hide raw JSON" side by side are wider than a
         // phone in several of the app's languages.
@@ -72,6 +81,26 @@ internal fun ToolResultOutput(content: JsonElement, modifier: Modifier = Modifie
             }
         }
         if (shown.isNotBlank()) JsonCode(shown)
+        if (clipped) ClippedNote(onShowAll)
+    }
+}
+
+/** "Showing the start of a long result", with the action that opens the rest. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun ClippedNote(onShowAll: () -> Unit) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            stringResource(R.string.work_steps_clipped),
+            style = DsType.caption11,
+            color = DsTheme.colors.labelCaption,
+            modifier = Modifier.padding(top = 2.dp),
+        )
+        JsonAction(stringResource(R.string.work_steps_show_all), onShowAll)
     }
 }
 
@@ -81,9 +110,14 @@ internal fun ToolResultOutput(content: JsonElement, modifier: Modifier = Modifie
  * said twice.
  */
 @Composable
-internal fun ToolResultOutputRow(title: String, content: JsonElement) {
+internal fun ToolResultOutputRow(
+    title: String,
+    content: JsonElement,
+    clip: Boolean = false,
+    onShowAll: () -> Unit = {},
+) {
     var expanded by remember(content) { mutableStateOf(false) }
     DisclosureRow(title = title, expanded = expanded, onToggle = { expanded = !expanded }) {
-        ToolResultOutput(content, Modifier.padding(start = DsSpacing.medium))
+        ToolResultOutput(content, Modifier.padding(start = DsSpacing.medium), clip = clip, onShowAll = onShowAll)
     }
 }
