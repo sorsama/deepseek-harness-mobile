@@ -68,7 +68,6 @@ import com.labteto.dshmobile.ui.components.DetentCounter
 import com.labteto.dshmobile.ui.components.DsBottomSheet
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonSize
-import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.HapticTicker
 import com.labteto.dshmobile.ui.components.LocalDsSheetHide
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
@@ -235,31 +234,21 @@ private fun AccentPickerContent(
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
-            DsButton(
-                text = stringResource(R.string.common_cancel),
-                onClick = {
-                    haptics.tap()
-                    hide { onDismiss() }
-                },
-                variant = DsButtonVariant.Ghost,
-                size = DsButtonSize.Large,
-                modifier = Modifier.weight(1f),
-            )
-            DsButton(
-                text = stringResource(R.string.appearance_custom_apply),
-                onClick = {
-                    haptics.confirm()
-                    // Applied first, then the sheet slides away: the theme changes under it, so the
-                    // result is already on screen by the time the page is back.
-                    onApply(picked)
-                    hide { onDismiss() }
-                },
-                enabled = hexState == HexInput.Valid,
-                size = DsButtonSize.Large,
-                modifier = Modifier.weight(1f),
-            )
-        }
+        // Apply is the one button: it commits the pick. Backing out is the sheet's own close
+        // button, so there is no Cancel beside it.
+        DsButton(
+            text = stringResource(R.string.appearance_custom_apply),
+            onClick = {
+                haptics.confirm()
+                // Applied first, then the sheet slides away: the theme changes under it, so the
+                // result is already on screen by the time the page is back.
+                onApply(picked)
+                hide { onDismiss() }
+            },
+            enabled = hexState == HexInput.Valid,
+            size = DsButtonSize.Large,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 

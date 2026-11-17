@@ -143,13 +143,36 @@ class WindowRulesTest {
                     val tail = header.substring(trailing.range.last)
                     // `trailing = { ... }` ends where the sheet's content lambda opens: `) {`.
                     val body = tail.substringBefore("\n    ) {").substringBefore("\n        ) {")
-                    if (Regex("""Icons\.Filled\.Close|DsIcons\.Close""").containsMatchIn(body)) {
+                    if (Regex("""Icons\.Filled\.Close|DsIcons\.Close|string\.common_(close|done|cancel)\b""").containsMatchIn(body)) {
                         val line = code.substring(0, call.range.first).count { it == '\n' } + 1
                         doubled += "$relative:$line adds its own close button to a DsBottomSheet"
                     }
                 }
+                // A sheet's own "Done" would sit beside the close button and do the same thing. A button that
+                // commits something has its own word ("Apply", "Save"); `common_done` never does.
+                if (code.contains("DsBottomSheet(") && Regex("""string\.common_done\b""").containsMatchIn(code)) {
+                    doubled += "$relative has a Done button in a file that draws a DsBottomSheet; the sheet's close button is the way out"
+                }
             }
         assertTrue("DsBottomSheet already has a close button; remove the extra one.\n" + doubled.joinToString("\n"), doubled.isEmpty())
+    }
+
+    /**
+     * The sheet used to pad its content by the whole status bar height at any sheet height, which put a
+     * wide empty band above the grabber of a short sheet. The bar is now cleared only where it overlaps.
+     */
+    @Test
+    fun theSheetClearsTheStatusBarOnlyWhereItOverlaps() {
+        val sheet = stripCommentsAndStrings(sourceFile(sheetFile).readText())
+        assertTrue("the sheet no longer clears the status bar at all", sheet.contains("StatusBarClearance(state)"))
+        assertTrue(
+            "contentWindowInsets must not pad the top by the whole bar again",
+            !Regex("""contentWindowInsets\s*=\s*\{\s*WindowInsets\.systemBars\.union""").containsMatchIn(sheet),
+        )
+        assertTrue(
+            "the sheet must still keep its content above the keyboard and the navigation bar",
+            sheet.contains("WindowInsets.ime") && sheet.contains("WindowInsetsSides.Bottom"),
+        )
     }
 
     @Test

@@ -43,6 +43,12 @@ All notable changes to DSH Mobile are documented here. Format based on
   still in reach after scrolling to the end and with the keyboard up. The follow-up field no longer
   swallows a back press either: on Android 11, with the keyboard up, the first back hid the keyboard,
   the second did nothing and only the third closed the sheet; now the second one does.
+- **Short sheets no longer start with a wide empty band, and a sheet has one way out.** Every sheet
+  left room above its grabber for the status bar even when it sat halfway down the screen, so a
+  sheet with a single row looked pushed down. The room is now added only when a sheet actually
+  reaches the status bar, as with a long list or the keyboard up, and the title and Close button
+  stay clear of it. The **Done** button in the model picker and the **Cancel** button in the custom
+  accent sheet did the same thing as **Close**, so they are gone; **Apply** stays.
 
 ## [0.22.0] - 2026-11-16
 
