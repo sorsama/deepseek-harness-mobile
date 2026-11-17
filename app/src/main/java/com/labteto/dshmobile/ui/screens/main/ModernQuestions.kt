@@ -287,13 +287,6 @@ private fun QuestionReplyCard(card: QuestionCardState, onHide: () -> Unit) {
             title = stringResource(R.string.ux_b_view_answers),
             subtitle = state,
             onDismiss = { expanded = false },
-            trailing = {
-                DsIconButton(
-                    Icons.Filled.Close,
-                    stringResource(R.string.common_close),
-                    { expanded = false },
-                )
-            },
         ) {
             Column(
                 Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),

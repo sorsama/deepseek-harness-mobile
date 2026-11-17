@@ -2,6 +2,7 @@
 <resources>
     <string name="common_back">กลับ</string>
     <string name="common_cancel">ยกเลิก</string>
+    <string name="common_close">ปิด</string>
     <string name="common_connected">เชื่อมต่อแล้ว</string>
     <string name="common_retry">ลองอีกครั้ง</string>
     <string name="connect_auto_lan">เชื่อมต่ออัตโนมัติกับ harness ที่พบผ่าน Wi-Fi</string>

@@ -2,6 +2,7 @@
 <resources>
     <string name="common_back">পিছনে</string>
     <string name="common_cancel">বাতিল</string>
+    <string name="common_close">বন্ধ করুন</string>
     <string name="common_connected">সংযুক্ত</string>
     <string name="common_retry">আবার চেষ্টা করুন</string>
     <string name="connect_auto_lan">Wi-Fi-তে পাওয়া harness-এ নিজে থেকে সংযুক্ত হোন</string>

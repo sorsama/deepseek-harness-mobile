@@ -161,7 +161,7 @@
     <string name="settings_work_steps">خطوات العمل</string>
     <string name="settings_work_steps_hint">يغيّر شكل المحادثة فقط، وعلى هذا الجهاز وحده. المس أي صف لفتحه أو إغلاقه وحده.</string>
     <string name="settings_auto_translate_reasoning">ترجمة عملية التفكير تلقائيًا</string>
-    <string name="settings_auto_translate_reasoning_hint">تترجم عملية التفكير عند فتحها، بنفس المزوّد واللغة المستخدمين في زر الترجمة. كل ترجمة هي استدعاء للنموذج لدى مزوّدك الخاص وتستهلك رموزك (tokens).</string>
+    <string name="settings_auto_translate_reasoning_hint">تترجم عملية التفكير عند فتحها، بنفس المزوّد واللغة المستخدمين في زر الترجمة. ترسل كل ترجمة النص إلى ذلك المزوّد. ويستهلك المزوّد المعتمد على نموذج رموزك (tokens)، أما Bing وGoogle فلا.</string>
     <string name="settings_auto_translate_reasoning_unavailable">لم تُضبط الترجمة على هذا الـ harness، لذلك لا يفعل هذا المفتاح شيئًا هنا. فعّل إضافة الترجمة واختر مزوّدًا على الـ harness.</string>
     <string name="settings_auto_translate_reasoning_no_host">اتصل بـ harness لتعرف إن كان يستطيع الترجمة.</string>
     <string name="reasoning_translation_failed">تعذّرت الترجمة. النص الأصلي ما زال موجودًا.</string>

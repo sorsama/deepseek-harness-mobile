@@ -2,6 +2,7 @@
 <resources>
     <string name="common_back">واپس</string>
     <string name="common_cancel">منسوخ کریں</string>
+    <string name="common_close">بند کریں</string>
     <string name="common_connected">منسلک</string>
     <string name="common_retry">دوبارہ کوشش کریں</string>
     <string name="connect_auto_lan">Wi-Fi پر دریافت شدہ harness سے خودکار طور پر منسلک ہوں</string>

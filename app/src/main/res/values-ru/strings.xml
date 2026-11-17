@@ -161,7 +161,7 @@
     <string name="settings_work_steps">Шаги работы</string>
     <string name="settings_work_steps_hint">Меняет только вид чата и только на этом устройстве. Нажмите на строку, чтобы открыть или закрыть только её.</string>
     <string name="settings_auto_translate_reasoning">Автоперевод хода рассуждений</string>
-    <string name="settings_auto_translate_reasoning_hint">Переводит ход рассуждений, когда вы его открываете, тем же сервисом и на тот же язык, что и кнопка «Перевести». Каждый перевод отдельно обращается к модели вашего провайдера и тратит ваши токены.</string>
+    <string name="settings_auto_translate_reasoning_hint">Переводит ход рассуждений, когда вы его открываете, тем же сервисом и на тот же язык, что и кнопка «Перевести». Каждый перевод отправляет текст этому провайдеру. Провайдер на основе модели тратит ваши токены, а Bing и Google не тратят.</string>
     <string name="settings_auto_translate_reasoning_unavailable">В этом harness не настроен перевод, поэтому переключатель здесь ничего не делает. Включите плагин перевода и выберите провайдера в harness.</string>
     <string name="settings_auto_translate_reasoning_no_host">Подключитесь к harness, чтобы узнать, умеет ли он переводить.</string>
     <string name="reasoning_translation_failed">Не удалось перевести. Оригинал остался на месте.</string>

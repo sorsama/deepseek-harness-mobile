@@ -45,9 +45,6 @@ import com.labteto.dshmobile.data.ActionOutcome
 import com.labteto.dshmobile.data.SessionStore
 import com.labteto.dshmobile.data.failureNotice
 import com.labteto.dshmobile.ui.components.DsBottomSheet
-import com.labteto.dshmobile.ui.components.DsButton
-import com.labteto.dshmobile.ui.components.DsButtonSize
-import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsSegment
 import com.labteto.dshmobile.ui.components.DsSegmented
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
@@ -99,17 +96,6 @@ internal fun ModelsSheet(
         onDismiss = {
             haptics.tap()
             onDismiss()
-        },
-        trailing = {
-            DsButton(
-                text = stringResource(R.string.common_done),
-                onClick = {
-                    haptics.tap()
-                    onDismiss()
-                },
-                variant = DsButtonVariant.Ghost,
-                size = DsButtonSize.Small,
-            )
         },
     ) {
         if (models == null) {

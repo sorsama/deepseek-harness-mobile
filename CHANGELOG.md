@@ -19,9 +19,9 @@ All notable changes to DSH Mobile are documented here. Format based on
   settings are not touched. (#115)
 - **Translate a thought process on its own.** Settings, **Chat**, **Auto-translate thought process**
   (off by default) translates a thought process when you open it, with the same provider and
-  language as the **Translate** button. Each translation is a model call on your own provider and
-  uses your tokens, and the switch says so, and says when the connected harness has no translation
-  set up. Only a thought that is open and has rested on screen for a moment is sent, never a whole
+  language as the **Translate** button. Each translation sends the text to that provider, and a
+  model provider uses your tokens while Bing and Google do not. The switch says so, and says when
+  the connected harness has no translation set up. Only a thought that is open and has rested on screen for a moment is sent, never a whole
   history, and at most two requests run at once. A thought already written in your language is
   skipped when the script makes that clear. Each thought is translated once: translations are kept
   between opening, scrolling, reconnecting and restarting the app, and the button and the switch
@@ -36,6 +36,19 @@ All notable changes to DSH Mobile are documented here. Format based on
   away instead of a plain confirm first. The dialog lists the running work, with a background job's
   command line, and says that stopped work will not continue by itself and the session can be
   resumed from Archived sessions. (#114)
+- **The Subagents sheet, and every other sheet, now has a Close button.** A sheet with a long
+  transcript or the keyboard up fills the screen, so there was no dimmed area left to tap, and a swipe
+  down from inside a long list scrolled the list instead of the sheet. Every sheet with a title now
+  has a **Close** button at the end of its title row (the start side in right-to-left languages),
+  still in reach after scrolling to the end and with the keyboard up. The follow-up field no longer
+  swallows a back press either: on Android 11, with the keyboard up, the first back hid the keyboard,
+  the second did nothing and only the third closed the sheet; now the second one does.
+- **Short sheets no longer start with a wide empty band, and a sheet has one way out.** Every sheet
+  left room above its grabber for the status bar even when it sat halfway down the screen, so a
+  sheet with a single row looked pushed down. The room is now added only when a sheet actually
+  reaches the status bar, as with a long list or the keyboard up, and the title and Close button
+  stay clear of it. The **Done** button in the model picker and the **Cancel** button in the custom
+  accent sheet did the same thing as **Close**, so they are gone; **Apply** stays.
 
 ## [0.22.0] - 2026-11-16
 

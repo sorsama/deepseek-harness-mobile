@@ -2,6 +2,7 @@
 <resources>
     <string name="common_back">Назад</string>
     <string name="common_cancel">Отмена</string>
+    <string name="common_close">Закрыть</string>
     <string name="common_connected">Подключено</string>
     <string name="common_retry">Повторить</string>
     <string name="connect_auto_lan">Автоподключение к обнаруженному harness по Wi-Fi</string>

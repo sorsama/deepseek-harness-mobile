@@ -161,7 +161,7 @@
     <string name="settings_work_steps">การแสดงขั้นตอนการทำงาน</string>
     <string name="settings_work_steps_hint">เปลี่ยนแค่หน้าตาของแชท และเฉพาะบนอุปกรณ์เครื่องนี้ แตะแถวใดก็ได้เพื่อเปิดหรือปิดเฉพาะแถวนั้น</string>
     <string name="settings_auto_translate_reasoning">แปลกระบวนการคิดอัตโนมัติ</string>
-    <string name="settings_auto_translate_reasoning_hint">แปลกระบวนการคิดให้เมื่อคุณเปิดดู โดยใช้ผู้ให้บริการและภาษาเดียวกับปุ่มแปล การแปลแต่ละครั้งคือการเรียกโมเดลของผู้ให้บริการของคุณเอง และใช้โทเคนของคุณ</string>
+    <string name="settings_auto_translate_reasoning_hint">แปลกระบวนการคิดให้เมื่อคุณเปิดดู โดยใช้ผู้ให้บริการและภาษาเดียวกับปุ่มแปล การแปลแต่ละครั้งจะส่งข้อความไปยังผู้ให้บริการนั้น ผู้ให้บริการที่ใช้โมเดลจะใช้โทเคนของคุณ ส่วน Bing และ Google ไม่ใช้</string>
     <string name="settings_auto_translate_reasoning_unavailable">harness นี้ยังไม่ได้ตั้งค่าการแปล สวิตช์นี้จึงไม่มีผลที่นี่ เปิดปลั๊กอินแปลและเลือกผู้ให้บริการบน harness</string>
     <string name="settings_auto_translate_reasoning_no_host">เชื่อมต่อ harness เพื่อดูว่าแปลได้หรือไม่</string>
     <string name="reasoning_translation_failed">แปลไม่สำเร็จ ข้อความต้นฉบับยังอยู่</string>
