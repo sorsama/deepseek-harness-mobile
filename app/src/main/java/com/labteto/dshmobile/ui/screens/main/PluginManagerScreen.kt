@@ -633,8 +633,10 @@ private fun PluginFilterChips(counts: PluginFilterCounts, selected: PluginFilter
  *
  * The text and the chevron share one interaction source, and the card ([DsCard]) fills itself with
  * the pressed tone while that source is pressed, so pressing either one lights the whole card and it
- * reads as one thing being pressed. They do not use a ripple: the app's `LocalIndication` draws
- * nothing (see `FocusRing.kt`), so both clickables pass `indication = null` and the card does the drawing.
+ * reads as one thing being pressed. Both clickables pass `indication = null`: the app's
+ * `LocalIndication` (see `FocusRing.kt`) fills whatever a clickable covers with the pressed tone, which
+ * here would light only the text or only the chevron and tint that half a second time over the card's
+ * own fill. So the card does the drawing.
  */
 @Composable
 private fun PluginBundleCard(
@@ -957,9 +959,10 @@ private fun PluginNameBlock(
  * [ToggleRow], but with a technical name that wraps to a second line and ends in an ellipsis after
  * that. [qualifier] is the small second line for a row whose module name another row shares.
  *
- * Pressing the row fills it with the pressed tone (a ripple would draw nothing here, see
- * `FocusRing.kt`). A row that sits in a card passes the card's [interactionSource] and
- * `drawsPress = false`, and the card does the filling, so the whole card lights and not just the row.
+ * Pressing the row fills it with the pressed tone. The row draws that fill itself and passes
+ * `indication = null` to its `toggleable`, so the app's `LocalIndication` (see `FocusRing.kt`) does not
+ * draw the same tone over it a second time. A row that sits in a card passes the card's [interactionSource]
+ * and `drawsPress = false`, and the card does the filling, so the whole card lights and not just the row.
  */
 @Composable
 private fun PluginToggleRow(
