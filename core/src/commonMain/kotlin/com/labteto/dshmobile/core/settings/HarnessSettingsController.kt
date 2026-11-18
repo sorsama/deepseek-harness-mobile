@@ -149,6 +149,7 @@ class HarnessSettingsController(
     /** One queue per namespace; looked up on the caller's thread, before the write is launched. */
     private val locks = HashMap<String, Mutex>()
     private var loading: Job? = null
+    private var catalogJob: Job? = null
     private val serial = atomic(0L)
 
     private fun lockFor(ns: String): Mutex = locks.getOrPut(ns) { Mutex() }
@@ -166,6 +167,9 @@ class HarnessSettingsController(
                 val rows = result.value.namespaces.associateBy { it.ns }
                 _state.update { it.copy(phase = SettingsPhase.Ready, writable = result.value.writable, namespaces = rows) }
                 refreshCredentials()
+                // A page that showed the model list reads it again with everything else: a key saved
+                // since (here or on the Models page) is what makes models appear.
+                if (_state.value.catalog !is CatalogState.Idle) loadCatalog()
             }
             is RpcResult.Err -> {
                 val failure = result.error.toSettingsFailure()
@@ -235,6 +239,18 @@ class HarnessSettingsController(
     fun reset(field: SettingsField) =
         write(field.ns, listOf(SettingsPathOpView.Unset(listOf(field.key))), mapOf(field.id to null))
 
+    /**
+     * Clear the override of every one of [keys] that carries one, in one write: a control that is
+     * several fields at once (the web search switch, the model switch with its list) resets as one.
+     * Nothing is sent when none of them is overridden.
+     */
+    fun resetKeys(ns: String, keys: List<String>) {
+        val ops = resetOps(_state.value.namespaces[ns], keys)
+        if (ops.isEmpty()) return
+        val cleared = overriddenKeys(_state.value.namespaces[ns], keys)
+        write(ns, ops, cleared.associate { FieldId(ns, it) to null })
+    }
+
     fun dismissFailure(id: FieldId) = _state.update { it.copy(failures = it.failures - id) }
 
     fun dismissNotice() = _state.update { it.copy(notice = null) }
@@ -298,6 +314,8 @@ class HarnessSettingsController(
                         notice = done,
                     )
                 }
+                // A model provider may use this very key (the DeepSeek one does): what it lists changes with it.
+                if (_state.value.catalog !is CatalogState.Idle) loadCatalog()
             } else {
                 val failure = (result as RpcResult.Err).error.toSettingsFailure().masked(secret)
                 _state.update {
@@ -312,16 +330,22 @@ class HarnessSettingsController(
 
     // ------------------------------------------------------------------------ the model catalog
 
-    /** Read the models the harness offers, for the subagent allowlist. */
+    /**
+     * Read the models the harness offers, for the subagent allowlist. Asked each time the Subagents
+     * page opens and again after a refresh or a key change, never once per screen: the answer follows
+     * the keys the harness holds. The first read shows progress; a later one keeps the list on
+     * screen until the answer replaces it, and a later failure leaves what was read.
+     */
     fun loadCatalog() {
-        if (_state.value.catalog == CatalogState.Loading) return
-        _state.update { it.copy(catalog = CatalogState.Loading) }
-        scope.launch {
-            val next = when (val result = attempt { port.modelCatalog() }) {
-                is RpcResult.Ok -> CatalogState.Ready(result.value)
-                is RpcResult.Err -> CatalogState.Failed(result.error.toSettingsFailure())
+        if (catalogJob?.isActive == true) return
+        if (_state.value.catalog !is CatalogState.Ready) _state.update { it.copy(catalog = CatalogState.Loading) }
+        catalogJob = scope.launch {
+            when (val result = attempt { port.modelCatalog() }) {
+                is RpcResult.Ok -> _state.update { it.copy(catalog = CatalogState.Ready(result.value)) }
+                is RpcResult.Err -> _state.update {
+                    if (it.catalog is CatalogState.Ready) it else it.copy(catalog = CatalogState.Failed(result.error.toSettingsFailure()))
+                }
             }
-            _state.update { it.copy(catalog = next) }
         }
     }
 

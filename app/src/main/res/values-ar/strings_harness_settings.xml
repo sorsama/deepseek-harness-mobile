@@ -60,16 +60,16 @@
     <string name="hs_models_pick_one">اختر نموذجًا واحدًا على الأقل للتفعيل.</string>
     <string name="hs_models_keep_one">أبقِ نموذجًا واحدًا على الأقل، أو أطفئ المفتاح.</string>
     <string name="hs_models_load_failed">تعذّر تحميل النماذج.</string>
-    <string name="hs_models_empty">لا يوفّر أي مزوّد نموذجًا حاليًا.</string>
+    <string name="hs_models_none_why">لا يوجد نموذج جاهز بعد. تظهر نماذج المزوّد هنا عندما يكون لديه مفتاح API يعمل. أضف مفتاحًا ضمن «النماذج ومفاتيح API».</string>
     <string name="hs_models_retired">غير متاح الآن</string>
 
     <!-- Web search. -->
     <string name="hs_f_search_api">استخدام واجهة Search API</string>
     <string name="hs_f_search_api_hint">عند الإيقاف يمرّ البحث عبر DeepSeek Messages. وعند التشغيل تُستخدم واجهتا Search وFetch، ولكل منهما ميزاته وأسعاره.</string>
     <string name="hs_f_endpoint_messages">عنوان واجهة Messages API</string>
-    <string name="hs_f_endpoint_messages_hint">أدرج بادئة واجهة API، مثل %1$s. اتركه فارغًا لاستخدام العنوان الافتراضي.</string>
+    <string name="hs_f_endpoint_messages_hint">أدرج بادئة واجهة API، مثل %1$s.</string>
     <string name="hs_f_endpoint_search">عنوان واجهتي Search وFetch</string>
-    <string name="hs_f_endpoint_search_hint">أدرج بادئة واجهة API، مثل %1$s. اتركه فارغًا لاستخدام العنوان الافتراضي.</string>
+    <string name="hs_f_endpoint_search_hint">أدرج بادئة واجهة API، مثل %1$s.</string>
     <string name="hs_f_max_uses">عمليات البحث لكل طلب</string>
     <string name="hs_f_max_uses_hint">عدد عمليات البحث التي يجريها النموذج المساعد في طلب واحد. ينطبق على البحث عبر Messages فقط.</string>
     <string name="hs_f_count">النتائج لكل بحث</string>

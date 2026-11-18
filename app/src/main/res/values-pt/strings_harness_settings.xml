@@ -60,16 +60,16 @@
     <string name="hs_models_pick_one">Escolha pelo menos um modelo para ativar.</string>
     <string name="hs_models_keep_one">Mantenha pelo menos um modelo ou desligue a chave.</string>
     <string name="hs_models_load_failed">Não foi possível carregar os modelos.</string>
-    <string name="hs_models_empty">Nenhum provedor oferece um modelo agora.</string>
+    <string name="hs_models_none_why">Nenhum modelo está pronto ainda. Um provedor lista seus modelos aqui quando tem uma chave de API válida. Adicione uma em «Modelos e chaves de API».</string>
     <string name="hs_models_retired">Indisponível agora</string>
 
     <!-- Web search. -->
     <string name="hs_f_search_api">Usar a API Search</string>
     <string name="hs_f_search_api_hint">Desligada, a pesquisa passa pelo DeepSeek Messages. Ligada, usa as APIs Search e Fetch, que têm recursos e preços próprios.</string>
     <string name="hs_f_endpoint_messages">Endereço da API Messages</string>
-    <string name="hs_f_endpoint_messages_hint">Inclua o prefixo da API, por exemplo %1$s. Deixe vazio para usar o endereço padrão.</string>
+    <string name="hs_f_endpoint_messages_hint">Inclua o prefixo da API, por exemplo %1$s.</string>
     <string name="hs_f_endpoint_search">Endereço das APIs Search e Fetch</string>
-    <string name="hs_f_endpoint_search_hint">Inclua o prefixo da API, por exemplo %1$s. Deixe vazio para usar o endereço padrão.</string>
+    <string name="hs_f_endpoint_search_hint">Inclua o prefixo da API, por exemplo %1$s.</string>
     <string name="hs_f_max_uses">Pesquisas por solicitação</string>
     <string name="hs_f_max_uses_hint">Quantas pesquisas o modelo auxiliar pode fazer em uma solicitação. Vale só para a pesquisa via Messages.</string>
     <string name="hs_f_count">Resultados por pesquisa</string>

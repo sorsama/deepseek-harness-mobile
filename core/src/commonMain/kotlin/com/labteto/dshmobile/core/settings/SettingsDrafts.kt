@@ -16,7 +16,11 @@ import kotlin.math.roundToLong
  * language, with the numbers in it); this only says which rule failed.
  */
 sealed interface FieldProblem {
-    /** Empty, where the plugin has no default to fall back to. */
+    /**
+     * Empty, where an empty box is not an answer: a number, an address, a field the plugin requires
+     * or one whose schema asks for some text. An empty box is never read as "use the default"; that
+     * is the separate Reset action.
+     */
     data object Required : FieldProblem
 
     data object NotANumber : FieldProblem
@@ -55,9 +59,6 @@ sealed interface DraftResult {
     /** Write this value. */
     data class Write(val value: JsonElement) : DraftResult
 
-    /** Clear the override, so the field goes back to the deployment's value. */
-    data object Reset : DraftResult
-
     data class Invalid(val problem: FieldProblem) : DraftResult
 }
 
@@ -79,11 +80,13 @@ data class FieldTraits(
 private const val MAX_SAFE = 9007199254740991.0
 
 /**
- * The draft a text box holds, as a write, a reset or a problem.
+ * The draft a text box holds, as a write or a problem.
  *
- * Empty text is "use the default": a reset, the same gesture as the "Reset to default" action,
- * which is how the harness's own page treats a blanked field. Only a field the plugin gives no
- * default and marks required refuses it.
+ * An empty box is never a reset: clearing a field to retype it must not drop an override by
+ * accident (a number box empty and Done once removed a deliberate timeout without a word). Going
+ * back to the deployment's value is the separate "Reset to default" action, which sends `unset`.
+ * An empty number is refused. An empty text is written as an empty string only where the schema
+ * allows one: no minimum length, a pattern that matches it, not required, and not an address.
  */
 fun SettingsField.draftFromText(text: String, traits: FieldTraits = FieldTraits()): DraftResult = when (val kind = kind) {
     is FieldKind.Number -> numberDraft(kind, text, traits)
@@ -92,12 +95,12 @@ fun SettingsField.draftFromText(text: String, traits: FieldTraits = FieldTraits(
     else -> DraftResult.Invalid(FieldProblem.WrongFormat)
 }
 
-private fun SettingsField.blankDraft(): DraftResult =
-    if (required && baseValue == null) DraftResult.Invalid(FieldProblem.Required) else DraftResult.Reset
+/** An empty box where nothing may be empty. */
+private val EMPTY_REFUSED = DraftResult.Invalid(FieldProblem.Required)
 
 private fun SettingsField.textDraft(kind: FieldKind.Text, raw: String, traits: FieldTraits): DraftResult {
     val text = raw.trim()
-    if (text.isEmpty()) return blankDraft()
+    if (text.isEmpty()) return emptyTextDraft(kind, traits)
     if (traits.url && !looksLikeHttpUrl(text)) return DraftResult.Invalid(FieldProblem.NotAnUrl)
     kind.minLength?.let { if (text.length < it) return DraftResult.Invalid(FieldProblem.TooShort(it)) }
     kind.maxLength?.let { if (text.length > it) return DraftResult.Invalid(FieldProblem.TooLong(it)) }
@@ -109,6 +112,78 @@ private fun SettingsField.textDraft(kind: FieldKind.Text, raw: String, traits: F
     return DraftResult.Write(JsonPrimitive(text))
 }
 
+/** How the person leaves a text box. */
+enum class TextExit {
+    /** The keyboard's Done. */
+    Done,
+
+    /** Focus moved elsewhere. */
+    Blur,
+
+    /** The page is closing with the keyboard still up (Back, a swipe). */
+    Dispose,
+}
+
+/** What leaving a text box does with the draft in it. */
+sealed interface TextAction {
+    /** Write this value. */
+    data class Send(val value: JsonElement) : TextAction
+
+    /** Put the saved text back: the draft changes nothing, or it is an empty box that is not an answer. */
+    data object Restore : TextAction
+
+    /** Leave the draft, and the message about it, where they are. */
+    data object Keep : TextAction
+}
+
+/**
+ * What finishing or leaving a text box does, in one place so the rule is tested and not only drawn.
+ *
+ * A draft that can be saved is sent, unless it changes nothing. One that cannot is never sent, on
+ * Done or on leaving the field. An empty box is the case that needs care: Done keeps it and its
+ * message in view (so the refusal can be read), and leaving the field puts the saved value back,
+ * because an empty box is not an attempt at a value. Any other refused draft stays until corrected.
+ * Going back to the default is the Reset button, never a side effect of an empty box.
+ */
+fun SettingsField.textAction(text: String, traits: FieldTraits, edited: Boolean, exit: TextExit): TextAction {
+    if (!edited) return TextAction.Keep
+    return when (val draft = draftFromText(text, traits)) {
+        is DraftResult.Write -> if (isUnchangedBy(draft.value)) TextAction.Restore else TextAction.Send(draft.value)
+        is DraftResult.Invalid ->
+            if (draft.problem == FieldProblem.Required && exit == TextExit.Blur) TextAction.Restore else TextAction.Keep
+    }
+}
+
+/** Whether Done leaves the cursor in the box: only an empty one that was refused, so its message stays beside it. */
+fun SettingsField.keepsFocusOnDone(text: String, traits: FieldTraits, edited: Boolean): Boolean =
+    edited && (draftFromText(text, traits) as? DraftResult.Invalid)?.problem == FieldProblem.Required
+
+/**
+ * What an empty text box means for this field: an empty string where the schema allows one, a
+ * refusal where it does not. An address and the name of a credential are never empty.
+ */
+private fun SettingsField.emptyTextDraft(kind: FieldKind.Text, traits: FieldTraits): DraftResult {
+    if (required || traits.url || kind.credentialRef) return EMPTY_REFUSED
+    if ((kind.minLength ?: 0) > 0) return EMPTY_REFUSED
+    kind.pattern?.let { source ->
+        // A pattern this platform cannot read is the harness's to enforce, as for any other text.
+        val regex = try { Regex(source) } catch (_: IllegalArgumentException) { null }
+        if (regex != null && !regex.containsMatchIn("")) return EMPTY_REFUSED
+    }
+    return DraftResult.Write(JsonPrimitive(""))
+}
+
+/**
+ * Whether writing [value] would change nothing the person can see: it is what is already in force,
+ * or it is an empty text over a field that holds nothing (typed into and cleared again), which must
+ * not leave an override of `""` behind.
+ */
+fun SettingsField.isUnchangedBy(value: JsonElement): Boolean {
+    if (valuesEquivalent(value, this.value)) return true
+    val emptyText = value is JsonPrimitive && value.isString && value.content.isEmpty()
+    return emptyText && !overridden && this.value == null
+}
+
 /**
  * A typed number, judged on its digits and not on a double: whether it is whole, and whether it
  * is inside the safe range, never depend on how a platform rounds a long string (Kotlin/Native
@@ -118,7 +193,7 @@ private fun SettingsField.textDraft(kind: FieldKind.Text, raw: String, traits: F
 @OptIn(ExperimentalSerializationApi::class)
 private fun SettingsField.numberDraft(kind: FieldKind.Number, raw: String, traits: FieldTraits): DraftResult {
     val text = normalizeNumberText(raw)
-    if (text.isEmpty()) return blankDraft()
+    if (text.isEmpty()) return EMPTY_REFUSED
     val typed = parseDecimal(text) ?: return DraftResult.Invalid(FieldProblem.NotANumber)
     if ((kind.whole || traits.whole) && !typed.isWhole) return DraftResult.Invalid(FieldProblem.NotWhole)
     // Beyond the safe range the number is an infinity here, so the limits below decide it.

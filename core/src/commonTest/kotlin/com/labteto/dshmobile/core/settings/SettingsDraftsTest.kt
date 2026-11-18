@@ -28,17 +28,78 @@ class SettingsDraftsTest {
         assertEquals(DraftResult.Write(JsonPrimitive(0)), depth.draftFromText("0"))
     }
 
+    /** A plain text field the way a schema with no limits describes it, over a value of [value]. */
+    private fun plainText(
+        value: String? = null,
+        overridden: Boolean = false,
+        required: Boolean = false,
+        kind: FieldKind.Text = FieldKind.Text(minLength = null, maxLength = null, pattern = null),
+    ) = SettingsField(
+        ns = "plugin-x", key = "note", kind = kind,
+        value = value?.let { JsonPrimitive(it) }, baseValue = null,
+        overridden = overridden, secretSet = false, required = required, description = null,
+    )
+
     @Test
-    fun `an empty box means use the default`() {
-        assertEquals(DraftResult.Reset, count.draftFromText(""))
-        assertEquals(DraftResult.Reset, count.draftFromText("   "))
-        assertEquals(DraftResult.Reset, endpoint.draftFromText(""))
+    fun `an empty number is refused and never a reset`() {
+        // The device run cleared a shell timeout holding an override of 90000 and pressed Done: the
+        // override was dropped without a word. An empty box is not an answer.
+        val timeoutWithOverride = timeout.copy(value = num(90000), baseValue = num(120000), overridden = true)
+        assertEquals(invalid(FieldProblem.Required), timeoutWithOverride.draftFromText(""))
+        assertEquals(invalid(FieldProblem.Required), timeoutWithOverride.draftFromText("   "))
+        assertEquals(invalid(FieldProblem.Required), count.draftFromText(""))
+        assertEquals(invalid(FieldProblem.Required), loop.draftFromText("\u00A0"))
+        // Not even with a default to fall back to: that is the Reset action.
+        assertEquals(invalid(FieldProblem.Required), count.copy(required = false, baseValue = num(10)).draftFromText(""))
+    }
+
+    @Test
+    fun `an empty address is refused`() {
+        val url = FieldTraits(url = true)
+        assertEquals(invalid(FieldProblem.Required), endpoint.draftFromText("", url))
+        assertEquals(invalid(FieldProblem.Required), endpoint.draftFromText("  ", url))
+    }
+
+    @Test
+    fun `an empty text is an empty string where the schema allows one and never an unset`() {
+        assertEquals(DraftResult.Write(JsonPrimitive("")), plainText(value = "old", overridden = true).draftFromText(""))
+        assertEquals(DraftResult.Write(JsonPrimitive("")), plainText().draftFromText("   "))
+        // A pattern that accepts nothing at all is not an empty string either.
+        val slugKind = FieldKind.Text(minLength = null, maxLength = null, pattern = "^[a-z]+$")
+        assertEquals(invalid(FieldProblem.Required), plainText(kind = slugKind).draftFromText(""))
+        val anything = FieldKind.Text(minLength = null, maxLength = null, pattern = "^[a-z]*$")
+        assertEquals(DraftResult.Write(JsonPrimitive("")), plainText(kind = anything).draftFromText(""))
+    }
+
+    @Test
+    fun `an empty text is refused where the schema or the app asks for something`() {
+        assertEquals(invalid(FieldProblem.Required), label.draftFromText("")) // minimum length 2
+        assertEquals(invalid(FieldProblem.Required), plainText(required = true).draftFromText(""))
+        assertEquals(
+            invalid(FieldProblem.Required),
+            plainText(kind = FieldKind.Text(null, null, null, credentialRef = true)).draftFromText(""),
+        )
     }
 
     @Test
     fun `a required field with no default refuses an empty box`() {
         val required = settingsFields(syntheticRow()).single { it.key == "label" }.copy(required = true, baseValue = null)
         assertEquals(invalid(FieldProblem.Required), required.draftFromText(" "))
+    }
+
+    @Test
+    fun `an empty text typed into a field that holds nothing changes nothing`() {
+        // Typed into and cleared again, with no override and nothing in force: leaving the field must
+        // not write `""` where nothing was set.
+        val empty = DraftResult.Write(JsonPrimitive("")).value
+        assertTrue(plainText().isUnchangedBy(empty))
+        // Over a value in force an empty string is a real change, and an explicit one.
+        assertFalse(plainText(value = "old", overridden = true).isUnchangedBy(empty))
+        assertFalse(plainText(value = "old").isUnchangedBy(empty))
+        // The value already in force is unchanged however it is spelled.
+        assertTrue(count.copy(value = num(10)).isUnchangedBy(JsonPrimitive(10)))
+        assertTrue(plainText(value = "", overridden = true).isUnchangedBy(empty))
+        assertFalse(count.copy(value = num(10)).isUnchangedBy(JsonPrimitive(11)))
     }
 
     @Test
@@ -206,5 +267,99 @@ class SettingsDraftsTest {
         assertFalse(valuesEquivalent(JsonPrimitive("4"), JsonPrimitive(4)))
         assertFalse(valuesEquivalent(JsonPrimitive(4), null))
         assertFalse(valuesEquivalent(JsonPrimitive(true), JsonPrimitive(false)))
+    }
+
+    // ------------------------------------------------------------- Done, leaving the field, Back
+
+    /** The shell timeout as the device run left it: an override of 90000 over the deployment's 120000. */
+    private val shellTimeout get() = timeout.copy(value = num(90000), baseValue = num(120000), overridden = true)
+    private val shellRules = FieldTraits(whole = true, min = 1.0)
+
+    @Test
+    fun `done on an empty number sends nothing and keeps the box with its message`() {
+        assertEquals(TextAction.Keep, shellTimeout.textAction("", shellRules, edited = true, exit = TextExit.Done))
+        assertTrue(shellTimeout.keepsFocusOnDone("", shellRules, edited = true))
+        assertTrue(shellTimeout.keepsFocusOnDone("   ", shellRules, edited = true))
+    }
+
+    @Test
+    fun `leaving an empty number puts the saved value back and sends nothing`() {
+        assertEquals(TextAction.Restore, shellTimeout.textAction("", shellRules, edited = true, exit = TextExit.Blur))
+        assertEquals(TextAction.Restore, shellTimeout.textAction("  ", shellRules, edited = true, exit = TextExit.Blur))
+    }
+
+    @Test
+    fun `closing the page on an empty number sends nothing`() {
+        // Back with the keyboard up: the page closes and reopens on the saved value.
+        assertEquals(TextAction.Keep, shellTimeout.textAction("", shellRules, edited = true, exit = TextExit.Dispose))
+    }
+
+    @Test
+    fun `no way of leaving an empty number ever sends anything`() {
+        for (exit in TextExit.entries) {
+            for (text in listOf("", " ", "\t")) {
+                assertFalse(shellTimeout.textAction(text, shellRules, edited = true, exit = exit) is TextAction.Send, "$exit")
+            }
+        }
+    }
+
+    @Test
+    fun `a valid number is sent however the box is left`() {
+        for (exit in TextExit.entries) {
+            assertEquals(
+                TextAction.Send(JsonPrimitive(60000)),
+                shellTimeout.textAction("60000", shellRules, edited = true, exit = exit),
+            )
+        }
+        assertFalse(shellTimeout.keepsFocusOnDone("60000", shellRules, edited = true))
+    }
+
+    @Test
+    fun `a refused number that is not empty stays until it is corrected`() {
+        for (exit in TextExit.entries) {
+            assertEquals(TextAction.Keep, shellTimeout.textAction("0", shellRules, edited = true, exit = exit))
+            assertEquals(TextAction.Keep, shellTimeout.textAction("abc", shellRules, edited = true, exit = exit))
+            assertEquals(TextAction.Keep, shellTimeout.textAction("1.5", shellRules, edited = true, exit = exit))
+        }
+        assertFalse(shellTimeout.keepsFocusOnDone("abc", shellRules, edited = true))
+    }
+
+    @Test
+    fun `a number equal to what is saved is not sent again`() {
+        assertEquals(TextAction.Restore, shellTimeout.textAction("90000", shellRules, edited = true, exit = TextExit.Done))
+        assertEquals(TextAction.Restore, shellTimeout.textAction("90000.0", shellRules, edited = true, exit = TextExit.Blur))
+    }
+
+    @Test
+    fun `a box nobody edited does nothing`() {
+        for (exit in TextExit.entries) {
+            assertEquals(TextAction.Keep, shellTimeout.textAction("", shellRules, edited = false, exit = exit))
+        }
+        assertFalse(shellTimeout.keepsFocusOnDone("", shellRules, edited = false))
+    }
+
+    @Test
+    fun `an empty optional text is sent as an empty string over a saved value and never as an unset`() {
+        val saved = plainText(value = "old", overridden = true)
+        assertEquals(TextAction.Send(JsonPrimitive("")), saved.textAction("", FieldTraits(), edited = true, exit = TextExit.Done))
+        assertEquals(TextAction.Send(JsonPrimitive("")), saved.textAction(" ", FieldTraits(), edited = true, exit = TextExit.Blur))
+        assertFalse(saved.keepsFocusOnDone("", FieldTraits(), edited = true))
+    }
+
+    @Test
+    fun `text typed into a field that holds nothing and cleared again writes nothing`() {
+        val nothing = plainText()
+        for (exit in TextExit.entries) {
+            assertEquals(TextAction.Restore, nothing.textAction("", FieldTraits(), edited = true, exit = exit))
+        }
+    }
+
+    @Test
+    fun `an address cannot be emptied and the empty box is handled like an empty number`() {
+        val url = FieldTraits(url = true)
+        val saved = endpoint.copy(value = str("https://example.com/v1"), overridden = true)
+        assertEquals(TextAction.Keep, saved.textAction("", url, edited = true, exit = TextExit.Done))
+        assertEquals(TextAction.Restore, saved.textAction("", url, edited = true, exit = TextExit.Blur))
+        assertTrue(saved.keepsFocusOnDone("", url, edited = true))
     }
 }

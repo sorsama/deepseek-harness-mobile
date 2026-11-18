@@ -59,6 +59,25 @@ internal object SettingsFixtures {
     /** credentials/describe after credentials/set, plus an unknown reference (captured). */
     val CREDENTIALS_AFTER_SET = """{"ok":true,"value":{"DEEPSEEK_API_KEY":{"configured":true,"source":"file","writable":true},"SOME_UNKNOWN_REF":{"configured":false,"writable":true}}}"""
 
+    /**
+     * session/modelCatalog on a harness where no provider has a key. DERIVED, not captured. The harness
+     * builds it in `buildModelCatalog` (packages/api/session-controller/src/catalog.ts): a provider's group
+     * is kept only if it lists a model, and the DeepSeek API-key provider lists none while its credential is
+     * missing (`discoverModels` returns `[]` on MISSING_CREDENTIAL, packages/llm/llm-deepseek-api-key). So
+     * nothing failed, nothing is routable, and `groups` is empty: an empty catalog is the correct answer.
+     */
+    val MODEL_CATALOG_NO_KEY = """{"ok":true,"value":{"default":{"provider":"deepseek-official","model":"deepseek-flash"},"routableProviders":[],"groups":[],"failures":[]}}"""
+
+    /** The same catalog when the one provider's lookup threw instead of answering `[]` (derived from the `failures` shape of the captured one). */
+    val MODEL_CATALOG_PROVIDER_FAILED = """{"ok":true,"value":{"default":{"provider":"deepseek-official","model":"deepseek-flash"},"routableProviders":[],"groups":[],"failures":[{"id":"deepseek-official","name":"DeepSeek","message":"llm-deepseek: API key rejected"}]}}"""
+
+    /**
+     * settings/mutate session-log-deepseek set enabled=true after it was set to false: the user layer now
+     * carries `enabled: true`, equal to the deployment's value. DERIVED from the captured MUTATE_SESSION_LOG_OFF
+     * answer; the device run saw the same `enabled: true` left in the harness's patch file.
+     */
+    val MUTATE_SESSION_LOG_BACK_ON = """{"ok":true,"value":{"ns":"session-log-deepseek","autoGenerate":true,"schema":{"uid":15397,"refs":{"15396":{"type":"boolean","meta":{"default":true}},"15397":{"type":"object","meta":{"default":{}},"dict":{"enabled":15396}}}},"value":{"enabled":true},"base":{"enabled":true},"user":{"enabled":true},"applies":"live","secrets":[],"revision":2}}"""
+
     /** session/modelCatalog (captured). */
     val MODEL_CATALOG = """{"ok":true,"value":{"default":{"provider":"deepseek-official","model":"deepseek-flash"},"routableProviders":["deepseek-official"],"groups":[{"id":"deepseek-official","name":"DeepSeek","models":[{"id":"deepseek-flash","name":"DeepSeek-V4.1-Flash","reasoning":{"efforts":[{"id":"off","name":"Off","description":"Use for simple tasks that do not need reasoning."},{"id":"low","name":"Low","description":"Prefer for routine or latency-sensitive tasks."},{"id":"high","name":"High","description":"The default balance for most tasks."},{"id":"max","name":"Max","description":"Reserve for the hardest quality-first tasks."}],"defaultEffort":"high"}},{"id":"deepseek-v4-pro","name":"DeepSeek-V4-Pro","description":"Stronger agentic coding, knowledge, and difficult reasoning; suited to complex or quality-critical tasks at higher cost.","reasoning":{"efforts":[{"id":"off","name":"Off","description":"Use for simple tasks that do not need reasoning."},{"id":"low","name":"Low","description":"Prefer for routine or latency-sensitive tasks."},{"id":"high","name":"High","description":"The default balance for most tasks."},{"id":"max","name":"Max","description":"Reserve for the hardest quality-first tasks."}],"defaultEffort":"high"}}]}],"failures":[]}}"""
 }

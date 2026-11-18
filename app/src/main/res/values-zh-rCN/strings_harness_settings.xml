@@ -60,16 +60,16 @@
     <string name="hs_models_pick_one">请至少选择一个模型，才能开启。</string>
     <string name="hs_models_keep_one">请至少保留一个模型，或者关闭开关。</string>
     <string name="hs_models_load_failed">无法加载模型。</string>
-    <string name="hs_models_empty">目前没有提供方提供模型。</string>
+    <string name="hs_models_none_why">暂无可用的模型。提供方有了可用的 API 密钥后，它的模型才会出现在这里。请在“模型与 API 密钥”中添加。</string>
     <string name="hs_models_retired">当前不可用</string>
 
     <!-- Web search. -->
     <string name="hs_f_search_api">使用 Search API</string>
     <string name="hs_f_search_api_hint">关闭时，搜索通过 DeepSeek Messages 进行。开启后使用 Search 和 Fetch API，它们有各自的功能和定价。</string>
     <string name="hs_f_endpoint_messages">Messages API 地址</string>
-    <string name="hs_f_endpoint_messages_hint">请包含 API 前缀，例如 %1$s。留空则使用默认地址。</string>
+    <string name="hs_f_endpoint_messages_hint">请包含 API 前缀，例如 %1$s。</string>
     <string name="hs_f_endpoint_search">Search 和 Fetch API 地址</string>
-    <string name="hs_f_endpoint_search_hint">请包含 API 前缀，例如 %1$s。留空则使用默认地址。</string>
+    <string name="hs_f_endpoint_search_hint">请包含 API 前缀，例如 %1$s。</string>
     <string name="hs_f_max_uses">每次请求的搜索次数</string>
     <string name="hs_f_max_uses_hint">辅助模型在一次请求中最多可以搜索几次。仅适用于通过 Messages 的搜索。</string>
     <string name="hs_f_count">每次搜索的结果数</string>

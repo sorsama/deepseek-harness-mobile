@@ -60,16 +60,16 @@
     <string name="hs_models_pick_one">آن کرنے کے لیے کم از کم ایک ماڈل چنیں۔</string>
     <string name="hs_models_keep_one">کم از کم ایک ماڈل رکھیں، یا سوئچ بند کر دیں۔</string>
     <string name="hs_models_load_failed">ماڈلز لوڈ نہیں ہو سکے۔</string>
-    <string name="hs_models_empty">اس وقت کوئی پرووائیڈر کوئی ماڈل نہیں دے رہا۔</string>
+    <string name="hs_models_none_why">ابھی کوئی ماڈل تیار نہیں ہے۔ جب کسی پرووائیڈر کے پاس کام کرنے والی API کی ہو، تب ہی اس کے ماڈل یہاں نظر آتے ہیں۔ «ماڈلز اور API کیز» میں ایک شامل کریں۔</string>
     <string name="hs_models_retired">ابھی دستیاب نہیں</string>
 
     <!-- Web search. -->
     <string name="hs_f_search_api">Search API استعمال کریں</string>
     <string name="hs_f_search_api_hint">بند ہو تو سرچ DeepSeek Messages سے ہوتا ہے۔ آن ہو تو Search اور Fetch API استعمال ہوتے ہیں، جن کی اپنی خصوصیات اور قیمتیں ہیں۔</string>
     <string name="hs_f_endpoint_messages">Messages API کا پتہ</string>
-    <string name="hs_f_endpoint_messages_hint">API کا پری فکس بھی لکھیں، جیسے %1$s۔ ڈیفالٹ پتہ استعمال کرنے کے لیے خالی چھوڑیں۔</string>
+    <string name="hs_f_endpoint_messages_hint">API کا پری فکس بھی لکھیں، جیسے %1$s۔</string>
     <string name="hs_f_endpoint_search">Search اور Fetch API کا پتہ</string>
-    <string name="hs_f_endpoint_search_hint">API کا پری فکس بھی لکھیں، جیسے %1$s۔ ڈیفالٹ پتہ استعمال کرنے کے لیے خالی چھوڑیں۔</string>
+    <string name="hs_f_endpoint_search_hint">API کا پری فکس بھی لکھیں، جیسے %1$s۔</string>
     <string name="hs_f_max_uses">فی درخواست سرچ</string>
     <string name="hs_f_max_uses_hint">معاون ماڈل ایک درخواست میں کتنے سرچ کر سکتا ہے۔ صرف Messages والے سرچ پر لاگو ہے۔</string>
     <string name="hs_f_count">فی سرچ نتائج</string>

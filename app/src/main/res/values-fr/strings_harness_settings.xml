@@ -60,16 +60,16 @@
     <string name="hs_models_pick_one">Choisissez au moins un modèle pour activer cette option.</string>
     <string name="hs_models_keep_one">Gardez au moins un modèle, ou désactivez l\'interrupteur.</string>
     <string name="hs_models_load_failed">Impossible de charger les modèles.</string>
-    <string name="hs_models_empty">Aucun fournisseur ne propose de modèle pour le moment.</string>
+    <string name="hs_models_none_why">Aucun modèle n\'est prêt pour le moment. Un fournisseur affiche ses modèles ici dès qu\'il a une clé API valide. Ajoutez-en une dans « Modèles et clés API ».</string>
     <string name="hs_models_retired">Indisponible actuellement</string>
 
     <!-- Web search. -->
     <string name="hs_f_search_api">Utiliser l\'API Search</string>
     <string name="hs_f_search_api_hint">Désactivée, la recherche passe par DeepSeek Messages. Activée, elle utilise les API Search et Fetch, qui ont leurs propres fonctions et tarifs.</string>
     <string name="hs_f_endpoint_messages">Adresse de l\'API Messages</string>
-    <string name="hs_f_endpoint_messages_hint">Incluez le préfixe de l\'API, par exemple %1$s. Laissez vide pour utiliser l\'adresse par défaut.</string>
+    <string name="hs_f_endpoint_messages_hint">Incluez le préfixe de l\'API, par exemple %1$s.</string>
     <string name="hs_f_endpoint_search">Adresse des API Search et Fetch</string>
-    <string name="hs_f_endpoint_search_hint">Incluez le préfixe de l\'API, par exemple %1$s. Laissez vide pour utiliser l\'adresse par défaut.</string>
+    <string name="hs_f_endpoint_search_hint">Incluez le préfixe de l\'API, par exemple %1$s.</string>
     <string name="hs_f_max_uses">Recherches par requête</string>
     <string name="hs_f_max_uses_hint">Combien de recherches le modèle auxiliaire peut lancer dans une requête. Ne concerne que la recherche via Messages.</string>
     <string name="hs_f_count">Résultats par recherche</string>

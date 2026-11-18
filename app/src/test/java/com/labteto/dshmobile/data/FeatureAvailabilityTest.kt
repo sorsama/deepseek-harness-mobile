@@ -92,4 +92,51 @@ class FeatureAvailabilityTest {
         }
         assertTrue(errors.isEmpty())
     }
+
+    private val missing = RpcResult.Err(RpcError("capability-unavailable", "missing"))
+
+    @Test fun `a module change gives an unavailable feature another chance`() {
+        // The harness lacked settings, then a bundle that brings them was switched on in the app.
+        val availability = FeatureAvailability { fail("no error to report") }
+        availability.observe(HarnessFeature.HARNESS_SETTINGS, availability.generation(), missing)
+        assertEquals(false, availability.state(HarnessFeature.HARNESS_SETTINGS).value)
+
+        val lapsed = availability.relax(setOf(HarnessFeature.HARNESS_SETTINGS, HarnessFeature.AUTOMATION))
+        assertEquals(listOf(HarnessFeature.HARNESS_SETTINGS), lapsed)
+        // Unknown again, so a probe can settle it, and a later answer is believed.
+        assertNull(availability.state(HarnessFeature.HARNESS_SETTINGS).value)
+        availability.observe(HarnessFeature.HARNESS_SETTINGS, availability.generation(), RpcResult.Ok(Unit))
+        assertEquals(true, availability.state(HarnessFeature.HARNESS_SETTINGS).value)
+    }
+
+    @Test fun `a module change leaves available and unknown features alone and asks for nothing`() {
+        val availability = FeatureAvailability { fail("no error to report") }
+        availability.observe(HarnessFeature.AUTOMATION, availability.generation(), RpcResult.Ok(Unit))
+        val before = availability.generation()
+        assertEquals(emptyList<HarnessFeature>(), availability.relax(HarnessFeature.entries.toSet()))
+        assertEquals(true, availability.state(HarnessFeature.AUTOMATION).value)
+        assertNull(availability.state(HarnessFeature.HARNESS_SETTINGS).value)
+        // Nothing lapsed, so nothing in flight was invalidated either.
+        assertEquals(before, availability.generation())
+    }
+
+    @Test fun `only the features that have a probe come back from a module change`() {
+        val availability = FeatureAvailability { fail("no error to report") }
+        HarnessFeature.entries.forEach { availability.observe(it, availability.generation(), missing) }
+        val lapsed = availability.relax(setOf(HarnessFeature.HARNESS_SETTINGS, HarnessFeature.PLUGIN_MANAGEMENT))
+        assertEquals(setOf(HarnessFeature.HARNESS_SETTINGS, HarnessFeature.PLUGIN_MANAGEMENT), lapsed.toSet())
+        // A feature nobody can ask about again keeps its answer rather than turning into a guess.
+        assertEquals(false, availability.state(HarnessFeature.TIMED_QUESTIONS).value)
+        assertEquals(false, availability.state(HarnessFeature.SESSION_REFERENCES).value)
+    }
+
+    @Test fun `a result still in flight from before a module change is dropped`() {
+        val availability = FeatureAvailability { fail("no error to report") }
+        availability.observe(HarnessFeature.HARNESS_SETTINGS, availability.generation(), missing)
+        val stale = availability.generation()
+        availability.relax(setOf(HarnessFeature.HARNESS_SETTINGS))
+        // The old probe answers "missing" after the bundle was already switched on.
+        availability.observe(HarnessFeature.HARNESS_SETTINGS, stale, missing)
+        assertNull(availability.state(HarnessFeature.HARNESS_SETTINGS).value)
+    }
 }

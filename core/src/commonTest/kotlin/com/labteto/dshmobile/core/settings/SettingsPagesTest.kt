@@ -309,6 +309,98 @@ class SettingsPagesTest {
         assertEquals(listOf<SettingsPathOpView>(SettingsPathOpView.Set(listOf("enabled"), JsonPrimitive(true))), modelSelectionSwitchOps(true))
     }
 
+    // ------------------------------------------------------------------------ overrides
+
+    @Test
+    fun `a key the user layer carries is an override even when it equals the deployment value`() {
+        // Session log off, then on again: the harness keeps `enabled: true` in the user layer.
+        val flipped = writeAnswer(SettingsFixtures.MUTATE_SESSION_LOG_BACK_ON)
+        assertEquals(flipped.base, flipped.value)
+        assertEquals(listOf("enabled"), overriddenKeys(flipped, listOf("enabled")))
+        assertTrue(settingsFields(flipped).single().overridden)
+        // The untouched row has no override at all.
+        assertEquals(emptyList(), overriddenKeys(fixtureRow("session-log-deepseek"), listOf("enabled")))
+    }
+
+    @Test
+    fun `resetting asks the harness to unset, never to set the default back`() {
+        val web = writeAnswer(SettingsFixtures.MUTATE_WEB_SELECT_API)
+        assertEquals(
+            listOf<SettingsPathOpView>(SettingsPathOpView.Unset(listOf("searchProvider")), SettingsPathOpView.Unset(listOf("fetchProvider"))),
+            resetOps(web, listOf("searchProvider", "fetchProvider")),
+        )
+        // Only what is overridden is touched, and a key that is not there is not invented.
+        val half = web.copy(user = obj("searchProvider" to str("deepseek-search-api")))
+        assertEquals(listOf<SettingsPathOpView>(SettingsPathOpView.Unset(listOf("searchProvider"))), resetOps(half, listOf("searchProvider", "fetchProvider", "nope")))
+    }
+
+    @Test
+    fun `there is nothing to reset on a row with no user layer`() {
+        assertEquals(emptyList(), resetOps(null, listOf("enabled")))
+        assertEquals(emptyList(), resetOps(fixtureRow("session-log-deepseek").copy(user = null), listOf("enabled")))
+        assertEquals(emptyList(), resetOps(fixtureRow("session-log-deepseek"), listOf("enabled")))
+    }
+
+    // ------------------------------------------------------ the model list with nothing in it
+
+    private fun catalogOf(json: String): ModelCatalog =
+        WireJson.decodeFromJsonElement(ModelCatalog.serializer(), (fixtureResult(json) as com.labteto.dshmobile.core.wire.RpcResult.Ok).value)
+
+    private val noKey get() = CatalogState.Ready(catalogOf(SettingsFixtures.MODEL_CATALOG_NO_KEY))
+    private val withModels get() = CatalogState.Ready(catalogOf(SettingsFixtures.MODEL_CATALOG))
+
+    @Test
+    fun `a harness with no provider key answers an empty catalog`() {
+        val catalog = catalogOf(SettingsFixtures.MODEL_CATALOG_NO_KEY)
+        assertEquals(emptyList(), catalog.groups)
+        assertEquals(emptyList(), catalog.failures)
+        assertEquals(emptyList(), catalog.routableProviders)
+        assertFalse(hasSelectableModels(catalog.groups))
+        assertTrue(hasSelectableModels(catalogOf(SettingsFixtures.MODEL_CATALOG).groups))
+    }
+
+    @Test
+    fun `an empty catalog reads as no models whether or not a provider failed`() {
+        val failed = catalogOf(SettingsFixtures.MODEL_CATALOG_PROVIDER_FAILED)
+        assertEquals("deepseek-official", failed.failures.single().id)
+        assertFalse(hasSelectableModels(failed.groups))
+        assertIs<ModelListView.NoModels>(modelListView(CatalogState.Ready(failed), emptyList()))
+        assertIs<ModelListView.NoModels>(modelListView(noKey, emptyList()))
+    }
+
+    @Test
+    fun `the switch is blocked only when the harness answered with no models and none is stored`() {
+        assertTrue(modelSwitchBlocked(noKey, emptyList(), enabled = false))
+        // Models to choose from: not blocked.
+        assertFalse(modelSwitchBlocked(withModels, emptyList(), enabled = false))
+        // Not asked yet, still asking, or the ask failed: the switch can still be armed.
+        assertFalse(modelSwitchBlocked(CatalogState.Idle, emptyList(), enabled = false))
+        assertFalse(modelSwitchBlocked(CatalogState.Loading, emptyList(), enabled = false))
+        assertFalse(modelSwitchBlocked(CatalogState.Failed(SettingsFailure.Unreachable("down")), emptyList(), enabled = false))
+        // A switch that is already on can always be turned off, and a stored list can be switched on.
+        assertFalse(modelSwitchBlocked(noKey, emptyList(), enabled = true))
+        assertFalse(modelSwitchBlocked(noKey, listOf(AllowedRoute("deepseek-official", "deepseek-flash")), enabled = false))
+    }
+
+    @Test
+    fun `stored routes stay on the list when the catalog is empty so they can be taken off`() {
+        val stored = listOf(AllowedRoute("deepseek-official", "deepseek-flash"))
+        val view = assertIs<ModelListView.NoModels>(modelListView(noKey, stored))
+        val retired = view.retired.single()
+        assertEquals(stored.single(), retired.route)
+        assertFalse(retired.available)
+        assertTrue(retired.selected)
+    }
+
+    @Test
+    fun `models that are advertised show as the list and an unread catalog shows progress or failure`() {
+        val view = assertIs<ModelListView.Models>(modelListView(withModels, emptyList()))
+        assertEquals(2, view.candidates.size)
+        assertEquals(ModelListView.Loading, modelListView(CatalogState.Idle, emptyList()))
+        assertEquals(ModelListView.Loading, modelListView(CatalogState.Loading, emptyList()))
+        assertEquals(ModelListView.Failed, modelListView(CatalogState.Failed(SettingsFailure.Unavailable), emptyList()))
+    }
+
     @Test
     fun `a catalog model with no models yields no candidates`() {
         assertEquals(emptyList(), modelCandidates(listOf(ModelProviderGroup("p", "P", emptyList<ModelCatalogModel>())), emptyList()))

@@ -60,16 +60,16 @@
     <string name="hs_models_pick_one">চালু করতে অন্তত একটি মডেল বেছে নিন।</string>
     <string name="hs_models_keep_one">অন্তত একটি মডেল রাখুন, নয়তো সুইচ বন্ধ করুন।</string>
     <string name="hs_models_load_failed">মডেল লোড করা যায়নি।</string>
-    <string name="hs_models_empty">এই মুহূর্তে কোনো প্রোভাইডার কোনো মডেল দিচ্ছে না।</string>
+    <string name="hs_models_none_why">এখনও কোনো মডেল প্রস্তুত নেই। কোনো প্রোভাইডারের কাজ করা API কী থাকলে তবেই তার মডেল এখানে দেখা যায়। «মডেল ও API কী»-তে একটি যোগ করুন।</string>
     <string name="hs_models_retired">এখন পাওয়া যাচ্ছে না</string>
 
     <!-- Web search. -->
     <string name="hs_f_search_api">Search API ব্যবহার করুন</string>
     <string name="hs_f_search_api_hint">বন্ধ থাকলে সার্চ DeepSeek Messages দিয়ে চলে। চালু থাকলে Search ও Fetch API ব্যবহার হয়, যেগুলোর নিজস্ব সুবিধা ও দাম আছে।</string>
     <string name="hs_f_endpoint_messages">Messages API-এর ঠিকানা</string>
-    <string name="hs_f_endpoint_messages_hint">API-এর প্রিফিক্সসহ লিখুন, যেমন %1$s। ডিফল্ট ঠিকানা ব্যবহার করতে ফাঁকা রাখুন।</string>
+    <string name="hs_f_endpoint_messages_hint">API-এর প্রিফিক্সসহ লিখুন, যেমন %1$s।</string>
     <string name="hs_f_endpoint_search">Search ও Fetch API-এর ঠিকানা</string>
-    <string name="hs_f_endpoint_search_hint">API-এর প্রিফিক্সসহ লিখুন, যেমন %1$s। ডিফল্ট ঠিকানা ব্যবহার করতে ফাঁকা রাখুন।</string>
+    <string name="hs_f_endpoint_search_hint">API-এর প্রিফিক্সসহ লিখুন, যেমন %1$s।</string>
     <string name="hs_f_max_uses">প্রতি অনুরোধে সার্চ</string>
     <string name="hs_f_max_uses_hint">সহায়ক মডেল এক অনুরোধে কতগুলো সার্চ করতে পারে। শুধু Messages দিয়ে সার্চে প্রযোজ্য।</string>
     <string name="hs_f_count">প্রতি সার্চে ফলাফল</string>

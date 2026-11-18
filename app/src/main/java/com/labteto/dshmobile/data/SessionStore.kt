@@ -418,6 +418,28 @@ class SessionStore @Inject constructor(
         scope.launch { featureCall(HarnessFeature.AUTOMATION, api) { api.automationCatalog() } }
         scope.launch { featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.pluginBundles() } }
     }
+
+    /** The cheap call that tells whether the harness has [feature] now, for the features that have one. */
+    private fun featureProbe(feature: HarnessFeature): (suspend (DshApiClient) -> RpcResult<*>)? = when (feature) {
+        HarnessFeature.AUTOMATION -> { api -> api.automationCatalog() }
+        HarnessFeature.PLUGIN_MANAGEMENT -> { api -> api.pluginBundles() }
+        HarnessFeature.HARNESS_SETTINGS -> { api -> api.settingsDescribe() }
+        else -> null
+    }
+
+    /**
+     * A bundle was switched on or off (`plugin-manager/changed`), so a feature the harness lacked may
+     * be there now. Whatever read "unavailable" is asked again, instead of staying hidden until the
+     * app reconnects.
+     */
+    private fun recheckFeatures() {
+        val api = connectionManager.connectedApi ?: return
+        val probes = HarnessFeature.entries.mapNotNull { feature -> featureProbe(feature)?.let { feature to it } }.toMap()
+        featureAvailability.relax(probes.keys).forEach { feature ->
+            val probe = probes.getValue(feature)
+            scope.launch { featureCall(feature, api) { probe(api) } }
+        }
+    }
     private val permissionCatalog = MutableStateFlow<PermissionCatalog?>(null)
     private var permissionCatalogEpoch = 0L
     private val queuesBySession = MutableStateFlow<Map<String, List<QueueItem>>>(emptyMap())
@@ -1004,6 +1026,7 @@ class SessionStore @Inject constructor(
             }
             "api-session/error" -> setConnectionError(str(1))
             "commands/change" -> scope.launch { refreshCommands() }
+            "plugin-manager/changed" -> recheckFeatures()
             "agent-preset/selected" -> scope.launch {
                 refreshAgentPresets()
                 refreshCommands()

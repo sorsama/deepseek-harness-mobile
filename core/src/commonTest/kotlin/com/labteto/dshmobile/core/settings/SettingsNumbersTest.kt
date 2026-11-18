@@ -221,9 +221,11 @@ class SettingsNumbersTest {
     }
 
     @Test
-    fun `an empty box is a reset and not zero`() {
-        assertEquals(DraftResult.Reset, count.draftFromText(""))
-        assertEquals(DraftResult.Reset, timeout.draftFromText("   "))
+    fun `an empty box is refused and neither a reset nor zero`() {
+        assertEquals(invalid(FieldProblem.Required), count.draftFromText(""))
+        assertEquals(invalid(FieldProblem.Required), timeout.draftFromText("   "))
+        // Separators alone are an empty number too.
+        assertEquals(invalid(FieldProblem.Required), timeout.draftFromText("\u00A0 \u202F"))
     }
 
     @Test

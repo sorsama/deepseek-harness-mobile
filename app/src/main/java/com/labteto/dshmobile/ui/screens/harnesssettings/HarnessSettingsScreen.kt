@@ -157,15 +157,25 @@ fun HarnessSettingsScreen(onClose: () -> Unit) {
     // The page that is open survives the settings controller being replaced.
     var openKey by rememberSaveable(host) { mutableStateOf<String?>(null) }
 
-    // Another client saved a namespace: read it again. The harness announces our own writes too, and the
-    // controller tells them apart by revision.
     LaunchedEffect(controller) {
         if (controller == null) return@LaunchedEffect
         store.hostEvents.collect { (event, args) ->
-            if (event != "settings/document-updated") return@collect
-            val ns = (args.getOrNull(0) as? JsonPrimitive)?.contentOrNull ?: return@collect
-            val revision = (args.getOrNull(1) as? JsonPrimitive)?.contentOrNull?.toLongOrNull() ?: return@collect
-            controller.onDocumentUpdated(ns, revision)
+            when (event) {
+                // A bundle was switched on or off (a module such as web search or the shell sandbox came
+                // or went), and the namespaces the harness describes went with it: read the list again.
+                "plugin-manager/changed" -> {
+                    controller.load()
+                    // The account calls come and go with the account plugin: the Account page is offered or dropped from what they answer.
+                    accountController?.refresh()
+                }
+                // Another client saved a namespace: read it again. The harness announces our own writes
+                // too, and the controller tells them apart by revision.
+                "settings/document-updated" -> {
+                    val ns = (args.getOrNull(0) as? JsonPrimitive)?.contentOrNull ?: return@collect
+                    val revision = (args.getOrNull(1) as? JsonPrimitive)?.contentOrNull?.toLongOrNull() ?: return@collect
+                    controller.onDocumentUpdated(ns, revision)
+                }
+            }
         }
     }
 

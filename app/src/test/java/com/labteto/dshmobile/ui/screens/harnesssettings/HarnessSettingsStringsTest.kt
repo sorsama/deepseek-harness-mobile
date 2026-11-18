@@ -74,6 +74,31 @@ class HarnessSettingsStringsTest {
     }
 
     @Test
+    fun `the empty model list names the page where it is fixed in every language`() {
+        // The sentence points at "Models and API keys" by its own title, so it must say what the page is called there.
+        locales.forEach { directory ->
+            val title = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                .parse(File(directory, "strings_models.xml"))
+                .let { document ->
+                    val nodes = document.getElementsByTagName("string")
+                    (0 until nodes.length).map { nodes.item(it) }
+                        .first { it.attributes.getNamedItem("name").nodeValue == "models_keys_title" }.textContent
+                }
+            assertTrue("${directory.name}: ${strings(directory).getValue("hs_models_none_why")} should name $title", title in strings(directory).getValue("hs_models_none_why"))
+        }
+    }
+
+    @Test
+    fun `leaving a field empty is no longer how a value goes back to its default`() {
+        // The address hints used to say "leave empty"; an empty box is refused now and Reset to default is the way back.
+        val english = strings(File(res, "values"))
+        assertFalse(english.getValue("hs_f_endpoint_messages_hint").contains("empty", ignoreCase = true))
+        assertFalse(english.getValue("hs_f_endpoint_search_hint").contains("empty", ignoreCase = true))
+        assertTrue(english.containsKey("hs_reset"))
+        assertFalse(english.containsKey("hs_models_empty"))
+    }
+
+    @Test
     fun `the limit sentences take the numbers they name`() {
         val baseline = strings(File(res, "values"))
         assertEquals(2, argument.findAll(baseline.getValue("hs_err_range")).count())

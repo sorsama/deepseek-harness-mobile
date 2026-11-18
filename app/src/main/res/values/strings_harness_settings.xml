@@ -60,16 +60,16 @@
     <string name="hs_models_pick_one">Choose at least one model to turn this on.</string>
     <string name="hs_models_keep_one">Keep at least one model, or turn the switch off.</string>
     <string name="hs_models_load_failed">Couldn\'t load the models.</string>
-    <string name="hs_models_empty">No provider offers a model right now.</string>
+    <string name="hs_models_none_why">No model is ready yet. A provider lists its models here once it has a working API key. Add one under Models and API keys.</string>
     <string name="hs_models_retired">Not available now</string>
 
     <!-- Web search. -->
     <string name="hs_f_search_api">Use the Search API</string>
     <string name="hs_f_search_api_hint">Off, search runs through DeepSeek Messages. On, it uses the Search and Fetch APIs, which have their own features and pricing.</string>
     <string name="hs_f_endpoint_messages">Messages API address</string>
-    <string name="hs_f_endpoint_messages_hint">Include the API prefix, for example %1$s. Leave empty to use the default.</string>
+    <string name="hs_f_endpoint_messages_hint">Include the API prefix, for example %1$s.</string>
     <string name="hs_f_endpoint_search">Search and Fetch API address</string>
-    <string name="hs_f_endpoint_search_hint">Include the API prefix, for example %1$s. Leave empty to use the default.</string>
+    <string name="hs_f_endpoint_search_hint">Include the API prefix, for example %1$s.</string>
     <string name="hs_f_max_uses">Searches per request</string>
     <string name="hs_f_max_uses_hint">How many searches the helper model may run in one request. Applies to Messages search only.</string>
     <string name="hs_f_count">Results per search</string>

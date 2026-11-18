@@ -60,16 +60,16 @@
     <string name="hs_models_pick_one">Чтобы включить, выберите хотя бы одну модель.</string>
     <string name="hs_models_keep_one">Оставьте хотя бы одну модель или выключите переключатель.</string>
     <string name="hs_models_load_failed">Не удалось загрузить модели.</string>
-    <string name="hs_models_empty">Сейчас ни один провайдер не предлагает моделей.</string>
+    <string name="hs_models_none_why">Пока нет ни одной готовой модели. Модели провайдера появятся здесь, когда у него будет рабочий API-ключ. Добавьте ключ в разделе «Модели и API-ключи».</string>
     <string name="hs_models_retired">Сейчас недоступна</string>
 
     <!-- Web search. -->
     <string name="hs_f_search_api">Использовать Search API</string>
     <string name="hs_f_search_api_hint">Выключено: поиск идёт через DeepSeek Messages. Включено: используются Search и Fetch API со своими возможностями и тарифами.</string>
     <string name="hs_f_endpoint_messages">Адрес Messages API</string>
-    <string name="hs_f_endpoint_messages_hint">Укажите префикс API, например %1$s. Оставьте пустым, чтобы использовать адрес по умолчанию.</string>
+    <string name="hs_f_endpoint_messages_hint">Укажите префикс API, например %1$s.</string>
     <string name="hs_f_endpoint_search">Адрес Search и Fetch API</string>
-    <string name="hs_f_endpoint_search_hint">Укажите префикс API, например %1$s. Оставьте пустым, чтобы использовать адрес по умолчанию.</string>
+    <string name="hs_f_endpoint_search_hint">Укажите префикс API, например %1$s.</string>
     <string name="hs_f_max_uses">Поисков на запрос</string>
     <string name="hs_f_max_uses_hint">Сколько поисков вспомогательная модель может выполнить за один запрос. Относится только к поиску через Messages.</string>
     <string name="hs_f_count">Результатов на поиск</string>

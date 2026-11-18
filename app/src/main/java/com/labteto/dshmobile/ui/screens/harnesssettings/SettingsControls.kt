@@ -56,12 +56,16 @@ import com.labteto.dshmobile.core.settings.HarnessSettingsController
 import com.labteto.dshmobile.core.settings.HarnessSettingsState
 import com.labteto.dshmobile.core.settings.SettingsFailure
 import com.labteto.dshmobile.core.settings.SettingsField
+import com.labteto.dshmobile.core.settings.TextAction
+import com.labteto.dshmobile.core.settings.TextExit
 import com.labteto.dshmobile.core.settings.draftFromChoice
 import com.labteto.dshmobile.core.settings.draftFromList
 import com.labteto.dshmobile.core.settings.draftFromSelection
 import com.labteto.dshmobile.core.settings.draftFromText
 import com.labteto.dshmobile.core.settings.fieldText
 import com.labteto.dshmobile.core.settings.formatNumber
+import com.labteto.dshmobile.core.settings.keepsFocusOnDone
+import com.labteto.dshmobile.core.settings.textAction
 import com.labteto.dshmobile.core.settings.valuesEquivalent
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonVariant
@@ -116,12 +120,14 @@ internal fun SettingsFieldControl(
                 val on = (shown as? JsonPrimitive)?.booleanOrNull == true
                 onSet(JsonPrimitive(!on))
             }
+            // A switch flipped off and on leaves an explicit override equal to the default: say so, and offer the way back.
+            OverrideLine(label, field.overridden, state.writable, busy, onReset)
             FailureLine(failure)
         }
         is FieldKind.Number, is FieldKind.Text -> TextualField(
             field, label, hint, unit, words.traits, words.technical, state.writable, failure, onSet, onReset, onDismiss,
         )
-        is FieldKind.Choice -> ChoiceField(field, kind, label, hint, shown, state.writable, failure, onSet)
+        is FieldKind.Choice -> ChoiceField(field, kind, label, hint, shown, state.writable, busy, failure, onSet, onReset)
         is FieldKind.StringList -> StringListField(field, label, hint, shown, state.writable, failure, onSet, onReset)
         is FieldKind.ChoiceList -> ChoiceListField(field, kind, label, hint, shown, state.writable, failure, onSet, onReset)
         FieldKind.Secret -> GenericSecretField(field, label, hint, state, controller, hostLabel)
@@ -211,26 +217,26 @@ private fun TextualField(
     val draft = field.draftFromText(text, traits)
     val problem = (draft as? DraftResult.Invalid)?.problem
     val showProblem = edited && problem != null
-
-    fun commit() {
-        if (!edited) return
-        when (draft) {
-            // Nothing is sent; the draft and the message stay so it can be corrected.
-            is DraftResult.Invalid -> Unit
-            DraftResult.Reset -> {
+    // What Done and leaving the field do is decided in core (`textAction`): a valid edit is sent, an
+    // empty box never is (Done keeps it with its message, leaving the field puts the saved value back),
+    // and going back to the default is the Reset button, never a side effect of an empty box.
+    fun leave(exit: TextExit) {
+        when (val action = field.textAction(text, traits, edited, exit)) {
+            is TextAction.Send -> {
                 edited = false
-                if (field.overridden) onReset() else text = fieldText(field.value)
+                onSet(action.value)
             }
-            is DraftResult.Write -> {
+            TextAction.Restore -> {
                 edited = false
-                if (valuesEquivalent(draft.value, field.value)) text = fieldText(field.value) else onSet(draft.value)
+                text = fieldText(field.value)
             }
+            TextAction.Keep -> Unit
         }
     }
 
     // Leaving the page with the keyboard still up (Back, a swipe) is leaving the field: a valid edit is saved.
-    val latestCommit by rememberUpdatedState { commit() }
-    DisposableEffect(Unit) { onDispose { latestCommit() } }
+    val latestLeave by rememberUpdatedState { leave(TextExit.Dispose) }
+    DisposableEffect(Unit) { onDispose { latestLeave() } }
 
     val whole = (field.kind as? FieldKind.Number)?.let { it.whole || traits.whole }
     val keyboard = when {
@@ -239,7 +245,6 @@ private fun TextualField(
         else -> KeyboardType.Text
     }
     val textStyle = if (technical) DsType.mono13.copy(textDirection = TextDirection.Ltr) else DsType.std14
-    val placeholder = fieldText(field.baseValue)
 
     Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {
         FieldHeader(label, field.overridden)
@@ -254,21 +259,20 @@ private fun TextualField(
                 .fillMaxWidth()
                 .inkFieldFrame()
                 .onFocusChanged { state ->
-                    if (hadFocus && !state.isFocused) commit()
+                    if (hadFocus && !state.isFocused) leave(TextExit.Blur)
                     hadFocus = state.isFocused
                 },
             enabled = writable,
             singleLine = true,
             isError = showProblem,
             textStyle = textStyle,
-            placeholder = if (placeholder.isEmpty()) null else {
-                { Text(placeholder, style = textStyle, color = colors.labelCaption, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-            },
             suffix = unit?.let { { Text(it, style = DsType.small13, color = colors.labelTertiary) } },
             keyboardOptions = KeyboardOptions(keyboardType = keyboard, autoCorrectEnabled = false, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {
-                commit()
-                focusManager.clearFocus()
+                val keepFocus = field.keepsFocusOnDone(text, traits, edited)
+                leave(TextExit.Done)
+                // An empty box stays focused with its message beside it; the next tap elsewhere puts the saved value back.
+                if (!keepFocus) focusManager.clearFocus()
             }),
             colors = dialogTextFieldColors(),
             shape = DsShapes.control,
@@ -299,6 +303,32 @@ private fun TextualField(
     }
 }
 
+/**
+ * The marker and the way back for a control that has no label row of its own (a switch): a word,
+ * "Changed", and "Reset to default", only while the value carries an override. The word is the
+ * marker, never a colour alone, and the override counts even when it equals the deployment's value.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun OverrideLine(label: String, overridden: Boolean, writable: Boolean, busy: Boolean, onReset: () -> Unit) {
+    if (!overridden) return
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
+    ) {
+        DsPill(stringResource(R.string.hs_overridden), modifier = Modifier.align(Alignment.CenterVertically))
+        if (writable) {
+            SettingsButton(
+                text = stringResource(R.string.hs_reset),
+                onClick = onReset,
+                enabled = !busy,
+                variant = DsButtonVariant.Ghost,
+                description = stringResource(R.string.hs_reset_for, label),
+            )
+        }
+    }
+}
+
 // ----------------------------------------------------------------------------------------- choices
 
 @Composable
@@ -309,8 +339,10 @@ private fun ChoiceField(
     hint: String?,
     shown: JsonElement?,
     writable: Boolean,
+    busy: Boolean,
     failure: FieldFailure?,
     onSet: (JsonElement) -> Unit,
+    onReset: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {
         FieldHeader(label, field.overridden)
@@ -334,6 +366,15 @@ private fun ChoiceField(
             }
         }
         FailureLine(failure)
+        if (field.overridden && writable) {
+            SettingsButton(
+                text = stringResource(R.string.hs_reset),
+                onClick = onReset,
+                enabled = !busy,
+                variant = DsButtonVariant.Ghost,
+                description = stringResource(R.string.hs_reset_for, label),
+            )
+        }
     }
 }
 
@@ -371,7 +412,6 @@ private fun ChoiceListField(
                                 onSet(draft.value)
                             }
                             is DraftResult.Invalid -> problem = draft.problem
-                            DraftResult.Reset -> Unit
                         }
                     },
                 verticalAlignment = Alignment.CenterVertically,
@@ -384,7 +424,10 @@ private fun ChoiceListField(
         problem?.let { Text(problemText(it, field.kind, FieldTraits()), style = DsType.small13, color = DsTheme.colors.error) }
         FailureLine(failure)
         if (field.overridden && writable) {
-            SettingsButton(stringResource(R.string.hs_reset), onReset, variant = DsButtonVariant.Ghost)
+            SettingsButton(
+                stringResource(R.string.hs_reset), onReset, variant = DsButtonVariant.Ghost,
+                description = stringResource(R.string.hs_reset_for, label),
+            )
         }
     }
 }
@@ -414,7 +457,6 @@ private fun StringListField(
                 onSet(result.value)
             }
             is DraftResult.Invalid -> problem = result.problem
-            DraftResult.Reset -> Unit
         }
     }
 
@@ -463,7 +505,10 @@ private fun StringListField(
         problem?.let { Text(problemText(it, field.kind, FieldTraits()), style = DsType.small13, color = colors.error) }
         FailureLine(failure)
         if (field.overridden && writable) {
-            SettingsButton(stringResource(R.string.hs_reset), onReset, variant = DsButtonVariant.Ghost)
+            SettingsButton(
+                stringResource(R.string.hs_reset), onReset, variant = DsButtonVariant.Ghost,
+                description = stringResource(R.string.hs_reset_for, label),
+            )
         }
     }
 }
@@ -503,7 +548,8 @@ internal fun problemText(problem: FieldProblem, kind: FieldKind?, traits: FieldT
     val max = listOfNotNull(number?.max, traits.max).minOrNull()
     val whole = number?.whole == true || traits.whole
     return when (problem) {
-        FieldProblem.Required -> stringResource(R.string.hs_err_required)
+        // An empty number is asked for in the words the box already uses for a wrong one.
+        FieldProblem.Required -> stringResource(if (number != null) R.string.hs_err_number else R.string.hs_err_required)
         FieldProblem.NotANumber -> stringResource(R.string.hs_err_number)
         FieldProblem.NotWhole -> stringResource(R.string.hs_err_whole)
         is FieldProblem.NotMultiple -> stringResource(R.string.hs_err_step, formatBound(problem.step))
