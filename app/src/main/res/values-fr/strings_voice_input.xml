@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_start">Démarrer la dictée</string>
+    <string name="voice_stop">Arrêter la dictée</string>
+    <string name="voice_in_progress">Dictée en cours</string>
+    <string name="voice_listening">Écoute en cours…</string>
+    <string name="voice_starting">Préparation…</string>
+    <string name="voice_finishing">Fin de la dictée…</string>
+    <string name="voice_shortcut_toggle">Dicter (démarrer ou arrêter)</string>
+
+    <string name="voice_language_title">Langue de la dictée</string>
+    <string name="voice_language_hold_label">Choisir la langue de la dictée</string>
+    <string name="voice_language_follow_app">Comme l’appli</string>
+    <string name="voice_language_device">Langue du téléphone</string>
+
+    <string name="voice_setting_title">Bouton de dictée</string>
+    <string name="voice_setting_hint">Ajoute un micro à la zone de message. Le service vocal du téléphone transforme la voix en texte.</string>
+    <string name="voice_unavailable_hint">Ce téléphone n’a pas de service de reconnaissance vocale, le micro n’est donc pas affiché.</string>
+
+    <string name="voice_notice_title">Dictée</string>
+    <string name="voice_notice_body">Votre voix est traitée par le service vocal du téléphone, qui peut être un service en ligne du fabricant. Elle n’est pas envoyée au harness.</string>
+    <string name="voice_notice_continue">Continuer</string>
+
+    <string name="voice_err_no_match">Je n’ai pas compris. Réessayez.</string>
+    <string name="voice_err_timeout">Je n’ai rien entendu. Réessayez.</string>
+    <string name="voice_err_network">Impossible de joindre le service vocal. Vérifiez votre connexion.</string>
+    <string name="voice_err_busy">Le service vocal est occupé. Réessayez dans un instant.</string>
+    <string name="voice_err_audio">Impossible d’utiliser le micro.</string>
+    <string name="voice_err_service">Le service vocal n’est pas disponible pour le moment.</string>
+    <string name="voice_err_language">La dictée n’est pas disponible dans cette langue.</string>
+    <string name="voice_err_failed">La dictée s’est arrêtée. Réessayez.</string>
+    <string name="voice_err_interrupted">La dictée a été interrompue. Réessayez.</string>
+    <string name="voice_perm_denied">La dictée a besoin du micro.</string>
+    <string name="voice_perm_blocked">L’accès au micro est désactivé pour cette appli.</string>
+    <string name="voice_open_settings">Ouvrir les réglages</string>
+</resources>

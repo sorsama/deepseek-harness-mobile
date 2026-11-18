@@ -234,6 +234,8 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                     }
                     AppShortcut.FocusComposer -> if (!now.listDocked) scope.launch { drawerState.close() }
                     AppShortcut.OpenSettings -> currentOpenSettings.value()
+                    // The chat's composer owns this one; the shell has nothing to do for it.
+                    AppShortcut.ToggleDictation -> Unit
                 }
             }
         }

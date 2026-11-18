@@ -262,12 +262,14 @@ class ComposerNarrowLayoutTest {
         draft: String = longDraft,
         permission: String = "custom",
         pressure: ContextPressureView? = null,
+        dictation: DictationConfig? = null,
+        fontScale: Float = 1f,
     ) {
         compose.setContent {
             BoxWithConstraints {
                 // Fit both device shapes on the assigned emulator without rotating or changing it.
                 val density = Density(minOf(LocalDensity.current.density,
-                    constraints.maxWidth / width.value, constraints.maxHeight / height.value))
+                    constraints.maxWidth / width.value, constraints.maxHeight / height.value), fontScale)
                 SideEffect { pixelsPerDp = density.density }
                 CompositionLocalProvider(LocalDensity provides density) {
                     DshTheme {
@@ -282,6 +284,7 @@ class ComposerNarrowLayoutTest {
                                     running = running, enabled = true, onOpenSheet = {}, onSend = {}, onStop = {},
                                     references = if (withReferences) references else emptyList(),
                                     onOpenReference = onOpenReference, onAddReference = onAddReference,
+                                    dictation = dictation,
                                 )
                             }
                         }
@@ -409,6 +412,82 @@ class ComposerNarrowLayoutTest {
     @Test fun aFillingWindowLeavesTheChipItsNameOnTheNarrowestPhone() = assertTheMeterNeverCostsTheChipItsName(360.dp)
 
     @Test fun aFillingWindowLeavesTheChipItsNameOnAFlipInnerScreen() = assertTheMeterNeverCostsTheChipItsName(411.dp)
+
+    // ---- The microphone shares the message field's trailing slot, not the row of controls ----
+
+    /** A recogniser that exists and does nothing: enough to make the microphone appear. */
+    private val micConfig = DictationConfig(
+        languageChoice = null, appLanguage = null, noticeSeen = true, sessionKey = "s", toggleTick = 0,
+        onNoticeSeen = {}, onLanguageChoice = {}, engineFactory = { IdleSpeechEngine },
+    )
+
+    private fun micBounds() = compose.onNodeWithContentDescription(context.getString(R.string.voice_start))
+        .fetchSemanticsNode().boundsInRoot
+
+    /**
+     * The row has no 48dp to spare at 360dp: the chip keeps 144dp for "Workspace Write", and a
+     * button in that row would take it to 88dp. The microphone is therefore in the field, and the
+     * chip still says its whole name with its margin, with the microphone on screen at full size.
+     */
+    @Test fun microphoneLeavesTheChipItsNameOnTheNarrowestPhone() {
+        render(360.dp, 640.dp, null, withReferences = false, draft = "hi", permission = "workspace-write",
+            pressure = nearlyEmpty, dictation = micConfig)
+        assertChipSaysItsWholeName()
+        assertChipHasRoomToSpare()
+        val mic = micBounds()
+        assertTrue("the microphone is a 48dp target: $mic", mic.width >= 48f * pixelsPerDp - 1f && mic.height >= 48f * pixelsPerDp - 1f)
+        compose.onNodeWithContentDescription(context.getString(R.string.voice_start)).assertIsDisplayed().assertHasClickAction()
+        listOf(R.string.chat_composer_send, R.string.chat_composer_commands, R.string.harness_add_reference).forEach {
+            compose.onNodeWithContentDescription(context.getString(it)).assertIsDisplayed()
+        }
+    }
+
+    @Test fun microphoneAndAFillingContextMeterStillLeaveTheChipItsNameOnAFlipInnerScreen() {
+        render(411.dp, 640.dp, null, withReferences = false, draft = "hi", permission = "workspace-write",
+            pressure = filling, dictation = micConfig)
+        assertChipSaysItsWholeName()
+    }
+
+    /** With no recognition service the field is exactly what it was: no microphone, nothing in the slot. */
+    @Test fun noMicrophoneWithoutARecogniser() {
+        render(360.dp, 640.dp, null, withReferences = false, draft = "hi",
+            dictation = DictationConfig(null, null, true, "s", 0, {}, {}, { UnavailableSpeechEngine }))
+        compose.onNodeWithContentDescription(context.getString(R.string.voice_start)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.voice_stop)).assertDoesNotExist()
+        // The controls the row always had are all still there.
+        compose.onNodeWithContentDescription(context.getString(R.string.chat_composer_send)).assertIsDisplayed()
+    }
+
+    /** Switched off in Settings, the chat screen passes no config at all: the same field as before. */
+    @Test fun noMicrophoneWhenTurnedOff() {
+        render(360.dp, 640.dp, null, withReferences = false, draft = "hi", dictation = null)
+        compose.onNodeWithContentDescription(context.getString(R.string.voice_start)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.chat_composer_send)).assertIsDisplayed()
+    }
+
+    /**
+     * Beside the expand button and at twice the font size, the microphone and the expand button are
+     * both whole, side by side and not on top of each other, and send keeps its height.
+     */
+    @Test fun microphoneAndExpandSitSideBySideAtALargeFontOnANarrowPhone() {
+        render(360.dp, 560.dp, 220.dp, fontScale = 2f, dictation = micConfig)
+        assertControlsHaveHeight()
+        val mic = micBounds()
+        val expand = compose.onNodeWithContentDescription(context.getString(R.string.chat_composer_expand))
+            .assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        assertTrue("the microphone and expand overlap: $mic vs $expand", mic.right <= expand.left + 1f || expand.right <= mic.left + 1f)
+        assertTrue("the microphone is clipped", mic.height >= 48f * pixelsPerDp - 1f)
+    }
+
+    /** The tightest height the chat screen gives the composer, mid-turn: the microphone is reachable too. */
+    @Test fun microphoneIsReachableAtThePostImeCapWithStopRunning() {
+        render(360.dp, 378.dp, 180.dp, running = true, dictation = micConfig)
+        assertControlsHaveHeight()
+        val node = compose.onNodeWithContentDescription(context.getString(R.string.voice_start))
+        node.assertIsDisplayed()
+        node.assertHasClickAction()
+        assertTrue("the microphone must stay inside the screen", node.fetchSemanticsNode().boundsInRoot.bottom <= 378f * pixelsPerDp + 1f)
+    }
 
     private fun assertControlsHaveHeight() {
         compose.waitForIdle()

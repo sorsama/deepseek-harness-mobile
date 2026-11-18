@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_start">بدء الإملاء</string>
+    <string name="voice_stop">إيقاف الإملاء</string>
+    <string name="voice_in_progress">الإملاء قيد التنفيذ</string>
+    <string name="voice_listening">جارٍ الاستماع…</string>
+    <string name="voice_starting">جارٍ التجهيز…</string>
+    <string name="voice_finishing">جارٍ الإنهاء…</string>
+    <string name="voice_shortcut_toggle">إملاء (بدء أو إيقاف)</string>
+
+    <string name="voice_language_title">لغة الإملاء</string>
+    <string name="voice_language_hold_label">اختيار لغة الإملاء</string>
+    <string name="voice_language_follow_app">مثل لغة التطبيق</string>
+    <string name="voice_language_device">الافتراضية في الهاتف</string>
+
+    <string name="voice_setting_title">زر الإملاء</string>
+    <string name="voice_setting_hint">يضيف ميكروفونًا إلى مربع الرسالة. تحوّل خدمة الكلام في هاتفك الصوت إلى نص.</string>
+    <string name="voice_unavailable_hint">لا توجد خدمة للتعرف على الكلام في هذا الهاتف، لذلك لا يظهر الميكروفون.</string>
+
+    <string name="voice_notice_title">الإملاء</string>
+    <string name="voice_notice_body">تعالج خدمة الكلام في هاتفك ما تقوله، وقد تكون خدمة عبر الإنترنت من الشركة المصنّعة. ولا يُرسل إلى harness.</string>
+    <string name="voice_notice_continue">متابعة</string>
+
+    <string name="voice_err_no_match">لم أفهم ما قلته. حاول مرة أخرى.</string>
+    <string name="voice_err_timeout">لم أسمع شيئًا. حاول مرة أخرى.</string>
+    <string name="voice_err_network">تعذر الاتصال بخدمة الكلام. تحقق من اتصالك.</string>
+    <string name="voice_err_busy">خدمة الكلام مشغولة. حاول بعد قليل.</string>
+    <string name="voice_err_audio">تعذر استخدام الميكروفون.</string>
+    <string name="voice_err_service">خدمة الكلام غير متاحة حاليًا.</string>
+    <string name="voice_err_language">الإملاء غير متاح بهذه اللغة.</string>
+    <string name="voice_err_failed">توقف الإملاء. حاول مرة أخرى.</string>
+    <string name="voice_err_interrupted">انقطع الإملاء. حاول مرة أخرى.</string>
+    <string name="voice_perm_denied">يحتاج الإملاء إلى الميكروفون.</string>
+    <string name="voice_perm_blocked">الوصول إلى الميكروفون متوقف لهذا التطبيق.</string>
+    <string name="voice_open_settings">فتح الإعدادات</string>
+</resources>

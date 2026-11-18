@@ -27,6 +27,9 @@ enum class AppShortcut {
 
     /** Ctrl+, : open settings. */
     OpenSettings,
+
+    /** Ctrl+M: start or stop dictation in the message box, on a phone that can dictate. */
+    ToggleDictation,
 }
 
 /**
@@ -43,6 +46,7 @@ fun matchAppShortcut(key: Key, ctrl: Boolean, shift: Boolean, alt: Boolean, meta
         Key.K, Key.Slash -> AppShortcut.FocusComposer
         Key.B -> AppShortcut.ToggleSessionList
         Key.Comma -> AppShortcut.OpenSettings
+        Key.M -> AppShortcut.ToggleDictation
         else -> null
     }
 }

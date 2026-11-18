@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_start">Iniciar dictado</string>
+    <string name="voice_stop">Detener dictado</string>
+    <string name="voice_in_progress">Dictado en curso</string>
+    <string name="voice_listening">Escuchando…</string>
+    <string name="voice_starting">Preparando…</string>
+    <string name="voice_finishing">Terminando…</string>
+    <string name="voice_shortcut_toggle">Dictar (iniciar o detener)</string>
+
+    <string name="voice_language_title">Idioma del dictado</string>
+    <string name="voice_language_hold_label">Elegir idioma del dictado</string>
+    <string name="voice_language_follow_app">El mismo que la app</string>
+    <string name="voice_language_device">Predeterminado del teléfono</string>
+
+    <string name="voice_setting_title">Botón de dictado</string>
+    <string name="voice_setting_hint">Añade un micrófono al cuadro de mensaje. El servicio de voz del teléfono convierte la voz en texto.</string>
+    <string name="voice_unavailable_hint">Este teléfono no tiene un servicio de reconocimiento de voz, por eso no se muestra el micrófono.</string>
+
+    <string name="voice_notice_title">Dictado</string>
+    <string name="voice_notice_body">El servicio de voz del teléfono procesa lo que dices, y puede ser un servicio en línea del fabricante. No se envía al harness.</string>
+    <string name="voice_notice_continue">Continuar</string>
+
+    <string name="voice_err_no_match">No se entendió. Inténtalo de nuevo.</string>
+    <string name="voice_err_timeout">No se oyó nada. Inténtalo de nuevo.</string>
+    <string name="voice_err_network">No se puede conectar con el servicio de voz. Revisa tu conexión.</string>
+    <string name="voice_err_busy">El servicio de voz está ocupado. Inténtalo en un momento.</string>
+    <string name="voice_err_audio">No se pudo usar el micrófono.</string>
+    <string name="voice_err_service">El servicio de voz no está disponible ahora.</string>
+    <string name="voice_err_language">El dictado no está disponible en este idioma.</string>
+    <string name="voice_err_failed">El dictado se detuvo. Inténtalo de nuevo.</string>
+    <string name="voice_err_interrupted">El dictado se interrumpió. Inténtalo de nuevo.</string>
+    <string name="voice_perm_denied">El dictado necesita el micrófono.</string>
+    <string name="voice_perm_blocked">El acceso al micrófono está desactivado para esta app.</string>
+    <string name="voice_open_settings">Abrir ajustes</string>
+</resources>

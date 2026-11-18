@@ -37,6 +37,7 @@ val ShortcutCatalog: List<ShortcutGroup> = listOf(
             ShortcutEntry(R.string.shortcuts_newline, KeyEvent.KEYCODE_ENTER, Shift),
             ShortcutEntry(R.string.shortcuts_focus_composer, KeyEvent.KEYCODE_K, Ctrl),
             ShortcutEntry(R.string.shortcuts_focus_composer, KeyEvent.KEYCODE_SLASH, Ctrl),
+            ShortcutEntry(R.string.voice_shortcut_toggle, KeyEvent.KEYCODE_M, Ctrl),
         ),
     ),
     ShortcutGroup(
