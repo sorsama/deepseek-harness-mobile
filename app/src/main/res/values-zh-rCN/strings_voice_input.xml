@@ -29,7 +29,7 @@
     <string name="voice_err_service">语音服务暂时不可用。</string>
     <string name="voice_err_language">暂不支持这种语言的语音输入。</string>
     <string name="voice_err_failed">语音输入已停止，请再试一次。</string>
-    <string name="voice_err_interrupted">语音输入已停止，因为其他应用正在使用音频。</string>
+    <string name="voice_err_interrupted">语音输入被打断了，请再试一次。</string>
     <string name="voice_perm_denied">语音输入需要使用麦克风。</string>
     <string name="voice_perm_blocked">已关闭此应用的麦克风权限。</string>
     <string name="voice_open_settings">打开设置</string>

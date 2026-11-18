@@ -34,7 +34,7 @@
     <string name="voice_err_service">The speech service isn’t available right now.</string>
     <string name="voice_err_language">Dictation isn’t available in this language.</string>
     <string name="voice_err_failed">Dictation stopped. Try again.</string>
-    <string name="voice_err_interrupted">Dictation stopped because another app is using the audio.</string>
+    <string name="voice_err_interrupted">Dictation was interrupted. Try again.</string>
     <string name="voice_perm_denied">Dictation needs the microphone.</string>
     <string name="voice_perm_blocked">Microphone access is off for this app.</string>
     <string name="voice_open_settings">Open settings</string>

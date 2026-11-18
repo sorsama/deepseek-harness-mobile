@@ -29,7 +29,7 @@
     <string name="voice_err_service">Служба распознавания сейчас недоступна.</string>
     <string name="voice_err_language">Диктовка недоступна на этом языке.</string>
     <string name="voice_err_failed">Диктовка остановлена. Попробуйте ещё раз.</string>
-    <string name="voice_err_interrupted">Диктовка остановлена: звук занят другим приложением.</string>
+    <string name="voice_err_interrupted">Диктовка прервалась. Попробуйте ещё раз.</string>
     <string name="voice_perm_denied">Для диктовки нужен микрофон.</string>
     <string name="voice_perm_blocked">Доступ к микрофону для приложения выключен.</string>
     <string name="voice_open_settings">Открыть настройки</string>

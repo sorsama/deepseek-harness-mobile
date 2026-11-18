@@ -33,7 +33,11 @@ enum class DictationProblem {
     /** Anything else, including codes this app has never seen. */
     Failed,
 
-    /** Another app or a call took the audio away from the take. */
+    /**
+     * The take was cut from outside: the recogniser reported `ERROR_CLIENT` while it was running,
+     * which is what a call or another app taking the microphone can look like. Never derived from
+     * audio focus.
+     */
     Interrupted,
 
     /** The microphone permission was refused; the system dialog can still be shown again. */
@@ -84,8 +88,10 @@ fun dictationProblemFor(code: Int): DictationProblem = when (code) {
     // revoked from the system settings while the take was running.
     RecognizerCodes.INSUFFICIENT_PERMISSIONS -> DictationProblem.PermissionBlocked
     RecognizerCodes.LANGUAGE_NOT_SUPPORTED, RecognizerCodes.LANGUAGE_UNAVAILABLE -> DictationProblem.Language
-    // CLIENT is what a recogniser reports when it was destroyed under a running take, and the two
-    // newest codes only come from calls this app does not make.
+    // CLIENT mid-take means the recogniser's client side was cut off, as a call or another app taking
+    // the microphone does. (A take the app ends itself is ignored by the engine before it gets here.)
+    RecognizerCodes.CLIENT -> DictationProblem.Interrupted
+    // The two newest codes only come from calls this app does not make.
     else -> DictationProblem.Failed
 }
 

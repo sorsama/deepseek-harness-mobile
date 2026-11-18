@@ -29,7 +29,7 @@
     <string name="voice_err_service">บริการเสียงยังใช้งานไม่ได้ในตอนนี้</string>
     <string name="voice_err_language">ภาษานี้ยังพูดเป็นข้อความไม่ได้</string>
     <string name="voice_err_failed">หยุดทำงาน ลองอีกครั้ง</string>
-    <string name="voice_err_interrupted">หยุดทำงานเพราะแอปอื่นกำลังใช้เสียง</string>
+    <string name="voice_err_interrupted">การพูดเป็นข้อความถูกขัดจังหวะ ลองอีกครั้ง</string>
     <string name="voice_perm_denied">ต้องใช้ไมโครโฟนเพื่อพูดเป็นข้อความ</string>
     <string name="voice_perm_blocked">ปิดสิทธิ์ไมโครโฟนของแอปนี้อยู่</string>
     <string name="voice_open_settings">เปิดการตั้งค่า</string>

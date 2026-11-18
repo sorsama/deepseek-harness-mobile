@@ -29,7 +29,7 @@
     <string name="voice_err_service">स्पीच सेवा अभी उपलब्ध नहीं है।</string>
     <string name="voice_err_language">इस भाषा में बोलकर लिखना उपलब्ध नहीं है।</string>
     <string name="voice_err_failed">बोलकर लिखना रुक गया। फिर से कोशिश करें।</string>
-    <string name="voice_err_interrupted">बोलकर लिखना इसलिए रुका क्योंकि कोई दूसरा ऐप ऑडियो इस्तेमाल कर रहा है।</string>
+    <string name="voice_err_interrupted">बोलकर लिखना बीच में रुक गया। फिर से कोशिश करें।</string>
     <string name="voice_perm_denied">बोलकर लिखने के लिए माइक्रोफ़ोन चाहिए।</string>
     <string name="voice_perm_blocked">इस ऐप के लिए माइक्रोफ़ोन की अनुमति बंद है।</string>
     <string name="voice_open_settings">सेटिंग खोलें</string>

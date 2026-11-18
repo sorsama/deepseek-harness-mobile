@@ -29,7 +29,7 @@
     <string name="voice_err_service">স্পিচ সার্ভিস এখন পাওয়া যাচ্ছে না।</string>
     <string name="voice_err_language">এই ভাষায় ডিকটেশন পাওয়া যাচ্ছে না।</string>
     <string name="voice_err_failed">ডিকটেশন থেমে গেছে। আবার চেষ্টা করুন।</string>
-    <string name="voice_err_interrupted">ডিকটেশন থেমে গেছে কারণ অন্য একটি অ্যাপ অডিও ব্যবহার করছে।</string>
+    <string name="voice_err_interrupted">ডিকটেশন মাঝপথে থেমে গেছে। আবার চেষ্টা করুন।</string>
     <string name="voice_perm_denied">ডিকটেশনের জন্য মাইক্রোফোন দরকার।</string>
     <string name="voice_perm_blocked">এই অ্যাপের জন্য মাইক্রোফোনের অনুমতি বন্ধ আছে।</string>
     <string name="voice_open_settings">সেটিংস খুলুন</string>

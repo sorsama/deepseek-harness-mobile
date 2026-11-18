@@ -17,7 +17,7 @@ All notable changes to DSH Mobile are documented here. Format based on
   audio is not sent to the harness, and the first time you use it the app says so. The microphone
   permission is asked for on the first tap only; if it is refused for good, the message offers
   **Open settings**. Dictation stops when the app goes to the background, another window covers it,
-  you switch session, or a call takes the audio. Hold the microphone, or use Settings, Chat,
+  you switch session, or the speech service reports it lost the microphone, as a call does. Hold the microphone, or use Settings, Chat,
   **Dictation language**, to choose the language (the app's, the phone's, or any of the 11); Ctrl+M
   starts and stops it from a keyboard. **Settings, Chat, Dictation button** turns it off, and says
   why it is missing on a phone without a speech service.

@@ -54,8 +54,12 @@ class DictationProblemTest {
         assertEquals(DictationProblem.PermissionBlocked, dictationProblemFor(9))
     }
 
-    @Test fun clientAndUnknownCodesAreAGenericFailure() {
-        assertEquals(DictationProblem.Failed, dictationProblemFor(5))
+    @Test fun aClientErrorMidTakeIsAnInterruptionNotAFailureAndNeverAFocusMessage() {
+        // A call or another app taking the microphone shows up as the recogniser's own error code.
+        assertEquals(DictationProblem.Interrupted, dictationProblemFor(5))
+    }
+
+    @Test fun unknownAndNewestCodesAreAGenericFailure() {
         assertEquals(DictationProblem.Failed, dictationProblemFor(14))
         assertEquals(DictationProblem.Failed, dictationProblemFor(15))
         assertEquals(DictationProblem.Failed, dictationProblemFor(0))

@@ -14,6 +14,12 @@ interface SpeechListener {
     /** The input level in decibels, as `onRmsChanged` reports it. */
     fun onLevel(rmsDb: Float)
 
+    /**
+     * The recogniser stopped capturing on its own (the person fell silent) and is working out the
+     * result; [onResults] or [onProblem] follows. Not reported for a stop the person asked for.
+     */
+    fun onEndOfSpeech() = Unit
+
     /** A partial hypothesis: what is settled, and the tail that may still change. */
     fun onPartial(stable: String?, unstable: String?)
 
@@ -30,6 +36,12 @@ interface SpeechListener {
  * Kept this small so the dictation state machine is tested without a device: the real one is
  * [AndroidSpeechEngine], and a test brings a scripted fake. The recogniser is a platform service
  * that may be absent, so [available] is asked before anything is shown.
+ *
+ * The engine does not manage the audio itself. The recognition service owns the capture of a take,
+ * and takes audio focus (or the microphone) for it as it sees fit, so an engine neither requests
+ * focus nor ends a take because focus moved. A take ends when the person ends it, when the service
+ * reports its end or an error, or when the screen reports that the app was left (see
+ * [DictationController]).
  */
 interface SpeechEngine {
     /** Whether the phone has a recognition service at all. Constant for a given engine. */
@@ -47,7 +59,7 @@ interface SpeechEngine {
     /** Abandons the take and reports nothing more for it. Safe to call when nothing is running. */
     fun cancel()
 
-    /** Gives back everything held for the take: the recogniser, audio focus. Nothing more is reported afterwards. */
+    /** Gives back everything held for the take: the recogniser. Nothing more is reported afterwards. */
     fun release()
 }
 

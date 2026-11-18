@@ -295,13 +295,124 @@ class DictationControllerTest {
         assertNull(c.notice.value)
     }
 
-    @Test fun anAudioTakeoverIsReportedAsAnInterruptionAndNothingIsInserted() {
+    @Test fun aTakeCutFromOutsideIsReportedAsAnInterruptionAndNothingIsInserted() {
         val c = controller().listening()
         engine.listener!!.onPartial("half a thought", null)
-        engine.listener!!.onProblem(DictationProblem.Interrupted)
+        engine.listener!!.onProblem(dictationProblemFor(RecognizerCodes.CLIENT))
         assertEquals(DictationState.Idle, c.state.value)
         assertTrue(host.inserted.isEmpty())
         assertEquals(DictationProblem.Interrupted, c.notice.value!!.problem)
+    }
+
+    // ---- what does and does not end a take (the API 37 emulator took 36 ms to cancel itself) ----
+
+    /**
+     * The sequence the emulator's log showed: the app starts a take, and 36 ms later the speech service
+     * (another process) asks for audio focus for its own capture. The app used to take that for
+     * "another app is using the audio" and cancelled the take within a second, on every tap.
+     *
+     * The controller is told nothing about focus (the engine asks for none and ignores it), so the
+     * take simply goes on: ready, listening, still listening seconds later, text in on stop.
+     */
+    @Test fun theSpeechServiceTakingTheAudioForItsOwnCaptureDoesNotEndTheTake() {
+        val c = controller()
+        c.toggle()
+        // t = 0: startListening. t = 36 ms: the service's own focus request. Nothing reaches us.
+        clock.advance(36)
+        assertEquals(DictationState.Starting, c.state.value)
+        engine.listener!!.onReady()
+        clock.advance(1_000)
+        assertEquals(DictationState.Listening(0f, ""), c.state.value)
+        assertNull(c.notice.value)
+        assertEquals(0, engine.cancels)
+        engine.listener!!.onPartial("this keeps going", null)
+        clock.advance(3_000)
+        assertEquals(DictationState.Listening(0f, "this keeps going"), c.state.value)
+        c.toggle()
+        engine.listener!!.onResults(listOf("this keeps going"))
+        assertEquals(listOf("this keeps going"), host.inserted)
+        assertEquals(DictationState.Idle, c.state.value)
+        assertNull(c.notice.value)
+    }
+
+    @Test fun theServiceEndingTheCaptureItselfMovesToFinishingAndTheResultStillGoesIn() {
+        val c = controller().listening()
+        engine.listener!!.onPartial("said it all", null)
+        engine.listener!!.onEndOfSpeech()
+        assertEquals(DictationState.Finishing("said it all"), c.state.value)
+        // The person did not tap, so the engine was not asked to stop.
+        assertEquals(0, engine.stops)
+        assertEquals(listOf(DictationSignal.Started, DictationSignal.Stopped), host.signals)
+        engine.listener!!.onResults(listOf("said it all"))
+        assertEquals(listOf("said it all"), host.inserted)
+        assertEquals(DictationState.Idle, c.state.value)
+    }
+
+    @Test fun aResultThatNeverFollowsTheEndOfSpeechKeepsWhatWasShown() {
+        val c = controller().listening()
+        engine.listener!!.onPartial("almost there", null)
+        engine.listener!!.onEndOfSpeech()
+        clock.advance(4_001)
+        assertEquals(listOf("almost there"), host.inserted)
+        assertEquals(DictationState.Idle, c.state.value)
+    }
+
+    @Test fun theEndOfSpeechThatFollowsATapIsNotCountedTwice() {
+        val c = controller().listening()
+        engine.listener!!.onPartial("one two", null)
+        c.toggle()
+        engine.listener!!.onEndOfSpeech()
+        assertEquals(DictationState.Finishing("one two"), c.state.value)
+        assertEquals(listOf(DictationSignal.Started, DictationSignal.Stopped), host.signals)
+        assertEquals(1, engine.stops)
+    }
+
+    @Test fun anEndOfSpeechBeforeTheTakeIsListeningChangesNothing() {
+        val c = controller()
+        c.toggle()
+        engine.listener!!.onEndOfSpeech()
+        assertEquals(DictationState.Starting, c.state.value)
+    }
+
+    @Test fun anEndOfSpeechFromAReplacedTakeIsIgnored() {
+        val c = controller().listening()
+        val old = engine.listener!!
+        c.cancel()
+        c.toggle()
+        engine.listener!!.onReady()
+        old.onEndOfSpeech()
+        assertEquals(DictationState.Listening(0f, ""), c.state.value)
+    }
+
+    @Test fun theRecognisersOwnErrorsEndTheTakeWithTheirOwnMessageAndTheDraftIsUntouched() {
+        listOf(
+            RecognizerCodes.AUDIO to DictationProblem.Audio,
+            RecognizerCodes.RECOGNIZER_BUSY to DictationProblem.Busy,
+            RecognizerCodes.CLIENT to DictationProblem.Interrupted,
+        ).forEach { (code, expected) ->
+            val e = FakeEngine()
+            val h = FakeHost()
+            val c = DictationController(e, h, FakeClock(), listOf(null))
+            c.toggle()
+            e.listener!!.onReady()
+            e.listener!!.onPartial("half", null)
+            e.listener!!.onProblem(dictationProblemFor(code))
+            assertEquals(code.toString(), DictationState.Idle, c.state.value)
+            assertEquals(code.toString(), expected, c.notice.value!!.problem)
+            assertTrue(code.toString(), h.inserted.isEmpty())
+        }
+    }
+
+    @Test fun leavingTheAppEndsTheTakeAndATakeInProgressSurvivesEverythingElse() {
+        val c = controller().listening()
+        engine.listener!!.onPartial("on the move", null)
+        // No lifecycle signal, no recogniser callback: nothing the platform does around the take
+        // (focus, other apps' audio) can end it from the controller's side.
+        clock.advance(30_000)
+        assertEquals(DictationState.Listening(0f, "on the move"), c.state.value)
+        c.interrupt(DictationInterruption.Background)
+        assertEquals(DictationState.Idle, c.state.value)
+        assertTrue(host.inserted.isEmpty())
     }
 
     // ---- language fallback ----

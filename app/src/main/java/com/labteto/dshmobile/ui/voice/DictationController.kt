@@ -73,6 +73,14 @@ interface DictationHost {
  *  - A take that showed text and then ended empty-handed (no match, timeout, a stop the service
  *    never answered) keeps the last text it showed instead of losing it.
  *  - Anything that arrives from a take that has been replaced or cancelled is ignored.
+ *  - What ends a take, and only this: the person (a second tap, Cancel), the recogniser's own
+ *    callbacks (a result, `onEndOfSpeech`, `onError`: `ERROR_AUDIO`, `ERROR_RECOGNIZER_BUSY`,
+ *    `ERROR_CLIENT`, silence, no match, ...), the screen saying the app was left ([interrupt]:
+ *    background, screen off, another window, another session) and the two deadlines. A call that
+ *    takes the microphone arrives as one of the recogniser's errors or as the app leaving. The
+ *    audio focus is not a signal: the recognition service requests it for its own take, a few
+ *    milliseconds after the app asks it to start, so a focus change is never "another app took the
+ *    audio" and the app does not look at it.
  *
  * Plain Kotlin on purpose: the recogniser, the clock and the screen are behind small interfaces.
  */
@@ -195,14 +203,18 @@ class DictationController(
         val heard = (stateFlow.value as? DictationState.Listening)?.heard.orEmpty()
         stateFlow.value = DictationState.Finishing(heard)
         host.signal(DictationSignal.Stopped)
+        awaitResult()
+        engine.stopListening()
+    }
+
+    /** From here the service owes an answer; if it never comes, what was on screen is kept rather than nothing. */
+    private fun awaitResult() {
         deadline(FINISH_DEADLINE_MS) {
-            // The service never answered the stop: keep what was on screen rather than nothing.
             if (stateFlow.value is DictationState.Finishing) {
                 engine.cancel()
                 if (lastPartial.isBlank()) fail(DictationProblem.Timeout) else complete(lastPartial)
             }
         }
-        engine.stopListening()
     }
 
     private fun complete(text: String) {
@@ -270,6 +282,16 @@ class DictationController(
             // indicator that animates between them, and they keep the screen from being asked to
             // recompose for a change nobody can see.
             stateFlow.value = now.copy(level = quantizeLevel(normalizeRms(rmsDb)))
+        }
+
+        override fun onEndOfSpeech() {
+            if (!current()) return
+            // The service stopped capturing by itself and is working out the result, so this is
+            // the same place a tap on the microphone leads to, under the same deadline.
+            val heard = (stateFlow.value as? DictationState.Listening)?.heard ?: return
+            stateFlow.value = DictationState.Finishing(heard)
+            host.signal(DictationSignal.Stopped)
+            awaitResult()
         }
 
         override fun onPartial(stable: String?, unstable: String?) {

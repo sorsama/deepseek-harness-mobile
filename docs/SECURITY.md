@@ -365,9 +365,10 @@ uses Android's own `SpeechRecognizer`, the service the phone has chosen for it, 
 - **When it listens.** Only from a tap (or Ctrl+M with a keyboard), only while the app is in front
   and its window has focus, and only for one message box. It stops, and discards what it heard, when
   the app goes to the background or the screen locks, when another window or a system dialog covers
-  it, when you switch session, when the message box leaves the screen, and when a call or another
-  app takes the audio. The app holds transient audio focus while it listens, so music pauses
-  instead of being picked up.
+  it, when you switch session, when the message box leaves the screen, and when the speech service
+  reports that it lost the microphone (a call taking it, for example). The app asks for no audio
+  focus of its own: the phone's speech service captures the audio and takes focus for itself while it
+  listens, so music is paused by that service, not by the app.
 - **Switching it off.** **Settings, Chat, Dictation button.** The button is also absent, and the
   setting explains why, on a phone with no recognition service.
 

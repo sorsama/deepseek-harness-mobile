@@ -2,9 +2,6 @@ package com.labteto.dshmobile.ui.voice
 
 import android.content.Context
 import android.content.Intent
-import android.media.AudioAttributes
-import android.media.AudioFocusRequest
-import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -24,14 +21,18 @@ import android.speech.SpeechRecognizer
  * A fresh recogniser is made for every take and destroyed at its end. Reusing one is the classic
  * way to get `ERROR_RECOGNIZER_BUSY` on the second take, and a take is short.
  *
- * While a take runs, the engine holds transient audio focus, so music pauses instead of being
- * recorded, and a call or another app taking the audio ends the take (see [SpeechListener.onProblem]
- * with [DictationProblem.Interrupted]).
+ * The engine asks for no audio focus. The recognition service captures the audio and takes focus
+ * (or the microphone) for the take itself, normally a few milliseconds after `startListening`.
+ * An earlier version of this class asked for focus as well and treated losing it as "another app
+ * took the audio": the service's own request arrived 36 ms later on an API 37 emulator, so the app
+ * cancelled its own dictation within a second, every time. A call or another app that really takes
+ * the microphone is told apart by what the service reports (`onError` with `ERROR_AUDIO`,
+ * `ERROR_RECOGNIZER_BUSY` or `ERROR_CLIENT`, or `onEndOfSpeech`), and leaving the app by the
+ * lifecycle signals the composer sends to the controller.
  */
 class AndroidSpeechEngine(context: Context) : SpeechEngine {
     private val app = context.applicationContext
     private val handler = Handler(Looper.getMainLooper())
-    private val audio = app.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
 
     /**
      * Asked once. Needs the `RecognitionService` query in the manifest: from Android 11 on, package
@@ -40,7 +41,6 @@ class AndroidSpeechEngine(context: Context) : SpeechEngine {
     override val available: Boolean = speechRecognitionAvailable(app)
 
     private var recognizer: SpeechRecognizer? = null
-    private var focus: AudioFocusRequest? = null
 
     /** Bumped whenever a take ends, so a late callback from the platform finds itself out of date. */
     private var session = 0
@@ -48,10 +48,6 @@ class AndroidSpeechEngine(context: Context) : SpeechEngine {
     override fun start(language: String?, listener: SpeechListener) {
         endTake()
         val id = session
-        if (!takeAudioFocus(id, listener)) {
-            listener.onProblem(DictationProblem.Busy)
-            return
-        }
         val created = runCatching { SpeechRecognizer.createSpeechRecognizer(app) }.getOrNull()
         if (created == null) {
             endTake()
@@ -93,37 +89,11 @@ class AndroidSpeechEngine(context: Context) : SpeechEngine {
             }
         }
 
-    private fun takeAudioFocus(id: Int, listener: SpeechListener): Boolean {
-        val manager = audio ?: return true
-        val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ASSISTANT)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build(),
-            )
-            .setOnAudioFocusChangeListener({ change ->
-                // A call or another app has the audio now. Ducking for a notification is not that.
-                val taken = change == AudioManager.AUDIOFOCUS_LOSS || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT
-                if (taken && id == session) {
-                    endTake()
-                    listener.onProblem(DictationProblem.Interrupted)
-                }
-            }, handler)
-            .build()
-        if (manager.requestAudioFocus(request) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return false
-        focus = request
-        return true
-    }
-
-    /** Ends the take quietly: stops capture, destroys the recogniser, gives the audio back. Idempotent. */
+    /** Ends the take quietly: stops capture and destroys the recogniser. Idempotent. */
     private fun endTake() {
         session++
         val ending = recognizer
         recognizer = null
-        val held = focus
-        focus = null
-        if (held != null) runCatching { audio?.abandonAudioFocusRequest(held) }
         if (ending != null) {
             runCatching { ending.cancel() }
             // Not from inside the recogniser's own callback: destroying it there is allowed but
@@ -148,7 +118,9 @@ class AndroidSpeechEngine(context: Context) : SpeechEngine {
         // Raw audio is not kept: this callback is deliberately empty.
         override fun onBufferReceived(buffer: ByteArray?) = Unit
 
-        override fun onEndOfSpeech() = Unit
+        override fun onEndOfSpeech() {
+            if (live()) out.onEndOfSpeech()
+        }
 
         override fun onError(error: Int) {
             if (!live()) return

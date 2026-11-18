@@ -29,7 +29,7 @@
     <string name="voice_err_service">Le service vocal n’est pas disponible pour le moment.</string>
     <string name="voice_err_language">La dictée n’est pas disponible dans cette langue.</string>
     <string name="voice_err_failed">La dictée s’est arrêtée. Réessayez.</string>
-    <string name="voice_err_interrupted">La dictée s’est arrêtée, car une autre appli utilise le son.</string>
+    <string name="voice_err_interrupted">La dictée a été interrompue. Réessayez.</string>
     <string name="voice_perm_denied">La dictée a besoin du micro.</string>
     <string name="voice_perm_blocked">L’accès au micro est désactivé pour cette appli.</string>
     <string name="voice_open_settings">Ouvrir les réglages</string>

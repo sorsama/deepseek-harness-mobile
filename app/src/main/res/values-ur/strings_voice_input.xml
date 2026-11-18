@@ -29,7 +29,7 @@
     <string name="voice_err_service">اسپیچ سروس ابھی دستیاب نہیں۔</string>
     <string name="voice_err_language">اس زبان میں ڈکٹیشن دستیاب نہیں۔</string>
     <string name="voice_err_failed">ڈکٹیشن رک گئی۔ دوبارہ کوشش کریں۔</string>
-    <string name="voice_err_interrupted">ڈکٹیشن اس لیے رک گئی کہ کوئی اور ایپ آواز استعمال کر رہی ہے۔</string>
+    <string name="voice_err_interrupted">ڈکٹیشن درمیان میں رک گئی۔ دوبارہ کوشش کریں۔</string>
     <string name="voice_perm_denied">ڈکٹیشن کے لیے مائیکروفون درکار ہے۔</string>
     <string name="voice_perm_blocked">اس ایپ کے لیے مائیکروفون کی رسائی بند ہے۔</string>
     <string name="voice_open_settings">سیٹنگز کھولیں</string>

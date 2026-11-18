@@ -29,7 +29,7 @@
     <string name="voice_err_service">خدمة الكلام غير متاحة حاليًا.</string>
     <string name="voice_err_language">الإملاء غير متاح بهذه اللغة.</string>
     <string name="voice_err_failed">توقف الإملاء. حاول مرة أخرى.</string>
-    <string name="voice_err_interrupted">توقف الإملاء لأن تطبيقًا آخر يستخدم الصوت.</string>
+    <string name="voice_err_interrupted">انقطع الإملاء. حاول مرة أخرى.</string>
     <string name="voice_perm_denied">يحتاج الإملاء إلى الميكروفون.</string>
     <string name="voice_perm_blocked">الوصول إلى الميكروفون متوقف لهذا التطبيق.</string>
     <string name="voice_open_settings">فتح الإعدادات</string>

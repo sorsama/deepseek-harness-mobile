@@ -29,7 +29,7 @@
     <string name="voice_err_service">El servicio de voz no está disponible ahora.</string>
     <string name="voice_err_language">El dictado no está disponible en este idioma.</string>
     <string name="voice_err_failed">El dictado se detuvo. Inténtalo de nuevo.</string>
-    <string name="voice_err_interrupted">El dictado se detuvo porque otra app está usando el audio.</string>
+    <string name="voice_err_interrupted">El dictado se interrumpió. Inténtalo de nuevo.</string>
     <string name="voice_perm_denied">El dictado necesita el micrófono.</string>
     <string name="voice_perm_blocked">El acceso al micrófono está desactivado para esta app.</string>
     <string name="voice_open_settings">Abrir ajustes</string>
