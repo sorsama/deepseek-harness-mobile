@@ -5,6 +5,23 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **Change the harness's own settings from the app.** Settings, **Harness settings** lists what the
+  connected harness lets a client change: **Web search**, **Shell**, **Subagents**, **Agent loop** and
+  **Session log**, and any other settings the harness offers a page for. Until now these could only
+  be changed on the harness's own web page, which a phone-only user does not have. Web search
+  switches between Messages search and the Search and Fetch APIs, sets the endpoint and the results
+  per search, and keeps the API key on the harness: the key is never shown, only whether one is set,
+  and it can be replaced or removed (the page says when the same key also serves the DeepSeek model
+  provider, so removing it would stop chat too). Shell sets the command timeout and the output cap. Subagents
+  sets how deep and how many may run, and which models an agent may choose for them. Agent loop sets
+  the parallel tool calls, and Session log the upload switch. Switches and choices save as soon as
+  you touch them; numbers and addresses save on Done or when you leave the field. A value that is
+  out of range is explained next to the field before anything is sent, and a change the harness
+  refuses puts the old value back and says why. It works on the harness on this phone and on a
+  remote one, and the row is hidden once a harness turns out to be too old to describe its settings.
+
 ## [0.23.0] - 2026-11-17
 
 ![Three phones: the Subagents sheet with its Close button, a chat at Fully expanded, and the Stop and archive dialog](docs/images/releases/0.23.0/devices/hero-whats-new.png)
