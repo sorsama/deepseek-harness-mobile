@@ -323,7 +323,7 @@ class SettingsPagesTest {
     }
 
     @Test
-    fun `resetting asks the harness to unset, never to set the default back`() {
+    fun `resetting asks the harness to unset and never to set the default back`() {
         val web = writeAnswer(SettingsFixtures.MUTATE_WEB_SELECT_API)
         assertEquals(
             listOf<SettingsPathOpView>(SettingsPathOpView.Unset(listOf("searchProvider")), SettingsPathOpView.Unset(listOf("fetchProvider"))),
