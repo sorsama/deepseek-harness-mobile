@@ -1,13 +1,17 @@
 package com.labteto.dshmobile.ui.screens.main.browser
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.GeolocationPermissions
@@ -29,6 +33,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.webkit.ProfileStore
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
@@ -38,7 +45,10 @@ import androidx.webkit.WebViewFeature
  *
  * It is created the first time the tab needs it, kept while the reader switches between Files,
  * Preview, Terminal and Browser (so the page, its history and its scroll position stay), paused
- * whenever the tab is not on screen, and destroyed when the panel closes ([rememberBrowserViewHolder]).
+ * whenever the tab is not on screen, and destroyed when the panel closes ([rememberBrowserViewHolder])
+ * or, if the activity finishes first, with the activity. [WebPageSlot] holds the rules (one view,
+ * destroyed once, never made again after the close, replaced after its renderer died);
+ * [AndroidWebPage] holds the teardown order.
  *
  * The page runs JavaScript, because the dev servers this tab exists for are JavaScript apps. What it
  * does not get:
@@ -62,11 +72,11 @@ internal class BrowserViewHolder(private val context: Context, private val state
      */
     var gate: (String) -> BrowserProblem? = { null }
 
-    /** Bumped when the view is replaced (after its renderer died), so the tab composes the new one. */
+    /** Bumped when a view is made or dropped, so the tab composes the view that is current. */
     var generation by mutableIntStateOf(0)
         private set
 
-    private var view: WebView? = null
+    private val slot = WebPageSlot { create() }
 
     /** Cookies and storage are in the tab's own profile; false on a WebView too old for profiles. */
     var isolated: Boolean = false
@@ -75,18 +85,36 @@ internal class BrowserViewHolder(private val context: Context, private val state
     /** The URL of the main-frame load in progress, to tell a page's certificate error from a resource's. */
     private var mainUrl: String? = null
 
+    /**
+     * The panel's web view. Null before the first page, after its renderer died and once the panel
+     * closed; nothing outside this class keeps a reference to a view that is gone.
+     */
+    val view: WebView?
+        get() {
+            // Read so a composition that asks is told when the view is replaced or dropped.
+            @Suppress("UNUSED_EXPRESSION")
+            generation
+            return slot.current?.view
+        }
+
     val hasView: Boolean get() = view != null
 
-    /** The web view, created on first use. */
-    fun obtain(): WebView = view ?: create().also { view = it }
-
     fun load(url: String) {
+        // The panel is gone (a late tap or callback): nothing may be made for a panel nobody sees.
+        if (slot.closed) return
         state.problem = null
         state.notice = null
         state.url = url
-        state.live = true
         mainUrl = url
-        obtain().loadUrl(url)
+        val page = slot.obtain()
+        if (page == null) {
+            // This phone has no usable WebView right now. Retry tries to build one again.
+            state.live = false
+            state.problem = BrowserProblem.Crashed
+            return
+        }
+        state.live = true
+        page.view.loadUrl(url)
     }
 
     fun reload() {
@@ -118,11 +146,11 @@ internal class BrowserViewHolder(private val context: Context, private val state
     }
 
     fun pause() {
-        view?.onPause()
+        slot.pause()
     }
 
     fun resume() {
-        view?.onResume()
+        slot.resume()
     }
 
     /** Cookies, site storage, cache and form data of the tab, then the page again. */
@@ -133,25 +161,34 @@ internal class BrowserViewHolder(private val context: Context, private val state
         if (state.live && state.url != null) reload()
     }
 
+    /**
+     * The panel is done with the browser (it closed, or the activity is finishing): destroys the web
+     * view, once, and forgets the page ([BrowserTabState.closePage]). Safe to call again.
+     */
     fun destroy() {
-        view?.let {
-            (it.parent as? ViewGroup)?.removeView(it)
-            it.stopLoading()
-            it.destroy()
-        }
-        view = null
-        state.live = false
-        state.phoneLoopback = false
-        state.loading = false
-        state.canGoBack = false
-        state.canGoForward = false
+        slot.close()
+        gate = { null }
+        mainUrl = null
+        state.closePage()
+        generation++
     }
 
     // JavaScript is the point of the tab (dev servers are JavaScript apps). The page gets no bridge
     // into the app and no access beyond its own origin; see the class comment.
-    @SuppressLint("SetJavaScriptEnabled")
-    private fun create(): WebView {
+    private fun create(): AndroidWebPage {
         val v = WebView(context)
+        try {
+            configure(v)
+        } catch (e: RuntimeException) {
+            v.destroy()
+            throw e
+        }
+        generation++
+        return AndroidWebPage(v)
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun configure(v: WebView) {
         // Must come before anything else touches the view: the profile is fixed at first use.
         isolated = BrowserProfile.attach(v)
         // Legacy WebViews can lose the containing Compose dialog's surface with GPU drawing (the
@@ -182,8 +219,6 @@ internal class BrowserViewHolder(private val context: Context, private val state
         v.setDownloadListener { _, _, _, _, _ -> state.notice = BrowserNotice.Download }
         v.webViewClient = Client()
         v.webChromeClient = Chrome()
-        generation++
-        return v
     }
 
     private fun syncHistory(v: WebView?) {
@@ -246,14 +281,16 @@ internal class BrowserViewHolder(private val context: Context, private val state
             }
         }
 
+        // Returning false (the default) would kill the whole app with the renderer. The view cannot
+        // be used again: the slot takes it down here, and Retry builds a new one.
         override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
-            // The view is unusable from here on; drop it, and the tab composes a fresh one on reload.
-            if (view != null && view === this@BrowserViewHolder.view) {
-                (view.parent as? ViewGroup)?.removeView(view)
-                view.destroy()
-                this@BrowserViewHolder.view = null
+            val lost = slot.current?.takeIf { it.view === view }
+            if (lost != null && slot.rendererGone(lost)) {
                 state.live = false
                 state.loading = false
+                state.title = null
+                state.canGoBack = false
+                state.canGoForward = false
                 state.problem = BrowserProblem.Crashed
                 generation++
             }
@@ -296,6 +333,56 @@ internal class BrowserViewHolder(private val context: Context, private val state
 }
 
 /**
+ * One real [WebView] and the order its teardown must follow. A view torn down with a page still
+ * loading, its clients still attached or itself still in the view tree is the classic way for a
+ * WebView to outlive its owner or to crash in native code when the window goes away.
+ */
+internal class AndroidWebPage(val view: WebView) : WebPage {
+    private var down = false
+
+    override fun pause() {
+        if (!down) view.onPause()
+    }
+
+    override fun resume() {
+        if (!down) view.onResume()
+    }
+
+    override fun teardown(rendererGone: Boolean) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            // `destroy()` belongs to the thread that made the view.
+            Handler(Looper.getMainLooper()).post { teardown(rendererGone) }
+            return
+        }
+        if (down) return
+        down = true
+        // Out of the view tree first: `destroy()` is only allowed on a detached view.
+        step { (view.parent as? ViewGroup)?.removeView(view) }
+        if (!rendererGone) {
+            // Stop what is running, drop every callback into the app, unload the page, then stop the
+            // page's own timers. A view whose renderer died takes none of these calls.
+            step { view.stopLoading() }
+            step { view.webViewClient = WebViewClient() }
+            step { view.webChromeClient = null }
+            step { view.setDownloadListener(null) }
+            step { view.clearFocus() }
+            step { view.loadUrl("about:blank") }
+            step { view.onPause() }
+        }
+        step { view.removeAllViews() }
+        step { view.destroy() }
+    }
+
+    /** One step failing must never skip the `destroy()` after it. */
+    private inline fun step(block: () -> Unit) {
+        try {
+            block()
+        } catch (_: RuntimeException) {
+        }
+    }
+}
+
+/**
  * The tab's own WebView profile: cookies, local storage, IndexedDB, service workers and the HTTP
  * cache apart from the app's other web views (the file preview and the terminal).
  *
@@ -324,13 +411,34 @@ internal object BrowserProfile {
     }
 }
 
-/** The panel's browser view: lives while the panel is open and is destroyed with it. */
+/**
+ * The panel's browser view: lives while the panel is open and is destroyed with it. It is also
+ * destroyed when the activity starts finishing, ahead of the window going away, so a web view never
+ * meets the end of its activity.
+ */
 @Composable
 internal fun rememberBrowserViewHolder(state: BrowserTabState): BrowserViewHolder {
     val context = LocalContext.current
     val holder = remember(state, context) { BrowserViewHolder(context, state) }
-    DisposableEffect(holder) { onDispose { holder.destroy() } }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(holder, lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            val finishing = event == Lifecycle.Event.ON_PAUSE && context.findActivity()?.isFinishing == true
+            if (finishing || event == Lifecycle.Event.ON_DESTROY) holder.destroy()
+        }
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
+            holder.destroy()
+        }
+    }
     return holder
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 /**

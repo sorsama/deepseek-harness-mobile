@@ -365,9 +365,9 @@ internal fun WorkspacePanelBody(
                 role = Role.Tab,
                 stretch = true,
                 minSegmentHeight = 36.dp,
-                // Four tabs share a phone's width; at a large text size a label wraps rather than
-                // being cut.
-                maxLabelLines = 2,
+                // Four tabs share a phone's width. When their labels do not fit on one line each the
+                // row scrolls sideways (fading into the page colour) instead of breaking a word.
+                scrollFadeColor = DsTheme.colors.bgBase,
                 modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.xsmall),
             )
             when (state.section) {

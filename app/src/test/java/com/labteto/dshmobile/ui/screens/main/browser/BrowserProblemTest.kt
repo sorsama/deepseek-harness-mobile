@@ -64,8 +64,15 @@ class BrowserProblemTest {
 
     @Test
     fun otherSchemesAreRefusedWithTheirName() {
-        assertEquals(BrowserProblem.Refused(AddressRefusal.UnsupportedScheme, "intent"), browserProblemFor("intent://x#Intent;end", browserEndpointOf(lan, keyOf(lan))))
-        assertEquals(BrowserProblem.Refused(AddressRefusal.Credentials, null), browserProblemFor("http://a@b/", browserEndpointOf(lan, keyOf(lan))))
+        // What was typed is kept, so the address field can go on showing it while the explanation is up.
+        assertEquals(
+            BrowserProblem.Refused(AddressRefusal.UnsupportedScheme, "intent", typed = "intent://x#Intent;end"),
+            browserProblemFor("intent://x#Intent;end", browserEndpointOf(lan, keyOf(lan))),
+        )
+        assertEquals(
+            BrowserProblem.Refused(AddressRefusal.Credentials, null, typed = "http://a@b/"),
+            browserProblemFor("http://a@b/", browserEndpointOf(lan, keyOf(lan))),
+        )
     }
 
     @Test

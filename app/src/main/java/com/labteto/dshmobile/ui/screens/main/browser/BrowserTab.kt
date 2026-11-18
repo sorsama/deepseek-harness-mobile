@@ -127,7 +127,7 @@ internal fun browserEndpointOf(active: HostConfig?, panelHost: String): BrowserE
 /** The problem [raw] would be on [endpoint], or null when the tab may load it. */
 internal fun browserProblemFor(raw: String, endpoint: BrowserEndpoint): BrowserProblem? =
     when (val input = parseBrowserAddress(raw, ::idnToAscii)) {
-        is AddressInput.Refused -> BrowserProblem.Refused(input.reason, input.scheme)
+        is AddressInput.Refused -> BrowserProblem.Refused(input.reason, input.scheme, typed = raw)
         is AddressInput.Web -> when (val reach = browserReach(input.address, endpoint.connection, endpoint.host, endpoint.port, endpoint.secure)) {
             BrowserReach.Open -> null
             BrowserReach.HarnessItself -> BrowserProblem.HarnessItself(input.address.url)
@@ -184,15 +184,21 @@ internal fun BrowserSection(
     val noApp = stringResource(R.string.browser_no_app)
     val cleared = stringResource(R.string.browser_data_cleared)
     val copied = stringResource(R.string.common_copied)
+    // The toolbar and the address field describe what is on screen: the page, an explanation page,
+    // or the start page (see browserShown), never a page that is gone.
+    val showsPage = state.live && holder.hasView
+    val shown = browserShown(showsPage, state.url, state.title, state.problem)
+    val menuUrl = shown.address.takeIf { state.problem !is BrowserProblem.Refused }
 
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall)) {
         BrowserToolbar(
             state = state,
+            shown = shown,
             onBack = { holder.goBack() },
             onForward = { holder.goForward() },
             onReload = { holder.reload() },
             onStop = { holder.stop() },
-            menu = state.url?.let { url ->
+            menu = menuUrl?.let { url ->
                 listOf(
                     MenuItem(stringResource(R.string.browser_open_external), FeatherIcons.ExternalLink) {
                         if (!openInBrowser(context, url)) toast.second(noApp)
@@ -208,7 +214,7 @@ internal fun BrowserSection(
                 )
             },
         )
-        AddressField(url = state.url, onGo = { open(it) })
+        AddressField(url = shown.address, marked = shown.marked, onGo = { open(it) })
         if (state.loading) {
             val loadingLabel = stringResource(R.string.common_loading)
             LinearProgressIndicator(
@@ -237,12 +243,12 @@ internal fun BrowserSection(
                     },
                     onReload = { holder.reload() },
                 )
-                state.live && holder.hasView -> PageView(holder)
+                showsPage -> PageView(holder)
                 else -> StartPage(
                     store = store,
                     key = key,
                     connection = endpoint.connection,
-                    lastUrl = state.url,
+                    lastUrl = state.lastUrl,
                     onOpen = { open(it) },
                 )
             }
@@ -273,6 +279,7 @@ internal fun BrowserSection(
 @Composable
 private fun BrowserToolbar(
     state: BrowserTabState,
+    shown: BrowserShown,
     onBack: () -> Unit,
     onForward: () -> Unit,
     onReload: () -> Unit,
@@ -300,11 +307,11 @@ private fun BrowserToolbar(
                 icon = FeatherIcons.RefreshCw,
                 contentDescription = stringResource(R.string.browser_reload),
                 onClick = onReload,
-                enabled = state.url != null,
+                enabled = shown.reloadable,
             )
         }
         Text(
-            state.title ?: state.url?.let { hostOf(it) }.orEmpty(),
+            shown.title,
             style = DsType.small13Strong,
             color = colors.labelPrimary,
             maxLines = 1,
@@ -322,16 +329,14 @@ private fun BrowserToolbar(
     }
 }
 
-/** The host of [url] for the toolbar while a page has no title yet. */
-private fun hostOf(url: String): String = (parseBrowserAddress(url) as? AddressInput.Web)?.address?.host ?: url
-
 /**
  * The address field: URL keyboard, Go action, and a lock or "not secure" mark that is an icon with a
  * spoken label and the scheme spelled out in the address, never colour alone. The address reads left
- * to right in every language.
+ * to right in every language. [url] is what the tab shows (empty on the start page) and [marked] is
+ * whether a real page is loaded, the only case the mark is about.
  */
 @Composable
-private fun AddressField(url: String?, onGo: (String) -> Unit) {
+private fun AddressField(url: String?, marked: Boolean, onGo: (String) -> Unit) {
     val colors = DsTheme.colors
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
@@ -344,7 +349,7 @@ private fun AddressField(url: String?, onGo: (String) -> Unit) {
     val address = remember(url) { url?.let { (parseBrowserAddress(it, ::idnToAscii) as? AddressInput.Web)?.address } }
     val secure = address?.secure == true
     // Plain HTTP to this phone's own loopback never leaves the device, so it is not marked.
-    val marked = address != null && (secure || address.scope != AddressScope.Loopback)
+    val showMark = marked && address != null && (secure || address.scope != AddressScope.Loopback)
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         BasicTextField(
             value = value,
@@ -377,7 +382,7 @@ private fun AddressField(url: String?, onGo: (String) -> Unit) {
                     Modifier.fillMaxWidth().heightIn(min = DsSpacing.touchTarget).padding(horizontal = DsSpacing.medium),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    if (marked && !focused) {
+                    if (showMark && !focused) {
                         Icon(
                             if (secure) Icons.Filled.Lock else Icons.Filled.Public,
                             contentDescription = stringResource(if (secure) R.string.browser_secure else R.string.browser_not_secure),
@@ -417,9 +422,12 @@ private fun PageView(holder: BrowserViewHolder) {
             holder.pause()
         }
     }
+    // The view is the holder's, and the holder alone makes it; composing never creates one, so a
+    // late recomposition cannot build a view nobody would destroy.
+    val view = holder.view ?: return
     key(holder.generation) {
         AndroidView(
-            factory = { holder.obtain().also { (it.parent as? ViewGroup)?.removeView(it) } },
+            factory = { view.also { (it.parent as? ViewGroup)?.removeView(it) } },
             modifier = Modifier.fillMaxSize(),
             onRelease = { (it.parent as? ViewGroup)?.removeView(it) },
         )
