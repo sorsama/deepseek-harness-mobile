@@ -59,4 +59,9 @@
     <string name="market_line_market">মার্কেট: %1$s</string>
     <string name="market_line_registry">রেজিস্ট্রি: %1$s</string>
     <string name="market_line_registry_own">রেজিস্ট্রি: এই harness-এর নিজের</string>
+    <string name="market_tool_failed">harness-এর কম্পিউটারের প্যাকেজ টুল একটি ত্রুটি জানিয়েছে। এখান থেকে প্লাগইন ইনস্টল করার আগে সেটি সেখানে ঠিক করতে হবে।</string>
+    <string name="market_check_not_found">harness এই প্যাকেজটি খুঁজে পায়নি, তাই মার্কেটের তালিকা পুরোনো হতে পারে। কিছু ইনস্টল হয়নি।</string>
+    <string name="market_check_failed">এই প্যাকেজ যাচাই করা যায়নি। কিছু ইনস্টল হয়নি।</string>
+    <string name="market_line_repository">রিপোজিটরি: %1$s</string>
+    <string name="market_line_commit">কমিট: %1$s</string>
 </resources>

@@ -59,4 +59,9 @@
     <string name="market_line_market">مارکیٹ: %1$s</string>
     <string name="market_line_registry">رجسٹری: %1$s</string>
     <string name="market_line_registry_own">رجسٹری: اسی Harness کی اپنی</string>
+    <string name="market_tool_failed">harness والے کمپیوٹر کے پیکیج ٹول نے خرابی بتائی ہے۔ یہاں سے پلگ ان انسٹال کرنے سے پہلے اسے وہیں ٹھیک کرنا ہوگا۔</string>
+    <string name="market_check_not_found">harness کو یہ پیکیج نہیں ملا، اس لیے ممکن ہے مارکیٹ کی فہرست پرانی ہو۔ کچھ انسٹال نہیں ہوا۔</string>
+    <string name="market_check_failed">یہ پیکیج جانچا نہیں جا سکا۔ کچھ انسٹال نہیں ہوا۔</string>
+    <string name="market_line_repository">ریپوزٹری: %1$s</string>
+    <string name="market_line_commit">کمٹ: %1$s</string>
 </resources>

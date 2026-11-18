@@ -1,6 +1,5 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -93,7 +92,12 @@ internal fun LazyListScope.marketListItems(
         )
     }
     if (page == null && (status == MarketStatus.LOADING || status == MarketStatus.IDLE)) item(key = "market-skeleton") { SkeletonPluginCards() }
-    if (failure != null) item(key = "market-failure") { MarketFailureCard(browser) }
+    if (failure != null) item(key = "market-failure") {
+        // The market the failure is about, by name: a failure never stands under another market's results. With no
+        // results yet it is the page's one card; with results of the same market on screen it is a notice above them.
+        val label = browser.failureUrl?.let { marketLabel(it, sources, languages) }
+        if (page == null) MarketFailureCard(browser, label) else MarketFailureNotice(browser, label)
+    }
     val empty = marketEmpty(page, browser.answered)
     if (page != null && empty != null) item(key = "market-empty") {
         Text(
@@ -157,12 +161,39 @@ private fun MarketNoSources(onOpenSources: () -> Unit) {
     }
 }
 
-/** The standard error card, with Retry; the host's reason sits behind "Technical details". */
+/**
+ * The error card for a market that could not be read at all (nothing of it is on screen), with Retry; the host's reason
+ * sits behind "Technical details". [market] is the market it is about, when it is about one.
+ */
 @Composable
-private fun MarketFailureCard(browser: PluginMarketBrowser) {
+private fun MarketFailureCard(browser: PluginMarketBrowser, market: String?) {
     val failure = browser.failure ?: return
     DsCard {
+        market?.let { Text(technicalDisplay(it), style = DsType.small13Strong, color = DsTheme.colors.labelSecondary) }
         Text(stringResource(marketFailureText(failure)), color = DsTheme.colors.error, style = DsType.std14)
+        FeatureAction(stringResource(R.string.common_retry), browser.status != MarketStatus.LOADING) { browser.retry() }
+        FeatureDiagnostics(marketFailureDetails(failure)?.let(::technicalDisplay))
+    }
+}
+
+/**
+ * A read that failed while the market's own results are on screen (a refresh, a search, the next page): a compact notice
+ * above them, named for the market, with Retry. The results stay, as they do for a search that is still running.
+ */
+@Composable
+private fun MarketFailureNotice(browser: PluginMarketBrowser, market: String?) {
+    val failure = browser.failure ?: return
+    val colors = DsTheme.colors
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(DsShapes.row)
+            .background(colors.errorTertiary)
+            .border(1.dp, colors.errorBorder, DsShapes.row)
+            .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small),
+    ) {
+        market?.let { Text(technicalDisplay(it), style = DsType.small13Strong, color = colors.labelPrimary) }
+        Text(stringResource(marketFailureText(failure)), color = colors.error, style = DsType.small13)
         FeatureAction(stringResource(R.string.common_retry), browser.status != MarketStatus.LOADING) { browser.retry() }
         FeatureDiagnostics(marketFailureDetails(failure)?.let(::technicalDisplay))
     }
@@ -180,15 +211,15 @@ private fun MarketCardView(card: MarketCard, onOpen: () -> Unit) {
     val open = { haptics.tap(); onOpen() }
     val openLabel = stringResource(R.string.plugins_open_details)
     val pressSource = remember { MutableInteractionSource() }
-    val indication = LocalIndication.current
     val meta = listOfNotNull(card.version?.let(::technicalDisplay), card.publisher?.let(::technicalDisplay)).joinToString(" · ")
-    DsCard(contentPadding = PaddingValues(0.dp)) {
+    // Both tap zones share one source and the card fills itself while it is pressed (no ripple is drawn, see DsCard).
+    DsCard(contentPadding = PaddingValues(0.dp), pressSource = pressSource) {
         Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
             Row(
                 Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .clickable(interactionSource = pressSource, indication = indication, onClickLabel = openLabel, role = Role.Button, onClick = open)
+                    .clickable(interactionSource = pressSource, indication = null, onClickLabel = openLabel, role = Role.Button, onClick = open)
                     .padding(start = DsSpacing.comfortable, top = DsSpacing.medium, bottom = DsSpacing.medium, end = DsSpacing.small),
                 horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
             ) {
@@ -213,7 +244,7 @@ private fun MarketCardView(card: MarketCard, onOpen: () -> Unit) {
                 Modifier
                     .fillMaxHeight()
                     .width(36.dp)
-                    .clickable(interactionSource = pressSource, indication = indication, onClick = open)
+                    .clickable(interactionSource = pressSource, indication = null, onClick = open)
                     .clearAndSetSemantics { },
                 contentAlignment = Alignment.Center,
             ) {
@@ -378,7 +409,7 @@ internal fun PluginMarketEntryPage(
         if (check is MarketCheckState.Problem && check.name == entry.name) item(key = "check") { MarketCheckCard(check, onDismissCheck) }
         if (check is MarketCheckState.Failed && check.name == entry.name) item(key = "check-failed") {
             DsCard {
-                Text(stringResource(R.string.ux_a_action_error), color = colors.error, style = DsType.std14)
+                Text(stringResource(R.string.market_check_failed), color = colors.error, style = DsType.std14)
                 FeatureAction(stringResource(R.string.common_close)) { onDismissCheck() }
                 FeatureDiagnostics(check.message)
             }
@@ -455,7 +486,12 @@ internal fun MarketConfirmNotes(note: MarketInstallNote, registryNamed: Boolean,
         Text(technicalDisplay("${note.title} · ${note.version}"), style = DsType.std14, color = colors.labelPrimary)
         note.publisher?.let { Text(stringResource(R.string.market_line_publisher, technicalDisplay(it)), style = DsType.small13, color = colors.labelSecondary) }
         note.market?.let { Text(stringResource(R.string.market_line_market, technicalDisplay(it)), style = DsType.small13, color = colors.labelSecondary) }
-        if (!registryNamed) {
+        val git = note.git
+        if (git != null) {
+            // A git source has no registry: what matters is where it comes from and the exact commit it is pinned to.
+            Text(stringResource(R.string.market_line_repository, technicalDisplay(git.url)), style = DsType.small13, color = colors.labelSecondary)
+            Text(stringResource(R.string.market_line_commit, technicalDisplay(git.commit)), style = DsType.small13, color = colors.labelSecondary)
+        } else if (!registryNamed) {
             Text(
                 if (defaultRegistry != null) stringResource(R.string.market_line_registry, technicalDisplay(defaultRegistry)) else stringResource(R.string.market_line_registry_own),
                 style = DsType.small13,
@@ -489,6 +525,8 @@ internal fun PluginMarketSourcesPage(
         if (!browser.saving && submitted) { submitted = false; if (browser.sourceFailure == null) url = "" }
     }
     DisposableEffect(Unit) { onDispose { browser.clearSourceFailure() } }
+    // What this page shows is what the host says now, not what it said when Discover was last read.
+    LaunchedEffect(Unit) { browser.refreshSources() }
     FeaturePage(stringResource(R.string.market_sources_title), onClose) {
         MarketNote(stringResource(R.string.market_sources_trust))
         sources.forEach { source ->
@@ -501,7 +539,7 @@ internal fun PluginMarketSourcesPage(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(technicalDisplay(source.url), style = DsType.mono12, color = colors.labelTertiary)
-                source.error?.let { Text(technicalDisplay(it), style = DsType.small13, color = colors.error) }
+                browser.sourceProblem(source)?.let { Text(technicalDisplay(it), style = DsType.small13, color = colors.error) }
                 val showing = source.url == browser.selectedUrl
                 if (showing) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {

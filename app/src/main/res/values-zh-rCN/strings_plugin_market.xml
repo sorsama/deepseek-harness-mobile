@@ -59,4 +59,9 @@
     <string name="market_line_market">市场：%1$s</string>
     <string name="market_line_registry">注册表：%1$s</string>
     <string name="market_line_registry_own">注册表：此 Harness 自己的</string>
+    <string name="market_tool_failed">harness 电脑上的软件包工具报告了错误。需要先在那台电脑上修好，才能从这里安装插件。</string>
+    <string name="market_check_not_found">harness 找不到这个软件包，市场的列表可能已过期。未安装任何东西。</string>
+    <string name="market_check_failed">无法检查此软件包。未安装任何东西。</string>
+    <string name="market_line_repository">仓库：%1$s</string>
+    <string name="market_line_commit">提交：%1$s</string>
 </resources>

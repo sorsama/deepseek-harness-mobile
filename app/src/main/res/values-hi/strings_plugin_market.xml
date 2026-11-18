@@ -59,4 +59,9 @@
     <string name="market_line_market">मार्केट: %1$s</string>
     <string name="market_line_registry">रजिस्ट्री: %1$s</string>
     <string name="market_line_registry_own">रजिस्ट्री: इसी harness की अपनी</string>
+    <string name="market_tool_failed">harness वाले कंप्यूटर के पैकेज टूल ने त्रुटि बताई है। यहाँ से प्लगइन इंस्टॉल करने से पहले उसे वहीं ठीक करना होगा।</string>
+    <string name="market_check_not_found">harness को यह पैकेज नहीं मिला, इसलिए हो सकता है मार्केट की सूची पुरानी हो। कुछ इंस्टॉल नहीं हुआ।</string>
+    <string name="market_check_failed">यह पैकेज जाँचा नहीं जा सका। कुछ इंस्टॉल नहीं हुआ।</string>
+    <string name="market_line_repository">रिपॉज़िटरी: %1$s</string>
+    <string name="market_line_commit">कमिट: %1$s</string>
 </resources>

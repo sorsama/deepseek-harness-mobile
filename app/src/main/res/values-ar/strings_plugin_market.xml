@@ -59,4 +59,9 @@
     <string name="market_line_market">السوق: %1$s</string>
     <string name="market_line_registry">السجل: %1$s</string>
     <string name="market_line_registry_own">السجل: الخاص بـ Harness هذا</string>
+    <string name="market_tool_failed">أبلغت أداة الحزم على حاسوب الـharness عن خطأ. يجب إصلاح ذلك هناك قبل تثبيت الإضافات من هنا.</string>
+    <string name="market_check_not_found">لم يعثر الـharness على هذه الحزمة، فربما قائمة السوق قديمة. لم يُثبَّت شيء.</string>
+    <string name="market_check_failed">تعذّر فحص هذه الحزمة. لم يُثبَّت شيء.</string>
+    <string name="market_line_repository">المستودع: %1$s</string>
+    <string name="market_line_commit">الإيداع: %1$s</string>
 </resources>

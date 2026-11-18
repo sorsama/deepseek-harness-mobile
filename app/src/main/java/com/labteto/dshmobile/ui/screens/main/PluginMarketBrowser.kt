@@ -57,6 +57,16 @@ internal class PluginMarketBrowser(
     var answered by mutableStateOf<MarketQuery?>(null); private set
     var status by mutableStateOf(MarketStatus.IDLE); private set
     var failure by mutableStateOf<MarketFailure?>(null); private set
+
+    /** The market [failure] is about, or null when it is about none (the list of markets itself could not be read). */
+    var failureUrl by mutableStateOf<String?>(null); private set
+
+    /**
+     * What this session has seen of each market since the host listed it. The host keeps the last error it recorded for a
+     * market it was not asked about again, so a market that has loaded since is no longer in error whatever the host says.
+     */
+    private var loadedUrls by mutableStateOf<Set<String>>(emptySet())
+    private var failedUrls by mutableStateOf<Map<String, MarketFailure>>(emptyMap())
     var saving by mutableStateOf(false); private set
     var sourceFailure by mutableStateOf<MarketFailure?>(null); private set
     var check by mutableStateOf<MarketCheckState>(MarketCheckState.Idle); private set
@@ -103,7 +113,26 @@ internal class PluginMarketBrowser(
         load(url, query, count = (page?.entries?.size ?: 0).coerceAtLeast(MarketLimits.PAGE_SIZE), refresh = true)
     }
 
-    fun retry() = retryAction()
+    /** Retry the read that failed, and read the list of markets again so what the Markets page says is current. */
+    fun retry() {
+        retryAction()
+        refreshSources()
+    }
+
+    /**
+     * Read the list of markets again and nothing else: the host answers from what it has, it never fetches an index for
+     * this. Called when the Markets page opens, after a retry and after a market loads, so a title or an error that changed
+     * on the host does not stay as the last read left it.
+     */
+    fun refreshSources() {
+        scope.launch {
+            val result = market { it.marketIndexes() }
+            if (result is RpcResult.Ok) sources = result.value
+        }
+    }
+
+    /** What the Markets page says is wrong with [source], or null: the host's words, unless the market has loaded since. */
+    fun sourceProblem(source: MarketIndexInfo): String? = marketSourceProblem(source.error, source.url in loadedUrls, failedUrls[source.url])
 
     private fun loadSources(select: String? = null) {
         scope.launch {
@@ -113,6 +142,7 @@ internal class PluginMarketBrowser(
                 is RpcResult.Err -> {
                     if (id != read) return@launch
                     failure = result.error.toMarketFailure()
+                    failureUrl = null
                     status = MarketStatus.ERROR
                     retryAction = { loadSources() }
                 }
@@ -126,9 +156,11 @@ internal class PluginMarketBrowser(
                         ?: list.firstOrNull()?.url
                     selectedUrl = next
                     if (next == null) {
-                        page = null; answered = null; failure = null; status = MarketStatus.READY
+                        page = null; answered = null; failure = null; failureUrl = null; status = MarketStatus.READY
                     } else if (next != previous || page == null) {
                         query = MarketQuery(query.text)
+                        // Another market is now shown: nothing of the one before may stay under its name (or under an error of the new one).
+                        if (next != previous) { page = null; answered = null }
                         load(next, query, MarketLimits.PAGE_SIZE, refresh = false)
                     } else {
                         // The same market: recount what is installed, from the host's cached document.
@@ -144,6 +176,7 @@ internal class PluginMarketBrowser(
         val id = ++read
         status = MarketStatus.LOADING
         failure = null
+        failureUrl = null
         scope.launch {
             val outcome = loadMarketEntries(count, refresh) { offset, limit, fetchedAt, again ->
                 market { it.marketSearch(url, asked, offset, limit, fetchedAt, again) }
@@ -156,19 +189,30 @@ internal class PluginMarketBrowser(
                         query = declared
                         load(url, declared, count, refresh = false)
                     } else {
-                        page = outcome.page; answered = asked; failure = null; status = MarketStatus.READY
+                        page = outcome.page; answered = asked; failure = null; failureUrl = null; status = MarketStatus.READY
+                        loaded(url)
                     }
                 }
-                is MarketLoad.Failed -> fail(outcome.failure) { load(url, asked, count, refresh) }
-                MarketLoad.Changed -> fail(MarketFailure.Changed) { load(url, asked, count, refresh) }
+                is MarketLoad.Failed -> fail(url, outcome.failure) { load(url, asked, count, refresh) }
+                MarketLoad.Changed -> fail(url, MarketFailure.Changed) { load(url, asked, count, refresh) }
             }
         }
     }
 
-    private fun fail(reason: MarketFailure, again: () -> Unit) {
+    private fun fail(url: String, reason: MarketFailure, again: () -> Unit) {
         failure = reason
+        failureUrl = url
         status = MarketStatus.ERROR
         retryAction = again
+        loadedUrls = loadedUrls - url
+        failedUrls = failedUrls + (url to reason)
+    }
+
+    /** A market was read: its error, if the host still lists one, is over; and its title may be known now. */
+    private fun loaded(url: String) {
+        loadedUrls = loadedUrls + url
+        failedUrls = failedUrls - url
+        if (sources?.firstOrNull { it.url == url }?.let { it.title == null || it.error != null } == true) refreshSources()
     }
 
     /** The search text, after the typing pause. Blank text asks for the market in its own order. */
@@ -204,6 +248,7 @@ internal class PluginMarketBrowser(
         val id = ++read
         status = MarketStatus.MORE
         failure = null
+        failureUrl = null
         scope.launch {
             val asked = query
             val outcome = loadMoreMarketEntries(current) { offset, limit, fetchedAt, again ->
@@ -212,8 +257,8 @@ internal class PluginMarketBrowser(
             if (id != read) return@launch
             when (outcome) {
                 is MarketLoad.Loaded -> { page = outcome.page; status = MarketStatus.READY }
-                is MarketLoad.Failed -> fail(outcome.failure) { more() }
-                MarketLoad.Changed -> fail(MarketFailure.Changed) { more() }
+                is MarketLoad.Failed -> fail(url, outcome.failure) { more() }
+                MarketLoad.Changed -> fail(url, MarketFailure.Changed) { more() }
             }
         }
     }

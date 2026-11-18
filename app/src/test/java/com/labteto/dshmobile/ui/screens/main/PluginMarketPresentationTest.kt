@@ -152,6 +152,31 @@ class PluginMarketPresentationTest {
         assertEquals(R.string.market_source_failed, marketSourceFailureText(MarketFailure.Other("x", null)))
     }
 
+    // ---- errors belong to the market they are about ----
+
+    @Test fun `a market that has loaded since is not in error whatever the host still lists`() {
+        val stale = "Could not fetch http://127.0.0.1:3099/index.json: fetch failed: connect ECONNREFUSED 127.0.0.1:3099"
+        // The device run: the server came back, the host still carried this error for the market it was not asked about again.
+        assertNull(marketSourceProblem(stale, loadedSince = true, failure = null))
+        assertNull(marketSourceProblem(stale, loadedSince = true, failure = MarketFailure.Fetch("HTTP 500")))
+        assertEquals(stale, marketSourceProblem(stale, loadedSince = false, failure = null))
+        // A failure this session saw is shown even when the host has recorded nothing.
+        assertEquals("HTTP 404", marketSourceProblem(null, loadedSince = false, failure = MarketFailure.Fetch("HTTP 404")))
+        assertNull(marketSourceProblem(null, loadedSince = false, failure = null))
+    }
+
+    @Test fun `a failure is named for its market by title then by host`() {
+        val titled = com.labteto.dshmobile.core.market.MarketIndexInfo(
+            "http://127.0.0.1:3099/index.json", com.labteto.dshmobile.core.market.MarketText("Integration Test Market"), null, null,
+        )
+        val untitled = com.labteto.dshmobile.core.market.MarketIndexInfo("http://127.0.0.1:3099/dead.json", null, null, "x")
+        val sources = listOf(titled, untitled)
+        assertEquals("Integration Test Market", marketLabel(titled.url, sources, english))
+        // The second market of the device run, which had no title: the host of its address, not another market's name.
+        assertEquals("127.0.0.1", marketLabel(untitled.url, sources, english))
+        assertEquals("example.org", marketLabel("https://www.example.org/index.json", null, english))
+    }
+
     // ---- the entry page ----
 
     @Test fun `the action follows the hosts installation status`() {
@@ -272,5 +297,47 @@ class PluginMarketPresentationTest {
     @Test fun `a failed install on a host without pnpm reads as that and not as a generic error`() {
         assertEquals(R.string.market_no_pnpm, pluginReason("pnpm-missing"))
         assertEquals(R.string.ux_a_action_error, pluginReason("something-new"))
+    }
+
+    // ---- what a failed check says: one sentence for each thing the harness's answer can tell apart ----
+
+    @Test fun `a package tool that failed says so and never sends the person to refresh`() {
+        // The answer a harness gave with an npm that rejects the flag it passes (see core's inspect-tool-failed fixture).
+        val failed = MarketCheck.ToolFailed("unknown", "npm error code EUNKNOWNCONFIG\nnpm error Unknown cli flag: --config.fetch-retries")
+        assertEquals(R.string.market_tool_failed, marketCheckProblem(failed))
+        assertEquals("unknown\nnpm error code EUNKNOWNCONFIG\nnpm error Unknown cli flag: --config.fetch-retries", marketCheckDetails(failed))
+        assertTrue(marketCheckProblem(failed) != R.string.ux_a_action_error)
+    }
+
+    @Test fun `a package that was not found is told apart from a tool failure and from a network failure`() {
+        assertEquals(R.string.market_check_not_found, marketCheckProblem(MarketCheck.Refused("not-found", "ERR_PNPM_FETCH_404")))
+        assertEquals(R.string.ux_a_reason_network, marketCheckProblem(MarketCheck.Refused("network", "ECONNRESET")))
+        assertEquals(R.string.market_no_pnpm, marketCheckProblem(MarketCheck.NoPackageManager))
+        assertEquals(R.string.market_check_mismatch, marketCheckProblem(MarketCheck.Mismatch("evil", "1.0.0")))
+    }
+
+    @Test fun `a refusal nothing can classify never falls back to the generic refresh sentence`() {
+        assertEquals(R.string.market_check_failed, marketCheckProblem(MarketCheck.Refused("something-new", null)))
+        assertEquals(R.string.market_check_failed, marketCheckProblem(MarketCheck.Refused("unknown", null)))
+        // A code the manual install already words keeps its words.
+        assertEquals(R.string.ux_a_reason_installed, marketCheckProblem(MarketCheck.Refused("already-installed", null)))
+    }
+
+    // ---- the confirmation: a git source has a repository and a commit, not a registry ----
+
+    @Test fun `a git entry's confirmation names the repository and the pinned commit`() {
+        val version = foo.presented!!
+        val note = marketInstallNote(foo, version, page.header, notInstalled, english)
+        val git = note.git!!
+        val source = version.source as com.labteto.dshmobile.core.market.MarketInstallSource.Git
+        assertEquals(source.url, git.url)
+        assertEquals(source.commit, git.commit)
+        assertTrue(git.url.startsWith("https://"))
+        assertTrue(git.commit.length >= 7)
+    }
+
+    @Test fun `a registry entry's confirmation has no git lines so it still names its registry`() {
+        assertNull(marketInstallNote(review, review.presented!!, page.header, notInstalled, english).git)
+        assertNull(marketInstallNote(ralph, ralph.presented!!, page.header, ralph.installation, english).git)
     }
 }

@@ -116,7 +116,13 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
         catch (e: Exception) { error = e.message ?: offline }
         finally { loading = false }
     } }
+    // Whether the harness has the plugin market is cached per connection, and the market is a bundle that is turned on and
+    // off while connected. So it is asked again whenever plugin state may have changed: when this page opens, after a
+    // bundle or plugin is switched, installed or removed (each of those bumps `revision` or the operation result, which
+    // run the load below), on the host's own "plugins changed" event (it bumps `revision`), and on Refresh.
+    fun recheckMarket() { scope.launch { store.apiForHost(host)?.let { store.recheckPluginMarket(it) } } }
     LaunchedEffect(host, connection.phase, revision, current?.result, current?.unknown) { run { api ->
+        store.recheckPluginMarket(api)
         val next = store.featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.pluginBundles() }.featureValue()
         val rows = store.featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.managedPlugins() }.featureValue()
         val sources = store.featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.pluginRegistries() }.featureValue()
@@ -126,8 +132,13 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
     // The market is read when Discover is first shown, and again (from the host's cached copy) when what is
     // installed or what the host lists as sources changes, so an installed entry reads Installed at once.
     LaunchedEffect(host, view) { if (view == PluginView.DISCOVER) browser.ensureLoaded() }
-    LaunchedEffect(host, revision, current?.result, current?.unknown) { browser.invalidate() }
+    LaunchedEffect(host, revision, current?.result, current?.unknown) { if (marketAvailable != false) browser.invalidate() }
     LaunchedEffect(host) { store.hostEvents.collect { if (it.first == "plugin-market/changed") browser.invalidate() } }
+    // The market bundle was turned off: back to Installed with nothing of Discover left open. Turned on again: read it fresh.
+    LaunchedEffect(host, marketAvailable) {
+        if (marketAvailable == false) { viewChoice = PluginView.INSTALLED; marketEntryName = null; sourcesOpen = false }
+        else if (marketAvailable == true) browser.invalidate()
+    }
     // Typing waits for a pause before the harness is asked.
     LaunchedEffect(marketSearch, view) {
         if (view == PluginView.DISCOVER) { if (marketSearch != browser.query.text) delay(250); browser.setText(marketSearch) }
@@ -280,7 +291,7 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
     LazyFeaturePage(
         title = stringResource(R.string.settings_plugins),
         onClose = onClose,
-        onRefresh = { if (!busy) { if (view == PluginView.DISCOVER) browser.refresh() else revision++ } },
+        onRefresh = { if (!busy) { if (view == PluginView.DISCOVER) { recheckMarket(); browser.refresh() } else revision++ } },
         footer = {
             Text(
                 stringResource(R.string.ink_files_plugins_intro),
@@ -468,7 +479,7 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
             },
             onDismissCheck = browser::dismissCheck,
             onClose = { browser.dismissCheck(); marketEntryName = null },
-            onRefresh = { if (!busy) browser.refresh() },
+            onRefresh = { if (!busy) { recheckMarket(); browser.refresh() } },
         )
     }
     if (sourcesOpen) PluginMarketSourcesPage(browser, languages) { sourcesOpen = false }

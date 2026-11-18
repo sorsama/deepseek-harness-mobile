@@ -59,4 +59,9 @@
     <string name="market_line_market">Каталог: %1$s</string>
     <string name="market_line_registry">Реестр: %1$s</string>
     <string name="market_line_registry_own">Реестр: собственный реестр этого harness</string>
+    <string name="market_tool_failed">Инструмент пакетов на компьютере harness сообщил об ошибке. Её нужно исправить там, прежде чем устанавливать плагины отсюда.</string>
+    <string name="market_check_not_found">Harness не нашёл этот пакет, возможно, каталог устарел. Ничего не установлено.</string>
+    <string name="market_check_failed">Не удалось проверить этот пакет. Ничего не установлено.</string>
+    <string name="market_line_repository">Репозиторий: %1$s</string>
+    <string name="market_line_commit">Коммит: %1$s</string>
 </resources>

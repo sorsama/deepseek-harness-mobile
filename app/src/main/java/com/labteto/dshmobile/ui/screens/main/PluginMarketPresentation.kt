@@ -5,6 +5,7 @@ import com.labteto.dshmobile.core.market.MarketCheck
 import com.labteto.dshmobile.core.market.MarketEntry
 import com.labteto.dshmobile.core.market.MarketFailure
 import com.labteto.dshmobile.core.market.MarketHeader
+import com.labteto.dshmobile.core.market.MarketIndexInfo
 import com.labteto.dshmobile.core.market.MarketInstallSource
 import com.labteto.dshmobile.core.market.MarketInstallStatus
 import com.labteto.dshmobile.core.market.MarketInstallation
@@ -128,6 +129,18 @@ internal fun marketFailureDetails(failure: MarketFailure): String? = when (failu
     else -> null
 }
 
+/**
+ * What the Markets page says is wrong with one market: the host's own words, or what this session saw fail, unless the
+ * market has loaded since. The host keeps the last error it recorded for a market it was not asked about again, so a
+ * market that loaded is not in error whatever the host still lists.
+ */
+internal fun marketSourceProblem(hostError: String?, loadedSince: Boolean, failure: MarketFailure?): String? =
+    if (loadedSince) null else hostError ?: failure?.let(::marketFailureDetails)
+
+/** The name a failure is shown under: the market's title in the person's language, else the host of its address. */
+internal fun marketLabel(url: String, sources: List<MarketIndexInfo>?, languages: List<String>): String? =
+    sources?.firstOrNull { it.url == url }?.title?.resolve(languages) ?: marketHost(url)
+
 /** Why a market source was refused when it was added. */
 internal fun marketSourceFailureText(failure: MarketFailure): Int = when (failure) {
     is MarketFailure.InvalidUrl -> if (failure.reason == "duplicate") R.string.market_source_duplicate else R.string.market_source_invalid
@@ -248,7 +261,12 @@ internal data class MarketInstallNote(
     val market: String?,
     val unverified: Boolean,
     val exempted: Boolean,
+    /** Set for a git install: the repository and the pinned commit, which is what it installs from. A git source has no registry. */
+    val git: MarketGitNote? = null,
 )
+
+/** Where a git install comes from: the repository and the exact commit it is pinned to. */
+internal data class MarketGitNote(val url: String, val commit: String)
 
 internal fun marketInstallNote(
     entry: MarketEntry,
@@ -263,6 +281,7 @@ internal fun marketInstallNote(
     market = header?.title?.resolve(languages),
     unverified = marketTrust(installation) == MarketTrust.UNVERIFIED,
     exempted = !version.compatibility.compatible && version.compatibility.exempted,
+    git = (version.source as? MarketInstallSource.Git)?.let { MarketGitNote(it.url, it.commit) },
 )
 
 /**
@@ -281,17 +300,28 @@ internal fun marketInstallSubject(version: MarketVersion, note: MarketInstallNot
         market = note,
     )
 
-/** The sentence for a check that did not clear the install, or null when it did. Mismatch and refusals say what was found. */
+/**
+ * The sentence for a check that did not clear the install, or null when it did. Each outcome the harness's answer can tell
+ * apart has its own: the package is not what the market listed, the package was not found, the harness has no package
+ * manager, the harness's package tool failed (that one is fixed on the harness computer, so it never says "refresh"), and
+ * the package source could not be reached. A refusal with any other code keeps the text the manual install gives it.
+ */
 internal fun marketCheckProblem(check: MarketCheck): Int? = when (check) {
     MarketCheck.Proceed -> null
     is MarketCheck.Mismatch -> R.string.market_check_mismatch
     MarketCheck.NoPackageManager -> R.string.market_no_pnpm
-    is MarketCheck.Refused -> pluginReason(check.problem)
+    is MarketCheck.ToolFailed -> R.string.market_tool_failed
+    is MarketCheck.Refused -> when (check.problem) {
+        "not-found" -> R.string.market_check_not_found
+        "network" -> R.string.ux_a_reason_network
+        else -> pluginReason(check.problem).takeUnless { it == R.string.ux_a_action_error } ?: R.string.market_check_failed
+    }
 }
 
-/** The technical lines under a check that did not clear the install. */
+/** The technical lines under a check that did not clear the install: the harness's own code and words. */
 internal fun marketCheckDetails(check: MarketCheck): String? = when (check) {
     is MarketCheck.Mismatch -> listOfNotNull(check.name, check.version).joinToString(" ").ifBlank { null }
     is MarketCheck.Refused -> listOfNotNull(check.problem, check.reason).joinToString("\n").ifBlank { null }
+    is MarketCheck.ToolFailed -> listOfNotNull(check.problem, check.reason).joinToString("\n").ifBlank { null }
     else -> null
 }

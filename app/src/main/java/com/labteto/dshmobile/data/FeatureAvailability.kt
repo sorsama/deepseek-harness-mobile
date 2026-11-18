@@ -22,11 +22,17 @@ internal class FeatureAvailability(private val report: (RpcError) -> Unit) {
         states.values.forEach { it.value = null }
     }
 
-    @Synchronized fun observe(feature: HarnessFeature, generation: Long, result: RpcResult<*>) {
+    /**
+     * [authoritative] is for a call made only to ask again whether the capability exists now (see
+     * [SessionStore.recheckPluginMarket]). An ordinary result never brings back a feature that was retired,
+     * because a concurrent read can succeed on a family with a missing method; an answer to the question itself
+     * can, for a feature that appears and disappears while connected (the optional market bundle).
+     */
+    @Synchronized fun observe(feature: HarnessFeature, generation: Long, result: RpcResult<*>, authoritative: Boolean = false) {
         if (generation != epoch) return
         val state = states.getValue(feature)
         when (result) {
-            is RpcResult.Ok -> if (state.value != false) state.value = true
+            is RpcResult.Ok -> if (authoritative || state.value != false) state.value = true
             is RpcResult.Err -> if (result.error.classifyCapability().code == "capability-unavailable") {
                 state.value = false
             } else {

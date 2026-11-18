@@ -59,4 +59,9 @@
     <string name="market_line_market">Catalogue : %1$s</string>
     <string name="market_line_registry">Registre : %1$s</string>
     <string name="market_line_registry_own">Registre : celui de ce harness</string>
+    <string name="market_tool_failed">L’outil de paquets de l’ordinateur du harness a signalé une erreur. Il faut la corriger là-bas avant de pouvoir installer des plugins d’ici.</string>
+    <string name="market_check_not_found">Le harness n’a pas trouvé ce paquet, le catalogue est peut-être périmé. Rien n’a été installé.</string>
+    <string name="market_check_failed">Impossible de vérifier ce paquet. Rien n’a été installé.</string>
+    <string name="market_line_repository">Dépôt : %1$s</string>
+    <string name="market_line_commit">Commit : %1$s</string>
 </resources>

@@ -59,4 +59,9 @@
     <string name="market_line_market">ตลาด: %1$s</string>
     <string name="market_line_registry">รีจิสทรี: %1$s</string>
     <string name="market_line_registry_own">รีจิสทรี: ของ Harness นี้เอง</string>
+    <string name="market_tool_failed">เครื่องมือแพ็กเกจบนคอมพิวเตอร์ของ harness รายงานข้อผิดพลาด ต้องแก้ที่เครื่องนั้นก่อนจึงจะติดตั้งปลั๊กอินจากที่นี่ได้</string>
+    <string name="market_check_not_found">harness ไม่พบแพ็กเกจนี้ รายการของตลาดอาจล้าสมัย จึงไม่ได้ติดตั้งอะไร</string>
+    <string name="market_check_failed">ตรวจสอบแพ็กเกจนี้ไม่ได้ จึงไม่ได้ติดตั้งอะไร</string>
+    <string name="market_line_repository">รีโพซิทอรี: %1$s</string>
+    <string name="market_line_commit">คอมมิต: %1$s</string>
 </resources>

@@ -59,4 +59,9 @@
     <string name="market_line_market">Market: %1$s</string>
     <string name="market_line_registry">Registry: %1$s</string>
     <string name="market_line_registry_own">Registry: this harness\'s own</string>
+    <string name="market_tool_failed">The package tool on the harness computer reported an error. That needs fixing there before plugins can be installed from here.</string>
+    <string name="market_check_not_found">The harness couldn\'t find this package, so the market may be out of date. Nothing was installed.</string>
+    <string name="market_check_failed">Couldn\'t check this package. Nothing was installed.</string>
+    <string name="market_line_repository">Repository: %1$s</string>
+    <string name="market_line_commit">Commit: %1$s</string>
 </resources>

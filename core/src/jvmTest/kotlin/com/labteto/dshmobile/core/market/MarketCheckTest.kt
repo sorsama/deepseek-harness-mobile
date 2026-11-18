@@ -56,6 +56,33 @@ class MarketCheckTest {
         assertFalse(looksLikeMissingPackageManager("unknown", null))
     }
 
+    @Test fun aPackageToolThatRejectsItsOwnFlagIsAToolFailureAndNotAMissingPackage() {
+        // Captured with 0.2.1-rc.2 on a machine whose npm 12 rejects the --config.fetch-retries flag the harness
+        // passes: refused, unclassified, with npm's own words. Looking again changes nothing, and it is not "no pnpm".
+        val verdict = marketCheck(review, review.presented!!, inspected("inspect-tool-failed"))
+        verdict as MarketCheck.ToolFailed
+        assertEquals("unknown", verdict.problem)
+        assertTrue(verdict.reason!!.contains("EUNKNOWNCONFIG"))
+        assertTrue(verdict.reason!!.contains("--config.fetch-retries"))
+    }
+
+    @Test fun theOtherRefusalsKeepTheirOwnVerdict() {
+        // Not found, a bad spec and a network failure carry a code of their own: they are about the package or the network.
+        assertTrue(marketCheck(review, review.presented!!, inspected("inspect-registry")) is MarketCheck.Refused)
+        assertTrue(marketCheck(review, review.presented!!, inspected("inspect-bad-spec")) is MarketCheck.Refused)
+        val network = PluginInspection(status = "refused", problem = "network", reason = "ERR_PNPM_META_FETCH_FAIL connect ETIMEDOUT")
+        assertEquals(MarketCheck.Refused("network", "ERR_PNPM_META_FETCH_FAIL connect ETIMEDOUT"), marketCheck(review, review.presented!!, network))
+        // No words at all is not enough to blame the tool.
+        assertTrue(marketCheck(review, review.presented!!, PluginInspection(status = "refused", problem = "unknown")) is MarketCheck.Refused)
+        assertFalse(looksLikeToolFailure("unknown", " "))
+        assertTrue(looksLikeToolFailure(null, "boom"))
+        assertFalse(looksLikeToolFailure("not-found", "ERR_PNPM_FETCH_404"))
+    }
+
+    @Test fun aMissingPnpmIsStillToldApartFromAToolFailure() {
+        assertEquals(MarketCheck.NoPackageManager, marketCheck(review, review.presented!!, inspected("inspect-no-pnpm")))
+    }
+
     @Test fun aHostileNameInTheHostsAnswerIsCleaned() {
         val answer = PluginInspection(status = "accepted", kind = "registry", name = "gpj‮.exe", version = "1.0.0", bundle = true)
         assertEquals(MarketCheck.Mismatch("gpj.exe", "1.0.0"), marketCheck(review, review.presented!!, answer))
