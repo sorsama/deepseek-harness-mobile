@@ -254,6 +254,15 @@ internal fun clipCardForPreview(card: ToolCardView): ClippedCard {
             lines = take(card.lines, PREVIEW_MAX_LINES).map { it.copy(text = clip(it.text).orEmpty()) },
         )
         is ToolCardView.WebCard -> card
+        // The control tools' cards: lists to the item bound, long text and job output to the text one.
+        is com.labteto.dshmobile.ui.components.TodoCard -> card.copy(lines = take(card.lines, PREVIEW_MAX_ITEMS))
+        is com.labteto.dshmobile.ui.components.QuestionCard -> card.copy(questions = take(card.questions, PREVIEW_MAX_ITEMS))
+        is com.labteto.dshmobile.ui.components.SubagentCard -> card.copy(prompt = clip(card.prompt))
+        is com.labteto.dshmobile.ui.components.SkillCard -> card
+        is com.labteto.dshmobile.ui.components.ImageCard -> card
+        is com.labteto.dshmobile.ui.components.DetailsCard -> card.copy(
+            items = take(card.items, PREVIEW_MAX_ITEMS).map { it.copy(description = clip(it.description), code = clip(it.code)) },
+        )
         is ToolCardView.GenericCard -> card.copy(
             rawInput = clip(card.rawInput),
             locations = card.locations?.let { take(it, PREVIEW_MAX_ITEMS) },

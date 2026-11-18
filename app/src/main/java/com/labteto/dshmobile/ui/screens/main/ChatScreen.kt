@@ -152,6 +152,10 @@ fun ChatScreen(
     val subagents by store.subagents.collectAsStateWithLifecycle()
     val subagentConversation by store.subagentConversation.collectAsStateWithLifecycle()
     val subagentMode by store.subagentMode.collectAsStateWithLifecycle()
+    // A background command's card shows its job's state and opens it in the Jobs sheet.
+    val jobs by store.jobs.collectAsStateWithLifecycle()
+    val jobControls by store.jobControls.collectAsStateWithLifecycle()
+    var openJobId by remember { mutableStateOf<String?>(null) }
     // Null for an ordinary session, non-null while a subagent child is open. A child is the
     // harness's to drive, not the reader's: which controls still mean anything depends on it.
     val currentSubagent by store.currentSubagent.collectAsStateWithLifecycle()
@@ -736,6 +740,13 @@ fun ChatScreen(
                 permissionNames = remember(permissions) {
                     permissions?.options?.associate { it.value to it.name }.orEmpty()
                 },
+                // By id and state only, so a job's progress line ticking does not recompose the
+                // transcript.
+                jobStates = remember(jobs.map { it.id to it.status }) { jobs.associate { it.id to it.status } },
+                onOpenJob = { id -> openJobId = id },
+                subagentRunning = remember(subagents) {
+                    subagents.mapNotNull { entry -> subagentId(entry)?.let { it to subagentRunning(entry) } }.toMap()
+                },
             )
 
             // Where this column starts in the window, for a tabletop split: the hinge is a fact about
@@ -1180,6 +1191,10 @@ fun ChatScreen(
         )
     }
     feedback?.let { (key, id, positive) -> FeedbackDialog(store, key, id, positive) { feedback = null } }
+    // The job a background command's card opened; the live row, so its state follows the job.
+    openJobId?.let { id -> jobs.firstOrNull { it.id == id } }?.let { job ->
+        JobOutputSheet(job = job, store = store, canStop = jobControls, onDismiss = { openJobId = null })
+    }
     when (sheet) {
         ChatSheet.Commands -> CommandSheet(
             commands = commands,

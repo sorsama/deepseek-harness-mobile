@@ -91,6 +91,17 @@ sealed interface ToolCardView {
         val exitCode: Int? = null,
         val signal: String? = null,
         val running: Boolean? = null,
+        /**
+         * Started with `run_in_background`: the call only launched a job, so the card has no output
+         * and no exit status of its own. [jobId] is the job it started, once the result names it.
+         */
+        val background: Boolean = false,
+        val jobId: String? = null,
+        /**
+         * The call failed before the command could report an exit (the tool threw, or a persistent
+         * shell gave no single status): the card keeps the command and claims no exit code.
+         */
+        val failed: Boolean = false,
     ) : ToolCardView
 
     /** Diff: per-path hunks with added/removed line counts. */

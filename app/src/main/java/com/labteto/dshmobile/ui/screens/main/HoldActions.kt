@@ -2,6 +2,7 @@ package com.labteto.dshmobile.ui.screens.main
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AlternateEmail
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FolderOpen
@@ -72,6 +73,8 @@ internal fun ToolHoldMenu(
     result: ToolResultNode?,
     filePath: String?,
     context: ChatNodeContext,
+    /** Opens the call's raw protocol data ([toolRawJson]); null offers no such action. */
+    onShowRaw: (() -> Unit)? = null,
     onDismiss: () -> Unit,
 ) {
     val copy = rememberCopier()
@@ -98,13 +101,51 @@ internal fun ToolHoldMenu(
                 )
             }
         }
-        // Nothing else to offer still leaves the raw arguments, which is what a bug report wants.
-        if (isEmpty() && call.arguments.isNotBlank()) {
+        // The protocol view, for whoever is debugging: what the call was sent and what came back,
+        // as the harness recorded it. It used to sit beside every output and under every card; the
+        // transcript itself now shows only what the tool did.
+        if (call.arguments.isNotBlank()) {
             add(HoldAction(stringResource(R.string.hold_copy_arguments), Icons.Outlined.ContentCopy) { copy(call.arguments) })
+        }
+        onShowRaw?.let { show ->
+            add(HoldAction(stringResource(R.string.tool_output_show_raw), Icons.Outlined.Code) { show() })
         }
     }
     val preview = copies.firstOrNull { it.kind != ToolCopyKind.Output }?.text ?: call.name
     HoldMenu(onDismiss = onDismiss, actions = actions, preview = preview, monospacePreview = true)
+}
+
+/**
+ * Everything the harness recorded about one call, as pretty JSON: its name and arguments, and once
+ * it settled, the result body, the durable `meta` the cards are built from, and the error facts.
+ * This is where the raw metadata that used to sit under every card is still one hold away.
+ */
+internal fun toolRawJson(call: ToolCallNode, result: ToolResultNode?): String {
+    val json = kotlinx.serialization.json.buildJsonObject {
+        put("name", kotlinx.serialization.json.JsonPrimitive(call.name))
+        put("callId", kotlinx.serialization.json.JsonPrimitive(call.callId))
+        val args = runCatching { com.labteto.dshmobile.core.wire.WireJson.parseToJsonElement(call.arguments) }.getOrNull()
+        put("arguments", args ?: kotlinx.serialization.json.JsonPrimitive(call.arguments))
+        if (result != null) {
+            put("isError", kotlinx.serialization.json.JsonPrimitive(result.isError))
+            result.content?.let { put("content", it) }
+            result.meta?.let { put("meta", it) }
+            if (result.errorCode != null || result.errorName != null || result.errorReason != null) {
+                put("error", kotlinx.serialization.json.buildJsonObject {
+                    result.errorName?.let { put("name", kotlinx.serialization.json.JsonPrimitive(it)) }
+                    result.errorCode?.let { put("code", kotlinx.serialization.json.JsonPrimitive(it)) }
+                    result.errorReason?.let { put("reason", kotlinx.serialization.json.JsonPrimitive(it)) }
+                })
+            }
+        }
+    }
+    return RAW_JSON.encodeToString(kotlinx.serialization.json.JsonElement.serializer(), json)
+}
+
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+private val RAW_JSON = kotlinx.serialization.json.Json {
+    prettyPrint = true
+    prettyPrintIndent = "  "
 }
 
 /**

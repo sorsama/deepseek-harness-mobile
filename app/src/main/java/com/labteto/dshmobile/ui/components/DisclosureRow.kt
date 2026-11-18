@@ -68,7 +68,7 @@ fun DisclosureRow(
     expanded: Boolean = false,
     onToggle: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
-    /** Opens the row's [HoldMenu]; only honoured on a row that also toggles. */
+    /** Opens the row's [HoldMenu], on a row that toggles or on one with nothing to open. */
     onHold: (() -> Unit)? = null,
     holdLabel: String = "",
     content: (@Composable () -> Unit)? = null,
@@ -88,7 +88,9 @@ fun DisclosureRow(
                 .fillMaxWidth()
                 .heightIn(min = 32.dp)
                 .then(
-                    if (onToggle != null && onHold != null) {
+                    if (onHold != null) {
+                        // A row with nothing to open (a header-only tool card) still has its hold
+                        // menu; a tap on it does nothing rather than toggling an empty body.
                         Modifier
                             .hoverable(interaction)
                             .clickableWithHold(
@@ -96,7 +98,7 @@ fun DisclosureRow(
                                 onHold = onHold,
                                 role = Role.Button,
                                 interactionSource = interaction,
-                                onClick = toggle,
+                                onClick = if (onToggle != null) toggle else ({}),
                             )
                     } else if (onToggle != null) {
                         Modifier

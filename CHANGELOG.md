@@ -5,6 +5,20 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Changed
+
+- **Every common tool call reads as what it did, not as JSON.** The task list, questions, subagents,
+  skills, image reads, background jobs, terminals, code lookups, goals, reminders and shared files
+  each have a row of their own: the task list says "3 of 7 done" and what changed, a question shows
+  your answer beside it, and a subagent row says what it is working on and opens it in the Subagents
+  sheet. A command run in the background shows the command and where it runs, with **Open job**
+  instead of the raw job id. A failed call keeps its own card (the command it ran, the edit it tried)
+  with one plain line saying why, including Auto review refusals and turn errors such as a busy
+  provider or a chat too long for the model. A command that only exited non-zero still shows its
+  output with its exit code. The raw metadata under each card and **Show raw JSON** beside each
+  output have moved to the call's hold menu, and a tool with no view of its own gets a readable
+  title with its arguments folded away. PowerShell rows say PowerShell.
+
 ## [0.23.0] - 2026-11-17
 
 ![Three phones: the Subagents sheet with its Close button, a chat at Fully expanded, and the Stop and archive dialog](docs/images/releases/0.23.0/devices/hero-whats-new.png)
