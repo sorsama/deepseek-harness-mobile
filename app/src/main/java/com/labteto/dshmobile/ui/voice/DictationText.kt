@@ -137,5 +137,9 @@ fun normalizeRms(rmsDb: Float): Float {
     return ((rmsDb - RMS_FLOOR) / (RMS_CEILING - RMS_FLOOR)).coerceIn(0f, 1f)
 }
 
+/** A 0..1 level rounded to the nearest of [LEVEL_STEPS] steps. */
+fun quantizeLevel(level: Float): Float = Math.round(level.coerceIn(0f, 1f) * LEVEL_STEPS) / LEVEL_STEPS.toFloat()
+
+private const val LEVEL_STEPS = 8
 private const val RMS_FLOOR = -2f
 private const val RMS_CEILING = 10f

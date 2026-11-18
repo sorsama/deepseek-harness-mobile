@@ -266,7 +266,10 @@ class DictationController(
         override fun onLevel(rmsDb: Float) {
             if (!current()) return
             val now = stateFlow.value as? DictationState.Listening ?: return
-            stateFlow.value = now.copy(level = normalizeRms(rmsDb))
+            // The service reports the level many times a second. Eight steps are plenty for an
+            // indicator that animates between them, and they keep the screen from being asked to
+            // recompose for a change nobody can see.
+            stateFlow.value = now.copy(level = quantizeLevel(normalizeRms(rmsDb)))
         }
 
         override fun onPartial(stable: String?, unstable: String?) {

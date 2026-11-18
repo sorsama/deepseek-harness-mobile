@@ -42,6 +42,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -174,8 +175,12 @@ internal fun rememberComposerDictation(
     val currentOnInsert by rememberUpdatedState(onInsert)
     val currentConfig by rememberUpdatedState(config)
 
-    val engine = remember(context, config != null, config?.engineFactory) {
-        config?.let { (it.engineFactory ?: { c -> AndroidSpeechEngine(c) })(context) }
+    // Built once for the composer. The factory is read through a holder: a caller that rebuilds its
+    // lambda on every composition must not get a new recogniser, and with it a new controller,
+    // which would end a take that is running.
+    val currentFactory by rememberUpdatedState(config?.engineFactory)
+    val engine = remember(context, config != null) {
+        config?.let { (currentFactory ?: { c -> AndroidSpeechEngine(c) })(context) }
     }
     val attempts = remember(config?.languageChoice, config?.appLanguage) {
         languageAttempts(config?.languageChoice, config?.appLanguage)
@@ -277,7 +282,7 @@ internal fun rememberComposerDictation(
         }
     }
     val currentTap by rememberUpdatedState(tap)
-    var lastTick by remember { mutableStateOf(config?.toggleTick ?: 0) }
+    var lastTick by remember { mutableIntStateOf(config?.toggleTick ?: 0) }
     LaunchedEffect(config?.toggleTick) {
         val tick = config?.toggleTick ?: return@LaunchedEffect
         if (tick != lastTick) {

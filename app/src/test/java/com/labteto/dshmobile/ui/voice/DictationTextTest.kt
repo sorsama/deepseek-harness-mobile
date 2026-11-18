@@ -202,4 +202,16 @@ class DictationTextTest {
         assertEquals(0.5f, normalizeRms(4f), 0.0001f)
         assertEquals(0f, normalizeRms(Float.NaN), 0f)
     }
+
+    @Test fun theLevelIsQuantisedSoTinyChangesAreNotAChange() {
+        assertEquals(0f, quantizeLevel(0f), 0f)
+        assertEquals(1f, quantizeLevel(1f), 0f)
+        assertEquals(0.5f, quantizeLevel(0.5f), 0f)
+        assertEquals(quantizeLevel(normalizeRms(4.0f)), quantizeLevel(normalizeRms(4.1f)), 0f)
+        assertEquals(1f, quantizeLevel(7f), 0f)
+        assertEquals(0f, quantizeLevel(-1f), 0f)
+        // At most nine distinct values can ever reach the screen.
+        val seen = (0..1000).map { quantizeLevel(it / 1000f) }.toSet()
+        assertEquals(9, seen.size)
+    }
 }
