@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="team_title">ทีมเอเจนต์</string>
+    <string name="team_chip">ทีม</string>
+    <string name="team_beta_badge">เบต้า</string>
+    <string name="team_tab_members">สมาชิก (%1$d)</string>
+    <string name="team_tab_tasks">งาน (%1$d)</string>
+    <string name="team_read_only_note">เอเจนต์จะอัปเดตรายการนี้เอง ถ้าต้องการเปลี่ยนทีมหรืองาน ให้บอกหัวหน้าทีมในแชทนี้</string>
+    <string name="team_failure">อ่านข้อมูลบางส่วนของทีมไม่ได้ ข้อมูลนี้จึงอาจไม่เป็นปัจจุบัน</string>
+    <string name="team_members_empty_title">ยังไม่มีสมาชิก</string>
+    <string name="team_members_empty_body">ขอให้เอเจนต์เพิ่มสมาชิกมาช่วยทำงานบางส่วน</string>
+    <string name="team_member_running">กำลังทำงาน</string>
+    <string name="team_member_idle">ไม่ทำงาน</string>
+    <string name="team_member_starting">กำลังเริ่ม</string>
+    <string name="team_member_failed">เริ่มไม่สำเร็จ</string>
+    <string name="team_member_status_tasks">%1$s · งานที่ยังเปิดอยู่: %2$d</string>
+    <string name="team_lead">หัวหน้าทีม</string>
+    <string name="team_open_chat">เปิดแชท</string>
+    <string name="team_this_chat">แชทนี้</string>
+    <string name="team_tasks_empty_title">ยังไม่มีงานที่แชร์กัน</string>
+    <string name="team_tasks_empty_body">เมื่อเอเจนต์แบ่งงานกันแล้ว งานของแต่ละคนจะแสดงที่นี่</string>
+    <string name="team_group_in_progress">กำลังทำ</string>
+    <string name="team_group_ready">พร้อมเริ่ม</string>
+    <string name="team_group_waiting">รออยู่</string>
+    <string name="team_group_other">อื่นๆ</string>
+    <string name="team_group_done">เสร็จแล้ว</string>
+    <string name="team_task_unassigned">ยังไม่มีผู้รับผิดชอบ</string>
+    <string name="team_task_waiting_on">รอ: %1$s</string>
+    <string name="team_task_no_details">ไม่มีรายละเอียด</string>
+    <string name="team_task_depends_on">ขึ้นอยู่กับ</string>
+    <string name="team_task_dependency_done">%1$s (เสร็จแล้ว)</string>
+    <string name="team_task_dependency_open">%1$s (ยังไม่เสร็จ)</string>
+    <string name="team_task_files">ไฟล์ที่จะแก้ไข</string>
+    <string name="team_task_overlap">แก้ไฟล์เดียวกับ \"%1$s\" ที่กำลังทำอยู่</string>
+    <string name="team_task_in_this_chat">หัวหน้าทีมกำลังทำงานนี้อยู่ในแชทนี้</string>
+    <string name="team_task_open_owner">เปิดแชทกับ %1$s</string>
+</resources>

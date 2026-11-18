@@ -23,6 +23,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.components.DisclosureRow
+import com.labteto.dshmobile.ui.components.LeftToRight
+import com.labteto.dshmobile.ui.components.OutputViewerDialog
 import com.labteto.dshmobile.ui.components.rememberCopier
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.theme.DsShapes
@@ -38,7 +40,9 @@ internal fun JsonDisclosure(title: String, value: JsonElement, depth: Int = 0) {
     val open = com.labteto.dshmobile.ui.components.LocalFileOpener.current
     val colors = DsTheme.colors
     val copy = rememberCopier()
-    DisclosureRow(title = title, expanded = expanded, onToggle = { expanded = !expanded }) {
+    // Below the top level a title is a key or an index out of the data (`file_path`, `0`): isolated
+    // left to right, like the values beneath it. The top one is a name in the reader's language.
+    DisclosureRow(title = if (depth > 0) technicalDisplay(title) else title, expanded = expanded, onToggle = { expanded = !expanded }) {
         Column(Modifier.padding(start = DsSpacing.medium), verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {
             if (value is JsonObject) {
                 // Only a complete durable reference can be read back: the host verifies the
@@ -97,22 +101,38 @@ internal fun JsonAction(label: String, onClick: () -> Unit) {
     )
 }
 
-/** Raw JSON on the code-block surface, in the mono face. */
+/**
+ * Raw JSON on the code-block surface, in the mono face.
+ *
+ * Left to right whatever the app's language is, and bounded like every inline block: a long text
+ * lays out only its start, with "Show all" opening the whole of it in the full-screen viewer. (A
+ * disclosure holds raw events, and a raw event can hold a whole file.)
+ */
 @Composable
 internal fun JsonCode(text: String) {
     val colors = DsTheme.colors
-    SelectionContainer {
-        Text(
-            text,
-            style = DsType.mono12,
-            color = colors.labelSecondary,
-            softWrap = true,
-            overflow = TextOverflow.Clip,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(DsShapes.chip)
-                .padding(vertical = 2.dp),
-        )
+    val shown = remember(text) { clipPreview(text) }
+    var viewer by remember(text) { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {
+        LeftToRight {
+            SelectionContainer {
+                Text(
+                    shown,
+                    style = DsType.mono12,
+                    color = colors.labelSecondary,
+                    softWrap = true,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(DsShapes.chip)
+                        .padding(vertical = 2.dp),
+                )
+            }
+        }
+        if (shown.length != text.length) ClippedNote { viewer = true }
+    }
+    if (viewer) {
+        OutputViewerDialog(title = "JSON", contentKey = text, onDismiss = { viewer = false }, load = { text })
     }
 }
 

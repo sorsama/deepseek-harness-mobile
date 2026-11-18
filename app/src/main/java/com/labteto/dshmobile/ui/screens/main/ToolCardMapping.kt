@@ -47,6 +47,8 @@ internal fun buildToolCardView(
     running: Boolean,
     cwd: String? = null,
     home: String? = null,
+    /** The list the previous `todo_write` recorded, for a `todo_write` card's changes. */
+    previousTodos: List<TodoEntry>? = null,
 ): ToolCardView {
     val args = parsedArguments(call)
     if (args != null) {
@@ -55,6 +57,7 @@ internal fun buildToolCardView(
         readCard(args, result, cwd, home)?.let { return it }
         searchCard(call, args, result)?.let { return it }
         webCard(call, args, result)?.let { return it }
+        controlToolCard(call, args, result, previousTodos)?.let { return it }
     }
     return ToolCardView.GenericCard(title = call.name, rawInput = call.arguments)
 }
@@ -64,7 +67,7 @@ private fun parsedArguments(call: ToolCallNode): JsonObject? =
     runCatching { WireJson.parseToJsonElement(call.arguments) as? JsonObject }.getOrNull()
 
 /** The single text block a first-party result carries, or null for any other content layout. */
-private fun singleResultText(result: ToolResultNode): String? {
+internal fun singleResultText(result: ToolResultNode): String? {
     val content = result.content as? JsonArray ?: return null
     val only = content.singleOrNull() as? JsonObject ?: return null
     if (only["type"]?.jsonPrimitive?.contentOrNull != "text") return null
@@ -155,13 +158,34 @@ private fun terminalCard(
     val shell = shellCall(call.name, args)
     val send = if (shell == null) terminalSendCall(call.name, args) else null
     if (shell == null && send == null) return null
-    // A background call has no output to show inline; it becomes a job instead.
-    if (shell?.background == true || send?.background == true) return null
 
+    // How the call ended, from the one function the row's own dot is read from: a command the turn's
+    // stop cut short is an error in the harness's records, but it is stopped, not failed.
+    val outcome = toolOutcome(call.name, result, running)
+    val stopped = outcome == ToolOutcome.Stopped
     // Shown, not run: cut a huge command (a model can send hundreds of KB) to what a card can lay out.
     val command = cardCommandText(shell?.command ?: send?.text.orEmpty())
     val description = shell?.description
-    val workdir = resolveTerminalCwd(shell?.workdir, cwd)
+    // The directory the harness recorded for a settled call (`presentationMeta: { cwd }`) is the one
+    // it actually ran in; the arguments only say what was asked for.
+    val recordedCwd = (result?.meta as? JsonObject)?.let { str(it, "cwd") }?.takeIf { it.isNotBlank() }
+    val workdir = recordedCwd ?: resolveTerminalCwd(shell?.workdir, cwd)
+
+    // A background call launched a job: the card is the web client's "start" presentation, the
+    // command and where it runs, with no output and no exit status of its own. The acknowledgement
+    // (`started background job <id>`) is not output; the id only says which job to open.
+    if (shell?.background == true || send?.background == true) {
+        return ToolCardView.TerminalCard(
+            title = command,
+            description = description,
+            cwd = workdir,
+            running = result == null,
+            background = true,
+            jobId = backgroundJobId(result),
+            failed = outcome == ToolOutcome.Failed,
+            stopped = stopped,
+        )
+    }
 
     if (result == null) {
         return ToolCardView.TerminalCard(
@@ -171,10 +195,19 @@ private fun terminalCard(
             running = true,
         )
     }
-    // A persistent shell's result stays generic: it can report a reset or partial output, and
-    // inventing one process exit status for it would be a claim this client cannot support.
-    if (result.isError || shell?.persistent == true) return null
+    // A call that failed before the command could report (the tool threw) keeps its card: what it
+    // ran stays in view, and the transcript says why under it. A persistent shell can report a reset
+    // or partial output, so its output is shown as written with no exit status invented for it.
+    if (result.isError) {
+        return ToolCardView.TerminalCard(
+            title = command, description = description, cwd = workdir, running = false,
+            failed = !stopped, stopped = stopped,
+        )
+    }
     val output = singleResultText(result) ?: return null
+    if (shell?.persistent == true) {
+        return ToolCardView.TerminalCard(title = command, description = description, cwd = workdir, output = output, running = false)
+    }
     val status = if (send != null) ExitStatus(output, null, null) else parseExitStatus(output)
     return ToolCardView.TerminalCard(
         title = command,
@@ -290,10 +323,12 @@ private fun appliedDiffs(result: ToolResultNode): List<DiffHunk>? {
 
 private fun diffCard(call: ToolCallNode, args: JsonObject, result: ToolResultNode?): ToolCardView? {
     val intended = intendedDiff(call, args) ?: return null
-    // Still running: show the change the call asked for.
-    if (result == null) return ToolCardView.DiffCard(diffs = listOf(intended.hunk))
-    // `str_replace_editor` reports nothing about what it applied, so a settled one goes generic.
-    if (intended.tool == "str_replace_editor" || result.isError) return null
+    // Still running: show the change the call asked for. A failed one keeps that same picture, the
+    // diff it attempted, and the transcript says under it that it was not applied.
+    if (result == null || result.isError) return ToolCardView.DiffCard(diffs = listOf(intended.hunk))
+    // `str_replace_editor` reports nothing about what it applied; it succeeded, so the change it
+    // asked for is the change it made.
+    if (intended.tool == "str_replace_editor") return ToolCardView.DiffCard(diffs = listOf(intended.hunk))
     val applied = appliedDiffs(result)
     if (applied.isNullOrEmpty()) {
         // A successful write with no reported hunks is an identical overwrite; its whole-file

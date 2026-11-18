@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Account: DeepSeek sign-in, in Harness settings. -->
+    <string name="acct_title">บัญชี</string>
+    <string name="acct_summary">ลงชื่อเข้าใช้ DeepSeek แล้วดูยอดเงินของคุณ</string>
+    <string name="acct_unavailable">harness นี้ลงชื่อเข้าใช้ DeepSeek ไม่ได้ อาจเป็นเวอร์ชันเก่า หรือปลั๊กอินบัญชีถูกปิดอยู่</string>
+
+    <!-- Signed out. -->
+    <string name="acct_signed_out_title">ยังไม่ได้ลงชื่อเข้าใช้</string>
+    <string name="acct_signed_out_body">ลงชื่อเข้าใช้ด้วยบัญชี DeepSeek ของคุณเพื่อใช้บน harness นี้ โปรเจกต์และไฟล์ของคุณยังอยู่ที่เดิม</string>
+    <string name="acct_sign_in">ลงชื่อเข้าใช้</string>
+    <string name="acct_sign_in_again">ลงชื่อเข้าใช้อีกครั้ง</string>
+    <string name="acct_session_ended">การลงชื่อเข้าใช้ DeepSeek ของคุณสิ้นสุดแล้ว ลงชื่อเข้าใช้อีกครั้งเพื่อใช้งานต่อ</string>
+
+    <!-- How the last sign-in ended, and why. -->
+    <string name="acct_outcome_failed">การลงชื่อเข้าใช้ครั้งล่าสุดยังไม่เสร็จสมบูรณ์</string>
+    <string name="acct_outcome_expired">การลงชื่อเข้าใช้ครั้งล่าสุดหมดเวลา เริ่มใหม่ได้เมื่อพร้อม</string>
+    <string name="acct_outcome_cancelled">การลงชื่อเข้าใช้ครั้งล่าสุดถูกยกเลิก</string>
+    <string name="acct_reason_platform">harness เชื่อมต่อกับ DeepSeek ไม่ได้ ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของมันแล้วลองอีกครั้ง</string>
+    <string name="acct_reason_storage">harness บันทึกการลงชื่อเข้าใช้ไม่ได้ ตรวจสอบว่ามีพื้นที่ว่างและเขียนลงโฟลเดอร์ของตัวเองได้</string>
+    <string name="acct_reason_generic">harness ใช้คำตอบจาก DeepSeek ไม่ได้ ลองอีกครั้ง</string>
+
+    <!-- A harness on another device: the browser cannot be sent back to it from this phone. -->
+    <string name="acct_remote_title">ลงชื่อเข้าใช้บนคอมพิวเตอร์ของ harness</string>
+    <string name="acct_remote_body">ขั้นสุดท้ายของการลงชื่อเข้าใช้คือส่งเบราว์เซอร์กลับมาที่ harness ผ่านที่อยู่ที่ใช้ได้เฉพาะในอุปกรณ์เครื่องเดียวกัน จากโทรศัพท์เครื่องนี้ อุปกรณ์นั้นคือตัวโทรศัพท์เอง ไม่ใช่ harness ให้ลงชื่อเข้าใช้ให้เสร็จบนคอมพิวเตอร์ที่รัน harness อยู่ โดยเปิด harness ที่นั่น ไปที่การตั้งค่า แล้วเลือกบัญชี จากนั้นลงชื่อเข้าใช้ หน้านี้จะอัปเดตเองเมื่อเสร็จ</string>
+    <string name="acct_check_again">ตรวจสอบอีกครั้ง</string>
+
+    <!-- A sign-in in progress. -->
+    <string name="acct_progress_title">กำลังลงชื่อเข้าใช้</string>
+    <string name="acct_progress_starting">กำลังเริ่มลงชื่อเข้าใช้…</string>
+    <string name="acct_progress_browser">ทำการลงชื่อเข้าใช้ให้เสร็จในเบราว์เซอร์ แล้วกลับมาที่แอปนี้</string>
+    <string name="acct_progress_remote">กำลังรอให้การลงชื่อเข้าใช้เสร็จบนคอมพิวเตอร์ของ harness</string>
+    <string name="acct_progress_finishing">กำลังทำการลงชื่อเข้าใช้ให้เสร็จ…</string>
+    <string name="acct_open_browser">เปิดเบราว์เซอร์</string>
+    <string name="acct_copy_link">คัดลอกลิงก์ลงชื่อเข้าใช้</string>
+    <string name="acct_link_copied">คัดลอกลิงก์แล้ว</string>
+    <string name="acct_browser_missing">ไม่มีเบราว์เซอร์เปิดขึ้น คัดลอกลิงก์แล้วเปิดในเบราว์เซอร์ด้วยตัวเอง</string>
+    <string name="acct_link_refused">ใช้ลิงก์ลงชื่อเข้าใช้นี้ไม่ได้ ลองอีกครั้งเพื่อรับลิงก์ใหม่</string>
+    <string name="acct_cancel_sign_in">ยกเลิกการลงชื่อเข้าใช้</string>
+    <string name="acct_try_again">ลองอีกครั้ง</string>
+
+    <!-- Signed in: profile, balance, bonus notices, sign out. -->
+    <string name="acct_signed_in">ลงชื่อเข้าใช้แล้ว</string>
+    <string name="acct_name_fallback">บัญชี DeepSeek</string>
+    <string name="acct_profile_unavailable">ตอนนี้ยังดูรายละเอียดบัญชีไม่ได้</string>
+    <string name="acct_balance_none">ไม่มียอดเงินให้แสดง</string>
+    <string name="acct_bonus_title">ได้รับโบนัสแล้ว</string>
+    <string name="acct_bonus_dismiss">เข้าใจแล้ว</string>
+    <string name="acct_sign_out">ออกจากระบบ</string>
+    <string name="acct_sign_out_title">ออกจากระบบ DeepSeek ไหม</string>
+    <string name="acct_sign_out_idle">การออกจากระบบไม่ลบข้อมูลใดๆ คุณลงชื่อเข้าใช้ใหม่ได้</string>
+    <string name="acct_sign_out_running">มีงานที่กำลังทำงานด้วยบัญชีนี้ การออกจากระบบจะหยุดงานเหล่านั้น</string>
+    <string name="acct_sign_out_unknown">ตรวจสอบงานที่กำลังทำงานไม่ได้ การออกจากระบบอาจหยุดงานที่ใช้บัญชีนี้</string>
+
+    <!-- A call that did not go through. -->
+    <string name="acct_fail_rejected">harness ทำเรื่องนี้ไม่ได้ ลองอีกครั้ง</string>
+    <string name="acct_fail_unreachable">เชื่อมต่อกับ harness ไม่ได้ ไม่มีอะไรเปลี่ยนแปลง</string>
+</resources>

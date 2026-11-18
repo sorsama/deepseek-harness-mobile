@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.labteto.dshmobile.ui.theme.DsAnimations
@@ -28,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -65,14 +68,26 @@ fun ToolCard(
     /** Opens the call's hold menu from the default header; a custom [header] wires its own. */
     onHold: (() -> Unit)? = null,
     holdLabel: String = "",
+    /** What the card can open elsewhere (a background job, a subagent), from the transcript. */
+    actions: ToolCardActions = ToolCardActions.None,
+    /**
+     * Whether the row opens at all. A card whose own body is empty can still have something under it
+     * (the call's Output, an image), which the transcript draws; it then says so here.
+     */
+    expandable: Boolean = view.hasBody(),
+    /** How many lines the header's summary may take: more once the row is open, so it is not cut. */
+    summaryMaxLines: Int = 1,
+    /** How long the step took, shown at the end of the row itself. */
+    trailingText: String? = null,
 ) {
+    val hasBody = view.hasBody()
     if (header != null) {
         header()
         AnimatedVisibility(
-            visible = expanded,
+            visible = expanded && hasBody,
             enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
             exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
-        ) { ToolCardBody(view) }
+        ) { ToolCardBody(view, actions) }
         return
     }
     DisclosureRow(
@@ -80,13 +95,16 @@ fun ToolCard(
         summary = summaryOverride ?: view.summary(),
         icon = iconOverride ?: view.icon(),
         state = state ?: if (view.isRunning()) DisclosureState.Running else DisclosureState.Idle,
-        expanded = expanded,
-        onToggle = onToggle,
+        expanded = expanded && expandable,
+        // A header-only card (a goal change, shared files) has its subject drawn by its own node
+        // right below it: there is nothing to open, so no chevron, but the hold menu still works.
+        onToggle = if (expandable) onToggle else null,
         onHold = onHold,
         holdLabel = holdLabel,
-    ) {
-        ToolCardBody(view)
-    }
+        summaryMaxLines = summaryMaxLines,
+        trailingText = trailingText,
+        content = if (hasBody) ({ ToolCardBody(view, actions) }) else null,
+    )
 }
 
 // ---- Header helpers ---------------------------------------------------------
@@ -99,6 +117,8 @@ private fun ToolCardView.displayTitle(): String = when (this) {
     is ToolCardView.SearchCard -> title ?: stringResource(R.string.toolcard_title_search)
     is ToolCardView.ReadCard -> label
     is ToolCardView.WebCard -> title ?: stringResource(R.string.toolcard_title_web)
+    // The transcript always passes its own title for these; this is only the fallback.
+    else -> stringResource(R.string.toolcard_title_tool)
 }
 
 @Composable
@@ -108,7 +128,7 @@ private fun ToolCardView.summary(): String? = when (this) {
             ?: locations?.size?.let { pluralStringResource(R.plurals.toolcard_locations, it, it) }
     is ToolCardView.TerminalCard -> terminalStatus() ?: description ?: cwd
     is ToolCardView.DiffCard -> {
-        val (added, removed, files) = diffStats(diffs)
+        val (added, removed, files) = diffStats(this)
         "+$added -$removed · " + pluralStringResource(R.plurals.toolcard_files, files, files)
     }
     is ToolCardView.SearchCard -> (total ?: resultCount()).let { pluralStringResource(R.plurals.toolcard_results, it, it) }
@@ -118,6 +138,7 @@ private fun ToolCardView.summary(): String? = when (this) {
             ?: kind.sources.size.let { pluralStringResource(R.plurals.toolcard_sources, it, it) }
         is WebCardKind.Fetch -> kind.statusCode?.let { "HTTP $it" } ?: kind.url
     }
+    else -> controlSummary()
 }
 
 /** "running", "killed by SIGTERM" or "exit 1" for a terminal card; null when it has none of those. */
@@ -126,6 +147,8 @@ private fun ToolCardView.TerminalCard.terminalStatus(): String? {
     val signal = signal
     val exitCode = exitCode
     return when {
+        // A background launch has no exit of its own; the job it started has the status.
+        background -> null
         running == true -> stringResource(R.string.toolcard_running)
         signal != null -> stringResource(R.string.toolcard_killed_by, signal)
         exitCode != null -> stringResource(R.string.toolcard_exit_code, exitCode)
@@ -140,6 +163,7 @@ private fun ToolCardView.icon(): ImageVector = when (this) {
     is ToolCardView.SearchCard -> FeatherIcons.Search
     is ToolCardView.ReadCard -> FeatherIcons.FileText
     is ToolCardView.WebCard -> FeatherIcons.Globe
+    else -> controlIcon() ?: FeatherIcons.Tool
 }
 
 private fun ToolCardView.isRunning(): Boolean = (this as? ToolCardView.TerminalCard)?.running == true
@@ -150,21 +174,17 @@ private fun ToolCardView.SearchCard.resultCount(): Int = when (val matches = mat
 }
 
 /** Counts added lines, removed lines and distinct file paths across hunks. */
-private fun diffStats(diffs: List<DiffHunk>): Triple<Int, Int, Int> {
-    var added = 0
-    var removed = 0
-    diffs.forEach { hunk ->
-        val lines = com.labteto.dshmobile.core.session.lineDiff(hunk.oldText, hunk.newText)
-        added += lines.count { it.kind == '+' }
-        removed += lines.count { it.kind == '-' }
-    }
-    return Triple(added, removed, diffs.map { it.path }.distinct().size)
-}
+private fun diffStats(diffs: List<DiffHunk>): Triple<Int, Int, Int> =
+    DiffTotals.of(diffs).let { Triple(it.added, it.removed, it.files) }
+
+/** The counts of a diff card: the whole change's when the card was cut for a preview. */
+private fun diffStats(card: ToolCardView.DiffCard): Triple<Int, Int, Int> =
+    card.totals?.let { Triple(it.added, it.removed, it.files) } ?: diffStats(card.diffs)
 
 // ---- Bodies -----------------------------------------------------------------
 
 @Composable
-private fun ToolCardBody(view: ToolCardView) {
+private fun ToolCardBody(view: ToolCardView, actions: ToolCardActions = ToolCardActions.None) {
     val colors = DsTheme.colors
     Column(
         modifier = Modifier
@@ -177,19 +197,24 @@ private fun ToolCardBody(view: ToolCardView) {
     ) {
         when (view) {
             is ToolCardView.GenericCard -> GenericBody(view)
-            is ToolCardView.TerminalCard -> TerminalBody(view)
+            is ToolCardView.TerminalCard -> TerminalBody(view, actions)
             is ToolCardView.DiffCard -> DiffBody(view)
             is ToolCardView.SearchCard -> SearchBody(view)
             is ToolCardView.ReadCard -> ReadBody(view)
             is ToolCardView.WebCard -> WebBody(view)
+            else -> ControlCardBody(view, actions)
         }
     }
 }
 
 @Composable
-private fun TerminalBody(card: ToolCardView.TerminalCard) {
+private fun TerminalBody(card: ToolCardView.TerminalCard, actions: ToolCardActions = ToolCardActions.None) {
     val colors = DsTheme.colors
     val state = when {
+        // Stopped is amber like the row's own dot; only a failed call is red.
+        card.stopped -> StateDotState.Warning
+        card.failed -> StateDotState.Error
+        card.background -> if (card.running == true || actions.jobRunning) StateDotState.Running else StateDotState.Idle
         card.running == true -> StateDotState.Running
         card.signal != null || (card.exitCode != null && card.exitCode != 0) -> StateDotState.Error
         card.exitCode == 0 -> StateDotState.Done
@@ -205,18 +230,21 @@ private fun TerminalBody(card: ToolCardView.TerminalCard) {
             }
             card.cwd?.let {
                 Text(
-                    it,
+                    com.labteto.dshmobile.ui.screens.main.technicalDisplay(it),
                     style = DsType.caption11.copy(fontFamily = DsType.codeFont),
                     color = colors.labelCaption,
                 )
             }
+            // The command itself, since the header shows its description: a background launch and a
+            // failed call have no output under them to say what ran.
+            if ((card.background || card.cutShort) && card.description != null && !card.title.isNullOrEmpty()) {
+                CodeText(card.title, blockId = "cmd", fadeColor = colors.codeBlockBg, modifier = Modifier.fillMaxWidth())
+            }
+            if (card.background && !card.cutShort) BackgroundJobLine(card, actions)
+            // Output does not wrap: build lines and tables keep their columns, and the block scrolls
+            // sideways as one piece (or wraps, when the reader asks).
             card.output?.let {
-                Text(
-                    it,
-                    style = DsType.mdCode,
-                    color = colors.labelPrimary,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                CodeText(it, blockId = "out", fadeColor = colors.codeBlockBg, modifier = Modifier.fillMaxWidth())
             }
             // The status line under the output is a finished call's: while it runs, the header
             // already says so.
@@ -240,34 +268,37 @@ private fun TerminalBody(card: ToolCardView.TerminalCard) {
 @Composable
 private fun DiffBody(card: ToolCardView.DiffCard) {
     val colors = DsTheme.colors
-    val (added, removed, files) = diffStats(card.diffs)
+    val (added, removed, files) = diffStats(card)
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        card.diffs.forEach { hunk ->
+        card.diffs.forEachIndexed { hunkIndex, hunk ->
             Text(
-                hunk.path,
+                // A path reads left to right whatever the language around it.
+                com.labteto.dshmobile.ui.screens.main.technicalDisplay(hunk.path),
                 style = DsType.small13Strong,
                 color = colors.labelSecondary,
                 modifier = Modifier.padding(top = 6.dp, bottom = 2.dp),
             )
-            val lines = remember(hunk) { com.labteto.dshmobile.core.session.lineDiff(hunk.oldText, hunk.newText) }
-            androidx.compose.foundation.text.selection.SelectionContainer {
-                Column {
-                    lines.forEach { line ->
-                        Row {
-                            // Two cells, one line each: both numbers in one narrow text wrapped onto
-                            // a second line once either reached four digits, and pushed the code
-                            // under it out of step with its own gutter.
-                            DiffGutterCell(line.oldLine)
-                            DiffGutterCell(line.newLine)
-                            DiffLine(line.kind.toString(), line.text, when (line.kind) {
-                                '+' -> colors.success
-                                '-' -> colors.error
-                                else -> colors.labelSecondary
-                            })
-                        }
+            val lines = remember(hunk, colors) {
+                com.labteto.dshmobile.core.session.lineDiff(hunk.oldText, hunk.newText).map { line ->
+                    val tint = when (line.kind) {
+                        '+' -> colors.success
+                        '-' -> colors.error
+                        else -> colors.labelSecondary
                     }
+                    // Two number cells and the +/- mark form the gutter, which stays put while the
+                    // code scrolls sideways.
+                    GutterLine(
+                        listOf(
+                            GutterCell(line.oldLine?.toString().orEmpty(), colors.labelCaption),
+                            GutterCell(line.newLine?.toString().orEmpty(), colors.labelCaption),
+                            GutterCell(line.kind.toString(), tint),
+                        ),
+                        AnnotatedString(line.text),
+                        tint,
+                    )
                 }
             }
+            CodeGutterBlock(lines, blockId = "diff$hunkIndex", fadeColor = colors.codeBlockBg)
         }
         Spacer(Modifier.height(2.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -284,31 +315,6 @@ private fun DiffBody(card: ToolCardView.DiffCard) {
     }
 }
 
-/** One line number of a diff's gutter: a fixed width, right-aligned, and never wrapped. */
-@Composable
-private fun DiffGutterCell(number: Int?) {
-    Text(
-        number?.toString().orEmpty(),
-        style = DsType.caption11,
-        color = DsTheme.colors.labelCaption,
-        textAlign = TextAlign.End,
-        maxLines = 1,
-        softWrap = false,
-        modifier = Modifier.width(DiffGutterCellWidth).padding(end = 4.dp),
-    )
-}
-
-/** Room for five digits at the caption size, so a very long file still fits its cell. */
-private val DiffGutterCellWidth = 36.dp
-
-@Composable
-private fun DiffLine(prefix: String, line: String, color: Color) {
-    Row(Modifier.fillMaxWidth()) {
-        Text(prefix, style = DsType.mdCode, color = color, modifier = Modifier.width(18.dp))
-        Text(line, style = DsType.mdCode, color = color, modifier = Modifier.weight(1f))
-    }
-}
-
 @Composable
 private fun SearchBody(card: ToolCardView.SearchCard) {
     val colors = DsTheme.colors
@@ -321,35 +327,40 @@ private fun SearchBody(card: ToolCardView.SearchCard) {
             is SearchMatches.FileMatches -> matches.files.forEach { file ->
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        file.path,
+                        com.labteto.dshmobile.ui.screens.main.technicalDisplay(file.path),
                         style = DsType.small13Strong.copy(fontFamily = DsType.codeFont),
                         color = colors.labelSecondary,
                     )
-                    file.matches.forEach { match ->
-                        Row(Modifier.fillMaxWidth()) {
-                            Text(
-                                "${match.lineNumber}",
-                                style = DsType.mdCode.copy(color = colors.labelCaption),
-                                color = colors.labelCaption,
-                                textAlign = TextAlign.End,
-                                modifier = Modifier.width(40.dp),
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                match.line,
-                                style = DsType.mdCode,
-                                color = colors.labelTertiary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f),
-                            )
+                    // Line number and matched text keep their order in a right-to-left language.
+                    LeftToRight {
+                        Column {
+                            file.matches.forEach { match ->
+                                Row(Modifier.fillMaxWidth()) {
+                                    Text(
+                                        "${match.lineNumber}",
+                                        style = DsType.mdCode.copy(color = colors.labelCaption),
+                                        color = colors.labelCaption,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.width(40.dp),
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        match.line,
+                                        style = DsType.mdCode,
+                                        color = colors.labelTertiary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
             is SearchMatches.PathList -> matches.paths.forEach { path ->
                 Text(
-                    path,
+                    com.labteto.dshmobile.ui.screens.main.technicalDisplay(path),
                     style = DsType.mdCode,
                     color = colors.labelSecondary,
                     maxLines = 1,
@@ -379,27 +390,13 @@ private fun ReadBody(card: ToolCardView.ReadCard) {
         )
         return
     }
-    val lineStyle = DsType.mdCode
-    // One row per source line, number and text together. They were two independent columns, so the
-    // first line long enough to wrap made every row under it taller than its number, and line N's
-    // number ended up beside line N+k's text.
-    Column(Modifier.fillMaxWidth()) {
-        card.lines.forEach {
-            Row(Modifier.fillMaxWidth()) {
-                Text(
-                    "${it.number}",
-                    style = lineStyle,
-                    color = colors.labelCaption,
-                    textAlign = TextAlign.End,
-                    maxLines = 1,
-                    softWrap = false,
-                    modifier = Modifier.width(48.dp),
-                )
-                Spacer(Modifier.width(10.dp))
-                Text(it.text, style = lineStyle, color = colors.labelPrimary, modifier = Modifier.weight(1f))
-            }
-        }
+    // The same lexer as the Markdown code blocks colours the lines, by the language the read recorded
+    // (or the file's extension). A language it has no rules for stays plain, with no work done.
+    val lang = card.lang ?: card.path?.substringAfterLast('.', "")?.takeIf { it.isNotEmpty() }
+    val gutter = remember(card.lines, lang, colors) {
+        readGutterLines(card.lines, lang, colors)
     }
+    CodeGutterBlock(gutter, blockId = "read", fadeColor = colors.codeBlockBg)
 }
 
 @Composable
@@ -431,7 +428,7 @@ private fun WebBody(card: ToolCardView.WebCard) {
                                 )
                             }
                             Text(
-                                source.url,
+                                com.labteto.dshmobile.ui.screens.main.technicalDisplay(source.url),
                                 style = DsType.caption11,
                                 color = colors.labelCaption,
                                 maxLines = 1,
@@ -459,7 +456,7 @@ private fun WebBody(card: ToolCardView.WebCard) {
             }
             is WebCardKind.Fetch -> {
                 Text(
-                    kind.url,
+                    com.labteto.dshmobile.ui.screens.main.technicalDisplay(kind.url),
                     style = DsType.mdCode,
                     color = colors.labelSecondary,
                     maxLines = 2,
@@ -486,25 +483,35 @@ private fun WebBody(card: ToolCardView.WebCard) {
 private fun GenericBody(card: ToolCardView.GenericCard) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        card.rawInput?.let { raw ->
-            SectionLabel(stringResource(R.string.toolcard_section_in))
-            Text(
-                prettyJson(raw),
-                style = DsType.mdCode,
-                color = colors.labelPrimary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(DsShapes.row)
-                    .background(colors.bgLayer2)
-                    .border(1.dp, colors.borderL1, DsShapes.row)
-                    .padding(10.dp),
-            )
+        // A tool this app has no view for: what it was called with is there for whoever wants it,
+        // collapsed so the row reads as a step rather than a JSON dump, and one tap opens it.
+        card.rawInput?.takeIf { hasArguments(it) }?.let { raw ->
+            var open by androidx.compose.runtime.saveable.rememberSaveable(raw) { androidx.compose.runtime.mutableStateOf(false) }
+            val fields = remember(raw) { topLevelFieldCount(raw) }
+            DisclosureRow(
+                title = stringResource(R.string.chat_tool_arguments),
+                summary = fields?.let { pluralStringResource(R.plurals.chat_tool_arguments_count, it, it) },
+                icon = FeatherIcons.Code,
+                expanded = open,
+                onToggle = { open = !open },
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(DsShapes.row)
+                        .background(colors.bgLayer2)
+                        .border(1.dp, colors.borderL1, DsShapes.row)
+                        .padding(10.dp),
+                ) {
+                    CodeText(prettyJson(raw), blockId = "args", fadeColor = colors.bgLayer2)
+                }
+            }
         }
         card.locations?.takeIf { it.isNotEmpty() }?.let { locations ->
             SectionLabel(stringResource(R.string.toolcard_section_locations))
             locations.forEach { location ->
                 Text(
-                    location,
+                    com.labteto.dshmobile.ui.screens.main.technicalDisplay(location),
                     style = DsType.mdCode,
                     color = colors.labelTertiary,
                     maxLines = 1,
@@ -514,13 +521,9 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
         }
         card.content?.takeIf { it.isNotEmpty() }?.let { blocks ->
             SectionLabel(stringResource(R.string.toolcard_section_out))
-            blocks.forEach { block ->
+            blocks.forEachIndexed { blockIndex, block ->
                 when (block) {
-                    is ContentBlockView.TextBlock -> Text(
-                        block.text,
-                        style = DsType.mdCode,
-                        color = colors.labelPrimary,
-                    )
+                    is ContentBlockView.TextBlock -> CodeText(block.text, blockId = "text$blockIndex", fadeColor = colors.codeBlockBg)
                     is ContentBlockView.ReasoningBlock -> Text(
                         block.text,
                         style = DsType.mdSmall.copy(color = colors.labelTertiary),
@@ -552,6 +555,23 @@ private fun SectionLabel(text: String) {
         color = DsTheme.colors.labelCaption,
         modifier = Modifier.padding(bottom = 2.dp),
     )
+}
+
+/** How many fields a JSON object has at its top level, or null when [raw] is not an object. */
+internal fun topLevelFieldCount(raw: String): Int? = runCatching {
+    (com.labteto.dshmobile.core.wire.WireJson.parseToJsonElement(raw) as? kotlinx.serialization.json.JsonObject)?.size
+}.getOrNull()
+
+/**
+ * Whether a call's recorded arguments say anything: not blank, and not an object with no fields
+ * (`{}`, `{ }`), which is how a tool that takes nothing (`list_agents`) is called. Such a call gets
+ * no arguments row and no empty box.
+ */
+internal fun hasArguments(raw: String?): Boolean {
+    if (raw.isNullOrBlank()) return false
+    val trimmed = raw.trim()
+    if (trimmed == "{}") return false
+    return topLevelFieldCount(trimmed) != 0
 }
 
 /** Tiny deterministic JSON pretty-printer (2-space indent, strings/escapes preserved). */

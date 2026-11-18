@@ -142,10 +142,18 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
     val store = rememberSessionStore()
     val plugins by store.plugins.collectAsStateWithLifecycle()
     val pluginManagementAvailable by store.pluginManagementAvailable.collectAsStateWithLifecycle()
+    val harnessSettingsAvailable by store.harnessSettingsAvailable.collectAsStateWithLifecycle()
+    val accountAvailable by store.accountAvailable.collectAsStateWithLifecycle()
     val colors = DsTheme.colors
     val toast = rememberDsToast()
     var showDisconnectDialog by remember { mutableStateOf(false) }
-    var pluginsOpen by remember { mutableStateOf(false) }
+    // Saveable: a text size, display size, theme or language change recreates the activity, and the
+    // page should still be open afterwards. The confirmations below are not: they ask about a deletion.
+    var pluginsOpen by rememberSaveable { mutableStateOf(false) }
+    // Saveable for the same reason: Harness settings comes back after the activity is recreated. What
+    // is typed on its pages is not saved (a key entry comes back closed and empty), and the area closes
+    // itself when the harness it was opened for is gone.
+    var harnessSettingsOpen by rememberSaveable { mutableStateOf(false) }
     // Settings and the archive are two different jobs: one is configuration, the other is a list to
     // search and restore from. A tab each keeps the settings reachable without scrolling past a
     // list that can be long, and the archive gets the whole height to be scrolled in.
@@ -304,6 +312,14 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                 if (connectionState.phase == ConnectionPhase.CONNECTED) {
                     SettingsCard(stringResource(R.string.models_title)) {
                         com.labteto.dshmobile.ui.screens.models.ModelsSettingsRow()
+                    }
+                    // What the harness keeps for itself: web search, shell limits, subagents and more.
+                    // Hidden only once the harness has said it has neither the settings call nor the account
+                    // calls, which are the other thing this area holds (DeepSeek sign-in).
+                    if (harnessSettingsAvailable != false || accountAvailable != false) {
+                        SettingsCard(stringResource(R.string.hs_title)) {
+                            com.labteto.dshmobile.ui.screens.harnesssettings.HarnessSettingsRow { harnessSettingsOpen = true }
+                        }
                     }
                 }
 
@@ -535,6 +551,10 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
         else com.labteto.dshmobile.ui.screens.main.PluginManagerScreen(onClose = { pluginsOpen = false }, onDraftOpened = { pluginsOpen = false; onClose() })
     }
 
+    if (harnessSettingsOpen) {
+        com.labteto.dshmobile.ui.screens.harnesssettings.HarnessSettingsScreen(onClose = { harnessSettingsOpen = false })
+    }
+
     if (showDisconnectDialog) {
         DsDialog(
             title = stringResource(R.string.settings_connection_disconnect_confirm),
@@ -654,7 +674,7 @@ private fun PluginsCard(inventory: PluginInventorySnapshot, onOpen: () -> Unit) 
 @Composable
 internal fun PluginsSheet(inventory: PluginInventorySnapshot, onDismiss: () -> Unit) {
     val colors = DsTheme.colors
-    var filter by remember { mutableStateOf("") }
+    var filter by rememberSaveable { mutableStateOf("") }
     val matching = remember(inventory, filter) {
         val q = filter.trim().lowercase(Locale.ROOT)
         if (q.isEmpty()) {

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="code_wrap">سطریں لپیٹیں</string>
+    <string name="output_viewer_search">آؤٹ پٹ میں تلاش کریں</string>
+    <string name="output_viewer_prev">پچھلا نتیجہ</string>
+    <string name="output_viewer_next">اگلا نتیجہ</string>
+    <string name="output_viewer_matches">%2$s میں سے %1$d</string>
+    <string name="output_viewer_no_matches">کوئی نتیجہ نہیں</string>
+    <string name="chat_state_running">چل رہا ہے</string>
+    <string name="chat_state_done">مکمل</string>
+    <string name="chat_state_failed">ناکام</string>
+    <string name="chat_state_stopped">روک دیا گیا</string>
+</resources>

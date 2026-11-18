@@ -306,7 +306,7 @@ class DesktopInputTest {
     @Test fun theFocusedControlGetsARing() {
         var accent = Color.Unspecified
         compose.setContent {
-            DshTheme(indication = { base, ring -> rememberFocusRingIndication(base, ring) }) {
+            DshTheme(indication = { _, ring -> rememberAppIndication(ring) }) {
                 KeyboardMode()
                 accent = DsTheme.colors.accent
                 Box(Modifier.testTag("box").size(160.dp, 96.dp).background(Color.White).clickable { })

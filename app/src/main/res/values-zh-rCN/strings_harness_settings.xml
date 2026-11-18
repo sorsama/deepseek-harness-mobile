@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Harness settings: the area in Settings and its pages. -->
+    <string name="hs_title">harness 设置</string>
+    <string name="hs_entry_summary">网页搜索、Shell 限制、子智能体等</string>
+    <string name="hs_intro">harness 自己保存的设置，作用于你当前连接的 harness。</string>
+    <string name="hs_section_more">更多设置</string>
+    <string name="hs_empty">这个 harness 在这里没有可更改的设置。</string>
+    <string name="hs_unsupported">这个 harness 不允许本应用更改它的设置。请在 harness 本身上更改，或先更新它。</string>
+    <string name="hs_read_only">harness 把这些设置保存为只读，所以无法在这里更改。</string>
+    <string name="hs_refresh_failed">刷新失败，显示的是之前加载的内容。</string>
+    <string name="hs_note_restart">重启 harness 后，本页的更改才会生效。</string>
+
+    <!-- Page names and one-line descriptions. -->
+    <string name="hs_page_web_search">网页搜索</string>
+    <string name="hs_page_web_search_desc">智能体如何搜索网页，以及它使用的密钥。</string>
+    <string name="hs_page_shell">Shell</string>
+    <string name="hs_page_shell_desc">单条命令最多能运行多久，以及保留多少输出。</string>
+    <string name="hs_page_subagents">子智能体</string>
+    <string name="hs_page_subagents_desc">能嵌套几层、同时有多少个，以及可以使用哪些模型。</string>
+    <string name="hs_page_agent_loop">智能体循环</string>
+    <string name="hs_page_agent_loop_desc">智能体同时运行多少个工具调用。</string>
+    <string name="hs_page_session_log">会话日志</string>
+    <string name="hs_page_session_log_desc">分享会话日志，帮助改进 DeepSeek。</string>
+
+    <!-- Shared field words. -->
+    <string name="hs_overridden">已更改</string>
+    <string name="hs_reset">恢复默认</string>
+    <string name="hs_reset_for">将“%1$s”恢复默认</string>
+    <string name="hs_readonly_note">仅供查看，本应用无法更改。</string>
+    <string name="hs_remove">移除</string>
+    <string name="hs_remove_item">移除 %1$s</string>
+    <string name="hs_add">添加</string>
+    <string name="hs_new_item">新条目</string>
+
+    <!-- Agent loop and session log. -->
+    <string name="hs_f_parallel">并行工具调用数</string>
+    <string name="hs_f_parallel_hint">同一步内最多可以同时运行的工具调用数。</string>
+    <string name="hs_f_session_log">向官方 API 发送请求时一并上传会话日志</string>
+    <string name="hs_f_session_log_hint">帮助改进 DeepSeek 的模型和产品。</string>
+
+    <!-- Shell. -->
+    <string name="hs_f_timeout">命令超时</string>
+    <string name="hs_f_timeout_hint">单条命令运行多久后会被停止。</string>
+    <string name="hs_unit_ms">毫秒</string>
+    <string name="hs_f_output">每路输出上限</string>
+    <string name="hs_f_output_hint">超出上限的输出会存入临时文件，而不是丢失。</string>
+    <string name="hs_unit_bytes">字节</string>
+
+    <!-- Subagents. -->
+    <string name="hs_sec_limits">限制</string>
+    <string name="hs_f_depth">最大层数</string>
+    <string name="hs_f_depth_hint">一个智能体最多能启动几层子智能体。0 表示关闭子智能体，1 表示只有主智能体能启动。如果某个工具有自己的层数限制，则以它为准。</string>
+    <string name="hs_f_width">同时运行的子智能体数</string>
+    <string name="hs_f_width_hint">同一个主智能体下、所有层级中同时存在的子智能体上限。达到上限后，新的会被拒绝。</string>
+    <string name="hs_sec_models">子智能体可用的模型</string>
+    <string name="hs_f_model_choice">允许智能体为每个子智能体选择模型</string>
+    <string name="hs_f_model_choice_hint">智能体会从你在下方允许的模型中选择。仅对新会话生效。</string>
+    <string name="hs_models_list_label">智能体可以选择的模型</string>
+    <string name="hs_models_pick_one">请至少选择一个模型，才能开启。</string>
+    <string name="hs_models_keep_one">请至少保留一个模型，或者关闭开关。</string>
+    <string name="hs_models_load_failed">无法加载模型。</string>
+    <string name="hs_models_none_why">暂无可用的模型。提供方有了可用的 API 密钥后，它的模型才会出现在这里。请在“模型与 API 密钥”中添加。</string>
+    <string name="hs_models_retired">当前不可用</string>
+
+    <!-- Web search. -->
+    <string name="hs_f_search_api">使用 Search API</string>
+    <string name="hs_f_search_api_hint">关闭时，搜索通过 DeepSeek Messages 进行。开启后使用 Search 和 Fetch API，它们有各自的功能和定价。</string>
+    <string name="hs_f_endpoint_messages">Messages API 地址</string>
+    <string name="hs_f_endpoint_messages_hint">请包含 API 前缀，例如 %1$s。</string>
+    <string name="hs_f_endpoint_search">Search 和 Fetch API 地址</string>
+    <string name="hs_f_endpoint_search_hint">请包含 API 前缀，例如 %1$s。</string>
+    <string name="hs_f_max_uses">每次请求的搜索次数</string>
+    <string name="hs_f_max_uses_hint">辅助模型在一次请求中最多可以搜索几次。仅适用于通过 Messages 的搜索。</string>
+    <string name="hs_f_count">每次搜索的结果数</string>
+    <string name="hs_f_count_hint">每次查询返回多少条结果，范围 1 到 50。它不限制搜索的次数。</string>
+    <string name="hs_key_unset">还没有设置密钥。只有使用 DeepSeek 账号模型的对话才能搜索，并且走默认地址。</string>
+    <string name="hs_key_hint">保存在 harness 上，不会写入它的设置文件。留空表示保留当前密钥。</string>
+    <string name="hs_key_remove_title">移除网页搜索的密钥？</string>
+    <string name="hs_key_remove_body">harness 会忘记这个密钥。需要它的网页搜索会停止工作，直到你重新添加。</string>
+    <string name="hs_key_shared">这个密钥是共用的。以下设置也在使用它：%1$s。在这里替换或移除，它们也会受到影响。</string>
+
+    <!-- A secret field the app has no words for. -->
+    <string name="hs_secret_set">harness 上已保存一个值。</string>
+    <string name="hs_secret_unset">还没有保存任何内容。</string>
+    <string name="hs_secret_remove_title">移除已保存的值？</string>
+    <string name="hs_secret_remove_body">harness 会忘记它。以后可以再添加新的。</string>
+
+    <!-- What is wrong with what was typed. -->
+    <string name="hs_err_required">这里不能留空。</string>
+    <string name="hs_err_number">请输入数字。</string>
+    <string name="hs_err_whole">请输入整数。</string>
+    <string name="hs_err_min">请输入不小于 %1$s 的数。</string>
+    <string name="hs_err_max">请输入不大于 %1$s 的数。</string>
+    <string name="hs_err_range">请输入 %1$s 到 %2$s 之间的整数。</string>
+    <string name="hs_err_step">请输入 %1$s 的倍数。</string>
+    <string name="hs_err_min_length">最小长度：%1$s。</string>
+    <string name="hs_err_max_length">最大长度：%1$s。</string>
+    <string name="hs_err_format">格式不对。</string>
+    <string name="hs_err_option">请从选项中选一个。</string>
+    <string name="hs_err_min_items">最少项数：%1$s。</string>
+    <string name="hs_err_max_items">最多项数：%1$s。</string>
+
+    <!-- A change that did not go through. -->
+    <string name="hs_fail_rejected">harness 没有接受这个值，已恢复为之前的值。</string>
+    <string name="hs_fail_conflict">这个值在别处被改过了，现在显示的是最新的。</string>
+    <string name="hs_fail_unreachable">连接不上 harness，没有做任何更改。</string>
+</resources>

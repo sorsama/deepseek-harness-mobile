@@ -1,0 +1,129 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-6",
+  "result": {
+    "ok": true,
+    "value": {
+      "url": "http://127.0.0.1:56394/index.json",
+      "title": {
+        "en": "Example Market",
+        "zh": "示例市场"
+      },
+      "description": {
+        "en": "Community DSH bundles",
+        "zh": "社区 DSH bundle"
+      },
+      "metadata": {
+        "categories": {
+          "productivity": {
+            "title": {
+              "en": "Productivity",
+              "zh": "效率"
+            }
+          },
+          "tools": {
+            "title": {
+              "en": "Tools",
+              "zh": "工具"
+            }
+          }
+        },
+        "labels": {
+          "official": {
+            "title": {
+              "en": "Official",
+              "zh": "官方"
+            }
+          },
+          "experimental": {
+            "title": {
+              "en": "Experimental"
+            }
+          }
+        },
+        "sortKeys": {
+          "downloads": {
+            "title": {
+              "en": "Downloads",
+              "zh": "下载量"
+            },
+            "order": "desc"
+          }
+        }
+      },
+      "fetchedAt": 1794979638965,
+      "entries": [
+        {
+          "name": "@example/dsh-auto-review",
+          "title": {
+            "en": "Auto Review",
+            "zh": "自动审查"
+          },
+          "description": {
+            "en": "Per-tool LLM authorization review",
+            "zh": "逐工具 LLM 授权审查"
+          },
+          "author": "Example Labs",
+          "homepage": "https://example.com/dsh-auto-review",
+          "repository": {
+            "url": "https://github.com/example/dsh-plugins",
+            "directory": "auto-review"
+          },
+          "metadata": {
+            "category": "productivity",
+            "keywords": [
+              "review",
+              "authorization"
+            ],
+            "labels": [
+              "official"
+            ],
+            "sortKeys": {
+              "downloads": 12034
+            }
+          },
+          "versions": [
+            {
+              "version": "0.2.0-rc.2",
+              "publishTimestamp": 1790476800,
+              "source": {
+                "type": "npm"
+              },
+              "engines": {
+                "dsh": ">=0.2.0 <0.3.0"
+              },
+              "install": {
+                "spec": "@example/dsh-auto-review@0.2.0-rc.2"
+              },
+              "compatibility": {
+                "compatible": true
+              }
+            },
+            {
+              "version": "0.2.0-rc.1",
+              "publishTimestamp": 1789872000,
+              "source": {
+                "type": "npm"
+              },
+              "engines": {
+                "dsh": "0.2.0 - 0.2.4 || >=0.3.0 <0.4.0"
+              },
+              "install": {
+                "spec": "@example/dsh-auto-review@0.2.0-rc.1"
+              },
+              "compatibility": {
+                "compatible": true
+              }
+            }
+          ],
+          "defaultVersion": "0.2.0-rc.2",
+          "installation": {
+            "status": "not-installed"
+          }
+        }
+      ],
+      "total": 1,
+      "nextOffset": null
+    }
+  }
+}

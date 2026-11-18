@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_tool_title_todo">Liste de tâches</string>
+    <string name="chat_tool_title_ask">Question</string>
+    <string name="chat_tool_title_subagent">Sous-agent</string>
+    <string name="chat_tool_title_skill">Compétence</string>
+    <string name="chat_tool_title_read_image">Lire une image</string>
+    <string name="chat_tool_title_job_output">Sortie de la tâche</string>
+    <string name="chat_tool_title_job_kill">Arrêter la tâche</string>
+    <string name="chat_tool_title_terminal_open">Ouvrir un terminal</string>
+    <string name="chat_tool_title_terminal_read">Lire le terminal</string>
+    <string name="chat_tool_title_terminal_list">Terminaux</string>
+    <string name="chat_tool_title_terminal_signal">Envoyer un signal</string>
+    <string name="chat_tool_title_terminal_close">Fermer le terminal</string>
+    <string name="chat_tool_title_terminal_send">Envoyer au terminal</string>
+    <string name="chat_tool_title_lsp">Recherche dans le code</string>
+    <string name="chat_tool_title_goal_create">Fixer l’objectif</string>
+    <string name="chat_tool_title_goal_view">Voir l’objectif</string>
+    <string name="chat_tool_title_goal_update">Modifier l’objectif</string>
+    <string name="chat_tool_title_schedule_create">Nouveau rappel</string>
+    <string name="chat_tool_title_schedule_list">Rappels</string>
+    <string name="chat_tool_title_schedule_update">Modifier le rappel</string>
+    <string name="chat_tool_title_schedule_delete">Supprimer le rappel</string>
+    <string name="chat_tool_title_present">Partager des fichiers</string>
+
+    <string name="chat_tool_todo_progress">%1$d sur %2$d faites</string>
+    <plurals name="chat_tool_todo_added">
+        <item quantity="one">%d ajoutée</item>
+        <item quantity="many">%d ajoutées</item>
+        <item quantity="other">%d ajoutées</item>
+    </plurals>
+    <plurals name="chat_tool_todo_changed">
+        <item quantity="one">%d modifiée</item>
+        <item quantity="many">%d modifiées</item>
+        <item quantity="other">%d modifiées</item>
+    </plurals>
+    <plurals name="chat_tool_todo_removed">
+        <item quantity="one">%d retirée</item>
+        <item quantity="many">%d retirées</item>
+        <item quantity="other">%d retirées</item>
+    </plurals>
+    <string name="chat_tool_todo_no_changes">Aucun changement</string>
+    <string name="chat_tool_todo_not_saved">Non enregistrée. Voici la liste qu’il a essayé d’écrire.</string>
+    <string name="chat_tool_todo_pending">À faire</string>
+    <string name="chat_tool_todo_in_progress">En cours</string>
+    <string name="chat_tool_todo_done">Faite</string>
+    <string name="chat_tool_todo_change_added">Ajoutée</string>
+    <string name="chat_tool_todo_change_moved">Déplacée</string>
+    <string name="chat_tool_todo_change_removed">Retirée</string>
+    <string name="chat_tool_todo_change_was">Avant : %1$s</string>
+
+    <string name="chat_tool_ask_waiting">En attente de votre réponse</string>
+    <string name="chat_tool_ask_answered">%1$d sur %2$d répondues</string>
+    <string name="chat_tool_ask_cancelled">Vous avez fermé ces questions</string>
+    <string name="chat_tool_ask_interrupted">Arrêté avant votre réponse</string>
+    <string name="chat_tool_ask_timed_out">Pas de réponse à temps</string>
+    <string name="chat_tool_ask_carried_on">L’agent a continué sans attendre</string>
+    <string name="chat_tool_ask_closed">Fermée</string>
+    <string name="chat_tool_ask_your_answer">Votre réponse : %1$s</string>
+    <string name="chat_tool_ask_not_answered">Sans réponse</string>
+
+    <string name="chat_tool_subagent_starting">Démarrage</string>
+    <string name="chat_tool_subagent_started">Démarré</string>
+    <string name="chat_tool_subagent_working">Au travail</string>
+    <string name="chat_tool_subagent_finished">Terminé</string>
+    <string name="chat_tool_subagent_failed">N’a pas démarré</string>
+    <string name="chat_tool_subagent_replied">A répondu</string>
+    <string name="chat_tool_subagent_model">Modèle : %1$s</string>
+    <string name="chat_tool_subagent_model_label">Modèle :</string>
+    <string name="chat_tool_subagent_open">Ouvrir le sous-agent</string>
+    <string name="chat_tool_subagent_conversation">C’est la conversation d’un sous-agent</string>
+
+    <string name="chat_tool_skill_loading">Chargement</string>
+    <string name="chat_tool_skill_loaded">Chargée</string>
+    <string name="chat_tool_skill_not_loaded">Non chargée</string>
+    <string name="chat_tool_image_none">Aucune image reçue</string>
+
+    <string name="chat_tool_background">Tourne en arrière-plan</string>
+    <string name="chat_tool_background_starting">Démarrage en arrière-plan</string>
+    <string name="chat_tool_open_job">Ouvrir la tâche</string>
+
+    <string name="chat_tool_state_exited">Terminé</string>
+    <string name="chat_tool_state_started">Démarré</string>
+    <string name="chat_tool_state_stop_requested">Arrêt demandé</string>
+    <string name="chat_tool_state_already_finished">Déjà terminé</string>
+    <string name="chat_tool_state_signal_sent">Signal envoyé</string>
+    <string name="chat_tool_state_closed">Fermé</string>
+    <string name="chat_tool_state_closing">Fermeture en cours</string>
+    <string name="chat_tool_state_scheduled">Programmé</string>
+    <string name="chat_tool_state_overdue">En retard</string>
+    <string name="chat_tool_state_deleted">Supprimé</string>
+    <string name="chat_tool_state_goal_waiting">En attente de reprise</string>
+    <string name="chat_tool_state_goal_cleared">Retiré</string>
+
+    <string name="chat_tool_field_type">Type</string>
+    <string name="chat_tool_field_pid">ID de processus</string>
+    <string name="chat_tool_field_exit_code">Code de sortie</string>
+    <string name="chat_tool_field_signal">Signal</string>
+    <string name="chat_tool_field_process_group">Groupe de processus</string>
+    <string name="chat_tool_field_lines">Lignes</string>
+    <string name="chat_tool_field_rounds">Tours</string>
+    <string name="chat_tool_field_reason">Raison</string>
+    <string name="chat_tool_field_when">Quand</string>
+    <string name="chat_tool_field_repeats">Répétition</string>
+    <string name="chat_tool_field_location">Ligne</string>
+    <string name="chat_tool_field_kind">Genre</string>
+    <string name="chat_tool_field_value">%1$s : %2$s</string>
+
+    <plurals name="chat_tool_jobs_count">
+        <item quantity="one">%d tâche en arrière-plan</item>
+        <item quantity="many">%d tâches en arrière-plan</item>
+        <item quantity="other">%d tâches en arrière-plan</item>
+    </plurals>
+    <plurals name="chat_tool_terminals_count">
+        <item quantity="one">%d terminal</item>
+        <item quantity="many">%d terminaux</item>
+        <item quantity="other">%d terminaux</item>
+    </plurals>
+    <plurals name="chat_tool_places_count">
+        <item quantity="one">%d résultat</item>
+        <item quantity="many">%d résultats</item>
+        <item quantity="other">%d résultats</item>
+    </plurals>
+    <plurals name="chat_tool_reminders_count">
+        <item quantity="one">%d rappel</item>
+        <item quantity="many">%d rappels</item>
+        <item quantity="other">%d rappels</item>
+    </plurals>
+    <plurals name="chat_tool_files_count">
+        <item quantity="one">%d fichier</item>
+        <item quantity="many">%d fichiers</item>
+        <item quantity="other">%d fichiers</item>
+    </plurals>
+    <string name="chat_tool_jobs_none">Aucune tâche en arrière-plan</string>
+    <string name="chat_tool_terminals_none">Aucun terminal ouvert</string>
+    <string name="chat_tool_places_none">Rien trouvé</string>
+    <string name="chat_tool_reminders_none">Aucun rappel</string>
+    <string name="chat_tool_goal_none">Aucun objectif</string>
+    <string name="chat_tool_output_cut">La sortie a été coupée.</string>
+
+    <string name="chat_tool_repeat_once">Une fois</string>
+    <string name="chat_tool_repeat_every_second">Chaque seconde</string>
+    <string name="chat_tool_repeat_every_minute">Chaque minute</string>
+    <string name="chat_tool_repeat_every_hour">Chaque heure</string>
+    <string name="chat_tool_repeat_every_day">Chaque jour</string>
+    <plurals name="chat_tool_repeat_seconds">
+        <item quantity="one">Toutes les %d seconde</item>
+        <item quantity="many">Toutes les %d secondes</item>
+        <item quantity="other">Toutes les %d secondes</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_minutes">
+        <item quantity="one">Toutes les %d minute</item>
+        <item quantity="many">Toutes les %d minutes</item>
+        <item quantity="other">Toutes les %d minutes</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_hours">
+        <item quantity="one">Toutes les %d heure</item>
+        <item quantity="many">Toutes les %d heures</item>
+        <item quantity="other">Toutes les %d heures</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_days">
+        <item quantity="one">Tous les %d jour</item>
+        <item quantity="many">Tous les %d jours</item>
+        <item quantity="other">Tous les %d jours</item>
+    </plurals>
+    <string name="chat_tool_repeat_daily">Tous les jours à %1$s (%2$s)</string>
+    <string name="chat_tool_repeat_weekly">%1$s à %2$s (%3$s)</string>
+    <string name="chat_tool_repeat_cron">Selon un horaire personnalisé : %1$s (%2$s)</string>
+
+    <string name="chat_tool_arguments">Arguments</string>
+    <plurals name="chat_tool_arguments_count">
+        <item quantity="one">%d champ</item>
+        <item quantity="many">%d champs</item>
+        <item quantity="other">%d champs</item>
+    </plurals>
+    <string name="chat_tool_raw_title">Données brutes de l’appel</string>
+
+    <string name="chat_tool_failed_label">Échec :</string>
+    <string name="chat_tool_failed">Cette étape a échoué.</string>
+    <string name="chat_tool_stopped">Arrêté avant la fin.</string>
+    <string name="chat_tool_auto_review_denied">La revue automatique a bloqué cette étape, elle n’a donc pas été lancée.</string>
+    <string name="chat_tool_reason_label">Raison :</string>
+
+    <string name="chat_turn_failed_rate_limit">Le fournisseur du modèle est occupé. Réessayez dans un instant.</string>
+    <string name="chat_turn_failed_quota">Le compte du fournisseur du modèle n’a plus de crédit.</string>
+    <string name="chat_turn_failed_account_quota">Votre compte DeepSeek n’a plus de jetons.</string>
+    <string name="chat_turn_failed_context">Cette discussion est trop longue pour le modèle. Compactez-la ou ouvrez-en une nouvelle.</string>
+    <string name="chat_turn_failed_empty">Le modèle a renvoyé une réponse vide.</string>
+    <string name="chat_turn_failed_bad_key">La clé d’API a été refusée. Vérifiez-la dans Modèles.</string>
+    <string name="chat_turn_failed_missing_key">Ce modèle n’a pas encore de clé d’API. Ajoutez-en une dans Modèles.</string>
+    <string name="chat_turn_failed_network">Impossible de joindre le fournisseur du modèle.</string>
+    <string name="chat_turn_failed_timeout">Le modèle a mis trop de temps à répondre.</string>
+    <string name="chat_turn_failed_server">Le fournisseur du modèle a rencontré un problème.</string>
+    <string name="chat_turn_failed_process">Le harness s’est arrêté avant la fin de ce tour.</string>
+    <string name="chat_turn_failed_signed_out">Arrêté parce que vous vous êtes déconnecté de DeepSeek.</string>
+    <string name="chat_turn_failed_unknown">Un problème est survenu pendant ce tour.</string>
+    <string name="chat_turn_error_code_label">Code :</string>
+</resources>

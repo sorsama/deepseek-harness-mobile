@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Account: DeepSeek sign-in, in Harness settings. -->
+    <string name="acct_title">الحساب</string>
+    <string name="acct_summary">سجّل الدخول إلى DeepSeek وشاهد رصيدك.</string>
+    <string name="acct_unavailable">لا يستطيع هذا الـ harness تسجيل الدخول إلى DeepSeek. قد يكون إصدارًا أقدم، أو أن إضافة الحساب فيه متوقفة.</string>
+
+    <!-- Signed out. -->
+    <string name="acct_signed_out_title">لم تسجّل الدخول</string>
+    <string name="acct_signed_out_body">سجّل الدخول بحساب DeepSeek لتستخدمه على هذا الـ harness. تبقى مشاريعك وملفاتك في مكانها.</string>
+    <string name="acct_sign_in">تسجيل الدخول</string>
+    <string name="acct_sign_in_again">تسجيل الدخول مرة أخرى</string>
+    <string name="acct_session_ended">انتهى تسجيل دخولك إلى DeepSeek. سجّل الدخول مرة أخرى لتواصل استخدامه.</string>
+
+    <!-- How the last sign-in ended, and why. -->
+    <string name="acct_outcome_failed">لم يكتمل آخر تسجيل دخول.</string>
+    <string name="acct_outcome_expired">انتهت مهلة آخر تسجيل دخول. ابدأ من جديد عندما تكون مستعدًا.</string>
+    <string name="acct_outcome_cancelled">تم إلغاء آخر تسجيل دخول.</string>
+    <string name="acct_reason_platform">تعذّر على الـ harness الوصول إلى DeepSeek. تحقق من اتصاله بالإنترنت وحاول مرة أخرى.</string>
+    <string name="acct_reason_storage">تعذّر على الـ harness حفظ تسجيل الدخول. تحقق من أن لديه مساحة فارغة وأنه يستطيع الكتابة في مجلده.</string>
+    <string name="acct_reason_generic">لم يستطع الـ harness استخدام رد DeepSeek. حاول مرة أخرى.</string>
+
+    <!-- A harness on another device: the browser cannot be sent back to it from this phone. -->
+    <string name="acct_remote_title">سجّل الدخول من حاسوب الـ harness</string>
+    <string name="acct_remote_body">ينتهي تسجيل الدخول بإعادة المتصفح إلى الـ harness عبر عنوان لا يعمل إلا على الجهاز نفسه. من هذا الهاتف، هذا الجهاز هو الهاتف نفسه وليس الـ harness. أكمل تسجيل الدخول على الحاسوب الذي يشغّل الـ harness: افتحه هناك، وانتقل إلى الإعدادات ثم الحساب، وسجّل الدخول. تتحدّث هذه الصفحة عندما ينتهي ذلك.</string>
+    <string name="acct_check_again">تحقق مرة أخرى</string>
+
+    <!-- A sign-in in progress. -->
+    <string name="acct_progress_title">جارٍ تسجيل الدخول</string>
+    <string name="acct_progress_starting">جارٍ بدء تسجيل الدخول…</string>
+    <string name="acct_progress_browser">أكمل تسجيل الدخول في المتصفح، ثم عد إلى هذا التطبيق.</string>
+    <string name="acct_progress_remote">بانتظار اكتمال تسجيل الدخول على حاسوب الـ harness.</string>
+    <string name="acct_progress_finishing">جارٍ إنهاء تسجيل الدخول…</string>
+    <string name="acct_open_browser">فتح المتصفح</string>
+    <string name="acct_copy_link">نسخ رابط تسجيل الدخول</string>
+    <string name="acct_link_copied">تم نسخ الرابط</string>
+    <string name="acct_browser_missing">لم يُفتح أي متصفح. انسخ الرابط وافتحه بنفسك في متصفح.</string>
+    <string name="acct_link_refused">لا يمكن استخدام رابط تسجيل الدخول. حاول مرة أخرى للحصول على رابط جديد.</string>
+    <string name="acct_cancel_sign_in">إلغاء تسجيل الدخول</string>
+    <string name="acct_try_again">إعادة المحاولة</string>
+
+    <!-- Signed in: profile, balance, bonus notices, sign out. -->
+    <string name="acct_signed_in">تم تسجيل الدخول</string>
+    <string name="acct_name_fallback">حساب DeepSeek</string>
+    <string name="acct_profile_unavailable">بيانات الحساب غير متاحة الآن.</string>
+    <string name="acct_balance_none">لا يوجد رصيد لعرضه.</string>
+    <string name="acct_bonus_title">تمت إضافة المكافأة</string>
+    <string name="acct_bonus_dismiss">فهمت</string>
+    <string name="acct_sign_out">تسجيل الخروج</string>
+    <string name="acct_sign_out_title">تسجيل الخروج من DeepSeek؟</string>
+    <string name="acct_sign_out_idle">تسجيل الخروج لا يحذف أي بيانات. يمكنك تسجيل الدخول مرة أخرى.</string>
+    <string name="acct_sign_out_running">هناك مهام قيد التشغيل بهذا الحساب. سيوقفها تسجيل الخروج.</string>
+    <string name="acct_sign_out_unknown">تعذّر التحقق من المهام الجارية. قد يوقف تسجيل الخروج المهام التي تستخدم هذا الحساب.</string>
+
+    <!-- A call that did not go through. -->
+    <string name="acct_fail_rejected">لم يستطع الـ harness تنفيذ ذلك. حاول مرة أخرى.</string>
+    <string name="acct_fail_unreachable">تعذّر الوصول إلى الـ harness. لم يتغيّر شيء.</string>
+</resources>

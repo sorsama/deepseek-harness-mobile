@@ -20,6 +20,10 @@ class FeatureAvailabilityTest {
         HarnessFeature.PLUGIN_MANAGEMENT -> api.pluginBundles()
         HarnessFeature.SESSION_REFERENCES -> api.sessionReferenceCandidates("s", "")
         HarnessFeature.TIMED_QUESTIONS -> api.answerContinuedQuestion("s", "call", AskUserQuestionAnswer(emptyList()))
+        HarnessFeature.PRESET_COMPOSITION -> api.agentPresetRead("standard")
+        HarnessFeature.PLUGIN_MARKET -> api.marketIndexes()
+        HarnessFeature.HARNESS_SETTINGS -> api.settingsDescribe()
+        HarnessFeature.ACCOUNT -> api.accountState()
     }
 
     @Test fun `404 endpoints retire each feature without reporting a connection failure`() = runTest {
@@ -51,6 +55,33 @@ class FeatureAvailabilityTest {
                 assertEquals(true, availability.state(feature).value)
             }
         }
+    }
+
+    @Test fun `an answer to the question itself brings a retired feature back and a retired one goes again`() {
+        // The market is an optional bundle: switched on after the first probe said it was missing, switched off again later.
+        val availability = FeatureAvailability { fail("No error is expected") }
+        val unavailable = RpcResult.Err(RpcError("capability-unavailable", "missing"))
+        val market = HarnessFeature.PLUGIN_MARKET
+        availability.observe(market, availability.generation(), unavailable)
+        assertEquals(false, availability.state(market).value)
+        // An ordinary success (another call racing the first) still cannot restore it...
+        availability.observe(market, availability.generation(), RpcResult.Ok(Unit))
+        assertEquals(false, availability.state(market).value)
+        // ...but the re-probe's own success can.
+        availability.observe(market, availability.generation(), RpcResult.Ok(Unit), authoritative = true)
+        assertEquals(true, availability.state(market).value)
+        // And the same re-probe, after the bundle was turned off, retires it.
+        availability.observe(market, availability.generation(), unavailable, authoritative = true)
+        assertEquals(false, availability.state(market).value)
+    }
+
+    @Test fun `an authoritative answer from an old connection is ignored`() {
+        val availability = FeatureAvailability { fail("No error is expected") }
+        val old = availability.generation()
+        availability.observe(HarnessFeature.PLUGIN_MARKET, old, RpcResult.Err(RpcError("capability-unavailable", "missing")))
+        availability.reset()
+        availability.observe(HarnessFeature.PLUGIN_MARKET, old, RpcResult.Ok(Unit), authoritative = true)
+        assertNull(availability.state(HarnessFeature.PLUGIN_MARKET).value)
     }
 
     @Test fun `HTTP 403 remains visible for every feature`() = runTest {
@@ -89,5 +120,52 @@ class FeatureAvailabilityTest {
             assertEquals(true, availability.state(it).value)
         }
         assertTrue(errors.isEmpty())
+    }
+
+    private val missing = RpcResult.Err(RpcError("capability-unavailable", "missing"))
+
+    @Test fun `a module change gives an unavailable feature another chance`() {
+        // The harness lacked settings, then a bundle that brings them was switched on in the app.
+        val availability = FeatureAvailability { fail("no error to report") }
+        availability.observe(HarnessFeature.HARNESS_SETTINGS, availability.generation(), missing)
+        assertEquals(false, availability.state(HarnessFeature.HARNESS_SETTINGS).value)
+
+        val lapsed = availability.relax(setOf(HarnessFeature.HARNESS_SETTINGS, HarnessFeature.AUTOMATION))
+        assertEquals(listOf(HarnessFeature.HARNESS_SETTINGS), lapsed)
+        // Unknown again, so a probe can settle it, and a later answer is believed.
+        assertNull(availability.state(HarnessFeature.HARNESS_SETTINGS).value)
+        availability.observe(HarnessFeature.HARNESS_SETTINGS, availability.generation(), RpcResult.Ok(Unit))
+        assertEquals(true, availability.state(HarnessFeature.HARNESS_SETTINGS).value)
+    }
+
+    @Test fun `a module change leaves available and unknown features alone and asks for nothing`() {
+        val availability = FeatureAvailability { fail("no error to report") }
+        availability.observe(HarnessFeature.AUTOMATION, availability.generation(), RpcResult.Ok(Unit))
+        val before = availability.generation()
+        assertEquals(emptyList<HarnessFeature>(), availability.relax(HarnessFeature.entries.toSet()))
+        assertEquals(true, availability.state(HarnessFeature.AUTOMATION).value)
+        assertNull(availability.state(HarnessFeature.HARNESS_SETTINGS).value)
+        // Nothing lapsed, so nothing in flight was invalidated either.
+        assertEquals(before, availability.generation())
+    }
+
+    @Test fun `only the features that have a probe come back from a module change`() {
+        val availability = FeatureAvailability { fail("no error to report") }
+        HarnessFeature.entries.forEach { availability.observe(it, availability.generation(), missing) }
+        val lapsed = availability.relax(setOf(HarnessFeature.HARNESS_SETTINGS, HarnessFeature.PLUGIN_MANAGEMENT))
+        assertEquals(setOf(HarnessFeature.HARNESS_SETTINGS, HarnessFeature.PLUGIN_MANAGEMENT), lapsed.toSet())
+        // A feature nobody can ask about again keeps its answer rather than turning into a guess.
+        assertEquals(false, availability.state(HarnessFeature.TIMED_QUESTIONS).value)
+        assertEquals(false, availability.state(HarnessFeature.SESSION_REFERENCES).value)
+    }
+
+    @Test fun `a result still in flight from before a module change is dropped`() {
+        val availability = FeatureAvailability { fail("no error to report") }
+        availability.observe(HarnessFeature.HARNESS_SETTINGS, availability.generation(), missing)
+        val stale = availability.generation()
+        availability.relax(setOf(HarnessFeature.HARNESS_SETTINGS))
+        // The old probe answers "missing" after the bundle was already switched on.
+        availability.observe(HarnessFeature.HARNESS_SETTINGS, stale, missing)
+        assertNull(availability.state(HarnessFeature.HARNESS_SETTINGS).value)
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -68,8 +69,11 @@ import com.labteto.dshmobile.core.session.TurnStartNode
 import com.labteto.dshmobile.core.session.UserMessageNode
 import com.labteto.dshmobile.core.session.WorkflowNode
 import com.labteto.dshmobile.ui.components.AttachmentImage
+import com.labteto.dshmobile.ui.components.CallStateMark
+import com.labteto.dshmobile.ui.components.LeftToRight
+import com.labteto.dshmobile.ui.components.LocalCodeOwner
+import com.labteto.dshmobile.ui.components.OutputViewerDialog
 import com.labteto.dshmobile.ui.components.DisclosureRow
-import com.labteto.dshmobile.ui.components.DisclosureState
 import com.labteto.dshmobile.ui.components.DsPill
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.HoldAction
@@ -80,8 +84,14 @@ import com.labteto.dshmobile.ui.components.clickableWithHold
 import com.labteto.dshmobile.ui.components.StateDot
 import com.labteto.dshmobile.ui.components.StateDotState
 import com.labteto.dshmobile.ui.components.ThinkingPanel
+import com.labteto.dshmobile.ui.components.SubagentCard
 import com.labteto.dshmobile.ui.components.ToolCard
+import com.labteto.dshmobile.ui.components.ToolCardActions
+import com.labteto.dshmobile.ui.components.ToolCardView
 import com.labteto.dshmobile.ui.components.UserBubble
+import com.labteto.dshmobile.ui.components.controlIcon
+import com.labteto.dshmobile.ui.components.controlSummary
+import com.labteto.dshmobile.ui.components.hasBody
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -129,6 +139,15 @@ internal data class ChatNodeContext(
      * is the transcript as it looked before the setting existed.
      */
     val presentation: WorkStepPresentation = WorkStepPresentation.Default,
+    /**
+     * The live state of each background job by id, for a background command's card, and how to open
+     * one in the Jobs sheet. Empty and null where there is no jobs list (the subagent sheet, the
+     * Trajectory ledger): the card then shows the command and draws no control.
+     */
+    val jobStates: Map<String, com.labteto.dshmobile.core.wire.dto.JobStatus> = emptyMap(),
+    val onOpenJob: ((String) -> Unit)? = null,
+    /** Whether each known subagent is working now, by child id, for a `subagent` call's card. */
+    val subagentRunning: Map<String, Boolean> = emptyMap(),
 )
 
 /**
@@ -181,15 +200,9 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
         is TurnEndNode -> when (node.reasonKind) {
             "completed" -> Unit
             "aborted", "interrupted" -> DsPill(text = stringResource(R.string.chat_stopped), warn = true)
-            "error" -> Row(verticalAlignment = Alignment.CenterVertically) {
-                StateDot(StateDotState.Error, size = 8.dp)
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    stringResource(R.string.chat_error_turn) + node.reasonDetail?.let { " · $it" }.orEmpty(),
-                    style = DsType.small13,
-                    color = colors.error,
-                )
-            }
+            // What went wrong in words chosen by the failure's code; the provider's message and the
+            // code itself stay one tap away under Technical details.
+            "error" -> TurnFailureRow(node.failureCode, node.failureMessage)
             "max-tokens" -> DsPill(text = stringResource(R.string.chat_max_tokens), warn = true)
             else -> Unit
         }
@@ -223,16 +236,7 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
             }
         }
 
-        is TurnErrorNode -> Row(verticalAlignment = Alignment.CenterVertically) {
-            StateDot(StateDotState.Error, size = 8.dp)
-            Spacer(Modifier.width(6.dp))
-            Text(
-                stringResource(R.string.chat_error_turn) + " · " + node.message,
-                style = DsType.small13,
-                color = colors.error,
-            )
-            node.code?.let { Text(" · $it", style = DsType.caption11, color = colors.labelTertiary) }
-        }
+        is TurnErrorNode -> TurnFailureRow(node.code, node.message)
 
         // A command the reader ran is their action, not the agent's: a muted system line, not a
         // terminal row. A node that is not theirs keeps the row it always had.
@@ -246,11 +250,9 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
         is DeveloperMessageNode -> ToolSetChangeRow(node)
 
         is TitleNode -> Text(node.title, style = DsType.caption11, color = colors.labelTertiary)
-        is SubagentNode -> Text(
-            stringResource(R.string.subagents_title),
-            style = DsType.caption11,
-            color = colors.labelTertiary,
-        )
+        // The child's own descriptor, at the top of its conversation: which subagent this is and what
+        // it runs on, rather than the bare word "Subagents".
+        is SubagentNode -> SubagentDescriptorRow(node)
         // Unknown event types stay visible — that is the compatibility contract — but the
         // structural ones are not "unknown", they are bookkeeping, and printing `step/start` /
         // `step/end` between every tool call buried the actual work in noise. A record the harness
@@ -277,7 +279,8 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
             } else JsonDisclosure(when (node.type) {
                 "system/message", "request/context" -> stringResource(R.string.system_prompt)
                 "image/offload" -> stringResource(R.string.image_offload)
-                else -> node.type
+                // An event this build has no words for: its type in words, not its wire form.
+                else -> humanizeIdentifier(node.type)
             }, node.data)
         }
     }
@@ -398,6 +401,8 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
     val knownToolCallIds = remember(context.nodes) {
         context.nodes.filterIsInstance<ToolCallNode>().mapTo(mutableSetOf()) { it.callId }
     }
+    // The pill for a stopped turn is drawn once, by the turn's own end, below its tool calls.
+    val stoppedTurns = remember(context.nodes) { turnsStoppedByTurnEnd(context.nodes) }
     // Keyed on the message's identity across its settling, not on `seq`: a streaming message's
     // sequence number is replaced by the durable one when the reply finishes, and state keyed on it
     // folded the reader's open thinking panel shut at that moment. See [assistantStateKey].
@@ -473,7 +478,7 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
                 }
             }
         }
-        if (node.interrupted) {
+        if (node.showsStoppedPill(stoppedTurns)) {
             DsPill(text = stringResource(R.string.chat_stopped), warn = true)
         }
         AnimatedVisibility(
@@ -543,122 +548,199 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
     // Remembered: in the flat levels every call on screen builds its card, and the arguments it
     // parses can be large. The inputs are exactly what the card is derived from.
     val running = result == null && context.running
-    val card = remember(node, result, running, context.cwd, context.home) {
-        buildToolCardView(call = node, result = result, running = running, cwd = context.cwd, home = context.home)
+    // A task-list write lists what changed since the write before it, so it needs that list.
+    val previousTodos = if (node.name == "todo_write") {
+        remember(context.nodes, node.seq) { previousTodoList(context.nodes, node.seq) }
+    } else null
+    val card = remember(node, result, running, context.cwd, context.home, previousTodos) {
+        buildToolCardView(
+            call = node, result = result, running = running, cwd = context.cwd, home = context.home,
+            previousTodos = previousTodos,
+        )
     }
     // The row header is derived here rather than taken from the card: only this layer knows the
     // tool's name and the session's cwd, which is what turns an absolute path into `app\build.gradle.kts`.
-    val row = toolRowModel(
+    val baseRow = toolRowModel(
         toolName = node.name,
         argumentsJson = node.arguments,
         cwd = context.cwd,
         // Derived from the call itself now: 0.1.2 sends no presenter title to prefer over it.
         viewTitle = null,
     )
+    // A tool with a view of its own has a title of its own, in the reader's language, and a summary
+    // the view derives (`3 of 7 done`, `Waiting for your answer`) where it has one.
+    val ownTitle = toolTitle(node.name)?.let { toolTitleText(it) }
+    val controlSummary = card.controlSummary()?.let(::rowSummaryText)
+    val row = baseRow.copy(
+        title = ownTitle ?: baseRow.title,
+        // A summary the app wrote (`3 of 7 done`) is in the reader's language. One taken from the
+        // call (a command, a path, a pattern, a url) is technical text: isolated left to right so a
+        // right-to-left row cannot reorder it.
+        summary = controlSummary
+            ?: baseRow.summary?.let { if (baseRow.variant == ToolRowVariant.Other) it else technicalDisplay(it) },
+    )
+    val icon = card.controlIcon() ?: baseRow.variant.featherIcon()
+    val failure = remember(result) { toolFailureOf(result) }
+    // The card's own body, or what the transcript draws under it (Output, an image, nested calls).
+    // A tool that takes no arguments has no body of its own, and used to draw an empty box.
+    val images = remember(result?.content) { toolResultImages(result?.content) }
+    val hasBody = remember(card, result, failure, images, context.nodes) {
+        card.hasBody() || images.isNotEmpty() || showsOutputRow(card, result, failure) ||
+            hasPtcChildren(context.nodes.filterIsInstance<OtherNode>(), node.callId)
+    }
+    val actions = toolCardActions(card, context)
     // Open or closed by the work-step level; a tap overrides it for this row only (see
-    // RowDisclosureMemory). A row the level opened is a bounded preview until "Show all".
+    // RowDisclosureMemory). However it was opened, only the start of a long body is laid out: the
+    // bounds are the same for a row the reader tapped, and "Show all" opens the rest in the
+    // full-screen viewer, which is lazy by line. (Opening the whole of a megabyte of output as one
+    // text is what made a hand-opened row freeze.)
     val disclosure = rememberRowDisclosure(context.presentation, "tool:${node.callId}", node.seq)
     val expanded = disclosure.open
-    val preview = disclosure.preview
-    val clippedCard = remember(card, preview) { if (preview) clipCardForPreview(card) else ClippedCard(card, false) }
+    val clippedCard = remember(card) { clipCardForPreview(card) }
+    var viewer by remember(node.callId) { mutableStateOf<OutputViewerRequest?>(null) }
     var holdOpen by remember(node.callId) { mutableStateOf(false) }
+    var rawOpen by remember(node.callId) { mutableStateOf(false) }
     val holdLabel = stringResource(R.string.hold_tool_actions)
-    // The leading slot carries the outcome: a red dot for a failed call, the tool glyph otherwise.
-    val state = when {
-        result?.isError == true -> DisclosureState.Error
-        result == null && context.running -> DisclosureState.Running
-        else -> DisclosureState.Idle
-    }
+    // The leading slot carries the outcome: a red dot for a failed call, an amber one for a call the
+    // turn's stop cut short, the tool glyph otherwise. The card's own dot and the group's failed count
+    // read the same function, so they cannot disagree with this row.
+    val state = toolOutcome(node.name, result, context.running).disclosureState()
     val startedAt = context.eventTimes[node.seq]
     val endedAt = result?.let { context.eventTimes[it.seq] }
     val elapsed = if (startedAt != null && endedAt != null) {
         com.labteto.dshmobile.ui.components.formatDurationMs((endedAt - startedAt).coerceAtLeast(0))
     } else null
-    if (!compact && elapsed != null) Text(elapsed, style = DsType.caption11, color = colors.labelCaption)
+    // The blocks of this call remember whether the reader wrapped them under the call's id.
+    CompositionLocalProvider(LocalCodeOwner provides node.callId) {
     ToolCard(
         view = clippedCard.view,
         expanded = expanded,
         onToggle = disclosure.toggle,
         titleOverride = row.title,
         summaryOverride = row.summary,
-        iconOverride = row.variant.featherIcon(),
+        iconOverride = icon,
         state = state,
         onHold = { holdOpen = true },
         holdLabel = holdLabel,
+        actions = actions,
+        expandable = hasBody,
+        // The summary opens with the figures (progress, then what changed): an open row, and a row
+        // with nothing to open, give it a second line rather than cutting them.
+        summaryMaxLines = if (expanded || !hasBody) 2 else 1,
+        // How long it took, in the row itself, not as a caption floating above the card.
+        trailingText = if (compact) null else elapsed,
         header = if (compact) ({
             Row(Modifier.fillMaxWidth().heightIn(min = 32.dp)
-                .clickableWithHold(holdLabel, onHold = { holdOpen = true }, role = Role.Button) { disclosure.toggle() }
+                .clickableWithHold(holdLabel, onHold = { holdOpen = true }, role = Role.Button) { if (hasBody) disclosure.toggle() }
                 .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                Icon(if (node.name == "read_image") FeatherIcons.Image else row.variant.featherIcon(), null, Modifier.size(14.dp), tint = colors.labelTertiary)
+                Icon(icon, null, Modifier.size(14.dp), tint = colors.labelTertiary)
                 Text(row.title, style = DsType.small13, color = colors.labelSecondary)
                 Text(row.summary.orEmpty(), Modifier.weight(1f), style = DsType.caption11,
-                    color = colors.labelCaption, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    color = colors.labelCaption, maxLines = if (expanded || !hasBody) 2 else 1, overflow = TextOverflow.Ellipsis)
                 if (expanded && elapsed != null) Text(elapsed, style = DsType.caption11, color = colors.labelCaption)
-                Text(when (state) { DisclosureState.Error -> "!"; DisclosureState.Running -> "…"; else -> "✓" },
-                    style = DsType.caption11, color = if (state == DisclosureState.Error) colors.error else colors.labelTertiary)
-                val chevron by animateFloatAsState(if (expanded) 90f else 0f, DsAnimations.chevron, label = "toolChevron")
-                Icon(FeatherIcons.ChevronRight, null, Modifier.size(14.dp).graphicsLayer { rotationZ = chevron }, tint = colors.labelTertiary)
+                // The outcome as a shape with a spoken name (the bare "!", "…", "✓" and "■" read as
+                // punctuation to a screen reader, and done and stopped looked alike).
+                CallStateMark(state)
+                if (hasBody) {
+                    val chevron by animateFloatAsState(if (expanded) 90f else 0f, DsAnimations.chevron, label = "toolChevron")
+                    Icon(FeatherIcons.ChevronRight, null, Modifier.size(14.dp).graphicsLayer { rotationZ = chevron }, tint = colors.labelTertiary)
+                }
             }
         }) else null,
     )
-    if (holdOpen) ToolHoldMenu(node, result, row.filePath, context) { holdOpen = false }
+    if (holdOpen) {
+        ToolHoldMenu(node, result, row.filePath, context, onDismiss = { holdOpen = false }, onShowRaw = { rawOpen = true })
+    }
+    if (rawOpen) {
+        val raw = remember(node, result) { toolRawJson(node, result) }
+        RawJsonDialog(raw) { rawOpen = false }
+    }
+    viewer?.let { request ->
+        OutputViewerDialog(title = request.title, contentKey = request.key, onDismiss = { viewer = null }, load = request.load)
+    }
     AnimatedVisibility(
-        visible = expanded,
+        visible = expanded && hasBody,
         enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
         exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
     ) { Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         // What the call returned, not the file as it is now: the durable attachment survives the
         // file changing or being deleted, and shares the transcript's decoded-image cache.
-        val images = remember(result?.content) { toolResultImages(result?.content) }
         images.forEach { ref ->
             AttachmentImage(ref = ref, contentDescription = ref.name)
         }
         // The text the tool returned, not the protocol JSON around it. A generic card has no output
         // of its own, so the text sits right under the input; the specialised cards (a terminal, a
         // diff, a read) already present the result in their body, so there it stays one row down.
-        result?.content?.let { content ->
+        // A card that says all its result does (a task list, a job's state, a question's answers)
+        // gets no Output row at all; the raw result is in the hold menu.
+        // A failed call whose text is only the failure line's own words (an unknown tool's
+        // `Error: unknown tool "x"`) is not drawn twice.
+        val repeatsFailure = remember(result, failure) { outputRepeatsFailure(result, failure) }
+        result?.content?.takeIf { !card.coversOutput() && !repeatsFailure }?.let { content ->
             if (card is com.labteto.dshmobile.ui.components.ToolCardView.GenericCard) {
                 ToolResultOutput(
                     content,
                     label = stringResource(R.string.chat_output_placeholder),
-                    clip = preview,
-                    onShowAll = disclosure.showAll,
+                    viewerTitle = row.title,
                 )
             } else {
                 ToolResultOutputRow(
                     stringResource(R.string.chat_output_placeholder),
                     content,
-                    clip = preview,
-                    onShowAll = disclosure.showAll,
+                    viewerTitle = row.title,
                 )
             }
         }
-        result?.meta?.let { JsonDisclosure(node.name, it) }
+        // The result's `meta` is what the cards are built from, so it is not repeated under them as
+        // raw JSON; the hold menu's "Show raw JSON" and Trajectory's raw events still have it.
         val others = remember(context.nodes) { context.nodes.filterIsInstance<OtherNode>() }
-        PtcChildren(node.callId, others, presentation = context.presentation, clip = preview, onShowAll = disclosure.showAll)
-        // The card body was cut to the preview bounds: say so, and let the reader open the rest.
-        if (clippedCard.clipped) ClippedNote(disclosure.showAll)
+        PtcChildren(node.callId, others, presentation = context.presentation)
+        // The card body was cut to the inline bounds: say so, and let the reader open all of it in the
+        // viewer. The text is built from the whole card, on a background thread, only when they do.
+        if (clippedCard.clipped) {
+            ClippedNote { viewer = OutputViewerRequest(row.title, "card:${node.callId}") { cardPlainText(card) } }
+        }
     } }
-    if (result?.isError == true) {
-        // The dot is colour-only, so the word stays — but without a second dot beside it.
-        //
-        // The call's own failure text, not a generic apology: "Something went wrong" told the
-        // reader nothing they could act on, while the result body carries the command's stderr,
-        // the refused path, or the tool's own message. The generic string is only the fallback
-        // for a result that genuinely carries no prose.
-        val failure = remember(result?.content) { toolFailureMessage(result?.content) }
-        // The built-in runtime's "Ask before commands" gate refuses a call with an English sentence
-        // written for the model and a stable code (permissions version 2); the reader gets the
-        // reason in their own words, chosen by the code (see permissionDenialOf).
-        val denial = remember(result) { result?.let { com.labteto.dshmobile.core.permission.permissionDenialOf(it) } }
-        Text(
-            denial?.let { stringResource(permissionDenialText(it)) } ?: failure ?: stringResource(R.string.common_error),
-            style = DsType.caption11,
-            color = colors.error,
-            modifier = Modifier.padding(start = 26.dp),
+    }
+    // The dot is colour-only, so the words stay, and the card above keeps what the call tried (the
+    // command, the diff). The line says why it did not happen: the tool's own failure text, cut to
+    // its first line, or for a refusal the reason in the reader's own words, chosen by its code
+    // (permissionDenialOf: the built-in runtime's gate, and the harness's Auto review). A card that
+    // states its own outcome (a question the reader closed) needs no second line.
+    if (failure != null && !card.explainsFailure(result)) ToolFailureLine(failure)
+}
+
+/**
+ * What the full-screen viewer is to show. [key] says when [load] would give another text; [load] runs
+ * on a background thread, so a text that needs building (a whole diff, a result to unwrap) costs
+ * nothing until the reader asks for it.
+ */
+internal class OutputViewerRequest(val title: String, val key: Any, val load: () -> String)
+
+/** What a call's card can open, from what the transcript knows about jobs and subagents. */
+@Composable
+private fun toolCardActions(card: ToolCardView, context: ChatNodeContext): ToolCardActions = when (card) {
+    is ToolCardView.TerminalCard -> {
+        val jobId = card.jobId
+        val status = jobId?.let { context.jobStates[it] }
+        val open = context.onOpenJob
+        ToolCardActions(
+            // Only a job the Jobs list still has can open there.
+            openJob = if (jobId != null && status != null && open != null) ({ open(jobId) }) else null,
+            jobState = status?.let { jobStatusLabel(it) },
+            jobRunning = status == com.labteto.dshmobile.core.wire.dto.JobStatus.RUNNING ||
+                status == com.labteto.dshmobile.core.wire.dto.JobStatus.STOPPING,
         )
     }
+    is SubagentCard -> {
+        val child = card.childId
+        ToolCardActions(
+            openSubagent = child?.let { id -> { context.onOpenSubagent(id) } },
+            subagentRunning = child?.let { context.subagentRunning[it] },
+        )
+    }
+    else -> ToolCardActions.None
 }
 
 // ---------------------------------------------------------------------------
@@ -728,15 +810,21 @@ private fun CommandRow(node: CommandNode, context: ChatNodeContext) {
         expanded = disclosure.open,
         onToggle = disclosure.toggle,
     ) {
-        val full = node.data.toString()
-        val shown = if (disclosure.preview) clipPreview(full) else full
-        Text(
-            shown,
-            style = DsType.caption11.copy(fontFamily = DsType.codeFont),
-            color = colors.labelCaption,
-            modifier = Modifier.padding(start = 28.dp, top = 2.dp),
-        )
-        if (shown.length != full.length) ClippedNote(disclosure.showAll)
+        // Bounded however the row was opened; "Show all" opens the whole text in the viewer.
+        val full = remember(node.data) { node.data.toString() }
+        val shown = remember(full) { clipPreview(full) }
+        var viewer by remember(node.seq) { mutableStateOf(false) }
+        // A command's own text is technical: kept left to right in a right-to-left row.
+        LeftToRight {
+            Text(
+                shown,
+                style = DsType.caption11.copy(fontFamily = DsType.codeFont),
+                color = colors.labelCaption,
+                modifier = Modifier.padding(start = 28.dp, top = 2.dp),
+            )
+        }
+        if (shown.length != full.length) ClippedNote { viewer = true }
+        if (viewer) OutputViewerDialog(title = "/$name", contentKey = node.seq, onDismiss = { viewer = false }, load = { full })
     }
 }
 
@@ -890,4 +978,5 @@ internal fun permissionDenialText(denial: com.labteto.dshmobile.core.permission.
     com.labteto.dshmobile.core.permission.PermissionDenial.NobodyToAsk -> R.string.command_denied_nobody
     com.labteto.dshmobile.core.permission.PermissionDenial.TextTooLarge -> R.string.command_denied_too_large
     com.labteto.dshmobile.core.permission.PermissionDenial.Other -> R.string.command_denied_other
+    com.labteto.dshmobile.core.permission.PermissionDenial.AutoReviewRejected -> R.string.chat_tool_auto_review_denied
 }

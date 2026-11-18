@@ -1,0 +1,15 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-9",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "plugin-market/invalid-query",
+      "message": "limit must be an integer from 1 to 100",
+      "details": {
+        "field": "limit",
+        "reason": "range"
+      }
+    }
+  }
+}

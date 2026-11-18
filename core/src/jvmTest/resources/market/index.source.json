@@ -1,0 +1,234 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Example Market",
+    "zh": "示例市场"
+  },
+  "description": {
+    "en": "Community DSH bundles",
+    "zh": "社区 DSH bundle"
+  },
+  "metadata": {
+    "categories": {
+      "productivity": {
+        "title": {
+          "en": "Productivity",
+          "zh": "效率"
+        }
+      },
+      "tools": {
+        "title": {
+          "en": "Tools",
+          "zh": "工具"
+        }
+      }
+    },
+    "labels": {
+      "official": {
+        "title": {
+          "en": "Official",
+          "zh": "官方"
+        }
+      },
+      "experimental": {
+        "title": {
+          "en": "Experimental"
+        }
+      }
+    },
+    "sortKeys": {
+      "downloads": {
+        "title": {
+          "en": "Downloads",
+          "zh": "下载量"
+        },
+        "order": "desc"
+      }
+    }
+  },
+  "plugins": [
+    {
+      "name": "@example/dsh-auto-review",
+      "title": {
+        "en": "Auto Review",
+        "zh": "自动审查"
+      },
+      "description": {
+        "en": "Per-tool LLM authorization review",
+        "zh": "逐工具 LLM 授权审查"
+      },
+      "author": "Example Labs",
+      "homepage": "https://example.com/dsh-auto-review",
+      "repository": {
+        "url": "https://github.com/example/dsh-plugins",
+        "directory": "auto-review"
+      },
+      "metadata": {
+        "category": "productivity",
+        "labels": [
+          "official"
+        ],
+        "keywords": [
+          "review",
+          "authorization"
+        ],
+        "sortKeys": {
+          "downloads": 12034
+        }
+      },
+      "dist-tags": {
+        "latest": "0.2.0-rc.1",
+        "next": "0.2.0-rc.2"
+      },
+      "versions": [
+        {
+          "version": "0.2.0-rc.2",
+          "publishTimestamp": 1790476800,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": ">=0.2.0 <0.3.0"
+          }
+        },
+        {
+          "version": "0.2.0-rc.1",
+          "publishTimestamp": 1789872000,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": "0.2.0 - 0.2.4 || >=0.3.0 <0.4.0"
+          }
+        }
+      ]
+    },
+    {
+      "name": "dsh-plugin-foo",
+      "title": "Foo",
+      "metadata": {
+        "labels": [
+          "experimental"
+        ]
+      },
+      "dist-tags": {
+        "latest": "1.0.0"
+      },
+      "versions": [
+        {
+          "version": "1.0.0",
+          "publishTimestamp": 1788000000,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/author/dsh-plugins",
+            "commit": "3f9c2e1d8a4b6c0e7f1a2b3c4d5e6f708192a3b4",
+            "path": "packages/foo"
+          },
+          "engines": {
+            "dsh": "*"
+          }
+        }
+      ]
+    },
+    {
+      "name": "@example/dsh-future",
+      "title": {
+        "en": "Future Tools",
+        "fr": "Outils du futur"
+      },
+      "description": {
+        "en": "Needs a much newer harness than this one"
+      },
+      "author": "Example Labs",
+      "metadata": {
+        "category": "tools",
+        "keywords": [
+          "future"
+        ]
+      },
+      "versions": [
+        {
+          "version": "9.1.0",
+          "publishTimestamp": 1795000000,
+          "source": {
+            "type": "npm",
+            "registry": "https://registry.example.com/"
+          },
+          "engines": {
+            "dsh": ">=9.0.0"
+          }
+        }
+      ]
+    },
+    {
+      "name": "@example/dsh-notes",
+      "title": {
+        "en": "Notes",
+        "fr": "Notes",
+        "zh": "笔记"
+      },
+      "description": {
+        "en": "Keep short notes next to a session",
+        "fr": "Garde de courtes notes à côté d'une session"
+      },
+      "author": "Example Labs",
+      "metadata": {
+        "category": "productivity",
+        "keywords": [
+          "notes",
+          "memo"
+        ]
+      },
+      "versions": [
+        {
+          "version": "1.2.0",
+          "publishTimestamp": 1793000000,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": "*"
+          }
+        },
+        {
+          "version": "1.1.0",
+          "publishTimestamp": 1792000000,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": "*"
+          }
+        }
+      ]
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-ralph-bundle",
+      "title": {
+        "en": "Ralph loop"
+      },
+      "description": {
+        "en": "Run a task again and again until it is done"
+      },
+      "author": "DeepSeek",
+      "metadata": {
+        "category": "productivity",
+        "keywords": [
+          "loop"
+        ]
+      },
+      "versions": [
+        {
+          "version": "0.2.1-rc.2",
+          "publishTimestamp": 1790000000,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": "*"
+          }
+        }
+      ]
+    }
+  ]
+}

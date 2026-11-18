@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="code_wrap">Переносить строки</string>
+    <string name="output_viewer_search">Поиск по выводу</string>
+    <string name="output_viewer_prev">Предыдущее совпадение</string>
+    <string name="output_viewer_next">Следующее совпадение</string>
+    <string name="output_viewer_matches">%1$d из %2$s</string>
+    <string name="output_viewer_no_matches">Совпадений нет</string>
+    <string name="chat_state_running">Выполняется</string>
+    <string name="chat_state_done">Готово</string>
+    <string name="chat_state_failed">Ошибка</string>
+    <string name="chat_state_stopped">Остановлено</string>
+</resources>

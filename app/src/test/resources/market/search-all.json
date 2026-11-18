@@ -1,0 +1,313 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-2",
+  "result": {
+    "ok": true,
+    "value": {
+      "url": "http://127.0.0.1:56394/index.json",
+      "title": {
+        "en": "Example Market",
+        "zh": "示例市场"
+      },
+      "description": {
+        "en": "Community DSH bundles",
+        "zh": "社区 DSH bundle"
+      },
+      "metadata": {
+        "categories": {
+          "productivity": {
+            "title": {
+              "en": "Productivity",
+              "zh": "效率"
+            }
+          },
+          "tools": {
+            "title": {
+              "en": "Tools",
+              "zh": "工具"
+            }
+          }
+        },
+        "labels": {
+          "official": {
+            "title": {
+              "en": "Official",
+              "zh": "官方"
+            }
+          },
+          "experimental": {
+            "title": {
+              "en": "Experimental"
+            }
+          }
+        },
+        "sortKeys": {
+          "downloads": {
+            "title": {
+              "en": "Downloads",
+              "zh": "下载量"
+            },
+            "order": "desc"
+          }
+        }
+      },
+      "fetchedAt": 1794979638965,
+      "entries": [
+        {
+          "name": "@example/dsh-auto-review",
+          "title": {
+            "en": "Auto Review",
+            "zh": "自动审查"
+          },
+          "description": {
+            "en": "Per-tool LLM authorization review",
+            "zh": "逐工具 LLM 授权审查"
+          },
+          "author": "Example Labs",
+          "homepage": "https://example.com/dsh-auto-review",
+          "repository": {
+            "url": "https://github.com/example/dsh-plugins",
+            "directory": "auto-review"
+          },
+          "metadata": {
+            "category": "productivity",
+            "keywords": [
+              "review",
+              "authorization"
+            ],
+            "labels": [
+              "official"
+            ],
+            "sortKeys": {
+              "downloads": 12034
+            }
+          },
+          "versions": [
+            {
+              "version": "0.2.0-rc.2",
+              "publishTimestamp": 1790476800,
+              "source": {
+                "type": "npm"
+              },
+              "engines": {
+                "dsh": ">=0.2.0 <0.3.0"
+              },
+              "install": {
+                "spec": "@example/dsh-auto-review@0.2.0-rc.2"
+              },
+              "compatibility": {
+                "compatible": true
+              }
+            },
+            {
+              "version": "0.2.0-rc.1",
+              "publishTimestamp": 1789872000,
+              "source": {
+                "type": "npm"
+              },
+              "engines": {
+                "dsh": "0.2.0 - 0.2.4 || >=0.3.0 <0.4.0"
+              },
+              "install": {
+                "spec": "@example/dsh-auto-review@0.2.0-rc.1"
+              },
+              "compatibility": {
+                "compatible": true
+              }
+            }
+          ],
+          "defaultVersion": "0.2.0-rc.2",
+          "installation": {
+            "status": "not-installed"
+          }
+        },
+        {
+          "name": "dsh-plugin-foo",
+          "title": "Foo",
+          "metadata": {
+            "keywords": [],
+            "labels": [
+              "experimental"
+            ],
+            "sortKeys": {}
+          },
+          "versions": [
+            {
+              "version": "1.0.0",
+              "publishTimestamp": 1788000000,
+              "source": {
+                "type": "git",
+                "url": "https://github.com/author/dsh-plugins",
+                "commit": "3f9c2e1d8a4b6c0e7f1a2b3c4d5e6f708192a3b4",
+                "path": "packages/foo"
+              },
+              "engines": {
+                "dsh": "*"
+              },
+              "install": {
+                "spec": "git+https://github.com/author/dsh-plugins.git#3f9c2e1d8a4b6c0e7f1a2b3c4d5e6f708192a3b4&path:/packages/foo"
+              },
+              "compatibility": {
+                "compatible": true
+              }
+            }
+          ],
+          "defaultVersion": "1.0.0",
+          "installation": {
+            "status": "not-installed"
+          }
+        },
+        {
+          "name": "@example/dsh-future",
+          "title": {
+            "en": "Future Tools",
+            "fr": "Outils du futur"
+          },
+          "description": {
+            "en": "Needs a much newer harness than this one"
+          },
+          "author": "Example Labs",
+          "metadata": {
+            "category": "tools",
+            "keywords": [
+              "future"
+            ],
+            "labels": [],
+            "sortKeys": {}
+          },
+          "versions": [
+            {
+              "version": "9.1.0",
+              "publishTimestamp": 1795000000,
+              "source": {
+                "type": "npm",
+                "registry": "https://registry.example.com/"
+              },
+              "engines": {
+                "dsh": ">=9.0.0"
+              },
+              "install": {
+                "spec": "@example/dsh-future@9.1.0",
+                "registry": "https://registry.example.com/"
+              },
+              "compatibility": {
+                "compatible": false,
+                "runtimeVersion": "0.2.1-rc.2",
+                "requirements": {
+                  "engines.dsh": ">=9.0.0"
+                },
+                "exempted": false
+              }
+            }
+          ],
+          "installation": {
+            "status": "not-installed"
+          }
+        },
+        {
+          "name": "@example/dsh-notes",
+          "title": {
+            "en": "Notes",
+            "fr": "Notes",
+            "zh": "笔记"
+          },
+          "description": {
+            "en": "Keep short notes next to a session",
+            "fr": "Garde de courtes notes à côté d'une session"
+          },
+          "author": "Example Labs",
+          "metadata": {
+            "category": "productivity",
+            "keywords": [
+              "notes",
+              "memo"
+            ],
+            "labels": [],
+            "sortKeys": {}
+          },
+          "versions": [
+            {
+              "version": "1.2.0",
+              "publishTimestamp": 1793000000,
+              "source": {
+                "type": "npm"
+              },
+              "engines": {
+                "dsh": "*"
+              },
+              "install": {
+                "spec": "@example/dsh-notes@1.2.0"
+              },
+              "compatibility": {
+                "compatible": true
+              }
+            },
+            {
+              "version": "1.1.0",
+              "publishTimestamp": 1792000000,
+              "source": {
+                "type": "npm"
+              },
+              "engines": {
+                "dsh": "*"
+              },
+              "install": {
+                "spec": "@example/dsh-notes@1.1.0"
+              },
+              "compatibility": {
+                "compatible": true
+              }
+            }
+          ],
+          "defaultVersion": "1.2.0",
+          "installation": {
+            "status": "not-installed"
+          }
+        },
+        {
+          "name": "@deepseek-ai/dsh-experimental-ralph-bundle",
+          "title": {
+            "en": "Ralph loop"
+          },
+          "description": {
+            "en": "Run a task again and again until it is done"
+          },
+          "author": "DeepSeek",
+          "metadata": {
+            "category": "productivity",
+            "keywords": [
+              "loop"
+            ],
+            "labels": [],
+            "sortKeys": {}
+          },
+          "versions": [
+            {
+              "version": "0.2.1-rc.2",
+              "publishTimestamp": 1790000000,
+              "source": {
+                "type": "npm"
+              },
+              "engines": {
+                "dsh": "*"
+              },
+              "install": {
+                "spec": "@deepseek-ai/dsh-experimental-ralph-bundle@0.2.1-rc.2"
+              },
+              "compatibility": {
+                "compatible": true
+              }
+            }
+          ],
+          "defaultVersion": "0.2.1-rc.2",
+          "installation": {
+            "status": "provided",
+            "installedVersion": "0.2.1-rc.2"
+          }
+        }
+      ],
+      "total": 5,
+      "nextOffset": null
+    }
+  }
+}

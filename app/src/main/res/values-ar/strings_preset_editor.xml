@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">عرض المحتويات</string>
+    <string name="preset_comp_open_for">عرض محتويات %1$s</string>
+    <string name="preset_comp_subtitle">للقراءة فقط. يغيّر هذا المضيف الإعدادات المسبقة عبر حزم الإضافات.</string>
+    <string name="preset_comp_plugins">الإضافات: %1$d</string>
+    <string name="preset_comp_conditional">مشروطة: %1$d</string>
+    <string name="preset_comp_off">متوقفة: %1$d</string>
+    <string name="preset_comp_always_on">تعمل دائمًا</string>
+    <string name="preset_comp_state_off">متوقفة</string>
+    <string name="preset_comp_state_conditional">مشروطة</string>
+    <string name="preset_comp_condition">تُحمَّل ما لم يكن هذا صحيحًا على المضيف: %1$s</string>
+    <string name="preset_comp_entry_unnamed">إضافة %1$d</string>
+    <string name="preset_comp_settings">الإعدادات (YAML)</string>
+    <string name="preset_comp_raw">الإضافات في هذا الإعداد المسبق</string>
+    <string name="preset_comp_copy_all">نسخ كل شيء بصيغة YAML</string>
+    <string name="preset_comp_loading">جارٍ قراءة الإعداد المسبق</string>
+    <string name="preset_comp_failed">تعذّرت قراءة هذا الإعداد المسبق: %1$s</string>
+    <string name="preset_comp_missing">لم يعد هذا الإعداد المسبق موجودًا على المضيف.</string>
+    <string name="preset_comp_unsupported">لا يستطيع هذا المضيف عرض محتوى الإعدادات المسبقة.</string>
+    <string name="preset_comp_retry">حاول مجددًا</string>
+    <string name="preset_comp_empty">لا يضم هذا الإعداد المسبق أي إضافات.</string>
+</resources>

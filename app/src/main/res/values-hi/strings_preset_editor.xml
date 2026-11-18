@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">सामग्री देखें</string>
+    <string name="preset_comp_open_for">%1$s की सामग्री देखें</string>
+    <string name="preset_comp_subtitle">केवल पढ़ने के लिए। यह होस्ट प्लगइन बंडल के ज़रिए प्रीसेट बदलता है।</string>
+    <string name="preset_comp_plugins">प्लगइन: %1$d</string>
+    <string name="preset_comp_conditional">शर्त वाले: %1$d</string>
+    <string name="preset_comp_off">बंद: %1$d</string>
+    <string name="preset_comp_always_on">हमेशा चालू</string>
+    <string name="preset_comp_state_off">बंद</string>
+    <string name="preset_comp_state_conditional">शर्त पर निर्भर</string>
+    <string name="preset_comp_condition">होस्ट पर यह सही न हो तभी लोड होता है: %1$s</string>
+    <string name="preset_comp_entry_unnamed">प्लगइन %1$d</string>
+    <string name="preset_comp_settings">सेटिंग (YAML)</string>
+    <string name="preset_comp_raw">इस प्रीसेट के प्लगइन</string>
+    <string name="preset_comp_copy_all">सब कुछ YAML में कॉपी करें</string>
+    <string name="preset_comp_loading">प्रीसेट पढ़ा जा रहा है</string>
+    <string name="preset_comp_failed">यह प्रीसेट पढ़ा नहीं जा सका: %1$s</string>
+    <string name="preset_comp_missing">यह प्रीसेट अब होस्ट पर नहीं है।</string>
+    <string name="preset_comp_unsupported">यह होस्ट प्रीसेट की सामग्री नहीं दिखा सकता।</string>
+    <string name="preset_comp_retry">फिर कोशिश करें</string>
+    <string name="preset_comp_empty">इस प्रीसेट में कोई प्लगइन नहीं है।</string>
+</resources>
