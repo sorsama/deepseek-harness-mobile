@@ -1,0 +1,262 @@
+package com.labteto.dshmobile.core.settings
+
+import com.labteto.dshmobile.core.wire.WireJson
+import com.labteto.dshmobile.core.wire.dto.ModelCatalog
+import com.labteto.dshmobile.core.wire.dto.ModelCatalogModel
+import com.labteto.dshmobile.core.wire.dto.ModelProviderGroup
+import com.labteto.dshmobile.core.wire.dto.SettingsDescribeValue
+import com.labteto.dshmobile.core.wire.dto.SettingsPathOpView
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+/** Which pages a harness gets, and the rules of the two pages that are more than one field. */
+class SettingsPagesTest {
+
+    private fun describe(vararg namespaces: String) = SettingsDescribeValue(
+        writable = true, hasDocument = true,
+        namespaces = namespaces.map { fixtureRow(it) },
+    )
+
+    @Test
+    fun `a harness that describes the five namespaces gets the five pages in order`() {
+        assertEquals(
+            listOf(SettingsPage.WebSearch, SettingsPage.Shell, SettingsPage.Subagents, SettingsPage.AgentLoop, SettingsPage.SessionLog),
+            settingsPages(describedFixture()),
+        )
+    }
+
+    @Test
+    fun `the namespaces another surface owns get no generic page`() {
+        // agent-default-model and permission are described, but the harness marks them not for a client-made page.
+        val generic = settingsPages(describedFixture()).filterIsInstance<SettingsPage.Generic>()
+        assertEquals(emptyList(), generic)
+    }
+
+    @Test
+    fun `only the pages whose namespace is described are offered`() {
+        assertEquals(emptyList(), settingsPages(SettingsDescribeValue(writable = true, hasDocument = false)))
+        assertEquals(listOf(SettingsPage.AgentLoop), settingsPages(describe("agent-loop", "permission")))
+        assertEquals(listOf(SettingsPage.SessionLog), settingsPages(describe("session-log-deepseek")))
+    }
+
+    @Test
+    fun `web search needs its own namespace not just the selection`() {
+        assertEquals(emptyList(), settingsPages(describe("web", "web-deepseek-api")))
+        assertEquals(listOf(SettingsPage.WebSearch), settingsPages(describe("web-search-deepseek")))
+    }
+
+    @Test
+    fun `either subagent namespace brings the subagent page`() {
+        assertEquals(listOf(SettingsPage.Subagents), settingsPages(describe("subagent")))
+        assertEquals(listOf(SettingsPage.Subagents), settingsPages(describe("subagent-model-selection-settings")))
+    }
+
+    @Test
+    fun `the shell page binds the executor the harness composed`() {
+        assertEquals("pwsh-sandbox", shellNamespace(listOf("pwsh-sandbox")))
+        assertEquals("bash-sandbox", shellNamespace(listOf("bash-sandbox", "agent-loop")))
+        assertEquals("pwsh-sandbox", shellNamespace(listOf("bash-sandbox", "pwsh-sandbox")))
+        assertNull(shellNamespace(listOf("agent-loop")))
+        val onPhone = SettingsDescribeValue(writable = true, hasDocument = true, namespaces = listOf(fixtureRow("bash-sandbox")))
+        assertEquals(listOf(SettingsPage.Shell), settingsPages(onPhone))
+    }
+
+    @Test
+    fun `a namespace the app has no page for becomes a generic page when the harness allows it`() {
+        val extra = syntheticRow("plugin-x")
+        val pages = settingsPages(describedFixture().let { it.copy(namespaces = it.namespaces + extra) })
+        assertEquals(SettingsPage.Generic("plugin-x"), pages.last())
+        assertEquals("ns:plugin-x", pages.last().key)
+        // Not when the harness says another surface owns it, and not when there is nothing to show.
+        assertEquals(
+            emptyList(),
+            settingsPages(describe().copy(namespaces = listOf(syntheticRow("hidden", autoGenerate = false)))),
+        )
+        assertEquals(emptyList(), settingsPages(describe().copy(namespaces = listOf(emptyRow("plugin-z")))))
+    }
+
+    @Test
+    fun `generic pages are listed in name order after the known ones`() {
+        val rows = listOf(syntheticRow("plugin-b"), fixtureRow("agent-loop"), syntheticRow("plugin-a"))
+        val pages = settingsPages(describe().copy(namespaces = rows))
+        assertEquals(listOf<SettingsPage>(SettingsPage.AgentLoop, SettingsPage.Generic("plugin-a"), SettingsPage.Generic("plugin-b")), pages)
+    }
+
+    @Test
+    fun `a restart note is owed only when a namespace says restart`() {
+        assertFalse(needsRestart(describedFixture().namespaces))
+        assertTrue(needsRestart(listOf(fixtureRow("agent-loop").copy(applies = "restart"))))
+    }
+
+    // ------------------------------------------------------------------------------ web search
+
+    @Test
+    fun `the provider switch needs the selection and the Search API sections`() {
+        val served = describedFixture().namespaces.associateBy { it.ns }
+        assertTrue(WebSearchRules.switchAvailable(served))
+        assertFalse(WebSearchRules.switchAvailable(served - "web"))
+        assertFalse(WebSearchRules.switchAvailable(served - "web-deepseek-api"))
+    }
+
+    @Test
+    fun `messages search is the default and the switch reads the stored selection`() {
+        assertFalse(WebSearchRules.usesSearchApi(fixtureRow("web")))
+        assertTrue(WebSearchRules.usesSearchApi(writeAnswer(SettingsFixtures.MUTATE_WEB_SELECT_API)))
+        assertFalse(WebSearchRules.usesSearchApi(null))
+        assertEquals("web-search-deepseek", WebSearchRules.sectionNamespace(false))
+        assertEquals("web-deepseek-api", WebSearchRules.sectionNamespace(true))
+    }
+
+    @Test
+    fun `turning the Search API on writes both providers`() {
+        assertEquals(
+            listOf(
+                SettingsPathOpView.Set(listOf("searchProvider"), JsonPrimitive("deepseek-search-api")),
+                SettingsPathOpView.Set(listOf("fetchProvider"), JsonPrimitive("deepseek-fetch-api")),
+            ),
+            WebSearchRules.switchOps(fixtureRow("web"), searchApi = true),
+        )
+    }
+
+    @Test
+    fun `turning it off again clears the override when that is the deployment default`() {
+        // The deployment's own selection is Messages search, so going back is an unset, not a copy of it.
+        val on = writeAnswer(SettingsFixtures.MUTATE_WEB_SELECT_API)
+        assertEquals(
+            listOf(
+                SettingsPathOpView.Unset(listOf("searchProvider")),
+                SettingsPathOpView.Unset(listOf("fetchProvider")),
+            ),
+            WebSearchRules.switchOps(on, searchApi = false),
+        )
+    }
+
+    @Test
+    fun `a selection already in force needs no write`() {
+        // Messages search is already the deployment default and nothing is overridden.
+        assertEquals(emptyList(), WebSearchRules.switchOps(fixtureRow("web"), searchApi = false))
+        // Search API already stored: nothing to do either.
+        val on = writeAnswer(SettingsFixtures.MUTATE_WEB_SELECT_API)
+        assertEquals(emptyList(), WebSearchRules.switchOps(on, searchApi = true))
+    }
+
+    @Test
+    fun `the key is stored under the reference the selected section names`() {
+        assertEquals("DEEPSEEK_API_KEY", WebSearchRules.keyRef(fixtureRow("web-search-deepseek")))
+        assertEquals("DEEPSEEK_API_KEY", WebSearchRules.keyRef(null))
+        val custom = fixtureRow("web-deepseek-api").copy(value = obj("apiKeyEnv" to JsonPrimitive("MY_SEARCH_KEY")))
+        assertEquals("MY_SEARCH_KEY", WebSearchRules.keyRef(custom))
+        val blank = fixtureRow("web-deepseek-api").copy(value = obj("apiKeyEnv" to JsonPrimitive("  ")))
+        assertEquals("DEEPSEEK_API_KEY", WebSearchRules.keyRef(blank))
+    }
+
+    // ------------------------------------------------------------------------ subagent models
+
+    private val flash = AllowedRoute("deepseek-official", "deepseek-flash")
+    private val pro = AllowedRoute("deepseek-official", "deepseek-v4-pro")
+    private val gone = AllowedRoute("old-provider", "old-model")
+
+    private fun catalog(): List<ModelProviderGroup> {
+        val value = (WireJson.decodeFromJsonElement(
+            ModelCatalog.serializer(),
+            (fixtureResult(SettingsFixtures.MODEL_CATALOG) as com.labteto.dshmobile.core.wire.RpcResult.Ok).value,
+        ))
+        return value.groups
+    }
+
+    @Test
+    fun `the real model catalog becomes one candidate per advertised model`() {
+        val candidates = modelCandidates(catalog(), emptyList())
+        assertEquals(listOf(flash, pro), candidates.map { it.route })
+        assertEquals("DeepSeek", candidates.first().providerName)
+        assertEquals("DeepSeek-V4.1-Flash", candidates.first().modelName)
+        assertTrue(candidates.all { it.available && !it.selected })
+    }
+
+    @Test
+    fun `stored routes are marked and a retired one stays so it can be removed`() {
+        val candidates = modelCandidates(catalog(), listOf(pro, gone))
+        assertEquals(listOf(flash, pro, gone), candidates.map { it.route })
+        assertEquals(listOf(false, true, true), candidates.map { it.selected })
+        assertFalse(candidates.last().available)
+        assertEquals("old-model", candidates.last().modelName)
+    }
+
+    @Test
+    fun `the stored routes are read from the row and unreadable ones skipped`() {
+        val row = fixtureRow("subagent-model-selection-settings").copy(
+            value = obj(
+                "enabled" to JsonPrimitive(true),
+                "allowedModels" to JsonArray(
+                    listOf(
+                        obj("provider" to str("a"), "model" to str("b")),
+                        obj("provider" to str("only-provider")),
+                        str("not an object"),
+                        obj("provider" to str(""), "model" to str("x")),
+                    ),
+                ),
+            ),
+        )
+        assertEquals(listOf(AllowedRoute("a", "b")), allowedRoutes(row))
+        assertTrue(modelSelectionEnabled(row))
+        assertEquals(emptyList(), allowedRoutes(null))
+        assertFalse(modelSelectionEnabled(fixtureRow("subagent-model-selection-settings")))
+        assertFalse(modelSelectionEnabled(null))
+    }
+
+    @Test
+    fun `choosing a model writes the whole list`() {
+        val toggle = routeToggle(stored = listOf(flash), enabled = true, armed = false, route = pro)
+        val ops = assertIs<RouteToggle.Write>(toggle).ops
+        assertEquals(1, ops.size)
+        val set = assertIs<SettingsPathOpView.Set>(ops.single())
+        assertEquals(listOf("allowedModels"), set.path)
+        assertEquals(
+            JsonArray(
+                listOf(
+                    obj("provider" to str("deepseek-official"), "model" to str("deepseek-flash")),
+                    obj("provider" to str("deepseek-official"), "model" to str("deepseek-v4-pro")),
+                ),
+            ),
+            set.value,
+        )
+    }
+
+    @Test
+    fun `the last model cannot come off an enabled list`() {
+        assertEquals(RouteToggle.KeepOne, routeToggle(listOf(flash), enabled = true, armed = false, route = flash))
+        // Off, it can: the list is just a remembered choice then.
+        val ops = assertIs<RouteToggle.Write>(routeToggle(listOf(flash), enabled = false, armed = false, route = flash)).ops
+        assertEquals(JsonArray(emptyList()), assertIs<SettingsPathOpView.Set>(ops.single()).value)
+    }
+
+    @Test
+    fun `the first model chosen after the switch is turned on writes the switch with it`() {
+        val ops = assertIs<RouteToggle.Write>(routeToggle(emptyList(), enabled = false, armed = true, route = flash)).ops
+        assertEquals(listOf(listOf("allowedModels"), listOf("enabled")), ops.map { (it as SettingsPathOpView.Set).path })
+        assertEquals(JsonPrimitive(true), (ops.last() as SettingsPathOpView.Set).value)
+    }
+
+    @Test
+    fun `a model tapped while the switch is off and not armed only changes the list`() {
+        val ops = assertIs<RouteToggle.Write>(routeToggle(emptyList(), enabled = false, armed = false, route = flash)).ops
+        assertEquals(1, ops.size)
+    }
+
+    @Test
+    fun `the switch alone writes enabled and keeps the chosen models`() {
+        assertEquals(listOf<SettingsPathOpView>(SettingsPathOpView.Set(listOf("enabled"), JsonPrimitive(false))), modelSelectionSwitchOps(false))
+        assertEquals(listOf<SettingsPathOpView>(SettingsPathOpView.Set(listOf("enabled"), JsonPrimitive(true))), modelSelectionSwitchOps(true))
+    }
+
+    @Test
+    fun `a catalog model with no models yields no candidates`() {
+        assertEquals(emptyList(), modelCandidates(listOf(ModelProviderGroup("p", "P", emptyList<ModelCatalogModel>())), emptyList()))
+    }
+}
