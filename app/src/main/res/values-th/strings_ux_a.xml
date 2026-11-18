@@ -77,7 +77,7 @@
     <string name="ux_a_last_run">รันล่าสุด: %1$s</string>
     <string name="plugins_filter_on">เปิด %1$d</string>
     <string name="plugins_filter_off">ปิด %1$d</string>
-    <string name="plugins_count_on">เปิดอยู่ %1$d จาก %2$d</string>
+    <string name="plugins_count_on">เปิดอยู่&#160;%1$d&#160;จาก&#160;%2$d</string>
     <string name="plugins_open_details">เปิดรายละเอียด</string>
     <string name="plugins_more_matches">อีก %1$d</string>
     <string name="plugins_no_matches">ไม่พบรายการที่ตรงกัน</string>

@@ -396,4 +396,57 @@ class PluginPresentationTest {
         assertFalse(pluginDetailShowsControls(8))
         assertTrue(pluginDetailShowsControls(9))
     }
+
+    // ---- an operation card before the list has loaded ----
+
+    @Test fun `a module entry id never reads as a raw id while the list loads`() {
+        // The real subject from the device run: the list was still loading, so the name map was empty.
+        assertEquals("repeat-tool-reminder", pluginSubjectText("include:repeat-tool-reminder", emptyMap()))
+        assertEquals("repeat-tool-reminder", pluginSubjectFallback("include:repeat-tool-reminder"))
+    }
+
+    @Test fun `the fallback applies the list's short name rule to what follows the prefix`() {
+        assertEquals("tool-subagent", pluginSubjectFallback("include:@deepseek-ai/dsh-tool-subagent"))
+        assertEquals("@other/pkg", pluginSubjectFallback("include:@other/pkg"))
+    }
+
+    @Test fun `a subject with no known prefix or only the prefix keeps its own text`() {
+        assertEquals("e-ralph", pluginSubjectFallback("e-ralph"))
+        assertEquals("@deepseek-ai/dsh-not-installed@1.2.3", pluginSubjectFallback("@deepseek-ai/dsh-not-installed@1.2.3"))
+        assertEquals("include:", pluginSubjectFallback("include:"))
+    }
+
+    @Test fun `the list's own name wins over the fallback once the list has loaded`() {
+        val names = mapOf("include:a" to "@deepseek-ai/dsh-clash")
+        assertEquals("@deepseek-ai/dsh-clash", pluginSubjectText("include:a", names))
+    }
+
+    // ---- the meta line under a bundle's name ----
+
+    @Test fun `the meta line joins version and count with a separator that only breaks after the dot`() {
+        assertEquals("0.2.1-rc.2 · 71 of 96 on", pluginMetaLine("0.2.1-rc.2", "71 of 96 on"))
+        assertEquals("71 of 96 on", pluginMetaLine(null, "71 of 96 on"))
+        assertEquals("0.2.1-rc.2", pluginMetaLine("0.2.1-rc.2", null))
+        assertEquals("", pluginMetaLine(null, null))
+    }
+
+    @Test fun `every language keeps the count phrase on one line`() {
+        val res = java.io.File("src/main/res")
+        val directories = res.listFiles()!!.filter { it.name == "values" || it.name.startsWith("values-") }
+        val counts = directories.mapNotNull { directory ->
+            val file = java.io.File(directory, "strings_ux_a.xml").takeIf { it.exists() } ?: return@mapNotNull null
+            val document = javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
+            val strings = document.getElementsByTagName("string")
+            (0 until strings.length).map { strings.item(it) }
+                .firstOrNull { it.attributes.getNamedItem("name").nodeValue == "plugins_count_on" }
+                ?.let { directory.name to it.textContent }
+        }
+        // The base language and the ten translations.
+        assertEquals(11, counts.size)
+        counts.forEach { (language, text) ->
+            assertTrue("$language keeps both numbers", text.contains("%1\$d") && text.contains("%2\$d"))
+            assertFalse("$language has a breaking space inside the count phrase: $text", text.contains(' '))
+            assertTrue("$language joins its words with no-break spaces", text.contains(' '))
+        }
+    }
 }
