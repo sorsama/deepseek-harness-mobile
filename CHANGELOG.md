@@ -5,6 +5,17 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **See an agent team at work (Beta).** When the harness has the experimental Agent Teams bundle
+  switched on, a **Team** chip appears beside the chat title. It opens the team: who is on it, what
+  each teammate is for and whether they are working, starting or failed, and the shared task board
+  grouped into In progress, Ready to start, Waiting and Done, with what each task waits on, the files
+  it plans to change and who owns it. Tap a teammate, or a task's owner, to open that teammate's
+  chat in the Subagents sheet, where you can follow it, send it a message or stop it. The list
+  updates live. Like the web app, it only shows the team: the agents create teammates and tasks
+  themselves. A harness without Agent Teams shows nothing new.
+
 ## [0.23.0] - 2026-11-17
 
 ![Three phones: the Subagents sheet with its Close button, a chat at Fully expanded, and the Stop and archive dialog](docs/images/releases/0.23.0/devices/hero-whats-new.png)
