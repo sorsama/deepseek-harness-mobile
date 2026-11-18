@@ -29,11 +29,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -58,25 +53,6 @@ import kotlin.math.roundToInt
  * ignored rather than acted on twice.
  */
 val LocalDsSheetHide = compositionLocalOf<(then: () -> Unit) -> Unit> { { then -> then() } }
-
-/**
- * Back, when it arrives as a key press, closes the sheet even while a text field in it has focus.
- *
- * Seen on Android 11 (key-based back, no predictive back): with the follow-up field of the Subagents
- * sheet focused, the first back hid the keyboard, the second did nothing at all, and only the third
- * closed the sheet. The focused field takes the key before the window's own back handling sees it. A
- * preview handler on the sheet runs before the field does, so the second back closes the sheet. The
- * first back never gets here with the keyboard up: the keyboard takes that one and hides itself.
- * Newer Android delivers back as a callback rather than a key, so this never fires there.
- */
-private fun Modifier.dismissOnBackKey(onDismiss: () -> Unit): Modifier = onPreviewKeyEvent { event ->
-    if (event.key == Key.Back) {
-        if (event.type == KeyEventType.KeyUp) onDismiss()
-        true
-    } else {
-        false
-    }
-}
 
 /**
  * Pushes the sheet's content down by exactly as much as the status bar still covers of it, and by

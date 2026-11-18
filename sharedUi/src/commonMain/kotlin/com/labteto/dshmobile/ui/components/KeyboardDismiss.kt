@@ -20,6 +20,29 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 
 /**
+ * Back, when it arrives as a key press, closes the surface this is placed on even while a text
+ * field inside it has focus.
+ *
+ * Seen on Android 11 (key-based back, no predictive back): with a text field focused, the first back
+ * hid the keyboard, the second did nothing at all, and only the third closed the sheet (and, later,
+ * the Plugins page). The focused field takes the key before the window's own back handling sees it.
+ * A preview handler on the surface runs before the field does, so the second back closes it. The
+ * first back never gets here with the keyboard up: the keyboard takes that one and hides itself.
+ * Newer Android delivers back as a callback rather than a key, so this never fires there.
+ *
+ * Put it on a node that is an ancestor of the fields, not beside them: a preview handler only sees
+ * the keys of what is focused below it.
+ */
+fun Modifier.dismissOnBackKey(onDismiss: () -> Unit): Modifier = onPreviewKeyEvent { event ->
+    if (event.key == Key.Back) {
+        if (event.type == KeyEventType.KeyUp) onDismiss()
+        true
+    } else {
+        false
+    }
+}
+
+/**
  * Closes the surface this is placed on when Escape is pressed.
  *
  * Android gives a dialog or a sheet no Escape handling of its own (back is the touch gesture, and a

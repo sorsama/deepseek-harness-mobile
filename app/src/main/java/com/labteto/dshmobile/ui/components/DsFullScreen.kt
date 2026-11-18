@@ -80,7 +80,13 @@ fun DsFullScreenDialog(
         }
         val page: @Composable () -> Unit = {
             Surface(Modifier.fillMaxSize(), color = containerColor) {
-                Column(Modifier.fillMaxSize().windowInsetsPadding(insets), content = content)
+                // Back as a key press (Android 10 and 11) is looked at before a focused text field can
+                // swallow it, so with the keyboard up one back hides it and the next one closes the page
+                // instead of the page staying open for a third. See dismissOnBackKey.
+                Column(
+                    Modifier.fillMaxSize().windowInsetsPadding(insets).dismissOnBackKey { onDismissRequest() },
+                    content = content,
+                )
             }
         }
         if (visibleState == null) {
