@@ -252,5 +252,14 @@ fun teamTaskBlockers(task: TeamTask, board: List<TeamTask>): List<TeamTaskBlocke
 fun teamTaskWaitingOn(task: TeamTask, board: List<TeamTask>): List<TeamTaskBlocker> =
     if (task.status == TeamTaskStatus.PENDING && !task.ready) teamTaskBlockers(task, board).filterNot { it.done } else emptyList()
 
-/** How many tasks are not completed yet; the chip and the tab say this. */
+private val overlapWarning = Regex("^write scopes overlap with (\\S+)$")
+
+/**
+ * The in-progress task a `writeScopeWarnings` entry names, so the warning can be said in the
+ * reader's language. The host writes these in English only (`task-view.ts`:
+ * `write scopes overlap with <taskId>`); anything else answers null and is shown as sent.
+ */
+fun teamWriteOverlapTaskId(warning: String): String? = overlapWarning.find(warning.trim())?.groupValues?.get(1)
+
+/** How many tasks are not completed yet. */
 fun teamOpenTaskCount(team: AgentTeam): Int = team.tasks.count { it.status != TeamTaskStatus.COMPLETED }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="team_title">Équipe d’agents</string>
+    <string name="team_chip">Équipe</string>
+    <string name="team_beta_badge">Bêta</string>
+    <string name="team_tab_members">Membres (%1$d)</string>
+    <string name="team_tab_tasks">Tâches (%1$d)</string>
+    <string name="team_read_only_note">Les agents tiennent cette liste à jour. Pour changer l’équipe ou ses tâches, demandez-le au responsable dans ce chat.</string>
+    <string name="team_failure">Une partie du registre de l’équipe n’a pas pu être lue, ces infos ne sont peut-être pas à jour.</string>
+    <string name="team_members_empty_title">Pas encore de coéquipiers</string>
+    <string name="team_members_empty_body">Demandez à l’agent d’ajouter un coéquipier pour une partie du travail.</string>
+    <string name="team_member_running">Au travail</string>
+    <string name="team_member_idle">Inactif</string>
+    <string name="team_member_starting">Démarrage</string>
+    <string name="team_member_failed">Échec du démarrage</string>
+    <string name="team_member_status_tasks">%1$s · Tâches ouvertes : %2$d</string>
+    <string name="team_lead">Responsable</string>
+    <string name="team_open_chat">Ouvrir le chat</string>
+    <string name="team_this_chat">Ce chat</string>
+    <string name="team_tasks_empty_title">Pas encore de tâches partagées</string>
+    <string name="team_tasks_empty_body">Quand les agents se répartissent le travail, leurs tâches apparaissent ici.</string>
+    <string name="team_group_in_progress">En cours</string>
+    <string name="team_group_ready">Prêtes à démarrer</string>
+    <string name="team_group_waiting">En attente</string>
+    <string name="team_group_other">Autres</string>
+    <string name="team_group_done">Terminées</string>
+    <string name="team_task_unassigned">Non attribuée</string>
+    <string name="team_task_waiting_on">En attente de : %1$s</string>
+    <string name="team_task_no_details">Aucun détail.</string>
+    <string name="team_task_depends_on">Dépend de</string>
+    <string name="team_task_dependency_done">%1$s (terminée)</string>
+    <string name="team_task_dependency_open">%1$s (pas encore terminée)</string>
+    <string name="team_task_files">Fichiers qu’elle va modifier</string>
+    <string name="team_task_overlap">Touche les mêmes fichiers que « %1$s », en cours</string>
+    <string name="team_task_in_this_chat">Le responsable s’en occupe dans ce chat.</string>
+    <string name="team_task_open_owner">Ouvrir le chat avec %1$s</string>
+</resources>

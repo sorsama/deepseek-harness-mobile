@@ -204,6 +204,13 @@ class AgentTeamTest {
     }
 
     @Test
+    fun theHostOverlapWarningNamesItsTask() {
+        // task-view.ts `projectTaskView`: warnings.add(`write scopes overlap with ${other.id}`).
+        assertEquals("task-1", teamWriteOverlapTaskId("write scopes overlap with task-1"))
+        assertNull(teamWriteOverlapTaskId("something else entirely"))
+    }
+
+    @Test
     fun theOwnerIsFoundByRosterName() {
         val team = parse(boardView)
         assertEquals("child-a", teamTaskOwner(team, team.tasks[0])?.id)

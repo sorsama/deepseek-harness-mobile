@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="team_title">এজেন্ট টিম</string>
+    <string name="team_chip">টিম</string>
+    <string name="team_beta_badge">বিটা</string>
+    <string name="team_tab_members">সদস্য (%1$d)</string>
+    <string name="team_tab_tasks">কাজ (%1$d)</string>
+    <string name="team_read_only_note">এজেন্টরা নিজেরাই এই তালিকা হালনাগাদ রাখে। টিম বা কাজ বদলাতে চাইলে এই চ্যাটে লিডকে বলুন।</string>
+    <string name="team_failure">টিমের রেকর্ডের একটি অংশ পড়া যায়নি, তাই এটি পুরোনো হতে পারে।</string>
+    <string name="team_members_empty_title">এখনও কোনো সদস্য নেই</string>
+    <string name="team_members_empty_body">কাজের একটি অংশের জন্য এজেন্টকে একজন সদস্য যোগ করতে বলুন।</string>
+    <string name="team_member_running">কাজ করছে</string>
+    <string name="team_member_idle">চালু নেই</string>
+    <string name="team_member_starting">শুরু হচ্ছে</string>
+    <string name="team_member_failed">শুরু করা যায়নি</string>
+    <string name="team_member_status_tasks">%1$s · খোলা কাজ: %2$d</string>
+    <string name="team_lead">লিড</string>
+    <string name="team_open_chat">চ্যাট খুলুন</string>
+    <string name="team_this_chat">এই চ্যাট</string>
+    <string name="team_tasks_empty_title">এখনও কোনো ভাগ করা কাজ নেই</string>
+    <string name="team_tasks_empty_body">এজেন্টরা কাজ ভাগ করে নিলে তাদের কাজগুলো এখানে দেখা যাবে।</string>
+    <string name="team_group_in_progress">চলছে</string>
+    <string name="team_group_ready">শুরুর জন্য তৈরি</string>
+    <string name="team_group_waiting">অপেক্ষায়</string>
+    <string name="team_group_other">অন্যান্য</string>
+    <string name="team_group_done">শেষ</string>
+    <string name="team_task_unassigned">কাউকে দেওয়া হয়নি</string>
+    <string name="team_task_waiting_on">অপেক্ষা করছে: %1$s</string>
+    <string name="team_task_no_details">কোনো বিবরণ নেই।</string>
+    <string name="team_task_depends_on">যার ওপর নির্ভর করে</string>
+    <string name="team_task_dependency_done">%1$s (শেষ)</string>
+    <string name="team_task_dependency_open">%1$s (এখনও শেষ হয়নি)</string>
+    <string name="team_task_files">যে ফাইলগুলো বদলাবে</string>
+    <string name="team_task_overlap">চলমান কাজ \"%1$s\"-এর মতো একই ফাইলে বদল করে</string>
+    <string name="team_task_in_this_chat">লিড এই চ্যাটেই কাজটি করছে।</string>
+    <string name="team_task_open_owner">%1$s-এর সঙ্গে চ্যাট খুলুন</string>
+</resources>
