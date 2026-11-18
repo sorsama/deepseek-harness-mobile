@@ -1,5 +1,7 @@
 package com.labteto.dshmobile.ui.components
 
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +36,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -41,12 +44,15 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.markdown.SyntaxToken
 import com.labteto.dshmobile.core.markdown.highlightCode
@@ -135,11 +141,15 @@ private val SideFadeWidth = 28.dp
 internal fun SideScroll(
     fadeColor: Color,
     modifier: Modifier = Modifier,
+    /** The scroll position, for a caller that holds something still while the content scrolls. */
+    state: ScrollState = rememberScrollState(),
+    /** A width at the start that is held still (a gutter): the fading edge there starts after it. */
+    fixedStart: Dp = 0.dp,
     content: @Composable () -> Unit,
 ) {
-    val state = rememberScrollState()
     val ltr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val fade = with(LocalDensity.current) { SideFadeWidth.toPx() }
+    val inset = with(LocalDensity.current) { fixedStart.toPx() }
     Box(
         modifier
             .drawWithContent {
@@ -157,8 +167,8 @@ internal fun SideScroll(
                 }
                 if (leftMore) {
                     drawRect(
-                        Brush.horizontalGradient(listOf(fadeColor, Color.Transparent), startX = 0f, endX = fade),
-                        topLeft = Offset(0f, 0f),
+                        Brush.horizontalGradient(listOf(fadeColor, Color.Transparent), startX = inset, endX = inset + fade),
+                        topLeft = Offset(inset, 0f),
                         size = Size(fade, size.height),
                     )
                 }
@@ -222,14 +232,18 @@ internal fun CodeText(
     showToggle: Boolean = true,
 ) {
     val long = remember(text) { hasLongLine(text.text) }
+    // Left to right in both senses: the layout direction (below) puts the block at its left edge, and
+    // the text direction keeps a line that starts with a right-to-left character (a comment, a
+    // string) from being laid out as a right-to-left paragraph.
+    val codeStyle = remember(style) { style.copy(textDirection = TextDirection.Ltr) }
     Column(modifier.fillMaxWidth()) {
         if (showToggle && long) WrapToggle(wrap, Modifier.align(Alignment.End))
         LeftToRight {
             if (wrap.wrapped) {
-                SelectionContainer { Text(text, style = style, color = color, modifier = Modifier.fillMaxWidth()) }
+                SelectionContainer { Text(text, style = codeStyle, color = color, modifier = Modifier.fillMaxWidth()) }
             } else {
                 SideScroll(fadeColor, Modifier.fillMaxWidth()) {
-                    SelectionContainer { Text(text, style = style, color = color, softWrap = false) }
+                    SelectionContainer { Text(text, style = codeStyle, color = color, softWrap = false) }
                 }
             }
         }
@@ -260,8 +274,18 @@ internal class GutterLine(val cells: List<GutterCell>, val text: AnnotatedString
 
 /**
  * Code with a gutter that stays put while the code scrolls: a file read (line numbers) or a diff (two
- * numbers and a `+`/`-`). Scrolling, the lines move as one and the gutter does not; wrapped, each
- * line carries its own gutter so a wrapped line's number stays beside its first row.
+ * numbers and a `+`/`-`). Scrolling, the lines move as one and the gutter does not; wrapped, a line's
+ * number stays beside its first row.
+ *
+ * One row per source line holds both its gutter and its code ([GutterRow]), so line N's number is
+ * beside line N whatever the lines contain. (They used to be two columns, the numbers in one and the
+ * lines in the other, and a blank line was a shorter row in the code column than in the numbers:
+ * the numbers drifted down by a fraction of a row for every blank line above.) A row is as tall as
+ * its code, so a wrapped line leaves room for its continuation rows, and never shorter than one line
+ * of text, so a blank line is a whole line in both.
+ *
+ * Scrolling sideways moves each row's code under its own gutter: the gutter is drawn over the code at
+ * the scroll offset, with the block's own colour behind it, which keeps it where it is.
  */
 @Composable
 internal fun CodeGutterBlock(
@@ -283,39 +307,26 @@ internal fun CodeGutterBlock(
             with(density) { (chars * 0.62f * style.fontSize.value).sp.toDp() }
         }
     }
-    val gap = 8.dp
+    val rowHeight = rememberLineHeight(style)
+    // A line that starts with a right-to-left character (a comment) is still laid out left to right.
+    val codeStyle = remember(style) { style.copy(textDirection = TextDirection.Ltr) }
+    // The gutter's whole width, for the fading edge to start after it.
+    val gutterWidth = widths.fold(GutterToCode) { total, width -> total + width + GutterGap }
     Column(modifier.fillMaxWidth()) {
         if (long) WrapToggle(wrap, Modifier.align(Alignment.End))
         LeftToRight {
             if (wrap.wrapped) {
                 SelectionContainer {
                     Column(Modifier.fillMaxWidth()) {
-                        lines.forEach { line ->
-                            Row(Modifier.fillMaxWidth()) {
-                                DisableSelection {
-                                    line.cells.forEachIndexed { index, cell -> GutterText(cell, widths[index], style) }
-                                }
-                                Spacer(Modifier.width(gap))
-                                Text(line.text, style = style, color = line.color, modifier = Modifier.weight(1f))
-                            }
-                        }
+                        lines.forEach { line -> GutterRow(line, widths, codeStyle, rowHeight, fadeColor, scroll = null) }
                     }
                 }
             } else {
-                Row(Modifier.fillMaxWidth()) {
-                    Row {
-                        for (column in 0 until columns) {
-                            Column(Modifier.width(widths[column] + GutterGap)) {
-                                lines.forEach { line -> GutterText(line.cells.getOrNull(column), widths[column], style) }
-                            }
-                        }
-                    }
-                    Spacer(Modifier.width(gap))
-                    SideScroll(fadeColor, Modifier.weight(1f)) {
-                        SelectionContainer {
-                            Column {
-                                lines.forEach { line -> Text(line.text, style = style, color = line.color, softWrap = false) }
-                            }
+                val scroll = rememberScrollState()
+                SideScroll(fadeColor, Modifier.fillMaxWidth(), state = scroll, fixedStart = gutterWidth) {
+                    SelectionContainer {
+                        Column {
+                            lines.forEach { line -> GutterRow(line, widths, codeStyle, rowHeight, fadeColor, scroll = scroll) }
                         }
                     }
                 }
@@ -323,6 +334,62 @@ internal fun CodeGutterBlock(
         }
     }
 }
+
+/**
+ * One source line: its gutter cells, then its code. The row is at least [minHeight] tall (one line of
+ * text), which is what keeps a blank line from collapsing: an empty `Text` is laid out shorter than
+ * one with something in it. With a [scroll] the code does not wrap and the gutter is held where it is
+ * while the row scrolls sideways; without one the code wraps beside its gutter.
+ */
+@Composable
+private fun GutterRow(
+    line: GutterLine,
+    widths: List<Dp>,
+    style: TextStyle,
+    minHeight: Dp,
+    fadeColor: Color,
+    scroll: ScrollState?,
+) {
+    Row(Modifier.heightIn(min = minHeight)) {
+        Row(
+            Modifier
+                .zIndex(1f)
+                .then(
+                    if (scroll != null) {
+                        // The row scrolls by `scroll.value` to the left; the gutter moves the same
+                        // distance back, over the code, with a surface of its own so the code passes
+                        // under it. Read while drawing, so scrolling recomposes nothing.
+                        Modifier.graphicsLayer { translationX = scroll.value.toFloat() }.background(fadeColor)
+                    } else Modifier,
+                ),
+        ) {
+            DisableSelection {
+                line.cells.forEachIndexed { index, cell -> GutterText(cell, widths[index], style) }
+                Spacer(Modifier.width(GutterToCode))
+            }
+        }
+        Text(
+            line.text,
+            style = style,
+            color = line.color,
+            softWrap = scroll == null,
+            modifier = if (scroll == null) Modifier.weight(1f) else Modifier,
+        )
+    }
+}
+
+/** The height of one line of [style], laid out the way any line of text in it is. */
+@Composable
+private fun rememberLineHeight(style: TextStyle): Dp {
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    return remember(style, density, measurer) {
+        with(density) { measurer.measure("0", style).size.height.toDp() }
+    }
+}
+
+/** The air between a block's gutter and its code. */
+private val GutterToCode = 8.dp
 
 private const val GUTTER_WRAP_THRESHOLD_CHARS = 28
 
@@ -355,12 +422,35 @@ internal fun syntaxColor(token: SyntaxToken, tint: DsColors): Color? = when (tok
 }
 
 /**
- * [code] as one styled line per source line, coloured by the same lexer the Markdown code blocks use.
- * A language the lexer has no rules for comes back plain, with no work done.
+ * A file read as the lines of a gutter block: one per entry of [lines], numbered as the read recorded
+ * them, blank lines and a blank last line included. This is the whole line model of a read card:
+ * nothing is dropped, merged or added, so line N's number is beside line N's code.
  */
-internal fun highlightedLines(code: String, lang: String?, tint: DsColors): List<AnnotatedString> {
-    if (!isHighlighted(lang)) return code.split("\n").map { AnnotatedString(it) }
-    return highlightCode(code, lang).map { spans ->
+internal fun readGutterLines(lines: List<ReadLine>, lang: String?, colors: DsColors): List<GutterLine> {
+    val styled = highlightedLines(lines.map { it.text }, lang, colors)
+    return lines.mapIndexed { index, line ->
+        GutterLine(
+            listOf(GutterCell(line.number.toString(), colors.labelCaption)),
+            styled[index],
+            colors.labelPrimary,
+        )
+    }
+}
+
+/**
+ * [lines] as one styled line each, coloured by the same lexer the Markdown code blocks use, with the
+ * answer exactly as long as the question: a blank line is an entry, and so is a last one. A language
+ * the lexer has no rules for (Markdown is one) comes back plain, with no work done.
+ */
+internal fun highlightedLines(lines: List<String>, lang: String?, tint: DsColors): List<AnnotatedString> {
+    // A `\r` left at the end of a line by a CRLF file is a line break, not a character to draw.
+    val clean = lines.map { it.removeSuffix("\r") }
+    if (clean.isEmpty() || !isHighlighted(lang)) return clean.map { AnnotatedString(it) }
+    val highlighted = highlightCode(clean.joinToString("\n"), lang)
+    // The lexer answers one entry per line it was given. Were that ever not so, plain text is right
+    // and a colour on the wrong line is not.
+    if (highlighted.size != clean.size) return clean.map { AnnotatedString(it) }
+    return highlighted.map { spans ->
         AnnotatedString.Builder().apply {
             spans.forEach { span ->
                 val color = syntaxColor(span.token, tint)

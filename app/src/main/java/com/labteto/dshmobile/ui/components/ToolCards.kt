@@ -394,15 +394,7 @@ private fun ReadBody(card: ToolCardView.ReadCard) {
     // (or the file's extension). A language it has no rules for stays plain, with no work done.
     val lang = card.lang ?: card.path?.substringAfterLast('.', "")?.takeIf { it.isNotEmpty() }
     val gutter = remember(card.lines, lang, colors) {
-        val styled = highlightedLines(card.lines.joinToString("\n") { it.text }, lang, colors)
-            .takeIf { it.size == card.lines.size }
-        card.lines.mapIndexed { index, line ->
-            GutterLine(
-                listOf(GutterCell(line.number.toString(), colors.labelCaption)),
-                styled?.get(index) ?: AnnotatedString(line.text),
-                colors.labelPrimary,
-            )
-        }
+        readGutterLines(card.lines, lang, colors)
     }
     CodeGutterBlock(gutter, blockId = "read", fadeColor = colors.codeBlockBg)
 }

@@ -694,11 +694,9 @@ fun ChatScreen(
                 }
             }
 
-            // The "no model provider is ready" notice is the first row of the conversation (the
-            // transcript's `header`), not a bar here: a bar over a list pinned to its newest row cut
-            // off the rows at the top as it appeared. Null when there is nothing to say, so the list
-            // gets no empty row (and no gap) for it.
-            val setupText = if (connected) com.labteto.dshmobile.ui.screens.models.chatModelSetupText(setupProblem) else null
+            // A bar pinned above the transcript: in view wherever the reader has scrolled to, and the
+            // transcript simply gets less height while it is there.
+            if (connected) com.labteto.dshmobile.ui.screens.models.ChatModelSetupNotice(setupProblem)
 
             // A command refused for want of a sandbox (SANDBOX_UNAVAILABLE): this session is on a
             // mode a phone cannot give it. On the built-in harness, one tap switches it.
@@ -832,9 +830,6 @@ fun ChatScreen(
                             onJumpConsumed = { pendingJumpSeq = null },
                             sentTick = sentTick,
                             followStreaming = appSettings.followStreamingReply,
-                            header = if (setupText != null) ({
-                                com.labteto.dshmobile.ui.screens.models.ChatModelSetupStrip(setupText)
-                            }) else null,
                             memory = transcriptMemory,
                             onSuggestion = if (currentSessionId != null) {
                                 { text -> draft = text; composer.selection = text.length }

@@ -74,7 +74,6 @@ import com.labteto.dshmobile.ui.components.LeftToRight
 import com.labteto.dshmobile.ui.components.LocalCodeOwner
 import com.labteto.dshmobile.ui.components.OutputViewerDialog
 import com.labteto.dshmobile.ui.components.DisclosureRow
-import com.labteto.dshmobile.ui.components.DisclosureState
 import com.labteto.dshmobile.ui.components.DsPill
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.HoldAction
