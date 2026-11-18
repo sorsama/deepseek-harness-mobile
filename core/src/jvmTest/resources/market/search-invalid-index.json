@@ -1,0 +1,16 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-10",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "plugin-market/invalid-index",
+      "message": "http://127.0.0.1:56394/broken.json: $.plugins[0].name must be a valid npm package name",
+      "details": {
+        "url": "http://127.0.0.1:56394/broken.json",
+        "path": "$.plugins[0].name",
+        "reason": "must be a valid npm package name"
+      }
+    }
+  }
+}

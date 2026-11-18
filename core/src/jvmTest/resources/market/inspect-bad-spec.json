@@ -1,0 +1,12 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-18",
+  "result": {
+    "ok": true,
+    "value": {
+      "status": "refused",
+      "problem": "invalid-spec",
+      "reason": "the package spec must not be empty"
+    }
+  }
+}
