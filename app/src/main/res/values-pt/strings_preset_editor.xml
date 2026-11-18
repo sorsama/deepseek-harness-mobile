@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">Ver conteúdo</string>
+    <string name="preset_comp_open_for">Ver o conteúdo de %1$s</string>
+    <string name="preset_comp_subtitle">Somente leitura. Este host altera as predefinições por meio de pacotes de plugins.</string>
+    <string name="preset_comp_plugins">Plugins: %1$d</string>
+    <string name="preset_comp_conditional">Condicionais: %1$d</string>
+    <string name="preset_comp_off">Desativados: %1$d</string>
+    <string name="preset_comp_always_on">Sempre ativo</string>
+    <string name="preset_comp_state_off">Desativado</string>
+    <string name="preset_comp_state_conditional">Condicional</string>
+    <string name="preset_comp_condition">Carrega, a menos que isto seja verdadeiro no host: %1$s</string>
+    <string name="preset_comp_entry_unnamed">Plugin %1$d</string>
+    <string name="preset_comp_settings">Configurações (YAML)</string>
+    <string name="preset_comp_raw">Plugins desta predefinição</string>
+    <string name="preset_comp_copy_all">Copiar tudo como YAML</string>
+    <string name="preset_comp_loading">Lendo a predefinição</string>
+    <string name="preset_comp_failed">Não foi possível ler esta predefinição: %1$s</string>
+    <string name="preset_comp_missing">Esta predefinição não está mais no host.</string>
+    <string name="preset_comp_unsupported">Este host não consegue mostrar o conteúdo de uma predefinição.</string>
+    <string name="preset_comp_retry">Tentar de novo</string>
+    <string name="preset_comp_empty">Esta predefinição não lista nenhum plugin.</string>
+</resources>

@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">Показать содержимое</string>
+    <string name="preset_comp_open_for">Показать содержимое «%1$s»</string>
+    <string name="preset_comp_subtitle">Только чтение. Этот хост меняет пресеты через пакеты плагинов.</string>
+    <string name="preset_comp_plugins">Плагины: %1$d</string>
+    <string name="preset_comp_conditional">С условием: %1$d</string>
+    <string name="preset_comp_off">Выключены: %1$d</string>
+    <string name="preset_comp_always_on">Всегда включён</string>
+    <string name="preset_comp_state_off">Выключен</string>
+    <string name="preset_comp_state_conditional">С условием</string>
+    <string name="preset_comp_condition">Загружается, если на хосте это не выполняется: %1$s</string>
+    <string name="preset_comp_entry_unnamed">Плагин %1$d</string>
+    <string name="preset_comp_settings">Настройки (YAML)</string>
+    <string name="preset_comp_raw">Плагины этого пресета</string>
+    <string name="preset_comp_copy_all">Скопировать всё как YAML</string>
+    <string name="preset_comp_loading">Чтение пресета</string>
+    <string name="preset_comp_failed">Не удалось прочитать пресет: %1$s</string>
+    <string name="preset_comp_missing">Этого пресета больше нет на хосте.</string>
+    <string name="preset_comp_unsupported">Этот хост не умеет показывать содержимое пресета.</string>
+    <string name="preset_comp_retry">Повторить</string>
+    <string name="preset_comp_empty">В этом пресете нет плагинов.</string>
+</resources>

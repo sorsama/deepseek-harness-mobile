@@ -366,6 +366,8 @@ class SessionStore @Inject constructor(
     val pluginManagementAvailable = featureAvailability.state(HarnessFeature.PLUGIN_MANAGEMENT)
     val timedQuestionsAvailable = featureAvailability.state(HarnessFeature.TIMED_QUESTIONS)
     val sessionReferencesAvailable = featureAvailability.state(HarnessFeature.SESSION_REFERENCES)
+    /** Whether the host answers `agentPresets/read`; null until a read has shown either way. */
+    val presetCompositionAvailable = featureAvailability.state(HarnessFeature.PRESET_COMPOSITION)
     val questionSessions = QuestionSessions(scope, { connectionManager.connectedApi },
         { connectionManager.generation?.mux }, { connectionManager.generation?.clientId },
         onCapability = { clientId, result ->

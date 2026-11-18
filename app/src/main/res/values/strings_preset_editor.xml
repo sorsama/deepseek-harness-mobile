@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">View contents</string>
+    <string name="preset_comp_open_for">View contents of %1$s</string>
+    <string name="preset_comp_subtitle">Read only. This host changes presets through plugin bundles.</string>
+    <string name="preset_comp_plugins">Plugins: %1$d</string>
+    <string name="preset_comp_conditional">Conditional: %1$d</string>
+    <string name="preset_comp_off">Off: %1$d</string>
+    <string name="preset_comp_always_on">Always on</string>
+    <string name="preset_comp_state_off">Off</string>
+    <string name="preset_comp_state_conditional">Conditional</string>
+    <string name="preset_comp_condition">Loads unless this is true on the host: %1$s</string>
+    <string name="preset_comp_entry_unnamed">Plugin %1$d</string>
+    <string name="preset_comp_settings">Settings (YAML)</string>
+    <string name="preset_comp_raw">Plugins in this preset</string>
+    <string name="preset_comp_copy_all">Copy everything as YAML</string>
+    <string name="preset_comp_loading">Reading the preset</string>
+    <string name="preset_comp_failed">Could not read this preset: %1$s</string>
+    <string name="preset_comp_missing">This preset is no longer on the host.</string>
+    <string name="preset_comp_unsupported">This host cannot show what a preset contains.</string>
+    <string name="preset_comp_retry">Try again</string>
+    <string name="preset_comp_empty">This preset lists no plugins.</string>
+</resources>

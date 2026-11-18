@@ -20,6 +20,7 @@ class FeatureAvailabilityTest {
         HarnessFeature.PLUGIN_MANAGEMENT -> api.pluginBundles()
         HarnessFeature.SESSION_REFERENCES -> api.sessionReferenceCandidates("s", "")
         HarnessFeature.TIMED_QUESTIONS -> api.answerContinuedQuestion("s", "call", AskUserQuestionAnswer(emptyList()))
+        HarnessFeature.PRESET_COMPOSITION -> api.agentPresetRead("standard")
     }
 
     @Test fun `404 endpoints retire each feature without reporting a connection failure`() = runTest {

@@ -21,18 +21,24 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.R
+import com.labteto.dshmobile.core.wire.dto.AgentPresetEntry
 import com.labteto.dshmobile.core.wire.dto.AgentPresetListValue
 import com.labteto.dshmobile.core.wire.dto.AgentPresetTrust
 import com.labteto.dshmobile.data.SessionStore
 import com.labteto.dshmobile.ui.components.DsBottomSheet
 import com.labteto.dshmobile.ui.components.DsPill
+import com.labteto.dshmobile.ui.components.DsTextAction
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
@@ -59,6 +65,10 @@ internal fun PresetsSheet(
     val scope = rememberCoroutineScope()
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
+    // Null until a read has shown whether this host answers `agentPresets/read`.
+    val viewable by store.presetCompositionAvailable.collectAsStateWithLifecycle()
+    var viewing by remember { mutableStateOf<AgentPresetEntry?>(null) }
+    viewing?.let { PresetCompositionPage(it, store, onClose = { viewing = null }) }
     DsBottomSheet(
         title = stringResource(R.string.presets_title),
         subtitle = if (sessionBlank) null else stringResource(R.string.presets_locked),
@@ -159,6 +169,15 @@ internal fun PresetsSheet(
                                     color = colors.warnLabel,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            // Reading is allowed on every row, broken ones included: a failed preset's
+                            // diagnostic points into its own contents. A host without the call hides it.
+                            if (viewable != false) {
+                                DsTextAction(
+                                    label = stringResource(R.string.preset_comp_open),
+                                    onClick = { viewing = entry },
+                                    contentDescription = stringResource(R.string.preset_comp_open_for, entry.displayName()),
                                 )
                             }
                         }

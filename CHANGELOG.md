@@ -5,6 +5,15 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **See what an agent preset is made of.** In the agent preset sheet, **View contents** opens a
+  read-only page that lists the plugins a preset mounts, says for each whether it is always on, off
+  or depends on a condition on the host, and keeps the exact YAML one tap away with **Copy** and
+  **Show all**. The harness (0.2.1) accepts no edits to a preset, because presets change by
+  installing a plugin bundle, so this page reads and never writes. A host that cannot show a preset
+  hides the button.
+
 ## [0.23.0] - 2026-11-17
 
 ![Three phones: the Subagents sheet with its Close button, a chat at Fully expanded, and the Stop and archive dialog](docs/images/releases/0.23.0/devices/hero-whats-new.png)
