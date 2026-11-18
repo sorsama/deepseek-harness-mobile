@@ -61,6 +61,7 @@ import com.labteto.dshmobile.core.settings.draftFromList
 import com.labteto.dshmobile.core.settings.draftFromSelection
 import com.labteto.dshmobile.core.settings.draftFromText
 import com.labteto.dshmobile.core.settings.fieldText
+import com.labteto.dshmobile.core.settings.formatNumber
 import com.labteto.dshmobile.core.settings.valuesEquivalent
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonVariant
@@ -524,8 +525,7 @@ internal fun problemText(problem: FieldProblem, kind: FieldKind?, traits: FieldT
 }
 
 /** A limit as a person writes it: `50`, not `50.0`. */
-internal fun formatBound(value: Double): String =
-    if (value % 1.0 == 0.0 && kotlin.math.abs(value) <= 9007199254740991.0) value.toLong().toString() else value.toString()
+internal fun formatBound(value: Double): String = formatNumber(value)
 
 /** What went wrong with the last save of a field, in words, with the harness's own message folded away. */
 @Composable

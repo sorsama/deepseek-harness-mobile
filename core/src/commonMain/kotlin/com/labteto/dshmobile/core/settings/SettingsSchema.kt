@@ -7,7 +7,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.doubleOrNull
 
 /**
  * What the harness says about one settings namespace's shape, read from the `schema` of a
@@ -136,7 +135,9 @@ private class SchemaReader(private val refs: JsonObject) {
 
 private fun metaOf(element: JsonElement?): SchemaMeta {
     val meta = element as? JsonObject ?: return SchemaMeta()
-    fun number(key: String): Double? = (meta[key] as? JsonPrimitive)?.doubleOrNull
+    // Read as digits (see SettingsNumbers.kt); a value beyond the safe range is "no limit", not a number.
+    fun number(key: String): Double? = (meta[key] as? JsonPrimitive)?.contentOrNull
+        ?.let { parseDecimal(it, allowExponent = true) }?.toDoubleOrNull()?.takeIf { it.isFinite() }
     fun flag(key: String): Boolean = (meta[key] as? JsonPrimitive)?.booleanOrNull == true
     val pattern = ((meta["pattern"] as? JsonObject)?.get("source") as? JsonPrimitive)?.contentOrNull
     return SchemaMeta(
