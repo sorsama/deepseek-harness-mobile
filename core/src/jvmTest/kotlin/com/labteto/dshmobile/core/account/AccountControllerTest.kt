@@ -264,6 +264,60 @@ class AccountControllerTest {
     }
 
     @Test
+    fun `a failure remembers which action it belongs to so that one can be retried`() = runTest {
+        val port = FakePort().apply {
+            onState = { ok(AccountFixtures.STATE_SIGNED_IN) }
+            onSignOut = { RpcResult.Err(RpcError("internal", "socket closed")) }
+        }
+        val h = loaded(port)
+        h.controller.signOut()
+        advanceUntilIdle()
+        assertEquals(AccountWork.SigningOut, h.controller.state.value.failedWork)
+        // Trying again clears the old failure first, then lands.
+        port.onSignOut = { ok(AccountFixtures.STATE_AFTER_SIGN_OUT) }
+        h.controller.signOut()
+        advanceUntilIdle()
+        val s = h.controller.state.value
+        assertNull(s.failedWork)
+        assertNull(s.actionFailure)
+        assertFalse(s.snapshot!!.signedIn)
+    }
+
+    @Test
+    fun `dismissing a failure forgets its action too`() = runTest {
+        val port = FakePort().apply { onStart = { RpcResult.Err(accountRefusal(AccountFixtures.START_REFUSED_LAN_ORIGIN)) } }
+        val h = loaded(port)
+        h.controller.startSignIn("http://127.0.0.1:3080")
+        advanceUntilIdle()
+        assertEquals(AccountWork.Starting, h.controller.state.value.failedWork)
+        h.controller.dismissActionFailure()
+        assertNull(h.controller.state.value.failedWork)
+    }
+
+    @Test
+    fun `a link the phone could not open is remembered until the attempt ends`() = runTest {
+        val port = FakePort().apply { onStart = { ok(AccountFixtures.STATE_WAITING) } }
+        val h = loaded(port)
+        h.controller.startSignIn("http://127.0.0.1:3080")
+        advanceUntilIdle()
+        val id = h.controller.state.value.snapshot!!.progress!!.attemptId
+        h.controller.browserOpened(id, opened = false)
+        assertEquals(id, h.controller.state.value.openFailedFor)
+        assertNull(h.controller.state.value.openBrowserFor)
+
+        // A later press that does open it clears the note.
+        h.controller.browserOpened(id, opened = true)
+        assertNull(h.controller.state.value.openFailedFor)
+
+        // And when the attempt ends the note goes with it.
+        h.controller.browserOpened(id, opened = false)
+        port.onState = { ok(AccountFixtures.STATE_CANCELLED) }
+        h.controller.refresh()
+        advanceUntilIdle()
+        assertNull(h.controller.state.value.openFailedFor)
+    }
+
+    @Test
     fun `a start answered with the plugin off makes the page unavailable`() = runTest {
         val port = FakePort().apply { onStart = { RpcResult.Err(accountRefusal(AccountFixtures.SERVICE_UNAVAILABLE)) } }
         val h = loaded(port)

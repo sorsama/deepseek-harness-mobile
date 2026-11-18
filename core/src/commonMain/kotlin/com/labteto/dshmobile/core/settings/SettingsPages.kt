@@ -47,6 +47,12 @@ sealed interface SettingsPage {
 
     data object SessionLog : SettingsPage { override val key = "session-log" }
 
+    /**
+     * DeepSeek sign-in. Not a settings namespace: its state is the harness's account calls, so it is
+     * never produced by [settingsPages]; the screen adds it when the harness has those calls.
+     */
+    data object Account : SettingsPage { override val key = "account" }
+
     /** A namespace the app has no page for: its fields come from what the harness describes. */
     data class Generic(val ns: String) : SettingsPage { override val key get() = "ns:$ns" }
 }
@@ -82,6 +88,7 @@ fun pageNamespaces(page: SettingsPage, served: Collection<String>): List<String>
         SettingsPage.Subagents -> listOf(SettingsNamespaces.SUBAGENT, SettingsNamespaces.SUBAGENT_MODELS)
         SettingsPage.AgentLoop -> listOf(SettingsNamespaces.AGENT_LOOP)
         SettingsPage.SessionLog -> listOf(SettingsNamespaces.SESSION_LOG)
+        SettingsPage.Account -> emptyList()
         is SettingsPage.Generic -> listOf(page.ns)
     }
     return wanted.filter { it in served }

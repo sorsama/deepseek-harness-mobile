@@ -93,12 +93,16 @@ data class AccountUiState(
     val working: AccountWork? = null,
     /** The last start, cancel or sign-out that did not land. */
     val actionFailure: AccountFailure? = null,
+    /** Which action [actionFailure] belongs to, so the screen can offer to try that one again. */
+    val failedWork: AccountWork? = null,
     /** A refresh failed; what is on screen is what was read before. */
     val refreshFailed: Boolean = false,
     /** The harness said its stored sign-in was rejected and removed (`deepseek-account/session-expired`). */
     val sessionEnded: Boolean = false,
     /** The attempt this phone just started and has not yet sent to the browser; the screen opens the link once and says so. */
     val openBrowserFor: String? = null,
+    /** The attempt whose link did not open because the phone had no browser to take it; the page says so, and the link can still be copied. */
+    val openFailedFor: String? = null,
 )
 
 /**
@@ -187,6 +191,7 @@ class AccountController(
                 // Signing in again clears the note that it ended; so does the harness being signed in.
                 sessionEnded = current.sessionEnded && signedOut,
                 openBrowserFor = current.openBrowserFor?.takeIf { next.progress?.attemptId == it },
+                openFailedFor = current.openFailedFor?.takeIf { next.progress?.attemptId == it },
             )
         }
         if (next.credentialKey != detailsKey) {
@@ -292,7 +297,7 @@ class AccountController(
 
     private fun act(work: AccountWork, block: suspend () -> Unit) {
         if (_state.value.working != null) return
-        _state.update { it.copy(working = work, actionFailure = null) }
+        _state.update { it.copy(working = work, actionFailure = null, failedWork = null) }
         scope.launch {
             try {
                 block()
@@ -305,16 +310,22 @@ class AccountController(
     private fun failAction(error: RpcError) {
         val failure = error.toAccountFailure()
         _state.update {
-            if (failure == AccountFailure.Unavailable) it.copy(phase = AccountPhase.Unavailable) else it.copy(actionFailure = failure)
+            if (failure == AccountFailure.Unavailable) it.copy(phase = AccountPhase.Unavailable) else it.copy(actionFailure = failure, failedWork = it.working)
         }
     }
 
-    /** The screen sent the link to the browser, so it is not sent again. */
-    fun browserOpened(attemptId: String) = _state.update {
-        if (it.openBrowserFor == attemptId) it.copy(openBrowserFor = null) else it
+    /**
+     * The screen sent the link of [attemptId] to the browser, so it is not sent again. [opened] is false when
+     * the phone had no browser to take it, which the page then says.
+     */
+    fun browserOpened(attemptId: String, opened: Boolean = true) = _state.update {
+        it.copy(
+            openBrowserFor = it.openBrowserFor?.takeIf { id -> id != attemptId },
+            openFailedFor = if (opened) it.openFailedFor?.takeIf { id -> id != attemptId } else attemptId,
+        )
     }
 
-    fun dismissActionFailure() = _state.update { it.copy(actionFailure = null) }
+    fun dismissActionFailure() = _state.update { it.copy(actionFailure = null, failedWork = null) }
 
     /** `deepseek-account/session-expired`: the harness removed a sign-in DeepSeek rejected. Read again, and say so. */
     fun onSessionExpired() {
