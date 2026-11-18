@@ -135,6 +135,32 @@ class WindowRulesTest {
     }
 
     /**
+     * Rotating the phone with a full-screen page open left the page blank. Compose measures a window's
+     * content for its new size before the window's view takes that size, and the insets that place a
+     * page against the activity's bars read the view's width and height while measuring: right after
+     * the turn they were the old portrait ones, the bottom inset came out taller than the landscape
+     * window and the page was measured at zero height. The insets must come from the rectangles both
+     * windows had after their last layout, which a layout listener keeps current as state.
+     */
+    @Test
+    fun theHostRelativeInsetsNeverReadAViewSizeWhileMeasuring() {
+        val window = stripCommentsAndStrings(sourceFile(windowFile).readText())
+        val relative = window.substringAfter("class HostRelative(", "").substringBefore("\nprivate fun TrackPlacement", "")
+        assertTrue("HostRelative or TrackPlacement is gone from DsFullScreen.kt", relative.isNotEmpty())
+        val getters = Regex("""override fun get(Left|Top|Right|Bottom)\(.*?\n    }""", RegexOption.DOT_MATCHES_ALL).findAll(relative).toList()
+        assertEquals("HostRelative should still have its four inset getters", 4, getters.size)
+        val viewReads = Regex("""\b(width|height|measuredWidth|measuredHeight|getLocationOnScreen|getLocationInWindow)\b""")
+        getters.forEach { getter ->
+            assertTrue(
+                "HostRelative.get${getter.groupValues[1]} reads a view's size or place while measuring; read the placement kept by TrackPlacement",
+                !viewReads.containsMatchIn(getter.value),
+            )
+        }
+        assertTrue("the placement must be state, so a new one measures the page again", Regex("""var placement by mutableStateOf""").containsMatchIn(relative))
+        assertTrue("TrackPlacement must listen for layouts of both windows", window.contains("OnGlobalLayoutListener"))
+    }
+
+    /**
      * The Subagents sheet could not be closed by a person who had scrolled deep into a long child
      * transcript, or who had the keyboard up: no scrim was left to tap and a swipe scrolled the list.
      * The fix is one close button in the shared sheet's title row, so every sheet has it. Callers must

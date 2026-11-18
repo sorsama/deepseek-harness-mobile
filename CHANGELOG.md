@@ -30,6 +30,10 @@ All notable changes to DSH Mobile are documented here. Format based on
   light tone while it is held (and while a mouse points at it on a Chromebook), the same tone a
   pressed card shows, and a quick tap is held long enough to see. The keyboard focus ring is
   unchanged.
+- **Turning the phone with a full-screen page open no longer leaves it blank.** Plugins, Models and
+  API keys, the Workspace panel and every other full-screen page went empty after a rotation, in
+  either direction, until it was closed and opened again. The page now lays itself out again for the
+  new shape, and the same holds when split screen changes the app's size.
 
 ## [0.23.0] - 2026-11-17
 
