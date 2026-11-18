@@ -1,5 +1,10 @@
 package com.labteto.dshmobile.ui.screens.main
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.ui.draw.rotate
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.outlined.PushPin
+
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
@@ -142,6 +147,17 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     var detailsShown by rememberSaveable { mutableStateOf(true) }
     // The docked chat list's switch. Only the reader sets it; the plan decides whether it applies.
     var listShown by rememberSaveable { mutableStateOf(true) }
+    val paneContext = androidx.compose.ui.platform.LocalContext.current.applicationContext
+    val panePrefs = remember(paneContext) { paneContext.getSharedPreferences("chat-pane", android.content.Context.MODE_PRIVATE) }
+    var preferredListWidthDp by rememberSaveable {
+        mutableStateOf<Float?>(if (panePrefs.contains("width")) panePrefs.getFloat("width", 320f) else null)
+    }
+    var listPinned by rememberSaveable { mutableStateOf(panePrefs.getBoolean("pinned", true)) }
+    LaunchedEffect(listPinned, preferredListWidthDp) {
+        panePrefs.edit().putBoolean("pinned", listPinned).apply {
+            preferredListWidthDp?.let { putFloat("width", it) }
+        }.apply()
+    }
     val reveal = remember { Animatable(if (detailsOpen) 1f else 0f) }
     val haptics = rememberDsHaptics()
     fun settleDetails(open: Boolean, velocity: Float = 0f) {
@@ -183,13 +199,17 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     ) {
         val hinge = com.labteto.dshmobile.ui.adaptive.rememberHinge()
         val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-        val plan = remember(maxWidth, maxHeight, hinge, rtl) { planShell(maxWidth, maxHeight, hinge, rtl) }
+        val basePlan = remember(maxWidth, maxHeight, hinge, rtl) { planShell(maxWidth, maxHeight, hinge, rtl) }
+        val canPinList = basePlan.listDocked && basePlan.listCanCollapse
+        val plan = basePlan
+        val overlayList = canPinList && !listPinned
+        val listDocked = plan.listDocked && !overlayList
         // Where the chat list is, it is on screen, and it has to be kept fresh. Sessions started,
         // renamed or archived on the computer reach this list by push, and a push is never replayed
         // after a gap, so the list also re-reads when it appears and when the app comes back to the
         // front, and now and then while it stays visible. The store spaces these reads out and runs
         // them quietly; see SessionStore.refreshSessionsIfStale.
-        val listVisible = if (plan.listDocked) {
+        val listVisible = if (listDocked) {
             listShown || !plan.listCanCollapse
         } else {
             drawerState.targetValue == DrawerValue.Open
@@ -205,7 +225,7 @@ fun MainScreen(onOpenSettings: () -> Unit) {
         }
         // A window that grew past the phone layout no longer has a drawer to leave open, and one that
         // grew into three panes no longer has an overlay: put each away rather than leave it stranded.
-        LaunchedEffect(plan.listDocked) { if (plan.listDocked) drawerState.snapTo(DrawerValue.Closed) }
+        LaunchedEffect(listDocked) { if (listDocked) drawerState.snapTo(DrawerValue.Closed) }
         LaunchedEffect(plan.detailsDockable) {
             if (plan.detailsDockable) {
                 detailsOpen = false
@@ -263,18 +283,30 @@ fun MainScreen(onOpenSettings: () -> Unit) {
         }
 
         val listControl = when {
-            !plan.listDocked -> ListControl.OpenDrawer
+            !listDocked -> ListControl.OpenDrawer
             !plan.listCanCollapse -> ListControl.None
             listShown -> ListControl.Collapse
             else -> ListControl.Expand
         }
         val detailsDocked = plan.detailsDockable
 
+        val treeMinimum = if (canPinList) treeContentMinimumWidth() else 240.dp
         AdaptiveShell(
             plan = plan,
+            minimumListContentWidth = treeMinimum,
+            allowListReveal = !detailsOpen,
             drawerState = drawerState,
             listShown = listShown,
             detailsShown = detailsShown,
+            overlayList = overlayList,
+            overlayListWidth = if (overlayList)
+                com.labteto.dshmobile.ui.adaptive.resolveListWidth(basePlan, maxWidth, preferredListWidthDp?.dp, false) else null,
+            preferredListWidth = preferredListWidthDp?.dp,
+            onListWidthChange = { preferredListWidthDp = it.value },
+            onListShownChange = { shown ->
+                // An open Details overlay owns its dismissal; do not reveal the list behind it.
+                if (!shown || !detailsOpen) listShown = shown
+            },
             list = { docked ->
                 // Docked, the list stays put when a session is picked; the drawer closes itself.
                 val closeList: () -> Unit = if (docked) {
@@ -286,6 +318,20 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                     onClose = closeList,
                     onOpenSettings = { currentOpenSettings.value() },
                     onOpenAutomations = { automationSession = null; automationsOpen = true; closeList() },
+                    pinControl = if (!canPinList) null else { {
+                    androidx.compose.material3.IconButton(onClick = {
+                        listPinned = !listPinned
+                        listShown = true
+                        if (!listPinned) scope.launch { drawerState.open() }
+                    }) {
+                        androidx.compose.material3.Icon(
+                            if (listPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                            contentDescription = if (listPinned) "Открепить дерево чатов" else "Закрепить дерево чатов",
+                            modifier = Modifier.rotate(if (listPinned) 0f else 45f),
+                            tint = if (listPinned) DsTheme.colors.accent else DsTheme.colors.labelSecondary,
+                        )
+                    }
+                    } },
                 )
             },
             details = { detailsContent(Modifier.fillMaxHeight(), true) },
@@ -308,7 +354,7 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                             },
                             onOpenDrawer = {
                                 haptics.tap()
-                                if (plan.listDocked) listShown = !listShown else scope.launch { drawerState.open() }
+                                if (listDocked) listShown = !listShown else scope.launch { drawerState.open() }
                             },
                             detailsOpen = if (detailsDocked) detailsShown else detailsOpen,
                             subagentRequest = subagentRequest,
