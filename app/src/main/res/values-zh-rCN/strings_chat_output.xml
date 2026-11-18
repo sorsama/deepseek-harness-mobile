@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="code_wrap">自动换行</string>
+    <string name="output_viewer_search">在输出中搜索</string>
+    <string name="output_viewer_prev">上一个匹配</string>
+    <string name="output_viewer_next">下一个匹配</string>
+    <string name="output_viewer_matches">第 %1$d 个，共 %2$s 个</string>
+    <string name="output_viewer_no_matches">没有匹配项</string>
+    <string name="chat_state_running">运行中</string>
+    <string name="chat_state_done">已完成</string>
+    <string name="chat_state_failed">失败</string>
+    <string name="chat_state_stopped">已停止</string>
+</resources>

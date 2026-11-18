@@ -1418,7 +1418,7 @@ private fun JobsRow(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        (job.progress ?: job.detail)?.let { "${job.kind} · $it" } ?: job.kind,
+                        (job.progress ?: job.detail)?.let { "${jobKindLabel(job.kind)} · $it" } ?: jobKindLabel(job.kind),
                         style = DsType.caption11,
                         color = colors.labelCaption,
                         maxLines = 1,

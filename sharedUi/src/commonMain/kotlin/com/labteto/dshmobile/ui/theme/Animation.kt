@@ -65,6 +65,15 @@ object DsAnimations {
     )
 
     /**
+     * The fill of a card or row following a press: the colour twin of [pressScale], so a card that
+     * cannot shrink (it is as wide as the screen) still answers a thumb at the same speed.
+     */
+    val pressFill: FiniteAnimationSpec<Color> = spring(
+        dampingRatio = Spring.DampingRatioNoBouncy,
+        stiffness = Spring.StiffnessHigh,
+    )
+
+    /**
      * Disclosure and dock expansion. Deliberately springy-but-unbouncy: content growing downward
      * with an overshoot reads as a glitch, and a linear tween reads as mechanical.
      */

@@ -136,6 +136,50 @@ class DshApiClient(
     suspend fun accountBalance(client: AccountUiMetadata): RpcResult<AccountWallet?> =
         call("account/getBalance", args { put("client", encodeToJsonElement(AccountUiMetadata.serializer(), client)) })
 
+    // The rest of the `account/*` Remotes (`packages/api/account-controller`). Argument names are the host
+    // method's parameter names. A signed-out harness answers null to the three reads.
+
+    /** `account/getState`: whether a credential is stored, and the latest sign-in attempt. */
+    suspend fun accountState(): RpcResult<AccountView> = callEmpty("account/getState")
+
+    suspend fun accountProfile(client: AccountUiMetadata): RpcResult<AccountProfileOutcome?> =
+        call("account/getProfile", args { put("client", encodeToJsonElement(AccountUiMetadata.serializer(), client)) })
+
+    suspend fun accountBonuses(client: AccountUiMetadata): RpcResult<AccountBonusBatch?> =
+        call("account/getUnnotifiedBonuses", args { put("client", encodeToJsonElement(AccountUiMetadata.serializer(), client)) })
+
+    /** Record one displayed bonus as seen. False when the account changed or signed out meanwhile. */
+    suspend fun accountAckBonus(accountId: String, orderId: String, client: AccountUiMetadata): RpcResult<Boolean> =
+        call("account/ackBonusNotified", args {
+            put("accountId", JsonPrimitive(accountId))
+            put("orderId", JsonPrimitive(orderId))
+            put("client", encodeToJsonElement(AccountUiMetadata.serializer(), client))
+        })
+
+    /**
+     * Begin a browser sign-in, or join the one already running. [callbackOrigin] is where the browser
+     * will be sent back to: the harness accepts only `http://localhost`, `127.0.0.1` or `[::1]` with an
+     * explicit port, and the browser that finishes the sign-in must reach the harness at it.
+     * [loginSource] is `web` for a browser tab (the harness's failure page then closes itself).
+     */
+    suspend fun accountStartSignIn(client: AccountUiMetadata, callbackOrigin: String, loginSource: String = "web"): RpcResult<AccountView> =
+        call("account/startSignIn", args {
+            put("client", encodeToJsonElement(AccountUiMetadata.serializer(), client))
+            put("callbackOrigin", JsonPrimitive(callbackOrigin))
+            put("loginSource", JsonPrimitive(loginSource))
+        })
+
+    /** Cancel the named attempt. A stale id leaves the current attempt alone and answers with the current state. */
+    suspend fun accountCancelSignIn(attemptId: String): RpcResult<AccountView> =
+        call("account/cancelSignIn", args { put("attemptId", JsonPrimitive(attemptId)) })
+
+    /** Forget the stored sign-in on the harness. API keys are kept. */
+    suspend fun accountSignOut(client: AccountUiMetadata): RpcResult<AccountView> =
+        call("account/signOut", args { put("client", encodeToJsonElement(AccountUiMetadata.serializer(), client)) })
+
+    /** Whether a running task is using the account, so a sign-out can say what it would stop. */
+    suspend fun accountHasRunningTasks(): RpcResult<Boolean> = callEmpty("account/hasRunningAccountTasks")
+
     // ------------------------------------------------------------------ unary machinery
 
     /** POST one unary call with a raw [JsonElement] payload and decode the typed value. */

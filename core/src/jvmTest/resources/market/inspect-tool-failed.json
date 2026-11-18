@@ -1,0 +1,15 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-19",
+  "result": {
+    "ok": true,
+    "value": {
+      "status": "refused",
+      "problem": "unknown",
+      "reason": "npm error code EUNKNOWNCONFIG\nnpm error Unknown cli flag: --config.fetch-retries\nnpm error Run `npm help config` for supported options.\nnpm error A complete log of this run can be found in: C:\\Users\\user\\AppData\\Local\\npm-cache\\_logs\\2026-11-18T07_24_18_519Z-debug-0.log\nEUNKNOWNCONFIG",
+      "registries": [
+        null
+      ]
+    }
+  }
+}

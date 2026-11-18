@@ -34,6 +34,23 @@ data class DiffHunk(
     val newText: String? = null,
 )
 
+/** How much a diff changed: lines added, lines removed, files touched. */
+data class DiffTotals(val added: Int, val removed: Int, val files: Int) {
+    companion object {
+        /** The totals of [diffs], line by line the way the card draws them. */
+        fun of(diffs: List<DiffHunk>): DiffTotals {
+            var added = 0
+            var removed = 0
+            diffs.forEach { hunk ->
+                com.labteto.dshmobile.core.session.lineDiff(hunk.oldText, hunk.newText).forEach {
+                    if (it.kind == '+') added++ else if (it.kind == '-') removed++
+                }
+            }
+            return DiffTotals(added, removed, diffs.map { it.path }.distinct().size)
+        }
+    }
+}
+
 /** One file matched by a search, with its matching lines. */
 data class SearchFile(
     val path: String,
@@ -91,10 +108,36 @@ sealed interface ToolCardView {
         val exitCode: Int? = null,
         val signal: String? = null,
         val running: Boolean? = null,
-    ) : ToolCardView
+        /**
+         * Started with `run_in_background`: the call only launched a job, so the card has no output
+         * and no exit status of its own. [jobId] is the job it started, once the result names it.
+         */
+        val background: Boolean = false,
+        val jobId: String? = null,
+        /**
+         * The call failed before the command could report an exit (the tool threw, or a persistent
+         * shell gave no single status): the card keeps the command and claims no exit code.
+         */
+        val failed: Boolean = false,
+        /**
+         * The turn's stop cut the call short. It is not a failure: the card's own dot is amber, like
+         * its row's, and like a failed one the card keeps the command and claims no exit code.
+         */
+        val stopped: Boolean = false,
+    ) : ToolCardView {
+        /** The call ended without reporting an exit, so there is no output and the card shows the command. */
+        val cutShort: Boolean get() = failed || stopped
+    }
 
-    /** Diff: per-path hunks with added/removed line counts. */
-    data class DiffCard(val title: String? = null, val diffs: List<DiffHunk>) : ToolCardView
+    /**
+     * Diff: per-path hunks with added/removed line counts. [totals] is set when [diffs] was cut for
+     * an inline preview, so the counts still describe the whole change.
+     */
+    data class DiffCard(
+        val title: String? = null,
+        val diffs: List<DiffHunk>,
+        val totals: DiffTotals? = null,
+    ) : ToolCardView
 
     /** Search: file matches or path list, with truncation info. */
     data class SearchCard(

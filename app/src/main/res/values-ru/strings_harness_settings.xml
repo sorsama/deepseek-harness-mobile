@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Harness settings: the area in Settings and its pages. -->
+    <string name="hs_title">Настройки harness</string>
+    <string name="hs_entry_summary">Веб-поиск, лимиты оболочки, субагенты и другое</string>
+    <string name="hs_intro">Настройки, которые harness хранит у себя. Они действуют для harness, к которому вы подключены.</string>
+    <string name="hs_section_more">Другие настройки</string>
+    <string name="hs_empty">В этом harness здесь нечего менять.</string>
+    <string name="hs_unsupported">Этот harness не даёт приложению менять свои настройки. Измените их на самом harness или обновите его.</string>
+    <string name="hs_read_only">Harness хранит эти настройки только для чтения, поэтому отсюда их изменить нельзя.</string>
+    <string name="hs_refresh_failed">Не удалось обновить. Показано то, что загрузилось раньше.</string>
+    <string name="hs_note_restart">Перезапустите harness, чтобы изменения на этой странице вступили в силу.</string>
+
+    <!-- Page names and one-line descriptions. -->
+    <string name="hs_page_web_search">Веб-поиск</string>
+    <string name="hs_page_web_search_desc">Как агент ищет в интернете и какой ключ использует.</string>
+    <string name="hs_page_shell">Оболочка</string>
+    <string name="hs_page_shell_desc">Сколько может выполняться команда и сколько вывода она хранит.</string>
+    <string name="hs_page_subagents">Субагенты</string>
+    <string name="hs_page_subagents_desc">Глубина, количество и модели, которые они могут использовать.</string>
+    <string name="hs_page_agent_loop">Цикл агента</string>
+    <string name="hs_page_agent_loop_desc">Сколько вызовов инструментов агент выполняет одновременно.</string>
+    <string name="hs_page_session_log">Журнал сеанса</string>
+    <string name="hs_page_session_log_desc">Делитесь журналами сеансов, чтобы помочь улучшать DeepSeek.</string>
+
+    <!-- Shared field words. -->
+    <string name="hs_overridden">Изменено</string>
+    <string name="hs_reset">Вернуть по умолчанию</string>
+    <string name="hs_reset_for">Вернуть «%1$s» по умолчанию</string>
+    <string name="hs_readonly_note">Только для просмотра. Приложение не может это изменить.</string>
+    <string name="hs_remove">Удалить</string>
+    <string name="hs_remove_item">Удалить %1$s</string>
+    <string name="hs_add">Добавить</string>
+    <string name="hs_new_item">Новый элемент</string>
+
+    <!-- Agent loop and session log. -->
+    <string name="hs_f_parallel">Параллельные вызовы инструментов</string>
+    <string name="hs_f_parallel_hint">Наибольшее число вызовов инструментов, которые могут выполняться одновременно в одном шаге.</string>
+    <string name="hs_f_session_log">Отправлять журнал сеанса с запросами к официальному API</string>
+    <string name="hs_f_session_log_hint">Помогает улучшать модели и продукты DeepSeek.</string>
+
+    <!-- Shell. -->
+    <string name="hs_f_timeout">Тайм-аут команды</string>
+    <string name="hs_f_timeout_hint">Сколько может выполняться одна команда, прежде чем её остановят.</string>
+    <string name="hs_unit_ms">мс</string>
+    <string name="hs_f_output">Лимит вывода на поток</string>
+    <string name="hs_f_output_hint">Вывод сверх лимита уходит во временный файл, а не пропадает.</string>
+    <string name="hs_unit_bytes">байт</string>
+
+    <!-- Subagents. -->
+    <string name="hs_sec_limits">Лимиты</string>
+    <string name="hs_f_depth">Максимальная глубина</string>
+    <string name="hs_f_depth_hint">Сколько уровней субагентов может запустить агент. 0 отключает субагентов. 1 позволяет запускать их только главному агенту. Если у инструмента есть собственный лимит глубины, он сохраняется.</string>
+    <string name="hs_f_width">Субагентов одновременно</string>
+    <string name="hs_f_width_hint">Наибольшее число живых субагентов у одного главного агента на всех уровнях. При достижении лимита новые отклоняются.</string>
+    <string name="hs_sec_models">Модели для субагентов</string>
+    <string name="hs_f_model_choice">Разрешить агентам выбирать модель для каждого субагента</string>
+    <string name="hs_f_model_choice_hint">Агент выбирает из моделей, которые вы разрешите ниже. Действует только для новых сеансов.</string>
+    <string name="hs_models_list_label">Модели, которые могут выбирать агенты</string>
+    <string name="hs_models_pick_one">Чтобы включить, выберите хотя бы одну модель.</string>
+    <string name="hs_models_keep_one">Оставьте хотя бы одну модель или выключите переключатель.</string>
+    <string name="hs_models_load_failed">Не удалось загрузить модели.</string>
+    <string name="hs_models_none_why">Пока нет ни одной готовой модели. Модели провайдера появятся здесь, когда у него будет рабочий API-ключ. Добавьте ключ в разделе «Модели и API-ключи».</string>
+    <string name="hs_models_retired">Сейчас недоступна</string>
+
+    <!-- Web search. -->
+    <string name="hs_f_search_api">Использовать Search API</string>
+    <string name="hs_f_search_api_hint">Выключено: поиск идёт через DeepSeek Messages. Включено: используются Search и Fetch API со своими возможностями и тарифами.</string>
+    <string name="hs_f_endpoint_messages">Адрес Messages API</string>
+    <string name="hs_f_endpoint_messages_hint">Укажите префикс API, например %1$s.</string>
+    <string name="hs_f_endpoint_search">Адрес Search и Fetch API</string>
+    <string name="hs_f_endpoint_search_hint">Укажите префикс API, например %1$s.</string>
+    <string name="hs_f_max_uses">Поисков на запрос</string>
+    <string name="hs_f_max_uses_hint">Сколько поисков вспомогательная модель может выполнить за один запрос. Относится только к поиску через Messages.</string>
+    <string name="hs_f_count">Результатов на поиск</string>
+    <string name="hs_f_count_hint">Сколько результатов возвращает каждый запрос, от 1 до 50. Число самих поисков это не ограничивает.</string>
+    <string name="hs_key_unset">Ключ не задан. Искать могут только чаты с моделью аккаунта DeepSeek, через адрес по умолчанию.</string>
+    <string name="hs_key_hint">Хранится на harness, а не в его файле настроек. Оставьте пустым, чтобы сохранить текущий ключ.</string>
+    <string name="hs_key_remove_title">Удалить ключ веб-поиска?</string>
+    <string name="hs_key_remove_body">Harness забудет этот ключ. Веб-поиск, которому он нужен, перестанет работать, пока вы не добавите другой.</string>
+    <string name="hs_key_shared">Этот ключ общий. Его используют и эти настройки: %1$s. Если заменить или удалить его здесь, изменятся и они.</string>
+
+    <!-- A secret field the app has no words for. -->
+    <string name="hs_secret_set">На harness сохранено значение.</string>
+    <string name="hs_secret_unset">Пока ничего не сохранено.</string>
+    <string name="hs_secret_remove_title">Удалить сохранённое значение?</string>
+    <string name="hs_secret_remove_body">Harness его забудет. Позже можно добавить новое.</string>
+
+    <!-- What is wrong with what was typed. -->
+    <string name="hs_err_required">Это поле не может быть пустым.</string>
+    <string name="hs_err_number">Введите число.</string>
+    <string name="hs_err_whole">Введите целое число.</string>
+    <string name="hs_err_min">Введите %1$s или больше.</string>
+    <string name="hs_err_max">Введите %1$s или меньше.</string>
+    <string name="hs_err_range">Введите целое число от %1$s до %2$s.</string>
+    <string name="hs_err_step">Введите число, кратное %1$s.</string>
+    <string name="hs_err_min_length">Минимальная длина: %1$s.</string>
+    <string name="hs_err_max_length">Максимальная длина: %1$s.</string>
+    <string name="hs_err_format">Формат не подходит.</string>
+    <string name="hs_err_option">Выберите один из вариантов.</string>
+    <string name="hs_err_min_items">Минимум элементов: %1$s.</string>
+    <string name="hs_err_max_items">Максимум элементов: %1$s.</string>
+
+    <!-- A change that did not go through. -->
+    <string name="hs_fail_rejected">Harness не принял это значение. Прежнее значение возвращено.</string>
+    <string name="hs_fail_conflict">Значение изменили в другом месте. Показано последнее.</string>
+    <string name="hs_fail_unreachable">Не удалось связаться с harness. Ничего не изменилось.</string>
+</resources>

@@ -1,0 +1,16 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-16",
+  "result": {
+    "ok": true,
+    "value": {
+      "status": "refused",
+      "problem": "not-found",
+      "reason": "ERR_PNPM_FETCH_404  GET https://registry.npmmirror.com/definitely-not-a-real-dsh-plugin-xyz: Not Found - 404",
+      "registries": [
+        null,
+        "https://registry.npmmirror.com/"
+      ]
+    }
+  }
+}

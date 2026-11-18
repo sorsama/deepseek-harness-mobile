@@ -98,7 +98,19 @@ enum class PermissionDenial {
 
     /** Any other code of the gate (unreadable arguments, the gate's own failure, and the rest). */
     Other,
+
+    /**
+     * `AUTO_REVIEW_DENIED` from `AutoReviewDeniedError`: the harness's Auto review refused the call,
+     * so it never ran. The reviewer's reason, when recorded, is [ToolResultNode.errorReason].
+     */
+    AutoReviewRejected,
 }
+
+/** `error.code` the harness records when Auto review refuses a call. */
+const val AUTO_REVIEW_DENIED = "AUTO_REVIEW_DENIED"
+
+/** `error.name` beside [AUTO_REVIEW_DENIED]; the web client matches both, and so does this. */
+const val AUTO_REVIEW_DENIED_ERROR_NAME = "AutoReviewDeniedError"
 
 /** `error.name` on every denial of the runtime's gate (permissions version 2 and later). */
 const val PERMISSION_DENIED_ERROR_NAME = "DshMobilePermissionDenied"
@@ -122,6 +134,9 @@ fun permissionDenialOf(node: ToolResultNode): PermissionDenial? {
         "APPROVAL_CANCELLED" -> return PermissionDenial.Cancelled
         "APPROVAL_UNAVAILABLE" -> return PermissionDenial.NobodyToAsk
         "APPROVAL_TEXT_TOO_LARGE" -> return PermissionDenial.TextTooLarge
+        // The harness's own reviewer, not this runtime's gate (web client: auto-review-denial.ts).
+        AUTO_REVIEW_DENIED ->
+            return if (node.errorName == AUTO_REVIEW_DENIED_ERROR_NAME) PermissionDenial.AutoReviewRejected else null
         null -> Unit
         else -> return if (node.errorName == PERMISSION_DENIED_ERROR_NAME) PermissionDenial.Other else null
     }

@@ -75,4 +75,12 @@
     <string name="ux_a_save_error">บันทึกงานอัตโนมัตินี้ไม่ได้ รีเฟรชกฎแล้วลองอีกครั้ง</string>
     <string name="ux_a_delete_error">ลบงานอัตโนมัตินี้ไม่ได้ รีเฟรชรายการแล้วลองอีกครั้ง</string>
     <string name="ux_a_last_run">รันล่าสุด: %1$s</string>
+    <string name="plugins_filter_on">เปิด %1$d</string>
+    <string name="plugins_filter_off">ปิด %1$d</string>
+    <string name="plugins_count_on">เปิดอยู่&#160;%1$d&#160;จาก&#160;%2$d</string>
+    <string name="plugins_open_details">เปิดรายละเอียด</string>
+    <string name="plugins_more_matches">อีก %1$d</string>
+    <string name="plugins_no_matches">ไม่พบรายการที่ตรงกัน</string>
+    <string name="plugins_modules_need_bundle_on">ชุดนี้ปิดอยู่ เปิดชุดก่อนจึงจะเปิดหรือปิดแต่ละโมดูลได้</string>
+    <string name="plugins_modules_need_install">ชุดนี้ยังไม่ได้ติดตั้ง ติดตั้งก่อนจึงจะเปิดหรือปิดแต่ละโมดูลได้</string>
 </resources>

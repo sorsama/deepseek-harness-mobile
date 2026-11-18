@@ -152,9 +152,15 @@ fun ChatScreen(
     val subagents by store.subagents.collectAsStateWithLifecycle()
     val subagentConversation by store.subagentConversation.collectAsStateWithLifecycle()
     val subagentMode by store.subagentMode.collectAsStateWithLifecycle()
+    // A background command's card shows its job's state and opens it in the Jobs sheet.
+    val jobs by store.jobs.collectAsStateWithLifecycle()
+    val jobControls by store.jobControls.collectAsStateWithLifecycle()
+    var openJobId by remember { mutableStateOf<String?>(null) }
     // Null for an ordinary session, non-null while a subagent child is open. A child is the
     // harness's to drive, not the reader's: which controls still mean anything depends on it.
     val currentSubagent by store.currentSubagent.collectAsStateWithLifecycle()
+    // Experimental Agent Teams: null unless the host publishes this session's `agentTeam` projection.
+    val agentTeam = rememberAgentTeam(conversation, isChild = currentSubagent != null)
     val connectionError by store.connectionError.collectAsStateWithLifecycle()
     val loadingOlder by store.loadingOlder.collectAsStateWithLifecycle()
     val loadOlderFailed by store.loadOlderFailed.collectAsStateWithLifecycle()
@@ -663,6 +669,8 @@ fun ChatScreen(
                 workspaceEnabled = currentSessionId != null,
                 historyEnabled = currentSessionId != null,
                 sessionOpen = currentSessionId != null,
+                teamAvailable = agentTeam != null,
+                onOpenTeam = { sheet = ChatSheet.Team },
             )
 
             // No model to answer: the last turn's failure code said so, or the harness has no
@@ -693,6 +701,8 @@ fun ChatScreen(
                 }
             }
 
+            // A bar pinned above the transcript: in view wherever the reader has scrolled to, and the
+            // transcript simply gets less height while it is there.
             if (connected) com.labteto.dshmobile.ui.screens.models.ChatModelSetupNotice(setupProblem)
 
             // A command refused for want of a sandbox (SANDBOX_UNAVAILABLE): this session is on a
@@ -738,6 +748,13 @@ fun ChatScreen(
                 presentation = workStepPresentation,
                 permissionNames = remember(permissions) {
                     permissions?.options?.associate { it.value to it.name }.orEmpty()
+                },
+                // By id and state only, so a job's progress line ticking does not recompose the
+                // transcript.
+                jobStates = remember(jobs.map { it.id to it.status }) { jobs.associate { it.id to it.status } },
+                onOpenJob = { id -> openJobId = id },
+                subagentRunning = remember(subagents) {
+                    subagents.mapNotNull { entry -> subagentId(entry)?.let { it to subagentRunning(entry) } }.toMap()
                 },
             )
 
@@ -1183,6 +1200,10 @@ fun ChatScreen(
         )
     }
     feedback?.let { (key, id, positive) -> FeedbackDialog(store, key, id, positive) { feedback = null } }
+    // The job a background command's card opened; the live row, so its state follows the job.
+    openJobId?.let { id -> jobs.firstOrNull { it.id == id } }?.let { job ->
+        JobOutputSheet(job = job, store = store, canStop = jobControls, onDismiss = { openJobId = null })
+    }
     when (sheet) {
         ChatSheet.Commands -> CommandSheet(
             commands = commands,
@@ -1262,12 +1283,27 @@ fun ChatScreen(
             workStepDisplay = workStepDisplay,
             onDismiss = { sheet = null },
         )
+        ChatSheet.Team -> if (agentTeam != null) {
+            AgentTeamSheet(
+                team = agentTeam,
+                rows = rememberTeamRows(agentTeam, currentSessionId, conversation?.running == true, subagents),
+                // A teammate is a continuable child of this session: its conversation opens in the
+                // Subagents sheet, the same way the Details panel's subagent rows open one.
+                onOpenTeammate = { childId ->
+                    sheet = ChatSheet.Subagents
+                    scope.launch { store.openSubagentTranscript(childId) }
+                },
+                onDismiss = { sheet = null },
+            )
+        } else {
+            LaunchedEffect(Unit) { sheet = null }
+        }
         null -> Unit
     }
 }
 
 /** Which sheet, if any, is open over the chat surface. */
-private enum class ChatSheet { Commands, Models, History, Presets, Subagents }
+private enum class ChatSheet { Commands, Models, History, Presets, Subagents, Team }
 
 /**
  * A picked document's display name and size, as its provider reports them.

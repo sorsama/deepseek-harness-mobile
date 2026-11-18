@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">查看内容</string>
+    <string name="preset_comp_open_for">查看“%1$s”的内容</string>
+    <string name="preset_comp_subtitle">只读。此主机通过插件包来更改预设。</string>
+    <string name="preset_comp_plugins">插件：%1$d</string>
+    <string name="preset_comp_conditional">有条件：%1$d</string>
+    <string name="preset_comp_off">已关闭：%1$d</string>
+    <string name="preset_comp_always_on">始终开启</string>
+    <string name="preset_comp_state_off">已关闭</string>
+    <string name="preset_comp_state_conditional">有条件</string>
+    <string name="preset_comp_condition">除非在主机上此条件成立，否则会加载：%1$s</string>
+    <string name="preset_comp_entry_unnamed">插件 %1$d</string>
+    <string name="preset_comp_settings">设置（YAML）</string>
+    <string name="preset_comp_raw">此预设中的插件</string>
+    <string name="preset_comp_copy_all">全部复制为 YAML</string>
+    <string name="preset_comp_loading">正在读取预设</string>
+    <string name="preset_comp_failed">无法读取此预设：%1$s</string>
+    <string name="preset_comp_missing">此预设已不在主机上。</string>
+    <string name="preset_comp_unsupported">此主机无法显示预设的内容。</string>
+    <string name="preset_comp_retry">重试</string>
+    <string name="preset_comp_empty">此预设未列出任何插件。</string>
+</resources>

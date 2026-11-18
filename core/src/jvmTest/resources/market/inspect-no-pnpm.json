@@ -1,0 +1,15 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-1",
+  "result": {
+    "ok": true,
+    "value": {
+      "status": "refused",
+      "problem": "unknown",
+      "reason": "'pnpm' is not recognized as an internal or external command,\r\noperable program or batch file.",
+      "registries": [
+        null
+      ]
+    }
+  }
+}

@@ -85,4 +85,12 @@
     <string name="ux_a_save_error">No se pudo guardar esta automatización. Actualiza la regla y reintenta.</string>
     <string name="ux_a_delete_error">No se pudo eliminar esta automatización. Actualiza la lista y reintenta.</string>
     <string name="ux_a_last_run">Última ejecución: %1$s</string>
+    <string name="plugins_filter_on">Activados %1$d</string>
+    <string name="plugins_filter_off">Desactivados %1$d</string>
+    <string name="plugins_count_on">%1$d&#160;de&#160;%2$d&#160;activados</string>
+    <string name="plugins_open_details">Abrir detalles</string>
+    <string name="plugins_more_matches">+%1$d más</string>
+    <string name="plugins_no_matches">Sin coincidencias</string>
+    <string name="plugins_modules_need_bundle_on">Este conjunto está desactivado. Actívalo para activar o desactivar sus módulos uno por uno.</string>
+    <string name="plugins_modules_need_install">Este conjunto no está instalado. Instálalo para activar o desactivar sus módulos uno por uno.</string>
 </resources>

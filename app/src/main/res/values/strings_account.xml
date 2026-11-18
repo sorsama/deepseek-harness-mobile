@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Account: DeepSeek sign-in, in Harness settings. -->
+    <string name="acct_title">Account</string>
+    <string name="acct_summary">Sign in to DeepSeek and see your balance.</string>
+    <string name="acct_unavailable">This harness can\'t sign in to DeepSeek. It may be an older version, or its account plugin is turned off.</string>
+
+    <!-- Signed out. -->
+    <string name="acct_signed_out_title">Not signed in</string>
+    <string name="acct_signed_out_body">Sign in with your DeepSeek account to use it on this harness. Your projects and files stay where they are.</string>
+    <string name="acct_sign_in">Sign in</string>
+    <string name="acct_sign_in_again">Sign in again</string>
+    <string name="acct_session_ended">Your DeepSeek sign-in ended. Sign in again to keep using it.</string>
+
+    <!-- How the last sign-in ended, and why. -->
+    <string name="acct_outcome_failed">The last sign-in didn\'t finish.</string>
+    <string name="acct_outcome_expired">The last sign-in timed out. Start again when you\'re ready.</string>
+    <string name="acct_outcome_cancelled">The last sign-in was cancelled.</string>
+    <string name="acct_reason_platform">The harness couldn\'t reach DeepSeek. Check its internet connection and try again.</string>
+    <string name="acct_reason_storage">The harness couldn\'t save the sign-in. Check that it has free space and can write to its folder.</string>
+    <string name="acct_reason_generic">DeepSeek\'s answer wasn\'t one the harness could use. Try again.</string>
+
+    <!-- A harness on another device: the browser cannot be sent back to it from this phone. -->
+    <string name="acct_remote_title">Sign in on the harness computer</string>
+    <string name="acct_remote_body">The sign-in ends by sending the browser back to the harness through an address that only works on the same device. From this phone that device is the phone, not the harness. Finish the sign-in on the computer that runs the harness: open it there, go to Settings, then Account, and sign in. This page updates when it\'s done.</string>
+    <string name="acct_check_again">Check again</string>
+
+    <!-- A sign-in in progress. -->
+    <string name="acct_progress_title">Signing in</string>
+    <string name="acct_progress_starting">Starting sign-in…</string>
+    <string name="acct_progress_browser">Finish signing in in your browser, then come back to this app.</string>
+    <string name="acct_progress_remote">Waiting for the sign-in to finish on the harness computer.</string>
+    <string name="acct_progress_finishing">Finishing sign-in…</string>
+    <string name="acct_open_browser">Open browser</string>
+    <string name="acct_copy_link">Copy sign-in link</string>
+    <string name="acct_link_copied">Link copied</string>
+    <string name="acct_browser_missing">No browser opened. Copy the link and open it in a browser yourself.</string>
+    <string name="acct_link_refused">The sign-in link can\'t be used. Try again to get a new one.</string>
+    <string name="acct_cancel_sign_in">Cancel sign-in</string>
+    <string name="acct_try_again">Try again</string>
+
+    <!-- Signed in: profile, balance, bonus notices, sign out. -->
+    <string name="acct_signed_in">Signed in</string>
+    <string name="acct_name_fallback">DeepSeek account</string>
+    <string name="acct_profile_unavailable">Account details aren\'t available right now.</string>
+    <string name="acct_balance_none">No balance to show.</string>
+    <string name="acct_bonus_title">Bonus credited</string>
+    <string name="acct_bonus_dismiss">Got it</string>
+    <string name="acct_sign_out">Sign out</string>
+    <string name="acct_sign_out_title">Sign out of DeepSeek?</string>
+    <string name="acct_sign_out_idle">Signing out doesn\'t delete any data. You can sign in again.</string>
+    <string name="acct_sign_out_running">Tasks are running with this account. Signing out stops them.</string>
+    <string name="acct_sign_out_unknown">Couldn\'t check for running tasks. Signing out may stop tasks that use this account.</string>
+
+    <!-- A call that did not go through. -->
+    <string name="acct_fail_rejected">The harness couldn\'t do that. Try again.</string>
+    <string name="acct_fail_unreachable">Couldn\'t reach the harness. Nothing was changed.</string>
+</resources>

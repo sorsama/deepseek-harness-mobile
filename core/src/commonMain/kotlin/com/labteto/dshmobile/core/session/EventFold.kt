@@ -193,8 +193,10 @@ private class FoldState(private val sessionId: String) {
                 val turn = data.jsonObject["turn"]?.jsonPrimitive?.intOrNull ?: 0
                 val reason = data.jsonObject["reason"]?.jsonObject
                 val kind = reason?.get("kind")?.jsonPrimitive?.contentOrNull ?: "completed"
-                val failureCode = (reason?.get("error") as? JsonObject)?.get("code")?.let { it as? JsonPrimitive }?.contentOrNull
-                nodes.add(TurnEndNode(event.seq, turn, kind, reason?.get("reason"), failureCode))
+                val failure = reason?.get("error") as? JsonObject
+                val failureCode = failure?.get("code")?.let { it as? JsonPrimitive }?.contentOrNull
+                val failureMessage = failure?.get("message")?.let { it as? JsonPrimitive }?.contentOrNull
+                nodes.add(TurnEndNode(event.seq, turn, kind, reason?.get("reason"), failureCode, failureMessage))
                 if (kind == "interrupted" || kind == "aborted" || kind == "error") {
                     markInterrupted(turn)
                 }
@@ -274,7 +276,14 @@ private class FoldState(private val sessionId: String) {
                 val error = data.jsonObject["error"] as? JsonObject
                 val errorCode = (error?.get("code") as? JsonPrimitive)?.contentOrNull
                 val errorName = (error?.get("name") as? JsonPrimitive)?.contentOrNull
-                nodes.add(ToolResultNode(event.seq, result.callId, result.content, result.isError, turn, step, data.jsonObject["meta"], errorCode, errorName))
+                // Auto review's refusal carries the reviewer's reason beside the code.
+                val errorReason = (error?.get("reason") as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
+                nodes.add(
+                    ToolResultNode(
+                        event.seq, result.callId, result.content, result.isError, turn, step,
+                        data.jsonObject["meta"], errorCode, errorName, errorReason,
+                    ),
+                )
             }
 
             // Harness 0.1.7: the agent's tool set changed mid-session. Model-visible context, not

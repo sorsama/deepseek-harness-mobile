@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tool views in the chat transcript: task list, questions, subagents, jobs, terminals, goals, reminders. -->
+<resources>
+    <!-- Row titles -->
+    <string name="chat_tool_title_todo">Task list</string>
+    <string name="chat_tool_title_ask">Question</string>
+    <string name="chat_tool_title_subagent">Subagent</string>
+    <string name="chat_tool_title_skill">Skill</string>
+    <string name="chat_tool_title_read_image">Read image</string>
+    <string name="chat_tool_title_job_output">Job output</string>
+    <string name="chat_tool_title_job_kill">Stop job</string>
+    <string name="chat_tool_title_terminal_open">Open terminal</string>
+    <string name="chat_tool_title_terminal_read">Read terminal</string>
+    <string name="chat_tool_title_terminal_list">Terminals</string>
+    <string name="chat_tool_title_terminal_signal">Signal terminal</string>
+    <string name="chat_tool_title_terminal_close">Close terminal</string>
+    <string name="chat_tool_title_terminal_send">Send to terminal</string>
+    <string name="chat_tool_title_lsp">Code lookup</string>
+    <string name="chat_tool_title_goal_create">Set goal</string>
+    <string name="chat_tool_title_goal_view">Check goal</string>
+    <string name="chat_tool_title_goal_update">Update goal</string>
+    <string name="chat_tool_title_schedule_create">New reminder</string>
+    <string name="chat_tool_title_schedule_list">Reminders</string>
+    <string name="chat_tool_title_schedule_update">Change reminder</string>
+    <string name="chat_tool_title_schedule_delete">Delete reminder</string>
+    <string name="chat_tool_title_present">Share files</string>
+
+    <!-- Task list -->
+    <string name="chat_tool_todo_progress">%1$d of %2$d done</string>
+    <plurals name="chat_tool_todo_added">
+        <item quantity="one">%d added</item>
+        <item quantity="other">%d added</item>
+    </plurals>
+    <plurals name="chat_tool_todo_changed">
+        <item quantity="one">%d changed</item>
+        <item quantity="other">%d changed</item>
+    </plurals>
+    <plurals name="chat_tool_todo_removed">
+        <item quantity="one">%d removed</item>
+        <item quantity="other">%d removed</item>
+    </plurals>
+    <string name="chat_tool_todo_no_changes">No changes</string>
+    <string name="chat_tool_todo_not_saved">Not saved. This is the list it tried to write.</string>
+    <string name="chat_tool_todo_pending">To do</string>
+    <string name="chat_tool_todo_in_progress">In progress</string>
+    <string name="chat_tool_todo_done">Done</string>
+    <string name="chat_tool_todo_change_added">Added</string>
+    <string name="chat_tool_todo_change_moved">Moved</string>
+    <string name="chat_tool_todo_change_removed">Removed</string>
+    <string name="chat_tool_todo_change_was">Was: %1$s</string>
+
+    <!-- Questions -->
+    <string name="chat_tool_ask_waiting">Waiting for your answer</string>
+    <string name="chat_tool_ask_answered">%1$d of %2$d answered</string>
+    <string name="chat_tool_ask_cancelled">You closed these questions</string>
+    <string name="chat_tool_ask_interrupted">Stopped before you answered</string>
+    <string name="chat_tool_ask_timed_out">No answer in time</string>
+    <string name="chat_tool_ask_carried_on">The agent went on without waiting</string>
+    <string name="chat_tool_ask_closed">Closed</string>
+    <string name="chat_tool_ask_your_answer">Your answer: %1$s</string>
+    <string name="chat_tool_ask_not_answered">Not answered</string>
+
+    <!-- Subagents -->
+    <string name="chat_tool_subagent_starting">Starting</string>
+    <string name="chat_tool_subagent_started">Started</string>
+    <string name="chat_tool_subagent_working">Working</string>
+    <string name="chat_tool_subagent_finished">Finished</string>
+    <string name="chat_tool_subagent_failed">Didn\'t start</string>
+    <string name="chat_tool_subagent_replied">Replied</string>
+    <string name="chat_tool_subagent_model">Model: %1$s</string>
+    <string name="chat_tool_subagent_model_label">Model:</string>
+    <string name="chat_tool_subagent_open">Open subagent</string>
+    <string name="chat_tool_subagent_conversation">This is a subagent\'s conversation</string>
+
+    <!-- Skills and images -->
+    <string name="chat_tool_skill_loading">Loading</string>
+    <string name="chat_tool_skill_loaded">Loaded</string>
+    <string name="chat_tool_skill_not_loaded">Not loaded</string>
+    <string name="chat_tool_image_none">No image came back</string>
+
+    <!-- Background commands -->
+    <string name="chat_tool_background">Runs in the background</string>
+    <string name="chat_tool_background_starting">Starting in the background</string>
+    <string name="chat_tool_open_job">Open job</string>
+
+    <!-- Record states -->
+    <string name="chat_tool_state_exited">Exited</string>
+    <string name="chat_tool_state_started">Started</string>
+    <string name="chat_tool_state_stop_requested">Stop requested</string>
+    <string name="chat_tool_state_already_finished">Already finished</string>
+    <string name="chat_tool_state_signal_sent">Signal sent</string>
+    <string name="chat_tool_state_closed">Closed</string>
+    <string name="chat_tool_state_closing">Closing</string>
+    <string name="chat_tool_state_scheduled">Scheduled</string>
+    <string name="chat_tool_state_overdue">Overdue</string>
+    <string name="chat_tool_state_deleted">Deleted</string>
+    <string name="chat_tool_state_goal_waiting">Waiting to continue</string>
+    <string name="chat_tool_state_goal_cleared">Cleared</string>
+
+    <!-- Record field labels -->
+    <string name="chat_tool_field_type">Type</string>
+    <string name="chat_tool_field_pid">Process ID</string>
+    <string name="chat_tool_field_exit_code">Exit code</string>
+    <string name="chat_tool_field_signal">Signal</string>
+    <string name="chat_tool_field_process_group">Process group</string>
+    <string name="chat_tool_field_lines">Lines</string>
+    <string name="chat_tool_field_rounds">Rounds</string>
+    <string name="chat_tool_field_reason">Reason</string>
+    <string name="chat_tool_field_when">When</string>
+    <string name="chat_tool_field_repeats">Repeats</string>
+    <string name="chat_tool_field_location">Line</string>
+    <string name="chat_tool_field_kind">Kind</string>
+    <string name="chat_tool_field_value">%1$s: %2$s</string>
+
+    <!-- Record counts and empty states -->
+    <plurals name="chat_tool_jobs_count">
+        <item quantity="one">%d background job</item>
+        <item quantity="other">%d background jobs</item>
+    </plurals>
+    <plurals name="chat_tool_terminals_count">
+        <item quantity="one">%d terminal</item>
+        <item quantity="other">%d terminals</item>
+    </plurals>
+    <plurals name="chat_tool_places_count">
+        <item quantity="one">%d place</item>
+        <item quantity="other">%d places</item>
+    </plurals>
+    <plurals name="chat_tool_reminders_count">
+        <item quantity="one">%d reminder</item>
+        <item quantity="other">%d reminders</item>
+    </plurals>
+    <plurals name="chat_tool_files_count">
+        <item quantity="one">%d file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
+    <string name="chat_tool_jobs_none">No background jobs</string>
+    <string name="chat_tool_terminals_none">No terminals open</string>
+    <string name="chat_tool_places_none">Nothing found</string>
+    <string name="chat_tool_reminders_none">No reminders</string>
+    <string name="chat_tool_goal_none">No goal set</string>
+    <string name="chat_tool_output_cut">The output was cut short.</string>
+
+    <!-- Reminder repeats -->
+    <string name="chat_tool_repeat_once">Once</string>
+    <string name="chat_tool_repeat_every_second">Every second</string>
+    <string name="chat_tool_repeat_every_minute">Every minute</string>
+    <string name="chat_tool_repeat_every_hour">Every hour</string>
+    <string name="chat_tool_repeat_every_day">Every day</string>
+    <plurals name="chat_tool_repeat_seconds">
+        <item quantity="one">Every %d second</item>
+        <item quantity="other">Every %d seconds</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_minutes">
+        <item quantity="one">Every %d minute</item>
+        <item quantity="other">Every %d minutes</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_hours">
+        <item quantity="one">Every %d hour</item>
+        <item quantity="other">Every %d hours</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_days">
+        <item quantity="one">Every %d day</item>
+        <item quantity="other">Every %d days</item>
+    </plurals>
+    <string name="chat_tool_repeat_daily">Every day at %1$s (%2$s)</string>
+    <string name="chat_tool_repeat_weekly">%1$s at %2$s (%3$s)</string>
+    <string name="chat_tool_repeat_cron">On a custom schedule: %1$s (%2$s)</string>
+
+    <!-- Arguments of a tool with no view of its own -->
+    <string name="chat_tool_arguments">Arguments</string>
+    <plurals name="chat_tool_arguments_count">
+        <item quantity="one">%d field</item>
+        <item quantity="other">%d fields</item>
+    </plurals>
+    <string name="chat_tool_raw_title">Raw call data</string>
+
+    <!-- Failure lines under a tool call -->
+    <string name="chat_tool_failed_label">Failed:</string>
+    <string name="chat_tool_failed">This step failed.</string>
+    <string name="chat_tool_stopped">Stopped before it finished.</string>
+    <string name="chat_tool_auto_review_denied">Auto review blocked this step, so it didn\'t run.</string>
+    <string name="chat_tool_reason_label">Reason:</string>
+
+    <!-- Why a turn failed -->
+    <string name="chat_turn_failed_rate_limit">The model provider is busy right now. Try again in a moment.</string>
+    <string name="chat_turn_failed_quota">The model provider account is out of credit.</string>
+    <string name="chat_turn_failed_account_quota">Your DeepSeek account has run out of tokens.</string>
+    <string name="chat_turn_failed_context">This chat is too long for the model. Compact it or start a new chat.</string>
+    <string name="chat_turn_failed_empty">The model sent back an empty reply.</string>
+    <string name="chat_turn_failed_bad_key">The API key was turned down. Check it in Models.</string>
+    <string name="chat_turn_failed_missing_key">This model has no API key yet. Add one in Models.</string>
+    <string name="chat_turn_failed_network">Couldn\'t reach the model provider.</string>
+    <string name="chat_turn_failed_timeout">The model took too long to answer.</string>
+    <string name="chat_turn_failed_server">The model provider had a problem on its side.</string>
+    <string name="chat_turn_failed_process">The harness stopped before this turn finished.</string>
+    <string name="chat_turn_failed_signed_out">Stopped because you signed out of DeepSeek.</string>
+    <string name="chat_turn_failed_unknown">Something went wrong in this turn.</string>
+    <string name="chat_turn_error_code_label">Code:</string>
+</resources>

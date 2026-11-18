@@ -90,4 +90,12 @@
     <string name="ux_a_save_error">Не удалось сохранить автоматизацию. Обновите правило и повторите попытку.</string>
     <string name="ux_a_delete_error">Не удалось удалить автоматизацию. Обновите список и повторите попытку.</string>
     <string name="ux_a_last_run">Последний запуск: %1$s</string>
+    <string name="plugins_filter_on">Вкл %1$d</string>
+    <string name="plugins_filter_off">Выкл %1$d</string>
+    <string name="plugins_count_on">%1$d&#160;из&#160;%2$d&#160;включено</string>
+    <string name="plugins_open_details">Открыть подробности</string>
+    <string name="plugins_more_matches">и ещё %1$d</string>
+    <string name="plugins_no_matches">Ничего не найдено</string>
+    <string name="plugins_modules_need_bundle_on">Этот набор отключён. Включите его, чтобы включать и отключать модули по одному.</string>
+    <string name="plugins_modules_need_install">Этот набор не установлен. Установите его, чтобы включать и отключать модули по одному.</string>
 </resources>

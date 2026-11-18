@@ -1,0 +1,14 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-17",
+  "result": {
+    "ok": true,
+    "value": {
+      "status": "accepted",
+      "kind": "git",
+      "bundle": null,
+      "registry": null,
+      "host": "github.com"
+    }
+  }
+}

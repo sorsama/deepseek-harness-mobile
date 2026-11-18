@@ -1,0 +1,15 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-11",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "plugin-market/fetch-failed",
+      "message": "Could not fetch http://127.0.0.1:56394/missing.json: HTTP 404",
+      "details": {
+        "url": "http://127.0.0.1:56394/missing.json",
+        "reason": "HTTP 404"
+      }
+    }
+  }
+}

@@ -80,4 +80,12 @@
     <string name="ux_a_save_error">Couldn\'t save this automation. Refresh the rule and try again.</string>
     <string name="ux_a_delete_error">Couldn\'t delete this automation. Refresh the list and try again.</string>
     <string name="ux_a_last_run">Last run: %1$s</string>
+    <string name="plugins_filter_on">On %1$d</string>
+    <string name="plugins_filter_off">Off %1$d</string>
+    <string name="plugins_count_on">%1$d&#160;of&#160;%2$d&#160;on</string>
+    <string name="plugins_open_details">Open details</string>
+    <string name="plugins_more_matches">+%1$d more</string>
+    <string name="plugins_no_matches">No matches</string>
+    <string name="plugins_modules_need_bundle_on">This bundle is off. Turn it on to switch its modules one by one.</string>
+    <string name="plugins_modules_need_install">This bundle is not installed. Install it to switch its modules one by one.</string>
 </resources>

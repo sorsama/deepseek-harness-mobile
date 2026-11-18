@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Account: DeepSeek sign-in, in Harness settings. -->
+    <string name="acct_title">账号</string>
+    <string name="acct_summary">登录 DeepSeek，查看你的余额。</string>
+    <string name="acct_unavailable">这个 harness 无法登录 DeepSeek。可能是版本较旧，或者它的账号插件已关闭。</string>
+
+    <!-- Signed out. -->
+    <string name="acct_signed_out_title">尚未登录</string>
+    <string name="acct_signed_out_body">用你的 DeepSeek 账号登录，就能在这个 harness 上使用。你的项目和文件保持原样。</string>
+    <string name="acct_sign_in">登录</string>
+    <string name="acct_sign_in_again">重新登录</string>
+    <string name="acct_session_ended">你的 DeepSeek 登录已失效。请重新登录以继续使用。</string>
+
+    <!-- How the last sign-in ended, and why. -->
+    <string name="acct_outcome_failed">上一次登录没有完成。</string>
+    <string name="acct_outcome_expired">上一次登录已超时。准备好后可以重新开始。</string>
+    <string name="acct_outcome_cancelled">上一次登录已取消。</string>
+    <string name="acct_reason_platform">harness 无法连接到 DeepSeek。请检查它的网络连接后重试。</string>
+    <string name="acct_reason_storage">harness 无法保存登录信息。请检查它是否有可用空间，以及能否写入自己的文件夹。</string>
+    <string name="acct_reason_generic">DeepSeek 返回的内容，harness 无法使用。请重试。</string>
+
+    <!-- A harness on another device: the browser cannot be sent back to it from this phone. -->
+    <string name="acct_remote_title">请在运行 harness 的电脑上登录</string>
+    <string name="acct_remote_body">登录的最后一步，是让浏览器通过一个只在同一台设备上有效的地址回到 harness。对这部手机来说，那台设备是手机本身，而不是 harness。请在运行 harness 的电脑上完成登录：在那里打开 harness，进入设置，再进入账号，然后登录。完成后，这个页面会自动更新。</string>
+    <string name="acct_check_again">再检查一次</string>
+
+    <!-- A sign-in in progress. -->
+    <string name="acct_progress_title">正在登录</string>
+    <string name="acct_progress_starting">正在开始登录…</string>
+    <string name="acct_progress_browser">请在浏览器中完成登录，然后回到本应用。</string>
+    <string name="acct_progress_remote">正在等待在运行 harness 的电脑上完成登录。</string>
+    <string name="acct_progress_finishing">正在完成登录…</string>
+    <string name="acct_open_browser">打开浏览器</string>
+    <string name="acct_copy_link">复制登录链接</string>
+    <string name="acct_link_copied">链接已复制</string>
+    <string name="acct_browser_missing">没有打开任何浏览器。请复制链接，自己在浏览器中打开。</string>
+    <string name="acct_link_refused">无法使用这个登录链接。请重试以获取新的链接。</string>
+    <string name="acct_cancel_sign_in">取消登录</string>
+    <string name="acct_try_again">重试</string>
+
+    <!-- Signed in: profile, balance, bonus notices, sign out. -->
+    <string name="acct_signed_in">已登录</string>
+    <string name="acct_name_fallback">DeepSeek 账号</string>
+    <string name="acct_profile_unavailable">暂时无法获取账号信息。</string>
+    <string name="acct_balance_none">没有可显示的余额。</string>
+    <string name="acct_bonus_title">赠金已到账</string>
+    <string name="acct_bonus_dismiss">知道了</string>
+    <string name="acct_sign_out">退出登录</string>
+    <string name="acct_sign_out_title">退出 DeepSeek 登录？</string>
+    <string name="acct_sign_out_idle">退出登录不会删除任何数据，之后可以再次登录。</string>
+    <string name="acct_sign_out_running">有任务正在使用这个账号。退出登录会让它们停止。</string>
+    <string name="acct_sign_out_unknown">无法确认是否有任务在运行。退出登录可能会停止使用这个账号的任务。</string>
+
+    <!-- A call that did not go through. -->
+    <string name="acct_fail_rejected">harness 没能完成这个操作。请重试。</string>
+    <string name="acct_fail_unreachable">无法连接到 harness。没有任何更改。</string>
+</resources>

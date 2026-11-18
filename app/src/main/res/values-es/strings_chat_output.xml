@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="code_wrap">Ajustar líneas</string>
+    <string name="output_viewer_search">Buscar en la salida</string>
+    <string name="output_viewer_prev">Coincidencia anterior</string>
+    <string name="output_viewer_next">Coincidencia siguiente</string>
+    <string name="output_viewer_matches">%1$d de %2$s</string>
+    <string name="output_viewer_no_matches">Sin coincidencias</string>
+    <string name="chat_state_running">En curso</string>
+    <string name="chat_state_done">Hecho</string>
+    <string name="chat_state_failed">Falló</string>
+    <string name="chat_state_stopped">Detenido</string>
+</resources>
