@@ -69,6 +69,13 @@ fun ToolCard(
     holdLabel: String = "",
     /** What the card can open elsewhere (a background job, a subagent), from the transcript. */
     actions: ToolCardActions = ToolCardActions.None,
+    /**
+     * Whether the row opens at all. A card whose own body is empty can still have something under it
+     * (the call's Output, an image), which the transcript draws; it then says so here.
+     */
+    expandable: Boolean = view.hasBody(),
+    /** How many lines the header's summary may take: more once the row is open, so it is not cut. */
+    summaryMaxLines: Int = 1,
 ) {
     val hasBody = view.hasBody()
     if (header != null) {
@@ -85,12 +92,13 @@ fun ToolCard(
         summary = summaryOverride ?: view.summary(),
         icon = iconOverride ?: view.icon(),
         state = state ?: if (view.isRunning()) DisclosureState.Running else DisclosureState.Idle,
-        expanded = expanded && hasBody,
+        expanded = expanded && expandable,
         // A header-only card (a goal change, shared files) has its subject drawn by its own node
         // right below it: there is nothing to open, so no chevron, but the hold menu still works.
-        onToggle = if (hasBody) onToggle else null,
+        onToggle = if (expandable) onToggle else null,
         onHold = onHold,
         holdLabel = holdLabel,
+        summaryMaxLines = summaryMaxLines,
         content = if (hasBody) ({ ToolCardBody(view, actions) }) else null,
     )
 }
@@ -509,7 +517,7 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         // A tool this app has no view for: what it was called with is there for whoever wants it,
         // collapsed so the row reads as a step rather than a JSON dump, and one tap opens it.
-        card.rawInput?.takeIf { it.isNotBlank() && it.trim() != "{}" }?.let { raw ->
+        card.rawInput?.takeIf { hasArguments(it) }?.let { raw ->
             var open by androidx.compose.runtime.saveable.rememberSaveable(raw) { androidx.compose.runtime.mutableStateOf(false) }
             val fields = remember(raw) { topLevelFieldCount(raw) }
             DisclosureRow(
@@ -590,6 +598,18 @@ private fun SectionLabel(text: String) {
 internal fun topLevelFieldCount(raw: String): Int? = runCatching {
     (com.labteto.dshmobile.core.wire.WireJson.parseToJsonElement(raw) as? kotlinx.serialization.json.JsonObject)?.size
 }.getOrNull()
+
+/**
+ * Whether a call's recorded arguments say anything: not blank, and not an object with no fields
+ * (`{}`, `{ }`), which is how a tool that takes nothing (`list_agents`) is called. Such a call gets
+ * no arguments row and no empty box.
+ */
+internal fun hasArguments(raw: String?): Boolean {
+    if (raw.isNullOrBlank()) return false
+    val trimmed = raw.trim()
+    if (trimmed == "{}") return false
+    return topLevelFieldCount(trimmed) != 0
+}
 
 /** Tiny deterministic JSON pretty-printer (2-space indent, strings/escapes preserved). */
 private fun prettyJson(raw: String): String {

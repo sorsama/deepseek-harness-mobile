@@ -397,6 +397,8 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
     val knownToolCallIds = remember(context.nodes) {
         context.nodes.filterIsInstance<ToolCallNode>().mapTo(mutableSetOf()) { it.callId }
     }
+    // The pill for a stopped turn is drawn once, by the turn's own end, below its tool calls.
+    val stoppedTurns = remember(context.nodes) { turnsStoppedByTurnEnd(context.nodes) }
     // Keyed on the message's identity across its settling, not on `seq`: a streaming message's
     // sequence number is replaced by the durable one when the reply finishes, and state keyed on it
     // folded the reader's open thinking panel shut at that moment. See [assistantStateKey].
@@ -472,7 +474,7 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
                 }
             }
         }
-        if (node.interrupted) {
+        if (node.showsStoppedPill(stoppedTurns)) {
             DsPill(text = stringResource(R.string.chat_stopped), warn = true)
         }
         AnimatedVisibility(
@@ -569,8 +571,14 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         summary = card.controlSummary()?.let(::rowSummaryText) ?: baseRow.summary,
     )
     val icon = card.controlIcon() ?: baseRow.variant.featherIcon()
-    val hasBody = card.hasBody()
     val failure = remember(result) { toolFailureOf(result) }
+    // The card's own body, or what the transcript draws under it (Output, an image, nested calls).
+    // A tool that takes no arguments has no body of its own, and used to draw an empty box.
+    val images = remember(result?.content) { toolResultImages(result?.content) }
+    val hasBody = remember(card, result, failure, images, context.nodes) {
+        card.hasBody() || images.isNotEmpty() || showsOutputRow(card, result, failure) ||
+            hasPtcChildren(context.nodes.filterIsInstance<OtherNode>(), node.callId)
+    }
     val actions = toolCardActions(card, context)
     // Open or closed by the work-step level; a tap overrides it for this row only (see
     // RowDisclosureMemory). A row the level opened is a bounded preview until "Show all".
@@ -607,6 +615,10 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         onHold = { holdOpen = true },
         holdLabel = holdLabel,
         actions = actions,
+        expandable = hasBody,
+        // The summary opens with the figures (progress, then what changed): an open row, and a row
+        // with nothing to open, give it a second line rather than cutting them.
+        summaryMaxLines = if (expanded || !hasBody) 2 else 1,
         header = if (compact) ({
             Row(Modifier.fillMaxWidth().heightIn(min = 32.dp)
                 .clickableWithHold(holdLabel, onHold = { holdOpen = true }, role = Role.Button) { if (hasBody) disclosure.toggle() }
@@ -615,7 +627,7 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
                 Icon(icon, null, Modifier.size(14.dp), tint = colors.labelTertiary)
                 Text(row.title, style = DsType.small13, color = colors.labelSecondary)
                 Text(row.summary.orEmpty(), Modifier.weight(1f), style = DsType.caption11,
-                    color = colors.labelCaption, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    color = colors.labelCaption, maxLines = if (expanded || !hasBody) 2 else 1, overflow = TextOverflow.Ellipsis)
                 if (expanded && elapsed != null) Text(elapsed, style = DsType.caption11, color = colors.labelCaption)
                 Text(when (state) {
                     DisclosureState.Error -> "!"; DisclosureState.Running -> "…"; DisclosureState.Stopped -> "■"; else -> "✓"
@@ -645,7 +657,6 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
     ) { Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         // What the call returned, not the file as it is now: the durable attachment survives the
         // file changing or being deleted, and shares the transcript's decoded-image cache.
-        val images = remember(result?.content) { toolResultImages(result?.content) }
         images.forEach { ref ->
             AttachmentImage(ref = ref, contentDescription = ref.name)
         }
@@ -654,7 +665,10 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         // diff, a read) already present the result in their body, so there it stays one row down.
         // A card that says all its result does (a task list, a job's state, a question's answers)
         // gets no Output row at all; the raw result is in the hold menu.
-        result?.content?.takeIf { !card.coversOutput() }?.let { content ->
+        // A failed call whose text is only the failure line's own words (an unknown tool's
+        // `Error: unknown tool "x"`) is not drawn twice.
+        val repeatsFailure = remember(result, failure) { outputRepeatsFailure(result, failure) }
+        result?.content?.takeIf { !card.coversOutput() && !repeatsFailure }?.let { content ->
             if (card is com.labteto.dshmobile.ui.components.ToolCardView.GenericCard) {
                 ToolResultOutput(
                     content,

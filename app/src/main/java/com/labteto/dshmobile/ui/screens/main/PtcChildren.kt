@@ -19,6 +19,12 @@ import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.serialization.json.*
 
+/** Whether any nested call names [parent] as its parent, i.e. whether [PtcChildren] would draw a row. */
+internal fun hasPtcChildren(events: List<OtherNode>, parent: String): Boolean = events.any { event ->
+    (event.type == "tool/ptc-dispatch-start" || event.type == "tool/ptc-dispatch") &&
+        ((event.data as? JsonObject)?.get("parentCallId") as? JsonPrimitive)?.contentOrNull == parent
+}
+
 /** Dispatch-start and settlement share one child row; recursion follows declared parent ids. */
 @Composable
 internal fun PtcChildren(

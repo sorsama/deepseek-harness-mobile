@@ -54,6 +54,7 @@
     <string name="chat_tool_ask_answered">%1$d of %2$d answered</string>
     <string name="chat_tool_ask_cancelled">You closed these questions</string>
     <string name="chat_tool_ask_interrupted">Stopped before you answered</string>
+    <string name="chat_tool_ask_timed_out">No answer in time</string>
     <string name="chat_tool_ask_carried_on">The agent went on without waiting</string>
     <string name="chat_tool_ask_closed">Closed</string>
     <string name="chat_tool_ask_your_answer">Your answer: %1$s</string>

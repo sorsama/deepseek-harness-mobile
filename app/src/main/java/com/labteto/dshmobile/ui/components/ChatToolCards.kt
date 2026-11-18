@@ -4,6 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -55,10 +58,15 @@ data class ToolCardActions(
 /** Technical text (a command, a path, an id): kept left to right inside a right-to-left line. */
 private fun technical(value: String): String = com.labteto.dshmobile.ui.screens.main.technicalDisplay(value)
 
-/** Whether a card has a body to open. A header-only card leaves its subject to its own node. */
+/**
+ * Whether a card draws a body to open. A header-only card leaves its subject to its own node, and a
+ * generic card with no arguments, locations or content has nothing of its own to put in the box (the
+ * tool's text is the transcript's Output row, drawn outside the card).
+ */
 internal fun ToolCardView.hasBody(): Boolean = when (this) {
     is TodoCard -> lines.isNotEmpty() || !recorded
     is DetailsCard -> !headerOnly
+    is ToolCardView.GenericCard -> hasArguments(rawInput) || !locations.isNullOrEmpty() || !content.isNullOrEmpty()
     else -> true
 }
 
@@ -114,6 +122,7 @@ private fun QuestionCard.questionOutcomeText(): String = when (outcome) {
     QuestionOutcome.Answered -> stringResource(R.string.chat_tool_ask_answered, answered, total)
     QuestionOutcome.Cancelled -> stringResource(R.string.chat_tool_ask_cancelled)
     QuestionOutcome.Interrupted -> stringResource(R.string.chat_tool_ask_interrupted)
+    QuestionOutcome.TimedOut -> stringResource(R.string.chat_tool_ask_timed_out)
     QuestionOutcome.CarriedOn -> stringResource(R.string.chat_tool_ask_carried_on)
     QuestionOutcome.Settled -> stringResource(R.string.chat_tool_ask_closed)
 }
@@ -262,7 +271,7 @@ private fun QuestionBody(card: QuestionCard) {
             }
         }
         when (card.outcome) {
-            QuestionOutcome.Cancelled, QuestionOutcome.Interrupted, QuestionOutcome.CarriedOn ->
+            QuestionOutcome.Cancelled, QuestionOutcome.Interrupted, QuestionOutcome.TimedOut, QuestionOutcome.CarriedOn ->
                 Caption(card.questionOutcomeText())
             else -> Unit
         }
@@ -343,11 +352,12 @@ private fun DetailsBody(card: DetailsCard) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DetailItemView(item: DetailItem) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        LabelWithChip {
             if (item.title.isNotEmpty()) {
                 Text(
                     if (item.technicalTitle) technical(item.title) else item.title,
@@ -355,10 +365,10 @@ private fun DetailItemView(item: DetailItem) {
                     color = colors.labelPrimary,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
+                    modifier = Modifier.align(Alignment.CenterVertically),
                 )
             }
-            detailStateText(item)?.let { StateChip(it, detailTone(item.state)) }
+            detailStateText(item)?.let { StateChip(it, detailTone(item.state), Modifier.align(Alignment.CenterVertically)) }
         }
         item.subtitle?.let { Caption(technical(it)) }
         item.fields.forEach { field ->
@@ -421,9 +431,24 @@ private fun detailTone(state: DetailState?): Tone = when (state) {
     else -> Tone.Neutral
 }
 
+/**
+ * A label and a state chip on one line while they fit, and stacked when they do not. Used wherever
+ * a card puts a word beside a chip, so a large text size wraps them instead of clipping the chip.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LabelWithChip(content: @Composable FlowRowScope.() -> Unit) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        content = content,
+    )
+}
+
 /** A state in words on a tinted pill: the word carries the state, the tint only repeats it. */
 @Composable
-private fun StateChip(text: String, tone: Tone) {
+private fun StateChip(text: String, tone: Tone, modifier: Modifier = Modifier) {
     val colors = DsTheme.colors
     val (foreground, background) = when (tone) {
         Tone.Success -> colors.success to colors.successTertiary
@@ -432,12 +457,13 @@ private fun StateChip(text: String, tone: Tone) {
         Tone.Info -> colors.accent to colors.accentTertiary
         Tone.Neutral -> colors.labelSecondary to colors.bgLayer3
     }
+    // A chip is one word or two: it is never squeezed to fewer letters. Where it is longer than the
+    // line it wraps within the chip instead.
     Text(
         text,
         style = DsType.caption11Strong,
         color = foreground,
-        maxLines = 1,
-        modifier = Modifier
+        modifier = modifier
             .clip(DsShapes.pillFull)
             .background(background)
             .padding(horizontal = 8.dp, vertical = 2.dp),
@@ -510,17 +536,21 @@ private fun repeatText(rule: ScheduleRepeat): String = when (rule) {
 // ---- Background command ---------------------------------------------------------------------
 
 /** The background part of a terminal card: where the job stands and the way to open it. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun BackgroundJobLine(card: ToolCardView.TerminalCard, actions: ToolCardActions) {
     val colors = DsTheme.colors
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // The label and the state chip wrap onto separate lines when they do not fit side by side (a
+        // large text size): the chip used to be squeezed to one letter instead.
+        LabelWithChip {
             Text(
                 stringResource(if (card.running == true) R.string.chat_tool_background_starting else R.string.chat_tool_background),
                 style = DsType.small13,
                 color = colors.labelSecondary,
+                modifier = Modifier.align(Alignment.CenterVertically),
             )
-            actions.jobState?.let { StateChip(it, if (actions.jobRunning) Tone.Info else Tone.Neutral) }
+            actions.jobState?.let { StateChip(it, if (actions.jobRunning) Tone.Info else Tone.Neutral, Modifier.align(Alignment.CenterVertically)) }
         }
         val open = actions.openJob
         if (open != null && card.jobId != null) OpenRow(stringResource(R.string.chat_tool_open_job), FeatherIcons.Terminal, open)

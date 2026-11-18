@@ -183,15 +183,34 @@ class ChatToolMappingTest {
         assertTrue(q.questions.all { it.answers == null })
     }
 
+    // What this app sends when the reader dismisses the set (core `QUESTION_CANCELLED`, docs/PROTOCOL.md),
+    // recorded by the harness as the tool's error: seen in a device run's raw call data.
+    private fun dismissed() = result("Error: the user closed this question request", isError = true,
+        errorCode = "cancelled", errorName = "UserQuestionError")
+
+    // user-questions/src/index.ts `abortedQuestion`: the turn was stopped while the question was open.
+    private fun stoppedWhileOpen() = result("Error: ask_user_question was aborted before the user answered", isError = true,
+        errorCode = "ASK_ABORTED", errorName = "UserQuestionError")
+
     @Test
     fun `a dismissed or interrupted question set says so itself`() {
-        val cancelled = result("Error: cancelled", isError = true, errorCode = "ASK_CANCELLED")
+        val cancelled = dismissed()
         val q = card("ask_user_question", questions, cancelled) as QuestionCard
         assertEquals(QuestionOutcome.Cancelled, q.outcome)
         // The card states the outcome, so the transcript adds no red failure line under it.
         assertTrue(q.explainsFailure(cancelled))
-        val aborted = result("Error: aborted", isError = true, errorCode = "ASK_ABORTED")
-        assertEquals(QuestionOutcome.Interrupted, (card("ask_user_question", questions, aborted) as QuestionCard).outcome)
+        val aborted = stoppedWhileOpen()
+        val stopped = card("ask_user_question", questions, aborted) as QuestionCard
+        assertEquals(QuestionOutcome.Interrupted, stopped.outcome)
+        assertTrue(stopped.explainsFailure(aborted))
+    }
+
+    @Test
+    fun `the web client's own dismissal code is read the same way`() {
+        // ui-user-questions slots.ts: `reject('ASK_CANCELLED')`, "the user cancelled ask_user_question".
+        val web = result("Error: the user cancelled ask_user_question", isError = true,
+            errorCode = "ASK_CANCELLED", errorName = "UserQuestionError")
+        assertEquals(QuestionOutcome.Cancelled, (card("ask_user_question", questions, web) as QuestionCard).outcome)
     }
 
     @Test
@@ -486,7 +505,8 @@ class ChatToolMappingTest {
         assertTrue(term.failed)
         assertEquals("ls -la", term.title)
         assertNull(term.exitCode)
-        assertEquals(ToolFailure.Failed("Error: run_in_background is disabled for this deployment"), toolFailureOf(res))
+        // The app's own "Failed:" goes in front, so the tool's "Error:" is not said twice.
+        assertEquals(ToolFailure.Failed("run_in_background is disabled for this deployment"), toolFailureOf(res))
     }
 
     @Test
@@ -511,6 +531,19 @@ class ChatToolMappingTest {
     fun `an interrupted call reads as stopped not failed`() {
         // ui-tool tool-call-model.ts: error.code 'interrupted' is the stopped state.
         assertEquals(ToolFailure.Interrupted, toolFailureOf(result("Error: interrupted", isError = true, errorCode = "interrupted")))
+    }
+
+    @Test
+    fun `a command cut short by the Stop button reads as stopped not failed`() {
+        // The raw call data of a pwsh `Start-Sleep -Seconds 600` stopped on a device (the
+        // harness's `toolAbortedResult`): isError, "Error: tool call aborted", error { AbortError, ABORTED }.
+        val res = result("Error: tool call aborted", isError = true, errorCode = "ABORTED", errorName = "AbortError")
+        assertEquals(ToolFailure.Interrupted, toolFailureOf(res))
+        assertFalse(callFailed(call("pwsh", shellArgs()), res))
+        // The card still shows what ran.
+        val term = card("pwsh", shellArgs(), res) as ToolCardView.TerminalCard
+        assertTrue(term.failed)
+        assertEquals("ls -la", term.title)
     }
 
     @Test

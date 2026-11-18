@@ -47,6 +47,7 @@
     <string name="chat_tool_ask_answered">已回答 %1$d/%2$d</string>
     <string name="chat_tool_ask_cancelled">你关闭了这些问题</string>
     <string name="chat_tool_ask_interrupted">你回答前已停止</string>
+    <string name="chat_tool_ask_timed_out">未在时限内回答</string>
     <string name="chat_tool_ask_carried_on">智能体没有等待，继续往下做了</string>
     <string name="chat_tool_ask_closed">已关闭</string>
     <string name="chat_tool_ask_your_answer">你的回答：%1$s</string>

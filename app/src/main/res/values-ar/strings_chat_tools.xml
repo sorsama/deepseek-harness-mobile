@@ -62,6 +62,7 @@
     <string name="chat_tool_ask_answered">أُجيب عن %1$d من %2$d</string>
     <string name="chat_tool_ask_cancelled">أغلقتَ هذه الأسئلة</string>
     <string name="chat_tool_ask_interrupted">توقّف قبل أن تجيب</string>
+    <string name="chat_tool_ask_timed_out">انتهت المهلة دون إجابة</string>
     <string name="chat_tool_ask_carried_on">تابع الوكيل دون أن ينتظر</string>
     <string name="chat_tool_ask_closed">مغلق</string>
     <string name="chat_tool_ask_your_answer">إجابتك: %1$s</string>

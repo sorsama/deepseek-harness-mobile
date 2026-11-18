@@ -47,6 +47,7 @@
     <string name="chat_tool_ask_answered">ตอบแล้ว %1$d จาก %2$d</string>
     <string name="chat_tool_ask_cancelled">คุณปิดคำถามเหล่านี้แล้ว</string>
     <string name="chat_tool_ask_interrupted">หยุดก่อนที่คุณจะตอบ</string>
+    <string name="chat_tool_ask_timed_out">ไม่มีคำตอบภายในเวลา</string>
     <string name="chat_tool_ask_carried_on">เอเจนต์ทำต่อโดยไม่รอ</string>
     <string name="chat_tool_ask_closed">ปิดแล้ว</string>
     <string name="chat_tool_ask_your_answer">คำตอบของคุณ: %1$s</string>

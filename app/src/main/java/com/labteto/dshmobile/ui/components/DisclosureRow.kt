@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -71,6 +72,8 @@ fun DisclosureRow(
     /** Opens the row's [HoldMenu], on a row that toggles or on one with nothing to open. */
     onHold: (() -> Unit)? = null,
     holdLabel: String = "",
+    /** How many lines the summary may take; a row that is open can afford more than one. */
+    summaryMaxLines: Int = 1,
     content: (@Composable () -> Unit)? = null,
 ) {
     val colors = DsTheme.colors
@@ -154,13 +157,18 @@ fun DisclosureRow(
             }
             Spacer(Modifier.width(8.dp))
             val titleModifier = if (running) Modifier.shimmer(runningBrush(colors)) else Modifier
+            // With a summary, the title is capped at half the row and measured first, so the summary
+            // gets everything the title does not use. Two weights of 1 gave the summary only half
+            // however short the title was, and the figures it opens with ("2 of 5 done · 1 added")
+            // were cut at large text sizes and in languages with long words.
+            val shareWithSummary = if (summary != null) Modifier.atMostHalfWidth() else Modifier.weight(1f, fill = false)
             Text(
                 title,
                 style = DsType.std14,
                 color = colors.labelSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false).then(titleModifier),
+                modifier = shareWithSummary.then(titleModifier),
             )
             if (summary != null) {
                 Spacer(Modifier.width(6.dp))
@@ -170,7 +178,7 @@ fun DisclosureRow(
                     summary,
                     style = DsType.small13,
                     color = colors.labelTertiary,
-                    maxLines = 1,
+                    maxLines = summaryMaxLines,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
@@ -186,6 +194,13 @@ fun DisclosureRow(
             Column { content?.invoke() }
         }
     }
+}
+
+/** At most half of the width the parent offers; narrower when the content is. */
+private fun Modifier.atMostHalfWidth(): Modifier = layout { measurable, constraints ->
+    val limit = if (constraints.hasBoundedWidth) constraints.maxWidth / 2 else constraints.maxWidth
+    val placeable = measurable.measure(constraints.copy(maxWidth = limit.coerceAtLeast(constraints.minWidth)))
+    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
 }
 
 /** Fixed 16dp box so the icon and the state dot occupy the same column. */

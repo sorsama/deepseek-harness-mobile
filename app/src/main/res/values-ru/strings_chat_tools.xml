@@ -56,6 +56,7 @@
     <string name="chat_tool_ask_answered">Отвечено %1$d из %2$d</string>
     <string name="chat_tool_ask_cancelled">Вы закрыли эти вопросы</string>
     <string name="chat_tool_ask_interrupted">Остановлено до вашего ответа</string>
+    <string name="chat_tool_ask_timed_out">Ответа не дождались</string>
     <string name="chat_tool_ask_carried_on">Агент продолжил, не дожидаясь ответа</string>
     <string name="chat_tool_ask_closed">Закрыт</string>
     <string name="chat_tool_ask_your_answer">Ваш ответ: %1$s</string>

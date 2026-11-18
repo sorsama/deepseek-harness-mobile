@@ -56,11 +56,14 @@ enum class QuestionOutcome {
     /** Answered (some answers may have been skipped). */
     Answered,
 
-    /** The reader dismissed the questions (`ASK_CANCELLED`). */
+    /** The reader dismissed the questions (`cancelled` from this app, `ASK_CANCELLED` from the web client). */
     Cancelled,
 
-    /** The turn was stopped while they were open (`ASK_ABORTED`). */
+    /** The turn was stopped while they were open (`ASK_ABORTED`, or any abort form of the harness). */
     Interrupted,
+
+    /** Nobody answered in time (`ASK_TIMED_OUT`). */
+    TimedOut,
 
     /** The agent carried on without waiting; the answer may still come later. */
     CarriedOn,

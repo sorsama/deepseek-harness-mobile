@@ -71,7 +71,9 @@ internal fun ToolFailureLine(failure: ToolFailure) {
         val (text, color) = when (failure) {
             ToolFailure.Interrupted -> stringResource(R.string.chat_tool_stopped) to colors.warnLabel
             is ToolFailure.Denied -> stringResource(permissionDenialText(failure.denial)) to colors.error
-            is ToolFailure.Failed -> (failure.message?.let { stringResource(R.string.chat_tool_failed_with, it) }
+            // The tool's own words are English text from the tool (a path, a command, a quoted name):
+            // isolated left to right as a whole, so a right-to-left sentence around it cannot reorder it.
+            is ToolFailure.Failed -> (failure.message?.let { stringResource(R.string.chat_tool_failed_with, technicalDisplay(it)) }
                 ?: stringResource(R.string.chat_tool_failed)) to colors.error
         }
         Text(text, style = DsType.caption11, color = color)

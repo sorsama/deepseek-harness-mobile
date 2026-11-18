@@ -50,6 +50,7 @@
     <string name="chat_tool_ask_answered">%2$d में से %1$d के जवाब दिए</string>
     <string name="chat_tool_ask_cancelled">आपने ये सवाल बंद कर दिए</string>
     <string name="chat_tool_ask_interrupted">आपके जवाब से पहले रोक दिया गया</string>
+    <string name="chat_tool_ask_timed_out">समय पर जवाब नहीं मिला</string>
     <string name="chat_tool_ask_carried_on">एजेंट बिना रुके आगे बढ़ गया</string>
     <string name="chat_tool_ask_closed">बंद</string>
     <string name="chat_tool_ask_your_answer">आपका जवाब: %1$s</string>

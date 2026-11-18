@@ -4,6 +4,7 @@ import com.labteto.dshmobile.core.permission.PermissionDenial
 import com.labteto.dshmobile.core.permission.permissionDenialOf
 import com.labteto.dshmobile.core.session.ToolCallNode
 import com.labteto.dshmobile.core.session.ToolResultNode
+import com.labteto.dshmobile.core.session.readToolResult
 import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.ui.components.DetailField
 import com.labteto.dshmobile.ui.components.DetailItem
@@ -176,21 +177,14 @@ private fun givenAnswers(value: JsonElement?): List<GivenAnswer>? {
 /**
  * An `ask_user_question` call: the questions, paired with the answers once there are any.
  *
- * The verdict codes are the harness's own (`ASK_CANCELLED` when the reader dismissed the set,
- * `ASK_ABORTED` when the turn was stopped while it was open), and a `{ pending: true }` result is a
- * timed question the agent carried on past.
+ * How a question ended is read from the error the harness recorded ([questionVerdictOf]); a
+ * `{ pending: true }` result is a timed question the agent carried on past.
  */
 internal fun questionCard(args: JsonObject, result: ToolResultNode?): QuestionCard? {
     val asked = askedQuestions(args) ?: return null
     val lines = asked.map { it.line }
     if (result == null) return QuestionCard(lines, QuestionOutcome.Waiting)
-    if (result.isError) {
-        return when (result.errorCode) {
-            "ASK_CANCELLED" -> QuestionCard(lines, QuestionOutcome.Cancelled)
-            "ASK_ABORTED" -> QuestionCard(lines, QuestionOutcome.Interrupted)
-            else -> QuestionCard(lines, QuestionOutcome.Settled)
-        }
-    }
+    if (result.isError) return QuestionCard(lines, questionVerdictOf(result) ?: QuestionOutcome.Settled)
     val text = singleResultText(result) ?: return QuestionCard(lines, QuestionOutcome.Settled)
     val value = runCatching { WireJson.parseToJsonElement(text) }.getOrNull()
     val obj = value as? JsonObject
@@ -209,6 +203,30 @@ internal fun questionCard(args: JsonObject, result: ToolResultNode?): QuestionCa
         lines
     }
     return QuestionCard(paired, QuestionOutcome.Answered, answered = answered, total = answers.size)
+}
+
+/**
+ * How a failed `ask_user_question` ended, from the error the harness recorded, or null when the
+ * error is none of the three endings a reader can cause. The codes are the real ones:
+ * - dismissed: the web client rejects with `ASK_CANCELLED` (`ui-user-questions`, `slots.ts`); this
+ *   app rejects the request with code `cancelled` and the message "the user closed this question
+ *   request" (`QUESTION_CANCELLED`), which the harness records as `{ name: UserQuestionError, code:
+ *   cancelled }` (seen on a device run, `docs/PROTOCOL.md`).
+ * - stopped while open: `ASK_ABORTED` (`user-questions/src/index.ts`), and any other form a turn's
+ *   stop takes ([isAbortedResult]).
+ * - timed out: `ASK_TIMED_OUT`. A timed `ask_user_question` turns its own timeout into a
+ *   `{ pending: true }` result, so this code only reaches a result when a client rejected an
+ *   untimed question that way.
+ */
+internal fun questionVerdictOf(result: ToolResultNode?): QuestionOutcome? {
+    if (result == null || !result.isError) return null
+    val code = result.errorCode
+    return when {
+        code == "ASK_CANCELLED" || code == "cancelled" -> QuestionOutcome.Cancelled
+        code == "ASK_TIMED_OUT" -> QuestionOutcome.TimedOut
+        isAbortedResult(result) -> QuestionOutcome.Interrupted
+        else -> null
+    }
 }
 
 // ============================================================================================
@@ -570,14 +588,51 @@ private fun shortTime(time: String): String = time.removeSuffix(":00.000").remov
 
 /** Why a settled call did not do what it set out to, in terms the transcript can word plainly. */
 internal sealed interface ToolFailure {
-    /** The turn was stopped while the call ran (`error.code` `interrupted`). */
+    /** The turn was stopped while the call ran or before it started ([isAbortedResult]). */
     data object Interrupted : ToolFailure
 
     /** A permission gate or Auto review refused it, so it never ran. */
     data class Denied(val denial: PermissionDenial, val reason: String?) : ToolFailure
 
-    /** It ran and failed; [message] is the first line of the tool's own failure text. */
+    /** It ran and failed; [message] is the first line of the tool's own failure text, without its `Error:` prefix. */
     data class Failed(val message: String?) : ToolFailure
+}
+
+/** `error.code` the harness records for a call cancelled after its body started (`TOOL_ABORTED`). */
+internal const val TOOL_ABORTED_CODE = "ABORTED"
+
+/** `error.code` for a call cancelled before its body started (`TOOL_ABORTED_BEFORE_DISPATCH`). */
+internal const val TOOL_ABORTED_BEFORE_DISPATCH_CODE = "ABORTED_BEFORE_DISPATCH"
+
+/** `error.name` of the canonical abort results (`core/tools/src/index.ts`, `toolAbortedResult`). */
+internal const val ABORT_ERROR_NAME = "AbortError"
+
+/**
+ * Whether [result] says the turn was stopped while the call was pending, in any form the harness
+ * uses (0.2.1-rc.2, `packages/core/tools/src/index.ts`, `agent-loop/src/tool-calls.ts`):
+ * - `{ name: AbortError, code: ABORTED }`, text "Error: tool call aborted": the Stop button while
+ *   the tool ran. `tool-bash` and `tool-pwsh` throw the same pair themselves.
+ * - `{ name: AbortError, code: ABORTED_BEFORE_DISPATCH }`, "tool call aborted before dispatch": a
+ *   call the stop reached before it started, or one the scheduler skipped.
+ * - a tool's own abort code, which by the harness's convention ends in `_ABORTED`
+ *   (`ASK_ABORTED`, `WEB_ABORTED`, `FS_ABORTED`).
+ * - `interrupted`, from records written before these existed.
+ */
+internal fun isAbortedResult(result: ToolResultNode?): Boolean {
+    if (result == null || !result.isError) return false
+    val code = result.errorCode
+    return code == TOOL_ABORTED_CODE || code == TOOL_ABORTED_BEFORE_DISPATCH_CODE || code == "interrupted" ||
+        code?.endsWith("_ABORTED") == true || result.errorName == ABORT_ERROR_NAME
+}
+
+/**
+ * Whether a settled call counts in the "N failed" of its group's header. A call the turn's stop cut
+ * short, and a question the reader closed or left unanswered, are outcomes the row states in their
+ * own plain words; none of them is a failure.
+ */
+internal fun callFailed(call: ToolCallNode, result: ToolResultNode?): Boolean {
+    if (result == null || !result.isError || isAbortedResult(result)) return false
+    return !(call.name == "ask_user_question" && questionVerdictOf(result) != null)
 }
 
 /**
@@ -588,12 +643,68 @@ internal sealed interface ToolFailure {
  */
 internal fun toolFailureOf(result: ToolResultNode?): ToolFailure? {
     if (result == null || !result.isError) return null
-    if (result.errorCode == "interrupted") return ToolFailure.Interrupted
+    if (isAbortedResult(result)) return ToolFailure.Interrupted
     permissionDenialOf(result)?.let { denial ->
         val reason = result.errorReason?.trim()?.replace(Regex("[\\r\\n\\u2028\\u2029]+"), " ")?.takeIf { it.isNotEmpty() }
         return ToolFailure.Denied(denial, reason)
     }
-    return ToolFailure.Failed(toolFailureMessage(result.content)?.let(::firstLine))
+    return ToolFailure.Failed(plainFailureMessage(toolFailureMessage(result.content)))
+}
+
+/** `Error:`, `TypeError:`, `Exception:` and the like at the start of a tool's failure text. */
+private val ERROR_PREFIX = Regex("^(?:[A-Za-z_][A-Za-z0-9_.]*(?:Error|Exception)|Error|error|ERROR|Exception)\\s*:\\s*")
+
+/** The longest failure line the transcript lays out; the whole text stays in the output and the hold menu. */
+internal const val FAILURE_LINE_MAX_CHARS = 240
+
+/**
+ * A tool's failure text as one plain line to put after the app's own "Failed:". The harness renders
+ * a thrown error as `Error: <message>`, so the app's label and the tool's would stack up as
+ * "Failed: Error: …"; the prefix is dropped here. Only the first line is kept, cut to
+ * [FAILURE_LINE_MAX_CHARS]. Null when nothing is left.
+ */
+internal fun plainFailureMessage(text: String?): String? {
+    if (text == null) return null
+    var line = firstLine(text)
+    // Bounded: "Error: Error: x" is one prefix said twice, not a loop to trust.
+    repeat(3) {
+        val stripped = ERROR_PREFIX.replaceFirst(line, "")
+        if (stripped == line) return@repeat
+        line = stripped
+    }
+    line = line.trim()
+    if (line.isEmpty()) return null
+    if (line.length <= FAILURE_LINE_MAX_CHARS) return line
+    val cut = line.take(FAILURE_LINE_MAX_CHARS).let { if (it.last().isHighSurrogate()) it.dropLast(1) else it }
+    return cut.trimEnd() + "…"
+}
+
+/**
+ * Whether the transcript draws an Output row for the call: its card does not already say what the
+ * result does, the failure line is not the same words, and there is text to show.
+ */
+internal fun showsOutputRow(card: ToolCardView, result: ToolResultNode?, failure: ToolFailure?): Boolean {
+    val content = result?.content ?: return false
+    if (card.coversOutput() || outputRepeatsFailure(result, failure)) return false
+    return readToolResult(content)?.text?.isNotBlank() == true
+}
+
+/**
+ * Whether the output of a failed call says nothing its failure line does not: a single line with the
+ * same words. The unknown tool's `Error: unknown tool "x"` was drawn as the failure line and again as
+ * the Output text right above it. Output with more to say (a second line, a trace) is kept.
+ */
+internal fun outputRepeatsFailure(result: ToolResultNode?, failure: ToolFailure?): Boolean {
+    if (result == null || failure == null || !result.isError) return false
+    val text = readToolResult(result.content)?.text?.trim() ?: return false
+    if (text.isEmpty() || text.contains('\n')) return false
+    val plain = plainFailureMessage(text)
+    return when (failure) {
+        is ToolFailure.Failed -> plain != null && plain == failure.message
+        // The canonical abort sentences; the stopped line already says it.
+        ToolFailure.Interrupted -> plain != null && (plain.startsWith("tool call aborted") || plain == "interrupted")
+        is ToolFailure.Denied -> false
+    }
 }
 
 private val BACKGROUND_STARTED = Regex("^started background job (\\S+)")
@@ -658,9 +769,13 @@ internal fun ToolCardView.coversOutput(): Boolean = when (this) {
     else -> false
 }
 
-/** Whether a card speaks for its own failure, so the transcript adds no failure line under it. */
+/**
+ * Whether a card speaks for its own ending, so the transcript adds no failure line under it: a
+ * question the reader closed, one that timed out, and one the turn's stop cut short each say so in
+ * the header and the body.
+ */
 internal fun ToolCardView.explainsFailure(result: ToolResultNode?): Boolean =
-    this is QuestionCard && (result?.errorCode == "ASK_CANCELLED" || result?.errorCode == "ASK_ABORTED")
+    this is QuestionCard && questionVerdictOf(result) != null
 
 /** The most recent `todo_write` list before [beforeSeq], for the task-list diff; null when none. */
 internal fun previousTodoList(nodes: List<com.labteto.dshmobile.core.session.ChatNode>, beforeSeq: Long): List<TodoEntry>? =
