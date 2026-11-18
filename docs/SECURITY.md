@@ -341,6 +341,40 @@ travels in the clear.
 The app keeps no copy: it reads the picked document once, at upload time, and
 holds only the receipt the harness answered with until the message is sent.
 
+## Dictation
+
+The message box has a microphone button, on phones that have a speech recognition service. It
+uses Android's own `SpeechRecognizer`, the service the phone has chosen for it, and nothing else.
+
+- **Where the audio goes.** To that service, and nowhere else. On many phones it is Google's
+  speech service, which can recognise on the device when the language's offline model is
+  installed (the app asks for that) and otherwise sends the audio to an online service run by the
+  phone's maker. That choice is the phone's, not the app's, which is why the first time you use the
+  microphone the app says so, in one sentence, before it asks for anything. **The audio is not sent
+  to the harness**, to the relay or to any server this app talks to, and the app adds no speech
+  library and no network request of its own for it.
+- **What stays.** The recognised text goes into the message box as ordinary text, at the caret,
+  and nothing is sent until you send it. The app records no audio to disk, does not use the raw
+  audio the service offers, and does not log what was recognised. The text that is on screen while
+  you are still speaking is not part of the draft until you stop.
+- **The permission.** `RECORD_AUDIO`, requested the first time you tap the microphone, never on
+  launch, and declared optional in hardware terms (`android.hardware.microphone` is not required),
+  so a device without a microphone can still install the app. If you refuse it the app says so once
+  and does not ask again by itself; if Android will no longer show the dialog, the message offers
+  **Open settings** instead.
+- **When it listens.** Only from a tap (or Ctrl+M with a keyboard), only while the app is in front
+  and its window has focus, and only for one message box. It stops, and discards what it heard, when
+  the app goes to the background or the screen locks, when another window or a system dialog covers
+  it, when you switch session, when the message box leaves the screen, and when a call or another
+  app takes the audio. The app holds transient audio focus while it listens, so music pauses
+  instead of being picked up.
+- **Switching it off.** **Settings, Chat, Dictation button.** The button is also absent, and the
+  setting explains why, on a phone with no recognition service.
+
+The official web client has a similar, experimental voice input that records in the browser and
+sends the audio to the harness, which transcribes it on the host. DSH Mobile does not use that
+route: dictation here never reaches the harness.
+
 ## Updating inside the app
 
 The update dialog (and **Settings → About**) can download and install a new
@@ -445,6 +479,8 @@ with one exception:
   The harness it runs then makes the requests you ask it to, like any harness:
   the model provider you configured, `git clone` addresses you type, and whatever
   the agent's commands fetch.
+- **Dictation**, when you tap the microphone: the phone's own speech service, as described in
+  **Dictation**. Not a connection the app makes, and not to the harness.
 - **Scanning** probes only your own device's IPv4 /24 — with a TCP connect
   followed by one argument-free `session/canOpenWorkspacePath` call in
   local-network mode, or by `/relay/health` in relay mode. Relay mode browses mDNS `_dsh._tcp` first and only sweeps if that

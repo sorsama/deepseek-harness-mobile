@@ -5,6 +5,23 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **Dictate a message.** On a phone that has a speech recognition service, the message box has a
+  microphone button. Tap it to start listening and tap again to stop: what you said goes into the
+  draft at the caret as ordinary text, with a space only where one belongs (Thai, Chinese and
+  Japanese are joined without one), and nothing is sent. While you speak, an animated level and a
+  **Listening…** line show it is on, what has been heard so far appears in the box in italics and
+  underlined, and **Cancel** throws the take away. The draft is never touched by a cancel, an error
+  or an interruption. It uses the phone's own speech service and prefers its offline model; the
+  audio is not sent to the harness, and the first time you use it the app says so. The microphone
+  permission is asked for on the first tap only; if it is refused for good, the message offers
+  **Open settings**. Dictation stops when the app goes to the background, another window covers it,
+  you switch session, or a call takes the audio. Hold the microphone, or use Settings, Chat,
+  **Dictation language**, to choose the language (the app's, the phone's, or any of the 11); Ctrl+M
+  starts and stops it from a keyboard. **Settings, Chat, Dictation button** turns it off, and says
+  why it is missing on a phone without a speech service.
+
 ## [0.23.0] - 2026-11-17
 
 ![Three phones: the Subagents sheet with its Close button, a chat at Fully expanded, and the Stop and archive dialog](docs/images/releases/0.23.0/devices/hero-whats-new.png)
