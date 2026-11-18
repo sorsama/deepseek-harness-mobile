@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="code_wrap">ตัดบรรทัดอัตโนมัติ</string>
+    <string name="output_viewer_search">ค้นหาในผลลัพธ์</string>
+    <string name="output_viewer_prev">รายการที่พบก่อนหน้า</string>
+    <string name="output_viewer_next">รายการที่พบถัดไป</string>
+    <string name="output_viewer_matches">%1$d จาก %2$s</string>
+    <string name="output_viewer_no_matches">ไม่พบ</string>
+    <string name="chat_state_running">กำลังทำงาน</string>
+    <string name="chat_state_done">เสร็จแล้ว</string>
+    <string name="chat_state_failed">ล้มเหลว</string>
+    <string name="chat_state_stopped">หยุดแล้ว</string>
+</resources>

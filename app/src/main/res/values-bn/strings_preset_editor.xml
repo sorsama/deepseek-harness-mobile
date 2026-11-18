@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">বিষয়বস্তু দেখুন</string>
+    <string name="preset_comp_open_for">%1$s-এর বিষয়বস্তু দেখুন</string>
+    <string name="preset_comp_subtitle">শুধু পড়া যাবে। এই হোস্ট প্লাগইন বান্ডেলের মাধ্যমে প্রিসেট বদলায়।</string>
+    <string name="preset_comp_plugins">প্লাগইন: %1$d</string>
+    <string name="preset_comp_conditional">শর্তসাপেক্ষ: %1$d</string>
+    <string name="preset_comp_off">বন্ধ: %1$d</string>
+    <string name="preset_comp_always_on">সবসময় চালু</string>
+    <string name="preset_comp_state_off">বন্ধ</string>
+    <string name="preset_comp_state_conditional">শর্তসাপেক্ষ</string>
+    <string name="preset_comp_condition">হোস্টে এটি সত্য না হলে লোড হয়: %1$s</string>
+    <string name="preset_comp_entry_unnamed">প্লাগইন %1$d</string>
+    <string name="preset_comp_settings">সেটিংস (YAML)</string>
+    <string name="preset_comp_raw">এই প্রিসেটের প্লাগইন</string>
+    <string name="preset_comp_copy_all">সবকিছু YAML হিসেবে কপি করুন</string>
+    <string name="preset_comp_loading">প্রিসেট পড়া হচ্ছে</string>
+    <string name="preset_comp_failed">এই প্রিসেট পড়া যায়নি: %1$s</string>
+    <string name="preset_comp_missing">এই প্রিসেটটি আর হোস্টে নেই।</string>
+    <string name="preset_comp_unsupported">এই হোস্ট প্রিসেটের ভেতরে কী আছে তা দেখাতে পারে না।</string>
+    <string name="preset_comp_retry">আবার চেষ্টা করুন</string>
+    <string name="preset_comp_empty">এই প্রিসেটে কোনো প্লাগইন নেই।</string>
+</resources>

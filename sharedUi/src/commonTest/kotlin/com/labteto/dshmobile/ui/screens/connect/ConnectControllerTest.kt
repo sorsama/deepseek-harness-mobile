@@ -7,6 +7,7 @@ import com.labteto.dshmobile.connection.DiscoveredHost
 import com.labteto.dshmobile.connection.HostConfig
 import com.labteto.dshmobile.connection.ProbeOutcome
 import com.labteto.dshmobile.connection.ProbeTimeouts
+import com.labteto.dshmobile.connection.belongsTo
 import com.labteto.dshmobile.connection.harnessBaseUrl
 import com.labteto.dshmobile.core.wire.SessionExchange
 import com.labteto.dshmobile.core.wire.dto.HostDescription
@@ -250,8 +251,13 @@ class ConnectControllerTest {
         runCurrent()
         val remembered = rig.store.hostList.value.single()
         assertTrue(remembered.isLoopback)
-        // Filed under the mode the Connect screen on this platform can open: not the local network list.
-        assertTrue(rig.controller.state.value.visibleHosts.isEmpty())
+        // Filed under the mode the Connect screen on this platform can open, not the local network list...
+        assertFalse(remembered.belongsTo(ConnectMode.LAN))
+        assertTrue(remembered.belongsTo(ConnectMode.LOOPBACK))
+        // ...and the screen is on that mode now, so it is the one that lists the host (and the one the
+        // next launch opens on). It used to stay on Local network, listing nothing.
+        assertEquals(ConnectMode.LOOPBACK, rig.controller.state.value.mode)
+        assertEquals(listOf(remembered), rig.controller.state.value.visibleHosts)
     }
 
     @Test
@@ -413,5 +419,138 @@ class ConnectControllerTest {
         rig.builtIn.mutable.value = BuiltInHarnessState(running(StartSignIn.SIGNED_IN))
         runCurrent()
         assertTrue(rig.link.connected.isEmpty())
+    }
+
+    // ---- A loopback pairing and the process dying ---------------------------------------------
+
+    @Test
+    fun `a loopback address typed on Local network moves the screen to This phone`() = runTest {
+        val rig = Rig(this)
+        runCurrent()
+        assertEquals(ConnectMode.LAN, rig.controller.state.value.mode)
+        rig.network.outcome = ProbeOutcome.Reachable(null)
+        rig.controller.connectManual("127.0.0.1:3181", "3080")
+        runCurrent()
+        // The record is filed under This phone; the mode the screen opens on has to follow it, or the
+        // next launch lists nothing and auto-connect never looks at it.
+        assertTrue(rig.store.hostList.value.single().isLoopback)
+        assertEquals(ConnectMode.LOOPBACK, rig.controller.state.value.mode)
+        assertEquals(ConnectMode.LOOPBACK, rig.store.current.connectMode)
+        assertEquals(3181, rig.controller.state.value.loopbackPort)
+        assertEquals(listOf("127.0.0.1:3181"), rig.link.connected.map { it.authority })
+    }
+
+    @Test
+    fun `a harness that wants a token is also remembered under This phone and the screen follows`() = runTest {
+        val rig = Rig(this)
+        runCurrent()
+        rig.network.outcome = ProbeOutcome.Unauthenticated
+        rig.controller.connectManual("localhost", "3080")
+        runCurrent()
+        assertTrue(rig.store.hostList.value.single().isLoopback)
+        assertEquals(ConnectMode.LOOPBACK, rig.store.current.connectMode)
+        // The refusal is still the one the screen reports.
+        assertEquals(ConnectFailure.Unauthenticated, rig.controller.state.value.failure)
+    }
+
+    @Test
+    fun `other addresses leave the mode alone and so does the platform with no such mode`() = runTest {
+        val lan = Rig(this)
+        runCurrent()
+        lan.network.outcome = ProbeOutcome.Reachable(null)
+        lan.controller.connectManual("10.0.0.5:3081", "3080")
+        runCurrent()
+        assertEquals(ConnectMode.LAN, lan.controller.state.value.mode)
+        assertEquals(ConnectMode.LAN, lan.store.current.connectMode)
+
+        val noMode = Rig(this, loopbackIsThisPhone = false)
+        runCurrent()
+        noMode.network.outcome = ProbeOutcome.Reachable(null)
+        noMode.controller.connectManual("127.0.0.1:3181", "3080")
+        runCurrent()
+        assertEquals(ConnectMode.LAN, noMode.controller.state.value.mode)
+        assertEquals(ConnectMode.LAN, noMode.store.current.connectMode)
+    }
+
+    @Test
+    fun `a pairing made with a pasted link survives the process dying and the app reconnects`() = runTest {
+        val store = FakeStore()
+        val network = FakeNetwork().apply { outcome = ProbeOutcome.Unauthenticated }
+        val first = ConnectController(backgroundScope, store, network, FakeLink(), FakeSignIn(SessionExchange.Granted("cookie")), NoLoopbackHarness, true)
+        runCurrent()
+        // The link `dsh web` prints, token included, pasted into the Local network field.
+        first.connectManual("http://127.0.0.1:3080/?token=abc123", "3080")
+        runCurrent()
+        assertEquals(1, store.hostList.value.size)
+
+        // The process dies. A new one opens over the same storage, and the harness still answers with the cookie it holds.
+        network.outcome = ProbeOutcome.Reachable(HostDescription("/home/demo"))
+        val link = FakeLink()
+        val second = ConnectController(backgroundScope, store, network, link, FakeSignIn(), NoLoopbackHarness, true)
+        runCurrent()
+        assertEquals(ConnectMode.LOOPBACK, second.state.value.mode)
+        assertEquals(listOf("127.0.0.1:3080"), link.connected.map { it.authority })
+    }
+
+    @Test
+    fun `a loopback host is not listed or reconnected to under Local network by design`() = runTest {
+        // What the device run saw: the record was kept, but the screen opened on a mode that cannot show it.
+        val store = FakeStore()
+        store.rememberHost("127.0.0.1", "127.0.0.1", 3080, true, false, null, "")
+        store.current = ConnectSettings(connectMode = ConnectMode.LAN)
+        val network = FakeNetwork().apply { outcome = ProbeOutcome.Reachable(null) }
+        val link = FakeLink()
+        val controller = ConnectController(backgroundScope, store, network, link, FakeSignIn(), NoLoopbackHarness, true)
+        runCurrent()
+        assertTrue(controller.state.value.visibleHosts.isEmpty())
+        assertTrue(link.connected.isEmpty())
+        // The same storage on This phone reconnects.
+        store.current = ConnectSettings(connectMode = ConnectMode.LOOPBACK)
+        val onThisPhone = FakeLink()
+        ConnectController(backgroundScope, store, network, onThisPhone, FakeSignIn(), NoLoopbackHarness, true)
+        runCurrent()
+        assertEquals(listOf("127.0.0.1:3080"), onThisPhone.connected.map { it.authority })
+    }
+
+    @Test
+    fun `an address from another device is remembered and listed after the process dies`() = runTest {
+        // The 10.0.2.2 pairing of the same run came back by itself: it is a Local network host.
+        val store = FakeStore()
+        val network = FakeNetwork().apply { outcome = ProbeOutcome.Reachable(HostDescription("/home/demo")) }
+        val first = ConnectController(backgroundScope, store, network, FakeLink(), FakeSignIn(), NoLoopbackHarness, true)
+        runCurrent()
+        first.connectManual("10.0.2.2:3080", "3080")
+        runCurrent()
+        val link = FakeLink()
+        val second = ConnectController(backgroundScope, store, network, link, FakeSignIn(), NoLoopbackHarness, true)
+        runCurrent()
+        assertEquals(listOf("10.0.2.2:3080"), second.state.value.visibleHosts.map { it.authority })
+        assertEquals(listOf("10.0.2.2:3080"), link.connected.map { it.authority })
+    }
+
+    // ---- The built-in harness after the process dies, in the middle of a sign-in ----------------
+
+    private val thisPhone = ConnectSettings(connectMode = ConnectMode.LOOPBACK)
+
+    @Test
+    fun `a built-in harness that kept running is connected to when the app comes back`() = runTest {
+        // The harness is a child of a foreground service, so swiping the app away leaves it running. The
+        // app opens on This phone, finds it answering with the cookie it holds, and reconnects.
+        val rig = BuiltInRig(this, running(StartSignIn.SIGNED_IN), thisPhone)
+        rig.network.outcome = ProbeOutcome.Reachable(HostDescription("/home/demo"))
+        runCurrent()
+        assertEquals(listOf("127.0.0.1:3080"), rig.link.connected.map { it.authority })
+    }
+
+    @Test
+    fun `a built-in harness that went down with the process is not started on its own`() = runTest {
+        // If the whole process died the harness died with it, and a sign-in attempt in progress was
+        // only in its memory. Nothing starts it unless "start when the app opens" is on: the card says Start.
+        val rig = BuiltInRig(this, RuntimeState.Stopped(installedRuntime), thisPhone)
+        rig.network.outcome = ProbeOutcome.Refused
+        runCurrent()
+        assertTrue(rig.builtIn.calls.isEmpty())
+        assertTrue(rig.link.connected.isEmpty())
+        assertEquals(RuntimeAction.Start, rig.controller.state.value.builtInCard?.primary)
     }
 }

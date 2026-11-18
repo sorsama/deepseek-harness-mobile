@@ -322,8 +322,9 @@ fun isDsDark(customization: ThemeCustomization): Boolean = when (customization.p
  * at all the app is silent.
  *
  * [indication] lets a host decorate the platform's own click indication, which is read from the
- * Material theme's local and handed in with the accent colour. Android uses it to draw a keyboard
- * focus ring on every clickable at once; left null, Material's stays untouched.
+ * Material theme's local and handed in with the accent colour. Android replaces it with the design
+ * system's press and hover fills and a keyboard focus ring, on every clickable at once; left null,
+ * Material's stays untouched.
  */
 @Composable
 fun DshTheme(

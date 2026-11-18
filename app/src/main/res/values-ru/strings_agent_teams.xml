@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="team_title">Команда агентов</string>
+    <string name="team_chip">Команда</string>
+    <string name="team_beta_badge">Бета</string>
+    <string name="team_tab_members">Участники (%1$d)</string>
+    <string name="team_tab_tasks">Задачи (%1$d)</string>
+    <string name="team_read_only_note">Агенты сами обновляют этот список. Чтобы изменить команду или задачи, попросите об этом ведущего в этом чате.</string>
+    <string name="team_failure">Часть записи команды не удалось прочитать, поэтому данные могут быть устаревшими.</string>
+    <string name="team_members_empty_title">Участников пока нет</string>
+    <string name="team_members_empty_body">Попросите агента добавить участника для части работы.</string>
+    <string name="team_member_running">Работает</string>
+    <string name="team_member_idle">Не активен</string>
+    <string name="team_member_starting">Запускается</string>
+    <string name="team_member_failed">Не удалось запустить</string>
+    <string name="team_member_status_tasks">%1$s · Открытых задач: %2$d</string>
+    <string name="team_lead">Ведущий</string>
+    <string name="team_open_chat">Открыть чат</string>
+    <string name="team_this_chat">Этот чат</string>
+    <string name="team_tasks_empty_title">Общих задач пока нет</string>
+    <string name="team_tasks_empty_body">Когда агенты распределят работу, их задачи появятся здесь.</string>
+    <string name="team_group_in_progress">В работе</string>
+    <string name="team_group_ready">Можно начинать</string>
+    <string name="team_group_waiting">Ожидают</string>
+    <string name="team_group_other">Другие</string>
+    <string name="team_group_done">Готово</string>
+    <string name="team_task_unassigned">Не назначена</string>
+    <string name="team_task_waiting_on">Ждёт: %1$s</string>
+    <string name="team_task_no_details">Нет описания.</string>
+    <string name="team_task_depends_on">Зависит от</string>
+    <string name="team_task_dependency_done">%1$s (готово)</string>
+    <string name="team_task_dependency_open">%1$s (ещё не готово)</string>
+    <string name="team_task_files">Файлы, которые она изменит</string>
+    <string name="team_task_overlap">Затрагивает те же файлы, что и «%1$s», которая уже в работе</string>
+    <string name="team_task_in_this_chat">Ведущий занимается этим в этом чате.</string>
+    <string name="team_task_open_owner">Открыть чат с %1$s</string>
+</resources>

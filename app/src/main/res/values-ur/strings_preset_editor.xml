@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">مواد دیکھیں</string>
+    <string name="preset_comp_open_for">%1$s کا مواد دیکھیں</string>
+    <string name="preset_comp_subtitle">صرف پڑھنے کے لیے۔ یہ ہوسٹ پلگ ان بنڈلز کے ذریعے پری سیٹ بدلتا ہے۔</string>
+    <string name="preset_comp_plugins">پلگ انز: %1$d</string>
+    <string name="preset_comp_conditional">شرط والے: %1$d</string>
+    <string name="preset_comp_off">بند: %1$d</string>
+    <string name="preset_comp_always_on">ہمیشہ آن</string>
+    <string name="preset_comp_state_off">بند</string>
+    <string name="preset_comp_state_conditional">شرط پر منحصر</string>
+    <string name="preset_comp_condition">ہوسٹ پر یہ درست نہ ہو تو لوڈ ہوتا ہے: %1$s</string>
+    <string name="preset_comp_entry_unnamed">پلگ ان %1$d</string>
+    <string name="preset_comp_settings">سیٹنگز (YAML)</string>
+    <string name="preset_comp_raw">اس پری سیٹ کے پلگ انز</string>
+    <string name="preset_comp_copy_all">سب کچھ YAML کے طور پر کاپی کریں</string>
+    <string name="preset_comp_loading">پری سیٹ پڑھا جا رہا ہے</string>
+    <string name="preset_comp_failed">یہ پری سیٹ پڑھا نہیں جا سکا: %1$s</string>
+    <string name="preset_comp_missing">یہ پری سیٹ اب ہوسٹ پر موجود نہیں۔</string>
+    <string name="preset_comp_unsupported">یہ ہوسٹ پری سیٹ کا مواد نہیں دکھا سکتا۔</string>
+    <string name="preset_comp_retry">دوبارہ کوشش کریں</string>
+    <string name="preset_comp_empty">اس پری سیٹ میں کوئی پلگ ان نہیں ہے۔</string>
+</resources>

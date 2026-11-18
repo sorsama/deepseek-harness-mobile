@@ -80,4 +80,12 @@
     <string name="ux_a_save_error">یہ آٹومیشن محفوظ نہیں ہوئی۔ قاعدہ تازہ کر کے دوبارہ کوشش کریں۔</string>
     <string name="ux_a_delete_error">یہ آٹومیشن حذف نہیں ہوئی۔ فہرست تازہ کر کے دوبارہ کوشش کریں۔</string>
     <string name="ux_a_last_run">آخری بار چلایا گیا: %1$s</string>
+    <string name="plugins_filter_on">فعال %1$d</string>
+    <string name="plugins_filter_off">غیر فعال %1$d</string>
+    <string name="plugins_count_on">%2$d&#160;میں&#160;سے&#160;%1$d&#160;فعال</string>
+    <string name="plugins_open_details">تفصیلات کھولیں</string>
+    <string name="plugins_more_matches">+%1$d مزید</string>
+    <string name="plugins_no_matches">کوئی نتیجہ نہیں ملا</string>
+    <string name="plugins_modules_need_bundle_on">یہ بنڈل بند ہے۔ اس کے ماڈیول الگ الگ چالو یا بند کرنے کے لیے پہلے بنڈل چالو کریں۔</string>
+    <string name="plugins_modules_need_install">یہ بنڈل انسٹال نہیں ہے۔ اس کے ماڈیول الگ الگ چالو یا بند کرنے کے لیے پہلے اسے انسٹال کریں۔</string>
 </resources>

@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">ดูเนื้อหา</string>
+    <string name="preset_comp_open_for">ดูเนื้อหาของ %1$s</string>
+    <string name="preset_comp_subtitle">อ่านอย่างเดียว โฮสต์นี้เปลี่ยนพรีเซ็ตผ่านชุดปลั๊กอิน</string>
+    <string name="preset_comp_plugins">ปลั๊กอิน: %1$d</string>
+    <string name="preset_comp_conditional">มีเงื่อนไข: %1$d</string>
+    <string name="preset_comp_off">ปิด: %1$d</string>
+    <string name="preset_comp_always_on">เปิดเสมอ</string>
+    <string name="preset_comp_state_off">ปิด</string>
+    <string name="preset_comp_state_conditional">มีเงื่อนไข</string>
+    <string name="preset_comp_condition">โหลดเมื่อเงื่อนไขนี้ไม่เป็นจริงบนโฮสต์: %1$s</string>
+    <string name="preset_comp_entry_unnamed">ปลั๊กอิน %1$d</string>
+    <string name="preset_comp_settings">การตั้งค่า (YAML)</string>
+    <string name="preset_comp_raw">ปลั๊กอินในพรีเซ็ตนี้</string>
+    <string name="preset_comp_copy_all">คัดลอกทั้งหมดเป็น YAML</string>
+    <string name="preset_comp_loading">กำลังอ่านพรีเซ็ต</string>
+    <string name="preset_comp_failed">อ่านพรีเซ็ตนี้ไม่ได้: %1$s</string>
+    <string name="preset_comp_missing">พรีเซ็ตนี้ไม่อยู่บนโฮสต์แล้ว</string>
+    <string name="preset_comp_unsupported">โฮสต์นี้แสดงเนื้อหาของพรีเซ็ตไม่ได้</string>
+    <string name="preset_comp_retry">ลองอีกครั้ง</string>
+    <string name="preset_comp_empty">พรีเซ็ตนี้ไม่มีปลั๊กอิน</string>
+</resources>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_tool_title_todo">কাজের তালিকা</string>
+    <string name="chat_tool_title_ask">প্রশ্ন</string>
+    <string name="chat_tool_title_subagent">সাবএজেন্ট</string>
+    <string name="chat_tool_title_skill">স্কিল</string>
+    <string name="chat_tool_title_read_image">ছবি পড়া</string>
+    <string name="chat_tool_title_job_output">কাজের আউটপুট</string>
+    <string name="chat_tool_title_job_kill">কাজ থামান</string>
+    <string name="chat_tool_title_terminal_open">টার্মিনাল খুলুন</string>
+    <string name="chat_tool_title_terminal_read">টার্মিনাল পড়া</string>
+    <string name="chat_tool_title_terminal_list">টার্মিনাল</string>
+    <string name="chat_tool_title_terminal_signal">টার্মিনালে সিগন্যাল পাঠান</string>
+    <string name="chat_tool_title_terminal_close">টার্মিনাল বন্ধ করুন</string>
+    <string name="chat_tool_title_terminal_send">টার্মিনালে পাঠান</string>
+    <string name="chat_tool_title_lsp">কোডে খোঁজা</string>
+    <string name="chat_tool_title_goal_create">লক্ষ্য ঠিক করুন</string>
+    <string name="chat_tool_title_goal_view">লক্ষ্য দেখুন</string>
+    <string name="chat_tool_title_goal_update">লক্ষ্য বদলান</string>
+    <string name="chat_tool_title_schedule_create">নতুন রিমাইন্ডার</string>
+    <string name="chat_tool_title_schedule_list">রিমাইন্ডার</string>
+    <string name="chat_tool_title_schedule_update">রিমাইন্ডার বদলান</string>
+    <string name="chat_tool_title_schedule_delete">রিমাইন্ডার মুছুন</string>
+    <string name="chat_tool_title_present">ফাইল শেয়ার করুন</string>
+
+    <string name="chat_tool_todo_progress">%2$d টির মধ্যে %1$d টি শেষ</string>
+    <plurals name="chat_tool_todo_added">
+        <item quantity="one">%d টি যোগ হয়েছে</item>
+        <item quantity="other">%d টি যোগ হয়েছে</item>
+    </plurals>
+    <plurals name="chat_tool_todo_changed">
+        <item quantity="one">%d টি বদলেছে</item>
+        <item quantity="other">%d টি বদলেছে</item>
+    </plurals>
+    <plurals name="chat_tool_todo_removed">
+        <item quantity="one">%d টি সরানো হয়েছে</item>
+        <item quantity="other">%d টি সরানো হয়েছে</item>
+    </plurals>
+    <string name="chat_tool_todo_no_changes">কোনো পরিবর্তন নেই</string>
+    <string name="chat_tool_todo_not_saved">সেভ হয়নি। এটি সেই তালিকা যা লেখার চেষ্টা করা হয়েছিল।</string>
+    <string name="chat_tool_todo_pending">বাকি</string>
+    <string name="chat_tool_todo_in_progress">চলছে</string>
+    <string name="chat_tool_todo_done">শেষ</string>
+    <string name="chat_tool_todo_change_added">যোগ হয়েছে</string>
+    <string name="chat_tool_todo_change_moved">ক্রম বদলেছে</string>
+    <string name="chat_tool_todo_change_removed">সরানো হয়েছে</string>
+    <string name="chat_tool_todo_change_was">আগে ছিল: %1$s</string>
+
+    <string name="chat_tool_ask_waiting">আপনার উত্তরের অপেক্ষায়</string>
+    <string name="chat_tool_ask_answered">%2$d টির মধ্যে %1$d টির উত্তর দেওয়া হয়েছে</string>
+    <string name="chat_tool_ask_cancelled">আপনি এই প্রশ্নগুলো বন্ধ করেছেন</string>
+    <string name="chat_tool_ask_interrupted">আপনার উত্তরের আগেই থামানো হয়েছে</string>
+    <string name="chat_tool_ask_timed_out">সময়ের মধ্যে উত্তর আসেনি</string>
+    <string name="chat_tool_ask_carried_on">এজেন্ট অপেক্ষা না করে এগিয়ে গেছে</string>
+    <string name="chat_tool_ask_closed">বন্ধ</string>
+    <string name="chat_tool_ask_your_answer">আপনার উত্তর: %1$s</string>
+    <string name="chat_tool_ask_not_answered">উত্তর দেওয়া হয়নি</string>
+
+    <string name="chat_tool_subagent_starting">শুরু হচ্ছে</string>
+    <string name="chat_tool_subagent_started">শুরু হয়েছে</string>
+    <string name="chat_tool_subagent_working">কাজ করছে</string>
+    <string name="chat_tool_subagent_finished">শেষ হয়েছে</string>
+    <string name="chat_tool_subagent_failed">শুরু হয়নি</string>
+    <string name="chat_tool_subagent_replied">উত্তর দিয়েছে</string>
+    <string name="chat_tool_subagent_model">মডেল: %1$s</string>
+    <string name="chat_tool_subagent_model_label">মডেল:</string>
+    <string name="chat_tool_subagent_open">সাবএজেন্ট খুলুন</string>
+    <string name="chat_tool_subagent_conversation">এটি একটি সাবএজেন্টের কথোপকথন</string>
+
+    <string name="chat_tool_skill_loading">লোড হচ্ছে</string>
+    <string name="chat_tool_skill_loaded">লোড হয়েছে</string>
+    <string name="chat_tool_skill_not_loaded">লোড হয়নি</string>
+    <string name="chat_tool_image_none">কোনো ছবি আসেনি</string>
+
+    <string name="chat_tool_background">ব্যাকগ্রাউন্ডে চলছে</string>
+    <string name="chat_tool_background_starting">ব্যাকগ্রাউন্ডে শুরু হচ্ছে</string>
+    <string name="chat_tool_open_job">কাজ খুলুন</string>
+
+    <string name="chat_tool_state_exited">বন্ধ হয়েছে</string>
+    <string name="chat_tool_state_started">শুরু হয়েছে</string>
+    <string name="chat_tool_state_stop_requested">থামাতে বলা হয়েছে</string>
+    <string name="chat_tool_state_already_finished">আগেই শেষ হয়েছিল</string>
+    <string name="chat_tool_state_signal_sent">সিগন্যাল পাঠানো হয়েছে</string>
+    <string name="chat_tool_state_closed">বন্ধ</string>
+    <string name="chat_tool_state_closing">বন্ধ হচ্ছে</string>
+    <string name="chat_tool_state_scheduled">নির্ধারিত</string>
+    <string name="chat_tool_state_overdue">সময় পেরিয়ে গেছে</string>
+    <string name="chat_tool_state_deleted">মুছে ফেলা হয়েছে</string>
+    <string name="chat_tool_state_goal_waiting">চালিয়ে যাওয়ার অপেক্ষায়</string>
+    <string name="chat_tool_state_goal_cleared">সরানো হয়েছে</string>
+
+    <string name="chat_tool_field_type">ধরন</string>
+    <string name="chat_tool_field_pid">প্রসেস ID</string>
+    <string name="chat_tool_field_exit_code">এক্সিট কোড</string>
+    <string name="chat_tool_field_signal">সিগন্যাল</string>
+    <string name="chat_tool_field_process_group">প্রসেস গ্রুপ</string>
+    <string name="chat_tool_field_lines">লাইন</string>
+    <string name="chat_tool_field_rounds">রাউন্ড</string>
+    <string name="chat_tool_field_reason">কারণ</string>
+    <string name="chat_tool_field_when">কখন</string>
+    <string name="chat_tool_field_repeats">পুনরাবৃত্তি</string>
+    <string name="chat_tool_field_location">লাইন নম্বর</string>
+    <string name="chat_tool_field_kind">রকম</string>
+    <string name="chat_tool_field_value">%1$s: %2$s</string>
+
+    <plurals name="chat_tool_jobs_count">
+        <item quantity="one">%d টি ব্যাকগ্রাউন্ড কাজ</item>
+        <item quantity="other">%d টি ব্যাকগ্রাউন্ড কাজ</item>
+    </plurals>
+    <plurals name="chat_tool_terminals_count">
+        <item quantity="one">%d টি টার্মিনাল</item>
+        <item quantity="other">%d টি টার্মিনাল</item>
+    </plurals>
+    <plurals name="chat_tool_places_count">
+        <item quantity="one">%d টি ফলাফল</item>
+        <item quantity="other">%d টি ফলাফল</item>
+    </plurals>
+    <plurals name="chat_tool_reminders_count">
+        <item quantity="one">%d টি রিমাইন্ডার</item>
+        <item quantity="other">%d টি রিমাইন্ডার</item>
+    </plurals>
+    <plurals name="chat_tool_files_count">
+        <item quantity="one">%d টি ফাইল</item>
+        <item quantity="other">%d টি ফাইল</item>
+    </plurals>
+    <string name="chat_tool_jobs_none">কোনো ব্যাকগ্রাউন্ড কাজ নেই</string>
+    <string name="chat_tool_terminals_none">কোনো টার্মিনাল খোলা নেই</string>
+    <string name="chat_tool_places_none">কিছু পাওয়া যায়নি</string>
+    <string name="chat_tool_reminders_none">কোনো রিমাইন্ডার নেই</string>
+    <string name="chat_tool_goal_none">কোনো লক্ষ্য ঠিক করা নেই</string>
+    <string name="chat_tool_output_cut">আউটপুট মাঝপথে কেটে গেছে।</string>
+
+    <string name="chat_tool_repeat_once">একবার</string>
+    <string name="chat_tool_repeat_every_second">প্রতি সেকেন্ডে</string>
+    <string name="chat_tool_repeat_every_minute">প্রতি মিনিটে</string>
+    <string name="chat_tool_repeat_every_hour">প্রতি ঘণ্টায়</string>
+    <string name="chat_tool_repeat_every_day">প্রতিদিন</string>
+    <plurals name="chat_tool_repeat_seconds">
+        <item quantity="one">প্রতি %d সেকেন্ডে</item>
+        <item quantity="other">প্রতি %d সেকেন্ডে</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_minutes">
+        <item quantity="one">প্রতি %d মিনিটে</item>
+        <item quantity="other">প্রতি %d মিনিটে</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_hours">
+        <item quantity="one">প্রতি %d ঘণ্টায়</item>
+        <item quantity="other">প্রতি %d ঘণ্টায়</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_days">
+        <item quantity="one">প্রতি %d দিনে</item>
+        <item quantity="other">প্রতি %d দিনে</item>
+    </plurals>
+    <string name="chat_tool_repeat_daily">প্রতিদিন %1$s-এ (%2$s)</string>
+    <string name="chat_tool_repeat_weekly">%1$s, %2$s-এ (%3$s)</string>
+    <string name="chat_tool_repeat_cron">নিজস্ব সময়সূচিতে: %1$s (%2$s)</string>
+
+    <string name="chat_tool_arguments">আর্গুমেন্ট</string>
+    <plurals name="chat_tool_arguments_count">
+        <item quantity="one">%d টি ফিল্ড</item>
+        <item quantity="other">%d টি ফিল্ড</item>
+    </plurals>
+    <string name="chat_tool_raw_title">কলের মূল ডেটা</string>
+
+    <string name="chat_tool_failed_label">ব্যর্থ:</string>
+    <string name="chat_tool_failed">এই ধাপটি ব্যর্থ হয়েছে।</string>
+    <string name="chat_tool_stopped">শেষ হওয়ার আগেই থেমে গেছে।</string>
+    <string name="chat_tool_auto_review_denied">অটো রিভিউ এই ধাপটি আটকে দিয়েছে, তাই এটি চলেনি।</string>
+    <string name="chat_tool_reason_label">কারণ:</string>
+
+    <string name="chat_turn_failed_rate_limit">মডেল প্রোভাইডার এখন ব্যস্ত। একটু পরে আবার চেষ্টা করুন।</string>
+    <string name="chat_turn_failed_quota">মডেল প্রোভাইডারের অ্যাকাউন্টে ক্রেডিট শেষ।</string>
+    <string name="chat_turn_failed_account_quota">আপনার DeepSeek অ্যাকাউন্টের টোকেন শেষ হয়ে গেছে।</string>
+    <string name="chat_turn_failed_context">এই চ্যাটটি মডেলের জন্য খুব লম্বা। এটি ছোট করুন বা নতুন চ্যাট শুরু করুন।</string>
+    <string name="chat_turn_failed_empty">মডেল একটি খালি উত্তর পাঠিয়েছে।</string>
+    <string name="chat_turn_failed_bad_key">API কী গ্রহণ করা হয়নি। মডেল-এ গিয়ে দেখে নিন।</string>
+    <string name="chat_turn_failed_missing_key">এই মডেলের এখনো কোনো API কী নেই। মডেল-এ গিয়ে যোগ করুন।</string>
+    <string name="chat_turn_failed_network">মডেল প্রোভাইডারের সঙ্গে যোগাযোগ করা যায়নি।</string>
+    <string name="chat_turn_failed_timeout">মডেল উত্তর দিতে অনেক বেশি সময় নিয়েছে।</string>
+    <string name="chat_turn_failed_server">মডেল প্রোভাইডারের দিকে একটি সমস্যা হয়েছে।</string>
+    <string name="chat_turn_failed_process">এই টার্ন শেষ হওয়ার আগেই harness থেমে গেছে।</string>
+    <string name="chat_turn_failed_signed_out">আপনি DeepSeek থেকে সাইন আউট করায় থেমে গেছে।</string>
+    <string name="chat_turn_failed_unknown">এই টার্নে কিছু একটা ভুল হয়েছে।</string>
+    <string name="chat_turn_error_code_label">কোড:</string>
+</resources>

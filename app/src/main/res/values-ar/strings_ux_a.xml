@@ -100,4 +100,12 @@
     <string name="ux_a_save_error">تعذر حفظ هذه المهمة. حدّث القاعدة وحاول مجددًا.</string>
     <string name="ux_a_delete_error">تعذر حذف هذه المهمة. حدّث القائمة وحاول مجددًا.</string>
     <string name="ux_a_last_run">آخر تشغيل: %1$s</string>
+    <string name="plugins_filter_on">مُفعّل %1$d</string>
+    <string name="plugins_filter_off">مُعطّل %1$d</string>
+    <string name="plugins_count_on">%1$d&#160;من&#160;%2$d&#160;مُفعّل</string>
+    <string name="plugins_open_details">فتح التفاصيل</string>
+    <string name="plugins_more_matches">+%1$d أخرى</string>
+    <string name="plugins_no_matches">لا توجد نتائج مطابقة</string>
+    <string name="plugins_modules_need_bundle_on">هذه المجموعة معطّلة. فعّلها لتشغيل مكوّناتها أو إيقافها واحدًا واحدًا.</string>
+    <string name="plugins_modules_need_install">هذه المجموعة غير مثبّتة. ثبّتها لتشغيل مكوّناتها أو إيقافها واحدًا واحدًا.</string>
 </resources>

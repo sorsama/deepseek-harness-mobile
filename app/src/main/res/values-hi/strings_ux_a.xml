@@ -80,4 +80,12 @@
     <string name="ux_a_save_error">यह ऑटोमेशन सेव नहीं हुआ। नियम रीफ़्रेश करके फिर कोशिश करें।</string>
     <string name="ux_a_delete_error">यह ऑटोमेशन हटाया नहीं गया। सूची रीफ़्रेश करके फिर कोशिश करें।</string>
     <string name="ux_a_last_run">पिछली बार चला: %1$s</string>
+    <string name="plugins_filter_on">चालू %1$d</string>
+    <string name="plugins_filter_off">बंद %1$d</string>
+    <string name="plugins_count_on">%2$d&#160;में&#160;से&#160;%1$d&#160;चालू</string>
+    <string name="plugins_open_details">विवरण खोलें</string>
+    <string name="plugins_more_matches">+%1$d और</string>
+    <string name="plugins_no_matches">कोई मेल नहीं मिला</string>
+    <string name="plugins_modules_need_bundle_on">यह बंडल बंद है। इसके मॉड्यूल अलग-अलग चालू या बंद करने के लिए पहले बंडल चालू करें।</string>
+    <string name="plugins_modules_need_install">यह बंडल इंस्टॉल नहीं है। इसके मॉड्यूल अलग-अलग चालू या बंद करने के लिए पहले इसे इंस्टॉल करें।</string>
 </resources>

@@ -213,7 +213,8 @@ internal fun ToolGroupRow(calls: List<ToolCallNode>, context: ChatNodeContext) {
     var expanded by remember(calls.first().callId) { mutableStateOf(false) }
     val colors = DsTheme.colors
     val results = context.nodes.filterIsInstance<ToolResultNode>().associateBy { it.callId }
-    val failed = calls.count { results[it.callId]?.isError == true }
+    // A call the turn's stop cut short, or a question the reader closed, is not a failure.
+    val failed = calls.count { callFailed(it, results[it.callId]) }
     val running = context.running && calls.any { it.callId !in results }
     val starts = calls.mapNotNull { context.eventTimes[it.seq] }
     val ends = calls.mapNotNull { results[it.callId]?.let { r -> context.eventTimes[r.seq] } }
@@ -232,7 +233,8 @@ internal fun ToolGroupRow(calls: List<ToolCallNode>, context: ChatNodeContext) {
                 liveGroupDetail(calls, results.keys, context.cwd)
             } else null
             if (detail != null) {
-                Text(detail, Modifier.weight(1f), style = DsType.caption11, color = colors.labelTertiary,
+                // "PowerShell · npm test": a command or a path, kept left to right in any language.
+                Text(technicalDisplay(detail), Modifier.weight(1f), style = DsType.caption11, color = colors.labelTertiary,
                     maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             } else Spacer(Modifier.weight(1f))
             Text(if (running) stringResource(R.string.jobs_running) else elapsed?.let(::formatDurationMs).orEmpty(),

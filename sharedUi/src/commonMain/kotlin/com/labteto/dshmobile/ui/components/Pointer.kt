@@ -205,7 +205,7 @@ private val WheelStep = 48.dp
  * The 2dp accent outline a control wears while it has keyboard focus, or null while it does not.
  *
  * Material's `Surface(onClick = ...)` brings its own ripple, so the app-wide focus indication (see
- * `rememberFocusRingIndication` in the app module) never reaches it; the controls built on it pass
+ * `rememberAppIndication` in the app module) never reaches it; the controls built on it pass
  * this as their border instead. A clickable is only focusable in keyboard mode, so a touch screen
  * never shows it and a mouse click does not leave it behind.
  */

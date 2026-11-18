@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import com.labteto.dshmobile.connection.WorkStepDisplay
 import com.labteto.dshmobile.ui.components.ContentBlockView
 import com.labteto.dshmobile.ui.components.DiffHunk
+import com.labteto.dshmobile.ui.components.DiffTotals
 import com.labteto.dshmobile.ui.components.SearchFile
 import com.labteto.dshmobile.ui.components.SearchMatches
 import com.labteto.dshmobile.ui.components.ToolCardView
@@ -165,11 +166,18 @@ internal fun rememberRowDisclosure(presentation: WorkStepPresentation, key: Stri
 // Bounds on a row the level opened
 // ---------------------------------------------------------------------------------------------
 
-/** The most characters of one text a preview lays out. */
+/**
+ * The most characters of one text a block lays out inline. The bound applies to every open row, the
+ * ones the level opened and the ones the reader tapped alike: the rest is one tap away in the
+ * full-screen viewer ("Show all"), which is lazy by line.
+ */
 internal const val PREVIEW_MAX_CHARS = 4_000
 
-/** The most lines of one text a preview lays out. */
-internal const val PREVIEW_MAX_LINES = 40
+/**
+ * The most lines of one text a block lays out inline. Code does not wrap, so a line is a line of
+ * height: 24 of them are about a screen, and a block never takes several screens of the transcript.
+ */
+internal const val PREVIEW_MAX_LINES = 24
 
 /** The most items of a list (search hits, locations, content blocks, nested calls) a preview lists. */
 internal const val PREVIEW_MAX_ITEMS = 8
@@ -228,10 +236,15 @@ internal fun clipCardForPreview(card: ToolCardView): ClippedCard {
         return list.take(max)
     }
     val view: ToolCardView = when (card) {
-        is ToolCardView.TerminalCard -> card.copy(output = clip(card.output))
-        is ToolCardView.DiffCard -> card.copy(
-            diffs = take(card.diffs, PREVIEW_MAX_ITEMS).map { DiffHunk(it.path, clip(it.oldText), clip(it.newText)) },
-        )
+        // The command is bounded too: a model can send a script of tens of thousands of characters.
+        is ToolCardView.TerminalCard -> card.copy(title = clip(card.title), output = clip(card.output))
+        is ToolCardView.DiffCard -> {
+            val cut = card.copy(
+                diffs = take(card.diffs, PREVIEW_MAX_ITEMS).map { DiffHunk(it.path, clip(it.oldText), clip(it.newText)) },
+            )
+            // The footer's "+N -M" counts the whole change, not the part that is drawn.
+            if (clipped) cut.copy(totals = DiffTotals.of(card.diffs)) else cut
+        }
         is ToolCardView.SearchCard -> {
             val matches = when (val m = card.matches) {
                 is SearchMatches.PathList -> SearchMatches.PathList(take(m.paths, PREVIEW_MAX_LINES).map { clip(it).orEmpty() })
@@ -254,6 +267,15 @@ internal fun clipCardForPreview(card: ToolCardView): ClippedCard {
             lines = take(card.lines, PREVIEW_MAX_LINES).map { it.copy(text = clip(it.text).orEmpty()) },
         )
         is ToolCardView.WebCard -> card
+        // The control tools' cards: lists to the item bound, long text and job output to the text one.
+        is com.labteto.dshmobile.ui.components.TodoCard -> card.copy(lines = take(card.lines, PREVIEW_MAX_ITEMS))
+        is com.labteto.dshmobile.ui.components.QuestionCard -> card.copy(questions = take(card.questions, PREVIEW_MAX_ITEMS))
+        is com.labteto.dshmobile.ui.components.SubagentCard -> card.copy(prompt = clip(card.prompt))
+        is com.labteto.dshmobile.ui.components.SkillCard -> card
+        is com.labteto.dshmobile.ui.components.ImageCard -> card
+        is com.labteto.dshmobile.ui.components.DetailsCard -> card.copy(
+            items = take(card.items, PREVIEW_MAX_ITEMS).map { it.copy(description = clip(it.description), code = clip(it.code)) },
+        )
         is ToolCardView.GenericCard -> card.copy(
             rawInput = clip(card.rawInput),
             locations = card.locations?.let { take(it, PREVIEW_MAX_ITEMS) },

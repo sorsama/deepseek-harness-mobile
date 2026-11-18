@@ -379,9 +379,11 @@ private fun buildInlineContent(
             is InlineSegment.Plain -> builder.append(segment.text)
             is InlineSegment.Bold -> builder.withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(segment.text) }
             is InlineSegment.Italic -> builder.withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(segment.text) }
+            // In right-to-left prose a path or a command is isolated, so it keeps its own order
+            // (and a `C:\...` path is not split into "C:" and the rest).
             is InlineSegment.Code -> builder.withStyle(
                 SpanStyle(fontFamily = codeStyle.fontFamily, color = codeStyle.color),
-            ) { append(segment.text) }
+            ) { append(inlineCodeDisplay(segment.text, paragraph = text)) }
             is InlineSegment.Link -> {
                 val path = if (safeHttpUrl(segment.url) == null) com.labteto.dshmobile.ui.screens.main.previewPath(segment.url) else null
                 builder.pushStringAnnotation("url", segment.url)
@@ -636,6 +638,11 @@ private fun MdBlockquote(block: MdBlock.Blockquote) {
 private fun CodeBlock(lang: String?, code: String, modifier: Modifier = Modifier) {
     val colors = DsTheme.colors
     val clipboard = LocalClipboardManager.current
+    // The same sideways-scrolling block the tool cards use, left to right whatever the message's
+    // language is. Its wrap switch sits in the banner, with the copy button.
+    val blockId = "message:" + code.hashCode()
+    val wrap = rememberCodeWrap(blockId)
+    val long = remember(code) { hasLongLine(code) }
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -658,6 +665,7 @@ private fun CodeBlock(lang: String?, code: String, modifier: Modifier = Modifier
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
+            if (long) WrapToggle(wrap)
             DsIconButton(
                 icon = Icons.Filled.ContentCopy,
                 contentDescription = stringResource(R.string.tool_copy_code),
@@ -671,11 +679,13 @@ private fun CodeBlock(lang: String?, code: String, modifier: Modifier = Modifier
         // and a theme change cannot break the lexer. The palette is scheme-aware now: the old fixed
         // light-theme tints were unreadable on the Ink canvas.
         val highlighted = remember(code, lang, colors) { codeAnnotated(code, lang, colors) }
-        Text(
+        CodeText(
             highlighted,
-            style = DsType.mdCode,
-            color = colors.labelPrimary,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+            blockId = blockId,
+            fadeColor = colors.codeBlockBg,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            wrap = wrap,
+            showToggle = false,
         )
     }
 }

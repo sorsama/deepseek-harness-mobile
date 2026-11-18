@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="team_title">Equipe de agentes</string>
+    <string name="team_chip">Equipe</string>
+    <string name="team_beta_badge">Beta</string>
+    <string name="team_tab_members">Membros (%1$d)</string>
+    <string name="team_tab_tasks">Tarefas (%1$d)</string>
+    <string name="team_read_only_note">Os agentes mantêm esta lista atualizada. Para mudar a equipe ou as tarefas, peça ao líder neste chat.</string>
+    <string name="team_failure">Não foi possível ler parte do registro da equipe, então isto pode estar desatualizado.</string>
+    <string name="team_members_empty_title">Ainda não há colegas</string>
+    <string name="team_members_empty_body">Peça ao agente para chamar um colega para uma parte do trabalho.</string>
+    <string name="team_member_running">Trabalhando</string>
+    <string name="team_member_idle">Inativo</string>
+    <string name="team_member_starting">Iniciando</string>
+    <string name="team_member_failed">Não foi possível iniciar</string>
+    <string name="team_member_status_tasks">%1$s · Tarefas abertas: %2$d</string>
+    <string name="team_lead">Líder</string>
+    <string name="team_open_chat">Abrir chat</string>
+    <string name="team_this_chat">Este chat</string>
+    <string name="team_tasks_empty_title">Ainda não há tarefas compartilhadas</string>
+    <string name="team_tasks_empty_body">Quando os agentes dividirem o trabalho, as tarefas deles aparecem aqui.</string>
+    <string name="team_group_in_progress">Em andamento</string>
+    <string name="team_group_ready">Prontas para começar</string>
+    <string name="team_group_waiting">Aguardando</string>
+    <string name="team_group_other">Outras</string>
+    <string name="team_group_done">Concluídas</string>
+    <string name="team_task_unassigned">Sem responsável</string>
+    <string name="team_task_waiting_on">Aguardando: %1$s</string>
+    <string name="team_task_no_details">Sem detalhes.</string>
+    <string name="team_task_depends_on">Depende de</string>
+    <string name="team_task_dependency_done">%1$s (concluída)</string>
+    <string name="team_task_dependency_open">%1$s (ainda não concluída)</string>
+    <string name="team_task_files">Arquivos que vai alterar</string>
+    <string name="team_task_overlap">Mexe nos mesmos arquivos que “%1$s”, que está em andamento</string>
+    <string name="team_task_in_this_chat">O líder está cuidando disso neste chat.</string>
+    <string name="team_task_open_owner">Abrir chat com %1$s</string>
+</resources>

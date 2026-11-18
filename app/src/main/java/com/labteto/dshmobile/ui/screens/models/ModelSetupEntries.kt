@@ -10,6 +10,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,8 +19,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,11 +35,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -101,8 +109,15 @@ fun BuiltInModelsHint(port: Int, signedIn: Boolean, modifier: Modifier = Modifie
 }
 
 /**
- * In the chat: a calm strip when the last turn failed for want of a key (from its failure code),
- * or when the connected harness has no provider that can answer. One button to the Models screen.
+ * In the chat: a calm bar above the conversation when the last turn failed for want of a key (from
+ * its failure code), or when the connected harness has no provider that can answer. One button to the
+ * Models screen.
+ *
+ * It is a bar pinned above the transcript, not a row of it, so it is in view wherever the reader has
+ * scrolled to (a row at the top of a long conversation is never seen at the newest message, which is
+ * where a reader is when they try to send). It does not cover anything: the transcript simply gets
+ * the height it takes. Where the words would take too much of the screen (a large text size) it folds
+ * to one line with the button, and a tap on the words opens the rest ([SetupNotice]).
  */
 @Composable
 fun ChatModelSetupNotice(problem: ModelSetupProblem?, viewModel: ModelSetupViewModel = hiltViewModel()) {
@@ -122,33 +137,115 @@ fun ChatModelSetupNotice(problem: ModelSetupProblem?, viewModel: ModelSetupViewM
         enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
         exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
     ) {
-        val colors = DsTheme.colors
-        val haptics = rememberDsHaptics()
-        // Held through the exit so the words do not vanish before the strip folds away.
+        // Held through the exit so the words do not vanish before the bar folds away.
         var last by remember { mutableStateOf("") }
         if (text != null) last = text
-        Surface(color = colors.warnTertiary, border = BorderStroke(1.dp, colors.warnBorder), modifier = Modifier.fillMaxWidth()) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small)
-                    .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
-                verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
-            ) {
-                Row(verticalAlignment = Alignment.Top) {
-                    Icon(DsIcons.Warning, contentDescription = null, tint = colors.warnLabel, modifier = Modifier.padding(top = 1.dp).size(16.dp))
-                    Spacer(Modifier.width(DsSpacing.small))
-                    Text(last, style = DsType.small13, color = colors.warnLabel, modifier = Modifier.weight(1f))
-                }
+        SetupNotice(last, onOpen = { monitor.open(ModelsRequest.Connected) })
+    }
+}
+
+/** The most of the screen's height the notice may take in its full form before it folds to one line. */
+internal const val SETUP_NOTICE_MAX_SHARE = 0.2f
+
+/**
+ * Whether the notice, which would be [fullHeightDp] tall with its words wrapped and its button below
+ * them, takes more of a [screenHeightDp] tall screen than [SETUP_NOTICE_MAX_SHARE] and so is shown
+ * folded. A screen of unknown height never folds it.
+ */
+internal fun setupNoticeIsCompact(fullHeightDp: Float, screenHeightDp: Float): Boolean =
+    screenHeightDp > 0f && fullHeightDp > screenHeightDp * SETUP_NOTICE_MAX_SHARE
+
+/**
+ * The bar itself. Full: an icon and the words (they wrap), then the button. Folded: the icon, the
+ * first line of the words and the button on one line; a tap on the words shows all of them and a
+ * second tap folds them again. Whether it is folded is measured, not guessed from the text size: the
+ * words are laid out at the width they will have, and their real height decides.
+ */
+@Composable
+private fun SetupNotice(text: String, onOpen: () -> Unit) {
+    val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val screenHeightDp = LocalConfiguration.current.screenHeightDp.toFloat()
+    // Not saved: this file is on the key path, where nothing goes into a saved-state bundle.
+    var open by remember(text) { mutableStateOf(false) }
+    Surface(color = colors.warnTertiary, border = BorderStroke(1.dp, colors.warnBorder), modifier = Modifier.fillMaxWidth()) {
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val barWidth = maxWidth
+            val iconSlot = 16.dp + DsSpacing.small
+            val textWidth = barWidth - DsSpacing.comfortable * 2 - iconSlot
+            val fullHeight = with(density) {
+                val words = measurer.measure(text, DsType.small13, constraints = Constraints(maxWidth = textWidth.roundToPx().coerceAtLeast(0))).size.height.toDp()
+                words + DsSpacing.touchTarget + DsSpacing.small * 3
+            }
+            val folded = setupNoticeIsCompact(fullHeight.value, screenHeightDp)
+            val button: @Composable (Modifier) -> Unit = { modifier ->
                 // Signing in to the DeepSeek account is a browser flow on the harness; the screen
                 // can still add a key for another provider, so the button stays.
                 DsConnectButton(
                     text = stringResource(R.string.models_open),
                     onClick = {
                         haptics.tap()
-                        monitor.open(ModelsRequest.Connected)
+                        onOpen()
                     },
+                    modifier = modifier,
                 )
+            }
+            if (!folded || open) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small),
+                    verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+                ) {
+                    Row(
+                        Modifier
+                            // Only a notice that was folded can be folded again.
+                            .then(if (folded) Modifier.clickable(role = Role.Button) { open = false } else Modifier),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        Icon(DsIcons.Warning, contentDescription = null, tint = colors.warnLabel, modifier = Modifier.padding(top = 1.dp).size(16.dp))
+                        Spacer(Modifier.width(DsSpacing.small))
+                        Text(
+                            text,
+                            style = DsType.small13,
+                            color = colors.warnLabel,
+                            modifier = Modifier.weight(1f).semantics { liveRegion = LiveRegionMode.Polite },
+                        )
+                    }
+                    button(Modifier)
+                }
+            } else {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+                ) {
+                    // The words are the target: 48dp tall, and a tap on them opens the full text.
+                    Row(
+                        Modifier
+                            .weight(1f)
+                            .heightIn(min = DsSpacing.touchTarget)
+                            .clickable(role = Role.Button) { open = true },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(DsIcons.Warning, contentDescription = null, tint = colors.warnLabel, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(DsSpacing.small))
+                        Text(
+                            text,
+                            style = DsType.small13,
+                            color = colors.warnLabel,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f).semantics { liveRegion = LiveRegionMode.Polite },
+                        )
+                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = colors.warnLabel, modifier = Modifier.size(16.dp))
+                    }
+                    button(Modifier.widthIn(max = barWidth * 0.45f))
+                }
             }
         }
     }

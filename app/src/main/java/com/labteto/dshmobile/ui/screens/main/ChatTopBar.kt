@@ -35,6 +35,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.foundation.ScrollState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
@@ -70,6 +77,9 @@ internal enum class ChatTab { Chat, Trajectory, Files }
 
 /** The widest the model chip (or the preset chip) grows, however long the name and however wide the bar. */
 private val MODEL_CHIP_MAX_WIDTH = 280.dp
+
+/** From this font scale the model chip's name may take a second line rather than being cut to a few letters. */
+private const val LARGE_TEXT_SCALE = 1.3f
 
 /** How wide the loading shimmer stands in for the model chip. */
 private val MODEL_CHIP_SKELETON_WIDTH = 132.dp
@@ -129,6 +139,9 @@ internal fun ChatTopBar(
      * [onOpenDrawer] is the click handler for all three.
      */
     listControl: ListControl = ListControl.OpenDrawer,
+    /** True when the open session leads an experimental Agent Team; the Team chip opens its sheet. */
+    teamAvailable: Boolean = false,
+    onOpenTeam: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = DsTheme.colors
@@ -202,12 +215,12 @@ internal fun ChatTopBar(
         // The live state shares the title row: the model chip above needs the width more, and the
         // title is already elastic, so "Working" / "Needs you" reads beside what is being worked on.
         val hasTitleRow = title.isNotBlank() || agentPresetLabel != null || subagentCount > 0 ||
-            running || needsYou
+            running || needsYou || teamAvailable
         if (hasTitleRow) {
             // The inline triggers are drawn 28dp but carry a 48dp touch target, which makes this row
             // 48dp tall whenever one is present; the padding that spaced a bare title is dropped then
             // so the row does not also pay for the margin on top of the target.
-            val hasTrigger = agentPresetLabel != null || subagentCount > 0
+            val hasTrigger = agentPresetLabel != null || subagentCount > 0 || teamAvailable
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -236,6 +249,9 @@ internal fun ChatTopBar(
                 }
                 if (agentPresetLabel != null) {
                     MetaChip(label = agentPresetLabel, onClick = { haptics.tap(); onOpenPresets() })
+                }
+                if (teamAvailable) {
+                    AgentTeamTag(onClick = { haptics.tap(); onOpenTeam() })
                 }
                 if (subagentCount > 0) {
                     SubagentTag(count = subagentCount, onClick = { haptics.tap(); onOpenSubagents() })
@@ -375,7 +391,9 @@ private fun ModelChip(
             modelLabel,
             style = DsType.std14Strong,
             color = colors.labelPrimary,
-            maxLines = 1,
+            // At a large text size the name wraps to a second line instead of being cut to a few
+            // letters beside the tier and the chevron.
+            maxLines = if (LocalDensity.current.fontScale >= LARGE_TEXT_SCALE) 2 else 1,
             overflow = TextOverflow.Ellipsis,
             // The model name is the one elastic label in the chip: the tier ("High") and the
             // chevron keep their natural width, so the name gets every pixel left rather than
@@ -478,9 +496,10 @@ private fun ChatTabRow(
         // The button is measured first (it has no weight), so at the largest text sizes, or with a long
         // translation, it is the tabs that scroll: the only way into the workspace never gets squeezed
         // out of the row.
-        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+        val tabScroll = rememberScrollState()
+        Box(Modifier.weight(1f).fadeWhereMoreToScroll(tabScroll, colors.bgBase), contentAlignment = Alignment.CenterStart) {
             Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                modifier = Modifier.horizontalScroll(tabScroll),
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -516,6 +535,29 @@ private fun ChatTabRow(
             .fillMaxWidth()
             .height(1.dp)
             .background(colors.borderL1),
+    )
+}
+
+/**
+ * A fade into [color] over the end of a sideways-scrolling row that still has more to scroll to, so a
+ * tab cut by the edge reads as "this scrolls" and not as clipped. It is painted over the row and adds
+ * no size of its own, and it is gone when everything fits or the row is scrolled to its end. The end
+ * is the reading end: the right in left-to-right text, the left in right-to-left.
+ */
+private fun Modifier.fadeWhereMoreToScroll(scroll: ScrollState, color: Color): Modifier = drawWithContent {
+    drawContent()
+    if (!scroll.canScrollForward) return@drawWithContent
+    val fade = 32.dp.toPx().coerceAtMost(size.width / 2f)
+    val rtl = layoutDirection == LayoutDirection.Rtl
+    val start = if (rtl) 0f else size.width - fade
+    drawRect(
+        brush = Brush.horizontalGradient(
+            colors = if (rtl) listOf(color, Color.Transparent) else listOf(Color.Transparent, color),
+            startX = start,
+            endX = start + fade,
+        ),
+        topLeft = Offset(start, 0f),
+        size = Size(fade, size.height),
     )
 }
 

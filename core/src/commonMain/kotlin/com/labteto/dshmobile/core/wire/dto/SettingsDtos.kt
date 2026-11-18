@@ -3,6 +3,8 @@ package com.labteto.dshmobile.core.wire.dto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
 
 /**
  * Settings-domain DTOs, ported from `packages/host/apiproxy/src/api/settings.schema.ts` and
@@ -20,18 +22,28 @@ data class SettingsSecretView(
 @Serializable
 data class SettingsNamespaceView(
     @SerialName("ns") val ns: String,
-    /** Namespace JSON schema (opaque). */
-    @SerialName("schema") val schema: JsonElement,
+    /**
+     * Namespace schema: a serialized Schemastery graph (`{uid, refs}`), read by
+     * `core.settings.parseSettingsSchema`. A missing one decodes as JSON null and reads as "no
+     * schema", so a harness that omits it still lists the namespace.
+     */
+    @SerialName("schema") val schema: JsonElement = JsonNull,
     /** Effective value (opaque). */
-    @SerialName("value") val value: JsonElement,
+    @SerialName("value") val value: JsonElement = JsonObject(emptyMap()),
     /** Base (deployment) value, when layered. */
     @SerialName("base") val base: JsonElement? = null,
     /** User override value, when layered. */
     @SerialName("user") val user: JsonElement? = null,
     /** 'live' or 'restart' — when the effective value applies. */
-    @SerialName("applies") val applies: String,
+    @SerialName("applies") val applies: String = "live",
     @SerialName("secrets") val secrets: List<SettingsSecretView> = emptyList(),
-    @SerialName("revision") val revision: Long,
+    @SerialName("revision") val revision: Long = 0,
+    /**
+     * Whether the harness lets a client generate a page for this namespace when it has no page of
+     * its own. False for the namespaces another surface owns (the models, the theme); a harness
+     * that predates the field is read as true.
+     */
+    @SerialName("autoGenerate") val autoGenerate: Boolean = true,
 )
 
 /** Value of `settings.describe`. */

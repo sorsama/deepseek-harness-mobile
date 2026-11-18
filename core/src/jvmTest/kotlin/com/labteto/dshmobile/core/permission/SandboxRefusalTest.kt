@@ -155,4 +155,34 @@ class SandboxRefusalTest {
         val other = nodes(call(1, "c1"), result(2, "c1", null, "Error: the user rejected tool \"bash\"")).filterIsInstance<ToolResultNode>().single()
         assertFalse(isSubagentCommandDenial(other))
     }
+
+    /**
+     * Auto review's refusal as the harness records it: `error` = `{ name: AutoReviewDeniedError,
+     * code: AUTO_REVIEW_DENIED, reason }` (the web client reads the same three fields in
+     * `ui-tool/src/client/tool/models/tool-call-model.ts`, `deriveAutoReviewDenial`).
+     */
+    private fun autoReview(seq: Long, id: String, name: String, reason: String?) = event(
+        "tool/result", seq,
+        """{"turn":1,"step":1,"error":{"name":"$name","code":"$AUTO_REVIEW_DENIED"${reason?.let { ",\"reason\":${Json.encodeToString(String.serializer(), it)}" } ?: ""}},
+           "message":{"id":"m$seq","role":"tool","source":{"kind":"tool","callId":"$id"},"toolCallId":"$id","isError":true,
+             "content":[{"type":"text","text":"Error: Auto review denied this tool call"}]}}""",
+    )
+
+    @Test fun autoReviewRefusalIsReadFromItsNameAndCode() {
+        val denied = single(call(1, "c1"), autoReview(2, "c1", AUTO_REVIEW_DENIED_ERROR_NAME, "Deletes files outside the workspace"))
+        assertEquals(PermissionDenial.AutoReviewRejected, permissionDenialOf(denied))
+        // The fold keeps the reviewer's reason for the transcript to show.
+        assertEquals("Deletes files outside the workspace", denied.errorReason)
+    }
+
+    @Test fun theAutoReviewCodeUnderAnotherNameIsNotARefusal() {
+        // The web client requires both the name and the code; so does this.
+        assertNull(permissionDenialOf(single(call(1, "c1"), autoReview(2, "c1", "SomeOtherError", null))))
+    }
+
+    @Test fun anAutoReviewRefusalWithoutAReasonStillCounts() {
+        val denied = single(call(1, "c1"), autoReview(2, "c1", AUTO_REVIEW_DENIED_ERROR_NAME, null))
+        assertEquals(PermissionDenial.AutoReviewRejected, permissionDenialOf(denied))
+        assertNull(denied.errorReason)
+    }
 }

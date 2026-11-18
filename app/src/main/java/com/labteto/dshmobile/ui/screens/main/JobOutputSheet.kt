@@ -157,7 +157,7 @@ internal fun JobOutputSheet(job: JobView, store: SessionStore, canStop: Boolean,
 
     DsBottomSheet(
         title = current.label,
-        subtitle = listOfNotNull(current.kind, jobStatusLabel(current.status), current.progress ?: current.detail)
+        subtitle = listOfNotNull(jobKindLabel(current.kind), jobStatusLabel(current.status), current.progress ?: current.detail)
             .joinToString(" · "),
         onDismiss = onDismiss,
         trailing = {

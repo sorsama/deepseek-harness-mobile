@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Harness settings: the area in Settings and its pages. -->
+    <string name="hs_title">إعدادات الـ harness</string>
+    <string name="hs_entry_summary">البحث على الويب، وحدود الصدفة، والوكلاء الفرعيون وغيرها</string>
+    <string name="hs_intro">إعدادات يحتفظ بها الـ harness نفسه. تسري على الـ harness المتصل به.</string>
+    <string name="hs_section_more">إعدادات أخرى</string>
+    <string name="hs_empty">لا توجد في هذا الـ harness إعدادات يمكن تغييرها هنا.</string>
+    <string name="hs_unsupported">هذا الـ harness لا يسمح للتطبيق بتغيير إعداداته. غيّرها على الـ harness نفسه أو حدّثه.</string>
+    <string name="hs_read_only">يحتفظ الـ harness بهذه الإعدادات للقراءة فقط، لذا لا يمكن تغييرها من هنا.</string>
+    <string name="hs_refresh_failed">تعذّر التحديث. نعرض ما جرى تحميله سابقًا.</string>
+    <string name="hs_note_restart">أعد تشغيل الـ harness لتسري تغييرات هذه الصفحة.</string>
+
+    <!-- Page names and one-line descriptions. -->
+    <string name="hs_page_web_search">البحث على الويب</string>
+    <string name="hs_page_web_search_desc">كيف يبحث الوكيل على الويب، والمفتاح الذي يستخدمه.</string>
+    <string name="hs_page_shell">الصدفة</string>
+    <string name="hs_page_shell_desc">المدة التي يمكن أن يعمل فيها الأمر، وقدر المخرجات التي يحتفظ بها.</string>
+    <string name="hs_page_subagents">الوكلاء الفرعيون</string>
+    <string name="hs_page_subagents_desc">العمق والعدد، والنماذج التي يمكنهم استخدامها.</string>
+    <string name="hs_page_agent_loop">حلقة الوكيل</string>
+    <string name="hs_page_agent_loop_desc">عدد استدعاءات الأدوات التي ينفذها الوكيل في وقت واحد.</string>
+    <string name="hs_page_session_log">سجل الجلسة</string>
+    <string name="hs_page_session_log_desc">شارك سجلات الجلسات للمساعدة في تحسين DeepSeek.</string>
+
+    <!-- Shared field words. -->
+    <string name="hs_overridden">تم تغييره</string>
+    <string name="hs_reset">استعادة الافتراضي</string>
+    <string name="hs_reset_for">استعادة الإعداد الافتراضي لـ %1$s</string>
+    <string name="hs_readonly_note">للعرض فقط. لا يستطيع التطبيق تغييره.</string>
+    <string name="hs_remove">إزالة</string>
+    <string name="hs_remove_item">إزالة %1$s</string>
+    <string name="hs_add">إضافة</string>
+    <string name="hs_new_item">عنصر جديد</string>
+
+    <!-- Agent loop and session log. -->
+    <string name="hs_f_parallel">استدعاءات الأدوات المتوازية</string>
+    <string name="hs_f_parallel_hint">أكبر عدد من استدعاءات الأدوات يمكن تشغيلها معًا في الخطوة الواحدة.</string>
+    <string name="hs_f_session_log">رفع سجل الجلسة مع الطلبات إلى واجهة API الرسمية</string>
+    <string name="hs_f_session_log_hint">يساعد في تحسين نماذج DeepSeek ومنتجاتها.</string>
+
+    <!-- Shell. -->
+    <string name="hs_f_timeout">مهلة الأمر</string>
+    <string name="hs_f_timeout_hint">المدة التي يمكن أن يعمل فيها أمر واحد قبل إيقافه.</string>
+    <string name="hs_unit_ms">مللي ثانية</string>
+    <string name="hs_f_output">حد المخرجات لكل مجرى</string>
+    <string name="hs_f_output_hint">ما يزيد عن هذا الحد يُحفظ في ملف مؤقت بدل أن يضيع.</string>
+    <string name="hs_unit_bytes">بايت</string>
+
+    <!-- Subagents. -->
+    <string name="hs_sec_limits">الحدود</string>
+    <string name="hs_f_depth">أقصى عمق</string>
+    <string name="hs_f_depth_hint">عدد مستويات الوكلاء الفرعيين التي يمكن للوكيل بدءها. القيمة 0 تعطّل الوكلاء الفرعيين، والقيمة 1 تسمح للوكيل الرئيسي وحده ببدئهم. الأداة التي لها حد عمق خاص بها تحتفظ به.</string>
+    <string name="hs_f_width">عدد الوكلاء الفرعيين معًا</string>
+    <string name="hs_f_width_hint">أكبر عدد من الوكلاء الفرعيين الأحياء تحت وكيل رئيسي واحد، في كل المستويات. تُرفض الطلبات الجديدة عند بلوغ الحد.</string>
+    <string name="hs_sec_models">نماذج الوكلاء الفرعيين</string>
+    <string name="hs_f_model_choice">السماح للوكلاء باختيار نموذج لكل وكيل فرعي</string>
+    <string name="hs_f_model_choice_hint">يختار الوكيل من النماذج التي تسمح بها أدناه. يسري على الجلسات الجديدة فقط.</string>
+    <string name="hs_models_list_label">النماذج التي يمكن للوكلاء اختيارها</string>
+    <string name="hs_models_pick_one">اختر نموذجًا واحدًا على الأقل للتفعيل.</string>
+    <string name="hs_models_keep_one">أبقِ نموذجًا واحدًا على الأقل، أو أطفئ المفتاح.</string>
+    <string name="hs_models_load_failed">تعذّر تحميل النماذج.</string>
+    <string name="hs_models_none_why">لا يوجد نموذج جاهز بعد. تظهر نماذج المزوّد هنا عندما يكون لديه مفتاح API يعمل. أضف مفتاحًا ضمن «النماذج ومفاتيح API».</string>
+    <string name="hs_models_retired">غير متاح الآن</string>
+
+    <!-- Web search. -->
+    <string name="hs_f_search_api">استخدام واجهة Search API</string>
+    <string name="hs_f_search_api_hint">عند الإيقاف يمرّ البحث عبر DeepSeek Messages. وعند التشغيل تُستخدم واجهتا Search وFetch، ولكل منهما ميزاته وأسعاره.</string>
+    <string name="hs_f_endpoint_messages">عنوان واجهة Messages API</string>
+    <string name="hs_f_endpoint_messages_hint">أدرج بادئة واجهة API، مثل %1$s.</string>
+    <string name="hs_f_endpoint_search">عنوان واجهتي Search وFetch</string>
+    <string name="hs_f_endpoint_search_hint">أدرج بادئة واجهة API، مثل %1$s.</string>
+    <string name="hs_f_max_uses">عمليات البحث لكل طلب</string>
+    <string name="hs_f_max_uses_hint">عدد عمليات البحث التي يجريها النموذج المساعد في طلب واحد. ينطبق على البحث عبر Messages فقط.</string>
+    <string name="hs_f_count">النتائج لكل بحث</string>
+    <string name="hs_f_count_hint">عدد النتائج التي يعيدها كل استعلام، من 1 إلى 50. لا يحدّ هذا من عدد عمليات البحث.</string>
+    <string name="hs_key_unset">لا يوجد مفتاح. المحادثات التي تستخدم نموذج حساب DeepSeek فقط يمكنها البحث، عبر العنوان الافتراضي.</string>
+    <string name="hs_key_hint">يُحفظ على الـ harness، وليس في ملف إعداداته. اتركه فارغًا للإبقاء على المفتاح الحالي.</string>
+    <string name="hs_key_remove_title">إزالة مفتاح البحث على الويب؟</string>
+    <string name="hs_key_remove_body">ينسى الـ harness هذا المفتاح. يتوقف البحث على الويب الذي يحتاجه حتى تضيف مفتاحًا آخر.</string>
+    <string name="hs_key_shared">هذا المفتاح مشترك. وتستخدمه أيضًا هذه الإعدادات: %1$s. استبداله أو إزالته هنا يغيّرها أيضًا.</string>
+
+    <!-- A secret field the app has no words for. -->
+    <string name="hs_secret_set">توجد قيمة محفوظة على الـ harness.</string>
+    <string name="hs_secret_unset">لا شيء محفوظًا بعد.</string>
+    <string name="hs_secret_remove_title">إزالة القيمة المحفوظة؟</string>
+    <string name="hs_secret_remove_body">ينساها الـ harness. يمكنك إضافة قيمة جديدة لاحقًا.</string>
+
+    <!-- What is wrong with what was typed. -->
+    <string name="hs_err_required">لا يمكن ترك هذا فارغًا.</string>
+    <string name="hs_err_number">أدخل رقمًا.</string>
+    <string name="hs_err_whole">أدخل عددًا صحيحًا.</string>
+    <string name="hs_err_min">أدخل %1$s أو أكثر.</string>
+    <string name="hs_err_max">أدخل %1$s أو أقل.</string>
+    <string name="hs_err_range">أدخل عددًا صحيحًا من %1$s إلى %2$s.</string>
+    <string name="hs_err_step">أدخل رقمًا من مضاعفات %1$s.</string>
+    <string name="hs_err_min_length">الحد الأدنى للطول: %1$s.</string>
+    <string name="hs_err_max_length">الحد الأقصى للطول: %1$s.</string>
+    <string name="hs_err_format">هذا ليس بالصيغة المطلوبة.</string>
+    <string name="hs_err_option">اختر أحد الخيارات.</string>
+    <string name="hs_err_min_items">الحد الأدنى لعدد العناصر: %1$s.</string>
+    <string name="hs_err_max_items">الحد الأقصى لعدد العناصر: %1$s.</string>
+
+    <!-- A change that did not go through. -->
+    <string name="hs_fail_rejected">لم يقبل الـ harness ذلك. عادت قيمتك السابقة.</string>
+    <string name="hs_fail_conflict">جرى تغيير هذا في مكان آخر. نعرض أحدث قيمة.</string>
+    <string name="hs_fail_unreachable">تعذّر الوصول إلى الـ harness. لم يتغير شيء.</string>
+</resources>

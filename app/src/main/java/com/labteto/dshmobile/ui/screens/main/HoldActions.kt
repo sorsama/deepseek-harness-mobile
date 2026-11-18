@@ -2,10 +2,12 @@ package com.labteto.dshmobile.ui.screens.main
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AlternateEmail
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.session.ToolCallNode
@@ -72,11 +74,15 @@ internal fun ToolHoldMenu(
     result: ToolResultNode?,
     filePath: String?,
     context: ChatNodeContext,
+    /** Opens the call's raw protocol data ([toolRawJson]); null offers no such action. */
+    onShowRaw: (() -> Unit)? = null,
     onDismiss: () -> Unit,
 ) {
     val copy = rememberCopier()
     val open = LocalFileOpener.current
-    val copies = toolCopies(call.arguments, toolOutputText(result))
+    // Once per call and result: the output text of a call can be megabytes, and reading it is not
+    // something to repeat each time the menu recomposes.
+    val copies = remember(call.arguments, result) { toolCopies(call.arguments, toolOutputText(result)) }
     val actions = buildList {
         copies.forEach { item ->
             val label = when (item.kind) {
@@ -98,13 +104,54 @@ internal fun ToolHoldMenu(
                 )
             }
         }
-        // Nothing else to offer still leaves the raw arguments, which is what a bug report wants.
-        if (isEmpty() && call.arguments.isNotBlank()) {
+        // The protocol view, for whoever is debugging: what the call was sent and what came back,
+        // as the harness recorded it. It used to sit beside every output and under every card; the
+        // transcript itself now shows only what the tool did.
+        if (call.arguments.isNotBlank()) {
             add(HoldAction(stringResource(R.string.hold_copy_arguments), Icons.Outlined.ContentCopy) { copy(call.arguments) })
         }
+        onShowRaw?.let { show ->
+            add(HoldAction(stringResource(R.string.tool_output_show_raw), Icons.Outlined.Code) { show() })
+        }
     }
-    val preview = copies.firstOrNull { it.kind != ToolCopyKind.Output }?.text ?: call.name
-    HoldMenu(onDismiss = onDismiss, actions = actions, preview = preview, monospacePreview = true)
+    // What the menu is about: the command or path, else the tool in words (`pwsh` is "PowerShell",
+    // `list_agents` is "List agents"), never the wire name.
+    val preview = copies.firstOrNull { it.kind != ToolCopyKind.Output }?.text
+        ?: toolRowModel(call.name, call.arguments, context.cwd).title
+    HoldMenu(onDismiss = onDismiss, actions = actions, preview = technicalDisplay(preview), monospacePreview = true)
+}
+
+/**
+ * Everything the harness recorded about one call, as pretty JSON: its name and arguments, and once
+ * it settled, the result body, the durable `meta` the cards are built from, and the error facts.
+ * This is where the raw metadata that used to sit under every card is still one hold away.
+ */
+internal fun toolRawJson(call: ToolCallNode, result: ToolResultNode?): String {
+    val json = kotlinx.serialization.json.buildJsonObject {
+        put("name", kotlinx.serialization.json.JsonPrimitive(call.name))
+        put("callId", kotlinx.serialization.json.JsonPrimitive(call.callId))
+        val args = runCatching { com.labteto.dshmobile.core.wire.WireJson.parseToJsonElement(call.arguments) }.getOrNull()
+        put("arguments", args ?: kotlinx.serialization.json.JsonPrimitive(call.arguments))
+        if (result != null) {
+            put("isError", kotlinx.serialization.json.JsonPrimitive(result.isError))
+            result.content?.let { put("content", it) }
+            result.meta?.let { put("meta", it) }
+            if (result.errorCode != null || result.errorName != null || result.errorReason != null) {
+                put("error", kotlinx.serialization.json.buildJsonObject {
+                    result.errorName?.let { put("name", kotlinx.serialization.json.JsonPrimitive(it)) }
+                    result.errorCode?.let { put("code", kotlinx.serialization.json.JsonPrimitive(it)) }
+                    result.errorReason?.let { put("reason", kotlinx.serialization.json.JsonPrimitive(it)) }
+                })
+            }
+        }
+    }
+    return RAW_JSON.encodeToString(kotlinx.serialization.json.JsonElement.serializer(), json)
+}
+
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+private val RAW_JSON = kotlinx.serialization.json.Json {
+    prettyPrint = true
+    prettyPrintIndent = "  "
 }
 
 /**

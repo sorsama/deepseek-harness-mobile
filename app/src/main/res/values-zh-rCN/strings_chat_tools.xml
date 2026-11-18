@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_tool_title_todo">任务清单</string>
+    <string name="chat_tool_title_ask">提问</string>
+    <string name="chat_tool_title_subagent">子智能体</string>
+    <string name="chat_tool_title_skill">技能</string>
+    <string name="chat_tool_title_read_image">读取图片</string>
+    <string name="chat_tool_title_job_output">任务输出</string>
+    <string name="chat_tool_title_job_kill">停止任务</string>
+    <string name="chat_tool_title_terminal_open">打开终端</string>
+    <string name="chat_tool_title_terminal_read">读取终端</string>
+    <string name="chat_tool_title_terminal_list">终端</string>
+    <string name="chat_tool_title_terminal_signal">发送终端信号</string>
+    <string name="chat_tool_title_terminal_close">关闭终端</string>
+    <string name="chat_tool_title_terminal_send">发送到终端</string>
+    <string name="chat_tool_title_lsp">查询代码</string>
+    <string name="chat_tool_title_goal_create">设定目标</string>
+    <string name="chat_tool_title_goal_view">查看目标</string>
+    <string name="chat_tool_title_goal_update">更新目标</string>
+    <string name="chat_tool_title_schedule_create">新建提醒</string>
+    <string name="chat_tool_title_schedule_list">提醒</string>
+    <string name="chat_tool_title_schedule_update">修改提醒</string>
+    <string name="chat_tool_title_schedule_delete">删除提醒</string>
+    <string name="chat_tool_title_present">分享文件</string>
+
+    <string name="chat_tool_todo_progress">已完成 %1$d/%2$d</string>
+    <plurals name="chat_tool_todo_added">
+        <item quantity="other">新增 %d</item>
+    </plurals>
+    <plurals name="chat_tool_todo_changed">
+        <item quantity="other">更新 %d</item>
+    </plurals>
+    <plurals name="chat_tool_todo_removed">
+        <item quantity="other">移除 %d</item>
+    </plurals>
+    <string name="chat_tool_todo_no_changes">没有变化</string>
+    <string name="chat_tool_todo_not_saved">没有保存。这是它尝试写入的清单。</string>
+    <string name="chat_tool_todo_pending">待处理</string>
+    <string name="chat_tool_todo_in_progress">进行中</string>
+    <string name="chat_tool_todo_done">已完成</string>
+    <string name="chat_tool_todo_change_added">新增</string>
+    <string name="chat_tool_todo_change_moved">调整了顺序</string>
+    <string name="chat_tool_todo_change_removed">已移除</string>
+    <string name="chat_tool_todo_change_was">原为：%1$s</string>
+
+    <string name="chat_tool_ask_waiting">等你回答</string>
+    <string name="chat_tool_ask_answered">已回答 %1$d/%2$d</string>
+    <string name="chat_tool_ask_cancelled">你关闭了这些问题</string>
+    <string name="chat_tool_ask_interrupted">你回答前已停止</string>
+    <string name="chat_tool_ask_timed_out">未在时限内回答</string>
+    <string name="chat_tool_ask_carried_on">智能体没有等待，继续往下做了</string>
+    <string name="chat_tool_ask_closed">已关闭</string>
+    <string name="chat_tool_ask_your_answer">你的回答：%1$s</string>
+    <string name="chat_tool_ask_not_answered">未回答</string>
+
+    <string name="chat_tool_subagent_starting">正在启动</string>
+    <string name="chat_tool_subagent_started">已启动</string>
+    <string name="chat_tool_subagent_working">工作中</string>
+    <string name="chat_tool_subagent_finished">已结束</string>
+    <string name="chat_tool_subagent_failed">没有启动</string>
+    <string name="chat_tool_subagent_replied">已回复</string>
+    <string name="chat_tool_subagent_model">模型：%1$s</string>
+    <string name="chat_tool_subagent_model_label">模型：</string>
+    <string name="chat_tool_subagent_open">打开子智能体</string>
+    <string name="chat_tool_subagent_conversation">这是子智能体的对话</string>
+
+    <string name="chat_tool_skill_loading">正在加载</string>
+    <string name="chat_tool_skill_loaded">已加载</string>
+    <string name="chat_tool_skill_not_loaded">没有加载</string>
+    <string name="chat_tool_image_none">没有返回图片</string>
+
+    <string name="chat_tool_background">在后台运行</string>
+    <string name="chat_tool_background_starting">正在后台启动</string>
+    <string name="chat_tool_open_job">打开任务</string>
+
+    <string name="chat_tool_state_exited">已退出</string>
+    <string name="chat_tool_state_started">已启动</string>
+    <string name="chat_tool_state_stop_requested">已请求停止</string>
+    <string name="chat_tool_state_already_finished">早已结束</string>
+    <string name="chat_tool_state_signal_sent">信号已发送</string>
+    <string name="chat_tool_state_closed">已关闭</string>
+    <string name="chat_tool_state_closing">正在关闭</string>
+    <string name="chat_tool_state_scheduled">已安排</string>
+    <string name="chat_tool_state_overdue">已逾期</string>
+    <string name="chat_tool_state_deleted">已删除</string>
+    <string name="chat_tool_state_goal_waiting">等待继续</string>
+    <string name="chat_tool_state_goal_cleared">已清除</string>
+
+    <string name="chat_tool_field_type">类型</string>
+    <string name="chat_tool_field_pid">进程 ID</string>
+    <string name="chat_tool_field_exit_code">退出码</string>
+    <string name="chat_tool_field_signal">信号</string>
+    <string name="chat_tool_field_process_group">进程组</string>
+    <string name="chat_tool_field_lines">行</string>
+    <string name="chat_tool_field_rounds">轮次</string>
+    <string name="chat_tool_field_reason">原因</string>
+    <string name="chat_tool_field_when">时间</string>
+    <string name="chat_tool_field_repeats">重复</string>
+    <string name="chat_tool_field_location">行号</string>
+    <string name="chat_tool_field_kind">种类</string>
+    <string name="chat_tool_field_value">%1$s：%2$s</string>
+
+    <plurals name="chat_tool_jobs_count">
+        <item quantity="other">%d 个后台任务</item>
+    </plurals>
+    <plurals name="chat_tool_terminals_count">
+        <item quantity="other">%d 个终端</item>
+    </plurals>
+    <plurals name="chat_tool_places_count">
+        <item quantity="other">%d 处结果</item>
+    </plurals>
+    <plurals name="chat_tool_reminders_count">
+        <item quantity="other">%d 个提醒</item>
+    </plurals>
+    <plurals name="chat_tool_files_count">
+        <item quantity="other">%d 个文件</item>
+    </plurals>
+    <string name="chat_tool_jobs_none">没有后台任务</string>
+    <string name="chat_tool_terminals_none">没有打开的终端</string>
+    <string name="chat_tool_places_none">什么也没找到</string>
+    <string name="chat_tool_reminders_none">没有提醒</string>
+    <string name="chat_tool_goal_none">没有设定目标</string>
+    <string name="chat_tool_output_cut">输出被截断了。</string>
+
+    <string name="chat_tool_repeat_once">一次</string>
+    <string name="chat_tool_repeat_every_second">每秒</string>
+    <string name="chat_tool_repeat_every_minute">每分钟</string>
+    <string name="chat_tool_repeat_every_hour">每小时</string>
+    <string name="chat_tool_repeat_every_day">每天</string>
+    <plurals name="chat_tool_repeat_seconds">
+        <item quantity="other">每 %d 秒</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_minutes">
+        <item quantity="other">每 %d 分钟</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_hours">
+        <item quantity="other">每 %d 小时</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_days">
+        <item quantity="other">每 %d 天</item>
+    </plurals>
+    <string name="chat_tool_repeat_daily">每天 %1$s（%2$s）</string>
+    <string name="chat_tool_repeat_weekly">每%1$s %2$s（%3$s）</string>
+    <string name="chat_tool_repeat_cron">自定义计划：%1$s（%2$s）</string>
+
+    <string name="chat_tool_arguments">参数</string>
+    <plurals name="chat_tool_arguments_count">
+        <item quantity="other">%d 个字段</item>
+    </plurals>
+    <string name="chat_tool_raw_title">原始调用数据</string>
+
+    <string name="chat_tool_failed_label">失败：</string>
+    <string name="chat_tool_failed">这一步失败了。</string>
+    <string name="chat_tool_stopped">还没完成就停止了。</string>
+    <string name="chat_tool_auto_review_denied">自动审查拦下了这一步，所以没有运行。</string>
+    <string name="chat_tool_reason_label">原因：</string>
+
+    <string name="chat_turn_failed_rate_limit">模型服务商现在很忙，请稍后再试。</string>
+    <string name="chat_turn_failed_quota">模型服务商账户余额不足。</string>
+    <string name="chat_turn_failed_account_quota">你的 DeepSeek 账户 token 已用完。</string>
+    <string name="chat_turn_failed_context">这段对话对模型来说太长了。请压缩上下文或新开一个对话。</string>
+    <string name="chat_turn_failed_empty">模型返回了空回复。</string>
+    <string name="chat_turn_failed_bad_key">API 密钥被拒绝了。请在“模型”中检查。</string>
+    <string name="chat_turn_failed_missing_key">这个模型还没有 API 密钥。请在“模型”中添加。</string>
+    <string name="chat_turn_failed_network">连不上模型服务商。</string>
+    <string name="chat_turn_failed_timeout">模型太久没有回答。</string>
+    <string name="chat_turn_failed_server">模型服务商那边出了问题。</string>
+    <string name="chat_turn_failed_process">这个回合还没结束，harness 就停止了。</string>
+    <string name="chat_turn_failed_signed_out">你已退出 DeepSeek 账号，所以停止了。</string>
+    <string name="chat_turn_failed_unknown">这个回合出了点问题。</string>
+    <string name="chat_turn_error_code_label">代码：</string>
+</resources>

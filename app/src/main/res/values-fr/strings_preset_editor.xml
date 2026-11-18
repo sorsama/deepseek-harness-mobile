@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">Voir le contenu</string>
+    <string name="preset_comp_open_for">Voir le contenu de %1$s</string>
+    <string name="preset_comp_subtitle">Lecture seule. Cet hôte modifie les préréglages au moyen de lots de plugins.</string>
+    <string name="preset_comp_plugins">Plugins : %1$d</string>
+    <string name="preset_comp_conditional">Conditionnels : %1$d</string>
+    <string name="preset_comp_off">Désactivés : %1$d</string>
+    <string name="preset_comp_always_on">Toujours actif</string>
+    <string name="preset_comp_state_off">Désactivé</string>
+    <string name="preset_comp_state_conditional">Conditionnel</string>
+    <string name="preset_comp_condition">Chargé sauf si ceci est vrai sur l’hôte : %1$s</string>
+    <string name="preset_comp_entry_unnamed">Plugin %1$d</string>
+    <string name="preset_comp_settings">Paramètres (YAML)</string>
+    <string name="preset_comp_raw">Plugins de ce préréglage</string>
+    <string name="preset_comp_copy_all">Tout copier en YAML</string>
+    <string name="preset_comp_loading">Lecture du préréglage</string>
+    <string name="preset_comp_failed">Impossible de lire ce préréglage : %1$s</string>
+    <string name="preset_comp_missing">Ce préréglage n’est plus sur l’hôte.</string>
+    <string name="preset_comp_unsupported">Cet hôte ne peut pas afficher le contenu d’un préréglage.</string>
+    <string name="preset_comp_retry">Réessayer</string>
+    <string name="preset_comp_empty">Ce préréglage ne liste aucun plugin.</string>
+</resources>

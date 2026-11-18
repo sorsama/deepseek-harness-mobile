@@ -167,6 +167,41 @@ harness's own Models page does (`packages/client/ui-settings-models`, 0.2.2-rc.1
 The key crosses the wire in `credentials/set` (and in a check's `apiKey`) and nowhere else;
 the app keeps no copy.
 
+### DeepSeek account sign-in
+
+The Account page (Harness settings) drives the `account` namespace
+(`packages/api/account-controller`, harness 0.2.1-rc.2). The harness keeps the token in its own
+credential store; no call returns it.
+
+- **Read:** `account/getState {}` answers `{status: signed-out | credential-stored, links, attempt}`.
+  The harness keeps the latest attempt after it ends, so `attempt.phase` (`initializing`,
+  `waiting-browser`, `exchanging`, `committing`, `succeeded`, `cancelled`, `expired`, `failed`) is
+  progress only for the first four; a signed-in harness still carries a `succeeded` attempt. Only a
+  `waiting-browser` attempt has `authorizeUrl`, a one-time link. A failed attempt has `errorCode`
+  (`no-response`, `network`, `protocol`, `storage`). `getProfile {client}`, `getBalance {client}` and
+  `getUnnotifiedBonuses {client}` answer null while signed out; `ackBonusNotified {accountId, orderId,
+  client}` answers false when the account changed. `client` is `{version, locale, timezoneOffsetSeconds}`.
+- **Start:** `startSignIn {client, callbackOrigin, loginSource}` answers at once with an `initializing`
+  attempt, or joins the one that runs. The harness never opens a browser. The client does, with
+  `authorizeUrl`, and the sign-in ends when the browser is redirected to
+  `<callbackOrigin>/oauth/callback`, a route the harness serves on its own web server for the length
+  of the attempt (10 minutes at most). The harness accepts only `http://localhost`, `http://127.0.0.1`
+  or `http://[::1]` with an explicit port as `callbackOrigin`; anything else is
+  `gateway/internal` with `account: protocol`. So the browser that approves the sign-in must reach
+  the harness at its own loopback address: the app starts a sign-in only for a harness reached on
+  this phone's loopback (the built-in one, Termux, `adb reverse`), and for any other tells the person
+  to sign in on the harness computer.
+- **Finish:** there is no event for it. The official client follows the `account/watch` stream; the
+  app asks `account/getState` again, every 0.5 to 2 seconds while an attempt runs, and at once when it
+  comes back to the front. `deepseek-account/session-expired` arrives on `$events` when the harness
+  drops a sign-in DeepSeek rejected.
+- **Cancel and sign out:** `cancelSignIn {attemptId}` (a stale id changes nothing) and
+  `signOut {client}`, which keeps API keys and stops tasks running on the account;
+  `hasRunningAccountTasks {}` says whether any do.
+- **No account service:** a harness with its account plugin switched off still exports the calls and
+  answers `gateway/service-unavailable`; an older one answers `gateway/invocation-unavailable`.
+  Either hides the page.
+
 ### Error codes
 
 Every business code is namespaced since 0.1.3, `<service>/<fault>`. The ones
@@ -577,6 +612,7 @@ so both generations share one apply path.
 | `subagentCatalog` | `[{id, createdAt, mode: one-shot\|continuable\|unknown, label?}]` — the direct children, and since 0.1.7 the **only** source of them (`subagents/list` is gone). Activity is not in it: a child's running state is its own session row's `running` and `api-session/status` |
 | `subagentTiming`, `subagent` | a child's active-turn duration, and a descriptor-backed child's identity |
 | `turnOutline`, `schedule` | new in 0.1.2–0.1.3; carried but not yet read by this client |
+| `agentTeam` | experimental Agent Teams: `{members, tasks, failure?}` on every session once the bundle is on; read only on a Lead. See [Agent Teams](#agent-teams-experimental-harness-021-rc2) |
 
 `turnBoundary` is **not** on this list, though 0.11.4 said it was: it is declared
 in `SessionProjectionStateMap` only, which is host-side fold state, so it never
@@ -862,3 +898,51 @@ for the earlier contract. See [validation status](VALIDATION-0.13.0.md) for run 
 - A question request may carry `wait: {callId, timed?}`. Timed requests attach `userQuestions/attachWait` using `agentId` and `callId`, then count the opening `remainingMs` locally. Focus pauses; edits and Take time hold. Closing hides the card. Expiry rejects with `UserQuestionError/ASK_TIMED_OUT` and releases the claim. The projection decides continuation and settlement. `userQuestions/answer` submits later answers; inbox provenance marks queued replies. Requests without `wait` retain the legacy blocking flow.
 - Composer references retain UTF-16 spans, type, target and canonical mention text locally. Submission still uses ordinary text content. File candidates use the file-reference grammar; session candidates supply their canonical mention. Editing through a reference dissolves its metadata. Composer text and references, and question answer drafts, persist in local preferences across app restarts. They are scoped by host and session; questions additionally use call ID. Attachment bytes and upload state are not part of this persisted draft record.
 - YAML frontmatter is decoded with safe constructors and explicit size, nesting and alias bounds. Invalid headers remain visible. Partial JSON argument extraction is display-only and cannot create an executable tool request.
+
+## Agent Teams (experimental, harness 0.2.1-rc.2)
+
+Shipped as the optional bundle `@deepseek-ai/dsh-experimental-agent-team-profile`, offered switched
+off in the plugin manager (`OPTIONAL_BUNDLES` in `packages/boot/app-boot/src/profile.ts`). It adds the
+Team service (`agent-team`), nine model tools (`tool-agent-team`) and the web panel
+(`client-ui-agent-team`), and disables the ordinary `subagent`, `subagent_fork` and global child
+controls. Sources: `packages/experimental/agent-team/src/{projection,types,task-view,roster}.ts`.
+
+**There is no Team RPC.** The service registers one session projection and nothing on the remote
+API; teammates, messages and tasks are created and changed only by the agents' tools. The official
+web panel is read-only (roster, task board, open a teammate), and so is the app's.
+
+`agentTeam` is a wire projection (`teamProjectionDefinition`), so it arrives like any other key:
+in the `session/follow` snapshot and in `session/control` `projection` frames. Every session
+carries one once the bundle is on (each root is the implicit Lead of a team whose id is its session
+id); a host without the bundle publishes no such key, and the app shows nothing. The value:
+
+```json
+{"members":[{"id":"<leadSessionId>","name":"lead","role":"lead","phase":"active"},
+            {"id":"<childSessionId>","name":"reviewer","role":"teammate","phase":"provisioning|active|failed","error?":"…"}],
+ "tasks":[{"id":"task-1","revision":2,"subject":"…","description":"…","status":"pending|in_progress|completed",
+           "blockedBy":["task-0"],"writeScopes":["src/web"],"ownerName?":"reviewer","ready":false,
+           "writeScopeWarnings":["write scopes overlap with task-3"]}],
+ "failure?":"<why a persisted team record was rejected>"}
+```
+
+- The Lead is always the first member, named `lead`. Teammate names are permanent and never reused;
+  a teammate whose creation failed stays on the roster as `failed` with its `error`.
+- `phase` is durable lifecycle only. Whether a member is working right now is its own session's
+  running state (`api-session/status`), exactly as for any subagent.
+- Deleted tasks are omitted. `ready` is the host's: pending and every `blockedBy` task completed (a
+  deleted blocker never completes). `ownerName` is `lead` or a teammate name; there is no owner id.
+- `writeScopeWarnings` are advisory English sentences of the form `write scopes overlap with <taskId>`;
+  the app recognises that form to say it in the reader's language and shows anything else as sent.
+- `failure` is terminal for the projection: the host keeps publishing the last valid roster and
+  tasks beside it.
+- The view carries no description, model or message history. A teammate is a continuable child of
+  the Lead (`roster.ts` starts it through `subagents.startActivation` with `label: description`), so
+  it is listed in the Lead's `subagentCatalog` with its job as the label. The app reads the job
+  from there and opens the teammate's conversation the way it opens any continuable child:
+  `session/follow` with the subagent address `{parentSessionId, childSessionId, mode:"continuable"}`,
+  follow-ups through `subagents/prompt` and Stop through `subagents/interruptByParent`. A follow-up
+  sent this way is an ordinary child prompt, not a Team peer message, as on the web.
+
+The app shows the Team chip only on a Lead session (a child's own `agentTeam` describes an empty
+team it would lead, and the web panel reads the Lead's instead). Live updates come with the
+projection frames; there is nothing to poll.
