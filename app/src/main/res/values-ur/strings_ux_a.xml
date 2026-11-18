@@ -80,4 +80,10 @@
     <string name="ux_a_save_error">یہ آٹومیشن محفوظ نہیں ہوئی۔ قاعدہ تازہ کر کے دوبارہ کوشش کریں۔</string>
     <string name="ux_a_delete_error">یہ آٹومیشن حذف نہیں ہوئی۔ فہرست تازہ کر کے دوبارہ کوشش کریں۔</string>
     <string name="ux_a_last_run">آخری بار چلایا گیا: %1$s</string>
+    <string name="plugins_filter_on">فعال %1$d</string>
+    <string name="plugins_filter_off">غیر فعال %1$d</string>
+    <string name="plugins_count_on">%2$d میں سے %1$d فعال</string>
+    <string name="plugins_open_details">تفصیلات کھولیں</string>
+    <string name="plugins_more_matches">+%1$d مزید</string>
+    <string name="plugins_no_matches">کوئی نتیجہ نہیں ملا</string>
 </resources>

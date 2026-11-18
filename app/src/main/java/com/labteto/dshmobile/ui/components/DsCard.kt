@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -21,6 +22,10 @@ import com.labteto.dshmobile.ui.theme.DsTheme
 /**
  * A grouped surface: 18dp radius, `bgLayer1` fill, hairline border — the design kit's `.card`.
  *
+ * [contentPadding] is 16dp all round by default. A card that splits into separate tap targets
+ * (a row you open next to a switch you flip) passes zero and pads inside each target instead, so
+ * no part of the card is dead.
+ *
  * The border is load-bearing in the light theme, where the page is warm paper and the card is
  * white: the edge is what separates them, so it is never dropped even when the fill alone would
  * read in dark mode.
@@ -30,6 +35,7 @@ fun DsCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(DsSpacing.small),
+    contentPadding: PaddingValues = PaddingValues(DsSpacing.comfortable),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = DsTheme.colors
@@ -51,7 +57,7 @@ fun DsCard(
                     Modifier
                 },
             )
-            .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.comfortable),
+            .padding(contentPadding),
         verticalArrangement = verticalArrangement,
         content = content,
     )
