@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.ui.input
 
 import androidx.compose.animation.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.IndicationNodeFactory
 import androidx.compose.foundation.interaction.FocusInteraction
@@ -24,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsTheme
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeMark
@@ -141,7 +141,12 @@ private class DsIndicationNode(
         move = coroutineScope.launch {
             if (next != press) {
                 val held = pressStarted?.elapsedNow()
-                if (held != null && held < MinimumPress) delay(MinimumPress - held)
+                if (held != null && held < MinimumPress) {
+                    // Finish showing the press before letting go of it. On the frame clock rather than
+                    // with a delay, so it moves with the animation clock (and a test's virtual one).
+                    val remaining = (MinimumPress - held).inWholeMilliseconds.toInt().coerceAtLeast(1)
+                    fill.animateTo(press, tween(remaining)) { invalidateDraw() }
+                }
             }
             fill.animateTo(next, DsAnimations.pressFill) { invalidateDraw() }
         }
