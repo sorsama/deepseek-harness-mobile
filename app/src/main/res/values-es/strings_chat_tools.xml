@@ -66,6 +66,7 @@
     <string name="chat_tool_subagent_failed">No se inició</string>
     <string name="chat_tool_subagent_replied">Respondió</string>
     <string name="chat_tool_subagent_model">Modelo: %1$s</string>
+    <string name="chat_tool_subagent_model_label">Modelo:</string>
     <string name="chat_tool_subagent_open">Abrir subagente</string>
     <string name="chat_tool_subagent_conversation">Esta es la conversación de un subagente</string>
 
@@ -174,11 +175,11 @@
     </plurals>
     <string name="chat_tool_raw_title">Datos sin procesar</string>
 
-    <string name="chat_tool_failed_with">Falló: %1$s</string>
+    <string name="chat_tool_failed_label">Falló:</string>
     <string name="chat_tool_failed">Este paso falló.</string>
     <string name="chat_tool_stopped">Se detuvo antes de terminar.</string>
     <string name="chat_tool_auto_review_denied">La revisión automática bloqueó este paso, así que no se ejecutó.</string>
-    <string name="chat_tool_reason">Motivo: %1$s</string>
+    <string name="chat_tool_reason_label">Motivo:</string>
 
     <string name="chat_turn_failed_rate_limit">El proveedor del modelo está ocupado. Vuelve a intentarlo en un momento.</string>
     <string name="chat_turn_failed_quota">La cuenta del proveedor del modelo se quedó sin saldo.</string>
@@ -193,5 +194,5 @@
     <string name="chat_turn_failed_process">El harness se detuvo antes de terminar este turno.</string>
     <string name="chat_turn_failed_signed_out">Se detuvo porque cerraste sesión en DeepSeek.</string>
     <string name="chat_turn_failed_unknown">Algo salió mal en este turno.</string>
-    <string name="chat_turn_error_code">Código: %1$s</string>
+    <string name="chat_turn_error_code_label">Código:</string>
 </resources>

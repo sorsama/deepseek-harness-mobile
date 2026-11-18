@@ -211,6 +211,8 @@ private fun ToolCardBody(view: ToolCardView, actions: ToolCardActions = ToolCard
 private fun TerminalBody(card: ToolCardView.TerminalCard, actions: ToolCardActions = ToolCardActions.None) {
     val colors = DsTheme.colors
     val state = when {
+        // Stopped is amber like the row's own dot; only a failed call is red.
+        card.stopped -> StateDotState.Warning
         card.failed -> StateDotState.Error
         card.background -> if (card.running == true || actions.jobRunning) StateDotState.Running else StateDotState.Idle
         card.running == true -> StateDotState.Running
@@ -235,10 +237,10 @@ private fun TerminalBody(card: ToolCardView.TerminalCard, actions: ToolCardActio
             }
             // The command itself, since the header shows its description: a background launch and a
             // failed call have no output under them to say what ran.
-            if ((card.background || card.failed) && card.description != null && !card.title.isNullOrEmpty()) {
+            if ((card.background || card.cutShort) && card.description != null && !card.title.isNullOrEmpty()) {
                 CodeText(card.title, blockId = "cmd", fadeColor = colors.codeBlockBg, modifier = Modifier.fillMaxWidth())
             }
-            if (card.background && !card.failed) BackgroundJobLine(card, actions)
+            if (card.background && !card.cutShort) BackgroundJobLine(card, actions)
             // Output does not wrap: build lines and tables keep their columns, and the block scrolls
             // sideways as one piece (or wraps, when the reader asks).
             card.output?.let {

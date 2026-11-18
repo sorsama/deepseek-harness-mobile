@@ -60,6 +60,7 @@
     <string name="chat_tool_subagent_failed">เริ่มไม่ได้</string>
     <string name="chat_tool_subagent_replied">ตอบกลับแล้ว</string>
     <string name="chat_tool_subagent_model">โมเดล: %1$s</string>
+    <string name="chat_tool_subagent_model_label">โมเดล:</string>
     <string name="chat_tool_subagent_open">เปิดซับเอเจนต์</string>
     <string name="chat_tool_subagent_conversation">นี่คือบทสนทนาของซับเอเจนต์</string>
 
@@ -148,11 +149,11 @@
     </plurals>
     <string name="chat_tool_raw_title">ข้อมูลดิบของการเรียก</string>
 
-    <string name="chat_tool_failed_with">ล้มเหลว: %1$s</string>
+    <string name="chat_tool_failed_label">ล้มเหลว:</string>
     <string name="chat_tool_failed">ขั้นตอนนี้ล้มเหลว</string>
     <string name="chat_tool_stopped">หยุดก่อนที่จะเสร็จ</string>
     <string name="chat_tool_auto_review_denied">การตรวจอัตโนมัติบล็อกขั้นตอนนี้ไว้ จึงไม่ได้รัน</string>
-    <string name="chat_tool_reason">เหตุผล: %1$s</string>
+    <string name="chat_tool_reason_label">เหตุผล:</string>
 
     <string name="chat_turn_failed_rate_limit">ผู้ให้บริการโมเดลไม่ว่างในตอนนี้ ลองใหม่อีกครั้งในอีกสักครู่</string>
     <string name="chat_turn_failed_quota">บัญชีผู้ให้บริการโมเดลเครดิตหมดแล้ว</string>
@@ -167,5 +168,5 @@
     <string name="chat_turn_failed_process">harness หยุดก่อนที่เทิร์นนี้จะจบ</string>
     <string name="chat_turn_failed_signed_out">หยุดแล้วเพราะคุณออกจากระบบ DeepSeek</string>
     <string name="chat_turn_failed_unknown">เกิดข้อผิดพลาดบางอย่างในเทิร์นนี้</string>
-    <string name="chat_turn_error_code">รหัส: %1$s</string>
+    <string name="chat_turn_error_code_label">รหัส:</string>
 </resources>

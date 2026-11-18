@@ -13,6 +13,7 @@ import com.labteto.dshmobile.ui.components.DetailState
 import com.labteto.dshmobile.ui.components.DetailValue
 import com.labteto.dshmobile.ui.components.DetailsCard
 import com.labteto.dshmobile.ui.components.DetailsTool
+import com.labteto.dshmobile.ui.components.DisclosureState
 import com.labteto.dshmobile.ui.components.ImageCard
 import com.labteto.dshmobile.ui.components.ImageFacts
 import com.labteto.dshmobile.ui.components.QuestionCard
@@ -220,13 +221,15 @@ internal fun questionCard(args: JsonObject, result: ToolResultNode?): QuestionCa
  */
 internal fun questionVerdictOf(result: ToolResultNode?): QuestionOutcome? {
     if (result == null || !result.isError) return null
-    val code = result.errorCode
-    return when {
-        code == "ASK_CANCELLED" || code == "cancelled" -> QuestionOutcome.Cancelled
-        code == "ASK_TIMED_OUT" -> QuestionOutcome.TimedOut
-        isAbortedResult(result) -> QuestionOutcome.Interrupted
-        else -> null
-    }
+    return questionEndingOf(result.errorCode, result.errorName)
+}
+
+/** [questionVerdictOf] from a record's error code and name alone. */
+private fun questionEndingOf(code: String?, name: String?): QuestionOutcome? = when {
+    code == "ASK_CANCELLED" || code == "cancelled" -> QuestionOutcome.Cancelled
+    code == "ASK_TIMED_OUT" -> QuestionOutcome.TimedOut
+    isAbortError(code, name) -> QuestionOutcome.Interrupted
+    else -> null
 }
 
 // ============================================================================================
@@ -243,7 +246,12 @@ internal fun subagentCard(args: JsonObject, result: ToolResultNode?): SubagentCa
     val model = str(args, "model")?.takeIf { it.isNotBlank() }
     val base = SubagentCard(title = title, prompt = prompt, model = model, phase = SubagentPhase.Starting)
     if (result == null) return base
-    if (result.isError) return base.copy(phase = SubagentPhase.Failed)
+    if (result.isError) {
+        // The same answer the row and its dot give: a subagent call the turn's stop cut short was
+        // stopped, not failed to start.
+        val stopped = toolOutcome("subagent", result, running = false) == ToolOutcome.Stopped
+        return base.copy(phase = if (stopped) SubagentPhase.Stopped else SubagentPhase.Failed)
+    }
     val text = singleResultText(result) ?: return base.copy(phase = SubagentPhase.Started)
     SUBAGENT_STARTED.find(text.trim())?.let { match ->
         // Only a session-backed child is something the Subagents sheet can open; a background job id
@@ -621,9 +629,68 @@ internal const val ABORT_ERROR_NAME = "AbortError"
  */
 internal fun isAbortedResult(result: ToolResultNode?): Boolean {
     if (result == null || !result.isError) return false
-    val code = result.errorCode
-    return code == TOOL_ABORTED_CODE || code == TOOL_ABORTED_BEFORE_DISPATCH_CODE || code == "interrupted" ||
-        code?.endsWith("_ABORTED") == true || result.errorName == ABORT_ERROR_NAME
+    return isAbortError(result.errorCode, result.errorName)
+}
+
+/** The abort forms listed at [isAbortedResult], from a record's error code and name alone. */
+internal fun isAbortError(code: String?, name: String?): Boolean =
+    code == TOOL_ABORTED_CODE || code == TOOL_ABORTED_BEFORE_DISPATCH_CODE || code == "interrupted" ||
+        code?.endsWith("_ABORTED") == true || name == ABORT_ERROR_NAME
+
+/**
+ * How a call stands. This is the one answer every dot, icon, count and line about a call reads: the
+ * row's state, a terminal card's own dot, a subagent card's, the failed count in a group's header and
+ * a nested call's row. Each of them used to ask "is the result an error?" for itself, and a stopped
+ * command (an error, by the harness's records) was amber on the row and still red inside its card.
+ */
+internal enum class ToolOutcome {
+    /** No result yet, and the session is working. */
+    Running,
+
+    /** It ran to its end: a result that is not an error, or one that is an error but not a failure of the call (a question the reader closed). */
+    Done,
+
+    /** It ran and went wrong, or a gate refused it. */
+    Failed,
+
+    /** The turn was stopped while it ran or before it started ([isAbortedResult]). */
+    Stopped,
+}
+
+/**
+ * The [ToolOutcome] of the call named [name] with [result] (null while it has none). A call with no
+ * result in a session that is not working is [ToolOutcome.Done]: nothing is going to change it, and
+ * the row has never shown such a call as anything but plain.
+ */
+internal fun toolOutcome(name: String, result: ToolResultNode?, running: Boolean): ToolOutcome =
+    toolOutcomeOfRecord(name, result != null, result?.isError == true, result?.errorCode, result?.errorName, running)
+
+/**
+ * [toolOutcome] for a record that is not a [ToolResultNode] (a nested call's settlement), from the
+ * facts every kind of record carries. All of the logic is here; the other overload only reads a result.
+ */
+internal fun toolOutcomeOfRecord(
+    name: String,
+    settled: Boolean,
+    isError: Boolean,
+    errorCode: String?,
+    errorName: String?,
+    running: Boolean,
+): ToolOutcome = when {
+    !settled -> if (running) ToolOutcome.Running else ToolOutcome.Done
+    !isError -> ToolOutcome.Done
+    isAbortError(errorCode, errorName) -> ToolOutcome.Stopped
+    // A question the reader closed, or nobody answered in time: how it ended, not a failure.
+    name == "ask_user_question" && questionEndingOf(errorCode, errorName) != null -> ToolOutcome.Done
+    else -> ToolOutcome.Failed
+}
+
+/** The leading slot and the shimmer of a row for this outcome: a failed call is red, a stopped one amber. */
+internal fun ToolOutcome.disclosureState(): DisclosureState = when (this) {
+    ToolOutcome.Running -> DisclosureState.Running
+    ToolOutcome.Done -> DisclosureState.Idle
+    ToolOutcome.Failed -> DisclosureState.Error
+    ToolOutcome.Stopped -> DisclosureState.Stopped
 }
 
 /**
@@ -631,10 +698,8 @@ internal fun isAbortedResult(result: ToolResultNode?): Boolean {
  * short, and a question the reader closed or left unanswered, are outcomes the row states in their
  * own plain words; none of them is a failure.
  */
-internal fun callFailed(call: ToolCallNode, result: ToolResultNode?): Boolean {
-    if (result == null || !result.isError || isAbortedResult(result)) return false
-    return !(call.name == "ask_user_question" && questionVerdictOf(result) != null)
-}
+internal fun callFailed(call: ToolCallNode, result: ToolResultNode?): Boolean =
+    toolOutcome(call.name, result, running = false) == ToolOutcome.Failed
 
 /**
  * What went wrong with [result], or null when it did not fail. A shell command that exited non-zero

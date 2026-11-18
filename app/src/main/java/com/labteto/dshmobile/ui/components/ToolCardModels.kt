@@ -119,7 +119,15 @@ sealed interface ToolCardView {
          * shell gave no single status): the card keeps the command and claims no exit code.
          */
         val failed: Boolean = false,
-    ) : ToolCardView
+        /**
+         * The turn's stop cut the call short. It is not a failure: the card's own dot is amber, like
+         * its row's, and like a failed one the card keeps the command and claims no exit code.
+         */
+        val stopped: Boolean = false,
+    ) : ToolCardView {
+        /** The call ended without reporting an exit, so there is no output and the card shows the command. */
+        val cutShort: Boolean get() = failed || stopped
+    }
 
     /**
      * Diff: per-path hunks with added/removed line counts. [totals] is set when [diffs] was cut for

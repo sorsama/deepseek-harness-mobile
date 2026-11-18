@@ -63,6 +63,7 @@
     <string name="chat_tool_subagent_failed">شروع نہیں ہوا</string>
     <string name="chat_tool_subagent_replied">جواب دیا</string>
     <string name="chat_tool_subagent_model">ماڈل: %1$s</string>
+    <string name="chat_tool_subagent_model_label">ماڈل:</string>
     <string name="chat_tool_subagent_open">ذیلی ایجنٹ کھولیں</string>
     <string name="chat_tool_subagent_conversation">یہ ایک ذیلی ایجنٹ کی گفتگو ہے</string>
 
@@ -161,11 +162,11 @@
     </plurals>
     <string name="chat_tool_raw_title">کال کا خام ڈیٹا</string>
 
-    <string name="chat_tool_failed_with">ناکام: %1$s</string>
+    <string name="chat_tool_failed_label">ناکام:</string>
     <string name="chat_tool_failed">یہ قدم ناکام رہا۔</string>
     <string name="chat_tool_stopped">مکمل ہونے سے پہلے رک گیا۔</string>
     <string name="chat_tool_auto_review_denied">آٹو ریویو نے یہ قدم روک دیا، اس لیے یہ نہیں چلا۔</string>
-    <string name="chat_tool_reason">وجہ: %1$s</string>
+    <string name="chat_tool_reason_label">وجہ:</string>
 
     <string name="chat_turn_failed_rate_limit">ماڈل فراہم کنندہ ابھی مصروف ہے۔ تھوڑی دیر بعد دوبارہ کوشش کریں۔</string>
     <string name="chat_turn_failed_quota">ماڈل فراہم کنندہ کے اکاؤنٹ میں کریڈٹ ختم ہو گیا ہے۔</string>
@@ -180,5 +181,5 @@
     <string name="chat_turn_failed_process">یہ ٹرن مکمل ہونے سے پہلے harness رک گیا۔</string>
     <string name="chat_turn_failed_signed_out">رک گیا کیونکہ آپ DeepSeek سے سائن آؤٹ ہو گئے۔</string>
     <string name="chat_turn_failed_unknown">اس ٹرن میں کچھ گڑبڑ ہو گئی۔</string>
-    <string name="chat_turn_error_code">کوڈ: %1$s</string>
+    <string name="chat_turn_error_code_label">کوڈ:</string>
 </resources>

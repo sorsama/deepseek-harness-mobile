@@ -132,6 +132,7 @@ private fun QuestionCard.questionOutcomeText(): String = when (outcome) {
 private fun SubagentCard.subagentStateText(running: Boolean? = null): String = when (phase) {
     SubagentPhase.Starting -> stringResource(R.string.chat_tool_subagent_starting)
     SubagentPhase.Failed -> stringResource(R.string.chat_tool_subagent_failed)
+    SubagentPhase.Stopped -> stringResource(R.string.chat_stopped)
     SubagentPhase.Replied -> stringResource(R.string.chat_tool_subagent_replied)
     SubagentPhase.Started -> when (running) {
         true -> stringResource(R.string.chat_tool_subagent_working)
@@ -270,11 +271,8 @@ private fun QuestionBody(card: QuestionCard) {
                 }
             }
         }
-        when (card.outcome) {
-            QuestionOutcome.Cancelled, QuestionOutcome.Interrupted, QuestionOutcome.TimedOut, QuestionOutcome.CarriedOn ->
-                Caption(card.questionOutcomeText())
-            else -> Unit
-        }
+        // How the questions ended ("You closed these questions") is said once, in the row's summary,
+        // which is what a closed row shows; it used to be said again at the foot of the card.
     }
 }
 
@@ -283,9 +281,18 @@ private fun SubagentBody(card: SubagentCard, actions: ToolCardActions) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         card.prompt?.let { Text(it, style = DsType.small13, color = colors.labelSecondary) }
-        card.model?.let { Caption(stringResource(R.string.chat_tool_subagent_model, technical(it))) }
+        // The model's name is the harness's text: its own left-to-right run after the app's label.
+        card.model?.let {
+            com.labteto.dshmobile.ui.screens.main.LabeledTechnicalText(
+                label = stringResource(R.string.chat_tool_subagent_model_label),
+                value = it,
+                style = DsType.caption11,
+                color = colors.labelCaption,
+            )
+        }
         val running = actions.subagentRunning
         val dot = when {
+            card.phase == SubagentPhase.Stopped -> StateDotState.Warning
             card.phase == SubagentPhase.Failed -> StateDotState.Error
             card.phase == SubagentPhase.Starting || running == true -> StateDotState.Running
             card.phase == SubagentPhase.Started && running == null -> StateDotState.Idle

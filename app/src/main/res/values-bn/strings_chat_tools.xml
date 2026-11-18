@@ -63,6 +63,7 @@
     <string name="chat_tool_subagent_failed">শুরু হয়নি</string>
     <string name="chat_tool_subagent_replied">উত্তর দিয়েছে</string>
     <string name="chat_tool_subagent_model">মডেল: %1$s</string>
+    <string name="chat_tool_subagent_model_label">মডেল:</string>
     <string name="chat_tool_subagent_open">সাবএজেন্ট খুলুন</string>
     <string name="chat_tool_subagent_conversation">এটি একটি সাবএজেন্টের কথোপকথন</string>
 
@@ -161,11 +162,11 @@
     </plurals>
     <string name="chat_tool_raw_title">কলের মূল ডেটা</string>
 
-    <string name="chat_tool_failed_with">ব্যর্থ: %1$s</string>
+    <string name="chat_tool_failed_label">ব্যর্থ:</string>
     <string name="chat_tool_failed">এই ধাপটি ব্যর্থ হয়েছে।</string>
     <string name="chat_tool_stopped">শেষ হওয়ার আগেই থেমে গেছে।</string>
     <string name="chat_tool_auto_review_denied">অটো রিভিউ এই ধাপটি আটকে দিয়েছে, তাই এটি চলেনি।</string>
-    <string name="chat_tool_reason">কারণ: %1$s</string>
+    <string name="chat_tool_reason_label">কারণ:</string>
 
     <string name="chat_turn_failed_rate_limit">মডেল প্রোভাইডার এখন ব্যস্ত। একটু পরে আবার চেষ্টা করুন।</string>
     <string name="chat_turn_failed_quota">মডেল প্রোভাইডারের অ্যাকাউন্টে ক্রেডিট শেষ।</string>
@@ -180,5 +181,5 @@
     <string name="chat_turn_failed_process">এই টার্ন শেষ হওয়ার আগেই harness থেমে গেছে।</string>
     <string name="chat_turn_failed_signed_out">আপনি DeepSeek থেকে সাইন আউট করায় থেমে গেছে।</string>
     <string name="chat_turn_failed_unknown">এই টার্নে কিছু একটা ভুল হয়েছে।</string>
-    <string name="chat_turn_error_code">কোড: %1$s</string>
+    <string name="chat_turn_error_code_label">কোড:</string>
 </resources>

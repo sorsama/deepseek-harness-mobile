@@ -75,6 +75,7 @@
     <string name="chat_tool_subagent_failed">لم يبدأ</string>
     <string name="chat_tool_subagent_replied">ردّ</string>
     <string name="chat_tool_subagent_model">النموذج: %1$s</string>
+    <string name="chat_tool_subagent_model_label">النموذج:</string>
     <string name="chat_tool_subagent_open">فتح الوكيل الفرعي</string>
     <string name="chat_tool_subagent_conversation">هذه محادثة وكيل فرعي</string>
 
@@ -213,11 +214,11 @@
     </plurals>
     <string name="chat_tool_raw_title">بيانات الاستدعاء الخام</string>
 
-    <string name="chat_tool_failed_with">فشل: %1$s</string>
+    <string name="chat_tool_failed_label">فشل:</string>
     <string name="chat_tool_failed">فشلت هذه الخطوة.</string>
     <string name="chat_tool_stopped">توقّف قبل أن ينتهي.</string>
     <string name="chat_tool_auto_review_denied">منعت المراجعة التلقائية هذه الخطوة، لذا لم تُنفَّذ.</string>
-    <string name="chat_tool_reason">السبب: %1$s</string>
+    <string name="chat_tool_reason_label">السبب:</string>
 
     <string name="chat_turn_failed_rate_limit">مزوّد النموذج مشغول الآن. حاول مجددًا بعد قليل.</string>
     <string name="chat_turn_failed_quota">نفد رصيد حساب مزوّد النموذج.</string>
@@ -232,5 +233,5 @@
     <string name="chat_turn_failed_process">توقّف الـ harness قبل أن تنتهي هذه الجولة.</string>
     <string name="chat_turn_failed_signed_out">توقّف لأنك سجّلت الخروج من DeepSeek.</string>
     <string name="chat_turn_failed_unknown">حدث خطأ ما في هذه الجولة.</string>
-    <string name="chat_turn_error_code">الرمز: %1$s</string>
+    <string name="chat_turn_error_code_label">الرمز:</string>
 </resources>

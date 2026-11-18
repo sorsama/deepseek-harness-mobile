@@ -66,6 +66,7 @@
     <string name="chat_tool_subagent_failed">N’a pas démarré</string>
     <string name="chat_tool_subagent_replied">A répondu</string>
     <string name="chat_tool_subagent_model">Modèle : %1$s</string>
+    <string name="chat_tool_subagent_model_label">Modèle :</string>
     <string name="chat_tool_subagent_open">Ouvrir le sous-agent</string>
     <string name="chat_tool_subagent_conversation">C’est la conversation d’un sous-agent</string>
 
@@ -174,11 +175,11 @@
     </plurals>
     <string name="chat_tool_raw_title">Données brutes de l’appel</string>
 
-    <string name="chat_tool_failed_with">Échec : %1$s</string>
+    <string name="chat_tool_failed_label">Échec :</string>
     <string name="chat_tool_failed">Cette étape a échoué.</string>
     <string name="chat_tool_stopped">Arrêté avant la fin.</string>
     <string name="chat_tool_auto_review_denied">La revue automatique a bloqué cette étape, elle n’a donc pas été lancée.</string>
-    <string name="chat_tool_reason">Raison : %1$s</string>
+    <string name="chat_tool_reason_label">Raison :</string>
 
     <string name="chat_turn_failed_rate_limit">Le fournisseur du modèle est occupé. Réessayez dans un instant.</string>
     <string name="chat_turn_failed_quota">Le compte du fournisseur du modèle n’a plus de crédit.</string>
@@ -193,5 +194,5 @@
     <string name="chat_turn_failed_process">Le harness s’est arrêté avant la fin de ce tour.</string>
     <string name="chat_turn_failed_signed_out">Arrêté parce que vous vous êtes déconnecté de DeepSeek.</string>
     <string name="chat_turn_failed_unknown">Un problème est survenu pendant ce tour.</string>
-    <string name="chat_turn_error_code">Code : %1$s</string>
+    <string name="chat_turn_error_code_label">Code :</string>
 </resources>
