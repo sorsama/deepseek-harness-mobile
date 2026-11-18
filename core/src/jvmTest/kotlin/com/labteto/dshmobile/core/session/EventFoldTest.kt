@@ -21,6 +21,33 @@ class EventFoldTest {
     private fun event(type: String, seq: Long, data: kotlinx.serialization.json.JsonObject): SessionEventEnvelope =
         SessionEventEnvelope(type, seq, seq, data)
 
+    /**
+     * A failed turn's end as the harness records it: `reason = { kind: 'error', error: LlmFailure }`,
+     * where the failure is `{ message, code, status? }` (`core/session/src/types.ts`,
+     * `TurnEndReasonMap.error`; `llm/llm/src/types.ts`, `LlmFailure`).
+     */
+    @Test
+    fun aFailedTurnKeepsItsCodeAndTheProvidersMessage() {
+        val events = listOf(
+            event("turn/start", 0, buildJsonObject { put("turn", 1) }),
+            event("turn/end", 1, buildJsonObject {
+                put("turn", 1)
+                putJsonObject("reason") {
+                    put("kind", "error")
+                    putJsonObject("error") {
+                        put("message", "429 Too Many Requests: rate limit reached for requests")
+                        put("code", "RATE_LIMIT")
+                        put("status", 429)
+                    }
+                }
+            }),
+        )
+        val end = EventFold("s1").fold(events).nodes.filterIsInstance<TurnEndNode>().single()
+        assertEquals("error", end.reasonKind)
+        assertEquals("RATE_LIMIT", end.failureCode)
+        assertEquals("429 Too Many Requests: rate limit reached for requests", end.failureMessage)
+    }
+
     @Test
     fun foldsBasicTurn() {
         val events = listOf(
