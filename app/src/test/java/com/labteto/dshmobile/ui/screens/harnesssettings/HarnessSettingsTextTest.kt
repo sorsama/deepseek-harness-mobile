@@ -74,8 +74,8 @@ class HarnessSettingsTextTest {
     }
 
     @Test
-    fun `the page names and one line summaries are the app's own for the five known pages`() {
-        val known = listOf(SettingsPage.WebSearch, SettingsPage.Shell, SettingsPage.Subagents, SettingsPage.AgentLoop, SettingsPage.SessionLog)
+    fun `the page names and one line summaries are the app's own for the known pages`() {
+        val known = listOf(SettingsPage.Account, SettingsPage.WebSearch, SettingsPage.Shell, SettingsPage.Subagents, SettingsPage.AgentLoop, SettingsPage.SessionLog)
         known.forEach {
             assertNotNull(it.key, pageTitleRes(it))
             assertNotNull(it.key, pageSummaryRes(it))

@@ -368,6 +368,12 @@ class SessionStore @Inject constructor(
     val sessionReferencesAvailable = featureAvailability.state(HarnessFeature.SESSION_REFERENCES)
     /** Whether the harness has `settings/describe`; unknown until the Harness settings page first asks. */
     val harnessSettingsAvailable = featureAvailability.state(HarnessFeature.HARNESS_SETTINGS)
+    /**
+     * Whether the harness has the account calls behind DeepSeek sign-in. A harness with its account
+     * plugin switched off answers `gateway/service-unavailable`, which the Account page's port spells as a
+     * missing capability before it reports here. Unknown until the Account page first asks.
+     */
+    val accountAvailable = featureAvailability.state(HarnessFeature.ACCOUNT)
     val questionSessions = QuestionSessions(scope, { connectionManager.connectedApi },
         { connectionManager.generation?.mux }, { connectionManager.generation?.clientId },
         onCapability = { clientId, result ->

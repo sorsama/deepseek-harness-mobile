@@ -21,6 +21,7 @@ class FeatureAvailabilityTest {
         HarnessFeature.SESSION_REFERENCES -> api.sessionReferenceCandidates("s", "")
         HarnessFeature.TIMED_QUESTIONS -> api.answerContinuedQuestion("s", "call", AskUserQuestionAnswer(emptyList()))
         HarnessFeature.HARNESS_SETTINGS -> api.settingsDescribe()
+        HarnessFeature.ACCOUNT -> api.accountState()
     }
 
     @Test fun `404 endpoints retire each feature without reporting a connection failure`() = runTest {
