@@ -79,7 +79,15 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
     // here is a secret, and the install form, the confirmations and the removal stay unsaved.
     val openedFor = rememberSaveable { mutableStateOf(host) }.value
     val stateHost = host ?: openedFor
-    LaunchedEffect(host) { if (host != null && openedFor != null && host != openedFor) onClose() }
+    // True when this page came back from saved state rather than being opened just now. A page brought
+    // back by a process restart finds no harness connected (the app does not reconnect while Settings
+    // is in front) and would only show an error, so it closes; a page opened offline stays as before.
+    var composedBefore by rememberSaveable { mutableStateOf(false) }
+    val restored = remember { composedBefore }
+    SideEffect { composedBefore = true }
+    LaunchedEffect(host) {
+        if (openedFor != null && host != openedFor && (host != null || restored)) onClose()
+    }
     var search by rememberSaveable(stateHost) { mutableStateOf("") }
     var filter by rememberSaveable(stateHost) { mutableStateOf(PluginFilter.ALL) }
     // The open bundle is held by name and looked up from `bundles` below, so a refresh or a toggle
