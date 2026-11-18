@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-enum class HarnessFeature { AUTOMATION, PLUGIN_MANAGEMENT, TIMED_QUESTIONS, SESSION_REFERENCES }
+/** [PLUGIN_MARKET] is the optional "custom plugin markets" bundle: its `pluginMarket` namespace exists only while that bundle is on. */
+enum class HarnessFeature { AUTOMATION, PLUGIN_MANAGEMENT, TIMED_QUESTIONS, SESSION_REFERENCES, PLUGIN_MARKET }
 
 /** Connection-scoped evidence: authorization failures do not imply a missing capability. */
 internal class FeatureAvailability(private val report: (RpcError) -> Unit) {

@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.data
 
 import com.labteto.dshmobile.core.wire.automationCatalog
+import com.labteto.dshmobile.core.wire.marketIndexes
 import com.labteto.dshmobile.core.wire.pluginBundles
 
 import android.util.Base64
@@ -364,6 +365,8 @@ class SessionStore @Inject constructor(
     private val featureAvailability = FeatureAvailability { setConnectionError(it.message) }
     val automationAvailable = featureAvailability.state(HarnessFeature.AUTOMATION)
     val pluginManagementAvailable = featureAvailability.state(HarnessFeature.PLUGIN_MANAGEMENT)
+    /** Whether the harness mounts the plugin market (`pluginMarket`); null until a call has told. */
+    val pluginMarketAvailable = featureAvailability.state(HarnessFeature.PLUGIN_MARKET)
     val timedQuestionsAvailable = featureAvailability.state(HarnessFeature.TIMED_QUESTIONS)
     val sessionReferencesAvailable = featureAvailability.state(HarnessFeature.SESSION_REFERENCES)
     val questionSessions = QuestionSessions(scope, { connectionManager.connectedApi },
@@ -409,6 +412,8 @@ class SessionStore @Inject constructor(
         val api = connectionManager.connectedApi ?: return
         scope.launch { featureCall(HarnessFeature.AUTOMATION, api) { api.automationCatalog() } }
         scope.launch { featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.pluginBundles() } }
+        // `listIndexes` never fetches an index; it only says whether the market is there.
+        scope.launch { featureCall(HarnessFeature.PLUGIN_MARKET, api) { api.marketIndexes() } }
     }
     private val permissionCatalog = MutableStateFlow<PermissionCatalog?>(null)
     private var permissionCatalogEpoch = 0L

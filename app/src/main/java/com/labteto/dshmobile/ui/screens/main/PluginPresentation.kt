@@ -8,8 +8,9 @@ import com.labteto.dshmobile.data.PluginOperationState
 
 /** Immutable confirmation: approval scripts and registry can never come from the editable form. */
 /** [replaces] names the installed bundle an update supersedes, for hosts that will not install over it. */
+/** [market] is set when the install comes from a market entry: what the confirmation shows beside the spec. */
 internal data class PluginInstallSubject(val target: String, val registry: String?, val approvedBuilds: List<String>? = null,
-    val enabled: Boolean = false, val saveExact: Boolean? = null, val replaces: String? = null)
+    val enabled: Boolean = false, val saveExact: Boolean? = null, val replaces: String? = null, val market: MarketInstallNote? = null)
 
 internal fun com.labteto.dshmobile.core.wire.dto.PluginBundle.catalogInstall(enabled: Boolean): PluginInstallSubject? =
     installTarget?.let { PluginInstallSubject(it.spec, null, enabled = enabled,
@@ -35,6 +36,7 @@ internal fun pluginReason(code: String?): Int = when (code) {
     "bundle-in-use" -> R.string.ux_a_reason_in_use
     "stale-approval" -> R.string.ux_a_reason_approval
     "incompatible-version" -> R.string.ux_a_reason_version
+    "pnpm-missing" -> R.string.market_no_pnpm
     else -> R.string.ux_a_action_error
 }
 internal fun pluginPhase(phase: String?): Int = when (phase) {
