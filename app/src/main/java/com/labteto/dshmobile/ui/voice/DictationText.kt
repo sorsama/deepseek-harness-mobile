@@ -30,6 +30,19 @@ fun insertDictation(draft: String, cursor: Int, spoken: String): DictationInsert
     return DictationInsertion(text, at + lead.length + phrase.length)
 }
 
+/** What [insertDictation] would add to the draft, and where: the phrase with the spaces it brings. */
+data class DictationChunk(val at: Int, val text: String)
+
+/**
+ * The text [insertDictation] would put into [draft], for showing it in place before it is final.
+ * The preview and the final insertion agree because the preview is computed from the insertion.
+ */
+fun dictationChunk(draft: String, cursor: Int, spoken: String): DictationChunk? {
+    val inserted = insertDictation(draft, cursor, spoken) ?: return null
+    val at = safeCursor(draft, cursor)
+    return DictationChunk(at, inserted.text.substring(at, at + inserted.text.length - draft.length))
+}
+
 /** The caret clamped into the draft and never between the halves of a surrogate pair. */
 internal fun safeCursor(draft: String, cursor: Int): Int {
     val at = cursor.coerceIn(0, draft.length)

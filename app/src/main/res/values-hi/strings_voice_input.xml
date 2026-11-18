@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_start">बोलकर लिखना शुरू करें</string>
+    <string name="voice_stop">बोलकर लिखना रोकें</string>
+    <string name="voice_in_progress">बोलकर लिखना जारी है</string>
+    <string name="voice_listening">सुन रहा है…</string>
+    <string name="voice_starting">तैयार हो रहा है…</string>
+    <string name="voice_finishing">पूरा हो रहा है…</string>
+    <string name="voice_shortcut_toggle">बोलकर लिखना (शुरू या बंद)</string>
+
+    <string name="voice_language_title">बोलकर लिखने की भाषा</string>
+    <string name="voice_language_hold_label">बोलकर लिखने की भाषा चुनें</string>
+    <string name="voice_language_follow_app">ऐप जैसी</string>
+    <string name="voice_language_device">फ़ोन की डिफ़ॉल्ट</string>
+
+    <string name="voice_setting_title">बोलकर लिखने का बटन</string>
+    <string name="voice_setting_hint">संदेश बॉक्स में माइक्रोफ़ोन जोड़ता है। आपके फ़ोन की स्पीच सेवा आवाज़ को टेक्स्ट में बदलती है।</string>
+    <string name="voice_unavailable_hint">इस फ़ोन में स्पीच पहचान सेवा नहीं है, इसलिए माइक्रोफ़ोन नहीं दिखता।</string>
+
+    <string name="voice_notice_title">बोलकर लिखना</string>
+    <string name="voice_notice_body">आपकी आवाज़ को आपके फ़ोन की स्पीच सेवा प्रोसेस करती है, जो फ़ोन बनाने वाली कंपनी की ऑनलाइन सेवा भी हो सकती है। इसे harness को नहीं भेजा जाता।</string>
+    <string name="voice_notice_continue">जारी रखें</string>
+
+    <string name="voice_err_no_match">समझ नहीं आया। फिर से कोशिश करें।</string>
+    <string name="voice_err_timeout">कुछ सुनाई नहीं दिया। फिर से कोशिश करें।</string>
+    <string name="voice_err_network">स्पीच सेवा से जुड़ नहीं पाया। अपना कनेक्शन जाँचें।</string>
+    <string name="voice_err_busy">स्पीच सेवा व्यस्त है। थोड़ी देर में फिर कोशिश करें।</string>
+    <string name="voice_err_audio">माइक्रोफ़ोन इस्तेमाल नहीं हो पाया।</string>
+    <string name="voice_err_service">स्पीच सेवा अभी उपलब्ध नहीं है।</string>
+    <string name="voice_err_language">इस भाषा में बोलकर लिखना उपलब्ध नहीं है।</string>
+    <string name="voice_err_failed">बोलकर लिखना रुक गया। फिर से कोशिश करें।</string>
+    <string name="voice_err_interrupted">बोलकर लिखना इसलिए रुका क्योंकि कोई दूसरा ऐप ऑडियो इस्तेमाल कर रहा है।</string>
+    <string name="voice_perm_denied">बोलकर लिखने के लिए माइक्रोफ़ोन चाहिए।</string>
+    <string name="voice_perm_blocked">इस ऐप के लिए माइक्रोफ़ोन की अनुमति बंद है।</string>
+    <string name="voice_open_settings">सेटिंग खोलें</string>
+</resources>

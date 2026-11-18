@@ -37,7 +37,7 @@ class AndroidSpeechEngine(context: Context) : SpeechEngine {
      * Asked once. Needs the `RecognitionService` query in the manifest: from Android 11 on, package
      * visibility makes the lookup answer false without it, on a phone that has a service.
      */
-    override val available: Boolean = runCatching { SpeechRecognizer.isRecognitionAvailable(app) }.getOrDefault(false)
+    override val available: Boolean = speechRecognitionAvailable(app)
 
     private var recognizer: SpeechRecognizer? = null
     private var focus: AudioFocusRequest? = null
@@ -179,6 +179,14 @@ class AndroidSpeechEngine(context: Context) : SpeechEngine {
         const val UNSTABLE_TEXT = "android.speech.extra.UNSTABLE_TEXT"
     }
 }
+
+/**
+ * Whether the phone has a speech recognition service. Many phones without Google's services have
+ * none (Settings then explains why there is no microphone), and a service that exists but was
+ * disabled counts as absent.
+ */
+fun speechRecognitionAvailable(context: Context): Boolean =
+    runCatching { SpeechRecognizer.isRecognitionAvailable(context.applicationContext) }.getOrDefault(false)
 
 /** The main-thread [DictationClock] the screen uses. */
 class HandlerDictationClock : DictationClock {

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_start">Начать диктовку</string>
+    <string name="voice_stop">Остановить диктовку</string>
+    <string name="voice_in_progress">Идёт диктовка</string>
+    <string name="voice_listening">Слушаю…</string>
+    <string name="voice_starting">Подготовка…</string>
+    <string name="voice_finishing">Завершаю…</string>
+    <string name="voice_shortcut_toggle">Диктовка (начать или остановить)</string>
+
+    <string name="voice_language_title">Язык диктовки</string>
+    <string name="voice_language_hold_label">Выбрать язык диктовки</string>
+    <string name="voice_language_follow_app">Как в приложении</string>
+    <string name="voice_language_device">Язык телефона</string>
+
+    <string name="voice_setting_title">Кнопка диктовки</string>
+    <string name="voice_setting_hint">Добавляет микрофон в поле сообщения. Речь превращает в текст служба распознавания на телефоне.</string>
+    <string name="voice_unavailable_hint">На этом телефоне нет службы распознавания речи, поэтому микрофон не показан.</string>
+
+    <string name="voice_notice_title">Диктовка</string>
+    <string name="voice_notice_body">Речь обрабатывает служба распознавания на телефоне, это может быть онлайн-сервис производителя. На harness она не отправляется.</string>
+    <string name="voice_notice_continue">Продолжить</string>
+
+    <string name="voice_err_no_match">Не удалось разобрать. Попробуйте ещё раз.</string>
+    <string name="voice_err_timeout">Ничего не слышно. Попробуйте ещё раз.</string>
+    <string name="voice_err_network">Нет связи со службой распознавания. Проверьте подключение.</string>
+    <string name="voice_err_busy">Служба распознавания занята. Попробуйте через минуту.</string>
+    <string name="voice_err_audio">Не удалось использовать микрофон.</string>
+    <string name="voice_err_service">Служба распознавания сейчас недоступна.</string>
+    <string name="voice_err_language">Диктовка недоступна на этом языке.</string>
+    <string name="voice_err_failed">Диктовка остановлена. Попробуйте ещё раз.</string>
+    <string name="voice_err_interrupted">Диктовка остановлена: звук занят другим приложением.</string>
+    <string name="voice_perm_denied">Для диктовки нужен микрофон.</string>
+    <string name="voice_perm_blocked">Доступ к микрофону для приложения выключен.</string>
+    <string name="voice_open_settings">Открыть настройки</string>
+</resources>

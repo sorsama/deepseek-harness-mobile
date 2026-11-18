@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The microphone in the message box. -->
+    <string name="voice_start">Start dictation</string>
+    <string name="voice_stop">Stop dictation</string>
+    <string name="voice_in_progress">Dictation in progress</string>
+    <string name="voice_listening">Listening…</string>
+    <string name="voice_starting">Getting ready…</string>
+    <string name="voice_finishing">Finishing…</string>
+    <string name="voice_shortcut_toggle">Dictate (start or stop)</string>
+
+    <!-- Which language to listen for: the sheet from holding the microphone, and the Settings row. -->
+    <string name="voice_language_title">Dictation language</string>
+    <string name="voice_language_hold_label">Choose dictation language</string>
+    <string name="voice_language_follow_app">Same as the app</string>
+    <string name="voice_language_device">Phone default</string>
+
+    <!-- Settings, Chat. -->
+    <string name="voice_setting_title">Dictation button</string>
+    <string name="voice_setting_hint">Adds a microphone to the message box. Your phone’s speech service turns speech into text.</string>
+    <string name="voice_unavailable_hint">This phone has no speech recognition service, so the microphone is not shown.</string>
+
+    <!-- Shown once, before the first use. -->
+    <string name="voice_notice_title">Dictation</string>
+    <string name="voice_notice_body">Speech is processed by your phone’s speech service, which may be an online service from your phone’s maker. It is not sent to the harness.</string>
+    <string name="voice_notice_continue">Continue</string>
+
+    <!-- Short messages under the message box. None of them touch the draft. -->
+    <string name="voice_err_no_match">Couldn’t make that out. Try again.</string>
+    <string name="voice_err_timeout">Didn’t hear anything. Try again.</string>
+    <string name="voice_err_network">Can’t reach the speech service. Check your connection.</string>
+    <string name="voice_err_busy">The speech service is busy. Try again in a moment.</string>
+    <string name="voice_err_audio">Couldn’t use the microphone.</string>
+    <string name="voice_err_service">The speech service isn’t available right now.</string>
+    <string name="voice_err_language">Dictation isn’t available in this language.</string>
+    <string name="voice_err_failed">Dictation stopped. Try again.</string>
+    <string name="voice_err_interrupted">Dictation stopped because another app is using the audio.</string>
+    <string name="voice_perm_denied">Dictation needs the microphone.</string>
+    <string name="voice_perm_blocked">Microphone access is off for this app.</string>
+    <string name="voice_open_settings">Open settings</string>
+</resources>

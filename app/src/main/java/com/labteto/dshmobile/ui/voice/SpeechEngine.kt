@@ -47,7 +47,7 @@ interface SpeechEngine {
     /** Abandons the take and reports nothing more for it. Safe to call when nothing is running. */
     fun cancel()
 
-    /** Gives back everything held for the take: the recogniser, audio focus. The engine is not reused. */
+    /** Gives back everything held for the take: the recogniser, audio focus. Nothing more is reported afterwards. */
     fun release()
 }
 

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_start">ڈکٹیشن شروع کریں</string>
+    <string name="voice_stop">ڈکٹیشن روکیں</string>
+    <string name="voice_in_progress">ڈکٹیشن جاری ہے</string>
+    <string name="voice_listening">سن رہا ہے…</string>
+    <string name="voice_starting">تیاری ہو رہی ہے…</string>
+    <string name="voice_finishing">ختم ہو رہا ہے…</string>
+    <string name="voice_shortcut_toggle">ڈکٹیشن (شروع یا بند)</string>
+
+    <string name="voice_language_title">ڈکٹیشن کی زبان</string>
+    <string name="voice_language_hold_label">ڈکٹیشن کی زبان منتخب کریں</string>
+    <string name="voice_language_follow_app">ایپ جیسی</string>
+    <string name="voice_language_device">فون کی ڈیفالٹ</string>
+
+    <string name="voice_setting_title">ڈکٹیشن کا بٹن</string>
+    <string name="voice_setting_hint">پیغام کے خانے میں مائیکروفون شامل کرتا ہے۔ آپ کے فون کی اسپیچ سروس آواز کو متن میں بدلتی ہے۔</string>
+    <string name="voice_unavailable_hint">اس فون میں اسپیچ ریکگنیشن سروس نہیں ہے، اس لیے مائیکروفون نہیں دکھایا جاتا۔</string>
+
+    <string name="voice_notice_title">ڈکٹیشن</string>
+    <string name="voice_notice_body">آپ کی آواز آپ کے فون کی اسپیچ سروس پروسیس کرتی ہے، جو فون بنانے والے کی آن لائن سروس بھی ہو سکتی ہے۔ یہ harness کو نہیں بھیجی جاتی۔</string>
+    <string name="voice_notice_continue">جاری رکھیں</string>
+
+    <string name="voice_err_no_match">سمجھ نہیں آیا۔ دوبارہ کوشش کریں۔</string>
+    <string name="voice_err_timeout">کچھ سنائی نہیں دیا۔ دوبارہ کوشش کریں۔</string>
+    <string name="voice_err_network">اسپیچ سروس تک رسائی نہیں ہو سکی۔ اپنا کنکشن چیک کریں۔</string>
+    <string name="voice_err_busy">اسپیچ سروس مصروف ہے۔ تھوڑی دیر بعد کوشش کریں۔</string>
+    <string name="voice_err_audio">مائیکروفون استعمال نہیں ہو سکا۔</string>
+    <string name="voice_err_service">اسپیچ سروس ابھی دستیاب نہیں۔</string>
+    <string name="voice_err_language">اس زبان میں ڈکٹیشن دستیاب نہیں۔</string>
+    <string name="voice_err_failed">ڈکٹیشن رک گئی۔ دوبارہ کوشش کریں۔</string>
+    <string name="voice_err_interrupted">ڈکٹیشن اس لیے رک گئی کہ کوئی اور ایپ آواز استعمال کر رہی ہے۔</string>
+    <string name="voice_perm_denied">ڈکٹیشن کے لیے مائیکروفون درکار ہے۔</string>
+    <string name="voice_perm_blocked">اس ایپ کے لیے مائیکروفون کی رسائی بند ہے۔</string>
+    <string name="voice_open_settings">سیٹنگز کھولیں</string>
+</resources>

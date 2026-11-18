@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_start">开始语音输入</string>
+    <string name="voice_stop">停止语音输入</string>
+    <string name="voice_in_progress">语音输入中</string>
+    <string name="voice_listening">正在听…</string>
+    <string name="voice_starting">正在准备…</string>
+    <string name="voice_finishing">正在完成…</string>
+    <string name="voice_shortcut_toggle">语音输入（开始或停止）</string>
+
+    <string name="voice_language_title">语音输入语言</string>
+    <string name="voice_language_hold_label">选择语音输入语言</string>
+    <string name="voice_language_follow_app">与应用语言相同</string>
+    <string name="voice_language_device">手机默认</string>
+
+    <string name="voice_setting_title">语音输入按钮</string>
+    <string name="voice_setting_hint">在消息框中加入麦克风，由手机的语音服务把说的话转成文字。</string>
+    <string name="voice_unavailable_hint">这部手机没有语音识别服务，所以不显示麦克风。</string>
+
+    <string name="voice_notice_title">语音输入</string>
+    <string name="voice_notice_body">语音由手机的语音服务处理，可能是手机厂商的在线服务，不会发送给 harness。</string>
+    <string name="voice_notice_continue">继续</string>
+
+    <string name="voice_err_no_match">没听清，请再试一次。</string>
+    <string name="voice_err_timeout">没听到声音，请再试一次。</string>
+    <string name="voice_err_network">连不上语音服务，请检查网络。</string>
+    <string name="voice_err_busy">语音服务正忙，请稍后再试。</string>
+    <string name="voice_err_audio">无法使用麦克风。</string>
+    <string name="voice_err_service">语音服务暂时不可用。</string>
+    <string name="voice_err_language">暂不支持这种语言的语音输入。</string>
+    <string name="voice_err_failed">语音输入已停止，请再试一次。</string>
+    <string name="voice_err_interrupted">语音输入已停止，因为其他应用正在使用音频。</string>
+    <string name="voice_perm_denied">语音输入需要使用麦克风。</string>
+    <string name="voice_perm_blocked">已关闭此应用的麦克风权限。</string>
+    <string name="voice_open_settings">打开设置</string>
+</resources>

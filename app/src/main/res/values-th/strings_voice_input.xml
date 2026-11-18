@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_start">เริ่มพูดเป็นข้อความ</string>
+    <string name="voice_stop">หยุดพูดเป็นข้อความ</string>
+    <string name="voice_in_progress">กำลังพูดเป็นข้อความ</string>
+    <string name="voice_listening">กำลังฟัง…</string>
+    <string name="voice_starting">กำลังเตรียม…</string>
+    <string name="voice_finishing">กำลังจบ…</string>
+    <string name="voice_shortcut_toggle">พูดเป็นข้อความ (เริ่มหรือหยุด)</string>
+
+    <string name="voice_language_title">ภาษาที่ใช้พูด</string>
+    <string name="voice_language_hold_label">เลือกภาษาที่ใช้พูด</string>
+    <string name="voice_language_follow_app">ตามภาษาของแอป</string>
+    <string name="voice_language_device">ค่าเริ่มต้นของโทรศัพท์</string>
+
+    <string name="voice_setting_title">ปุ่มพูดเป็นข้อความ</string>
+    <string name="voice_setting_hint">เพิ่มไมโครโฟนในช่องข้อความ บริการเสียงของโทรศัพท์จะแปลงคำพูดเป็นข้อความ</string>
+    <string name="voice_unavailable_hint">โทรศัพท์เครื่องนี้ไม่มีบริการรู้จำเสียงพูด จึงไม่แสดงไมโครโฟน</string>
+
+    <string name="voice_notice_title">พูดเป็นข้อความ</string>
+    <string name="voice_notice_body">บริการเสียงของโทรศัพท์จะประมวลผลคำพูดของคุณ ซึ่งอาจเป็นบริการออนไลน์ของผู้ผลิตเครื่อง และจะไม่ถูกส่งไปที่ harness</string>
+    <string name="voice_notice_continue">ต่อไป</string>
+
+    <string name="voice_err_no_match">ฟังไม่เข้าใจ ลองอีกครั้ง</string>
+    <string name="voice_err_timeout">ไม่ได้ยินอะไร ลองอีกครั้ง</string>
+    <string name="voice_err_network">เชื่อมต่อบริการเสียงไม่ได้ ตรวจสอบการเชื่อมต่อ</string>
+    <string name="voice_err_busy">บริการเสียงไม่ว่าง ลองใหม่อีกสักครู่</string>
+    <string name="voice_err_audio">ใช้ไมโครโฟนไม่ได้</string>
+    <string name="voice_err_service">บริการเสียงยังใช้งานไม่ได้ในตอนนี้</string>
+    <string name="voice_err_language">ภาษานี้ยังพูดเป็นข้อความไม่ได้</string>
+    <string name="voice_err_failed">หยุดทำงาน ลองอีกครั้ง</string>
+    <string name="voice_err_interrupted">หยุดทำงานเพราะแอปอื่นกำลังใช้เสียง</string>
+    <string name="voice_perm_denied">ต้องใช้ไมโครโฟนเพื่อพูดเป็นข้อความ</string>
+    <string name="voice_perm_blocked">ปิดสิทธิ์ไมโครโฟนของแอปนี้อยู่</string>
+    <string name="voice_open_settings">เปิดการตั้งค่า</string>
+</resources>
