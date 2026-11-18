@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -154,8 +155,23 @@ fun HarnessSettingsScreen(onClose: () -> Unit) {
             if (event == "deepseek-account/session-expired") accountController.onSessionExpired()
         }
     }
-    // The page that is open survives the settings controller being replaced.
-    var openKey by rememberSaveable(host) { mutableStateOf<String?>(null) }
+    // The page that is open survives the settings controller being replaced and the activity being
+    // recreated (text size, display size, theme or language changed while it is open), as the Plugins
+    // page does. Only the page's key is kept: nothing typed is saved, so a key entry comes back closed
+    // and empty (see SecretControl). Kept per harness: [openedFor] is the one the area was open for, which
+    // stands in while the connection comes back, and a different harness starts afresh on the list.
+    val openedFor = rememberSaveable { mutableStateOf(host) }.value
+    val stateHost = host ?: openedFor
+    // True when this page came back from saved state rather than being opened just now. A page brought
+    // back by a process restart finds no harness connected (the app does not reconnect while Settings
+    // is in front) and would only say it is offline, so it closes; one opened offline stays as before.
+    var composedBefore by rememberSaveable { mutableStateOf(false) }
+    val restored = remember { composedBefore }
+    SideEffect { composedBefore = true }
+    LaunchedEffect(host) {
+        if (openedFor != null && host != openedFor && (host != null || restored)) onClose()
+    }
+    var openKey by rememberSaveable(stateHost) { mutableStateOf<String?>(null) }
 
     LaunchedEffect(controller) {
         if (controller == null) return@LaunchedEffect

@@ -21,6 +21,8 @@ class ModelKeyRulesTest {
     private val keyPath = listOf(
         File(appRoot, "ui/screens/models/ModelsScreen.kt"),
         File(appRoot, "ui/screens/models/ModelSetupEntries.kt"),
+        // The web search key on the Harness settings pages, which now come back after the activity is recreated.
+        File(appRoot, "ui/screens/harnesssettings/SecretControl.kt"),
         File(appRoot, "models/ModelSetupMonitor.kt"),
         File(sharedRoot, "models/ModelsController.kt"),
         File(sharedRoot, "models/ModelsPort.kt"),

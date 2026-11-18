@@ -150,7 +150,10 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
     // Saveable: a text size, display size, theme or language change recreates the activity, and the
     // page should still be open afterwards. The confirmations below are not: they ask about a deletion.
     var pluginsOpen by rememberSaveable { mutableStateOf(false) }
-    var harnessSettingsOpen by remember { mutableStateOf(false) }
+    // Saveable for the same reason: Harness settings comes back after the activity is recreated. What
+    // is typed on its pages is not saved (a key entry comes back closed and empty), and the area closes
+    // itself when the harness it was opened for is gone.
+    var harnessSettingsOpen by rememberSaveable { mutableStateOf(false) }
     // Settings and the archive are two different jobs: one is configuration, the other is a list to
     // search and restore from. A tab each keeps the settings reachable without scrolling past a
     // list that can be long, and the archive gets the whole height to be scrolled in.
