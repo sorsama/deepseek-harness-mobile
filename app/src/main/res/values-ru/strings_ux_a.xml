@@ -96,4 +96,6 @@
     <string name="plugins_open_details">Открыть подробности</string>
     <string name="plugins_more_matches">и ещё %1$d</string>
     <string name="plugins_no_matches">Ничего не найдено</string>
+    <string name="plugins_modules_need_bundle_on">Этот набор отключён. Включите его, чтобы включать и отключать модули по одному.</string>
+    <string name="plugins_modules_need_install">Этот набор не установлен. Установите его, чтобы включать и отключать модули по одному.</string>
 </resources>

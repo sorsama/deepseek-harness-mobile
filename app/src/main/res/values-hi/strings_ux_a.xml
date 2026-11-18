@@ -86,4 +86,6 @@
     <string name="plugins_open_details">विवरण खोलें</string>
     <string name="plugins_more_matches">+%1$d और</string>
     <string name="plugins_no_matches">कोई मेल नहीं मिला</string>
+    <string name="plugins_modules_need_bundle_on">यह बंडल बंद है। इसके मॉड्यूल अलग-अलग चालू या बंद करने के लिए पहले बंडल चालू करें।</string>
+    <string name="plugins_modules_need_install">यह बंडल इंस्टॉल नहीं है। इसके मॉड्यूल अलग-अलग चालू या बंद करने के लिए पहले इसे इंस्टॉल करें।</string>
 </resources>

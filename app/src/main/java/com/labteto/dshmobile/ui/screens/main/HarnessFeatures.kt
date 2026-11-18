@@ -86,6 +86,11 @@ internal fun FeaturePage(
  * same [listState] from the caller to keep a scroll position across anything the caller redraws.
  * [verticalArrangement] is the gap between items: the page's usual 12dp, or none for a list of
  * flat rows that draw their own dividers.
+ *
+ * [progress] is the thin bar for work in flight, drawn directly under [pinned] (or under the header
+ * bar when there is none). `null` (the default) draws nothing, so a page that does not ask keeps its
+ * layout. `false` keeps the strip's height empty and `true` fills it, so the list below never moves
+ * when the work starts or ends.
  */
 @Composable
 internal fun LazyFeaturePage(
@@ -95,6 +100,7 @@ internal fun LazyFeaturePage(
     subtitle: String? = null,
     footer: (@Composable () -> Unit)? = null,
     pinned: (@Composable ColumnScope.() -> Unit)? = null,
+    progress: Boolean? = null,
     listState: LazyListState = rememberLazyListState(),
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(DsSpacing.medium),
     content: LazyListScope.() -> Unit,
@@ -109,6 +115,11 @@ internal fun LazyFeaturePage(
                 verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
                 content = it,
             )
+        }
+        if (progress != null) {
+            Box(Modifier.fillMaxWidth().padding(horizontal = DsSpacing.comfortable).height(FeatureProgressHeight)) {
+                if (progress) FeatureProgress()
+            }
         }
         LazyColumn(
             Modifier.weight(1f).fillMaxWidth(),
@@ -170,12 +181,17 @@ private fun FeatureHeaderBar(title: String, subtitle: String?, onClose: () -> Un
             onClick = onClose,
         )
         Column(Modifier.weight(1f).padding(horizontal = DsSpacing.xsmall)) {
+            // The column's whole width, not the title's measured one: Compose lays text out at its
+            // measured width, and with large20's negative letter spacing Arabic shapes a few pixels
+            // wider than it measures, so a one-line title ended in an ellipsis with room to spare
+            // ("الإضافا…"). fillMaxWidth makes the layout width the column's. Same fix as the sheet titles.
             Text(
                 title,
                 style = DsType.large20,
                 color = colors.labelPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(),
             )
             subtitle?.let {
                 Text(
@@ -230,6 +246,9 @@ internal fun FeatureProgress() = LinearProgressIndicator(
     color = DsTheme.colors.accent,
     trackColor = DsTheme.colors.borderL1,
 )
+
+/** The height [LazyFeaturePage] keeps for [FeatureProgress]: the indicator's own 4dp line. */
+private val FeatureProgressHeight = 4.dp
 
 @Composable
 internal fun FeatureAction(text: String, enabled: Boolean = true, variant: DsButtonVariant = DsButtonVariant.Outline, onClick: () -> Unit) {

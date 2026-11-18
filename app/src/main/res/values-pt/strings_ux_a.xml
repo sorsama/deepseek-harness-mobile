@@ -91,4 +91,6 @@
     <string name="plugins_open_details">Abrir detalhes</string>
     <string name="plugins_more_matches">+%1$d mais</string>
     <string name="plugins_no_matches">Nenhuma correspondência</string>
+    <string name="plugins_modules_need_bundle_on">Este conjunto está desativado. Ative-o para ligar ou desligar os módulos um a um.</string>
+    <string name="plugins_modules_need_install">Este conjunto não está instalado. Instale-o para ligar ou desligar os módulos um a um.</string>
 </resources>

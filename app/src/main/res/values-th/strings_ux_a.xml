@@ -81,4 +81,6 @@
     <string name="plugins_open_details">เปิดรายละเอียด</string>
     <string name="plugins_more_matches">อีก %1$d</string>
     <string name="plugins_no_matches">ไม่พบรายการที่ตรงกัน</string>
+    <string name="plugins_modules_need_bundle_on">ชุดนี้ปิดอยู่ เปิดชุดก่อนจึงจะเปิดหรือปิดแต่ละโมดูลได้</string>
+    <string name="plugins_modules_need_install">ชุดนี้ยังไม่ได้ติดตั้ง ติดตั้งก่อนจึงจะเปิดหรือปิดแต่ละโมดูลได้</string>
 </resources>

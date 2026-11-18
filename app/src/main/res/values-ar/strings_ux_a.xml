@@ -106,4 +106,6 @@
     <string name="plugins_open_details">فتح التفاصيل</string>
     <string name="plugins_more_matches">+%1$d أخرى</string>
     <string name="plugins_no_matches">لا توجد نتائج مطابقة</string>
+    <string name="plugins_modules_need_bundle_on">هذه المجموعة معطّلة. فعّلها لتشغيل مكوّناتها أو إيقافها واحدًا واحدًا.</string>
+    <string name="plugins_modules_need_install">هذه المجموعة غير مثبّتة. ثبّتها لتشغيل مكوّناتها أو إيقافها واحدًا واحدًا.</string>
 </resources>

@@ -81,4 +81,6 @@
     <string name="plugins_open_details">查看详情</string>
     <string name="plugins_more_matches">另有 %1$d 个</string>
     <string name="plugins_no_matches">没有匹配项</string>
+    <string name="plugins_modules_need_bundle_on">此插件包已关闭。开启后，才能逐个开关其中的模块。</string>
+    <string name="plugins_modules_need_install">此插件包尚未安装。安装后，才能逐个开关其中的模块。</string>
 </resources>

@@ -86,4 +86,6 @@
     <string name="plugins_open_details">Open details</string>
     <string name="plugins_more_matches">+%1$d more</string>
     <string name="plugins_no_matches">No matches</string>
+    <string name="plugins_modules_need_bundle_on">This bundle is off. Turn it on to switch its modules one by one.</string>
+    <string name="plugins_modules_need_install">This bundle is not installed. Install it to switch its modules one by one.</string>
 </resources>

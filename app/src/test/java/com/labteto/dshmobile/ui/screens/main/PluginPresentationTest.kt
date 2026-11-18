@@ -254,6 +254,143 @@ class PluginPresentationTest {
         assertTrue(pluginDetailModel(moduleRows, "nothing", PluginFilter.ALL).isEmpty)
     }
 
+    // ---- one module loaded by two rows: the shape the base bundle really has ----
+
+    private val subagentModule = "@deepseek-ai/dsh-tool-subagent"
+    private val baseLike = bundle("@deepseek-ai/dsh-base", listOf(
+        row("tool-subagent-control", "@deepseek-ai/dsh-tool-subagent-control", "include:tool-subagent-control"),
+        row("tool-subagent-list-agents", "@deepseek-ai/dsh-tool-subagent-control/list-agents", "include:tool-subagent-list-agents"),
+        row("tool-subagent", subagentModule, "include:tool-subagent"),
+        row("tool-subagent-fork", subagentModule, "include:tool-subagent-fork"),
+        row("ptc-runtime", "@deepseek-ai/dsh-ptc-runtime-node", "include:ptc-runtime"),
+    ))
+    private val baseLikePlugins = baseLike.rows.associate { it.entryId!! to plugin(it.entryId!!, it.moduleName, enabled = false) }
+
+    @Test fun `two rows of one module both stay on the page and draw the same name`() {
+        val rows = pluginModuleRows(baseLike, baseLikePlugins)
+        assertEquals(5, rows.size)
+        val names = pluginShortNames(rows.map { it.row.moduleName })
+        assertEquals("tool-subagent", names[subagentModule])
+        assertEquals(listOf("tool-subagent", "tool-subagent"), rows.filter { it.row.moduleName == subagentModule }.map { names.getValue(it.row.moduleName) })
+    }
+
+    @Test fun `the row id tells the two rows of one module apart`() {
+        val rows = pluginModuleRows(baseLike, baseLikePlugins)
+        val qualifiers = pluginRowQualifiers(rows, pluginShortNames(rows.map { it.row.moduleName }))
+        // The row whose id is the drawn name needs no second line; the fork row shows its own id.
+        assertEquals(mapOf("tool-subagent-fork" to "tool-subagent-fork"), qualifiers)
+    }
+
+    @Test fun `every row of a shared module is labelled when none of the ids is the drawn name`() {
+        val twin = bundle("b", listOf(row("first", "@x/module", "e1"), row("second", "@x/module", "e2"), row("alone", "@x/other", "e3")))
+        val rows = pluginModuleRows(twin, emptyMap())
+        val qualifiers = pluginRowQualifiers(rows, pluginShortNames(rows.map { it.row.moduleName }))
+        assertEquals(mapOf("first" to "first", "second" to "second"), qualifiers)
+    }
+
+    @Test fun `rows with their own module name get no label`() {
+        val rows = pluginModuleRows(moduleBundle, modulePlugins)
+        assertTrue(pluginRowQualifiers(rows, pluginShortNames(rows.map { it.row.moduleName })).isEmpty())
+        assertTrue(pluginRowQualifiers(emptyList(), emptyMap()).isEmpty())
+    }
+
+    @Test fun `a search that matches both rows of a module names it once`() {
+        val twins = bundle("dup", listOf(row("tool-subagent", subagentModule, "e1"), row("tool-subagent-fork", subagentModule, "e2")))
+        val matches = twins.rowMatches("subagent") { pluginShortName(it) }!!
+        // Two rows matched but they are one module, so the card names it once.
+        assertEquals(listOf("tool-subagent"), matches.names)
+        assertEquals(0, matches.more)
+        val both = baseLike.rowMatches("tool-subagent") { pluginShortName(it) }!!
+        assertEquals(listOf("tool-subagent-control", "tool-subagent-control/list-agents", "tool-subagent"), both.names)
+        assertEquals(0, both.more)
+    }
+
+    // ---- standalone plugins: the locked ones are grouped by their reason ----
+
+    @Test fun `locked standalone plugins group by reason and the others keep their switch`() {
+        val model = pluginStandaloneModel(listOf(
+            plugin("s1", "free"),
+            plugin("u1", "cordis:include", enabled = true, reason = "unaddressable"),
+            plugin("m1", "manager", enabled = true, reason = "management-required"),
+            plugin("u2", "picker", enabled = false, reason = "unaddressable"),
+        ))
+        assertEquals(listOf("s1"), model.open.map { it.entryId })
+        assertEquals(listOf("unaddressable", "management-required"), model.locked.map { it.reason })
+        assertEquals(listOf("u1", "u2"), model.locked[0].plugins.map { it.entryId })
+        assertEquals(listOf("m1"), model.locked[1].plugins.map { it.entryId })
+        assertEquals(PluginStandaloneModel(emptyList(), emptyList()), pluginStandaloneModel(emptyList()))
+    }
+
+    // ---- operation cards: the same names the list uses, and no line that repeats the tag ----
+
+    private val ralph = bundle("@deepseek-ai/dsh-experimental-ralph-bundle", listOf(row("ralph", "@deepseek-ai/dsh-experimental-ralph", "e-ralph")), enabled = false)
+    private val reminder = bundle("@deepseek-ai/dsh-base", listOf(
+        row("repeat-tool-reminder", "@deepseek-ai/dsh-repeat-tool-reminder", "include:repeat-tool-reminder"),
+        row("a", "@deepseek-ai/dsh-clash", "include:a"),
+        row("b", "@deepseek-ai/clash", "include:b"),
+    ))
+    private val subjectPlugins = listOf(
+        plugin("e-ralph", "@deepseek-ai/dsh-experimental-ralph"), plugin("include:repeat-tool-reminder", "@deepseek-ai/dsh-repeat-tool-reminder"),
+        plugin("include:a", "@deepseek-ai/dsh-clash"), plugin("include:b", "@deepseek-ai/clash"),
+        plugin("s1", "@deepseek-ai/cordis-plugin-timer"), plugin("s2", "@other/standalone"),
+    )
+    private val subjectNames = pluginSubjectNames(
+        listOf(ralph, reminder), subjectPlugins,
+        pluginListModel(listOf(ralph, reminder), subjectPlugins, "", PluginFilter.ALL).names,
+    )
+
+    @Test fun `an operation card resolves a bundle name and a module entry id to the list names`() {
+        assertEquals("experimental-ralph-bundle", subjectNames["@deepseek-ai/dsh-experimental-ralph-bundle"])
+        assertEquals("base", subjectNames["@deepseek-ai/dsh-base"])
+        assertEquals("repeat-tool-reminder", subjectNames["include:repeat-tool-reminder"])
+        assertEquals("experimental-ralph", subjectNames["e-ralph"])
+    }
+
+    @Test fun `a standalone plugin entry resolves to the name the list draws for it`() {
+        assertEquals("cordis-plugin-timer", subjectNames["s1"])
+        assertEquals("@other/standalone", subjectNames["s2"])
+    }
+
+    @Test fun `a module that clashes inside its bundle keeps the full name as its page draws it`() {
+        assertEquals("@deepseek-ai/dsh-clash", subjectNames["include:a"])
+        assertEquals("@deepseek-ai/clash", subjectNames["include:b"])
+    }
+
+    @Test fun `an unknown subject is not in the map so the card keeps its own text`() {
+        assertNull(subjectNames["@deepseek-ai/dsh-not-installed@1.2.3"])
+        assertNull(subjectNames["opaque-id"])
+        assertTrue(pluginSubjectNames(emptyList(), emptyList(), emptyMap()).isEmpty())
+    }
+
+    @Test fun `a status line that repeats its tag is dropped`() {
+        assertNull(pluginStatusLine("applied", busy = false, unknown = false, phase = null))
+        assertNull(pluginStatusLine("restart-required", busy = false, unknown = false, phase = null))
+        assertNull(pluginStatusLine("failed", busy = false, unknown = false, phase = null))
+        assertEquals(com.labteto.dshmobile.R.string.harness_applied, pluginTagLabel("applied", busy = false, unknown = false, failed = false))
+    }
+
+    @Test fun `a status line that adds something is kept`() {
+        assertEquals(com.labteto.dshmobile.R.string.harness_cancelled, pluginStatusLine("cancelled", busy = false, unknown = false, phase = null))
+        assertEquals(com.labteto.dshmobile.R.string.harness_overridden, pluginStatusLine("overridden", busy = false, unknown = false, phase = null))
+        assertEquals(pluginPhase("installing"), pluginStatusLine(null, busy = true, unknown = false, phase = "installing"))
+        assertEquals(com.labteto.dshmobile.R.string.ux_a_check_status, pluginStatusLine(null, busy = false, unknown = true, phase = null))
+    }
+
+    // ---- rows with no managed plugin behind them ----
+
+    @Test fun `rows of an installed bundle that is off say the bundle is off`() {
+        assertEquals(PluginPlainNote.BUNDLE_OFF, bundle("a", enabled = false).plainRowsNote())
+        assertEquals(PluginPlainNote.BUNDLE_OFF, bundle("a", enabled = false).copy(installed = false, availability = "installation").plainRowsNote())
+    }
+
+    @Test fun `rows of a bundle that is not installed say it is not installed`() {
+        assertEquals(PluginPlainNote.NOT_INSTALLED, bundle("a", enabled = false).copy(installed = false, availability = "missing").plainRowsNote())
+    }
+
+    @Test fun `a bundle that is on says nothing about rows without a plugin`() {
+        assertNull(bundle("a", enabled = true).plainRowsNote())
+    }
+
     @Test fun `detail search and chips appear only above eight rows`() {
         assertFalse(pluginDetailShowsControls(0))
         assertFalse(pluginDetailShowsControls(8))

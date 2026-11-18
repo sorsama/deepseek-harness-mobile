@@ -1,10 +1,12 @@
 package com.labteto.dshmobile.ui.screens.main
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -12,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Icon
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -28,13 +30,16 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.*
 import com.labteto.dshmobile.core.wire.dto.*
 import com.labteto.dshmobile.data.HarnessFeature
+import com.labteto.dshmobile.data.PluginOperationState
 import com.labteto.dshmobile.ui.components.*
 import com.labteto.dshmobile.ui.rememberSessionStore
 import com.labteto.dshmobile.ui.theme.*
@@ -105,6 +110,11 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
 
     val pluginsById = remember(plugins) { plugins.associateBy { it.entryId } }
     val model = remember(bundles, plugins, search, filter) { pluginListModel(bundles, plugins, search, filter) }
+    val standalone = remember(model.standalone) { pluginStandaloneModel(model.standalone) }
+    // The names the list and the bundle pages draw, so an operation card calls its subject the same thing.
+    val subjectNames = remember(bundles, plugins, model.names) { pluginSubjectNames(bundles, plugins, model.names) }
+    fun subjectText(state: PluginOperationState): String? =
+        state.displaySubject()?.let { subjectNames[it] ?: it }?.let(::technicalDisplay)
     val enabledCounts = remember(bundles, pluginsById) {
         bundles.distinctBy { it.name }.associate { it.name to pluginEnabledCount(pluginModuleRows(it, pluginsById)) }
     }
@@ -156,10 +166,10 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
         pending.filter { it.host == host }.forEach { state -> DsCard {
             row@ Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    state.displaySubject()?.let(::technicalDisplay) ?: stringResource(R.string.ux_a_previous_install),
+                    subjectText(state) ?: stringResource(R.string.ux_a_previous_install),
                     style = DsType.std14Strong,
                     color = colors.labelPrimary,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
@@ -185,24 +195,24 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
         current?.let { state -> state.result?.let { result -> DsCard {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    state.displaySubject()?.let(::technicalDisplay) ?: stringResource(R.string.ux_a_previous_install),
+                    subjectText(state) ?: stringResource(R.string.ux_a_previous_install),
                     style = DsType.std14Strong,
                     color = colors.labelPrimary,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
                 PluginPhaseTag(result.application, busy = false, unknown = false, failed = result.application == "failed")
             }
             result.version?.let { Text(technicalDisplay(it), style = DsType.mono12, color = colors.labelSecondary) }
-            Text(
-                stringResource(when (result.application) {
-                    "applied" -> R.string.harness_applied; "restart-required" -> R.string.harness_restart
-                    "overridden" -> R.string.harness_overridden; "cancelled" -> R.string.harness_cancelled; else -> R.string.harness_failed
-                }),
-                style = DsType.std14,
-                color = if (result.application == "restart-required") colors.warnText else colors.labelSecondary,
-            )
+            // The tag already says "Applied" or "Saved. Restart..."; the line only adds what it does not.
+            pluginStatusLine(result.application, busy = false, unknown = false, phase = null)?.let { line ->
+                Text(
+                    stringResource(line),
+                    style = DsType.std14,
+                    color = if (result.application == "restart-required") colors.warnText else colors.labelSecondary,
+                )
+            }
             result.error?.let { Text(stringResource(pluginReason(it.code)), color = colors.error, style = DsType.small13) }
             state.approvalSubject()?.let { approval ->
                 FeatureAction(stringResource(R.string.ux_a_approve_retry), !busy, DsButtonVariant.Primary) { confirm = approval }
@@ -215,7 +225,10 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
 
     val operationCards = pending.filter { it.host == host } + listOfNotNull(current?.takeIf { it.result != null })
     val showCreate = presets?.presets?.any { it.id == "cordis" && it.broken == null } == true
-    val emptyText = stringResource(if (search.isBlank() && filter == PluginFilter.ALL) R.string.plugins_empty else R.string.harness_automation_no_matches)
+    // With nothing to match, the mascot page says there are no plugins; a search or a chip that found
+    // nothing gets one quiet line, short enough to stay visible above the keyboard.
+    val nothingMatched = !(search.isBlank() && filter == PluginFilter.ALL)
+    val emptyText = stringResource(if (nothingMatched) R.string.plugins_no_matches else R.string.plugins_empty)
     val installedHeader = stringResource(R.string.ux_a_installed)
     val availableHeader = stringResource(R.string.ux_a_available)
 
@@ -234,44 +247,41 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
             DsSearchField(search, { search = it }, stringResource(R.string.plugins_search_hint))
             PluginFilterChips(model.counts, filter) { filter = it }
         },
+        progress = busy,
         listState = listState,
     ) {
-        item(key = "install") {
-            DsButton(
-                text = stringResource(R.string.harness_install_update),
-                icon = Icons.Filled.Add,
-                onClick = {
-                    spec = ""; registry = ""; inspection = null; installedVersion = null; replacing = null; installOpen = true
-                },
-                enabled = !busy,
-                variant = DsButtonVariant.Primary,
-                allowWrap = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
+        item(key = "actions") {
+            PluginButtonPair {
+                DsButton(
+                    text = stringResource(R.string.harness_install_update),
+                    onClick = {
+                        spec = ""; registry = ""; inspection = null; installedVersion = null; replacing = null; installOpen = true
+                    },
+                    enabled = !busy,
+                    variant = DsButtonVariant.Primary,
+                    allowWrap = true,
+                )
+                if (showCreate) DsButton(
+                    text = stringResource(if (loading) R.string.common_loading else R.string.harness_create_plugin),
+                    onClick = {
+                        run {
+                            if (host != null && store.stageFeatureDraft(host, creator, "cordis")) onDraftOpened() else error(offline)
+                        }
+                    },
+                    enabled = !busy,
+                    variant = DsButtonVariant.Outline,
+                    allowWrap = true,
+                )
+            }
         }
-        if (showCreate) item(key = "create") {
-            DsButton(
-                text = stringResource(if (loading) R.string.common_loading else R.string.harness_create_plugin),
-                onClick = {
-                    run {
-                        if (host != null && store.stageFeatureDraft(host, creator, "cordis")) onDraftOpened() else error(offline)
-                    }
-                },
-                enabled = !busy,
-                variant = DsButtonVariant.Outline,
-                allowWrap = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        if (loading && loaded) item(key = "progress") { FeatureProgress() }
         itemsIndexed(operationCards, key = { index, _ -> "operation:$index" }) { _, state ->
             DsCard(onClick = { operationOpen = true }) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        state.displaySubject()?.let(::technicalDisplay) ?: stringResource(R.string.ux_a_previous_install),
+                        subjectText(state) ?: stringResource(R.string.ux_a_previous_install),
                         style = DsType.std14Strong,
                         color = colors.labelPrimary,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
                     )
@@ -282,18 +292,14 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
                         failed = state.result?.application == "failed" || state.unknown,
                     )
                 }
-                Text(
-                    stringResource(when {
-                        state.unknown -> R.string.ux_a_check_status
-                        state.busy -> pluginPhase(state.phase)
-                        state.result?.application == "restart-required" -> R.string.harness_restart
-                        state.result?.application == "applied" -> R.string.harness_applied
-                        state.result?.application == "cancelled" -> R.string.harness_cancelled
-                        else -> R.string.harness_failed
-                    }),
-                    style = DsType.small13,
-                    color = if (state.unknown || state.result?.application == "restart-required") colors.warnText else colors.labelSecondary,
-                )
+                // The tag says "Applied"; a second line saying it again is dropped.
+                pluginStatusLine(state.result?.application, state.busy, state.unknown, state.phase)?.let { line ->
+                    Text(
+                        stringResource(line),
+                        style = DsType.small13,
+                        color = if (state.unknown || state.result?.application == "restart-required") colors.warnText else colors.labelSecondary,
+                    )
+                }
                 if (state.busy) FeatureProgress()
             }
         }
@@ -301,24 +307,46 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
         // An item with nothing in it still takes a gap in a lazy list, so the failure card only exists while there is one.
         if (error != null) item(key = "failure") { Failure() }
         if (loaded && model.bundles.isEmpty() && model.standalone.isEmpty()) item(key = "empty") {
-            EmptyHero(emptyText, null, showPreview = false)
+            if (nothingMatched) {
+                Text(
+                    emptyText,
+                    style = DsType.std14,
+                    color = colors.labelSecondary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = DsSpacing.large),
+                )
+            } else {
+                EmptyHero(emptyText, null, showPreview = false)
+            }
         }
         listOf(true, false).forEach { installed ->
             val group = model.bundles.filter { it.listedAsInstalled() == installed }
-            val standalone = if (installed) model.standalone else emptyList()
-            if (group.isNotEmpty() || standalone.isNotEmpty()) item(key = "section:$installed") {
+            val unbundled = if (installed) standalone else PluginStandaloneModel(emptyList(), emptyList())
+            if (group.isNotEmpty() || unbundled.open.isNotEmpty() || unbundled.locked.isNotEmpty()) item(key = "section:$installed") {
                 SectionHeader(if (installed) installedHeader else availableHeader)
             }
-            items(standalone, key = { "plugin:${it.entryId}" }) { plugin ->
+            items(unbundled.open, key = { "plugin:${it.entryId}" }) { plugin ->
                 DsCard {
                     PluginToggleRow(
                         label = technicalDisplay(model.names[plugin.moduleName] ?: plugin.moduleName),
                         checked = plugin.enabled,
-                        enabled = !busy && plugin.readOnlyReason == null,
+                        enabled = !busy,
                         onToggle = { togglePlugin(plugin) },
                         leading = { PluginGlyph(size = 40.dp) },
-                        hint = plugin.readOnlyReason?.let { stringResource(pluginReason(it)) },
                     )
+                }
+            }
+            // The plugins the harness locks share one reason; it is said once, over compact rows, as on a bundle's page.
+            items(unbundled.locked, key = { "locked:${it.reason}" }) { locked ->
+                DsCard(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                    PluginLockedHeader(stringResource(pluginReason(locked.reason)), Modifier.padding(bottom = DsSpacing.xsmall))
+                    locked.plugins.forEachIndexed { index, plugin ->
+                        if (index > 0) PluginRowDivider()
+                        PluginLockedRow(
+                            label = technicalDisplay(model.names[plugin.moduleName] ?: plugin.moduleName),
+                            enabled = plugin.enabled,
+                        )
+                    }
                 }
             }
             items(group, key = { "bundle:${it.name}" }) { bundle ->
@@ -327,7 +355,7 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
                     name = model.names[bundle.name] ?: bundle.name,
                     count = enabledCounts[bundle.name],
                     search = search,
-                    switchEnabled = !busy && bundle.readOnlyReason == null,
+                    switchEnabled = !busy,
                     onOpen = { openDetail(bundle) },
                     onToggle = { toggleBundle(bundle) },
                 )
@@ -407,6 +435,47 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
     } }
 }
 
+/**
+ * One or two buttons as a row: side by side at equal width when the longer label fits on one line in
+ * half the row, otherwise stacked, each at the full width, so a large font or a long language wraps
+ * onto a second row of buttons instead of clipping a label. A single button takes the full width.
+ * The buttons are passed without a width of their own; this sets it.
+ */
+@Composable
+private fun PluginButtonPair(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val gap = DsSpacing.small
+    Layout(content = content, modifier = modifier.fillMaxWidth()) { measurables, constraints ->
+        val gapPx = gap.roundToPx()
+        val width = constraints.maxWidth
+        val half = (width - gapPx) / 2
+        // Natural width: the whole label on one line, with the button's own padding and icon.
+        val sideBySide = measurables.size == 2 && measurables.all { it.maxIntrinsicWidth(0) <= half }
+        if (sideBySide) {
+            val first = measurables.map { it.measure(Constraints(minWidth = half, maxWidth = half, maxHeight = constraints.maxHeight)) }
+            val height = first.maxOf { it.height }
+            val placeables = if (first.all { it.height == height }) first else measurables.map {
+                it.measure(Constraints.fixed(half, height))
+            }
+            layout(width, height) {
+                placeables[0].placeRelative(0, 0)
+                placeables[1].placeRelative(half + gapPx, 0)
+            }
+        } else {
+            val placeables = measurables.map {
+                it.measure(Constraints(minWidth = width, maxWidth = width, maxHeight = constraints.maxHeight))
+            }
+            val height = placeables.sumOf { it.height } + gapPx * (placeables.size - 1).coerceAtLeast(0)
+            layout(width, height) {
+                var y = 0
+                placeables.forEach {
+                    it.placeRelative(0, y)
+                    y += it.height + gapPx
+                }
+            }
+        }
+    }
+}
+
 /** The All / On / Off chips with their counts. Scrolls sideways, so a large font or a long word never clips a chip. */
 @Composable
 private fun PluginFilterChips(counts: PluginFilterCounts, selected: PluginFilter, onSelect: (PluginFilter) -> Unit) {
@@ -437,7 +506,12 @@ private fun PluginFilterChips(counts: PluginFilterCounts, selected: PluginFilter
  * The card is three side-by-side targets that never overlap: the text opens the bundle, the switch
  * flips it, and the chevron opens it too. Each is at least 48dp tall (the row takes the height of
  * the text). The chevron is for sight and touch only; it stays out of the accessibility tree, where
- * the text already says "open details".
+ * the text already says "open details". A bundle the harness locks has no switch to draw: its state
+ * is a word beside a lock, as on a locked row of the bundle's page.
+ *
+ * The text and the chevron share one interaction source and wear the app's own pressed indication,
+ * which the card clips to its shape, so pressing either one lights both and the card reads as one
+ * thing being pressed.
  */
 @Composable
 private fun PluginBundleCard(
@@ -459,15 +533,15 @@ private fun PluginBundleCard(
     val meta = listOfNotNull(bundle.version?.let(::technicalDisplay), countText).joinToString(" · ")
     val open = { haptics.tap(); onOpen() }
     val openLabel = stringResource(R.string.plugins_open_details)
-    val textSource = remember { MutableInteractionSource() }
-    val chevronSource = remember { MutableInteractionSource() }
+    val pressSource = remember { MutableInteractionSource() }
+    val indication = LocalIndication.current
     DsCard(contentPadding = PaddingValues(0.dp)) {
         Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
             Row(
                 Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .clickable(interactionSource = textSource, indication = null, onClickLabel = openLabel, role = Role.Button, onClick = open)
+                    .clickable(interactionSource = pressSource, indication = indication, onClickLabel = openLabel, role = Role.Button, onClick = open)
                     .padding(
                         start = DsSpacing.comfortable,
                         top = DsSpacing.medium,
@@ -478,35 +552,28 @@ private fun PluginBundleCard(
             ) {
                 PluginGlyph(size = 40.dp)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    // Two lines before an ellipsis: at a large font two long names no longer read the same.
                     Text(
                         technicalDisplay(name),
                         style = DsType.mono13,
                         color = colors.labelPrimary,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    if (meta.isNotEmpty() || bundle.readOnlyReason != null) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {
-                            // The bundle can't be changed here: the switch is dimmed, and this says why it is.
-                            if (bundle.readOnlyReason != null) {
-                                Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(12.dp), tint = colors.labelTertiary)
-                            }
-                            if (meta.isNotEmpty()) {
-                                // Two lines at most: at a large font or in a long language the count wraps instead of being cut off.
-                                Text(meta, style = DsType.small13, color = colors.labelTertiary, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                            }
-                        }
-                    }
-                    matches?.let { found ->
-                        found.names.forEach {
+                    // No line limit: at a large font or in a long language the count wraps instead of being cut off.
+                    if (meta.isNotEmpty()) Text(meta, style = DsType.small13, color = colors.labelTertiary)
+                    if (matches != null) {
+                        // A search that matched module names says which; the description would only add height.
+                        matches.names.forEach {
                             Text(technicalDisplay(it), style = DsType.mono12, color = colors.labelSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
-                        if (found.more > 0) {
-                            Text(stringResource(R.string.plugins_more_matches, found.more), style = DsType.small13, color = colors.labelTertiary, maxLines = 1)
+                        if (matches.more > 0) {
+                            Text(stringResource(R.string.plugins_more_matches, matches.more), style = DsType.small13, color = colors.labelTertiary, maxLines = 1)
                         }
-                    }
-                    bundle.description?.takeIf { it.isNotBlank() }?.let {
-                        Text(it, style = DsType.small13, color = colors.labelSecondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    } else {
+                        bundle.description?.takeIf { it.isNotBlank() }?.let {
+                            Text(it, style = DsType.small13, color = colors.labelSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
                     }
                     bundle.error?.let {
                         Text(stringResource(pluginReason(it.code)), color = colors.error, style = DsType.small13, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -514,13 +581,17 @@ private fun PluginBundleCard(
                 }
             }
             Box(Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
-                PluginSwitch(name = name, checked = bundle.enabled, enabled = switchEnabled, onToggle = onToggle)
+                if (bundle.readOnlyReason != null) {
+                    PluginLockedState(enabled = bundle.enabled)
+                } else {
+                    PluginSwitch(name = name, checked = bundle.enabled, enabled = switchEnabled, onToggle = onToggle)
+                }
             }
             Box(
                 Modifier
                     .fillMaxHeight()
                     .width(36.dp)
-                    .clickable(interactionSource = chevronSource, indication = null, onClick = open)
+                    .clickable(interactionSource = pressSource, indication = indication, onClick = open)
                     .clearAndSetSemantics { },
                 contentAlignment = Alignment.Center,
             ) {
@@ -554,12 +625,20 @@ private fun PluginBundleDetailPage(
     // quietly hide rows behind a field nobody can see.
     val controls = pluginDetailShowsControls(rows.size)
     val names = remember(rows) { pluginShortNames(rows.map { it.row.moduleName }) }
+    // Two rows can load one module; the row id is what tells them apart (see pluginRowQualifiers).
+    val qualifiers = remember(rows, names) { pluginRowQualifiers(rows, names) }
     val shown = remember(rows, search, filter, controls) {
         pluginDetailModel(rows, if (controls) search else "", if (controls) filter else PluginFilter.ALL)
     }
     val count = remember(rows) { pluginEnabledCount(rows) }
     val canInstall = bundle.availability != "installation" && (bundle.installed || bundle.installTarget != null)
     val canRemove = bundle.removable && bundle.readOnlyReason == null
+    val lockReason = bundle.readOnlyReason
+    val plainNote = if (shown.plain.isEmpty()) null else bundle.plainRowsNote()
+    // The scroll position belongs to this bundle's page and is not saved: a list state remembered the
+    // usual way is restored by position after the activity is recreated, and the next bundle opened
+    // (or the same one) came up scrolled to wherever a page had been left.
+    val listState = remember(bundle.name) { LazyListState() }
     val controlsSlot: @Composable ColumnScope.() -> Unit = {
         DsSearchField(search, onSearch, stringResource(R.string.plugins_search_hint))
         PluginFilterChips(shown.counts, filter, onFilter)
@@ -570,6 +649,8 @@ private fun PluginBundleDetailPage(
         onClose = onClose,
         onRefresh = onRefresh,
         pinned = if (controls) controlsSlot else null,
+        progress = busy,
+        listState = listState,
         // The module rows are flat and draw their own dividers, so the page gives no gap between items
         // and the few blocks that need one (summary, count, group header, buttons) pad themselves.
         verticalArrangement = Arrangement.Top,
@@ -583,15 +664,26 @@ private fun PluginBundleDetailPage(
                     Text(stringResource(pluginReason(it.code)), color = colors.error, style = DsType.small13)
                     FeatureDiagnostics(it.diagnostic)
                 }
-                PluginToggleRow(
-                    label = stringResource(if (bundle.enabled) R.string.plugins_enabled else R.string.plugins_disabled),
-                    checked = bundle.enabled,
-                    enabled = !busy && bundle.readOnlyReason == null,
-                    onToggle = onToggleBundle,
-                    labelStyle = DsType.rowTitle,
-                )
-                bundle.readOnlyReason?.let {
-                    Text(stringResource(pluginReason(it)), style = DsType.small13, color = colors.labelTertiary)
+                val state = stringResource(if (bundle.enabled) R.string.plugins_enabled else R.string.plugins_disabled)
+                if (lockReason == null) {
+                    PluginToggleRow(
+                        label = state,
+                        checked = bundle.enabled,
+                        enabled = !busy,
+                        onToggle = onToggleBundle,
+                        labelStyle = DsType.rowTitle,
+                    )
+                } else {
+                    // Locked: a dimmed switch reads as "off" even when the bundle is on, so the state is a word.
+                    Row(
+                        Modifier.fillMaxWidth().heightIn(min = DsSpacing.touchTarget).semantics(mergeDescendants = true) { },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+                    ) {
+                        Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(16.dp), tint = colors.labelTertiary)
+                        Text(state, style = DsType.rowTitle, color = colors.labelPrimary)
+                    }
+                    Text(stringResource(pluginReason(lockReason)), style = DsType.small13, color = colors.labelTertiary)
                 }
             }
         }
@@ -613,6 +705,7 @@ private fun PluginBundleDetailPage(
             Column {
                 PluginToggleRow(
                     label = technicalDisplay(names[module.row.moduleName] ?: module.row.moduleName),
+                    qualifier = qualifiers[module.row.rowId],
                     checked = plugin.enabled,
                     enabled = !busy,
                     onToggle = { onTogglePlugin(plugin) },
@@ -622,65 +715,68 @@ private fun PluginBundleDetailPage(
         }
         shown.locked.forEach { group ->
             item(key = "reason:${group.reason}") {
-                Row(
-                    Modifier.fillMaxWidth().padding(top = DsSpacing.medium, bottom = DsSpacing.xsmall).semantics { heading() },
-                    horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
-                ) {
-                    Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.padding(top = 2.dp).size(16.dp), tint = colors.labelTertiary)
-                    Text(stringResource(pluginReason(group.reason)), style = DsType.small13, color = colors.labelSecondary, modifier = Modifier.weight(1f))
-                }
+                PluginLockedHeader(
+                    stringResource(pluginReason(group.reason)),
+                    Modifier.padding(top = DsSpacing.medium, bottom = DsSpacing.xsmall),
+                )
             }
             items(group.rows, key = { "row:${it.row.rowId}" }) { module ->
                 Column {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = DsSpacing.touchTarget)
-                            .semantics(mergeDescendants = true) { },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
-                    ) {
-                        Text(
-                            technicalDisplay(names[module.row.moduleName] ?: module.row.moduleName),
-                            style = DsType.mono13,
-                            color = colors.labelPrimary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f),
-                        )
-                        // The state is a word, not a colour, and there is no switch to hint at one.
-                        Text(
-                            stringResource(if (module.plugin?.enabled == true) R.string.plugins_enabled else R.string.plugins_disabled),
-                            style = DsType.small13,
-                            color = colors.labelSecondary,
-                            maxLines = 1,
-                        )
-                    }
+                    PluginLockedRow(
+                        label = technicalDisplay(names[module.row.moduleName] ?: module.row.moduleName),
+                        enabled = module.plugin?.enabled == true,
+                        qualifier = qualifiers[module.row.rowId],
+                    )
                     PluginRowDivider()
                 }
             }
         }
+        // Rows with no managed plugin have nothing to flip: said once, because the bundle is what is off.
+        plainNote?.let { note ->
+            item(key = "plain-note") {
+                Text(
+                    stringResource(
+                        when (note) {
+                            PluginPlainNote.BUNDLE_OFF -> R.string.plugins_modules_need_bundle_on
+                            PluginPlainNote.NOT_INSTALLED -> R.string.plugins_modules_need_install
+                        },
+                    ),
+                    style = DsType.small13,
+                    color = colors.labelSecondary,
+                    modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.small, bottom = DsSpacing.xsmall),
+                )
+            }
+        }
         items(shown.plain, key = { "row:${it.row.rowId}" }) { module ->
-            Text(
-                technicalDisplay(names[module.row.moduleName] ?: module.row.moduleName),
+            PluginNameBlock(
+                label = technicalDisplay(names[module.row.moduleName] ?: module.row.moduleName),
+                qualifier = qualifiers[module.row.rowId],
                 style = DsType.mono12,
                 color = colors.labelSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth().heightIn(min = DsSpacing.touchTarget).wrapContentHeight(Alignment.CenterVertically),
             )
         }
         if (canInstall || canRemove) item(key = "actions") {
             Column(Modifier.padding(top = DsSpacing.comfortable), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                 if (canInstall) {
-                    FeatureAction(
-                        stringResource(if (bundle.availability == "missing") R.string.harness_install_update else R.string.ux_a_update),
-                        !busy,
+                    DsButton(
+                        text = stringResource(if (bundle.availability == "missing") R.string.harness_install_update else R.string.ux_a_update),
                         onClick = onUpdate,
+                        enabled = !busy,
+                        variant = DsButtonVariant.Primary,
+                        allowWrap = true,
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
                 if (canRemove) {
-                    FeatureAction(stringResource(R.string.common_remove), !busy, DsButtonVariant.Danger, onRemove)
+                    DsButton(
+                        text = stringResource(R.string.common_remove),
+                        onClick = onRemove,
+                        enabled = !busy,
+                        variant = DsButtonVariant.Danger,
+                        allowWrap = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
         }
@@ -714,8 +810,29 @@ private fun PluginSwitch(name: String, checked: Boolean, enabled: Boolean, onTog
 }
 
 /**
+ * A technical name that wraps to a second line before it is cut, with an optional small line under it.
+ * Two long names that only differ at the end must not read the same.
+ */
+@Composable
+private fun PluginNameBlock(
+    label: String,
+    qualifier: String?,
+    modifier: Modifier = Modifier,
+    style: TextStyle = DsType.mono13,
+    color: androidx.compose.ui.graphics.Color = DsTheme.colors.labelPrimary,
+) {
+    Column(modifier) {
+        Text(label, style = style, color = color, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        qualifier?.let {
+            Text(technicalDisplay(it), style = DsType.mono12, color = DsTheme.colors.labelTertiary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+/**
  * A whole-row switch: the row is the target and its text is the name a screen reader says, like
- * [ToggleRow], but with a one-line technical name that ends in an ellipsis instead of wrapping.
+ * [ToggleRow], but with a technical name that wraps to a second line and ends in an ellipsis after
+ * that. [qualifier] is the small second line for a row whose module name another row shares.
  */
 @Composable
 private fun PluginToggleRow(
@@ -726,9 +843,8 @@ private fun PluginToggleRow(
     modifier: Modifier = Modifier,
     labelStyle: TextStyle = DsType.mono13,
     leading: (@Composable () -> Unit)? = null,
-    hint: String? = null,
+    qualifier: String? = null,
 ) {
-    val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     Row(
         modifier
@@ -746,11 +862,60 @@ private fun PluginToggleRow(
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
     ) {
         leading?.invoke()
-        Column(Modifier.weight(1f)) {
-            Text(label, style = labelStyle, color = colors.labelPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            hint?.let { Text(it, style = DsType.caption11, color = colors.labelTertiary, maxLines = 2) }
-        }
+        PluginNameBlock(label, qualifier, Modifier.weight(1f), labelStyle)
         DsSwitch(checked = checked, onCheckedChange = null, enabled = enabled)
+    }
+}
+
+/** The state of a locked bundle on its card: a lock and a word where the switch would be. */
+@Composable
+private fun PluginLockedState(enabled: Boolean, modifier: Modifier = Modifier) {
+    val colors = DsTheme.colors
+    Row(
+        modifier.padding(horizontal = DsSpacing.tiny).semantics(mergeDescendants = true) { },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
+    ) {
+        Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(12.dp), tint = colors.labelTertiary)
+        Text(
+            stringResource(if (enabled) R.string.plugins_enabled else R.string.plugins_disabled),
+            style = DsType.small13,
+            color = colors.labelSecondary,
+        )
+    }
+}
+
+/** The lock and the reason a group of rows cannot be changed, written once above them. */
+@Composable
+private fun PluginLockedHeader(reason: String, modifier: Modifier = Modifier) {
+    val colors = DsTheme.colors
+    Row(
+        modifier.fillMaxWidth().semantics { heading() },
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+    ) {
+        Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.padding(top = 2.dp).size(16.dp), tint = colors.labelTertiary)
+        Text(reason, style = DsType.small13, color = colors.labelSecondary, modifier = Modifier.weight(1f))
+    }
+}
+
+/** A locked row: its name and its state as a word. There is no switch to hint at a state. */
+@Composable
+private fun PluginLockedRow(label: String, enabled: Boolean, modifier: Modifier = Modifier, qualifier: String? = null) {
+    val colors = DsTheme.colors
+    Row(
+        modifier
+            .fillMaxWidth()
+            .heightIn(min = DsSpacing.touchTarget)
+            .semantics(mergeDescendants = true) { },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+    ) {
+        PluginNameBlock(label, qualifier, Modifier.weight(1f))
+        Text(
+            stringResource(if (enabled) R.string.plugins_enabled else R.string.plugins_disabled),
+            style = DsType.small13,
+            color = colors.labelSecondary,
+        )
     }
 }
 
@@ -780,14 +945,14 @@ private fun PluginGlyph(size: androidx.compose.ui.unit.Dp = 40.dp) {
 @Composable
 private fun PluginPhaseTag(application: String?, busy: Boolean, unknown: Boolean, failed: Boolean) {
     val colors = DsTheme.colors
-    val (label, foreground, background, border) = when {
-        busy -> PluginTag(stringResource(R.string.common_loading), colors.warnLabel, colors.warnTertiary, colors.warnBorder)
-        unknown -> PluginTag(stringResource(R.string.harness_failed), colors.error, colors.errorTertiary, colors.errorBorder)
-        failed -> PluginTag(stringResource(R.string.harness_failed), colors.error, colors.errorTertiary, colors.errorBorder)
-        application == "applied" -> PluginTag(stringResource(R.string.harness_applied), colors.success, colors.successTertiary, colors.successBorder)
-        application == "restart-required" -> PluginTag(stringResource(R.string.harness_restart), colors.warnLabel, colors.warnTertiary, colors.warnBorder)
-        application != null -> PluginTag(stringResource(R.string.harness_failed), colors.error, colors.errorTertiary, colors.errorBorder)
-        else -> PluginTag(stringResource(R.string.ux_a_installed), colors.labelSecondary, colors.bgLayer3, colors.borderL2)
+    val label = stringResource(pluginTagLabel(application, busy, unknown, failed))
+    val (foreground, background, border) = when {
+        busy -> Triple(colors.warnLabel, colors.warnTertiary, colors.warnBorder)
+        unknown || failed -> Triple(colors.error, colors.errorTertiary, colors.errorBorder)
+        application == "applied" -> Triple(colors.success, colors.successTertiary, colors.successBorder)
+        application == "restart-required" -> Triple(colors.warnLabel, colors.warnTertiary, colors.warnBorder)
+        application != null -> Triple(colors.error, colors.errorTertiary, colors.errorBorder)
+        else -> Triple(colors.labelSecondary, colors.bgLayer3, colors.borderL2)
     }
     Text(
         label,
@@ -801,13 +966,6 @@ private fun PluginPhaseTag(application: String?, busy: Boolean, unknown: Boolean
             .padding(horizontal = DsSpacing.xsmall, vertical = 2.dp),
     )
 }
-
-private data class PluginTag(
-    val label: String,
-    val foreground: androidx.compose.ui.graphics.Color,
-    val background: androidx.compose.ui.graphics.Color,
-    val border: androidx.compose.ui.graphics.Color,
-)
 
 /** Placeholder cards while the plugin inventory is on the wire. */
 @Composable

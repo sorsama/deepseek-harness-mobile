@@ -130,8 +130,9 @@ internal data class PluginRowMatches(val names: List<String>, val more: Int)
 
 internal fun PluginBundle.rowMatches(query: String, limit: Int = PLUGIN_MATCH_PREVIEW, shortName: (String) -> String): PluginRowMatches? {
     if (!matchedOnlyByRows(query)) return null
-    val hits = matchedRows(query)
-    return PluginRowMatches(hits.take(limit).map { shortName(it.moduleName) }, (hits.size - limit).coerceAtLeast(0))
+    // One module can be loaded by two rows (see [pluginRowQualifiers]); the card names it once.
+    val hits = matchedRows(query).map { shortName(it.moduleName) }.distinct()
+    return PluginRowMatches(hits.take(limit), (hits.size - limit).coerceAtLeast(0))
 }
 
 /**
@@ -213,4 +214,109 @@ internal fun pluginDetailModel(rows: List<PluginModuleRow>, query: String, filte
             .map { (reason, group) -> PluginLockedGroup(reason, group) },
         plain = shown.filter { it.plugin == null },
     )
+}
+
+/**
+ * The small second line that tells apart rows of one bundle that name the same module, keyed by row
+ * id; rows whose module name is unique get none.
+ *
+ * A bundle can load one module twice with different settings, and then both rows draw the same
+ * module name. The `base` bundle does it for `@deepseek-ai/dsh-tool-subagent`: its patch declares the
+ * row `tool-subagent` (the spawn tool) and the row `tool-subagent-fork` (the fork tool) over that one
+ * module. What differs is the row id, the id the patch gives the row, so that is the label; the
+ * harness's own web page prints it under the title the same way. A row whose id is already the name
+ * drawn (`tool-subagent`) needs nothing: it is the one with no second line. [names] is the module
+ * name to drawn name map the page uses.
+ */
+internal fun pluginRowQualifiers(rows: List<PluginModuleRow>, names: Map<String, String>): Map<String, String> =
+    rows.groupBy { it.row.moduleName }.values
+        .filter { it.size > 1 }
+        .flatten()
+        .mapNotNull { module ->
+            val drawn = names[module.row.moduleName] ?: module.row.moduleName
+            module.row.rowId.takeUnless { it == drawn }?.let { module.row.rowId to it }
+        }
+        .toMap()
+
+/** Why a bundle's rows have no managed plugin behind them, when that is the bundle's state and not the row's. */
+internal enum class PluginPlainNote { BUNDLE_OFF, NOT_INSTALLED }
+
+/**
+ * What to say once above rows that have no managed plugin. The harness gives a row an entry (and so a
+ * switch) only while its bundle is loaded, and its own page lists such rows as Off with the switches
+ * shown only when the bundle is on; so for an installed bundle that is off the true sentence is
+ * "turn the bundle on". A bundle that is not installed has no files to read rows from, so there is
+ * normally nothing to say it about. Null for a bundle that is on: its rows lack an entry for some
+ * other reason and the page does not guess which.
+ */
+internal fun PluginBundle.plainRowsNote(): PluginPlainNote? = when {
+    !listedAsInstalled() -> PluginPlainNote.NOT_INSTALLED
+    !enabled -> PluginPlainNote.BUNDLE_OFF
+    else -> null
+}
+
+/** Managed plugins that belong to no bundle: the ones with a switch, and the locked ones grouped by reason. */
+internal data class PluginStandaloneModel(val open: List<ManagedPlugin>, val locked: List<PluginLockedPlugins>)
+
+/** Locked standalone plugins that share one reason, drawn under that reason once. */
+internal data class PluginLockedPlugins(val reason: String, val plugins: List<ManagedPlugin>)
+
+internal fun pluginStandaloneModel(plugins: List<ManagedPlugin>): PluginStandaloneModel = PluginStandaloneModel(
+    open = plugins.filter { it.readOnlyReason == null },
+    locked = plugins.mapNotNull { plugin -> plugin.readOnlyReason?.let { it to plugin } }
+        .groupBy({ it.first }, { it.second })
+        .map { (reason, group) -> PluginLockedPlugins(reason, group) },
+)
+
+/**
+ * What an operation card calls its subject: the name the list or the bundle page draws for it, when
+ * the subject is something on them. A module change names its entry id (`include:repeat-tool-reminder`),
+ * a bundle change its full package name (`@deepseek-ai/dsh-experimental-ralph-bundle`); neither fits a
+ * card. Anything else (an install spec, an unknown id) is not in the map and keeps its own text.
+ * [listNames] is the list model's full name to drawn name map (bundles and standalone plugins).
+ */
+internal fun pluginSubjectNames(
+    bundles: List<PluginBundle>,
+    plugins: List<ManagedPlugin>,
+    listNames: Map<String, String>,
+): Map<String, String> {
+    val names = HashMap<String, String>()
+    // Modules of a bundle are drawn on its page with names that avoid clashes inside that bundle.
+    bundles.distinctBy { it.name }.forEach { bundle ->
+        val drawn = pluginShortNames(bundle.rows.map { it.moduleName })
+        bundle.rows.forEach { row -> row.entryId?.let { id -> names[id] = drawn.getValue(row.moduleName) } }
+    }
+    plugins.forEach { plugin -> names.putIfAbsent(plugin.entryId, listNames[plugin.moduleName] ?: pluginShortName(plugin.moduleName)) }
+    listNames.forEach { (full, drawn) -> names.putIfAbsent(full, drawn) }
+    return names
+}
+
+/** The word on an operation's tag. */
+internal fun pluginTagLabel(application: String?, busy: Boolean, unknown: Boolean, failed: Boolean): Int = when {
+    busy -> R.string.common_loading
+    unknown || failed -> R.string.harness_failed
+    application == "applied" -> R.string.harness_applied
+    application == "restart-required" -> R.string.harness_restart
+    application != null -> R.string.harness_failed
+    else -> R.string.ux_a_installed
+}
+
+/**
+ * The line an operation card writes under its subject, or null when it would only repeat the tag
+ * ("Applied" under an "Applied" tag, or the same sentence twice for a failure).
+ */
+internal fun pluginStatusLine(application: String?, busy: Boolean, unknown: Boolean, phase: String?): Int? {
+    val failed = application == "failed" || unknown
+    val line = when {
+        unknown -> R.string.ux_a_check_status
+        busy -> pluginPhase(phase)
+        else -> when (application) {
+            "applied" -> R.string.harness_applied
+            "restart-required" -> R.string.harness_restart
+            "overridden" -> R.string.harness_overridden
+            "cancelled" -> R.string.harness_cancelled
+            else -> R.string.harness_failed
+        }
+    }
+    return line.takeUnless { it == pluginTagLabel(application, busy, unknown, failed) }
 }
