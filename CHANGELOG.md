@@ -5,6 +5,23 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Changed
+
+- **The Plugins page is a short list, and each bundle opens on its own page.** A bundle with a
+  hundred modules used to put a switch for every one of them on its card, so the page ran on for
+  screens. Each bundle is now one card with its name, version, how many of its modules are on, its
+  own switch and a chevron; tapping the card opens the bundle's page. A bundle the harness locks has
+  a lock and the word **Enabled** or **Disabled** where the switch would be, because a dimmed switch
+  looked off when the bundle was on. Search and the **All**, **On** and **Off** chips, each with its
+  count, stay pinned at the top of the list, with **Install or update** and **Create plugin** side
+  by side below them. When a search matches module names, the card names up to three of them. The
+  bundle's page has the full description, the switches first and the modules the harness locks last,
+  with the reason said once for each group instead of under every row (plugins that belong to no
+  bundle are grouped the same way on the list), and full-width **Update** and **Remove** buttons at
+  the end. A bundle with more than eight modules gets a search and chips of its own there, and two
+  modules that share a name show the id that tells them apart. Names no longer start with
+  `@deepseek-ai/dsh-`, so the part that tells them apart is the part you can read. (#122)
+
 ## [0.23.0] - 2026-11-17
 
 ![Three phones: the Subagents sheet with its Close button, a chat at Fully expanded, and the Stop and archive dialog](docs/images/releases/0.23.0/devices/hero-whats-new.png)

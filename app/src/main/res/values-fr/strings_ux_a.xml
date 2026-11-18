@@ -85,4 +85,12 @@
     <string name="ux_a_save_error">Impossible d’enregistrer cette automatisation. Actualisez la règle puis réessayez.</string>
     <string name="ux_a_delete_error">Impossible de supprimer cette automatisation. Actualisez la liste puis réessayez.</string>
     <string name="ux_a_last_run">Dernière exécution : %1$s</string>
+    <string name="plugins_filter_on">Activés %1$d</string>
+    <string name="plugins_filter_off">Désactivés %1$d</string>
+    <string name="plugins_count_on">%1$d&#160;sur&#160;%2$d&#160;activés</string>
+    <string name="plugins_open_details">Ouvrir les détails</string>
+    <string name="plugins_more_matches">+%1$d autres</string>
+    <string name="plugins_no_matches">Aucun résultat</string>
+    <string name="plugins_modules_need_bundle_on">Cet ensemble est désactivé. Activez-le pour activer ou désactiver ses modules un par un.</string>
+    <string name="plugins_modules_need_install">Cet ensemble n\'est pas installé. Installez-le pour activer ou désactiver ses modules un par un.</string>
 </resources>

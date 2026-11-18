@@ -119,6 +119,22 @@ class WindowRulesTest {
     }
 
     /**
+     * On Android 10 and 11 back is a key press, and a focused text field (the Plugins search) took the
+     * second one: the first back hid the keyboard, the second did nothing, the third closed the page.
+     * The full-screen page looks at the key before its fields do, as the sheet does. The handler has to
+     * sit on the page's content, above the fields; on the window's outer box it would never see a key
+     * that a field below it holds.
+     */
+    @Test
+    fun theFullScreenPageClosesOnBackEvenWithATextFieldFocused() {
+        val window = stripCommentsAndStrings(sourceFile(windowFile).readText())
+        assertTrue(
+            "DsFullScreenDialog no longer closes its page on the Back key; a focused field takes it and back needs three presses",
+            Regex("""windowInsetsPadding\(insets\)\s*\.dismissOnBackKey\s*\{\s*onDismissRequest\(\)\s*\}""").containsMatchIn(window),
+        )
+    }
+
+    /**
      * The Subagents sheet could not be closed by a person who had scrolled deep into a long child
      * transcript, or who had the keyboard up: no scrim was left to tap and a swipe scrolled the list.
      * The fix is one close button in the shared sheet's title row, so every sheet has it. Callers must

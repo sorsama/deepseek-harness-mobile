@@ -85,4 +85,12 @@
     <string name="ux_a_save_error">Não foi possível salvar esta automação. Atualize a regra e tente novamente.</string>
     <string name="ux_a_delete_error">Não foi possível excluir esta automação. Atualize a lista e tente novamente.</string>
     <string name="ux_a_last_run">Última execução: %1$s</string>
+    <string name="plugins_filter_on">Ativados %1$d</string>
+    <string name="plugins_filter_off">Desativados %1$d</string>
+    <string name="plugins_count_on">%1$d&#160;de&#160;%2$d&#160;ativados</string>
+    <string name="plugins_open_details">Abrir detalhes</string>
+    <string name="plugins_more_matches">+%1$d mais</string>
+    <string name="plugins_no_matches">Nenhuma correspondência</string>
+    <string name="plugins_modules_need_bundle_on">Este conjunto está desativado. Ative-o para ligar ou desligar os módulos um a um.</string>
+    <string name="plugins_modules_need_install">Este conjunto não está instalado. Instale-o para ligar ou desligar os módulos um a um.</string>
 </resources>

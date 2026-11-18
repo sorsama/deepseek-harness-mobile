@@ -7,6 +7,10 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -62,50 +66,85 @@ internal fun FeaturePage(
     footer: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val colors = DsTheme.colors
+    FeatureFrame(title, onClose, onRefresh, subtitle, footer) {
+        Column(
+            Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small),
+            verticalArrangement = Arrangement.spacedBy(DsSpacing.medium),
+            content = content,
+        )
+    }
+}
+
+/**
+ * [FeaturePage] for a long list: the same header bar, entrance, system-bar padding and footer, with
+ * the rows in a [LazyColumn] so only the visible ones are composed. [pinned] is drawn between the
+ * header bar and the list and does not scroll with it (a search field and filter chips). Pass the
+ * same [listState] from the caller to keep a scroll position across anything the caller redraws.
+ * [verticalArrangement] is the gap between items: the page's usual 12dp, or none for a list of
+ * flat rows that draw their own dividers.
+ *
+ * [progress] is the thin bar for work in flight, drawn directly under [pinned] (or under the header
+ * bar when there is none). `null` (the default) draws nothing, so a page that does not ask keeps its
+ * layout. `false` keeps the strip's height empty and `true` fills it, so the list below never moves
+ * when the work starts or ends.
+ */
+@Composable
+internal fun LazyFeaturePage(
+    title: String,
+    onClose: () -> Unit,
+    onRefresh: (() -> Unit)? = null,
+    subtitle: String? = null,
+    footer: (@Composable () -> Unit)? = null,
+    pinned: (@Composable ColumnScope.() -> Unit)? = null,
+    progress: Boolean? = null,
+    listState: LazyListState = rememberLazyListState(),
+    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(DsSpacing.medium),
+    content: LazyListScope.() -> Unit,
+) {
+    FeatureFrame(title, onClose, onRefresh, subtitle, footer) {
+        pinned?.let {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = DsSpacing.comfortable)
+                    .padding(top = DsSpacing.small, bottom = DsSpacing.xsmall),
+                verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+                content = it,
+            )
+        }
+        if (progress != null) {
+            Box(Modifier.fillMaxWidth().padding(horizontal = DsSpacing.comfortable).height(FeatureProgressHeight)) {
+                if (progress) FeatureProgress()
+            }
+        }
+        LazyColumn(
+            Modifier.weight(1f).fillMaxWidth(),
+            state = listState,
+            contentPadding = PaddingValues(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small),
+            verticalArrangement = verticalArrangement,
+            content = content,
+        )
+    }
+}
+
+/** The part both page variants share: window, header bar, one-time entrance, then [body] and the footer. */
+@Composable
+private fun FeatureFrame(
+    title: String,
+    onClose: () -> Unit,
+    onRefresh: (() -> Unit)?,
+    subtitle: String?,
+    footer: (@Composable () -> Unit)?,
+    body: @Composable ColumnScope.() -> Unit,
+) {
     var shown by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { shown = true }
     DsFullScreenDialog(onDismissRequest = onClose) {
-        Row(
-            Modifier.fillMaxWidth().padding(
-                start = DsSpacing.small,
-                end = DsSpacing.small,
-                top = DsSpacing.small,
-                bottom = DsSpacing.xsmall,
-            ),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            DsIconButton(
-                icon = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.common_back),
-                onClick = onClose,
-            )
-            Column(Modifier.weight(1f).padding(horizontal = DsSpacing.xsmall)) {
-                Text(
-                    title,
-                    style = DsType.large20,
-                    color = colors.labelPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                subtitle?.let {
-                    Text(
-                        it,
-                        style = DsType.caption11,
-                        color = colors.labelTertiary,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
-            if (onRefresh != null) {
-                DsIconButton(
-                    icon = Icons.Filled.Refresh,
-                    contentDescription = stringResource(R.string.ux_a_refresh),
-                    onClick = onRefresh,
-                )
-            }
-        }
+        FeatureHeaderBar(title, subtitle, onClose, onRefresh)
         AnimatedVisibility(
             visible = shown,
             modifier = Modifier.weight(1f),
@@ -113,21 +152,63 @@ internal fun FeaturePage(
                 slideInVertically(tween(240, easing = DsAnimations.inkDecelerate)) { it / 30 },
         ) {
             Column(Modifier.fillMaxSize()) {
-                Column(
-                    Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small),
-                    verticalArrangement = Arrangement.spacedBy(DsSpacing.medium),
-                    content = content,
-                )
+                body()
                 footer?.let {
                     Box(Modifier.fillMaxWidth().padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small)) {
                         it()
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun FeatureHeaderBar(title: String, subtitle: String?, onClose: () -> Unit, onRefresh: (() -> Unit)?) {
+    val colors = DsTheme.colors
+    Row(
+        Modifier.fillMaxWidth().padding(
+            start = DsSpacing.small,
+            end = DsSpacing.small,
+            top = DsSpacing.small,
+            bottom = DsSpacing.xsmall,
+        ),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        DsIconButton(
+            icon = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = stringResource(R.string.common_back),
+            onClick = onClose,
+        )
+        Column(Modifier.weight(1f).padding(horizontal = DsSpacing.xsmall)) {
+            // The column's whole width, not the title's measured one: Compose lays text out at its
+            // measured width, and with large20's negative letter spacing Arabic shapes a few pixels
+            // wider than it measures, so a one-line title ended in an ellipsis with room to spare
+            // ("الإضافا…"). fillMaxWidth makes the layout width the column's. Same fix as the sheet titles.
+            Text(
+                title,
+                style = DsType.large20,
+                color = colors.labelPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            subtitle?.let {
+                Text(
+                    it,
+                    style = DsType.caption11,
+                    color = colors.labelTertiary,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        if (onRefresh != null) {
+            DsIconButton(
+                icon = Icons.Filled.Refresh,
+                contentDescription = stringResource(R.string.ux_a_refresh),
+                onClick = onRefresh,
+            )
         }
     }
 }
@@ -165,6 +246,9 @@ internal fun FeatureProgress() = LinearProgressIndicator(
     color = DsTheme.colors.accent,
     trackColor = DsTheme.colors.borderL1,
 )
+
+/** The height [LazyFeaturePage] keeps for [FeatureProgress]: the indicator's own 4dp line. */
+private val FeatureProgressHeight = 4.dp
 
 @Composable
 internal fun FeatureAction(text: String, enabled: Boolean = true, variant: DsButtonVariant = DsButtonVariant.Outline, onClick: () -> Unit) {
