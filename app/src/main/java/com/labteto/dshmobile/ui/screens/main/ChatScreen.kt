@@ -694,6 +694,8 @@ fun ChatScreen(
                 }
             }
 
+            // A bar pinned above the transcript: in view wherever the reader has scrolled to, and the
+            // transcript simply gets less height while it is there.
             if (connected) com.labteto.dshmobile.ui.screens.models.ChatModelSetupNotice(setupProblem)
 
             // A command refused for want of a sandbox (SANDBOX_UNAVAILABLE): this session is on a

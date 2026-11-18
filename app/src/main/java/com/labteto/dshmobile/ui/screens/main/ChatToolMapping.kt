@@ -439,7 +439,8 @@ private fun jobList(text: String): DetailsCard? {
     if (text == "(no background jobs)") return DetailsCard(DetailsTool.JobList, emptyList())
     val items = text.lines().map { line ->
         val (id, kind, state, title) = JOB_LINE.find(line)?.destructured ?: return null
-        stateItem(title, state, technical = true, subtitle = id).copy(fields = listOf(DetailField(DetailLabel.Kind, text(kind))))
+        stateItem(title, state, technical = true, subtitle = id)
+            .copy(fields = listOf(DetailField(DetailLabel.Kind, text(jobKindLabel(kind), technical = false))))
     }
     return DetailsCard(DetailsTool.JobList, items)
 }

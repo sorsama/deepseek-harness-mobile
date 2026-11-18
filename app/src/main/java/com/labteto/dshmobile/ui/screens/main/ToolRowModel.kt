@@ -141,6 +141,17 @@ internal fun toolRowModel(
 internal const val POWERSHELL_TITLE = "PowerShell"
 
 /**
+ * A background job's producer kind (`bash`, `pwsh`, `pty-send`, `subagent`) as words: the shells by
+ * their product names, anything else as [humanizeIdentifier] reads it. The job sheet, the Details
+ * panel and the Jobs card all say "PowerShell", never the wire name `pwsh`.
+ */
+internal fun jobKindLabel(kind: String): String = when (kind.lowercase()) {
+    "pwsh" -> POWERSHELL_TITLE
+    "bash" -> "Bash"
+    else -> humanizeIdentifier(kind)
+}
+
+/**
  * Strip the session's working directory from a path so rows read `app\build.gradle.kts` rather than
  * `D:\LabTeto\deepseek-mobile\app\build.gradle.kts`. Handles either separator, because the harness
  * host may be Windows or POSIX regardless of what the phone runs.

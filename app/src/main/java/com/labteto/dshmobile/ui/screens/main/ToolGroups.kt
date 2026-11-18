@@ -233,7 +233,8 @@ internal fun ToolGroupRow(calls: List<ToolCallNode>, context: ChatNodeContext) {
                 liveGroupDetail(calls, results.keys, context.cwd)
             } else null
             if (detail != null) {
-                Text(detail, Modifier.weight(1f), style = DsType.caption11, color = colors.labelTertiary,
+                // "PowerShell · npm test": a command or a path, kept left to right in any language.
+                Text(technicalDisplay(detail), Modifier.weight(1f), style = DsType.caption11, color = colors.labelTertiary,
                     maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             } else Spacer(Modifier.weight(1f))
             Text(if (running) stringResource(R.string.jobs_running) else elapsed?.let(::formatDurationMs).orEmpty(),

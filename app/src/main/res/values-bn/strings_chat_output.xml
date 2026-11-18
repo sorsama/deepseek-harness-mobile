@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="code_wrap">লাইন র‍্যাপ করুন</string>
+    <string name="output_viewer_search">আউটপুটে খুঁজুন</string>
+    <string name="output_viewer_prev">আগের মিল</string>
+    <string name="output_viewer_next">পরের মিল</string>
+    <string name="output_viewer_matches">%2$s-এর মধ্যে %1$d</string>
+    <string name="output_viewer_no_matches">কিছু মেলেনি</string>
+    <string name="chat_state_running">চলছে</string>
+    <string name="chat_state_done">সম্পন্ন</string>
+    <string name="chat_state_failed">ব্যর্থ</string>
+    <string name="chat_state_stopped">থামানো হয়েছে</string>
+</resources>

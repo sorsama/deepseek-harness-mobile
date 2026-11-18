@@ -36,7 +36,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.labteto.dshmobile.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -74,6 +78,8 @@ fun DisclosureRow(
     holdLabel: String = "",
     /** How many lines the summary may take; a row that is open can afford more than one. */
     summaryMaxLines: Int = 1,
+    /** A short caption at the end of the row, such as how long the step took. */
+    trailingText: String? = null,
     content: (@Composable () -> Unit)? = null,
 ) {
     val colors = DsTheme.colors
@@ -139,10 +145,15 @@ fun DisclosureRow(
             }
             // The leading slot: the terminal state outranks the glyph, a running row keeps it.
             when {
-                state == DisclosureState.Error ->
-                    LeadingSlot { StateDot(StateDotState.Error, size = 8.dp) }
-                state == DisclosureState.Stopped ->
-                    LeadingSlot { StateDot(StateDotState.Warning, size = 8.dp) }
+                // The dot is a picture: it is named for a screen reader as what it says.
+                state == DisclosureState.Error -> {
+                    val named = stringResource(R.string.chat_state_failed)
+                    LeadingSlot(Modifier.semantics { contentDescription = named }) { StateDot(StateDotState.Error, size = 8.dp) }
+                }
+                state == DisclosureState.Stopped -> {
+                    val named = stringResource(R.string.chat_state_stopped)
+                    LeadingSlot(Modifier.semantics { contentDescription = named }) { StateDot(StateDotState.Warning, size = 8.dp) }
+                }
                 icon != null -> LeadingSlot {
                     Icon(
                         icon,
@@ -183,6 +194,10 @@ fun DisclosureRow(
                     modifier = Modifier.weight(1f),
                 )
             }
+            if (trailingText != null) {
+                Spacer(Modifier.width(8.dp))
+                Text(trailingText, style = DsType.caption11, color = colors.labelCaption, maxLines = 1)
+            }
         }
         // Every disclosure in the app routes through here — tool cards, compaction, workflows,
         // archived sessions, the todo dock — so animating this one place animates all of them.
@@ -205,8 +220,8 @@ private fun Modifier.atMostHalfWidth(): Modifier = layout { measurable, constrai
 
 /** Fixed 16dp box so the icon and the state dot occupy the same column. */
 @Composable
-private fun LeadingSlot(content: @Composable () -> Unit) {
-    Box(Modifier.size(16.dp), contentAlignment = Alignment.Center) { content() }
+private fun LeadingSlot(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Box(modifier.size(16.dp), contentAlignment = Alignment.Center) { content() }
 }
 
 /** Glare band used for the running-state shimmer sweep. */

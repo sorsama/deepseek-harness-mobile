@@ -354,14 +354,14 @@ private fun DetailsBody(card: DetailsCard) {
                 },
             )
         }
-        card.items.forEach { item -> DetailItemView(item) }
+        card.items.forEachIndexed { index, item -> DetailItemView(item, index) }
         if (card.truncated) Caption(stringResource(R.string.chat_tool_output_cut))
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DetailItemView(item: DetailItem) {
+private fun DetailItemView(item: DetailItem, index: Int) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
         LabelWithChip {
@@ -383,17 +383,16 @@ private fun DetailItemView(item: DetailItem) {
         }
         item.description?.let { Text(it, style = DsType.small13, color = colors.labelSecondary) }
         item.code?.takeIf { it.isNotEmpty() }?.let { code ->
-            Text(
-                code,
-                style = DsType.mdCode,
-                color = colors.labelPrimary,
-                modifier = Modifier
+            androidx.compose.foundation.layout.Box(
+                Modifier
                     .fillMaxWidth()
                     .clip(DsShapes.row)
                     .background(colors.bgLayer2)
                     .border(1.dp, colors.borderL1, DsShapes.row)
                     .padding(10.dp),
-            )
+            ) {
+                CodeText(code, blockId = "item$index", fadeColor = colors.bgLayer2)
+            }
         }
     }
 }

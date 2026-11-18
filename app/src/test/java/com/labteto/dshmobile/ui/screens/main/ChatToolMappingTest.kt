@@ -330,6 +330,10 @@ class ChatToolMappingTest {
         assertEquals("j1", row.subtitle)
         assertEquals(DetailState.Running, row.state)
         assertEquals(DetailLabel.Kind, row.fields.single().label)
+        // The shell is named as a person would: Bash, and for `pwsh` PowerShell.
+        assertEquals(DetailValue.Text("Bash", technical = false), row.fields.single().value)
+        val pwsh = (card("job_list", "{}", result("j2 [pwsh] running — Build")) as DetailsCard).items.single()
+        assertEquals(DetailValue.Text("PowerShell", technical = false), pwsh.fields.single().value)
         assertTrue((card("job_list", "{}", result("(no background jobs)")) as DetailsCard).items.isEmpty())
     }
 
