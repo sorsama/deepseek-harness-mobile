@@ -3,6 +3,7 @@ package com.labteto.dshmobile.core.account
 import com.labteto.dshmobile.core.wire.RpcResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -137,5 +138,39 @@ class SignInRouteTest {
         assertEquals(SignOutImpact.TasksRunning, signOutImpact(RpcResult.Ok(true)))
         // A question that failed is not an answer of "nothing".
         assertEquals(SignOutImpact.Unknown, signOutImpact(RpcResult.Err(accountRefusal(AccountFixtures.SERVICE_UNAVAILABLE))))
+    }
+
+    // --------------------------------------------------------------- a link the app refuses
+
+    private fun waiting(url: String?) = SignInProgress("a1", SignInStep.WaitingForBrowser, url, 1794979700569L)
+
+    @Test
+    fun `the recorded waiting attempt has a link the browser can be given`() {
+        val progress = stateOf(AccountFixtures.STATE_WAITING).toSnapshot().progress!!
+        assertFalse(progress.linkRefused())
+        assertTrue(progress.browserTarget(dark = true)!!.contains("theme=dark"))
+        assertTrue(progress.browserTarget(dark = false)!!.contains("theme=light"))
+    }
+
+    @Test
+    fun `an attempt waiting with a link the app will not open is refused`() {
+        val refused = listOf(
+            null, "", "javascript:alert(1)", "ftp://platform.deepseek.com/x", "http://platform.deepseek.com/x",
+            "https://user@platform.deepseek.com/x", "https://platform.deepseek.com/x y",
+        )
+        for (url in refused) {
+            val progress = waiting(url)
+            assertTrue(progress.linkRefused(), "$url")
+            assertNull(progress.browserTarget(dark = false), "$url")
+            assertNull(progress.browserTarget(dark = true), "$url")
+        }
+    }
+
+    @Test
+    fun `an attempt that is not waiting for the browser has no refused link`() {
+        // Starting has no link yet and Finishing has used it: neither is a link problem.
+        assertFalse(SignInProgress("a1", SignInStep.Starting, null, null).linkRefused())
+        assertFalse(SignInProgress("a1", SignInStep.Finishing, null, null).linkRefused())
+        assertNull(SignInProgress("a1", SignInStep.Finishing, "https://platform.deepseek.com/x", null).browserTarget(dark = true))
     }
 }

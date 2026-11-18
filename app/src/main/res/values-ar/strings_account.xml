@@ -15,6 +15,7 @@
     <!-- How the last sign-in ended, and why. -->
     <string name="acct_outcome_failed">لم يكتمل آخر تسجيل دخول.</string>
     <string name="acct_outcome_expired">انتهت مهلة آخر تسجيل دخول. ابدأ من جديد عندما تكون مستعدًا.</string>
+    <string name="acct_outcome_cancelled">تم إلغاء آخر تسجيل دخول.</string>
     <string name="acct_reason_platform">تعذّر على الـ harness الوصول إلى DeepSeek. تحقق من اتصاله بالإنترنت وحاول مرة أخرى.</string>
     <string name="acct_reason_storage">تعذّر على الـ harness حفظ تسجيل الدخول. تحقق من أن لديه مساحة فارغة وأنه يستطيع الكتابة في مجلده.</string>
     <string name="acct_reason_generic">لم يستطع الـ harness استخدام رد DeepSeek. حاول مرة أخرى.</string>
@@ -34,7 +35,9 @@
     <string name="acct_copy_link">نسخ رابط تسجيل الدخول</string>
     <string name="acct_link_copied">تم نسخ الرابط</string>
     <string name="acct_browser_missing">لم يُفتح أي متصفح. انسخ الرابط وافتحه بنفسك في متصفح.</string>
+    <string name="acct_link_refused">لا يمكن استخدام رابط تسجيل الدخول. حاول مرة أخرى للحصول على رابط جديد.</string>
     <string name="acct_cancel_sign_in">إلغاء تسجيل الدخول</string>
+    <string name="acct_try_again">إعادة المحاولة</string>
 
     <!-- Signed in: profile, balance, bonus notices, sign out. -->
     <string name="acct_signed_in">تم تسجيل الدخول</string>

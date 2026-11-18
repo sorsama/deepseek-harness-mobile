@@ -15,6 +15,7 @@
     <!-- How the last sign-in ended, and why. -->
     <string name="acct_outcome_failed">El último inicio de sesión no se completó.</string>
     <string name="acct_outcome_expired">El último inicio de sesión caducó. Vuelve a empezar cuando quieras.</string>
+    <string name="acct_outcome_cancelled">El último inicio de sesión se canceló.</string>
     <string name="acct_reason_platform">El harness no pudo conectarse con DeepSeek. Revisa su conexión a internet e inténtalo de nuevo.</string>
     <string name="acct_reason_storage">El harness no pudo guardar el inicio de sesión. Comprueba que tenga espacio libre y pueda escribir en su carpeta.</string>
     <string name="acct_reason_generic">La respuesta de DeepSeek no era una que el harness pudiera usar. Inténtalo de nuevo.</string>
@@ -34,7 +35,9 @@
     <string name="acct_copy_link">Copiar enlace de inicio de sesión</string>
     <string name="acct_link_copied">Enlace copiado</string>
     <string name="acct_browser_missing">No se abrió ningún navegador. Copia el enlace y ábrelo tú en un navegador.</string>
+    <string name="acct_link_refused">No se puede usar el enlace de inicio de sesión. Inténtalo de nuevo para obtener uno nuevo.</string>
     <string name="acct_cancel_sign_in">Cancelar inicio de sesión</string>
+    <string name="acct_try_again">Reintentar</string>
 
     <!-- Signed in: profile, balance, bonus notices, sign out. -->
     <string name="acct_signed_in">Sesión iniciada</string>

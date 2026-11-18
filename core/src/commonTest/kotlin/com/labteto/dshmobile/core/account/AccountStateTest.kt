@@ -61,11 +61,36 @@ class AccountStateTest {
     }
 
     @Test
-    fun `a cancelled attempt is neither progress nor something to report`() {
-        val snapshot = stateOf(AccountFixtures.STATE_CANCELLED).toSnapshot()
+    fun `a cancelled attempt is not progress but it is said how the last try ended`() {
+        // The harness keeps the cancelled attempt: signed out, phase cancelled, no link. The page used
+        // to read that as nothing to say and went back to "Not signed in" without a word.
+        val view = stateOf(AccountFixtures.STATE_CANCELLED)
+        assertEquals("cancelled", view.attempt!!.phase)
+        val snapshot = view.toSnapshot()
         assertFalse(snapshot.signedIn)
         assertNull(snapshot.progress)
-        assertNull(snapshot.outcome)
+        assertEquals(SignInOutcome.Cancelled, snapshot.outcome)
+    }
+
+    @Test
+    fun `every way the last try can have ended is said and none of them while one is running`() {
+        assertEquals(SignInOutcome.Cancelled, stateOf(AccountFixtures.STATE_CANCELLED).toSnapshot().outcome)
+        assertEquals(SignInOutcome.Expired, stateOf(AccountFixtures.STATE_EXPIRED).toSnapshot().outcome)
+        assertEquals(SignInOutcome.Failed(SignInProblem.Generic), stateOf(AccountFixtures.STATE_FAILED_EXCHANGE).toSnapshot().outcome)
+        // A running attempt, and a stored sign-in whose last attempt succeeded, have no outcome to report.
+        assertNull(stateOf(AccountFixtures.STATE_WAITING).toSnapshot().outcome)
+        assertNull(stateOf(AccountFixtures.STATE_STARTING).toSnapshot().outcome)
+        assertNull(stateOf(AccountFixtures.STATE_SIGNED_IN).toSnapshot().outcome)
+        assertNull(stateOf(AccountFixtures.STATE_SIGNED_OUT).toSnapshot().outcome)
+    }
+
+    @Test
+    fun `a cancelled attempt over a stored sign-in is not reported`() {
+        // Signed in with an older attempt that was cancelled (an account switch someone gave up on): nothing to say.
+        val view = stateOf(AccountFixtures.STATE_SIGNED_IN)
+        val cancelled = view.copy(attempt = view.attempt!!.copy(phase = "cancelled"))
+        assertNull(cancelled.toSnapshot().outcome)
+        assertTrue(cancelled.toSnapshot().signedIn)
     }
 
     @Test

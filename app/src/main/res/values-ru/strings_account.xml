@@ -15,6 +15,7 @@
     <!-- How the last sign-in ended, and why. -->
     <string name="acct_outcome_failed">Последний вход не завершился.</string>
     <string name="acct_outcome_expired">Время последнего входа истекло. Начните заново, когда будете готовы.</string>
+    <string name="acct_outcome_cancelled">Последний вход был отменён.</string>
     <string name="acct_reason_platform">Harness не смог связаться с DeepSeek. Проверьте его подключение к интернету и повторите попытку.</string>
     <string name="acct_reason_storage">Harness не смог сохранить вход. Проверьте, что у него есть свободное место и он может писать в свою папку.</string>
     <string name="acct_reason_generic">Ответ DeepSeek оказался непригодным для harness. Повторите попытку.</string>
@@ -34,7 +35,9 @@
     <string name="acct_copy_link">Копировать ссылку для входа</string>
     <string name="acct_link_copied">Ссылка скопирована</string>
     <string name="acct_browser_missing">Браузер не открылся. Скопируйте ссылку и откройте её в браузере сами.</string>
+    <string name="acct_link_refused">Ссылку для входа нельзя использовать. Повторите попытку, чтобы получить новую.</string>
     <string name="acct_cancel_sign_in">Отменить вход</string>
+    <string name="acct_try_again">Повторить</string>
 
     <!-- Signed in: profile, balance, bonus notices, sign out. -->
     <string name="acct_signed_in">Вход выполнен</string>

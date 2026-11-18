@@ -50,12 +50,18 @@ enum class SignInProblem {
     Generic,
 }
 
-/** How the last attempt ended, kept by the harness until the next one. A cancelled attempt is not worth saying. */
+/** How the last attempt ended, kept by the harness until the next one. */
 sealed interface SignInOutcome {
     data class Failed(val problem: SignInProblem) : SignInOutcome
 
     /** The link was not used in time. */
     data object Expired : SignInOutcome
+
+    /**
+     * The attempt was cancelled, here or on the harness computer. The page used to go straight back to
+     * "Not signed in" with no word about it, which read as if nothing had happened.
+     */
+    data object Cancelled : SignInOutcome
 }
 
 /**
@@ -64,7 +70,7 @@ sealed interface SignInOutcome {
  * The harness keeps the latest attempt after it ends: a signed-in harness still carries a
  * `succeeded` attempt, and a signed-out one carries the `cancelled`, `failed` or `expired` attempt of
  * the last try. So the attempt's phase alone is not "something is running": [progress] is set only for
- * a phase that is, and [outcome] only for a failure worth reporting on a harness that is signed out.
+ * a phase that is, and [outcome] only for how the last try ended on a harness that is signed out.
  */
 data class AccountSnapshot(
     val signedIn: Boolean,
@@ -92,6 +98,7 @@ fun AccountView.toSnapshot(): AccountSnapshot {
     val outcome = if (signedIn || progress != null) null else when (attempt?.phase) {
         "failed" -> SignInOutcome.Failed(signInProblem(attempt.errorCode))
         "expired" -> SignInOutcome.Expired
+        "cancelled" -> SignInOutcome.Cancelled
         else -> null
     }
     // A new succeeded attempt over a stored credential is a different sign-in (an account switch), so its id is part of the key.

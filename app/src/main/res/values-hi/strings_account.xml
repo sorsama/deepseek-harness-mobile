@@ -15,6 +15,7 @@
     <!-- How the last sign-in ended, and why. -->
     <string name="acct_outcome_failed">पिछला साइन-इन पूरा नहीं हुआ।</string>
     <string name="acct_outcome_expired">पिछले साइन-इन का समय निकल गया। जब तैयार हों, दोबारा शुरू करें।</string>
+    <string name="acct_outcome_cancelled">पिछला साइन-इन रद्द कर दिया गया था।</string>
     <string name="acct_reason_platform">harness DeepSeek तक नहीं पहुँच सका। उसका इंटरनेट कनेक्शन जाँचें और फिर कोशिश करें।</string>
     <string name="acct_reason_storage">harness साइन-इन सहेज नहीं सका। जाँचें कि उसमें खाली जगह है और वह अपने फ़ोल्डर में लिख सकता है।</string>
     <string name="acct_reason_generic">DeepSeek का जवाब ऐसा नहीं था जिसे harness इस्तेमाल कर सके। फिर से कोशिश करें।</string>
@@ -34,7 +35,9 @@
     <string name="acct_copy_link">साइन-इन लिंक कॉपी करें</string>
     <string name="acct_link_copied">लिंक कॉपी हो गया</string>
     <string name="acct_browser_missing">कोई ब्राउज़र नहीं खुला। लिंक कॉपी करें और ख़ुद किसी ब्राउज़र में खोलें।</string>
+    <string name="acct_link_refused">साइन-इन लिंक इस्तेमाल नहीं किया जा सकता। नया लिंक पाने के लिए फिर से कोशिश करें।</string>
     <string name="acct_cancel_sign_in">साइन-इन रद्द करें</string>
+    <string name="acct_try_again">फिर से कोशिश करें</string>
 
     <!-- Signed in: profile, balance, bonus notices, sign out. -->
     <string name="acct_signed_in">साइन इन है</string>

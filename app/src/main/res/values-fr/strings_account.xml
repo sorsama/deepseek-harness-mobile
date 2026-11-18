@@ -15,6 +15,7 @@
     <!-- How the last sign-in ended, and why. -->
     <string name="acct_outcome_failed">La dernière connexion n\'a pas abouti.</string>
     <string name="acct_outcome_expired">La dernière connexion a expiré. Recommencez quand vous voulez.</string>
+    <string name="acct_outcome_cancelled">La dernière connexion a été annulée.</string>
     <string name="acct_reason_platform">Le harness n\'a pas pu joindre DeepSeek. Vérifiez sa connexion à internet et réessayez.</string>
     <string name="acct_reason_storage">Le harness n\'a pas pu enregistrer la connexion. Vérifiez qu\'il lui reste de la place et qu\'il peut écrire dans son dossier.</string>
     <string name="acct_reason_generic">La réponse de DeepSeek n\'était pas utilisable par le harness. Réessayez.</string>
@@ -34,7 +35,9 @@
     <string name="acct_copy_link">Copier le lien de connexion</string>
     <string name="acct_link_copied">Lien copié</string>
     <string name="acct_browser_missing">Aucun navigateur ne s\'est ouvert. Copiez le lien et ouvrez-le vous-même dans un navigateur.</string>
+    <string name="acct_link_refused">Le lien de connexion ne peut pas être utilisé. Réessayez pour en obtenir un nouveau.</string>
     <string name="acct_cancel_sign_in">Annuler la connexion</string>
+    <string name="acct_try_again">Réessayer</string>
 
     <!-- Signed in: profile, balance, bonus notices, sign out. -->
     <string name="acct_signed_in">Connecté</string>

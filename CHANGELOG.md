@@ -30,7 +30,18 @@ All notable changes to DSH Mobile are documented here. Format based on
   only works on the same device as the browser, which from a phone is the phone itself. For those the
   page says so and asks you to sign in on that computer, and it shows the account once that is done. The
   usage card in the chat updates its balance as soon as you sign in or out, and the page is left out on a
-  harness that has no account support.
+  harness that has no account support. How the last sign-in ended (cancelled, timed out or failed, and
+  why) stays on the page, under "Not signed in", until you start the next one, and a sign-in link the
+  app will not open offers **Try again**, which starts a fresh sign-in.
+
+### Fixed
+
+- **A harness reached on this phone's own address is found again after the app is closed.** Typing or
+  pasting `127.0.0.1` or `localhost` into Local network remembers the harness under **This phone**,
+  but the screen stayed on Local network, so after the app's process ended (the browser trip of a
+  sign-in is a good time for Android to do that) it opened on an empty Recent list and asked for the
+  link and token again. The screen now moves to **This phone** when you connect that way, and opens
+  there next time.
 
 ## [0.23.0] - 2026-11-17
 

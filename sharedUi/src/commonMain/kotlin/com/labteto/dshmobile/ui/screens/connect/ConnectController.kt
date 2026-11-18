@@ -731,6 +731,7 @@ class ConnectController(
                         port = portInt, isLoopback = isLoopback, useTls = useTls, basePath = input.basePath)
                     ensureActive()
                     _state.update { it.copy(remembered = it.remembered.filterNot { h -> h.id == target.id } + target) }
+                    followLoopback(isLoopback, portInt)
                     if (pastedToken != null) {
                         val exchange = sessions.pair(target.id, target.baseUrl, pastedToken)
                         ensureActive()
@@ -761,8 +762,23 @@ class ConnectController(
                 basePath = input.basePath,
             )
             ensureActive()
+            followLoopback(isLoopback, portInt)
             connectTo(config)
         }
+    }
+
+    /**
+     * A loopback address typed here is remembered as the "This phone" harness (see [belongsTo]), and
+     * nothing else lists or reconnects to it: Local network does not show it and its auto-connect does
+     * not consider it. So the screen moves to "This phone" with it, and the mode is stored. Without
+     * this the record was kept but the app opened on Local network after its process died, with
+     * nothing under Recent, and the person had to pair again: for a sign-in that sends them to the
+     * browser, where Android may end the app meanwhile, that is exactly when it happens.
+     */
+    private fun followLoopback(isLoopback: Boolean, port: Int) {
+        if (!isLoopback || _state.value.mode == ConnectMode.LOOPBACK) return
+        _state.update { it.copy(loopbackPort = port) }
+        setMode(ConnectMode.LOOPBACK)
     }
 
     /** Stop a connect attempt that the loop would otherwise keep retrying every few seconds. */

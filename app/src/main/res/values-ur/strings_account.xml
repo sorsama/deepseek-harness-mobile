@@ -15,6 +15,7 @@
     <!-- How the last sign-in ended, and why. -->
     <string name="acct_outcome_failed">پچھلا سائن اِن مکمل نہیں ہوا۔</string>
     <string name="acct_outcome_expired">پچھلے سائن اِن کا وقت ختم ہو گیا۔ تیار ہوں تو دوبارہ شروع کریں۔</string>
+    <string name="acct_outcome_cancelled">پچھلا سائن اِن منسوخ کر دیا گیا تھا۔</string>
     <string name="acct_reason_platform">harness DeepSeek تک نہیں پہنچ سکا۔ اس کا انٹرنیٹ کنکشن جانچیں اور دوبارہ کوشش کریں۔</string>
     <string name="acct_reason_storage">harness سائن اِن محفوظ نہیں کر سکا۔ جانچیں کہ اس میں خالی جگہ ہے اور وہ اپنے فولڈر میں لکھ سکتا ہے۔</string>
     <string name="acct_reason_generic">DeepSeek کا جواب ایسا نہیں تھا جسے harness استعمال کر سکے۔ دوبارہ کوشش کریں۔</string>
@@ -34,7 +35,9 @@
     <string name="acct_copy_link">سائن اِن لنک کاپی کریں</string>
     <string name="acct_link_copied">لنک کاپی ہو گیا</string>
     <string name="acct_browser_missing">کوئی براؤزر نہیں کھلا۔ لنک کاپی کریں اور خود کسی براؤزر میں کھولیں۔</string>
+    <string name="acct_link_refused">سائن اِن کا لنک استعمال نہیں کیا جا سکتا۔ نیا لنک لینے کے لیے دوبارہ کوشش کریں۔</string>
     <string name="acct_cancel_sign_in">سائن اِن منسوخ کریں</string>
+    <string name="acct_try_again">دوبارہ کوشش کریں</string>
 
     <!-- Signed in: profile, balance, bonus notices, sign out. -->
     <string name="acct_signed_in">سائن اِن ہے</string>

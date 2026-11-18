@@ -50,6 +50,8 @@ import com.labteto.dshmobile.core.account.SignInStep
 import com.labteto.dshmobile.core.account.SignOutImpact
 import com.labteto.dshmobile.core.account.accountPollDelayMs
 import com.labteto.dshmobile.core.account.browserLink
+import com.labteto.dshmobile.core.account.browserTarget
+import com.labteto.dshmobile.core.account.linkRefused
 import com.labteto.dshmobile.core.usage.DEEPSEEK_ACCOUNT
 import com.labteto.dshmobile.core.usage.walletRow
 import com.labteto.dshmobile.core.usage.walletText
@@ -155,8 +157,7 @@ private fun AccountReady(state: AccountUiState, controller: AccountController, r
         SignedInCards(state, controller)
     } else if (progress == null) {
         if (state.sessionEnded) Notice(stringResource(R.string.acct_session_ended), warning = true)
-        snapshot.outcome?.let { Notice(outcomeText(it), warning = true) }
-        SignedOutCard(state, controller, route, retrying = snapshot.outcome != null || state.sessionEnded)
+        SignedOutCard(state, controller, route, outcome = snapshot.outcome, retrying = snapshot.outcome != null || state.sessionEnded)
     }
 }
 
@@ -171,13 +172,14 @@ private fun retryOf(work: AccountWork?, controller: AccountController, route: Si
 // ------------------------------------------------------------------------------------- signed out
 
 @Composable
-private fun SignedOutCard(state: AccountUiState, controller: AccountController, route: SignInRoute, retrying: Boolean) {
+private fun SignedOutCard(state: AccountUiState, controller: AccountController, route: SignInRoute, outcome: SignInOutcome?, retrying: Boolean) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     DsCard(verticalArrangement = Arrangement.spacedBy(DsSpacing.medium)) {
         when (route) {
             is SignInRoute.OnThisPhone -> {
                 Text(stringResource(R.string.acct_signed_out_title), style = DsType.rowTitle, color = colors.labelPrimary, modifier = Modifier.semantics { heading() })
+                outcome?.let { OutcomeLine(it) }
                 Text(stringResource(R.string.acct_signed_out_body), style = DsType.small13, color = colors.labelSecondary)
                 SettingsButton(
                     text = stringResource(if (retrying) R.string.acct_sign_in_again else R.string.acct_sign_in),
@@ -192,6 +194,7 @@ private fun SignedOutCard(state: AccountUiState, controller: AccountController, 
             SignInRoute.OnHarnessComputer -> {
                 // The harness only takes a loopback address to send the browser back to, so from a phone nothing can be started.
                 Text(stringResource(R.string.acct_remote_title), style = DsType.rowTitle, color = colors.labelPrimary, modifier = Modifier.semantics { heading() })
+                outcome?.let { OutcomeLine(it) }
                 Text(stringResource(R.string.acct_remote_body), style = DsType.small13, color = colors.labelSecondary)
                 SettingsButton(stringResource(R.string.acct_check_again), onClick = { controller.refresh() })
             }
@@ -199,8 +202,25 @@ private fun SignedOutCard(state: AccountUiState, controller: AccountController, 
     }
 }
 
+/**
+ * How the last sign-in ended, in a plain line under the status. It stays until the next attempt starts
+ * (the harness keeps the last attempt, so it is also there when the app was away or came back after the
+ * process died): cancelled, timed out and failed are all said, none of them as a passing message.
+ */
+@Composable
+private fun OutcomeLine(outcome: SignInOutcome) {
+    val colors = DsTheme.colors
+    Text(
+        outcomeText(outcome),
+        style = DsType.small13,
+        color = if (outcome is SignInOutcome.Cancelled) colors.labelSecondary else colors.warnLabel,
+        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+    )
+}
+
 @Composable
 private fun outcomeText(outcome: SignInOutcome): String = when (outcome) {
+    SignInOutcome.Cancelled -> stringResource(R.string.acct_outcome_cancelled)
     SignInOutcome.Expired -> stringResource(R.string.acct_outcome_expired)
     is SignInOutcome.Failed -> stringResource(R.string.acct_outcome_failed) + " " + stringResource(
         when (outcome.problem) {
@@ -222,7 +242,10 @@ private fun ProgressCard(progress: SignInProgress, state: AccountUiState, contro
     val uriHandler = LocalUriHandler.current
     val dark = isDsDark(DsTheme.appearance)
     val onPhone = route is SignInRoute.OnThisPhone
-    val link = if (onPhone && progress.step == SignInStep.WaitingForBrowser) progress.authorizeUrl?.let { browserLink(it, dark) } else null
+    val link = if (onPhone) progress.browserTarget(dark) else null
+    // A link this app will not open cannot be finished from this page: offer a fresh attempt, not a Copy button.
+    val callbackOrigin = (route as? SignInRoute.OnThisPhone)?.callbackOrigin
+    val linkRefused = callbackOrigin != null && progress.linkRefused()
     var copied by remember(progress.attemptId) { mutableStateOf(false) }
     LaunchedEffect(copied) {
         if (copied) {
@@ -247,7 +270,14 @@ private fun ProgressCard(progress: SignInProgress, state: AccountUiState, contro
             color = colors.labelSecondary,
             modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
         )
-        if (state.openFailedFor == progress.attemptId) {
+        if (linkRefused) {
+            Text(
+                stringResource(R.string.acct_link_refused),
+                style = DsType.small13,
+                color = colors.warnLabel,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+        } else if (state.openFailedFor == progress.attemptId) {
             Text(stringResource(R.string.acct_browser_missing), style = DsType.small13, color = colors.warnLabel)
         }
         FlowRow(
@@ -272,6 +302,17 @@ private fun ProgressCard(progress: SignInProgress, state: AccountUiState, contro
                         copied = true
                     },
                     variant = DsButtonVariant.Ghost,
+                )
+            }
+            if (linkRefused && callbackOrigin != null) {
+                SettingsButton(
+                    text = stringResource(R.string.acct_try_again),
+                    onClick = {
+                        haptics.tap()
+                        controller.retrySignIn(callbackOrigin)
+                    },
+                    enabled = state.working == null,
+                    variant = DsButtonVariant.Primary,
                 )
             }
             SettingsButton(

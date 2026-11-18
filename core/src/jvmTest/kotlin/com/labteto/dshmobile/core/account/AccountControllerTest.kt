@@ -354,7 +354,8 @@ class AccountControllerTest {
         assertEquals(listOf(id), port.cancels)
         val s = h.controller.state.value
         assertNull(s.snapshot!!.progress)
-        assertNull(s.snapshot!!.outcome)
+        // The cancel is said on the page now, not left as a silent return to "Not signed in".
+        assertEquals(SignInOutcome.Cancelled, s.snapshot!!.outcome)
         assertNull(s.working)
     }
 
@@ -525,6 +526,178 @@ class AccountControllerTest {
         assertEquals(SignOutImpact.Unknown, h.controller.signOutImpact())
     }
 
+
+    // ----------------------------------------------- how the last try ended, and a fresh try
+
+    @Test
+    fun `after a cancel the page says so and keeps saying so until the next attempt`() = runTest {
+        val port = FakePort().apply { onState = { ok(AccountFixtures.STATE_WAITING) } }
+        val h = loaded(port)
+        h.controller.cancelSignIn()
+        advanceUntilIdle()
+        assertEquals(SignInOutcome.Cancelled, h.controller.state.value.snapshot!!.outcome)
+
+        // The harness keeps the last attempt, so every later read says the same and nothing clears it on its own.
+        port.onState = { ok(AccountFixtures.STATE_CANCELLED) }
+        repeat(3) {
+            h.controller.refresh()
+            advanceUntilIdle()
+        }
+        assertEquals(SignInOutcome.Cancelled, h.controller.state.value.snapshot!!.outcome)
+
+        // The next attempt takes it away.
+        h.controller.startSignIn("http://127.0.0.1:3080")
+        advanceUntilIdle()
+        assertNull(h.controller.state.value.snapshot!!.outcome)
+        assertEquals(SignInStep.Starting, h.controller.state.value.snapshot!!.progress!!.step)
+    }
+
+    @Test
+    fun `a sign-in that timed out or failed while the app was away is said when the page reads it`() = runTest {
+        val port = FakePort().apply { onState = { ok(AccountFixtures.STATE_EXPIRED) } }
+        val timedOut = loaded(port)
+        assertEquals(SignInOutcome.Expired, timedOut.controller.state.value.snapshot!!.outcome)
+
+        val failedPort = FakePort().apply { onState = { ok(AccountFixtures.STATE_FAILED_EXCHANGE) } }
+        val failed = loaded(failedPort)
+        assertEquals(SignInOutcome.Failed(SignInProblem.Generic), failed.controller.state.value.snapshot!!.outcome)
+    }
+
+    /** The recorded waiting attempt with a link the app will not open: plain http to a host that is not loopback. */
+    private fun refusedLinkState() = stateOf(AccountFixtures.STATE_WAITING).let {
+        it.copy(attempt = it.attempt!!.copy(authorizeUrl = "http://platform.deepseek.com/dsh/authorize"))
+    }
+
+    /** The recorded start, as a different attempt from the one waiting. */
+    private fun freshStartState() = stateOf(AccountFixtures.STATE_STARTING).let { it.copy(attempt = it.attempt!!.copy(id = "fresh-attempt")) }
+
+    @Test
+    fun `trying again after a refused link cancels that attempt and then starts a fresh one`() = runTest {
+        val order = mutableListOf<String>()
+        val port = FakePort().apply {
+            onState = { RpcResult.Ok(refusedLinkState()) }
+            onCancel = { order += "cancel"; ok(AccountFixtures.STATE_CANCELLED) }
+            onStart = { order += "start"; RpcResult.Ok(freshStartState()) }
+        }
+        val h = loaded(port)
+        val refused = h.controller.state.value.snapshot!!.progress!!
+        assertTrue(refused.linkRefused())
+
+        h.controller.retrySignIn("http://127.0.0.1:3080")
+        advanceUntilIdle()
+
+        // The harness answers a start with the attempt already running, so the old one goes first.
+        assertEquals(listOf("cancel", "start"), order)
+        assertEquals(listOf(refused.attemptId), port.cancels)
+        assertEquals(listOf("http://127.0.0.1:3080"), port.starts)
+        val s = h.controller.state.value
+        assertEquals("fresh-attempt", s.snapshot!!.progress!!.attemptId)
+        // The fresh attempt's link is opened once it is ready, as for any start from this phone.
+        assertEquals("fresh-attempt", s.openBrowserFor)
+        assertNull(s.working)
+        assertNull(s.actionFailure)
+        assertNull(s.snapshot!!.outcome)
+    }
+
+    @Test
+    fun `a cancel that fails does not stop the fresh start`() = runTest {
+        val port = FakePort().apply {
+            onState = { RpcResult.Ok(refusedLinkState()) }
+            onCancel = { RpcResult.Err(RpcError("internal", "no such attempt")) }
+            onStart = { RpcResult.Ok(freshStartState()) }
+        }
+        val h = loaded(port)
+        h.controller.retrySignIn("http://127.0.0.1:3080")
+        advanceUntilIdle()
+        assertEquals(1, port.starts.size)
+        assertEquals("fresh-attempt", h.controller.state.value.snapshot!!.progress!!.attemptId)
+        assertNull(h.controller.state.value.actionFailure)
+    }
+
+    @Test
+    fun `a fresh start that fails is reported and can be tried again`() = runTest {
+        val port = FakePort().apply {
+            onState = { RpcResult.Ok(refusedLinkState()) }
+            onStart = { RpcResult.Err(RpcError("internal", "socket closed")) }
+        }
+        val h = loaded(port)
+        h.controller.retrySignIn("http://127.0.0.1:3080")
+        advanceUntilIdle()
+        val s = h.controller.state.value
+        assertIs<AccountFailure.Unreachable>(s.actionFailure)
+        assertEquals(AccountWork.Starting, s.failedWork)
+        assertNull(s.working)
+    }
+
+    @Test
+    fun `trying again with nothing running only starts`() = runTest {
+        val port = FakePort().apply { onStart = { RpcResult.Ok(freshStartState()) } }
+        val h = loaded(port)
+        h.controller.retrySignIn("http://127.0.0.1:3080")
+        advanceUntilIdle()
+        assertTrue(port.cancels.isEmpty())
+        assertEquals(1, port.starts.size)
+    }
+
+    @Test
+    fun `trying again is one action like the others`() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        val port = FakePort().apply {
+            onState = { RpcResult.Ok(refusedLinkState()) }
+            onStart = { gate.await(); RpcResult.Ok(freshStartState()) }
+        }
+        val h = loaded(port)
+        h.controller.retrySignIn("http://127.0.0.1:3080")
+        h.controller.retrySignIn("http://127.0.0.1:3080")
+        h.controller.startSignIn("http://127.0.0.1:3080")
+        advanceUntilIdle()
+        assertEquals(AccountWork.Starting, h.controller.state.value.working)
+        assertEquals(1, port.cancels.size)
+        gate.complete(Unit)
+        advanceUntilIdle()
+        assertEquals(1, port.starts.size)
+    }
+
+    // ------------------------------------------------- the account plugin switched off and on
+
+    @Test
+    fun `switching the account plugin on brings the page back without a relaunch`() = runTest {
+        val port = FakePort().apply { onState = { RpcResult.Err(accountRefusal(AccountFixtures.SERVICE_UNAVAILABLE)) } }
+        val h = loaded(port)
+        assertEquals(AccountPhase.Unavailable, h.controller.state.value.phase)
+
+        // The Plugins page switched the bundle on; the harness announces plugin-manager/changed and the screen reads again.
+        port.onState = { ok(AccountFixtures.STATE_SIGNED_OUT) }
+        h.controller.refresh()
+        advanceUntilIdle()
+        assertEquals(AccountPhase.Ready, h.controller.state.value.phase)
+        assertFalse(h.controller.state.value.snapshot!!.signedIn)
+    }
+
+    @Test
+    fun `switching the account plugin off takes the page away without a relaunch`() = runTest {
+        val port = FakePort()
+        val h = loaded(port)
+        assertEquals(AccountPhase.Ready, h.controller.state.value.phase)
+
+        port.onState = { RpcResult.Err(accountRefusal(AccountFixtures.SERVICE_UNAVAILABLE)) }
+        h.controller.refresh()
+        advanceUntilIdle()
+        assertEquals(AccountPhase.Unavailable, h.controller.state.value.phase)
+
+        // And back on again.
+        port.onState = { ok(AccountFixtures.STATE_SIGNED_OUT) }
+        h.controller.refresh()
+        advanceUntilIdle()
+        assertEquals(AccountPhase.Ready, h.controller.state.value.phase)
+    }
+
+    @Test
+    fun `the harness answering gateway service unavailable is a missing capability for the store`() {
+        // This is the spelling the store's probe uses to retire and to restore the Account feature.
+        val refused = RpcResult.Err(accountRefusal(AccountFixtures.SERVICE_UNAVAILABLE)).withAccountCapability() as RpcResult.Err
+        assertEquals("capability-unavailable", refused.error.code)
+    }
 }
 
 private fun ok(json: String): RpcResult<AccountView> = RpcResult.Ok(stateOf(json))

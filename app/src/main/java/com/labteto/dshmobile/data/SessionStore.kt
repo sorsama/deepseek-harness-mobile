@@ -14,6 +14,7 @@ import com.labteto.dshmobile.core.session.ConversationSnapshot
 import com.labteto.dshmobile.core.session.EventFold
 import com.labteto.dshmobile.core.session.QueueItem
 import com.labteto.dshmobile.core.session.SessionEventEnvelope
+import com.labteto.dshmobile.core.account.withAccountCapability
 import com.labteto.dshmobile.core.wire.DshApiClient
 import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.core.wire.decodeFromJsonElement
@@ -424,6 +425,8 @@ class SessionStore @Inject constructor(
         HarnessFeature.AUTOMATION -> { api -> api.automationCatalog() }
         HarnessFeature.PLUGIN_MANAGEMENT -> { api -> api.pluginBundles() }
         HarnessFeature.HARNESS_SETTINGS -> { api -> api.settingsDescribe() }
+        // The same spelling the Account page's own port uses: a plugin that is off answers `gateway/service-unavailable`.
+        HarnessFeature.ACCOUNT -> { api -> api.accountState().withAccountCapability() }
         else -> null
     }
 

@@ -15,6 +15,7 @@
     <!-- How the last sign-in ended, and why. -->
     <string name="acct_outcome_failed">การลงชื่อเข้าใช้ครั้งล่าสุดยังไม่เสร็จสมบูรณ์</string>
     <string name="acct_outcome_expired">การลงชื่อเข้าใช้ครั้งล่าสุดหมดเวลา เริ่มใหม่ได้เมื่อพร้อม</string>
+    <string name="acct_outcome_cancelled">การลงชื่อเข้าใช้ครั้งล่าสุดถูกยกเลิก</string>
     <string name="acct_reason_platform">harness เชื่อมต่อกับ DeepSeek ไม่ได้ ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของมันแล้วลองอีกครั้ง</string>
     <string name="acct_reason_storage">harness บันทึกการลงชื่อเข้าใช้ไม่ได้ ตรวจสอบว่ามีพื้นที่ว่างและเขียนลงโฟลเดอร์ของตัวเองได้</string>
     <string name="acct_reason_generic">harness ใช้คำตอบจาก DeepSeek ไม่ได้ ลองอีกครั้ง</string>
@@ -34,7 +35,9 @@
     <string name="acct_copy_link">คัดลอกลิงก์ลงชื่อเข้าใช้</string>
     <string name="acct_link_copied">คัดลอกลิงก์แล้ว</string>
     <string name="acct_browser_missing">ไม่มีเบราว์เซอร์เปิดขึ้น คัดลอกลิงก์แล้วเปิดในเบราว์เซอร์ด้วยตัวเอง</string>
+    <string name="acct_link_refused">ใช้ลิงก์ลงชื่อเข้าใช้นี้ไม่ได้ ลองอีกครั้งเพื่อรับลิงก์ใหม่</string>
     <string name="acct_cancel_sign_in">ยกเลิกการลงชื่อเข้าใช้</string>
+    <string name="acct_try_again">ลองอีกครั้ง</string>
 
     <!-- Signed in: profile, balance, bonus notices, sign out. -->
     <string name="acct_signed_in">ลงชื่อเข้าใช้แล้ว</string>

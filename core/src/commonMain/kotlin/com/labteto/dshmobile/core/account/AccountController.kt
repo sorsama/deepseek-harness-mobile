@@ -255,7 +255,21 @@ class AccountController(
      * Begin a sign-in that this phone will finish in its own browser. The screen opens the link once it
      * is ready ([AccountUiState.openBrowserFor]); until then the attempt is `initializing`.
      */
-    fun startSignIn(callbackOrigin: String) = act(AccountWork.Starting) {
+    fun startSignIn(callbackOrigin: String) = act(AccountWork.Starting) { start(callbackOrigin) }
+
+    /**
+     * Give up on the attempt on screen and start a fresh one: the way out of a link this app will not
+     * open, which nothing on the page can finish. A plain start would only join the running attempt (the
+     * harness answers a start with the attempt already running), so that one is cancelled first. A cancel
+     * that fails is not the end of it: the attempt may already be gone, and the start that follows says
+     * whether the harness can be reached at all.
+     */
+    fun retrySignIn(callbackOrigin: String) = act(AccountWork.Starting) {
+        _state.value.snapshot?.progress?.attemptId?.let { attemptId -> attempt { port.cancelSignIn(attemptId) } }
+        start(callbackOrigin)
+    }
+
+    private suspend fun start(callbackOrigin: String) {
         when (val result = attempt { port.startSignIn(callbackOrigin) }) {
             is RpcResult.Ok -> {
                 val progress = result.value.toSnapshot().progress

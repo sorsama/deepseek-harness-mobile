@@ -71,3 +71,19 @@ fun browserLink(authorizeUrl: String, dark: Boolean): String? {
     val theme = "theme=" + if (dark) "dark" else "light"
     return "$scheme://$beforeQuery?" + (kept + theme).joinToString("&")
 }
+
+/**
+ * The sign-in link of a running attempt as the browser should get it, or null when there is none to
+ * open: the attempt is not waiting for the browser, or the link is one [browserLink] refuses.
+ */
+fun SignInProgress.browserTarget(dark: Boolean): String? =
+    if (step == SignInStep.WaitingForBrowser) authorizeUrl?.let { browserLink(it, dark) } else null
+
+/**
+ * The attempt is waiting for the browser, but the link it carries is one this app will not open (none,
+ * or one with another scheme, user information or control characters). Nothing on the page can finish
+ * that attempt, so the page offers a fresh one instead of a Copy button for a link it would not stand
+ * behind. The theme never decides whether a link is acceptable, so it is read as light here.
+ */
+fun SignInProgress.linkRefused(): Boolean =
+    step == SignInStep.WaitingForBrowser && browserTarget(dark = false) == null
