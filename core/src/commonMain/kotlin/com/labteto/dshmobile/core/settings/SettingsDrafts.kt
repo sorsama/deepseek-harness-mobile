@@ -1,14 +1,14 @@
 package com.labteto.dshmobile.core.settings
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonUnquotedLiteral
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.doubleOrNull
 import kotlin.math.abs
-import kotlin.math.floor
 import kotlin.math.roundToLong
 
 /**
@@ -75,7 +75,7 @@ data class FieldTraits(
     val max: Double? = null,
 )
 
-/** The largest whole number a JavaScript number holds exactly; the harness cannot store more. */
+/** [MAX_SAFE_INTEGER] as a limit in a problem. */
 private const val MAX_SAFE = 9007199254740991.0
 
 /**
@@ -109,37 +109,50 @@ private fun SettingsField.textDraft(kind: FieldKind.Text, raw: String, traits: F
     return DraftResult.Write(JsonPrimitive(text))
 }
 
+/**
+ * A typed number, judged on its digits and not on a double: whether it is whole, and whether it
+ * is inside the safe range, never depend on how a platform rounds a long string (Kotlin/Native
+ * and the JVM do not agree near 2^53). A whole number is written as a `Long`; a fraction is
+ * written with the digits the person typed (trailing zeros dropped), never `Double.toString()`.
+ */
+@OptIn(ExperimentalSerializationApi::class)
 private fun SettingsField.numberDraft(kind: FieldKind.Number, raw: String, traits: FieldTraits): DraftResult {
     val text = normalizeNumberText(raw)
     if (text.isEmpty()) return blankDraft()
-    if (!NUMBER.matches(text)) return DraftResult.Invalid(FieldProblem.NotANumber)
-    val number = text.toDoubleOrNull()?.takeIf { it.isFinite() } ?: return DraftResult.Invalid(FieldProblem.NotANumber)
-    val isWhole = floor(number) == number
-    if ((kind.whole || traits.whole) && !isWhole) return DraftResult.Invalid(FieldProblem.NotWhole)
-    val min = listOfNotNull(kind.min, traits.min).maxOrNull()
-    val max = listOfNotNull(kind.max, traits.max, MAX_SAFE).minOrNull()
-    if (min != null && number < min) return DraftResult.Invalid(FieldProblem.TooSmall(min))
-    if (max != null && number > max) return DraftResult.Invalid(FieldProblem.TooLarge(max))
+    val typed = parseDecimal(text) ?: return DraftResult.Invalid(FieldProblem.NotANumber)
+    if ((kind.whole || traits.whole) && !typed.isWhole) return DraftResult.Invalid(FieldProblem.NotWhole)
+    // Beyond the safe range the number is an infinity here, so the limits below decide it.
+    val number = typed.toDoubleOrNull() ?: return DraftResult.Invalid(FieldProblem.NotANumber)
+    val min = listOfNotNull(kind.min, traits.min, -MAX_SAFE).max()
+    val max = listOfNotNull(kind.max, traits.max, MAX_SAFE).min()
+    if (number < min) return DraftResult.Invalid(FieldProblem.TooSmall(min))
+    if (number > max) return DraftResult.Invalid(FieldProblem.TooLarge(max))
     val step = kind.step
     if (step != null && step > 0 && step != 1.0 && !isMultipleOf(number, kind.min ?: 0.0, step)) {
         return DraftResult.Invalid(FieldProblem.NotMultiple(step))
     }
-    return DraftResult.Write(if (isWhole && abs(number) <= MAX_SAFE) JsonPrimitive(number.roundToLong()) else JsonPrimitive(number))
+    val whole = typed.toWholeLongOrNull()
+    return DraftResult.Write(if (whole != null) JsonPrimitive(whole) else JsonUnquotedLiteral(typed.plain()))
 }
 
-/** `120 000`, `٣`, `4.5`: spaces out, any script's digits to ASCII, `٫` to a point. */
+/**
+ * `120 000`, `٣`, `4٫5`: spaces out, any script's decimal digits to ASCII, `٫` to a point. A comma
+ * stays a comma and is refused, because `1,5` and `1,500` mean different things in different places.
+ */
 internal fun normalizeNumberText(raw: String): String = buildString {
     for (c in raw.trim()) {
         when {
-            c.isWhitespace() || c == ' ' || c == ' ' || c == ' ' -> Unit
-            c == '٫' -> append('.')
+            c.isWhitespace() || c in SEPARATORS -> Unit
+            c == ARABIC_DECIMAL_SEPARATOR -> append('.')
             c in '0'..'9' -> append(c)
             else -> append(c.digitToIntOrNull()?.let { '0' + it } ?: c)
         }
     }
 }
 
-private val NUMBER = Regex("^[+-]?[0-9]+(\\.[0-9]+)?$")
+/** No-break space, narrow no-break space, thin space, and the Arabic thousands separator. */
+private const val SEPARATORS = "\u00A0\u202F\u2009\u066C"
+private const val ARABIC_DECIMAL_SEPARATOR = '\u066B'
 
 private fun isMultipleOf(value: Double, from: Double, step: Double): Boolean {
     val quotient = (value - from) / step
@@ -209,11 +222,8 @@ fun fieldText(value: JsonElement?): String {
     if (primitive is JsonNull) return ""
     val content = primitive.contentOrNull ?: return ""
     if (primitive.isString) return content
-    val number = primitive.doubleOrNull
-    if (number != null && (content.contains('e') || content.contains('E'))) {
-        return if (floor(number) == number && abs(number) <= MAX_SAFE) number.roundToLong().toString() else content
-    }
-    return content
+    // Read as digits, not as a double: `4.0` shows as `4`, `1e21` as its digits, `1.5e-7` as `0.00000015`.
+    return parseDecimal(content, allowExponent = true)?.plain() ?: content
 }
 
 /**
@@ -224,8 +234,9 @@ fun valuesEquivalent(a: JsonElement?, b: JsonElement?): Boolean {
     if (a == null || a is JsonNull) return b == null || b is JsonNull
     if (b == null || b is JsonNull) return false
     if (a is JsonPrimitive && b is JsonPrimitive && !a.isString && !b.isString) {
-        val x = a.doubleOrNull
-        val y = b.doubleOrNull
+        // Compared as digits: `4` and `4.0` agree, and `9007199254740993` and `9007199254740992` do not.
+        val x = parseDecimal(a.content, allowExponent = true)
+        val y = parseDecimal(b.content, allowExponent = true)
         if (x != null && y != null) return x == y
         val p = a.booleanOrNull
         val q = b.booleanOrNull
