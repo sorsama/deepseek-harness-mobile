@@ -60,16 +60,16 @@
     <string name="hs_models_pick_one">เลือกอย่างน้อยหนึ่งโมเดลเพื่อเปิดใช้</string>
     <string name="hs_models_keep_one">เก็บไว้อย่างน้อยหนึ่งโมเดล หรือปิดสวิตช์</string>
     <string name="hs_models_load_failed">โหลดโมเดลไม่สำเร็จ</string>
-    <string name="hs_models_empty">ตอนนี้ยังไม่มีผู้ให้บริการรายใดมีโมเดลให้ใช้</string>
+    <string name="hs_models_none_why">ยังไม่มีโมเดลที่พร้อมใช้ โมเดลของผู้ให้บริการจะแสดงที่นี่เมื่อมีคีย์ API ที่ใช้ได้ เพิ่มคีย์ได้ที่ «โมเดลและคีย์ API»</string>
     <string name="hs_models_retired">ใช้ไม่ได้ในตอนนี้</string>
 
     <!-- Web search. -->
     <string name="hs_f_search_api">ใช้ Search API</string>
     <string name="hs_f_search_api_hint">เมื่อปิด การค้นหาจะผ่าน DeepSeek Messages เมื่อเปิด จะใช้ Search และ Fetch API ซึ่งมีฟีเจอร์และราคาของตัวเอง</string>
     <string name="hs_f_endpoint_messages">ที่อยู่ของ Messages API</string>
-    <string name="hs_f_endpoint_messages_hint">ใส่คำนำหน้าของ API ด้วย เช่น %1$s เว้นว่างไว้เพื่อใช้ที่อยู่เริ่มต้น</string>
+    <string name="hs_f_endpoint_messages_hint">ใส่คำนำหน้าของ API ด้วย เช่น %1$s</string>
     <string name="hs_f_endpoint_search">ที่อยู่ของ Search และ Fetch API</string>
-    <string name="hs_f_endpoint_search_hint">ใส่คำนำหน้าของ API ด้วย เช่น %1$s เว้นว่างไว้เพื่อใช้ที่อยู่เริ่มต้น</string>
+    <string name="hs_f_endpoint_search_hint">ใส่คำนำหน้าของ API ด้วย เช่น %1$s</string>
     <string name="hs_f_max_uses">จำนวนการค้นหาต่อคำขอ</string>
     <string name="hs_f_max_uses_hint">โมเดลผู้ช่วยค้นหาได้กี่ครั้งในหนึ่งคำขอ ใช้กับการค้นหาผ่าน Messages เท่านั้น</string>
     <string name="hs_f_count">จำนวนผลลัพธ์ต่อการค้นหา</string>

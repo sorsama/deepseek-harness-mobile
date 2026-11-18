@@ -100,6 +100,22 @@ fun shellNamespace(served: Collection<String>): String? = when {
 /** Whether any namespace in [views] only applies after a harness restart. */
 fun needsRestart(views: Collection<SettingsNamespaceView>): Boolean = views.any { it.applies == "restart" }
 
+// ---------------------------------------------------------------------------- overrides
+
+/**
+ * The keys among [keys] whose value the user layer carries: an override. Presence, not inequality:
+ * a switch flipped off and on again leaves `enabled: true` in the user layer, equal to the
+ * deployment's value but still an override, and the person can only see and clear it if it counts.
+ */
+fun overriddenKeys(view: SettingsNamespaceView?, keys: Collection<String>): List<String> {
+    val user = view?.user as? JsonObject ?: return emptyList()
+    return keys.filter { user.containsKey(it) }
+}
+
+/** The writes that give every override among [keys] back to the deployment's value (`unset`, never a `set`). */
+fun resetOps(view: SettingsNamespaceView?, keys: Collection<String>): List<SettingsPathOpView> =
+    overriddenKeys(view, keys).map { SettingsPathOpView.Unset(listOf(it)) }
+
 // ---------------------------------------------------------------------------- web search
 
 /**
@@ -233,6 +249,42 @@ fun modelCandidates(groups: List<ModelProviderGroup>, stored: List<AllowedRoute>
     val retired = stored.filter { it !in known }.distinct()
         .map { ModelCandidate(it, it.provider, it.model, available = false, selected = true) }
     return advertised + retired
+}
+
+/** Whether the catalog offers a model an agent could be allowed to pick. An empty catalog is a real answer. */
+fun hasSelectableModels(groups: List<ModelProviderGroup>): Boolean = groups.any { it.models.isNotEmpty() }
+
+/**
+ * Whether the model switch cannot be turned on yet: the harness answered, it lists no model, and
+ * none is stored. The harness refuses an enabled list with nothing in it, so the switch would never
+ * stay on; the page says why instead and points at the Models page.
+ */
+fun modelSwitchBlocked(catalog: CatalogState, stored: List<AllowedRoute>, enabled: Boolean): Boolean =
+    !enabled && stored.isEmpty() && catalog is CatalogState.Ready && !hasSelectableModels(catalog.catalog.groups)
+
+/** What the allowlist's list part shows, decided from the catalog and what is stored. */
+sealed interface ModelListView {
+    data object Loading : ModelListView
+
+    data object Failed : ModelListView
+
+    /**
+     * The harness lists no model: no provider has a working key, so nothing is offered. [retired] are
+     * stored routes the catalog no longer advertises, which can still be taken off.
+     */
+    data class NoModels(val retired: List<ModelCandidate>) : ModelListView
+
+    data class Models(val candidates: List<ModelCandidate>) : ModelListView
+}
+
+fun modelListView(catalog: CatalogState, routes: List<AllowedRoute>): ModelListView = when (catalog) {
+    CatalogState.Idle, CatalogState.Loading -> ModelListView.Loading
+    is CatalogState.Failed -> ModelListView.Failed
+    is CatalogState.Ready -> {
+        val candidates = modelCandidates(catalog.catalog.groups, routes)
+        if (candidates.any { it.available }) ModelListView.Models(candidates)
+        else ModelListView.NoModels(candidates)
+    }
 }
 
 /** What tapping a model does. */

@@ -26,29 +26,38 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.R
+import com.labteto.dshmobile.core.settings.AllowedRoute
 import com.labteto.dshmobile.core.settings.CatalogState
 import com.labteto.dshmobile.core.settings.FieldId
 import com.labteto.dshmobile.core.settings.HarnessSettingsController
 import com.labteto.dshmobile.core.settings.HarnessSettingsState
+import com.labteto.dshmobile.core.settings.ModelCandidate
+import com.labteto.dshmobile.core.settings.ModelListView
 import com.labteto.dshmobile.core.settings.RouteToggle
 import com.labteto.dshmobile.core.settings.SettingsNamespaces
 import com.labteto.dshmobile.core.settings.SettingsPage
 import com.labteto.dshmobile.core.settings.WebSearchRules
 import com.labteto.dshmobile.core.settings.allowedRoutes
-import com.labteto.dshmobile.core.settings.modelCandidates
+import com.labteto.dshmobile.core.settings.modelListView
 import com.labteto.dshmobile.core.settings.modelSelectionEnabled
 import com.labteto.dshmobile.core.settings.modelSelectionSwitchOps
+import com.labteto.dshmobile.core.settings.modelSwitchBlocked
+import com.labteto.dshmobile.core.settings.overriddenKeys
 import com.labteto.dshmobile.core.settings.parseRoutes
 import com.labteto.dshmobile.core.settings.routeToggle
 import com.labteto.dshmobile.core.settings.settingsFields
 import com.labteto.dshmobile.core.settings.shellNamespace
+import com.labteto.dshmobile.models.ModelsRequest
 import com.labteto.dshmobile.ui.components.DsCard
 import com.labteto.dshmobile.ui.components.DsPill
 import com.labteto.dshmobile.ui.components.SectionHeader
 import com.labteto.dshmobile.ui.components.ToggleRow
 import com.labteto.dshmobile.ui.screens.main.FeatureProgress
 import com.labteto.dshmobile.ui.screens.main.technicalDisplay
+import com.labteto.dshmobile.ui.screens.models.ModelSetupViewModel
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -145,6 +154,15 @@ private fun WebSearchBody(state: HarnessSettingsState, controller: HarnessSettin
                         ),
                     )
                 }
+                // The switch is two fields; one reset clears whichever of them carries an override.
+                val providerKeys = listOf(searchId.key, fetchId.key)
+                OverrideLine(
+                    label = stringResource(R.string.hs_f_search_api),
+                    overridden = overriddenKeys(web, providerKeys).isNotEmpty(),
+                    writable = state.writable,
+                    busy = searchId in state.writing || fetchId in state.writing,
+                    onReset = { controller.resetKeys(SettingsNamespaces.WEB, providerKeys) },
+                )
                 FailureLine(state.failures[searchId] ?: state.failures[fetchId])
             }
         }
@@ -239,17 +257,32 @@ private fun ModelAllowlist(state: HarnessSettingsState, controller: HarnessSetti
     // The switch was turned on with nothing chosen yet: nothing is written until a model is picked.
     var armed by rememberSaveable { mutableStateOf(false) }
     var keepOne by remember { mutableStateOf(false) }
-    val listShown = enabled || armed
 
-    LaunchedEffect(listShown, state.catalog) {
-        if (listShown && state.catalog == CatalogState.Idle) controller.loadCatalog()
+    // The list follows the keys the harness holds, so it is read each time this page opens, and again
+    // when the Models page (where a key is added) closes over it. Never once per screen.
+    val monitor = hiltViewModel<ModelSetupViewModel>().monitor
+    val modelsRequest by monitor.request.collectAsStateWithLifecycle()
+    var modelsOpened by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { controller.loadCatalog() }
+    LaunchedEffect(modelsRequest) {
+        if (modelsRequest != null) modelsOpened = true
+        else if (modelsOpened) {
+            modelsOpened = false
+            controller.loadCatalog()
+        }
     }
+
+    // With nothing to choose from the switch cannot stay on (the harness refuses an enabled list
+    // with no model in it), so it says why instead of arming itself.
+    val blocked = modelSwitchBlocked(state.catalog, routes, enabled)
+    val listShown = (enabled || armed) && !blocked
+    LaunchedEffect(blocked) { if (blocked) armed = false }
 
     ToggleRow(
         label = stringResource(R.string.hs_f_model_choice),
         checked = listShown,
         hint = stringResource(R.string.hs_f_model_choice_hint),
-        enabled = state.writable,
+        enabled = state.writable && !blocked,
     ) {
         keepOne = false
         if (!listShown) {
@@ -263,7 +296,23 @@ private fun ModelAllowlist(state: HarnessSettingsState, controller: HarnessSetti
             if (enabled) controller.write(ns, modelSelectionSwitchOps(false), mapOf(enabledId to JsonPrimitive(false)))
         }
     }
+    // The switch and the list are two fields; one reset clears whichever of them carries an override.
+    val modelKeys = listOf(enabledId.key, allowedId.key)
+    OverrideLine(
+        label = stringResource(R.string.hs_f_model_choice),
+        overridden = overriddenKeys(view, modelKeys).isNotEmpty(),
+        writable = state.writable,
+        busy = enabledId in state.writing || allowedId in state.writing,
+        onReset = {
+            armed = false
+            controller.resetKeys(ns, modelKeys)
+        },
+    )
     FailureLine(state.failures[enabledId] ?: state.failures[allowedId])
+    if (blocked) {
+        NoModelsNote { monitor.open(ModelsRequest.Connected) }
+        return
+    }
     if (!listShown) return
 
     Text(
@@ -272,7 +321,7 @@ private fun ModelAllowlist(state: HarnessSettingsState, controller: HarnessSetti
         color = colors.labelPrimary,
         modifier = Modifier.semantics { heading() },
     )
-    if (armed && routes.isEmpty()) {
+    if (armed && routes.isEmpty() && state.catalog is CatalogState.Ready) {
         Text(stringResource(R.string.hs_models_pick_one), style = DsType.small13, color = colors.warnLabel)
     }
     if (keepOne) {
@@ -283,34 +332,62 @@ private fun ModelAllowlist(state: HarnessSettingsState, controller: HarnessSetti
             modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
         )
     }
-    when (val catalog = state.catalog) {
-        CatalogState.Idle, CatalogState.Loading -> FeatureProgress()
-        is CatalogState.Failed -> {
+    when (val list = modelListView(state.catalog, routes)) {
+        ModelListView.Loading -> FeatureProgress()
+        ModelListView.Failed -> {
             Text(stringResource(R.string.hs_models_load_failed), style = DsType.small13, color = colors.error)
             SettingsButton(stringResource(R.string.common_retry), controller::loadCatalog)
         }
-        is CatalogState.Ready -> {
-            val candidates = modelCandidates(catalog.catalog.groups, routes)
-            if (candidates.isEmpty()) {
-                Text(stringResource(R.string.hs_models_empty), style = DsType.small13, color = colors.labelTertiary)
-            }
-            candidates.groupBy { it.providerName }.forEach { (provider, models) ->
-                Text(
-                    technicalDisplay(provider),
-                    style = DsType.small13Strong,
-                    color = colors.labelTertiary,
-                    modifier = Modifier.padding(top = DsSpacing.small).semantics { heading() },
-                )
-                models.forEach { candidate ->
-                    ModelRow(candidate.modelName, candidate.selected, !candidate.available, state.writable) {
-                        when (val toggle = routeToggle(routes, enabled, armed, candidate.route)) {
-                            RouteToggle.KeepOne -> keepOne = true
-                            is RouteToggle.Write -> {
-                                keepOne = false
-                                armed = false
-                                controller.write(ns, toggle.ops, toggle.shown.mapKeys { FieldId(ns, it.key) })
-                            }
-                        }
+        is ModelListView.NoModels -> {
+            // The harness answered and lists nothing: say why and where to fix it. Stored routes it no
+            // longer advertises stay below, so they can still be taken off.
+            NoModelsNote { monitor.open(ModelsRequest.Connected) }
+            ModelGroups(list.retired, enabled, armed, routes, state, controller, ns) { keepOne = it; if (!it) armed = false }
+        }
+        is ModelListView.Models ->
+            ModelGroups(list.candidates, enabled, armed, routes, state, controller, ns) { keepOne = it; if (!it) armed = false }
+    }
+}
+
+/** Why the model list is empty, and the way to the page where that is fixed. */
+@Composable
+private fun NoModelsNote(onOpenModels: () -> Unit) {
+    Text(
+        stringResource(R.string.hs_models_none_why),
+        style = DsType.small13,
+        color = DsTheme.colors.labelSecondary,
+        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+    )
+    SettingsButton(stringResource(R.string.models_open), onOpenModels)
+}
+
+/** The models, grouped under their provider, each a checkbox. [onKeepOne] reports whether the last-model rule refused a tap. */
+@Composable
+private fun ModelGroups(
+    candidates: List<ModelCandidate>,
+    enabled: Boolean,
+    armed: Boolean,
+    routes: List<AllowedRoute>,
+    state: HarnessSettingsState,
+    controller: HarnessSettingsController,
+    ns: String,
+    onKeepOne: (Boolean) -> Unit,
+) {
+    val colors = DsTheme.colors
+    candidates.groupBy { it.providerName }.forEach { (provider, models) ->
+        Text(
+            technicalDisplay(provider),
+            style = DsType.small13Strong,
+            color = colors.labelTertiary,
+            modifier = Modifier.padding(top = DsSpacing.small).semantics { heading() },
+        )
+        models.forEach { candidate ->
+            ModelRow(candidate.modelName, candidate.selected, !candidate.available, state.writable) {
+                when (val toggle = routeToggle(routes, enabled, armed, candidate.route)) {
+                    RouteToggle.KeepOne -> onKeepOne(true)
+                    is RouteToggle.Write -> {
+                        onKeepOne(false)
+                        controller.write(ns, toggle.ops, toggle.shown.mapKeys { FieldId(ns, it.key) })
                     }
                 }
             }

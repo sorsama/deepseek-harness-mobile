@@ -572,4 +572,172 @@ class HarnessSettingsControllerTest {
         assertIs<CatalogState.Ready>(controller.state.value.catalog)
         assertEquals(2, port.catalogCalls)
     }
+
+    // ------------------------------------------------------------------------ resetting overrides
+
+    /** A describe whose `web` row is the captured answer to selecting the Search API: both providers overridden. */
+    private fun describedWithWebOverrides(): SettingsDescribeValue {
+        val web = writeAnswer(SettingsFixtures.MUTATE_WEB_SELECT_API)
+        val base = describedFixture()
+        return base.copy(namespaces = base.namespaces.map { if (it.ns == "web") web else it })
+    }
+
+    @Test
+    fun `resetting the web switch unsets both providers in one fenced write`() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        val port = FakePort().apply {
+            onDescribe = { RpcResult.Ok(describedWithWebOverrides()) }
+            onMutate = { gate.await(); RpcResult.Ok(fixtureRow("web").copy(revision = 2)) }
+        }
+        val controller = loaded(port)
+        controller.resetKeys("web", listOf("searchProvider", "fetchProvider"))
+        runCurrent()
+
+        val mutation = port.mutations.single()
+        assertEquals("web", mutation.ns)
+        assertEquals(1L, mutation.revision)
+        assertEquals(
+            listOf<SettingsPathOpView>(SettingsPathOpView.Unset(listOf("searchProvider")), SettingsPathOpView.Unset(listOf("fetchProvider"))),
+            mutation.ops,
+        )
+        // Both fields read as their defaults while the write is out.
+        assertEquals(setOf(FieldId("web", "searchProvider"), FieldId("web", "fetchProvider")), controller.state.value.writing.keys)
+        assertTrue(controller.state.value.writing.values.all { it == null })
+        gate.complete(Unit)
+        advanceUntilIdle()
+        assertTrue(controller.state.value.writing.isEmpty())
+        assertEquals(emptyList(), overriddenKeys(controller.row("web"), listOf("searchProvider", "fetchProvider")))
+    }
+
+    @Test
+    fun `resetting a switch that was flipped back clears the override it left`() = runTest {
+        val flipped = writeAnswer(SettingsFixtures.MUTATE_SESSION_LOG_BACK_ON)
+        val port = FakePort().apply {
+            onDescribe = { RpcResult.Ok(describedFixture().let { d -> d.copy(namespaces = d.namespaces.map { if (it.ns == flipped.ns) flipped else it }) }) }
+            onMutate = { RpcResult.Ok(fixtureRow("session-log-deepseek").copy(revision = 3)) }
+        }
+        val controller = loaded(port)
+        val field = settingsFields(controller.row("session-log-deepseek")).single()
+        // The value equals the deployment's, and the override is still there to be seen and cleared.
+        assertTrue(field.overridden)
+        assertEquals(field.value, field.baseValue)
+
+        controller.reset(field)
+        advanceUntilIdle()
+        assertEquals(listOf<SettingsPathOpView>(SettingsPathOpView.Unset(listOf("enabled"))), port.mutations.single().ops)
+        assertFalse(settingsFields(controller.row("session-log-deepseek")).single().overridden)
+    }
+
+    @Test
+    fun `nothing is sent to reset keys that carry no override`() = runTest {
+        val port = FakePort()
+        val controller = loaded(port)
+        controller.resetKeys("web", listOf("searchProvider", "fetchProvider"))
+        controller.resetKeys("no-such-namespace", listOf("x"))
+        advanceUntilIdle()
+        assertTrue(port.mutations.isEmpty())
+        assertTrue(controller.state.value.writing.isEmpty())
+    }
+
+    @Test
+    fun `only the overridden key of a group is reset`() = runTest {
+        val onlySearch = writeAnswer(SettingsFixtures.MUTATE_WEB_SELECT_API).let { it.copy(user = obj("searchProvider" to str("deepseek-search-api"))) }
+        val port = FakePort().apply {
+            onDescribe = { RpcResult.Ok(describedFixture().let { d -> d.copy(namespaces = d.namespaces.map { if (it.ns == "web") onlySearch else it }) }) }
+            onMutate = { RpcResult.Ok(fixtureRow("web").copy(revision = 2)) }
+        }
+        val controller = loaded(port)
+        controller.resetKeys("web", listOf("searchProvider", "fetchProvider"))
+        advanceUntilIdle()
+        assertEquals(listOf<SettingsPathOpView>(SettingsPathOpView.Unset(listOf("searchProvider"))), port.mutations.single().ops)
+    }
+
+    @Test
+    fun `a read-only document refuses a reset like any other write`() = runTest {
+        val port = FakePort().apply { onDescribe = { RpcResult.Ok(describedWithWebOverrides().copy(writable = false)) } }
+        val controller = loaded(port)
+        controller.resetKeys("web", listOf("searchProvider", "fetchProvider"))
+        advanceUntilIdle()
+        assertTrue(port.mutations.isEmpty())
+    }
+
+    // --------------------------------------------------------- the catalog follows the keys
+
+    private fun emptyCatalog() = WireJson.decodeFromJsonElement(ModelCatalog.serializer(), (fixtureResult(SettingsFixtures.MODEL_CATALOG_NO_KEY) as RpcResult.Ok).value)
+
+    private fun realCatalog() = WireJson.decodeFromJsonElement(ModelCatalog.serializer(), (fixtureResult(SettingsFixtures.MODEL_CATALOG) as RpcResult.Ok).value)
+
+    @Test
+    fun `a harness with no key answers an empty catalog that the page can explain`() = runTest {
+        val port = FakePort().apply { onCatalog = { RpcResult.Ok(emptyCatalog()) } }
+        val controller = loaded(port)
+        controller.loadCatalog()
+        advanceUntilIdle()
+        val ready = assertIs<CatalogState.Ready>(controller.state.value.catalog)
+        assertEquals(emptyList(), ready.catalog.groups)
+        assertTrue(modelSwitchBlocked(ready, allowedRoutes(controller.row("subagent-model-selection-settings")), enabled = false))
+        assertIs<ModelListView.NoModels>(modelListView(ready, emptyList()))
+    }
+
+    @Test
+    fun `the catalog is not asked for until a page that shows it asks`() = runTest {
+        val port = FakePort()
+        val controller = loaded(port)
+        controller.load()
+        advanceUntilIdle()
+        assertEquals(0, port.catalogCalls)
+        assertEquals(CatalogState.Idle, controller.state.value.catalog)
+    }
+
+    @Test
+    fun `a refresh reads the catalog again once it has been read`() = runTest {
+        val port = FakePort().apply { onCatalog = { RpcResult.Ok(emptyCatalog()) } }
+        val controller = loaded(port)
+        controller.loadCatalog()
+        advanceUntilIdle()
+        assertEquals(1, port.catalogCalls)
+
+        // A key was added on the Models page meanwhile; the harness now lists the real catalog.
+        port.onCatalog = { RpcResult.Ok(realCatalog()) }
+        controller.load()
+        advanceUntilIdle()
+        assertEquals(2, port.catalogCalls)
+        assertEquals(2, assertIs<CatalogState.Ready>(controller.state.value.catalog).catalog.groups.single().models.size)
+    }
+
+    @Test
+    fun `a key saved here reads the catalog again because a provider may use that key`() = runTest {
+        val port = FakePort().apply { onCatalog = { RpcResult.Ok(emptyCatalog()) } }
+        val controller = loaded(port)
+        controller.loadCatalog()
+        advanceUntilIdle()
+        assertEquals(1, port.catalogCalls)
+
+        port.onCatalog = { RpcResult.Ok(realCatalog()) }
+        controller.saveKey("DEEPSEEK_API_KEY", "fixture-not-a-real-key")
+        advanceUntilIdle()
+        assertEquals(2, port.catalogCalls)
+        assertTrue(hasSelectableModels(assertIs<CatalogState.Ready>(controller.state.value.catalog).catalog.groups))
+    }
+
+    @Test
+    fun `the list stays on screen while it is read again and a failed re-read leaves it`() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        val port = FakePort().apply { onCatalog = { RpcResult.Ok(emptyCatalog()) } }
+        val controller = loaded(port)
+        controller.loadCatalog()
+        advanceUntilIdle()
+        val first = controller.state.value.catalog
+        assertIs<CatalogState.Ready>(first)
+
+        port.onCatalog = { gate.await(); err("internal", "no route") }
+        controller.loadCatalog()
+        runCurrent()
+        // Reading again is not Loading: what was read stays until the answer replaces it.
+        assertEquals(first, controller.state.value.catalog)
+        gate.complete(Unit)
+        advanceUntilIdle()
+        assertEquals(first, controller.state.value.catalog)
+        assertEquals(2, port.catalogCalls)
+    }
 }
