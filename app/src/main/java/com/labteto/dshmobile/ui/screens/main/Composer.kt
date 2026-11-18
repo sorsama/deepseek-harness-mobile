@@ -250,6 +250,11 @@ internal fun Composer(
      * them (they are in the tray), false to let the field paste whatever it can.
      */
     onPasteFiles: ((List<Uri>) -> Boolean)? = null,
+    /**
+     * Dictation through the phone's speech service. Null (the default) leaves the composer without
+     * a microphone; so does a phone that has no recognition service, whatever this says.
+     */
+    dictation: DictationConfig? = null,
 ) {
     var editor by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(draft, androidx.compose.ui.text.TextRange(cursor))) }
     androidx.compose.runtime.LaunchedEffect(draft, cursor) {
@@ -272,6 +277,39 @@ internal fun Composer(
     val currentDraft by rememberUpdatedState(draft)
     val currentOnDraftChange by rememberUpdatedState(onDraftChange)
     val currentOnSend by rememberUpdatedState(onSend)
+
+    // Every edit, wherever it is typed, goes through the reference-aware one: a draft holding `@`
+    // chips keeps its chip ranges adjusted when a character is inserted, and the page must not be
+    // the one place that wrecks them.
+    val applyEdit: (androidx.compose.ui.text.input.TextFieldValue) -> Unit = { edited ->
+        val normalized = atomicReferenceEdit(editor.text, edited, references)
+        editor = normalized
+        onDraftChange(normalized.text)
+        onCursorChange(normalized.selection.end)
+    }
+
+    // Dictation puts its text in through the same door as typing, at the caret as it is when the
+    // take ends, so a recognised phrase is ordinary editable text and the chips stay whole.
+    val voice = rememberComposerDictation(dictation, enabled) { spoken ->
+        com.labteto.dshmobile.ui.voice.insertDictation(editor.text, editor.selection.end, spoken)?.let {
+            applyEdit(androidx.compose.ui.text.input.TextFieldValue(it.text, androidx.compose.ui.text.TextRange(it.cursor)))
+        }
+    }
+    val currentVoice by rememberUpdatedState(voice)
+
+    // One clear-then-deliver path for the send button, the hold menu and the full-screen page. The
+    // field only follows the draft a frame later, and an IME update landing in that frame (the
+    // keyboard finishing its composing word) carried the sent text back in, so it is cleared here
+    // as well as through the draft. A take still running is dropped first: its text would otherwise
+    // land in the next draft.
+    fun submitDraft(deliver: (String) -> Unit) {
+        currentVoice?.cancel?.invoke()
+        val text = currentDraft
+        editor = androidx.compose.ui.text.input.TextFieldValue("")
+        currentOnDraftChange("")
+        haptics.confirm()
+        deliver(text)
+    }
     var sendMenuOpen by remember { mutableStateOf(false) }
     // The mock's focused composer takes an accent hairline and a soft glow; the border is the part
     // a phone can show without a second shadow layer, so it is the part wired here.
@@ -295,8 +333,13 @@ internal fun Composer(
     // pasted paragraph on a narrow phone reaches two exactly as a draft with a hard break does.
     val measurer = androidx.compose.ui.text.rememberTextMeasurer()
     var fieldWidthPx by remember { mutableStateOf(0) }
-    // A Material text field pads 16dp on each side before it lays any text out.
-    val textWidthPx = fieldWidthPx - with(androidx.compose.ui.platform.LocalDensity.current) { 32.dp.roundToPx() }
+    // A Material text field pads 16dp on each side before it lays any text out, and a trailing icon
+    // takes the place of the end padding: the microphone's 48dp.
+    val micVoice = voice?.takeIf { enabled }
+    val micShown = micVoice != null
+    val textWidthPx = fieldWidthPx - with(androidx.compose.ui.platform.LocalDensity.current) {
+        (if (micShown) 64.dp else 32.dp).roundToPx()
+    }
     val lineCount = remember(draft, textWidthPx, measurer) {
         if (textWidthPx <= 0 || draft.isEmpty()) {
             1
@@ -344,28 +387,6 @@ internal fun Composer(
             if (!hardwareKeyboard) keyboard?.show()
         }
         pageWasOpen = pageComposed
-    }
-
-    // One clear-then-deliver path for the send button, the hold menu and the full-screen page. The
-    // field only follows the draft a frame later, and an IME update landing in that frame (the
-    // keyboard finishing its composing word) carried the sent text back in, so it is cleared here
-    // as well as through the draft.
-    fun submitDraft(deliver: (String) -> Unit) {
-        val text = currentDraft
-        editor = androidx.compose.ui.text.input.TextFieldValue("")
-        currentOnDraftChange("")
-        haptics.confirm()
-        deliver(text)
-    }
-
-    // Every edit, wherever it is typed, goes through the reference-aware one: a draft holding `@`
-    // chips keeps its chip ranges adjusted when a character is inserted, and the page must not be
-    // the one place that wrecks them.
-    val applyEdit: (androidx.compose.ui.text.input.TextFieldValue) -> Unit = { edited ->
-        val normalized = atomicReferenceEdit(editor.text, edited, references)
-        editor = normalized
-        onDraftChange(normalized.text)
-        onCursorChange(normalized.selection.end)
     }
 
     // What is attached lives in a tray directly above the card, not inside it: the tray is measured
@@ -441,9 +462,17 @@ internal fun Composer(
                 TextField(
                     value = editor,
                     onValueChange = applyEdit,
-                    visualTransformation = remember(references, colors.accent, colors.accentTertiary) {
-                        ReferenceTransformation(references, androidx.compose.ui.text.SpanStyle(color = colors.accent, background = colors.accentTertiary))
-                    },
+                    visualTransformation = pendingDictationTransformation(
+                        base = remember(references, colors.accent, colors.accentTertiary) {
+                            ReferenceTransformation(references, androidx.compose.ui.text.SpanStyle(color = colors.accent, background = colors.accentTertiary))
+                        },
+                        // What is being heard is painted at the caret and is not in the draft
+                        // until the take ends (see PendingDictationTransformation).
+                        state = voice?.state ?: com.labteto.dshmobile.ui.voice.DictationState.Idle,
+                        draft = editor.text,
+                        cursor = editor.selection.end,
+                        style = pendingDictationStyle(colors.accent),
+                    ),
                     // The height is decided by the column above, which gives the action row its
                     // space first; the field takes what is left and scrolls past it. The minimum
                     // only guarantees a line to tap when the drawer is at its cap.
@@ -495,16 +524,25 @@ internal fun Composer(
                     minLines = 1,
                     maxLines = 8,
                     // A paragraph in a card two thumb-heights tall is where people give up editing,
-                    // so a draft long enough to lift the drawer also gets a page of its own. The
-                    // slot only exists while that is true: a one-line message keeps the composer
+                    // so a draft long enough to lift the drawer also gets a page of its own. That
+                    // button only exists while that is true: a one-line message keeps the composer
                     // people already know, and the row below is already full at that point.
-                    trailingIcon = if (expanded) {
+                    //
+                    // The microphone, on a phone that can dictate, is in the same slot and always
+                    // there, ahead of the expand button. It goes here and not in that row because
+                    // the row has no 48dp to spare (see DictationMicButton).
+                    trailingIcon = if (expanded || micShown) {
                         {
-                            DsIconButton(
-                                icon = Icons.Filled.OpenInFull,
-                                contentDescription = stringResource(R.string.chat_composer_expand),
-                                onClick = { fullScreen = true },
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (micVoice != null) DictationMicButton(micVoice)
+                                if (expanded) {
+                                    DsIconButton(
+                                        icon = Icons.Filled.OpenInFull,
+                                        contentDescription = stringResource(R.string.chat_composer_expand),
+                                        onClick = { fullScreen = true },
+                                    )
+                                }
+                            }
                         }
                     } else {
                         null
@@ -525,6 +563,10 @@ internal fun Composer(
 
                 if (preparing) Text(stringResource(R.string.photos_preparing), style = DsType.caption11)
                 }
+
+                // While a take runs, and for the few seconds a message lives. It sits with the row
+                // of controls, which are measured first, so the editor is what gives way for it.
+                if (micVoice != null && micVoice.stripVisible()) DictationStrip(micVoice)
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
