@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.labteto.dshmobile.ui.theme.DsAnimations
@@ -65,14 +67,24 @@ fun ToolCard(
     /** Opens the call's hold menu from the default header; a custom [header] wires its own. */
     onHold: (() -> Unit)? = null,
     holdLabel: String = "",
+    /** What the card can open elsewhere (a background job, a subagent), from the transcript. */
+    actions: ToolCardActions = ToolCardActions.None,
+    /**
+     * Whether the row opens at all. A card whose own body is empty can still have something under it
+     * (the call's Output, an image), which the transcript draws; it then says so here.
+     */
+    expandable: Boolean = view.hasBody(),
+    /** How many lines the header's summary may take: more once the row is open, so it is not cut. */
+    summaryMaxLines: Int = 1,
 ) {
+    val hasBody = view.hasBody()
     if (header != null) {
         header()
         AnimatedVisibility(
-            visible = expanded,
+            visible = expanded && hasBody,
             enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
             exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
-        ) { ToolCardBody(view) }
+        ) { ToolCardBody(view, actions) }
         return
     }
     DisclosureRow(
@@ -80,13 +92,15 @@ fun ToolCard(
         summary = summaryOverride ?: view.summary(),
         icon = iconOverride ?: view.icon(),
         state = state ?: if (view.isRunning()) DisclosureState.Running else DisclosureState.Idle,
-        expanded = expanded,
-        onToggle = onToggle,
+        expanded = expanded && expandable,
+        // A header-only card (a goal change, shared files) has its subject drawn by its own node
+        // right below it: there is nothing to open, so no chevron, but the hold menu still works.
+        onToggle = if (expandable) onToggle else null,
         onHold = onHold,
         holdLabel = holdLabel,
-    ) {
-        ToolCardBody(view)
-    }
+        summaryMaxLines = summaryMaxLines,
+        content = if (hasBody) ({ ToolCardBody(view, actions) }) else null,
+    )
 }
 
 // ---- Header helpers ---------------------------------------------------------
@@ -99,6 +113,8 @@ private fun ToolCardView.displayTitle(): String = when (this) {
     is ToolCardView.SearchCard -> title ?: stringResource(R.string.toolcard_title_search)
     is ToolCardView.ReadCard -> label
     is ToolCardView.WebCard -> title ?: stringResource(R.string.toolcard_title_web)
+    // The transcript always passes its own title for these; this is only the fallback.
+    else -> stringResource(R.string.toolcard_title_tool)
 }
 
 @Composable
@@ -118,6 +134,7 @@ private fun ToolCardView.summary(): String? = when (this) {
             ?: kind.sources.size.let { pluralStringResource(R.plurals.toolcard_sources, it, it) }
         is WebCardKind.Fetch -> kind.statusCode?.let { "HTTP $it" } ?: kind.url
     }
+    else -> controlSummary()
 }
 
 /** "running", "killed by SIGTERM" or "exit 1" for a terminal card; null when it has none of those. */
@@ -126,6 +143,8 @@ private fun ToolCardView.TerminalCard.terminalStatus(): String? {
     val signal = signal
     val exitCode = exitCode
     return when {
+        // A background launch has no exit of its own; the job it started has the status.
+        background -> null
         running == true -> stringResource(R.string.toolcard_running)
         signal != null -> stringResource(R.string.toolcard_killed_by, signal)
         exitCode != null -> stringResource(R.string.toolcard_exit_code, exitCode)
@@ -140,6 +159,7 @@ private fun ToolCardView.icon(): ImageVector = when (this) {
     is ToolCardView.SearchCard -> FeatherIcons.Search
     is ToolCardView.ReadCard -> FeatherIcons.FileText
     is ToolCardView.WebCard -> FeatherIcons.Globe
+    else -> controlIcon() ?: FeatherIcons.Tool
 }
 
 private fun ToolCardView.isRunning(): Boolean = (this as? ToolCardView.TerminalCard)?.running == true
@@ -164,7 +184,7 @@ private fun diffStats(diffs: List<DiffHunk>): Triple<Int, Int, Int> {
 // ---- Bodies -----------------------------------------------------------------
 
 @Composable
-private fun ToolCardBody(view: ToolCardView) {
+private fun ToolCardBody(view: ToolCardView, actions: ToolCardActions = ToolCardActions.None) {
     val colors = DsTheme.colors
     Column(
         modifier = Modifier
@@ -177,19 +197,24 @@ private fun ToolCardBody(view: ToolCardView) {
     ) {
         when (view) {
             is ToolCardView.GenericCard -> GenericBody(view)
-            is ToolCardView.TerminalCard -> TerminalBody(view)
+            is ToolCardView.TerminalCard -> TerminalBody(view, actions)
             is ToolCardView.DiffCard -> DiffBody(view)
             is ToolCardView.SearchCard -> SearchBody(view)
             is ToolCardView.ReadCard -> ReadBody(view)
             is ToolCardView.WebCard -> WebBody(view)
+            else -> ControlCardBody(view, actions)
         }
     }
 }
 
 @Composable
-private fun TerminalBody(card: ToolCardView.TerminalCard) {
+private fun TerminalBody(card: ToolCardView.TerminalCard, actions: ToolCardActions = ToolCardActions.None) {
     val colors = DsTheme.colors
     val state = when {
+        // Stopped is amber like the row's own dot; only a failed call is red.
+        card.stopped -> StateDotState.Warning
+        card.failed -> StateDotState.Error
+        card.background -> if (card.running == true || actions.jobRunning) StateDotState.Running else StateDotState.Idle
         card.running == true -> StateDotState.Running
         card.signal != null || (card.exitCode != null && card.exitCode != 0) -> StateDotState.Error
         card.exitCode == 0 -> StateDotState.Done
@@ -205,11 +230,17 @@ private fun TerminalBody(card: ToolCardView.TerminalCard) {
             }
             card.cwd?.let {
                 Text(
-                    it,
+                    com.labteto.dshmobile.ui.screens.main.technicalDisplay(it),
                     style = DsType.caption11.copy(fontFamily = DsType.codeFont),
                     color = colors.labelCaption,
                 )
             }
+            // The command itself, since the header shows its description: a background launch and a
+            // failed call have no output under them to say what ran.
+            if ((card.background || card.cutShort) && card.description != null && !card.title.isNullOrEmpty()) {
+                Text(com.labteto.dshmobile.ui.screens.main.technicalDisplay(card.title), style = DsType.mdCode, color = colors.labelPrimary, modifier = Modifier.fillMaxWidth())
+            }
+            if (card.background && !card.cutShort) BackgroundJobLine(card, actions)
             card.output?.let {
                 Text(
                     it,
@@ -486,19 +517,30 @@ private fun WebBody(card: ToolCardView.WebCard) {
 private fun GenericBody(card: ToolCardView.GenericCard) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        card.rawInput?.let { raw ->
-            SectionLabel(stringResource(R.string.toolcard_section_in))
-            Text(
-                prettyJson(raw),
-                style = DsType.mdCode,
-                color = colors.labelPrimary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(DsShapes.row)
-                    .background(colors.bgLayer2)
-                    .border(1.dp, colors.borderL1, DsShapes.row)
-                    .padding(10.dp),
-            )
+        // A tool this app has no view for: what it was called with is there for whoever wants it,
+        // collapsed so the row reads as a step rather than a JSON dump, and one tap opens it.
+        card.rawInput?.takeIf { hasArguments(it) }?.let { raw ->
+            var open by androidx.compose.runtime.saveable.rememberSaveable(raw) { androidx.compose.runtime.mutableStateOf(false) }
+            val fields = remember(raw) { topLevelFieldCount(raw) }
+            DisclosureRow(
+                title = stringResource(R.string.chat_tool_arguments),
+                summary = fields?.let { pluralStringResource(R.plurals.chat_tool_arguments_count, it, it) },
+                icon = FeatherIcons.Code,
+                expanded = open,
+                onToggle = { open = !open },
+            ) {
+                Text(
+                    prettyJson(raw),
+                    style = DsType.mdCode,
+                    color = colors.labelPrimary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(DsShapes.row)
+                        .background(colors.bgLayer2)
+                        .border(1.dp, colors.borderL1, DsShapes.row)
+                        .padding(10.dp),
+                )
+            }
         }
         card.locations?.takeIf { it.isNotEmpty() }?.let { locations ->
             SectionLabel(stringResource(R.string.toolcard_section_locations))
@@ -552,6 +594,23 @@ private fun SectionLabel(text: String) {
         color = DsTheme.colors.labelCaption,
         modifier = Modifier.padding(bottom = 2.dp),
     )
+}
+
+/** How many fields a JSON object has at its top level, or null when [raw] is not an object. */
+internal fun topLevelFieldCount(raw: String): Int? = runCatching {
+    (com.labteto.dshmobile.core.wire.WireJson.parseToJsonElement(raw) as? kotlinx.serialization.json.JsonObject)?.size
+}.getOrNull()
+
+/**
+ * Whether a call's recorded arguments say anything: not blank, and not an object with no fields
+ * (`{}`, `{ }`), which is how a tool that takes nothing (`list_agents`) is called. Such a call gets
+ * no arguments row and no empty box.
+ */
+internal fun hasArguments(raw: String?): Boolean {
+    if (raw.isNullOrBlank()) return false
+    val trimmed = raw.trim()
+    if (trimmed == "{}") return false
+    return topLevelFieldCount(trimmed) != 0
 }
 
 /** Tiny deterministic JSON pretty-printer (2-space indent, strings/escapes preserved). */

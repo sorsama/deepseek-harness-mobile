@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_tool_title_todo">قائمة المهام</string>
+    <string name="chat_tool_title_ask">سؤال</string>
+    <string name="chat_tool_title_subagent">وكيل فرعي</string>
+    <string name="chat_tool_title_skill">مهارة</string>
+    <string name="chat_tool_title_read_image">قراءة صورة</string>
+    <string name="chat_tool_title_job_output">مخرجات المهمة</string>
+    <string name="chat_tool_title_job_kill">إيقاف المهمة</string>
+    <string name="chat_tool_title_terminal_open">فتح طرفية</string>
+    <string name="chat_tool_title_terminal_read">قراءة الطرفية</string>
+    <string name="chat_tool_title_terminal_list">الطرفيات</string>
+    <string name="chat_tool_title_terminal_signal">إرسال إشارة إلى الطرفية</string>
+    <string name="chat_tool_title_terminal_close">إغلاق الطرفية</string>
+    <string name="chat_tool_title_terminal_send">إرسال إلى الطرفية</string>
+    <string name="chat_tool_title_lsp">بحث في الكود</string>
+    <string name="chat_tool_title_goal_create">تحديد هدف</string>
+    <string name="chat_tool_title_goal_view">عرض الهدف</string>
+    <string name="chat_tool_title_goal_update">تحديث الهدف</string>
+    <string name="chat_tool_title_schedule_create">تذكير جديد</string>
+    <string name="chat_tool_title_schedule_list">التذكيرات</string>
+    <string name="chat_tool_title_schedule_update">تعديل التذكير</string>
+    <string name="chat_tool_title_schedule_delete">حذف التذكير</string>
+    <string name="chat_tool_title_present">مشاركة ملفات</string>
+
+    <string name="chat_tool_todo_progress">أُنجز %1$d من %2$d</string>
+    <plurals name="chat_tool_todo_added">
+        <item quantity="zero">أُضيف %d</item>
+        <item quantity="one">أُضيفت %d</item>
+        <item quantity="two">أُضيفت %d</item>
+        <item quantity="few">أُضيفت %d</item>
+        <item quantity="many">أُضيفت %d</item>
+        <item quantity="other">أُضيفت %d</item>
+    </plurals>
+    <plurals name="chat_tool_todo_changed">
+        <item quantity="zero">تغيّر %d</item>
+        <item quantity="one">تغيّرت %d</item>
+        <item quantity="two">تغيّرت %d</item>
+        <item quantity="few">تغيّرت %d</item>
+        <item quantity="many">تغيّرت %d</item>
+        <item quantity="other">تغيّرت %d</item>
+    </plurals>
+    <plurals name="chat_tool_todo_removed">
+        <item quantity="zero">أُزيل %d</item>
+        <item quantity="one">أُزيلت %d</item>
+        <item quantity="two">أُزيلت %d</item>
+        <item quantity="few">أُزيلت %d</item>
+        <item quantity="many">أُزيلت %d</item>
+        <item quantity="other">أُزيلت %d</item>
+    </plurals>
+    <string name="chat_tool_todo_no_changes">لا تغييرات</string>
+    <string name="chat_tool_todo_not_saved">لم تُحفظ. هذه هي القائمة التي حاول كتابتها.</string>
+    <string name="chat_tool_todo_pending">لم تبدأ</string>
+    <string name="chat_tool_todo_in_progress">قيد التنفيذ</string>
+    <string name="chat_tool_todo_done">منجزة</string>
+    <string name="chat_tool_todo_change_added">جديدة</string>
+    <string name="chat_tool_todo_change_moved">تغيّر ترتيبها</string>
+    <string name="chat_tool_todo_change_removed">أُزيلت</string>
+    <string name="chat_tool_todo_change_was">كانت: %1$s</string>
+
+    <string name="chat_tool_ask_waiting">بانتظار إجابتك</string>
+    <string name="chat_tool_ask_answered">أُجيب عن %1$d من %2$d</string>
+    <string name="chat_tool_ask_cancelled">أغلقتَ هذه الأسئلة</string>
+    <string name="chat_tool_ask_interrupted">توقّف قبل أن تجيب</string>
+    <string name="chat_tool_ask_timed_out">انتهت المهلة دون إجابة</string>
+    <string name="chat_tool_ask_carried_on">تابع الوكيل دون أن ينتظر</string>
+    <string name="chat_tool_ask_closed">مغلق</string>
+    <string name="chat_tool_ask_your_answer">إجابتك: %1$s</string>
+    <string name="chat_tool_ask_not_answered">بلا إجابة</string>
+
+    <string name="chat_tool_subagent_starting">قيد البدء</string>
+    <string name="chat_tool_subagent_started">بدأ</string>
+    <string name="chat_tool_subagent_working">يعمل</string>
+    <string name="chat_tool_subagent_finished">انتهى</string>
+    <string name="chat_tool_subagent_failed">لم يبدأ</string>
+    <string name="chat_tool_subagent_replied">ردّ</string>
+    <string name="chat_tool_subagent_model">النموذج: %1$s</string>
+    <string name="chat_tool_subagent_model_label">النموذج:</string>
+    <string name="chat_tool_subagent_open">فتح الوكيل الفرعي</string>
+    <string name="chat_tool_subagent_conversation">هذه محادثة وكيل فرعي</string>
+
+    <string name="chat_tool_skill_loading">جارٍ التحميل</string>
+    <string name="chat_tool_skill_loaded">حُمّلت</string>
+    <string name="chat_tool_skill_not_loaded">لم تُحمّل</string>
+    <string name="chat_tool_image_none">لم تصل أي صورة</string>
+
+    <string name="chat_tool_background">يعمل في الخلفية</string>
+    <string name="chat_tool_background_starting">يبدأ في الخلفية</string>
+    <string name="chat_tool_open_job">فتح المهمة</string>
+
+    <string name="chat_tool_state_exited">انتهى</string>
+    <string name="chat_tool_state_started">بدأ</string>
+    <string name="chat_tool_state_stop_requested">طُلب الإيقاف</string>
+    <string name="chat_tool_state_already_finished">كان قد انتهى</string>
+    <string name="chat_tool_state_signal_sent">أُرسلت الإشارة</string>
+    <string name="chat_tool_state_closed">مغلقة</string>
+    <string name="chat_tool_state_closing">قيد الإغلاق</string>
+    <string name="chat_tool_state_scheduled">مُجدول</string>
+    <string name="chat_tool_state_overdue">متأخر</string>
+    <string name="chat_tool_state_deleted">محذوف</string>
+    <string name="chat_tool_state_goal_waiting">بانتظار المتابعة</string>
+    <string name="chat_tool_state_goal_cleared">أُزيل</string>
+
+    <string name="chat_tool_field_type">النوع</string>
+    <string name="chat_tool_field_pid">معرّف العملية</string>
+    <string name="chat_tool_field_exit_code">رمز الخروج</string>
+    <string name="chat_tool_field_signal">الإشارة</string>
+    <string name="chat_tool_field_process_group">مجموعة العمليات</string>
+    <string name="chat_tool_field_lines">الأسطر</string>
+    <string name="chat_tool_field_rounds">الجولات</string>
+    <string name="chat_tool_field_reason">السبب</string>
+    <string name="chat_tool_field_when">الموعد</string>
+    <string name="chat_tool_field_repeats">التكرار</string>
+    <string name="chat_tool_field_location">السطر</string>
+    <string name="chat_tool_field_kind">الصنف</string>
+    <string name="chat_tool_field_value">%1$s: %2$s</string>
+
+    <plurals name="chat_tool_jobs_count">
+        <item quantity="zero">%d مهمة خلفية</item>
+        <item quantity="one">مهمة خلفية واحدة</item>
+        <item quantity="two">مهمتان خلفيتان</item>
+        <item quantity="few">%d مهام خلفية</item>
+        <item quantity="many">%d مهمة خلفية</item>
+        <item quantity="other">%d مهمة خلفية</item>
+    </plurals>
+    <plurals name="chat_tool_terminals_count">
+        <item quantity="zero">%d طرفية</item>
+        <item quantity="one">طرفية واحدة</item>
+        <item quantity="two">طرفيتان</item>
+        <item quantity="few">%d طرفيات</item>
+        <item quantity="many">%d طرفية</item>
+        <item quantity="other">%d طرفية</item>
+    </plurals>
+    <plurals name="chat_tool_places_count">
+        <item quantity="zero">%d نتيجة</item>
+        <item quantity="one">نتيجة واحدة</item>
+        <item quantity="two">نتيجتان</item>
+        <item quantity="few">%d نتائج</item>
+        <item quantity="many">%d نتيجة</item>
+        <item quantity="other">%d نتيجة</item>
+    </plurals>
+    <plurals name="chat_tool_reminders_count">
+        <item quantity="zero">%d تذكير</item>
+        <item quantity="one">تذكير واحد</item>
+        <item quantity="two">تذكيران</item>
+        <item quantity="few">%d تذكيرات</item>
+        <item quantity="many">%d تذكيرًا</item>
+        <item quantity="other">%d تذكير</item>
+    </plurals>
+    <plurals name="chat_tool_files_count">
+        <item quantity="zero">%d ملف</item>
+        <item quantity="one">%d ملف</item>
+        <item quantity="two">%d ملفان</item>
+        <item quantity="few">%d ملفات</item>
+        <item quantity="many">%d ملفًا</item>
+        <item quantity="other">%d ملف</item>
+    </plurals>
+    <string name="chat_tool_jobs_none">لا توجد مهام خلفية</string>
+    <string name="chat_tool_terminals_none">لا توجد طرفيات مفتوحة</string>
+    <string name="chat_tool_places_none">لم يُعثر على شيء</string>
+    <string name="chat_tool_reminders_none">لا توجد تذكيرات</string>
+    <string name="chat_tool_goal_none">لا يوجد هدف</string>
+    <string name="chat_tool_output_cut">قُطعت المخرجات.</string>
+
+    <string name="chat_tool_repeat_once">مرة واحدة</string>
+    <string name="chat_tool_repeat_every_second">كل ثانية</string>
+    <string name="chat_tool_repeat_every_minute">كل دقيقة</string>
+    <string name="chat_tool_repeat_every_hour">كل ساعة</string>
+    <string name="chat_tool_repeat_every_day">كل يوم</string>
+    <plurals name="chat_tool_repeat_seconds">
+        <item quantity="zero">كل %d ثانية</item>
+        <item quantity="one">كل %d ثانية</item>
+        <item quantity="two">كل %d ثانية</item>
+        <item quantity="few">كل %d ثوانٍ</item>
+        <item quantity="many">كل %d ثانية</item>
+        <item quantity="other">كل %d ثانية</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_minutes">
+        <item quantity="zero">كل %d دقيقة</item>
+        <item quantity="one">كل %d دقيقة</item>
+        <item quantity="two">كل %d دقيقة</item>
+        <item quantity="few">كل %d دقائق</item>
+        <item quantity="many">كل %d دقيقة</item>
+        <item quantity="other">كل %d دقيقة</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_hours">
+        <item quantity="zero">كل %d ساعة</item>
+        <item quantity="one">كل %d ساعة</item>
+        <item quantity="two">كل %d ساعة</item>
+        <item quantity="few">كل %d ساعات</item>
+        <item quantity="many">كل %d ساعة</item>
+        <item quantity="other">كل %d ساعة</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_days">
+        <item quantity="zero">كل %d يوم</item>
+        <item quantity="one">كل %d يوم</item>
+        <item quantity="two">كل %d يوم</item>
+        <item quantity="few">كل %d أيام</item>
+        <item quantity="many">كل %d يومًا</item>
+        <item quantity="other">كل %d يوم</item>
+    </plurals>
+    <string name="chat_tool_repeat_daily">كل يوم الساعة %1$s (%2$s)</string>
+    <string name="chat_tool_repeat_weekly">%1$s الساعة %2$s (%3$s)</string>
+    <string name="chat_tool_repeat_cron">بجدول مخصص: %1$s (%2$s)</string>
+
+    <string name="chat_tool_arguments">الوسائط</string>
+    <plurals name="chat_tool_arguments_count">
+        <item quantity="zero">%d حقل</item>
+        <item quantity="one">حقل واحد</item>
+        <item quantity="two">حقلان</item>
+        <item quantity="few">%d حقول</item>
+        <item quantity="many">%d حقلًا</item>
+        <item quantity="other">%d حقل</item>
+    </plurals>
+    <string name="chat_tool_raw_title">بيانات الاستدعاء الخام</string>
+
+    <string name="chat_tool_failed_label">فشل:</string>
+    <string name="chat_tool_failed">فشلت هذه الخطوة.</string>
+    <string name="chat_tool_stopped">توقّف قبل أن ينتهي.</string>
+    <string name="chat_tool_auto_review_denied">منعت المراجعة التلقائية هذه الخطوة، لذا لم تُنفَّذ.</string>
+    <string name="chat_tool_reason_label">السبب:</string>
+
+    <string name="chat_turn_failed_rate_limit">مزوّد النموذج مشغول الآن. حاول مجددًا بعد قليل.</string>
+    <string name="chat_turn_failed_quota">نفد رصيد حساب مزوّد النموذج.</string>
+    <string name="chat_turn_failed_account_quota">نفدت الرموز في حسابك على DeepSeek.</string>
+    <string name="chat_turn_failed_context">هذه المحادثة أطول مما يحتمله النموذج. اضغطها أو ابدأ محادثة جديدة.</string>
+    <string name="chat_turn_failed_empty">أعاد النموذج ردًا فارغًا.</string>
+    <string name="chat_turn_failed_bad_key">رُفض مفتاح API. تحقّق منه في النماذج.</string>
+    <string name="chat_turn_failed_missing_key">لا يوجد مفتاح API لهذا النموذج بعد. أضِف واحدًا في النماذج.</string>
+    <string name="chat_turn_failed_network">تعذّر الوصول إلى مزوّد النموذج.</string>
+    <string name="chat_turn_failed_timeout">استغرق النموذج وقتًا طويلًا ليجيب.</string>
+    <string name="chat_turn_failed_server">واجه مزوّد النموذج مشكلة من جهته.</string>
+    <string name="chat_turn_failed_process">توقّف الـ harness قبل أن تنتهي هذه الجولة.</string>
+    <string name="chat_turn_failed_signed_out">توقّف لأنك سجّلت الخروج من DeepSeek.</string>
+    <string name="chat_turn_failed_unknown">حدث خطأ ما في هذه الجولة.</string>
+    <string name="chat_turn_error_code_label">الرمز:</string>
+</resources>

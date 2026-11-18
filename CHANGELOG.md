@@ -48,15 +48,6 @@ All notable changes to DSH Mobile are documented here. Format based on
   why) stays on the page, under "Not signed in", until you start the next one, and a sign-in link the
   app will not open offers **Try again**, which starts a fresh sign-in.
 
-### Fixed
-
-- **A harness reached on this phone's own address is found again after the app is closed.** Typing or
-  pasting `127.0.0.1` or `localhost` into Local network remembers the harness under **This phone**,
-  but the screen stayed on Local network, so after the app's process ended (the browser trip of a
-  sign-in is a good time for Android to do that) it opened on an empty Recent list and asked for the
-  link and token again. The screen now moves to **This phone** when you connect that way, and opens
-  there next time.
-
 ### Changed
 
 - **The Plugins page is a short list, and each bundle opens on its own page.** A bundle with a
@@ -74,7 +65,26 @@ All notable changes to DSH Mobile are documented here. Format based on
   modules that share a name show the id that tells them apart. Names no longer start with
   `@deepseek-ai/dsh-`, so the part that tells them apart is the part you can read. (#122)
 
+- **Every common tool call reads as what it did, not as JSON.** The task list, questions, subagents,
+  skills, image reads, background jobs, terminals, code lookups, goals, reminders and shared files
+  each have a row of their own: the task list says "3 of 7 done" and what changed, a question shows
+  your answer beside it, and a subagent row says what it is working on and opens it in the Subagents
+  sheet. A command run in the background shows the command and where it runs, with **Open job**
+  instead of the raw job id. A failed call keeps its own card (the command it ran, the edit it tried)
+  with one plain line saying why, including Auto review refusals and turn errors such as a busy
+  provider or a chat too long for the model. A command that only exited non-zero still shows its
+  output with its exit code. The raw metadata under each card and **Show raw JSON** beside each
+  output have moved to the call's hold menu, and a tool with no view of its own gets a readable
+  title with its arguments folded away. PowerShell rows say PowerShell.
+
 ### Fixed
+
+- **A harness reached on this phone's own address is found again after the app is closed.** Typing or
+  pasting `127.0.0.1` or `localhost` into Local network remembers the harness under **This phone**,
+  but the screen stayed on Local network, so after the app's process ended (the browser trip of a
+  sign-in is a good time for Android to do that) it opened on an empty Recent list and asked for the
+  link and token again. The screen now moves to **This phone** when you connect that way, and opens
+  there next time.
 
 - **Rows, cards and list items show that they are pressed again.** Holding a tool row in the chat,
   a Settings row, an accent colour, a Trajectory row or a link on the Browser start page changed

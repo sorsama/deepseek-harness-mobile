@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_tool_title_todo">รายการงาน</string>
+    <string name="chat_tool_title_ask">คำถาม</string>
+    <string name="chat_tool_title_subagent">ซับเอเจนต์</string>
+    <string name="chat_tool_title_skill">สกิล</string>
+    <string name="chat_tool_title_read_image">อ่านรูปภาพ</string>
+    <string name="chat_tool_title_job_output">ผลลัพธ์ของงาน</string>
+    <string name="chat_tool_title_job_kill">หยุดงาน</string>
+    <string name="chat_tool_title_terminal_open">เปิดเทอร์มินัล</string>
+    <string name="chat_tool_title_terminal_read">อ่านเทอร์มินัล</string>
+    <string name="chat_tool_title_terminal_list">เทอร์มินัล</string>
+    <string name="chat_tool_title_terminal_signal">ส่งสัญญาณไปยังเทอร์มินัล</string>
+    <string name="chat_tool_title_terminal_close">ปิดเทอร์มินัล</string>
+    <string name="chat_tool_title_terminal_send">ส่งไปยังเทอร์มินัล</string>
+    <string name="chat_tool_title_lsp">ค้นในโค้ด</string>
+    <string name="chat_tool_title_goal_create">ตั้งเป้าหมาย</string>
+    <string name="chat_tool_title_goal_view">ดูเป้าหมาย</string>
+    <string name="chat_tool_title_goal_update">อัปเดตเป้าหมาย</string>
+    <string name="chat_tool_title_schedule_create">การแจ้งเตือนใหม่</string>
+    <string name="chat_tool_title_schedule_list">การแจ้งเตือน</string>
+    <string name="chat_tool_title_schedule_update">แก้ไขการแจ้งเตือน</string>
+    <string name="chat_tool_title_schedule_delete">ลบการแจ้งเตือน</string>
+    <string name="chat_tool_title_present">แชร์ไฟล์</string>
+
+    <string name="chat_tool_todo_progress">เสร็จ %1$d จาก %2$d</string>
+    <plurals name="chat_tool_todo_added">
+        <item quantity="other">เพิ่ม %d</item>
+    </plurals>
+    <plurals name="chat_tool_todo_changed">
+        <item quantity="other">เปลี่ยน %d</item>
+    </plurals>
+    <plurals name="chat_tool_todo_removed">
+        <item quantity="other">นำออก %d</item>
+    </plurals>
+    <string name="chat_tool_todo_no_changes">ไม่มีการเปลี่ยนแปลง</string>
+    <string name="chat_tool_todo_not_saved">ไม่ได้บันทึก นี่คือรายการที่พยายามเขียน</string>
+    <string name="chat_tool_todo_pending">ยังไม่เริ่ม</string>
+    <string name="chat_tool_todo_in_progress">กำลังทำ</string>
+    <string name="chat_tool_todo_done">เสร็จแล้ว</string>
+    <string name="chat_tool_todo_change_added">เพิ่มใหม่</string>
+    <string name="chat_tool_todo_change_moved">ย้ายลำดับ</string>
+    <string name="chat_tool_todo_change_removed">นำออกแล้ว</string>
+    <string name="chat_tool_todo_change_was">เดิม: %1$s</string>
+
+    <string name="chat_tool_ask_waiting">รอคำตอบของคุณ</string>
+    <string name="chat_tool_ask_answered">ตอบแล้ว %1$d จาก %2$d</string>
+    <string name="chat_tool_ask_cancelled">คุณปิดคำถามเหล่านี้แล้ว</string>
+    <string name="chat_tool_ask_interrupted">หยุดก่อนที่คุณจะตอบ</string>
+    <string name="chat_tool_ask_timed_out">ไม่มีคำตอบภายในเวลา</string>
+    <string name="chat_tool_ask_carried_on">เอเจนต์ทำต่อโดยไม่รอ</string>
+    <string name="chat_tool_ask_closed">ปิดแล้ว</string>
+    <string name="chat_tool_ask_your_answer">คำตอบของคุณ: %1$s</string>
+    <string name="chat_tool_ask_not_answered">ไม่ได้ตอบ</string>
+
+    <string name="chat_tool_subagent_starting">กำลังเริ่ม</string>
+    <string name="chat_tool_subagent_started">เริ่มแล้ว</string>
+    <string name="chat_tool_subagent_working">กำลังทำงาน</string>
+    <string name="chat_tool_subagent_finished">เสร็จแล้ว</string>
+    <string name="chat_tool_subagent_failed">เริ่มไม่ได้</string>
+    <string name="chat_tool_subagent_replied">ตอบกลับแล้ว</string>
+    <string name="chat_tool_subagent_model">โมเดล: %1$s</string>
+    <string name="chat_tool_subagent_model_label">โมเดล:</string>
+    <string name="chat_tool_subagent_open">เปิดซับเอเจนต์</string>
+    <string name="chat_tool_subagent_conversation">นี่คือบทสนทนาของซับเอเจนต์</string>
+
+    <string name="chat_tool_skill_loading">กำลังโหลด</string>
+    <string name="chat_tool_skill_loaded">โหลดแล้ว</string>
+    <string name="chat_tool_skill_not_loaded">ไม่ได้โหลด</string>
+    <string name="chat_tool_image_none">ไม่มีรูปภาพส่งกลับมา</string>
+
+    <string name="chat_tool_background">ทำงานอยู่เบื้องหลัง</string>
+    <string name="chat_tool_background_starting">กำลังเริ่มในเบื้องหลัง</string>
+    <string name="chat_tool_open_job">เปิดงาน</string>
+
+    <string name="chat_tool_state_exited">จบแล้ว</string>
+    <string name="chat_tool_state_started">เริ่มแล้ว</string>
+    <string name="chat_tool_state_stop_requested">ขอให้หยุดแล้ว</string>
+    <string name="chat_tool_state_already_finished">จบไปก่อนแล้ว</string>
+    <string name="chat_tool_state_signal_sent">ส่งสัญญาณแล้ว</string>
+    <string name="chat_tool_state_closed">ปิดแล้ว</string>
+    <string name="chat_tool_state_closing">กำลังปิด</string>
+    <string name="chat_tool_state_scheduled">ตั้งเวลาไว้</string>
+    <string name="chat_tool_state_overdue">เลยเวลาแล้ว</string>
+    <string name="chat_tool_state_deleted">ลบแล้ว</string>
+    <string name="chat_tool_state_goal_waiting">รอทำต่อ</string>
+    <string name="chat_tool_state_goal_cleared">ล้างแล้ว</string>
+
+    <string name="chat_tool_field_type">ประเภท</string>
+    <string name="chat_tool_field_pid">รหัสโปรเซส</string>
+    <string name="chat_tool_field_exit_code">รหัสออก</string>
+    <string name="chat_tool_field_signal">สัญญาณ</string>
+    <string name="chat_tool_field_process_group">กลุ่มโปรเซส</string>
+    <string name="chat_tool_field_lines">บรรทัด</string>
+    <string name="chat_tool_field_rounds">รอบ</string>
+    <string name="chat_tool_field_reason">เหตุผล</string>
+    <string name="chat_tool_field_when">เมื่อไร</string>
+    <string name="chat_tool_field_repeats">ทำซ้ำ</string>
+    <string name="chat_tool_field_location">บรรทัดที่</string>
+    <string name="chat_tool_field_kind">ชนิด</string>
+    <string name="chat_tool_field_value">%1$s: %2$s</string>
+
+    <plurals name="chat_tool_jobs_count">
+        <item quantity="other">งานเบื้องหลัง %d งาน</item>
+    </plurals>
+    <plurals name="chat_tool_terminals_count">
+        <item quantity="other">เทอร์มินัล %d ตัว</item>
+    </plurals>
+    <plurals name="chat_tool_places_count">
+        <item quantity="other">%d ผลลัพธ์</item>
+    </plurals>
+    <plurals name="chat_tool_reminders_count">
+        <item quantity="other">การแจ้งเตือน %d รายการ</item>
+    </plurals>
+    <plurals name="chat_tool_files_count">
+        <item quantity="other">%d ไฟล์</item>
+    </plurals>
+    <string name="chat_tool_jobs_none">ไม่มีงานเบื้องหลัง</string>
+    <string name="chat_tool_terminals_none">ไม่มีเทอร์มินัลที่เปิดอยู่</string>
+    <string name="chat_tool_places_none">ไม่พบอะไรเลย</string>
+    <string name="chat_tool_reminders_none">ไม่มีการแจ้งเตือน</string>
+    <string name="chat_tool_goal_none">ยังไม่ได้ตั้งเป้าหมาย</string>
+    <string name="chat_tool_output_cut">ผลลัพธ์ถูกตัดให้สั้นลง</string>
+
+    <string name="chat_tool_repeat_once">ครั้งเดียว</string>
+    <string name="chat_tool_repeat_every_second">ทุกวินาที</string>
+    <string name="chat_tool_repeat_every_minute">ทุกนาที</string>
+    <string name="chat_tool_repeat_every_hour">ทุกชั่วโมง</string>
+    <string name="chat_tool_repeat_every_day">ทุกวัน</string>
+    <plurals name="chat_tool_repeat_seconds">
+        <item quantity="other">ทุก %d วินาที</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_minutes">
+        <item quantity="other">ทุก %d นาที</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_hours">
+        <item quantity="other">ทุก %d ชั่วโมง</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_days">
+        <item quantity="other">ทุก %d วัน</item>
+    </plurals>
+    <string name="chat_tool_repeat_daily">ทุกวันเวลา %1$s (%2$s)</string>
+    <string name="chat_tool_repeat_weekly">%1$s เวลา %2$s (%3$s)</string>
+    <string name="chat_tool_repeat_cron">ตามกำหนดการเอง: %1$s (%2$s)</string>
+
+    <string name="chat_tool_arguments">อาร์กิวเมนต์</string>
+    <plurals name="chat_tool_arguments_count">
+        <item quantity="other">%d ฟิลด์</item>
+    </plurals>
+    <string name="chat_tool_raw_title">ข้อมูลดิบของการเรียก</string>
+
+    <string name="chat_tool_failed_label">ล้มเหลว:</string>
+    <string name="chat_tool_failed">ขั้นตอนนี้ล้มเหลว</string>
+    <string name="chat_tool_stopped">หยุดก่อนที่จะเสร็จ</string>
+    <string name="chat_tool_auto_review_denied">การตรวจอัตโนมัติบล็อกขั้นตอนนี้ไว้ จึงไม่ได้รัน</string>
+    <string name="chat_tool_reason_label">เหตุผล:</string>
+
+    <string name="chat_turn_failed_rate_limit">ผู้ให้บริการโมเดลไม่ว่างในตอนนี้ ลองใหม่อีกครั้งในอีกสักครู่</string>
+    <string name="chat_turn_failed_quota">บัญชีผู้ให้บริการโมเดลเครดิตหมดแล้ว</string>
+    <string name="chat_turn_failed_account_quota">โทเค็นในบัญชี DeepSeek ของคุณหมดแล้ว</string>
+    <string name="chat_turn_failed_context">แชตนี้ยาวเกินไปสำหรับโมเดล บีบอัดแชตหรือเริ่มแชตใหม่</string>
+    <string name="chat_turn_failed_empty">โมเดลส่งคำตอบว่างกลับมา</string>
+    <string name="chat_turn_failed_bad_key">คีย์ API ถูกปฏิเสธ ตรวจสอบได้ในโมเดล</string>
+    <string name="chat_turn_failed_missing_key">โมเดลนี้ยังไม่มีคีย์ API เพิ่มได้ในโมเดล</string>
+    <string name="chat_turn_failed_network">ติดต่อผู้ให้บริการโมเดลไม่ได้</string>
+    <string name="chat_turn_failed_timeout">โมเดลใช้เวลาตอบนานเกินไป</string>
+    <string name="chat_turn_failed_server">ฝั่งผู้ให้บริการโมเดลมีปัญหา</string>
+    <string name="chat_turn_failed_process">harness หยุดก่อนที่เทิร์นนี้จะจบ</string>
+    <string name="chat_turn_failed_signed_out">หยุดแล้วเพราะคุณออกจากระบบ DeepSeek</string>
+    <string name="chat_turn_failed_unknown">เกิดข้อผิดพลาดบางอย่างในเทิร์นนี้</string>
+    <string name="chat_turn_error_code_label">รหัส:</string>
+</resources>

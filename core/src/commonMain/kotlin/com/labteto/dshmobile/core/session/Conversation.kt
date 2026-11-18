@@ -36,7 +36,16 @@ sealed interface ChatNode {
 
 data class TurnStartNode(override val seq: Long, val turn: Int) : ChatNode
 /** [failureCode] is the `error.code` of a turn that ended in an `error`, such as `QUOTA` or `RATE_LIMIT`. */
-data class TurnEndNode(override val seq: Long, val turn: Int, val reasonKind: String, val reasonDetail: JsonElement? = null, val failureCode: String? = null) : ChatNode
+data class TurnEndNode(
+    override val seq: Long,
+    val turn: Int,
+    val reasonKind: String,
+    val reasonDetail: JsonElement? = null,
+    /** `reason.error.code` of a failed turn (`RATE_LIMIT`, `QUOTA`, ...); null otherwise. */
+    val failureCode: String? = null,
+    /** `reason.error.message` of a failed turn: the provider's own words, kept for diagnostics. */
+    val failureMessage: String? = null,
+) : ChatNode
 
 data class UserMessageNode(
     override val seq: Long,
@@ -126,6 +135,11 @@ data class ToolResultNode(
      * or the built-in runtime's `DshMobilePermissionDenied`; null when the harness gave none.
      */
     val errorName: String? = null,
+    /**
+     * The free-text `reason` beside [errorCode] (`tool/result`'s `error.reason`), which Auto review
+     * records when it refuses a call (`AUTO_REVIEW_DENIED`); null when the harness gave none.
+     */
+    val errorReason: String? = null,
 ) : ChatNode
 
 /**

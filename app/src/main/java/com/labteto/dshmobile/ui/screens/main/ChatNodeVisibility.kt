@@ -68,11 +68,26 @@ internal fun renderableChatNodes(nodes: List<ChatNode>, running: Boolean): List<
     // A reader's command draws one system line from its `command/run`; the `command/done` that
     // settles it is told inside that line, so it must not draw a second row.
     val folded = foldedCommandDones(nodes)
+    val stopped = turnsStoppedByTurnEnd(nodes)
     return nodes.filter { node ->
         node.seq !in cut && node.seq !in folded &&
-            ((node is UserMessageNode && node.isRewindMarker) || node.rendersContent(running, knownToolCallIds))
+            ((node is UserMessageNode && node.isRewindMarker) || node.rendersContent(running, knownToolCallIds, stopped))
     }
 }
+
+/**
+ * The turns whose own `turn/end` (`aborted` or `interrupted`) draws the "Stopped" pill.
+ *
+ * The fold also marks the turn's last assistant message as cut short, and that message used to draw
+ * a "Stopped" pill of its own, so one stopped turn showed the pill twice: above its tool calls and
+ * again below them. The turn's end says it once, where the turn stopped.
+ */
+internal fun turnsStoppedByTurnEnd(nodes: List<ChatNode>): Set<Int> =
+    nodes.filterIsInstance<TurnEndNode>().filter { it.reasonKind == "aborted" || it.reasonKind == "interrupted" }
+        .mapTo(HashSet()) { it.turn }
+
+/** Whether a cut-short assistant message draws its own "Stopped" pill, given [turnsStoppedByTurnEnd]. */
+internal fun AssistantMessageNode.showsStoppedPill(stoppedTurns: Set<Int>): Boolean = interrupted && turn !in stoppedTurns
 
 /** The `(empty message)` row `dsh-rewind` appends to mark where the conversation was cut back to. */
 internal val UserMessageNode.isRewindMarker: Boolean get() = sourceKind == REWIND_SOURCE_KIND
@@ -80,6 +95,7 @@ internal val UserMessageNode.isRewindMarker: Boolean get() = sourceKind == REWIN
 internal fun ChatNode.rendersContent(
     running: Boolean = false,
     knownToolCallIds: Set<String> = emptySet(),
+    stoppedTurns: Set<Int> = emptySet(),
 ): Boolean = when (this) {
     // Structure, not content.
     is TurnStartNode -> false
@@ -93,7 +109,7 @@ internal fun ChatNode.rendersContent(
 
     // Content that can still fold to nothing.
     is UserMessageNode -> blocks.any { it.kind == "image" } || displayText().isNotBlank()
-    is AssistantMessageNode -> interrupted || blocks.any { block ->
+    is AssistantMessageNode -> showsStoppedPill(stoppedTurns) || blocks.any { block ->
         when (block.kind) {
             // Before the durable call arrives, the provisional block is the argument preview.
             "tool-call" -> showsToolPreview(block, running, knownToolCallIds)

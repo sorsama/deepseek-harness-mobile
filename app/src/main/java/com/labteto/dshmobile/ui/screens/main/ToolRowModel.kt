@@ -62,7 +62,8 @@ private val SUMMARY_KEYS: Map<ToolRowVariant, List<String>> = mapOf(
     ToolRowVariant.Write to listOf("path", "file_path"),
     ToolRowVariant.Edit to listOf("path", "file_path"),
     ToolRowVariant.Code to listOf("description"),
-    ToolRowVariant.Other to emptyList(),
+    // Any other tool: the first argument that reads as a subject. The title already names the tool.
+    ToolRowVariant.Other to listOf("description", "title", "name", "objective", "file_path", "path", "url", "query", "prompt"),
 )
 
 private val LENIENT_JSON = Json { ignoreUnknownKeys = true; isLenient = true }
@@ -117,21 +118,27 @@ internal fun toolRowModel(
         .orEmpty()
         .firstNotNullOfOrNull { key -> displayArguments?.get(key).asSummary()?.takeIf { it.isNotBlank() } }
     val relative = derived?.let { relativizeToCwd(it, cwd) }
-    // An unclassified tool with no presenter title would otherwise render as a bare "Tool call"
-    // with nothing identifying it, so its raw name carries the summary instead.
-    val needsToolName = variant == ToolRowVariant.Other && viewTitle == null && toolName.isNotBlank()
-    val summary = when {
-        relative == null -> if (needsToolName) toolName else null
-        needsToolName -> "$toolName · $relative"
-        else -> relative
+    // An unclassified tool with no presenter title used to read "Tool call · list_subagent_models":
+    // the tool's code name, which says little to anyone who is not reading the harness's source. Its
+    // name in words is the title instead, and the summary is free for what it acted on.
+    val unnamed = variant == ToolRowVariant.Other && viewTitle == null && toolName.isNotBlank()
+    val title = when {
+        !viewTitle.isNullOrBlank() -> viewTitle
+        unnamed -> humanizeIdentifier(toolName)
+        // The harness's PowerShell tool is not bash, and the row should not say it is.
+        toolName.equals("pwsh", ignoreCase = true) -> POWERSHELL_TITLE
+        else -> variant.title
     }
     return ToolRowModel(
         variant = variant,
-        title = viewTitle?.takeIf { it.isNotBlank() } ?: variant.title,
-        summary = summary?.let(::rowSummaryText),
+        title = title,
+        summary = relative?.let(::rowSummaryText),
         filePath = filePathOf(variant, arguments),
     )
 }
+
+/** The PowerShell tool's row title: a product name, the same in every language. */
+internal const val POWERSHELL_TITLE = "PowerShell"
 
 /**
  * Strip the session's working directory from a path so rows read `app\build.gradle.kts` rather than

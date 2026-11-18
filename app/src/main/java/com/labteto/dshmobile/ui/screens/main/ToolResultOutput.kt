@@ -28,9 +28,10 @@ import kotlinx.serialization.json.JsonElement
  * What a tool call returned, as text.
  *
  * The result body is protocol (`[{ "type": "text", "text": "..." }]`, sometimes wrapped again), and
- * the useful part is the text inside it. This shows that text, with Copy copying it; the original
- * JSON is one explicit tap away ("Show raw JSON") and has its own copy. A result that is not text at
- * all (a real object) is shown pretty-printed, so nothing it says is hidden.
+ * the useful part is the text inside it. This shows that text, with Copy copying it. The original
+ * JSON is for whoever is debugging, so it lives in the call's hold menu ("Show raw JSON") rather than
+ * beside every output. A result that is not text at all (a real object) is shown pretty-printed, so
+ * nothing it says is hidden.
  *
  * The unwrapping itself lives in core ([readToolResult]) so it is tested without a device.
  *
@@ -47,17 +48,14 @@ internal fun ToolResultOutput(
     onShowAll: () -> Unit = {},
 ) {
     val reading = remember(content) { readToolResult(content) } ?: return
-    var showRaw by remember(content) { mutableStateOf(false) }
     val copy = rememberCopier()
-    val raw = reading.rawJson
     val hasText = reading.text.isNotBlank()
-    if (!hasText && raw == null) return
-    val full = if (showRaw && raw != null) raw else reading.text
+    if (!hasText) return
+    val full = reading.text
     val shown = if (clip) clipPreview(full) else full
     val clipped = clip && shown.length != full.length
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {
-        // Wraps rather than clips: "Copy raw JSON" and "Hide raw JSON" side by side are wider than a
-        // phone in several of the app's languages.
+        // Wraps rather than clips, for a long label in some of the app's languages.
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
@@ -72,13 +70,7 @@ internal fun ToolResultOutput(
                     modifier = Modifier.padding(top = 2.dp, end = DsSpacing.tiny),
                 )
             }
-            if (showRaw && raw != null) {
-                JsonAction(stringResource(R.string.tool_output_hide_raw)) { showRaw = false }
-                JsonAction(stringResource(R.string.tool_output_copy_raw)) { copy(raw) }
-            } else {
-                if (hasText) JsonAction(stringResource(R.string.common_copy)) { copy(reading.text) }
-                if (raw != null) JsonAction(stringResource(R.string.tool_output_show_raw)) { showRaw = true }
-            }
+            JsonAction(stringResource(R.string.common_copy)) { copy(reading.text) }
         }
         if (shown.isNotBlank()) JsonCode(shown)
         if (clipped) ClippedNote(onShowAll)

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_tool_title_todo">Список задач</string>
+    <string name="chat_tool_title_ask">Вопрос</string>
+    <string name="chat_tool_title_subagent">Субагент</string>
+    <string name="chat_tool_title_skill">Навык</string>
+    <string name="chat_tool_title_read_image">Чтение изображения</string>
+    <string name="chat_tool_title_job_output">Вывод задачи</string>
+    <string name="chat_tool_title_job_kill">Остановка задачи</string>
+    <string name="chat_tool_title_terminal_open">Открыть терминал</string>
+    <string name="chat_tool_title_terminal_read">Чтение терминала</string>
+    <string name="chat_tool_title_terminal_list">Терминалы</string>
+    <string name="chat_tool_title_terminal_signal">Сигнал терминалу</string>
+    <string name="chat_tool_title_terminal_close">Закрыть терминал</string>
+    <string name="chat_tool_title_terminal_send">Ввод в терминал</string>
+    <string name="chat_tool_title_lsp">Поиск по коду</string>
+    <string name="chat_tool_title_goal_create">Новая цель</string>
+    <string name="chat_tool_title_goal_view">Проверка цели</string>
+    <string name="chat_tool_title_goal_update">Изменение цели</string>
+    <string name="chat_tool_title_schedule_create">Новое напоминание</string>
+    <string name="chat_tool_title_schedule_list">Напоминания</string>
+    <string name="chat_tool_title_schedule_update">Изменение напоминания</string>
+    <string name="chat_tool_title_schedule_delete">Удаление напоминания</string>
+    <string name="chat_tool_title_present">Отправка файлов</string>
+
+    <string name="chat_tool_todo_progress">Готово %1$d из %2$d</string>
+    <plurals name="chat_tool_todo_added">
+        <item quantity="one">добавлена %d</item>
+        <item quantity="few">добавлено %d</item>
+        <item quantity="many">добавлено %d</item>
+        <item quantity="other">добавлено %d</item>
+    </plurals>
+    <plurals name="chat_tool_todo_changed">
+        <item quantity="one">изменена %d</item>
+        <item quantity="few">изменено %d</item>
+        <item quantity="many">изменено %d</item>
+        <item quantity="other">изменено %d</item>
+    </plurals>
+    <plurals name="chat_tool_todo_removed">
+        <item quantity="one">убрана %d</item>
+        <item quantity="few">убрано %d</item>
+        <item quantity="many">убрано %d</item>
+        <item quantity="other">убрано %d</item>
+    </plurals>
+    <string name="chat_tool_todo_no_changes">Без изменений</string>
+    <string name="chat_tool_todo_not_saved">Не сохранён. Это список, который агент пытался записать.</string>
+    <string name="chat_tool_todo_pending">Ожидает</string>
+    <string name="chat_tool_todo_in_progress">В работе</string>
+    <string name="chat_tool_todo_done">Готово</string>
+    <string name="chat_tool_todo_change_added">Добавлена</string>
+    <string name="chat_tool_todo_change_moved">Перемещена</string>
+    <string name="chat_tool_todo_change_removed">Убрана</string>
+    <string name="chat_tool_todo_change_was">Было: %1$s</string>
+
+    <string name="chat_tool_ask_waiting">Ждёт вашего ответа</string>
+    <string name="chat_tool_ask_answered">Отвечено %1$d из %2$d</string>
+    <string name="chat_tool_ask_cancelled">Вы закрыли эти вопросы</string>
+    <string name="chat_tool_ask_interrupted">Остановлено до вашего ответа</string>
+    <string name="chat_tool_ask_timed_out">Ответа не дождались</string>
+    <string name="chat_tool_ask_carried_on">Агент продолжил, не дожидаясь ответа</string>
+    <string name="chat_tool_ask_closed">Закрыт</string>
+    <string name="chat_tool_ask_your_answer">Ваш ответ: %1$s</string>
+    <string name="chat_tool_ask_not_answered">Без ответа</string>
+
+    <string name="chat_tool_subagent_starting">Запускается</string>
+    <string name="chat_tool_subagent_started">Запущен</string>
+    <string name="chat_tool_subagent_working">Работает</string>
+    <string name="chat_tool_subagent_finished">Завершил работу</string>
+    <string name="chat_tool_subagent_failed">Не запустился</string>
+    <string name="chat_tool_subagent_replied">Ответил</string>
+    <string name="chat_tool_subagent_model">Модель: %1$s</string>
+    <string name="chat_tool_subagent_model_label">Модель:</string>
+    <string name="chat_tool_subagent_open">Открыть субагента</string>
+    <string name="chat_tool_subagent_conversation">Это переписка субагента</string>
+
+    <string name="chat_tool_skill_loading">Загружается</string>
+    <string name="chat_tool_skill_loaded">Загружен</string>
+    <string name="chat_tool_skill_not_loaded">Не загружен</string>
+    <string name="chat_tool_image_none">Изображение не пришло</string>
+
+    <string name="chat_tool_background">Работает в фоне</string>
+    <string name="chat_tool_background_starting">Запускается в фоне</string>
+    <string name="chat_tool_open_job">Открыть задачу</string>
+
+    <string name="chat_tool_state_exited">Завершён</string>
+    <string name="chat_tool_state_started">Запущен</string>
+    <string name="chat_tool_state_stop_requested">Запрошена остановка</string>
+    <string name="chat_tool_state_already_finished">Уже завершена</string>
+    <string name="chat_tool_state_signal_sent">Сигнал отправлен</string>
+    <string name="chat_tool_state_closed">Закрыт</string>
+    <string name="chat_tool_state_closing">Закрывается</string>
+    <string name="chat_tool_state_scheduled">Запланировано</string>
+    <string name="chat_tool_state_overdue">Просрочено</string>
+    <string name="chat_tool_state_deleted">Удалено</string>
+    <string name="chat_tool_state_goal_waiting">Ждёт продолжения</string>
+    <string name="chat_tool_state_goal_cleared">Снята</string>
+
+    <string name="chat_tool_field_type">Тип</string>
+    <string name="chat_tool_field_pid">ID процесса</string>
+    <string name="chat_tool_field_exit_code">Код выхода</string>
+    <string name="chat_tool_field_signal">Сигнал</string>
+    <string name="chat_tool_field_process_group">Группа процессов</string>
+    <string name="chat_tool_field_lines">Строки</string>
+    <string name="chat_tool_field_rounds">Раунды</string>
+    <string name="chat_tool_field_reason">Причина</string>
+    <string name="chat_tool_field_when">Когда</string>
+    <string name="chat_tool_field_repeats">Повтор</string>
+    <string name="chat_tool_field_location">Строка</string>
+    <string name="chat_tool_field_kind">Вид</string>
+    <string name="chat_tool_field_value">%1$s: %2$s</string>
+
+    <plurals name="chat_tool_jobs_count">
+        <item quantity="one">%d фоновая задача</item>
+        <item quantity="few">%d фоновые задачи</item>
+        <item quantity="many">%d фоновых задач</item>
+        <item quantity="other">%d фоновой задачи</item>
+    </plurals>
+    <plurals name="chat_tool_terminals_count">
+        <item quantity="one">%d терминал</item>
+        <item quantity="few">%d терминала</item>
+        <item quantity="many">%d терминалов</item>
+        <item quantity="other">%d терминала</item>
+    </plurals>
+    <plurals name="chat_tool_places_count">
+        <item quantity="one">%d результат</item>
+        <item quantity="few">%d результата</item>
+        <item quantity="many">%d результатов</item>
+        <item quantity="other">%d результата</item>
+    </plurals>
+    <plurals name="chat_tool_reminders_count">
+        <item quantity="one">%d напоминание</item>
+        <item quantity="few">%d напоминания</item>
+        <item quantity="many">%d напоминаний</item>
+        <item quantity="other">%d напоминания</item>
+    </plurals>
+    <plurals name="chat_tool_files_count">
+        <item quantity="one">%d файл</item>
+        <item quantity="few">%d файла</item>
+        <item quantity="many">%d файлов</item>
+        <item quantity="other">%d файла</item>
+    </plurals>
+    <string name="chat_tool_jobs_none">Нет фоновых задач</string>
+    <string name="chat_tool_terminals_none">Нет открытых терминалов</string>
+    <string name="chat_tool_places_none">Ничего не найдено</string>
+    <string name="chat_tool_reminders_none">Нет напоминаний</string>
+    <string name="chat_tool_goal_none">Цель не задана</string>
+    <string name="chat_tool_output_cut">Вывод обрезан.</string>
+
+    <string name="chat_tool_repeat_once">Один раз</string>
+    <string name="chat_tool_repeat_every_second">Каждую секунду</string>
+    <string name="chat_tool_repeat_every_minute">Каждую минуту</string>
+    <string name="chat_tool_repeat_every_hour">Каждый час</string>
+    <string name="chat_tool_repeat_every_day">Каждый день</string>
+    <plurals name="chat_tool_repeat_seconds">
+        <item quantity="one">Каждую %d секунду</item>
+        <item quantity="few">Каждые %d секунды</item>
+        <item quantity="many">Каждые %d секунд</item>
+        <item quantity="other">Каждые %d секунды</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_minutes">
+        <item quantity="one">Каждую %d минуту</item>
+        <item quantity="few">Каждые %d минуты</item>
+        <item quantity="many">Каждые %d минут</item>
+        <item quantity="other">Каждые %d минуты</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_hours">
+        <item quantity="one">Каждый %d час</item>
+        <item quantity="few">Каждые %d часа</item>
+        <item quantity="many">Каждые %d часов</item>
+        <item quantity="other">Каждые %d часа</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_days">
+        <item quantity="one">Каждый %d день</item>
+        <item quantity="few">Каждые %d дня</item>
+        <item quantity="many">Каждые %d дней</item>
+        <item quantity="other">Каждые %d дня</item>
+    </plurals>
+    <string name="chat_tool_repeat_daily">Каждый день в %1$s (%2$s)</string>
+    <string name="chat_tool_repeat_weekly">%1$s в %2$s (%3$s)</string>
+    <string name="chat_tool_repeat_cron">По своему расписанию: %1$s (%2$s)</string>
+
+    <string name="chat_tool_arguments">Аргументы</string>
+    <plurals name="chat_tool_arguments_count">
+        <item quantity="one">%d поле</item>
+        <item quantity="few">%d поля</item>
+        <item quantity="many">%d полей</item>
+        <item quantity="other">%d поля</item>
+    </plurals>
+    <string name="chat_tool_raw_title">Исходные данные вызова</string>
+
+    <string name="chat_tool_failed_label">Ошибка:</string>
+    <string name="chat_tool_failed">Этот шаг не удался.</string>
+    <string name="chat_tool_stopped">Остановлено до завершения.</string>
+    <string name="chat_tool_auto_review_denied">Автопроверка заблокировала этот шаг, поэтому он не выполнялся.</string>
+    <string name="chat_tool_reason_label">Причина:</string>
+
+    <string name="chat_turn_failed_rate_limit">Провайдер модели сейчас перегружен. Попробуйте чуть позже.</string>
+    <string name="chat_turn_failed_quota">На счёте провайдера модели закончились средства.</string>
+    <string name="chat_turn_failed_account_quota">В вашем аккаунте DeepSeek закончились токены.</string>
+    <string name="chat_turn_failed_context">Этот чат слишком длинный для модели. Сожмите его или начните новый.</string>
+    <string name="chat_turn_failed_empty">Модель прислала пустой ответ.</string>
+    <string name="chat_turn_failed_bad_key">Ключ API отклонён. Проверьте его в разделе «Модели».</string>
+    <string name="chat_turn_failed_missing_key">У этой модели ещё нет ключа API. Добавьте его в разделе «Модели».</string>
+    <string name="chat_turn_failed_network">Не удалось связаться с провайдером модели.</string>
+    <string name="chat_turn_failed_timeout">Модель слишком долго не отвечала.</string>
+    <string name="chat_turn_failed_server">У провайдера модели произошёл сбой.</string>
+    <string name="chat_turn_failed_process">Harness остановился, не завершив этот ход.</string>
+    <string name="chat_turn_failed_signed_out">Остановлено, потому что вы вышли из DeepSeek.</string>
+    <string name="chat_turn_failed_unknown">В этом ходе что-то пошло не так.</string>
+    <string name="chat_turn_error_code_label">Код:</string>
+</resources>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_tool_title_todo">कामों की सूची</string>
+    <string name="chat_tool_title_ask">सवाल</string>
+    <string name="chat_tool_title_subagent">सबएजेंट</string>
+    <string name="chat_tool_title_skill">स्किल</string>
+    <string name="chat_tool_title_read_image">इमेज पढ़ें</string>
+    <string name="chat_tool_title_job_output">काम का आउटपुट</string>
+    <string name="chat_tool_title_job_kill">काम रोकें</string>
+    <string name="chat_tool_title_terminal_open">टर्मिनल खोलें</string>
+    <string name="chat_tool_title_terminal_read">टर्मिनल पढ़ें</string>
+    <string name="chat_tool_title_terminal_list">टर्मिनल</string>
+    <string name="chat_tool_title_terminal_signal">टर्मिनल को सिग्नल भेजें</string>
+    <string name="chat_tool_title_terminal_close">टर्मिनल बंद करें</string>
+    <string name="chat_tool_title_terminal_send">टर्मिनल में भेजें</string>
+    <string name="chat_tool_title_lsp">कोड में खोज</string>
+    <string name="chat_tool_title_goal_create">लक्ष्य तय करें</string>
+    <string name="chat_tool_title_goal_view">लक्ष्य देखें</string>
+    <string name="chat_tool_title_goal_update">लक्ष्य बदलें</string>
+    <string name="chat_tool_title_schedule_create">नया रिमाइंडर</string>
+    <string name="chat_tool_title_schedule_list">रिमाइंडर</string>
+    <string name="chat_tool_title_schedule_update">रिमाइंडर बदलें</string>
+    <string name="chat_tool_title_schedule_delete">रिमाइंडर हटाएं</string>
+    <string name="chat_tool_title_present">फ़ाइलें साझा करें</string>
+
+    <string name="chat_tool_todo_progress">%2$d में से %1$d पूरे</string>
+    <plurals name="chat_tool_todo_added">
+        <item quantity="one">%d जोड़ा गया</item>
+        <item quantity="other">%d जोड़े गए</item>
+    </plurals>
+    <plurals name="chat_tool_todo_changed">
+        <item quantity="one">%d बदला गया</item>
+        <item quantity="other">%d बदले गए</item>
+    </plurals>
+    <plurals name="chat_tool_todo_removed">
+        <item quantity="one">%d हटाया गया</item>
+        <item quantity="other">%d हटाए गए</item>
+    </plurals>
+    <string name="chat_tool_todo_no_changes">कोई बदलाव नहीं</string>
+    <string name="chat_tool_todo_not_saved">सेव नहीं हुई। यह वह सूची है जिसे लिखने की कोशिश की गई थी।</string>
+    <string name="chat_tool_todo_pending">बाकी</string>
+    <string name="chat_tool_todo_in_progress">चल रहा है</string>
+    <string name="chat_tool_todo_done">पूरा</string>
+    <string name="chat_tool_todo_change_added">जोड़ा गया</string>
+    <string name="chat_tool_todo_change_moved">क्रम बदला</string>
+    <string name="chat_tool_todo_change_removed">हटाया गया</string>
+    <string name="chat_tool_todo_change_was">पहले: %1$s</string>
+
+    <string name="chat_tool_ask_waiting">आपके जवाब का इंतज़ार है</string>
+    <string name="chat_tool_ask_answered">%2$d में से %1$d के जवाब दिए</string>
+    <string name="chat_tool_ask_cancelled">आपने ये सवाल बंद कर दिए</string>
+    <string name="chat_tool_ask_interrupted">आपके जवाब से पहले रोक दिया गया</string>
+    <string name="chat_tool_ask_timed_out">समय पर जवाब नहीं मिला</string>
+    <string name="chat_tool_ask_carried_on">एजेंट बिना रुके आगे बढ़ गया</string>
+    <string name="chat_tool_ask_closed">बंद</string>
+    <string name="chat_tool_ask_your_answer">आपका जवाब: %1$s</string>
+    <string name="chat_tool_ask_not_answered">जवाब नहीं दिया</string>
+
+    <string name="chat_tool_subagent_starting">शुरू हो रहा है</string>
+    <string name="chat_tool_subagent_started">शुरू हुआ</string>
+    <string name="chat_tool_subagent_working">काम कर रहा है</string>
+    <string name="chat_tool_subagent_finished">पूरा हुआ</string>
+    <string name="chat_tool_subagent_failed">शुरू नहीं हुआ</string>
+    <string name="chat_tool_subagent_replied">जवाब दिया</string>
+    <string name="chat_tool_subagent_model">मॉडल: %1$s</string>
+    <string name="chat_tool_subagent_model_label">मॉडल:</string>
+    <string name="chat_tool_subagent_open">सबएजेंट खोलें</string>
+    <string name="chat_tool_subagent_conversation">यह एक सबएजेंट की बातचीत है</string>
+
+    <string name="chat_tool_skill_loading">लोड हो रहा है</string>
+    <string name="chat_tool_skill_loaded">लोड हो गई</string>
+    <string name="chat_tool_skill_not_loaded">लोड नहीं हुई</string>
+    <string name="chat_tool_image_none">कोई इमेज नहीं आई</string>
+
+    <string name="chat_tool_background">बैकग्राउंड में चलता है</string>
+    <string name="chat_tool_background_starting">बैकग्राउंड में शुरू हो रहा है</string>
+    <string name="chat_tool_open_job">काम खोलें</string>
+
+    <string name="chat_tool_state_exited">बंद हुआ</string>
+    <string name="chat_tool_state_started">शुरू हुआ</string>
+    <string name="chat_tool_state_stop_requested">रोकने को कहा गया</string>
+    <string name="chat_tool_state_already_finished">पहले ही पूरा हो चुका था</string>
+    <string name="chat_tool_state_signal_sent">सिग्नल भेजा गया</string>
+    <string name="chat_tool_state_closed">बंद</string>
+    <string name="chat_tool_state_closing">बंद हो रहा है</string>
+    <string name="chat_tool_state_scheduled">तय है</string>
+    <string name="chat_tool_state_overdue">समय निकल गया</string>
+    <string name="chat_tool_state_deleted">हटाया गया</string>
+    <string name="chat_tool_state_goal_waiting">आगे बढ़ने का इंतज़ार</string>
+    <string name="chat_tool_state_goal_cleared">हटा दिया गया</string>
+
+    <string name="chat_tool_field_type">प्रकार</string>
+    <string name="chat_tool_field_pid">प्रोसेस ID</string>
+    <string name="chat_tool_field_exit_code">एग्ज़िट कोड</string>
+    <string name="chat_tool_field_signal">सिग्नल</string>
+    <string name="chat_tool_field_process_group">प्रोसेस समूह</string>
+    <string name="chat_tool_field_lines">पंक्तियां</string>
+    <string name="chat_tool_field_rounds">राउंड</string>
+    <string name="chat_tool_field_reason">वजह</string>
+    <string name="chat_tool_field_when">कब</string>
+    <string name="chat_tool_field_repeats">दोहराव</string>
+    <string name="chat_tool_field_location">पंक्ति</string>
+    <string name="chat_tool_field_kind">किस्म</string>
+    <string name="chat_tool_field_value">%1$s: %2$s</string>
+
+    <plurals name="chat_tool_jobs_count">
+        <item quantity="one">%d बैकग्राउंड काम</item>
+        <item quantity="other">%d बैकग्राउंड काम</item>
+    </plurals>
+    <plurals name="chat_tool_terminals_count">
+        <item quantity="one">%d टर्मिनल</item>
+        <item quantity="other">%d टर्मिनल</item>
+    </plurals>
+    <plurals name="chat_tool_places_count">
+        <item quantity="one">%d नतीजा</item>
+        <item quantity="other">%d नतीजे</item>
+    </plurals>
+    <plurals name="chat_tool_reminders_count">
+        <item quantity="one">%d रिमाइंडर</item>
+        <item quantity="other">%d रिमाइंडर</item>
+    </plurals>
+    <plurals name="chat_tool_files_count">
+        <item quantity="one">%d फ़ाइल</item>
+        <item quantity="other">%d फ़ाइलें</item>
+    </plurals>
+    <string name="chat_tool_jobs_none">कोई बैकग्राउंड काम नहीं</string>
+    <string name="chat_tool_terminals_none">कोई टर्मिनल खुला नहीं है</string>
+    <string name="chat_tool_places_none">कुछ नहीं मिला</string>
+    <string name="chat_tool_reminders_none">कोई रिमाइंडर नहीं</string>
+    <string name="chat_tool_goal_none">कोई लक्ष्य तय नहीं है</string>
+    <string name="chat_tool_output_cut">आउटपुट बीच में कट गया।</string>
+
+    <string name="chat_tool_repeat_once">एक बार</string>
+    <string name="chat_tool_repeat_every_second">हर सेकंड</string>
+    <string name="chat_tool_repeat_every_minute">हर मिनट</string>
+    <string name="chat_tool_repeat_every_hour">हर घंटे</string>
+    <string name="chat_tool_repeat_every_day">हर दिन</string>
+    <plurals name="chat_tool_repeat_seconds">
+        <item quantity="one">हर %d सेकंड</item>
+        <item quantity="other">हर %d सेकंड</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_minutes">
+        <item quantity="one">हर %d मिनट</item>
+        <item quantity="other">हर %d मिनट</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_hours">
+        <item quantity="one">हर %d घंटे</item>
+        <item quantity="other">हर %d घंटे</item>
+    </plurals>
+    <plurals name="chat_tool_repeat_days">
+        <item quantity="one">हर %d दिन</item>
+        <item quantity="other">हर %d दिन</item>
+    </plurals>
+    <string name="chat_tool_repeat_daily">हर दिन %1$s बजे (%2$s)</string>
+    <string name="chat_tool_repeat_weekly">%1$s को %2$s बजे (%3$s)</string>
+    <string name="chat_tool_repeat_cron">अपने शेड्यूल पर: %1$s (%2$s)</string>
+
+    <string name="chat_tool_arguments">आर्ग्युमेंट</string>
+    <plurals name="chat_tool_arguments_count">
+        <item quantity="one">%d फ़ील्ड</item>
+        <item quantity="other">%d फ़ील्ड</item>
+    </plurals>
+    <string name="chat_tool_raw_title">कॉल का मूल डेटा</string>
+
+    <string name="chat_tool_failed_label">नाकाम:</string>
+    <string name="chat_tool_failed">यह कदम नाकाम रहा।</string>
+    <string name="chat_tool_stopped">पूरा होने से पहले रुक गया।</string>
+    <string name="chat_tool_auto_review_denied">ऑटो रिव्यू ने यह कदम रोक दिया, इसलिए यह नहीं चला।</string>
+    <string name="chat_tool_reason_label">वजह:</string>
+
+    <string name="chat_turn_failed_rate_limit">मॉडल प्रोवाइडर अभी व्यस्त है। थोड़ी देर में फिर कोशिश करें।</string>
+    <string name="chat_turn_failed_quota">मॉडल प्रोवाइडर के खाते में क्रेडिट खत्म हो गया है।</string>
+    <string name="chat_turn_failed_account_quota">आपके DeepSeek खाते के टोकन खत्म हो गए हैं।</string>
+    <string name="chat_turn_failed_context">यह चैट मॉडल के लिए बहुत लंबी है। इसे छोटा करें या नई चैट शुरू करें।</string>
+    <string name="chat_turn_failed_empty">मॉडल ने खाली जवाब भेजा।</string>
+    <string name="chat_turn_failed_bad_key">API कुंजी स्वीकार नहीं हुई। मॉडल में जाकर जांचें।</string>
+    <string name="chat_turn_failed_missing_key">इस मॉडल की अभी कोई API कुंजी नहीं है। मॉडल में जाकर जोड़ें।</string>
+    <string name="chat_turn_failed_network">मॉडल प्रोवाइडर तक नहीं पहुंच सके।</string>
+    <string name="chat_turn_failed_timeout">मॉडल ने जवाब देने में बहुत देर लगाई।</string>
+    <string name="chat_turn_failed_server">मॉडल प्रोवाइडर की तरफ़ से कोई दिक्कत आई।</string>
+    <string name="chat_turn_failed_process">यह टर्न पूरा होने से पहले harness रुक गया।</string>
+    <string name="chat_turn_failed_signed_out">रुक गया क्योंकि आपने DeepSeek से साइन आउट किया।</string>
+    <string name="chat_turn_failed_unknown">इस टर्न में कुछ गड़बड़ हो गई।</string>
+    <string name="chat_turn_error_code_label">कोड:</string>
+</resources>

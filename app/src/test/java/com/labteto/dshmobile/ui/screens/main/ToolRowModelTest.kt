@@ -93,9 +93,12 @@ class ToolRowModelTest {
 
     @Test
     fun `an unclassified tool still identifies itself`() {
+        // Its name in words is the title now, rather than "Tool call" with the code name as the
+        // summary; an argument that reads as a subject fills the summary when there is one.
         val row = toolRowModel("some_new_tool", """{"whatever":1}""", cwd = null)
-        assertEquals("Tool call", row.title)
-        assertEquals("some_new_tool", row.summary)
+        assertEquals("Some new tool", row.title)
+        assertNull(row.summary)
+        assertEquals("cards", toolRowModel("some_new_tool", """{"query":"cards"}""", cwd = null).summary)
     }
 
     @Test
