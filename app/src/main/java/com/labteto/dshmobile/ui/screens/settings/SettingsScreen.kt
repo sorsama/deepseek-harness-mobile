@@ -143,6 +143,7 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
     val plugins by store.plugins.collectAsStateWithLifecycle()
     val pluginManagementAvailable by store.pluginManagementAvailable.collectAsStateWithLifecycle()
     val harnessSettingsAvailable by store.harnessSettingsAvailable.collectAsStateWithLifecycle()
+    val accountAvailable by store.accountAvailable.collectAsStateWithLifecycle()
     val colors = DsTheme.colors
     val toast = rememberDsToast()
     var showDisconnectDialog by remember { mutableStateOf(false) }
@@ -310,8 +311,9 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                         com.labteto.dshmobile.ui.screens.models.ModelsSettingsRow()
                     }
                     // What the harness keeps for itself: web search, shell limits, subagents and more.
-                    // Hidden only once the harness has said it has no such call.
-                    if (harnessSettingsAvailable != false) {
+                    // Hidden only once the harness has said it has neither the settings call nor the account
+                    // calls, which are the other thing this area holds (DeepSeek sign-in).
+                    if (harnessSettingsAvailable != false || accountAvailable != false) {
                         SettingsCard(stringResource(R.string.hs_title)) {
                             com.labteto.dshmobile.ui.screens.harnesssettings.HarnessSettingsRow { harnessSettingsOpen = true }
                         }

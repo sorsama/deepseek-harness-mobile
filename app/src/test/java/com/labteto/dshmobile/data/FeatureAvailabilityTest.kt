@@ -22,6 +22,7 @@ class FeatureAvailabilityTest {
         HarnessFeature.TIMED_QUESTIONS -> api.answerContinuedQuestion("s", "call", AskUserQuestionAnswer(emptyList()))
         HarnessFeature.PLUGIN_MARKET -> api.marketIndexes()
         HarnessFeature.HARNESS_SETTINGS -> api.settingsDescribe()
+        HarnessFeature.ACCOUNT -> api.accountState()
     }
 
     @Test fun `404 endpoints retire each feature without reporting a connection failure`() = runTest {

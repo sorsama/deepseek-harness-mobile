@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Account: DeepSeek sign-in, in Harness settings. -->
+    <string name="acct_title">অ্যাকাউন্ট</string>
+    <string name="acct_summary">DeepSeek-এ সাইন ইন করে আপনার ব্যালেন্স দেখুন।</string>
+    <string name="acct_unavailable">এই harness DeepSeek-এ সাইন ইন করতে পারে না। এটি পুরোনো সংস্করণ হতে পারে, অথবা এর অ্যাকাউন্ট প্লাগইন বন্ধ আছে।</string>
+
+    <!-- Signed out. -->
+    <string name="acct_signed_out_title">সাইন ইন করা নেই</string>
+    <string name="acct_signed_out_body">এই harness-এ ব্যবহার করতে আপনার DeepSeek অ্যাকাউন্টে সাইন ইন করুন। আপনার প্রজেক্ট আর ফাইল যেখানে আছে সেখানেই থাকবে।</string>
+    <string name="acct_sign_in">সাইন ইন করুন</string>
+    <string name="acct_sign_in_again">আবার সাইন ইন করুন</string>
+    <string name="acct_session_ended">আপনার DeepSeek সাইন-ইন শেষ হয়ে গেছে। ব্যবহার চালিয়ে যেতে আবার সাইন ইন করুন।</string>
+
+    <!-- How the last sign-in ended, and why. -->
+    <string name="acct_outcome_failed">শেষ সাইন-ইনটি সম্পূর্ণ হয়নি।</string>
+    <string name="acct_outcome_expired">শেষ সাইন-ইনের সময় পেরিয়ে গেছে। প্রস্তুত হলে আবার শুরু করুন।</string>
+    <string name="acct_outcome_cancelled">শেষ সাইন-ইন বাতিল করা হয়েছিল।</string>
+    <string name="acct_reason_platform">harness DeepSeek-এ পৌঁছাতে পারেনি। তার ইন্টারনেট সংযোগ দেখে নিন, তারপর আবার চেষ্টা করুন।</string>
+    <string name="acct_reason_storage">harness সাইন-ইন সংরক্ষণ করতে পারেনি। দেখে নিন তাতে ফাঁকা জায়গা আছে এবং সে নিজের ফোল্ডারে লিখতে পারে।</string>
+    <string name="acct_reason_generic">DeepSeek-এর উত্তরটি harness ব্যবহার করতে পারেনি। আবার চেষ্টা করুন।</string>
+
+    <!-- A harness on another device: the browser cannot be sent back to it from this phone. -->
+    <string name="acct_remote_title">harness-এর কম্পিউটারে সাইন ইন করুন</string>
+    <string name="acct_remote_body">সাইন-ইনের শেষে ব্রাউজারকে এমন একটি ঠিকানা দিয়ে harness-এ ফেরত পাঠানো হয়, যা শুধু একই ডিভাইসে কাজ করে। এই ফোন থেকে সেই ডিভাইস হলো ফোনটিই, harness নয়। যে কম্পিউটারে harness চলছে সেখানে সাইন-ইন শেষ করুন: সেখানে এটি খুলে সেটিংসে গিয়ে অ্যাকাউন্ট বেছে নিন এবং সাইন ইন করুন। শেষ হলে এই পাতা নিজে থেকেই হালনাগাদ হবে।</string>
+    <string name="acct_check_again">আবার দেখুন</string>
+
+    <!-- A sign-in in progress. -->
+    <string name="acct_progress_title">সাইন ইন হচ্ছে</string>
+    <string name="acct_progress_starting">সাইন-ইন শুরু হচ্ছে…</string>
+    <string name="acct_progress_browser">ব্রাউজারে সাইন-ইন শেষ করুন, তারপর এই অ্যাপে ফিরে আসুন।</string>
+    <string name="acct_progress_remote">harness-এর কম্পিউটারে সাইন-ইন শেষ হওয়ার অপেক্ষায়।</string>
+    <string name="acct_progress_finishing">সাইন-ইন শেষ হচ্ছে…</string>
+    <string name="acct_open_browser">ব্রাউজার খুলুন</string>
+    <string name="acct_copy_link">সাইন-ইন লিংক কপি করুন</string>
+    <string name="acct_link_copied">লিংক কপি হয়েছে</string>
+    <string name="acct_browser_missing">কোনো ব্রাউজার খোলেনি। লিংকটি কপি করে নিজে কোনো ব্রাউজারে খুলুন।</string>
+    <string name="acct_link_refused">সাইন-ইনের লিংকটি ব্যবহার করা যাচ্ছে না। নতুন লিংক পেতে আবার চেষ্টা করুন।</string>
+    <string name="acct_cancel_sign_in">সাইন-ইন বাতিল করুন</string>
+    <string name="acct_try_again">আবার চেষ্টা করুন</string>
+
+    <!-- Signed in: profile, balance, bonus notices, sign out. -->
+    <string name="acct_signed_in">সাইন ইন করা আছে</string>
+    <string name="acct_name_fallback">DeepSeek অ্যাকাউন্ট</string>
+    <string name="acct_profile_unavailable">অ্যাকাউন্টের তথ্য এখন পাওয়া যাচ্ছে না।</string>
+    <string name="acct_balance_none">দেখানোর মতো কোনো ব্যালেন্স নেই।</string>
+    <string name="acct_bonus_title">বোনাস জমা হয়েছে</string>
+    <string name="acct_bonus_dismiss">বুঝেছি</string>
+    <string name="acct_sign_out">সাইন আউট করুন</string>
+    <string name="acct_sign_out_title">DeepSeek থেকে সাইন আউট করবেন?</string>
+    <string name="acct_sign_out_idle">সাইন আউট করলে কোনো ডেটা মুছে যায় না। আপনি আবার সাইন ইন করতে পারবেন।</string>
+    <string name="acct_sign_out_running">এই অ্যাকাউন্ট দিয়ে কিছু টাস্ক চলছে। সাইন আউট করলে সেগুলো থেমে যাবে।</string>
+    <string name="acct_sign_out_unknown">চলমান টাস্ক দেখে নেওয়া যায়নি। সাইন আউট করলে এই অ্যাকাউন্টের টাস্কগুলো থেমে যেতে পারে।</string>
+
+    <!-- A call that did not go through. -->
+    <string name="acct_fail_rejected">harness এটি করতে পারেনি। আবার চেষ্টা করুন।</string>
+    <string name="acct_fail_unreachable">harness-এ পৌঁছানো যায়নি। কিছুই বদলায়নি।</string>
+</resources>

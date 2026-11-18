@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Account: DeepSeek sign-in, in Harness settings. -->
+    <string name="acct_title">Conta</string>
+    <string name="acct_summary">Entre no DeepSeek e veja seu saldo.</string>
+    <string name="acct_unavailable">Este harness não consegue entrar no DeepSeek. Pode ser uma versão antiga ou o plugin de conta estar desativado.</string>
+
+    <!-- Signed out. -->
+    <string name="acct_signed_out_title">Sem login</string>
+    <string name="acct_signed_out_body">Entre com sua conta do DeepSeek para usá-la neste harness. Seus projetos e arquivos continuam onde estão.</string>
+    <string name="acct_sign_in">Entrar</string>
+    <string name="acct_sign_in_again">Entrar de novo</string>
+    <string name="acct_session_ended">Seu login no DeepSeek terminou. Entre de novo para continuar usando.</string>
+
+    <!-- How the last sign-in ended, and why. -->
+    <string name="acct_outcome_failed">O último login não foi concluído.</string>
+    <string name="acct_outcome_expired">O último login expirou. Comece de novo quando quiser.</string>
+    <string name="acct_outcome_cancelled">O último login foi cancelado.</string>
+    <string name="acct_reason_platform">O harness não conseguiu falar com o DeepSeek. Verifique a conexão dele com a internet e tente novamente.</string>
+    <string name="acct_reason_storage">O harness não conseguiu salvar o login. Verifique se ele tem espaço livre e pode gravar na própria pasta.</string>
+    <string name="acct_reason_generic">A resposta do DeepSeek não era uma que o harness pudesse usar. Tente novamente.</string>
+
+    <!-- A harness on another device: the browser cannot be sent back to it from this phone. -->
+    <string name="acct_remote_title">Entre pelo computador do harness</string>
+    <string name="acct_remote_body">O login termina enviando o navegador de volta ao harness por um endereço que só funciona no mesmo dispositivo. A partir deste celular, esse dispositivo é o celular, não o harness. Conclua o login no computador que executa o harness: abra-o lá, vá em Configurações, depois em Conta, e entre. Esta página se atualiza quando terminar.</string>
+    <string name="acct_check_again">Verificar de novo</string>
+
+    <!-- A sign-in in progress. -->
+    <string name="acct_progress_title">Entrando</string>
+    <string name="acct_progress_starting">Iniciando o login…</string>
+    <string name="acct_progress_browser">Conclua o login no navegador e depois volte para este app.</string>
+    <string name="acct_progress_remote">Aguardando o login terminar no computador do harness.</string>
+    <string name="acct_progress_finishing">Concluindo o login…</string>
+    <string name="acct_open_browser">Abrir o navegador</string>
+    <string name="acct_copy_link">Copiar link de login</string>
+    <string name="acct_link_copied">Link copiado</string>
+    <string name="acct_browser_missing">Nenhum navegador abriu. Copie o link e abra você mesmo em um navegador.</string>
+    <string name="acct_link_refused">Não é possível usar o link de login. Tente novamente para receber um novo.</string>
+    <string name="acct_cancel_sign_in">Cancelar login</string>
+    <string name="acct_try_again">Tentar novamente</string>
+
+    <!-- Signed in: profile, balance, bonus notices, sign out. -->
+    <string name="acct_signed_in">Conectado</string>
+    <string name="acct_name_fallback">Conta DeepSeek</string>
+    <string name="acct_profile_unavailable">Os dados da conta não estão disponíveis agora.</string>
+    <string name="acct_balance_none">Nenhum saldo para mostrar.</string>
+    <string name="acct_bonus_title">Bônus creditado</string>
+    <string name="acct_bonus_dismiss">Entendi</string>
+    <string name="acct_sign_out">Sair</string>
+    <string name="acct_sign_out_title">Sair do DeepSeek?</string>
+    <string name="acct_sign_out_idle">Sair não apaga nenhum dado. Você pode entrar de novo.</string>
+    <string name="acct_sign_out_running">Há tarefas em andamento com esta conta. Ao sair, elas serão interrompidas.</string>
+    <string name="acct_sign_out_unknown">Não foi possível verificar as tarefas em andamento. Sair pode interromper as que usam esta conta.</string>
+
+    <!-- A call that did not go through. -->
+    <string name="acct_fail_rejected">O harness não conseguiu fazer isso. Tente novamente.</string>
+    <string name="acct_fail_unreachable">Não foi possível falar com o harness. Nada foi alterado.</string>
+</resources>

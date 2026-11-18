@@ -91,6 +91,7 @@ internal fun pageTitleRes(page: SettingsPage): Int? = when (page) {
     SettingsPage.Subagents -> R.string.hs_page_subagents
     SettingsPage.AgentLoop -> R.string.hs_page_agent_loop
     SettingsPage.SessionLog -> R.string.hs_page_session_log
+    SettingsPage.Account -> R.string.acct_title
     is SettingsPage.Generic -> null
 }
 
@@ -101,6 +102,7 @@ internal fun pageSummaryRes(page: SettingsPage): Int? = when (page) {
     SettingsPage.Subagents -> R.string.hs_page_subagents_desc
     SettingsPage.AgentLoop -> R.string.hs_page_agent_loop_desc
     SettingsPage.SessionLog -> R.string.hs_page_session_log_desc
+    SettingsPage.Account -> R.string.acct_summary
     is SettingsPage.Generic -> null
 }
 

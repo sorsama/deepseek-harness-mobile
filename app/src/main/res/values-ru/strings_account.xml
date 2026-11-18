@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Account: DeepSeek sign-in, in Harness settings. -->
+    <string name="acct_title">Аккаунт</string>
+    <string name="acct_summary">Войдите в DeepSeek и посмотрите свой баланс.</string>
+    <string name="acct_unavailable">Этот harness не может войти в DeepSeek. Возможно, это старая версия или у него отключён плагин аккаунта.</string>
+
+    <!-- Signed out. -->
+    <string name="acct_signed_out_title">Вход не выполнен</string>
+    <string name="acct_signed_out_body">Войдите с аккаунтом DeepSeek, чтобы использовать его на этом harness. Ваши проекты и файлы останутся на месте.</string>
+    <string name="acct_sign_in">Войти</string>
+    <string name="acct_sign_in_again">Войти снова</string>
+    <string name="acct_session_ended">Вход в DeepSeek завершился. Войдите снова, чтобы продолжить им пользоваться.</string>
+
+    <!-- How the last sign-in ended, and why. -->
+    <string name="acct_outcome_failed">Последний вход не завершился.</string>
+    <string name="acct_outcome_expired">Время последнего входа истекло. Начните заново, когда будете готовы.</string>
+    <string name="acct_outcome_cancelled">Последний вход был отменён.</string>
+    <string name="acct_reason_platform">Harness не смог связаться с DeepSeek. Проверьте его подключение к интернету и повторите попытку.</string>
+    <string name="acct_reason_storage">Harness не смог сохранить вход. Проверьте, что у него есть свободное место и он может писать в свою папку.</string>
+    <string name="acct_reason_generic">Ответ DeepSeek оказался непригодным для harness. Повторите попытку.</string>
+
+    <!-- A harness on another device: the browser cannot be sent back to it from this phone. -->
+    <string name="acct_remote_title">Войдите на компьютере с harness</string>
+    <string name="acct_remote_body">Вход заканчивается тем, что браузер возвращается на harness по адресу, который работает только на том же устройстве. С этого телефона это устройство, то есть сам телефон, а не harness. Завершите вход на компьютере, где запущен harness: откройте его там, зайдите в Настройки, затем в Аккаунт и войдите. Эта страница обновится, когда всё будет готово.</string>
+    <string name="acct_check_again">Проверить снова</string>
+
+    <!-- A sign-in in progress. -->
+    <string name="acct_progress_title">Выполняется вход</string>
+    <string name="acct_progress_starting">Начинаем вход…</string>
+    <string name="acct_progress_browser">Завершите вход в браузере и вернитесь в это приложение.</string>
+    <string name="acct_progress_remote">Ждём, пока вход завершится на компьютере с harness.</string>
+    <string name="acct_progress_finishing">Завершаем вход…</string>
+    <string name="acct_open_browser">Открыть браузер</string>
+    <string name="acct_copy_link">Копировать ссылку для входа</string>
+    <string name="acct_link_copied">Ссылка скопирована</string>
+    <string name="acct_browser_missing">Браузер не открылся. Скопируйте ссылку и откройте её в браузере сами.</string>
+    <string name="acct_link_refused">Ссылку для входа нельзя использовать. Повторите попытку, чтобы получить новую.</string>
+    <string name="acct_cancel_sign_in">Отменить вход</string>
+    <string name="acct_try_again">Повторить</string>
+
+    <!-- Signed in: profile, balance, bonus notices, sign out. -->
+    <string name="acct_signed_in">Вход выполнен</string>
+    <string name="acct_name_fallback">Аккаунт DeepSeek</string>
+    <string name="acct_profile_unavailable">Данные аккаунта сейчас недоступны.</string>
+    <string name="acct_balance_none">Баланса для показа нет.</string>
+    <string name="acct_bonus_title">Бонус начислен</string>
+    <string name="acct_bonus_dismiss">Понятно</string>
+    <string name="acct_sign_out">Выйти</string>
+    <string name="acct_sign_out_title">Выйти из DeepSeek?</string>
+    <string name="acct_sign_out_idle">Выход не удаляет никакие данные. Вы сможете войти снова.</string>
+    <string name="acct_sign_out_running">С этим аккаунтом выполняются задачи. При выходе они остановятся.</string>
+    <string name="acct_sign_out_unknown">Не удалось проверить, есть ли запущенные задачи. Выход может остановить те, что используют этот аккаунт.</string>
+
+    <!-- A call that did not go through. -->
+    <string name="acct_fail_rejected">Harness не смог это сделать. Повторите попытку.</string>
+    <string name="acct_fail_unreachable">Не удалось связаться с harness. Ничего не изменено.</string>
+</resources>

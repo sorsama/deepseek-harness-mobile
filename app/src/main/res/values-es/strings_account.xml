@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Account: DeepSeek sign-in, in Harness settings. -->
+    <string name="acct_title">Cuenta</string>
+    <string name="acct_summary">Inicia sesión en DeepSeek y mira tu saldo.</string>
+    <string name="acct_unavailable">Este harness no puede iniciar sesión en DeepSeek. Puede ser una versión antigua o tener desactivado el plugin de cuenta.</string>
+
+    <!-- Signed out. -->
+    <string name="acct_signed_out_title">Sin sesión iniciada</string>
+    <string name="acct_signed_out_body">Inicia sesión con tu cuenta de DeepSeek para usarla en este harness. Tus proyectos y archivos se quedan donde están.</string>
+    <string name="acct_sign_in">Iniciar sesión</string>
+    <string name="acct_sign_in_again">Iniciar sesión otra vez</string>
+    <string name="acct_session_ended">Tu sesión de DeepSeek terminó. Inicia sesión otra vez para seguir usándola.</string>
+
+    <!-- How the last sign-in ended, and why. -->
+    <string name="acct_outcome_failed">El último inicio de sesión no se completó.</string>
+    <string name="acct_outcome_expired">El último inicio de sesión caducó. Vuelve a empezar cuando quieras.</string>
+    <string name="acct_outcome_cancelled">El último inicio de sesión se canceló.</string>
+    <string name="acct_reason_platform">El harness no pudo conectarse con DeepSeek. Revisa su conexión a internet e inténtalo de nuevo.</string>
+    <string name="acct_reason_storage">El harness no pudo guardar el inicio de sesión. Comprueba que tenga espacio libre y pueda escribir en su carpeta.</string>
+    <string name="acct_reason_generic">La respuesta de DeepSeek no era una que el harness pudiera usar. Inténtalo de nuevo.</string>
+
+    <!-- A harness on another device: the browser cannot be sent back to it from this phone. -->
+    <string name="acct_remote_title">Inicia sesión en el ordenador del harness</string>
+    <string name="acct_remote_body">El inicio de sesión termina enviando el navegador de vuelta al harness por una dirección que solo funciona en el mismo dispositivo. Desde este teléfono, ese dispositivo es el teléfono y no el harness. Termina el inicio de sesión en el ordenador que ejecuta el harness: ábrelo allí, ve a Ajustes, luego a Cuenta, e inicia sesión. Esta página se actualiza cuando termine.</string>
+    <string name="acct_check_again">Comprobar de nuevo</string>
+
+    <!-- A sign-in in progress. -->
+    <string name="acct_progress_title">Iniciando sesión</string>
+    <string name="acct_progress_starting">Preparando el inicio de sesión…</string>
+    <string name="acct_progress_browser">Termina de iniciar sesión en tu navegador y vuelve a esta app.</string>
+    <string name="acct_progress_remote">Esperando a que el inicio de sesión termine en el ordenador del harness.</string>
+    <string name="acct_progress_finishing">Terminando el inicio de sesión…</string>
+    <string name="acct_open_browser">Abrir el navegador</string>
+    <string name="acct_copy_link">Copiar enlace de inicio de sesión</string>
+    <string name="acct_link_copied">Enlace copiado</string>
+    <string name="acct_browser_missing">No se abrió ningún navegador. Copia el enlace y ábrelo tú en un navegador.</string>
+    <string name="acct_link_refused">No se puede usar el enlace de inicio de sesión. Inténtalo de nuevo para obtener uno nuevo.</string>
+    <string name="acct_cancel_sign_in">Cancelar inicio de sesión</string>
+    <string name="acct_try_again">Reintentar</string>
+
+    <!-- Signed in: profile, balance, bonus notices, sign out. -->
+    <string name="acct_signed_in">Sesión iniciada</string>
+    <string name="acct_name_fallback">Cuenta de DeepSeek</string>
+    <string name="acct_profile_unavailable">Los datos de la cuenta no están disponibles ahora.</string>
+    <string name="acct_balance_none">No hay saldo que mostrar.</string>
+    <string name="acct_bonus_title">Bono acreditado</string>
+    <string name="acct_bonus_dismiss">Entendido</string>
+    <string name="acct_sign_out">Cerrar sesión</string>
+    <string name="acct_sign_out_title">¿Cerrar sesión en DeepSeek?</string>
+    <string name="acct_sign_out_idle">Cerrar sesión no borra ningún dato. Puedes volver a iniciarla.</string>
+    <string name="acct_sign_out_running">Hay tareas en marcha con esta cuenta. Al cerrar sesión se detendrán.</string>
+    <string name="acct_sign_out_unknown">No se pudo comprobar si hay tareas en marcha. Cerrar sesión puede detener las que usen esta cuenta.</string>
+
+    <!-- A call that did not go through. -->
+    <string name="acct_fail_rejected">El harness no pudo hacerlo. Inténtalo de nuevo.</string>
+    <string name="acct_fail_unreachable">No se pudo conectar con el harness. No se cambió nada.</string>
+</resources>

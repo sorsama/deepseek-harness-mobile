@@ -85,6 +85,8 @@ internal fun SettingsPageBody(
         }
         SettingsPage.Subagents -> SubagentsBody(state, controller, hostLabel)
         SettingsPage.WebSearch -> WebSearchBody(state, controller, hostLabel)
+        // DeepSeek sign-in is not a settings namespace and has its own page, AccountPageScreen.
+        SettingsPage.Account -> Unit
         is SettingsPage.Generic -> GenericBody(page.ns, state, controller, hostLabel)
     }
 }

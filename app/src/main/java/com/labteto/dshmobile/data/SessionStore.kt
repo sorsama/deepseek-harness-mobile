@@ -15,6 +15,7 @@ import com.labteto.dshmobile.core.session.ConversationSnapshot
 import com.labteto.dshmobile.core.session.EventFold
 import com.labteto.dshmobile.core.session.QueueItem
 import com.labteto.dshmobile.core.session.SessionEventEnvelope
+import com.labteto.dshmobile.core.account.withAccountCapability
 import com.labteto.dshmobile.core.wire.DshApiClient
 import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.core.wire.decodeFromJsonElement
@@ -371,6 +372,12 @@ class SessionStore @Inject constructor(
     val sessionReferencesAvailable = featureAvailability.state(HarnessFeature.SESSION_REFERENCES)
     /** Whether the harness has `settings/describe`; unknown until the Harness settings page first asks. */
     val harnessSettingsAvailable = featureAvailability.state(HarnessFeature.HARNESS_SETTINGS)
+    /**
+     * Whether the harness has the account calls behind DeepSeek sign-in. A harness with its account
+     * plugin switched off answers `gateway/service-unavailable`, which the Account page's port spells as a
+     * missing capability before it reports here. Unknown until the Account page first asks.
+     */
+    val accountAvailable = featureAvailability.state(HarnessFeature.ACCOUNT)
     val questionSessions = QuestionSessions(scope, { connectionManager.connectedApi },
         { connectionManager.generation?.mux }, { connectionManager.generation?.clientId },
         onCapability = { clientId, result ->
@@ -433,6 +440,8 @@ class SessionStore @Inject constructor(
         HarnessFeature.AUTOMATION -> { api -> api.automationCatalog() }
         HarnessFeature.PLUGIN_MANAGEMENT -> { api -> api.pluginBundles() }
         HarnessFeature.HARNESS_SETTINGS -> { api -> api.settingsDescribe() }
+        // The same spelling the Account page's own port uses: a plugin that is off answers `gateway/service-unavailable`.
+        HarnessFeature.ACCOUNT -> { api -> api.accountState().withAccountCapability() }
         else -> null
     }
 

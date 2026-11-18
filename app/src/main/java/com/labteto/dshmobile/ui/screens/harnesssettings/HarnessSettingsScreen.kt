@@ -34,6 +34,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.R
+import com.labteto.dshmobile.core.account.AccountController
+import com.labteto.dshmobile.core.account.AccountPhase
+import com.labteto.dshmobile.core.account.SignInRoute
+import com.labteto.dshmobile.core.account.signInRoute
 import com.labteto.dshmobile.core.settings.DshHarnessSettingsPort
 import com.labteto.dshmobile.core.settings.FieldKind
 import com.labteto.dshmobile.core.settings.HarnessSettingsController
@@ -65,6 +69,7 @@ import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 
@@ -122,13 +127,47 @@ fun HarnessSettingsScreen(onClose: () -> Unit) {
         api?.let { HarnessSettingsController(StoreSettingsPort(store, it), scope, cleartext) }
     }
     LaunchedEffect(controller) { controller?.load() }
+
+    // DeepSeek sign-in is not a settings namespace: its state is the harness's account calls. One controller
+    // per harness, not per connection, so a sign-in on screen survives the socket being replaced while the
+    // app is in the browser; its port looks the current client up at each call.
+    val accountController = remember(host) {
+        host?.let {
+            AccountController(
+                StoreAccountPort(store, it), scope,
+                // The chat usage card shows this account's balance: have it read again now rather than on its own timer.
+                onSignInChanged = { scope.launch { store.refreshQuota(recheck = true) } },
+            )
+        }
+    }
+    // Where the browser can be sent back to: only a harness on this phone's own loopback can be signed in from the phone.
+    val route = remember(connection.host) {
+        connection.host?.let { signInRoute(it.host, it.port, it.useTls, it.basePath, it.isRelay) } ?: SignInRoute.OnHarnessComputer
+    }
+    LaunchedEffect(accountController) { accountController?.load() }
+    // A reconnect hands out a new client: read the account again, which is also what finishes a sign-in
+    // that was done while the app was away and the socket dropped.
+    LaunchedEffect(api) { if (api != null) accountController?.refresh() }
+    LaunchedEffect(accountController) {
+        if (accountController == null) return@LaunchedEffect
+        store.hostEvents.collect { (event, _) ->
+            if (event == "deepseek-account/session-expired") accountController.onSessionExpired()
+        }
+    }
+    // The page that is open survives the settings controller being replaced.
+    var openKey by rememberSaveable(host) { mutableStateOf<String?>(null) }
+
     LaunchedEffect(controller) {
         if (controller == null) return@LaunchedEffect
         store.hostEvents.collect { (event, args) ->
             when (event) {
                 // A bundle was switched on or off (a module such as web search or the shell sandbox came
                 // or went), and the namespaces the harness describes went with it: read the list again.
-                "plugin-manager/changed" -> controller.load()
+                "plugin-manager/changed" -> {
+                    controller.load()
+                    // The account calls come and go with the account plugin: the Account page is offered or dropped from what they answer.
+                    accountController?.refresh()
+                }
                 // Another client saved a namespace: read it again. The harness announces our own writes
                 // too, and the controller tells them apart by revision.
                 "settings/document-updated" -> {
@@ -144,25 +183,46 @@ fun HarnessSettingsScreen(onClose: () -> Unit) {
         title = stringResource(R.string.hs_title),
         subtitle = stringResource(R.string.hs_intro),
         onClose = onClose,
-        onRefresh = controller?.let { { it.load() } },
+        onRefresh = controller?.let {
+            {
+                it.load()
+                accountController?.refresh()
+            }
+        },
     ) {
         if (controller == null) {
             Notice(stringResource(R.string.common_offline), warning = true)
         } else {
             val state by controller.state.collectAsStateWithLifecycle()
-            SettingsAreaBody(state, controller, hostLabel)
+            SettingsAreaBody(state, controller, accountController, route, hostLabel, openKey) { openKey = it }
         }
     }
 }
 
 @Composable
-private fun SettingsAreaBody(state: HarnessSettingsState, controller: HarnessSettingsController, hostLabel: String) {
-    var openKey by rememberSaveable { mutableStateOf<String?>(null) }
+private fun SettingsAreaBody(
+    state: HarnessSettingsState,
+    controller: HarnessSettingsController,
+    account: AccountController?,
+    route: SignInRoute,
+    hostLabel: String,
+    openKey: String?,
+    onOpen: (String?) -> Unit,
+) {
     val pages = remember(state.namespaces, state.writable) { state.pages }
+    // The Account page is offered until the harness has said it has no account calls (an older one, or its
+    // account plugin is off). Its own state decides, so a harness that cannot describe settings still has it.
+    val accountState = account?.state?.collectAsStateWithLifecycle()?.value
+    val accountOffered = account != null && accountState?.phase != AccountPhase.Unavailable
+    val accountPages = if (accountOffered) listOf(SettingsPage.Account) else emptyList()
+    LaunchedEffect(accountOffered) { if (!accountOffered && openKey == SettingsPage.Account.key) onOpen(null) }
 
     when (val phase = state.phase) {
         SettingsPhase.Loading -> SettingsSkeleton()
-        SettingsPhase.Unsupported -> Notice(stringResource(R.string.hs_unsupported), warning = false)
+        SettingsPhase.Unsupported -> {
+            Notice(stringResource(R.string.hs_unsupported), warning = false)
+            if (accountPages.isNotEmpty()) PageList(accountPages) { onOpen(it.key) }
+        }
         is SettingsPhase.Failed -> {
             // The app's usual load failure: a sentence, Retry, and the harness's own words folded away.
             DsCard {
@@ -174,21 +234,24 @@ private fun SettingsAreaBody(state: HarnessSettingsState, controller: HarnessSet
         SettingsPhase.Ready -> {
             if (!state.writable) Notice(stringResource(R.string.hs_read_only), warning = false)
             RefreshNotice(state, controller)
-            if (pages.isEmpty()) {
+            if (pages.isEmpty() && accountPages.isEmpty()) {
                 Text(stringResource(R.string.hs_empty), style = DsType.std14, color = DsTheme.colors.labelTertiary)
             }
-            val known = pages.filter { it !is SettingsPage.Generic }
+            val known = accountPages + pages.filter { it !is SettingsPage.Generic }
             val generic = pages.filterIsInstance<SettingsPage.Generic>()
-            if (known.isNotEmpty()) PageList(known) { openKey = it.key }
+            if (known.isNotEmpty()) PageList(known) { onOpen(it.key) }
             if (generic.isNotEmpty()) {
                 SectionHeader(stringResource(R.string.hs_section_more))
-                PageList(generic) { openKey = it.key }
+                PageList(generic) { onOpen(it.key) }
             }
         }
     }
 
+    if (account != null && accountOffered && openKey == SettingsPage.Account.key) {
+        AccountPageScreen(account, route, onClose = { onOpen(null) })
+    }
     pages.firstOrNull { it.key == openKey }?.let { page ->
-        HarnessSettingsPageScreen(page, controller, hostLabel, onClose = { openKey = null })
+        HarnessSettingsPageScreen(page, controller, hostLabel, onClose = { onOpen(null) })
     }
 }
 

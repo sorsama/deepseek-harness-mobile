@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Account: DeepSeek sign-in, in Harness settings. -->
+    <string name="acct_title">Compte</string>
+    <string name="acct_summary">Connectez-vous à DeepSeek et consultez votre solde.</string>
+    <string name="acct_unavailable">Ce harness ne peut pas se connecter à DeepSeek. C\'est peut-être une ancienne version, ou son plugin de compte est désactivé.</string>
+
+    <!-- Signed out. -->
+    <string name="acct_signed_out_title">Non connecté</string>
+    <string name="acct_signed_out_body">Connectez-vous avec votre compte DeepSeek pour l\'utiliser sur ce harness. Vos projets et vos fichiers restent où ils sont.</string>
+    <string name="acct_sign_in">Se connecter</string>
+    <string name="acct_sign_in_again">Se reconnecter</string>
+    <string name="acct_session_ended">Votre connexion à DeepSeek s\'est terminée. Reconnectez-vous pour continuer à l\'utiliser.</string>
+
+    <!-- How the last sign-in ended, and why. -->
+    <string name="acct_outcome_failed">La dernière connexion n\'a pas abouti.</string>
+    <string name="acct_outcome_expired">La dernière connexion a expiré. Recommencez quand vous voulez.</string>
+    <string name="acct_outcome_cancelled">La dernière connexion a été annulée.</string>
+    <string name="acct_reason_platform">Le harness n\'a pas pu joindre DeepSeek. Vérifiez sa connexion à internet et réessayez.</string>
+    <string name="acct_reason_storage">Le harness n\'a pas pu enregistrer la connexion. Vérifiez qu\'il lui reste de la place et qu\'il peut écrire dans son dossier.</string>
+    <string name="acct_reason_generic">La réponse de DeepSeek n\'était pas utilisable par le harness. Réessayez.</string>
+
+    <!-- A harness on another device: the browser cannot be sent back to it from this phone. -->
+    <string name="acct_remote_title">Connectez-vous sur l\'ordinateur du harness</string>
+    <string name="acct_remote_body">La connexion se termine en renvoyant le navigateur vers le harness par une adresse qui ne fonctionne que sur le même appareil. Depuis ce téléphone, cet appareil est le téléphone, pas le harness. Terminez la connexion sur l\'ordinateur qui fait tourner le harness : ouvrez-le là-bas, allez dans Réglages, puis Compte, et connectez-vous. Cette page se met à jour dès que c\'est fait.</string>
+    <string name="acct_check_again">Vérifier à nouveau</string>
+
+    <!-- A sign-in in progress. -->
+    <string name="acct_progress_title">Connexion en cours</string>
+    <string name="acct_progress_starting">Démarrage de la connexion…</string>
+    <string name="acct_progress_browser">Terminez la connexion dans votre navigateur, puis revenez dans cette app.</string>
+    <string name="acct_progress_remote">En attente de la fin de la connexion sur l\'ordinateur du harness.</string>
+    <string name="acct_progress_finishing">Finalisation de la connexion…</string>
+    <string name="acct_open_browser">Ouvrir le navigateur</string>
+    <string name="acct_copy_link">Copier le lien de connexion</string>
+    <string name="acct_link_copied">Lien copié</string>
+    <string name="acct_browser_missing">Aucun navigateur ne s\'est ouvert. Copiez le lien et ouvrez-le vous-même dans un navigateur.</string>
+    <string name="acct_link_refused">Le lien de connexion ne peut pas être utilisé. Réessayez pour en obtenir un nouveau.</string>
+    <string name="acct_cancel_sign_in">Annuler la connexion</string>
+    <string name="acct_try_again">Réessayer</string>
+
+    <!-- Signed in: profile, balance, bonus notices, sign out. -->
+    <string name="acct_signed_in">Connecté</string>
+    <string name="acct_name_fallback">Compte DeepSeek</string>
+    <string name="acct_profile_unavailable">Les informations du compte ne sont pas disponibles pour le moment.</string>
+    <string name="acct_balance_none">Aucun solde à afficher.</string>
+    <string name="acct_bonus_title">Bonus crédité</string>
+    <string name="acct_bonus_dismiss">Compris</string>
+    <string name="acct_sign_out">Se déconnecter</string>
+    <string name="acct_sign_out_title">Se déconnecter de DeepSeek ?</string>
+    <string name="acct_sign_out_idle">Se déconnecter ne supprime aucune donnée. Vous pourrez vous reconnecter.</string>
+    <string name="acct_sign_out_running">Des tâches tournent avec ce compte. Se déconnecter les arrête.</string>
+    <string name="acct_sign_out_unknown">Impossible de vérifier les tâches en cours. Se déconnecter peut arrêter celles qui utilisent ce compte.</string>
+
+    <!-- A call that did not go through. -->
+    <string name="acct_fail_rejected">Le harness n\'a pas pu le faire. Réessayez.</string>
+    <string name="acct_fail_unreachable">Impossible de joindre le harness. Rien n\'a été modifié.</string>
+</resources>
