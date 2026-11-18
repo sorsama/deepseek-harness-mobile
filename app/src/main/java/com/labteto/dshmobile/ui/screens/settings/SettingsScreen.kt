@@ -142,10 +142,12 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
     val store = rememberSessionStore()
     val plugins by store.plugins.collectAsStateWithLifecycle()
     val pluginManagementAvailable by store.pluginManagementAvailable.collectAsStateWithLifecycle()
+    val harnessSettingsAvailable by store.harnessSettingsAvailable.collectAsStateWithLifecycle()
     val colors = DsTheme.colors
     val toast = rememberDsToast()
     var showDisconnectDialog by remember { mutableStateOf(false) }
     var pluginsOpen by remember { mutableStateOf(false) }
+    var harnessSettingsOpen by remember { mutableStateOf(false) }
     // Settings and the archive are two different jobs: one is configuration, the other is a list to
     // search and restore from. A tab each keeps the settings reachable without scrolling past a
     // list that can be long, and the archive gets the whole height to be scrolled in.
@@ -304,6 +306,13 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                 if (connectionState.phase == ConnectionPhase.CONNECTED) {
                     SettingsCard(stringResource(R.string.models_title)) {
                         com.labteto.dshmobile.ui.screens.models.ModelsSettingsRow()
+                    }
+                    // What the harness keeps for itself: web search, shell limits, subagents and more.
+                    // Hidden only once the harness has said it has no such call.
+                    if (harnessSettingsAvailable != false) {
+                        SettingsCard(stringResource(R.string.hs_title)) {
+                            com.labteto.dshmobile.ui.screens.harnesssettings.HarnessSettingsRow { harnessSettingsOpen = true }
+                        }
                     }
                 }
 
@@ -533,6 +542,10 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
     if (pluginsOpen) {
         if (pluginManagementAvailable == false) plugins?.let { PluginsSheet(it, onDismiss = { pluginsOpen = false }) }
         else com.labteto.dshmobile.ui.screens.main.PluginManagerScreen(onClose = { pluginsOpen = false }, onDraftOpened = { pluginsOpen = false; onClose() })
+    }
+
+    if (harnessSettingsOpen) {
+        com.labteto.dshmobile.ui.screens.harnesssettings.HarnessSettingsScreen(onClose = { harnessSettingsOpen = false })
     }
 
     if (showDisconnectDialog) {
