@@ -22,6 +22,15 @@ All notable changes to DSH Mobile are documented here. Format based on
   modules that share a name show the id that tells them apart. Names no longer start with
   `@deepseek-ai/dsh-`, so the part that tells them apart is the part you can read. (#122)
 
+### Fixed
+
+- **Rows, cards and list items show that they are pressed again.** Holding a tool row in the chat,
+  a Settings row, an accent colour, a Trajectory row or a link on the Browser start page changed
+  nothing on screen; only buttons, chips and icon buttons answered. Every tappable item now takes a
+  light tone while it is held (and while a mouse points at it on a Chromebook), the same tone a
+  pressed card shows, and a quick tap is held long enough to see. The keyboard focus ring is
+  unchanged.
+
 ## [0.23.0] - 2026-11-17
 
 ![Three phones: the Subagents sheet with its Close button, a chat at Fully expanded, and the Stop and archive dialog](docs/images/releases/0.23.0/devices/hero-whats-new.png)

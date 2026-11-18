@@ -70,7 +70,7 @@ import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
-import com.labteto.dshmobile.ui.input.rememberFocusRingIndication
+import com.labteto.dshmobile.ui.input.rememberAppIndication
 import com.labteto.dshmobile.ui.adaptive.CaptionBarStyle
 import com.labteto.dshmobile.ui.theme.isDsDark
 import com.labteto.dshmobile.ui.theme.DshTheme
@@ -122,8 +122,9 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
     DshTheme(
         customization = customization,
         hapticPlatform = AndroidHapticPlatform,
-        // A visible ring on whatever has keyboard focus, for Tab on a Chromebook or a docked tablet.
-        indication = { base, accent -> rememberFocusRingIndication(base, accent) },
+        // The design system's press and hover fills on every clickable, and a visible ring on whatever
+        // has keyboard focus, for Tab on a Chromebook or a docked tablet. See FocusRing.kt.
+        indication = { _, accent -> rememberAppIndication(accent) },
     ) {
         val toast = rememberDsToast()
         CaptionBarStyle(dark = isDsDark(customization), background = DsTheme.colors.bgBase)

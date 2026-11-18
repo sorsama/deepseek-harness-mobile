@@ -37,11 +37,14 @@ import com.labteto.dshmobile.ui.theme.DsTheme
  * white: the edge is what separates them, so it is never dropped even when the fill alone would
  * read in dark mode.
  *
- * A card that can be pressed answers with its own fill, driven by the press itself and not by the
- * platform's ripple (the app's click indication draws no ripple, see `FocusRing.kt`): while the
- * card's [onClick], or whatever [pressSource] watches, is pressed, the whole card takes the `active`
- * tone over its fill. [pressSource] is for a card whose taps live inside it (a row that opens next to
- * a switch): the parts share one source, and pressing any of them lights the card as one thing.
+ * A card that can be pressed answers with its own fill under its content: while the card's
+ * [onClick], or whatever [pressSource] watches, is pressed, the whole card takes the `active` tone
+ * over its fill, with the same tone and spring as the app's click indication (`FocusRing.kt`) gives
+ * every other clickable. A card does not use that indication: its fill is the one press it shows, so
+ * its own clickable passes `indication = null`, and so must the targets inside a card that shares
+ * its [pressSource] (or the pressed tone would be drawn twice over them). [pressSource] is for a card
+ * whose taps live inside it (a row that opens next to a switch): the parts share one source, and
+ * pressing any of them lights the card as one thing, which a fill per target could not do.
  * While the source has keyboard focus the border becomes the accent ring, as it does on a button.
  */
 @Composable

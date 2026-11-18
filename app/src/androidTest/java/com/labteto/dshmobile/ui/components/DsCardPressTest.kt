@@ -29,10 +29,9 @@ import org.junit.Test
  * A card that can be pressed shows it, as a change of its own fill.
  *
  * Reported twice from a device: holding a bundle card on the Plugins page changed no pixel, while a
- * button, a chip and an icon button on the same page did. The app's click indication draws no ripple
- * (the focus-ring wrapper in `FocusRing.kt` is a draw node that never draws the ripple it wraps), so
- * the controls that looked pressed were the ones built on Material's `Surface`, which brings its own.
- * A card cannot lean on either, so [DsCard] reads the press itself. These hold a finger down on a
+ * button, a chip and an icon button on the same page did. The app's click indication then drew no
+ * press at all (it has since been fixed, see `FocusRing.kt`), and a card made of several targets
+ * cannot lean on a per-target indication anyway, so [DsCard] reads the press itself. These hold a finger down on a
  * target and sample a pixel of the card that is under no target, in both themes: it has to change
  * while the finger is down and come back when it lifts, for every target that shares the card's
  * source, and it must not change for a card nothing in it can press.
