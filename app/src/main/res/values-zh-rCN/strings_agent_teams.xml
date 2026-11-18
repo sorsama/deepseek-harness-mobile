@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="team_title">智能体团队</string>
+    <string name="team_chip">团队</string>
+    <string name="team_beta_badge">测试版</string>
+    <string name="team_tab_members">成员（%1$d）</string>
+    <string name="team_tab_tasks">任务（%1$d）</string>
+    <string name="team_read_only_note">这份列表由智能体自行更新。如需调整团队或任务，请在本会话中告诉负责人。</string>
+    <string name="team_failure">团队记录有一部分无法读取，以下内容可能不是最新的。</string>
+    <string name="team_members_empty_title">还没有成员</string>
+    <string name="team_members_empty_body">让智能体为一部分工作加入一名成员。</string>
+    <string name="team_member_running">运行中</string>
+    <string name="team_member_idle">未运行</string>
+    <string name="team_member_starting">准备中</string>
+    <string name="team_member_failed">启动失败</string>
+    <string name="team_member_status_tasks">%1$s · 未完成任务：%2$d</string>
+    <string name="team_lead">负责人</string>
+    <string name="team_open_chat">打开会话</string>
+    <string name="team_this_chat">当前会话</string>
+    <string name="team_tasks_empty_title">暂无共享任务</string>
+    <string name="team_tasks_empty_body">智能体分工后，各自的任务会显示在这里。</string>
+    <string name="team_group_in_progress">进行中</string>
+    <string name="team_group_ready">可开始</string>
+    <string name="team_group_waiting">等待中</string>
+    <string name="team_group_other">其他</string>
+    <string name="team_group_done">已完成</string>
+    <string name="team_task_unassigned">未分配</string>
+    <string name="team_task_waiting_on">等待：%1$s</string>
+    <string name="team_task_no_details">暂无详情。</string>
+    <string name="team_task_depends_on">依赖</string>
+    <string name="team_task_dependency_done">%1$s（已完成）</string>
+    <string name="team_task_dependency_open">%1$s（未完成）</string>
+    <string name="team_task_files">将修改的文件</string>
+    <string name="team_task_overlap">与进行中的“%1$s”修改相同的文件</string>
+    <string name="team_task_in_this_chat">负责人正在本会话中处理此任务。</string>
+    <string name="team_task_open_owner">打开与 %1$s 的会话</string>
+</resources>

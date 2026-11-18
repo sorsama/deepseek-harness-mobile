@@ -139,6 +139,9 @@ internal fun ChatTopBar(
      * [onOpenDrawer] is the click handler for all three.
      */
     listControl: ListControl = ListControl.OpenDrawer,
+    /** True when the open session leads an experimental Agent Team; the Team chip opens its sheet. */
+    teamAvailable: Boolean = false,
+    onOpenTeam: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = DsTheme.colors
@@ -212,12 +215,12 @@ internal fun ChatTopBar(
         // The live state shares the title row: the model chip above needs the width more, and the
         // title is already elastic, so "Working" / "Needs you" reads beside what is being worked on.
         val hasTitleRow = title.isNotBlank() || agentPresetLabel != null || subagentCount > 0 ||
-            running || needsYou
+            running || needsYou || teamAvailable
         if (hasTitleRow) {
             // The inline triggers are drawn 28dp but carry a 48dp touch target, which makes this row
             // 48dp tall whenever one is present; the padding that spaced a bare title is dropped then
             // so the row does not also pay for the margin on top of the target.
-            val hasTrigger = agentPresetLabel != null || subagentCount > 0
+            val hasTrigger = agentPresetLabel != null || subagentCount > 0 || teamAvailable
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -246,6 +249,9 @@ internal fun ChatTopBar(
                 }
                 if (agentPresetLabel != null) {
                     MetaChip(label = agentPresetLabel, onClick = { haptics.tap(); onOpenPresets() })
+                }
+                if (teamAvailable) {
+                    AgentTeamTag(onClick = { haptics.tap(); onOpenTeam() })
                 }
                 if (subagentCount > 0) {
                     SubagentTag(count = subagentCount, onClick = { haptics.tap(); onOpenSubagents() })

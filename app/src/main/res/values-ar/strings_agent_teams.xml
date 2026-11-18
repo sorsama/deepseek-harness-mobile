@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="team_title">فريق الوكلاء</string>
+    <string name="team_chip">الفريق</string>
+    <string name="team_beta_badge">تجريبي</string>
+    <string name="team_tab_members">الأعضاء (%1$d)</string>
+    <string name="team_tab_tasks">المهام (%1$d)</string>
+    <string name="team_read_only_note">يحدّث الوكلاء هذه القائمة بأنفسهم. لتغيير الفريق أو مهامه، اطلب ذلك من القائد في هذه المحادثة.</string>
+    <string name="team_failure">تعذّرت قراءة جزء من سجل الفريق، لذا قد لا تكون هذه المعلومات محدّثة.</string>
+    <string name="team_members_empty_title">لا يوجد أعضاء بعد</string>
+    <string name="team_members_empty_body">اطلب من الوكيل أن يضيف عضوًا إلى الفريق لينجز جزءًا من العمل.</string>
+    <string name="team_member_running">يعمل</string>
+    <string name="team_member_idle">غير نشط</string>
+    <string name="team_member_starting">قيد البدء</string>
+    <string name="team_member_failed">تعذّر البدء</string>
+    <string name="team_member_status_tasks">%1$s · مهام مفتوحة: %2$d</string>
+    <string name="team_lead">القائد</string>
+    <string name="team_open_chat">فتح المحادثة</string>
+    <string name="team_this_chat">هذه المحادثة</string>
+    <string name="team_tasks_empty_title">لا توجد مهام مشتركة بعد</string>
+    <string name="team_tasks_empty_body">عندما يقسّم الوكلاء العمل بينهم، ستظهر مهامهم هنا.</string>
+    <string name="team_group_in_progress">قيد التنفيذ</string>
+    <string name="team_group_ready">جاهزة للبدء</string>
+    <string name="team_group_waiting">في الانتظار</string>
+    <string name="team_group_other">أخرى</string>
+    <string name="team_group_done">مكتملة</string>
+    <string name="team_task_unassigned">غير مُسندة</string>
+    <string name="team_task_waiting_on">بانتظار: %1$s</string>
+    <string name="team_task_no_details">لا توجد تفاصيل.</string>
+    <string name="team_task_depends_on">تعتمد على</string>
+    <string name="team_task_dependency_done">%1$s (مكتملة)</string>
+    <string name="team_task_dependency_open">%1$s (لم تكتمل بعد)</string>
+    <string name="team_task_files">الملفات التي ستعدّلها</string>
+    <string name="team_task_overlap">تعدّل الملفات نفسها التي تعدّلها «%1$s» الجارية الآن</string>
+    <string name="team_task_in_this_chat">يعمل القائد على هذه المهمة في هذه المحادثة.</string>
+    <string name="team_task_open_owner">فتح المحادثة مع %1$s</string>
+</resources>
