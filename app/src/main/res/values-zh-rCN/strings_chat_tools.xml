@@ -60,6 +60,7 @@
     <string name="chat_tool_subagent_failed">没有启动</string>
     <string name="chat_tool_subagent_replied">已回复</string>
     <string name="chat_tool_subagent_model">模型：%1$s</string>
+    <string name="chat_tool_subagent_model_label">模型：</string>
     <string name="chat_tool_subagent_open">打开子智能体</string>
     <string name="chat_tool_subagent_conversation">这是子智能体的对话</string>
 
@@ -148,11 +149,11 @@
     </plurals>
     <string name="chat_tool_raw_title">原始调用数据</string>
 
-    <string name="chat_tool_failed_with">失败：%1$s</string>
+    <string name="chat_tool_failed_label">失败：</string>
     <string name="chat_tool_failed">这一步失败了。</string>
     <string name="chat_tool_stopped">还没完成就停止了。</string>
     <string name="chat_tool_auto_review_denied">自动审查拦下了这一步，所以没有运行。</string>
-    <string name="chat_tool_reason">原因：%1$s</string>
+    <string name="chat_tool_reason_label">原因：</string>
 
     <string name="chat_turn_failed_rate_limit">模型服务商现在很忙，请稍后再试。</string>
     <string name="chat_turn_failed_quota">模型服务商账户余额不足。</string>
@@ -167,5 +168,5 @@
     <string name="chat_turn_failed_process">这个回合还没结束，harness 就停止了。</string>
     <string name="chat_turn_failed_signed_out">你已退出 DeepSeek 账号，所以停止了。</string>
     <string name="chat_turn_failed_unknown">这个回合出了点问题。</string>
-    <string name="chat_turn_error_code">代码：%1$s</string>
+    <string name="chat_turn_error_code_label">代码：</string>
 </resources>

@@ -159,6 +159,10 @@ private fun terminalCard(
     val send = if (shell == null) terminalSendCall(call.name, args) else null
     if (shell == null && send == null) return null
 
+    // How the call ended, from the one function the row's own dot is read from: a command the turn's
+    // stop cut short is an error in the harness's records, but it is stopped, not failed.
+    val outcome = toolOutcome(call.name, result, running)
+    val stopped = outcome == ToolOutcome.Stopped
     // Shown, not run: cut a huge command (a model can send hundreds of KB) to what a card can lay out.
     val command = cardCommandText(shell?.command ?: send?.text.orEmpty())
     val description = shell?.description
@@ -178,7 +182,8 @@ private fun terminalCard(
             running = result == null,
             background = true,
             jobId = backgroundJobId(result),
-            failed = result?.isError == true,
+            failed = outcome == ToolOutcome.Failed,
+            stopped = stopped,
         )
     }
 
@@ -194,7 +199,10 @@ private fun terminalCard(
     // ran stays in view, and the transcript says why under it. A persistent shell can report a reset
     // or partial output, so its output is shown as written with no exit status invented for it.
     if (result.isError) {
-        return ToolCardView.TerminalCard(title = command, description = description, cwd = workdir, running = false, failed = true)
+        return ToolCardView.TerminalCard(
+            title = command, description = description, cwd = workdir, running = false,
+            failed = !stopped, stopped = stopped,
+        )
     }
     val output = singleResultText(result) ?: return null
     if (shell?.persistent == true) {

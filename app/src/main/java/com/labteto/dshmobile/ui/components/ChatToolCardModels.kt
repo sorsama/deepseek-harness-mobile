@@ -87,8 +87,8 @@ data class QuestionCard(
     val total: Int = questions.size,
 ) : ToolCardView
 
-/** How far a `subagent` call got, from its own result. */
-enum class SubagentPhase { Starting, Started, Replied, Failed }
+/** How far a `subagent` call got, from its own result. [Stopped] is a call the turn's stop cut short. */
+enum class SubagentPhase { Starting, Started, Replied, Failed, Stopped }
 
 /**
  * A `subagent` call: the child it started. [childId] is what the Subagents sheet opens it by; it is

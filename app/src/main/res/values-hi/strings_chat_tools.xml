@@ -63,6 +63,7 @@
     <string name="chat_tool_subagent_failed">शुरू नहीं हुआ</string>
     <string name="chat_tool_subagent_replied">जवाब दिया</string>
     <string name="chat_tool_subagent_model">मॉडल: %1$s</string>
+    <string name="chat_tool_subagent_model_label">मॉडल:</string>
     <string name="chat_tool_subagent_open">सबएजेंट खोलें</string>
     <string name="chat_tool_subagent_conversation">यह एक सबएजेंट की बातचीत है</string>
 
@@ -161,11 +162,11 @@
     </plurals>
     <string name="chat_tool_raw_title">कॉल का मूल डेटा</string>
 
-    <string name="chat_tool_failed_with">नाकाम: %1$s</string>
+    <string name="chat_tool_failed_label">नाकाम:</string>
     <string name="chat_tool_failed">यह कदम नाकाम रहा।</string>
     <string name="chat_tool_stopped">पूरा होने से पहले रुक गया।</string>
     <string name="chat_tool_auto_review_denied">ऑटो रिव्यू ने यह कदम रोक दिया, इसलिए यह नहीं चला।</string>
-    <string name="chat_tool_reason">वजह: %1$s</string>
+    <string name="chat_tool_reason_label">वजह:</string>
 
     <string name="chat_turn_failed_rate_limit">मॉडल प्रोवाइडर अभी व्यस्त है। थोड़ी देर में फिर कोशिश करें।</string>
     <string name="chat_turn_failed_quota">मॉडल प्रोवाइडर के खाते में क्रेडिट खत्म हो गया है।</string>
@@ -180,5 +181,5 @@
     <string name="chat_turn_failed_process">यह टर्न पूरा होने से पहले harness रुक गया।</string>
     <string name="chat_turn_failed_signed_out">रुक गया क्योंकि आपने DeepSeek से साइन आउट किया।</string>
     <string name="chat_turn_failed_unknown">इस टर्न में कुछ गड़बड़ हो गई।</string>
-    <string name="chat_turn_error_code">कोड: %1$s</string>
+    <string name="chat_turn_error_code_label">कोड:</string>
 </resources>

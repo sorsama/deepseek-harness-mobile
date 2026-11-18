@@ -590,14 +590,9 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
     var rawOpen by remember(node.callId) { mutableStateOf(false) }
     val holdLabel = stringResource(R.string.hold_tool_actions)
     // The leading slot carries the outcome: a red dot for a failed call, an amber one for a call the
-    // turn's stop cut short, the tool glyph otherwise.
-    val state = when {
-        failure == ToolFailure.Interrupted -> DisclosureState.Stopped
-        card.explainsFailure(result) -> DisclosureState.Idle
-        result?.isError == true -> DisclosureState.Error
-        result == null && context.running -> DisclosureState.Running
-        else -> DisclosureState.Idle
-    }
+    // turn's stop cut short, the tool glyph otherwise. The card's own dot and the group's failed count
+    // read the same function, so they cannot disagree with this row.
+    val state = toolOutcome(node.name, result, context.running).disclosureState()
     val startedAt = context.eventTimes[node.seq]
     val endedAt = result?.let { context.eventTimes[it.seq] }
     val elapsed = if (startedAt != null && endedAt != null) {

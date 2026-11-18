@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.permission.PermissionDenial
@@ -68,17 +69,28 @@ internal fun toolTitleText(title: ToolTitle): String = stringResource(
 internal fun ToolFailureLine(failure: ToolFailure) {
     val colors = DsTheme.colors
     Column(Modifier.padding(start = 26.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        val (text, color) = when (failure) {
-            ToolFailure.Interrupted -> stringResource(R.string.chat_tool_stopped) to colors.warnLabel
-            is ToolFailure.Denied -> stringResource(permissionDenialText(failure.denial)) to colors.error
-            // The tool's own words are English text from the tool (a path, a command, a quoted name):
-            // isolated left to right as a whole, so a right-to-left sentence around it cannot reorder it.
-            is ToolFailure.Failed -> (failure.message?.let { stringResource(R.string.chat_tool_failed_with, technicalDisplay(it)) }
-                ?: stringResource(R.string.chat_tool_failed)) to colors.error
-        }
-        Text(text, style = DsType.caption11, color = color)
-        if (failure is ToolFailure.Denied && failure.denial == PermissionDenial.AutoReviewRejected) {
-            failure.reason?.let { Text(stringResource(R.string.chat_tool_reason, it), style = DsType.caption11, color = colors.labelTertiary) }
+        when (failure) {
+            ToolFailure.Interrupted -> Text(stringResource(R.string.chat_tool_stopped), style = DsType.caption11, color = colors.warnLabel)
+            is ToolFailure.Denied -> {
+                Text(stringResource(permissionDenialText(failure.denial)), style = DsType.caption11, color = colors.error)
+                if (failure.denial == PermissionDenial.AutoReviewRejected) {
+                    // Auto review's reason is the harness's own text.
+                    failure.reason?.let {
+                        LabeledTechnicalText(stringResource(R.string.chat_tool_reason_label), it, DsType.caption11, colors.labelTertiary)
+                    }
+                }
+            }
+            // The tool's own words are English text from the tool (a path, a command, a quoted name).
+            // The app's "Failed:" follows the layout; the tool's text is its own left-to-right
+            // paragraph after it, so a Windows path that wraps still reads in order in Arabic.
+            is ToolFailure.Failed -> {
+                val message = failure.message
+                if (message != null) {
+                    LabeledTechnicalText(stringResource(R.string.chat_tool_failed_label), message, DsType.caption11, colors.error)
+                } else {
+                    Text(stringResource(R.string.chat_tool_failed), style = DsType.caption11, color = colors.error)
+                }
+            }
         }
     }
 }
@@ -98,11 +110,8 @@ internal fun TurnFailureRow(code: String?, message: String?) {
                 color = colors.error,
             )
         }
-        val detail = listOfNotNull(
-            message?.trim()?.takeIf { it.isNotEmpty() },
-            code?.let { stringResource(R.string.chat_turn_error_code, technicalDisplay(it)) },
-        )
-        if (detail.isNotEmpty()) {
+        val providerMessage = message?.trim()?.takeIf { it.isNotEmpty() }
+        if (providerMessage != null || code != null) {
             DisclosureRow(
                 title = stringResource(R.string.ux_a_details),
                 icon = FeatherIcons.Info,
@@ -110,7 +119,14 @@ internal fun TurnFailureRow(code: String?, message: String?) {
                 onToggle = { open = !open },
             ) {
                 Column(Modifier.padding(start = 28.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    detail.forEach { Text(it, style = DsType.caption11, color = colors.labelTertiary) }
+                    // The provider's message and code are English text from outside the app: one
+                    // left-to-right paragraph each, never mixed into a translated sentence.
+                    providerMessage?.let {
+                        Text(it, style = DsType.caption11.copy(textDirection = TextDirection.Ltr), color = colors.labelTertiary)
+                    }
+                    code?.let {
+                        LabeledTechnicalText(stringResource(R.string.chat_turn_error_code_label), it, DsType.caption11, colors.labelTertiary)
+                    }
                 }
             }
         }

@@ -7,13 +7,18 @@ import com.labteto.dshmobile.core.session.ToolCallNode
 import com.labteto.dshmobile.core.session.ToolResultNode
 import com.labteto.dshmobile.core.session.TurnEndNode
 import com.labteto.dshmobile.core.session.TurnStartNode
+import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.ui.components.ContentBlockView
+import com.labteto.dshmobile.ui.components.DisclosureState
 import com.labteto.dshmobile.ui.components.QuestionOutcome
+import com.labteto.dshmobile.ui.components.SubagentCard
+import com.labteto.dshmobile.ui.components.SubagentPhase
 import com.labteto.dshmobile.ui.components.ToolCardView
 import com.labteto.dshmobile.ui.components.hasArguments
 import com.labteto.dshmobile.ui.components.hasBody
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
@@ -95,6 +100,130 @@ class ChatToolOutcomesTest {
         val denied = result("Error: denied", code = "APPROVAL_REJECTED_BY_USER", name = "DshMobilePermissionDenied")
         assertEquals(ToolFailure.Denied(PermissionDenial.Rejected, null), toolFailureOf(denied))
         assertTrue(callFailed(call("bash"), denied))
+    }
+
+    // ---- One outcome for every dot ---------------------------------------------------------
+
+    private val pwshArgs = """{"command":"Start-Sleep -Seconds 600","description":"Wait for the build to finish"}"""
+
+    @Test
+    fun `every abort payload of the harness is stopped for every reader of the outcome`() {
+        val pwsh = call("pwsh", pwshArgs)
+        val aborts = listOf(
+            stoppedRunning,
+            stoppedBefore,
+            result("Error: read aborted", code = "FS_ABORTED", name = "FsError"),
+            result("Error: Exa search aborted", code = "WEB_ABORTED", name = "WebError"),
+            result("Error: x", code = "interrupted"),
+        )
+        for (aborted in aborts) {
+            // Whether or not the session still says it is working: a result is a result.
+            assertEquals(ToolOutcome.Stopped, toolOutcome(pwsh.name, aborted, running = true))
+            assertEquals(ToolOutcome.Stopped, toolOutcome(pwsh.name, aborted, running = false))
+            // The row's dot is amber, and the group's header does not count it as failed.
+            assertEquals(DisclosureState.Stopped, toolOutcome(pwsh.name, aborted, running = false).disclosureState())
+            assertFalse(callFailed(pwsh, aborted))
+        }
+    }
+
+    @Test
+    fun `a failure is failed for every reader of the outcome`() {
+        val pwsh = call("pwsh", pwshArgs)
+        val spawn = result("Error: spawn C:\\Program Files\\nodejs\\node.exe ENOENT")
+        val denied = result("Error: denied", code = "APPROVAL_REJECTED_BY_USER", name = "DshMobilePermissionDenied")
+        for (failed in listOf(spawn, denied)) {
+            assertEquals(ToolOutcome.Failed, toolOutcome(pwsh.name, failed, running = false))
+            assertEquals(DisclosureState.Error, toolOutcome(pwsh.name, failed, running = false).disclosureState())
+            assertTrue(callFailed(pwsh, failed))
+        }
+    }
+
+    @Test
+    fun `a call with no result is running while the session works and plain after`() {
+        assertEquals(ToolOutcome.Running, toolOutcome("pwsh", null, running = true))
+        assertEquals(DisclosureState.Running, toolOutcome("pwsh", null, running = true).disclosureState())
+        assertEquals(ToolOutcome.Done, toolOutcome("pwsh", null, running = false))
+        assertEquals(DisclosureState.Idle, toolOutcome("pwsh", null, running = false).disclosureState())
+        assertEquals(ToolOutcome.Done, toolOutcome("pwsh", result("ok", isError = false), running = true))
+        // An error flag that is not set is not an error, whatever code is recorded.
+        assertEquals(ToolOutcome.Done, toolOutcome("pwsh", result("ok", isError = false, code = "ABORTED"), running = false))
+    }
+
+    @Test
+    fun `a closed or timed out question is done and a stopped one is stopped`() {
+        assertEquals(ToolOutcome.Done, toolOutcome("ask_user_question", dismissed(), running = false))
+        assertEquals(
+            ToolOutcome.Done,
+            toolOutcome("ask_user_question", result("Error: the user cancelled", code = "ASK_CANCELLED", name = "UserQuestionError"), running = false),
+        )
+        assertEquals(
+            ToolOutcome.Done,
+            toolOutcome("ask_user_question", result("Error: timed out", code = "ASK_TIMED_OUT", name = "UserQuestionError"), running = false),
+        )
+        assertEquals(
+            ToolOutcome.Stopped,
+            toolOutcome("ask_user_question", result("Error: aborted", code = "ASK_ABORTED", name = "UserQuestionError"), running = false),
+        )
+        // The same code on another tool is nothing a reader did to a question.
+        assertEquals(ToolOutcome.Failed, toolOutcome("edit", dismissed(), running = false))
+    }
+
+    @Test
+    fun `a stopped command's card is stopped not failed so its own dot is not red`() {
+        val stopped = buildToolCardView(call("pwsh", pwshArgs), stoppedRunning, running = false) as ToolCardView.TerminalCard
+        assertTrue(stopped.stopped)
+        assertFalse(stopped.failed)
+        // Like a failed one it keeps the command, since there is no output to say what ran.
+        assertTrue(stopped.cutShort)
+        assertEquals("Start-Sleep -Seconds 600", stopped.title)
+
+        val failed = buildToolCardView(call("pwsh", pwshArgs), result("Error: spawn pwsh ENOENT"), running = false) as ToolCardView.TerminalCard
+        assertTrue(failed.failed)
+        assertFalse(failed.stopped)
+
+        val finished = buildToolCardView(call("pwsh", pwshArgs), result("done\n", isError = false), running = false) as ToolCardView.TerminalCard
+        assertFalse(finished.failed)
+        assertFalse(finished.stopped)
+        assertFalse(finished.cutShort)
+    }
+
+    @Test
+    fun `a stopped background launch is stopped not failed`() {
+        val args = """{"command":"npm start","description":"Start the dev server","run_in_background":true}"""
+        val stopped = buildToolCardView(call("pwsh", args), stoppedBefore, running = false) as ToolCardView.TerminalCard
+        assertTrue(stopped.background)
+        assertTrue(stopped.stopped)
+        assertFalse(stopped.failed)
+        val failed = buildToolCardView(call("pwsh", args), result("Error: run_in_background is disabled"), running = false) as ToolCardView.TerminalCard
+        assertTrue(failed.failed)
+        assertFalse(failed.stopped)
+    }
+
+    @Test
+    fun `a stopped subagent call is stopped not failed to start`() {
+        val args = """{"description":"Read the docs","prompt":"Read the docs folder"}"""
+        val stopped = buildToolCardView(call("subagent", args), stoppedRunning, running = false) as SubagentCard
+        assertEquals(SubagentPhase.Stopped, stopped.phase)
+        val failed = buildToolCardView(call("subagent", args), result("Error: subagent tool requires a calling agent"), running = false) as SubagentCard
+        assertEquals(SubagentPhase.Failed, failed.phase)
+    }
+
+    @Test
+    fun `nested calls read the same outcome from their settlement record`() {
+        fun record(json: String) = WireJson.parseToJsonElement(json) as JsonObject
+        assertEquals(
+            ToolOutcome.Stopped,
+            ptcChildOutcome(record("""{"name":"pwsh","isError":true,"error":{"name":"AbortError","code":"ABORTED"}}""")),
+        )
+        assertEquals(
+            ToolOutcome.Failed,
+            ptcChildOutcome(record("""{"name":"read","isError":true,"error":{"name":"FsError","code":"ENOENT"}}""")),
+        )
+        // An error with no recorded error object is still an error.
+        assertEquals(ToolOutcome.Failed, ptcChildOutcome(record("""{"name":"read","isError":true}""")))
+        assertEquals(ToolOutcome.Done, ptcChildOutcome(record("""{"name":"read","content":[]}""")))
+        // A start record has no error flag: nothing to show yet.
+        assertEquals(ToolOutcome.Done, ptcChildOutcome(record("""{"name":"read","arguments":{"path":"a"}}""")))
     }
 
     // ---- Questions -------------------------------------------------------------------------

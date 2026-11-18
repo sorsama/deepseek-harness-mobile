@@ -68,6 +68,7 @@
     <string name="chat_tool_subagent_failed">Didn\'t start</string>
     <string name="chat_tool_subagent_replied">Replied</string>
     <string name="chat_tool_subagent_model">Model: %1$s</string>
+    <string name="chat_tool_subagent_model_label">Model:</string>
     <string name="chat_tool_subagent_open">Open subagent</string>
     <string name="chat_tool_subagent_conversation">This is a subagent\'s conversation</string>
 
@@ -174,11 +175,11 @@
     <string name="chat_tool_raw_title">Raw call data</string>
 
     <!-- Failure lines under a tool call -->
-    <string name="chat_tool_failed_with">Failed: %1$s</string>
+    <string name="chat_tool_failed_label">Failed:</string>
     <string name="chat_tool_failed">This step failed.</string>
     <string name="chat_tool_stopped">Stopped before it finished.</string>
     <string name="chat_tool_auto_review_denied">Auto review blocked this step, so it didn\'t run.</string>
-    <string name="chat_tool_reason">Reason: %1$s</string>
+    <string name="chat_tool_reason_label">Reason:</string>
 
     <!-- Why a turn failed -->
     <string name="chat_turn_failed_rate_limit">The model provider is busy right now. Try again in a moment.</string>
@@ -194,5 +195,5 @@
     <string name="chat_turn_failed_process">The harness stopped before this turn finished.</string>
     <string name="chat_turn_failed_signed_out">Stopped because you signed out of DeepSeek.</string>
     <string name="chat_turn_failed_unknown">Something went wrong in this turn.</string>
-    <string name="chat_turn_error_code">Code: %1$s</string>
+    <string name="chat_turn_error_code_label">Code:</string>
 </resources>

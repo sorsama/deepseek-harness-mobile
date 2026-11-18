@@ -69,6 +69,7 @@
     <string name="chat_tool_subagent_failed">Не запустился</string>
     <string name="chat_tool_subagent_replied">Ответил</string>
     <string name="chat_tool_subagent_model">Модель: %1$s</string>
+    <string name="chat_tool_subagent_model_label">Модель:</string>
     <string name="chat_tool_subagent_open">Открыть субагента</string>
     <string name="chat_tool_subagent_conversation">Это переписка субагента</string>
 
@@ -187,11 +188,11 @@
     </plurals>
     <string name="chat_tool_raw_title">Исходные данные вызова</string>
 
-    <string name="chat_tool_failed_with">Ошибка: %1$s</string>
+    <string name="chat_tool_failed_label">Ошибка:</string>
     <string name="chat_tool_failed">Этот шаг не удался.</string>
     <string name="chat_tool_stopped">Остановлено до завершения.</string>
     <string name="chat_tool_auto_review_denied">Автопроверка заблокировала этот шаг, поэтому он не выполнялся.</string>
-    <string name="chat_tool_reason">Причина: %1$s</string>
+    <string name="chat_tool_reason_label">Причина:</string>
 
     <string name="chat_turn_failed_rate_limit">Провайдер модели сейчас перегружен. Попробуйте чуть позже.</string>
     <string name="chat_turn_failed_quota">На счёте провайдера модели закончились средства.</string>
@@ -206,5 +207,5 @@
     <string name="chat_turn_failed_process">Harness остановился, не завершив этот ход.</string>
     <string name="chat_turn_failed_signed_out">Остановлено, потому что вы вышли из DeepSeek.</string>
     <string name="chat_turn_failed_unknown">В этом ходе что-то пошло не так.</string>
-    <string name="chat_turn_error_code">Код: %1$s</string>
+    <string name="chat_turn_error_code_label">Код:</string>
 </resources>

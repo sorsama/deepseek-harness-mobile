@@ -25,6 +25,23 @@ internal fun hasPtcChildren(events: List<OtherNode>, parent: String): Boolean = 
         ((event.data as? JsonObject)?.get("parentCallId") as? JsonPrimitive)?.contentOrNull == parent
 }
 
+/**
+ * How a nested call ended, from its settlement record (`tool/ptc-dispatch`), through the function the
+ * top-level rows use. Only a settlement carries `isError`, so a record that has not settled reads as
+ * done here: a nested row shows a failure or a stop, and nothing for a call still going.
+ */
+internal fun ptcChildOutcome(record: JsonObject): ToolOutcome {
+    val error = record["error"] as? JsonObject
+    return toolOutcomeOfRecord(
+        name = (record["name"] as? JsonPrimitive)?.contentOrNull.orEmpty(),
+        settled = true,
+        isError = (record["isError"] as? JsonPrimitive)?.booleanOrNull == true,
+        errorCode = (error?.get("code") as? JsonPrimitive)?.contentOrNull,
+        errorName = (error?.get("name") as? JsonPrimitive)?.contentOrNull,
+        running = false,
+    )
+}
+
 /** Dispatch-start and settlement share one child row; recursion follows declared parent ids. */
 @Composable
 internal fun PtcChildren(
@@ -56,6 +73,7 @@ internal fun PtcChildren(
         // Cut only while the enclosing row is a preview and this call has not been opened by a tap.
         val clipChild = clip && nested.preview
         DisclosureRow(title = (record["name"] as? JsonPrimitive)?.contentOrNull ?: id,
+            state = ptcChildOutcome(record).disclosureState(),
             expanded = expanded, onToggle = nested.toggle) {
             Column(Modifier.padding(start = DsSpacing.medium), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(DsSpacing.xsmall)) {
                 record["arguments"]?.let { args ->

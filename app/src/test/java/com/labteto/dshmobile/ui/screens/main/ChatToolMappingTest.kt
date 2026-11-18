@@ -540,9 +540,10 @@ class ChatToolMappingTest {
         val res = result("Error: tool call aborted", isError = true, errorCode = "ABORTED", errorName = "AbortError")
         assertEquals(ToolFailure.Interrupted, toolFailureOf(res))
         assertFalse(callFailed(call("pwsh", shellArgs()), res))
-        // The card still shows what ran.
+        // The card still shows what ran, and its own dot is the row's: stopped, not failed.
         val term = card("pwsh", shellArgs(), res) as ToolCardView.TerminalCard
-        assertTrue(term.failed)
+        assertTrue(term.stopped)
+        assertFalse(term.failed)
         assertEquals("ls -la", term.title)
     }
 
