@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,14 +72,22 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
     var registries by remember(host) { mutableStateOf<PluginRegistries?>(null) }
     var spec by remember(host) { mutableStateOf("") }
     var registry by remember(host) { mutableStateOf("") }
-    var search by remember(host) { mutableStateOf("") }
-    var filter by remember(host) { mutableStateOf(PluginFilter.ALL) }
+    // What the person was looking at survives the activity being recreated (text size, display size,
+    // theme or language changed with the page open) and a process restart: the search, the chip and
+    // the open bundle. Kept per harness: [openedFor] is the one the page was open for, which stands in
+    // while the connection comes back after a restart, and a different harness starts afresh. Nothing
+    // here is a secret, and the install form, the confirmations and the removal stay unsaved.
+    val openedFor = rememberSaveable { mutableStateOf(host) }.value
+    val stateHost = host ?: openedFor
+    LaunchedEffect(host) { if (host != null && openedFor != null && host != openedFor) onClose() }
+    var search by rememberSaveable(stateHost) { mutableStateOf("") }
+    var filter by rememberSaveable(stateHost) { mutableStateOf(PluginFilter.ALL) }
     // The open bundle is held by name and looked up from `bundles` below, so a refresh or a toggle
     // updates its page and a removed bundle closes it. Its search and chip live here, not inside the
     // page, so that the list's own search, chip and scroll position are never touched by it.
-    var detailName by remember(host) { mutableStateOf<String?>(null) }
-    var detailSearch by remember(host) { mutableStateOf("") }
-    var detailFilter by remember(host) { mutableStateOf(PluginFilter.ALL) }
+    var detailName by rememberSaveable(stateHost) { mutableStateOf<String?>(null) }
+    var detailSearch by rememberSaveable(stateHost) { mutableStateOf("") }
+    var detailFilter by rememberSaveable(stateHost) { mutableStateOf(PluginFilter.ALL) }
     val listState = rememberLazyListState()
     var installOpen by remember(host) { mutableStateOf(false) }
     var operationOpen by remember(host) { mutableStateOf(false) }

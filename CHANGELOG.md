@@ -34,6 +34,9 @@ All notable changes to DSH Mobile are documented here. Format based on
   API keys, the Workspace panel and every other full-screen page went empty after a rotation, in
   either direction, until it was closed and opened again. The page now lays itself out again for the
   new shape, and the same holds when split screen changes the app's size.
+- **Changing the text size, display size or dark mode with the Plugins page open keeps you there.**
+  The app went back to the top of Settings, and the search, the chosen chip and the open bundle were
+  lost. They now come back as they were.
 
 ## [0.23.0] - 2026-11-17
 
