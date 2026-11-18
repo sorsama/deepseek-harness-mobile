@@ -14,6 +14,17 @@ All notable changes to DSH Mobile are documented here. Format based on
   installing a plugin bundle, so this page reads and never writes. A host that cannot show a preset
   hides the button.
 
+- **See where a turn's time went, and open any record.** Under each turn in the Trajectory tab, one
+  stacked bar shows how its time split between waiting for the first token, the model writing,
+  tools running, waiting for your approval and everything else, with a legend that gives every
+  label, time and percentage in words, so nothing depends on colour. A card above the turns adds the
+  loaded session up: time, turns, model replies, tool calls and tokens. Tap a turn to see its
+  records, and tap a model reply or a tool call to open its inspector: kind, start, duration, time
+  to first token, token counts, the model, and its input and output with **Show all** and
+  **Copy**. **Show raw JSON** keeps the logged events one explicit tap away. A number the harness did
+  not record is left out, never shown as zero. Tapping a tool call now opens the inspector instead of
+  unfolding a short preview in place.
+
 ## [0.23.0] - 2026-11-17
 
 ![Three phones: the Subagents sheet with its Close button, a chat at Fully expanded, and the Stop and archive dialog](docs/images/releases/0.23.0/devices/hero-whats-new.png)

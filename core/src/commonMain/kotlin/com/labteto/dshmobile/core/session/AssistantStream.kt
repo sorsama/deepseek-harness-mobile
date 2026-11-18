@@ -108,6 +108,66 @@ object AssistantStream {
         return out
     }
 
+    /**
+     * When the first token arrived, read straight from the compact [stream] without expanding it.
+     *
+     * A token is the first non-empty text or reasoning fragment, or the first tool-call fragment
+     * that carries arguments or names the tool. This mirrors `assistantStreamFirstTokenTime` in the
+     * host's `packages/llm/llm/src/assistant-stream.ts` (harness 0.2.1-rc.2), which the web client's
+     * Trajectory view uses for "time to first token". A settlement can hold thousands of fragments
+     * and the Trajectory tab asks this once per model step, so it stops at the first token and
+     * allocates nothing per fragment.
+     *
+     * Null when the stream is absent, carries no token, or is malformed before its first token: a
+     * time this client cannot establish is left out rather than guessed.
+     */
+    fun firstTokenTime(stream: JsonElement?): Long? {
+        val records = stream as? JsonArray ?: return null
+        for (candidate in records) {
+            val record = candidate as? JsonObject ?: return null
+            val time = when (record["type"]?.jsonPrimitive?.contentOrNull) {
+                CHUNK -> {
+                    val chunk = record["chunk"] as? JsonObject ?: return null
+                    if (chunk.isTokenDelta()) record["time"]?.time() ?: return null else null
+                }
+                TEXT, REASONING, TOOL_CALL -> firstRunTokenTime(record) ?: if (record.isMalformedRun()) return null else null
+                else -> return null
+            }
+            if (time != null) return time
+        }
+        return null
+    }
+
+    private fun JsonObject.isTokenDelta(): Boolean = when (this["type"]?.jsonPrimitive?.contentOrNull) {
+        "text-delta", "reasoning-delta" -> this["text"]?.jsonPrimitive?.contentOrNull?.isNotEmpty() == true
+        "tool-call-delta" ->
+            this["argumentsDelta"]?.jsonPrimitive?.contentOrNull?.isNotEmpty() == true || this["name"] != null
+        else -> false
+    }
+
+    /** Time of the first member that makes a token; a named tool-call run counts from its start. */
+    private fun firstRunTokenTime(record: JsonObject): Long? {
+        val type = record["type"]?.jsonPrimitive?.contentOrNull ?: return null
+        val time0 = record["time0"]?.time() ?: return null
+        if (type == TOOL_CALL && record["name"] != null) return time0
+        val members = (if (type == TOOL_CALL) record["args"] else record["texts"]) as? JsonArray ?: return null
+        val gaps = record["dt"] as? JsonArray ?: JsonArray(emptyList())
+        var time = time0
+        for (k in members.indices) {
+            if (k > 0) time += gaps.getOrNull(k - 1)?.time() ?: return null
+            val member = (members[k] as? JsonPrimitive)?.takeIf { it.isString }?.content ?: return null
+            if (member.isNotEmpty()) return time
+        }
+        return null
+    }
+
+    /** A run whose own fields cannot be read, as opposed to one that simply has no token in it. */
+    private fun JsonObject.isMalformedRun(): Boolean {
+        val type = this["type"]?.jsonPrimitive?.contentOrNull ?: return true
+        if (this["time0"]?.time() == null) return true
+        return (if (type == TOOL_CALL) this["args"] else this["texts"]) !is JsonArray
+    }
+
     /** Read a wire time or gap; the host writes safe integers, but a float is not worth a crash. */
     private fun JsonElement.time(): Long? {
         val primitive = this as? JsonPrimitive ?: return null

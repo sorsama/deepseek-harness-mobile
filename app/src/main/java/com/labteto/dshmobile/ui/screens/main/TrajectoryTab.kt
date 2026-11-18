@@ -18,10 +18,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,7 +34,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -46,7 +46,11 @@ import com.labteto.dshmobile.core.session.ChatNode
 import com.labteto.dshmobile.core.session.ConversationSnapshot
 import com.labteto.dshmobile.core.session.ToolCallNode
 import com.labteto.dshmobile.core.session.ToolResultNode
+import com.labteto.dshmobile.core.session.TrajectoryRecord
+import com.labteto.dshmobile.core.session.TrajectoryTimeline
+import com.labteto.dshmobile.core.session.TurnTiming
 import com.labteto.dshmobile.core.session.UserMessageNode
+import com.labteto.dshmobile.core.session.deriveTrajectoryTimeline
 import com.labteto.dshmobile.core.session.lineDiff
 import com.labteto.dshmobile.core.wire.dto.SessionStatsView
 import com.labteto.dshmobile.core.wire.dto.TokenUsageView
@@ -58,11 +62,12 @@ import com.labteto.dshmobile.ui.components.ToolCardView
 import com.labteto.dshmobile.ui.components.formatDurationMs
 import com.labteto.dshmobile.ui.components.formatTokens
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
-import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * The turn-by-turn ledger: what the agent did, in order, with its inputs and outputs.
@@ -71,7 +76,10 @@ import com.labteto.dshmobile.ui.theme.DsType
  * call with its arguments and result, grouped by turn. Design 12's timeline: a fixed 30dp rail with
  * the tool glyphs threaded on one hairline, the verb and its argument on the reading line, and the
  * elapsed time or diff size right-aligned where the eye lands last. Turn headers carry the step
- * count and the turn's own duration, so a 30-step turn is answerable at a glance.
+ * count and the turn's own duration, so a 30-step turn is answerable at a glance, and under them one
+ * stacked bar and a legend of where that turn's time went (model, tools, waiting for approval).
+ * Tapping a turn opens its records; tapping a model reply or a tool call opens the record inspector
+ * ([TrajectorySheet]). A card above the turns adds the loaded session up.
  *
  * Timings come from the journal's event times, which the fold keeps on the wire envelope rather
  * than on the nodes; a session with no journal (or events without times) simply omits them.
@@ -103,6 +111,19 @@ internal fun TrajectoryTab(
     // Structural markers are dropped before grouping, not just drawn as nothing: an empty row
     // still costs the list's spacing, and a turn of tool calls would gain a gap around each one.
     var rawOpen by rememberSaveable { mutableStateOf(false) }
+    // Where the time went, for every turn, derived once per journal change and off the main thread:
+    // a long session has thousands of records, and the previous result stays on screen until the
+    // next one lands. The key is the journal's shape rather than the list itself, because the journal
+    // is append-only and comparing two long lists element by element would cost as much as the work.
+    val journalKey = Triple(journal.size, journal.firstOrNull()?.seq, journal.lastOrNull()?.seq)
+    var derived by remember { mutableStateOf<TrajectoryTimeline?>(null) }
+    LaunchedEffect(journalKey) {
+        derived = withContext(Dispatchers.Default) { deriveTrajectoryTimeline(journal) }
+    }
+    val timeline = derived ?: TrajectoryTimeline.EMPTY
+    val turnTimings = remember(timeline) { timeline.turns.associateBy { it.turn } }
+    val recordIndex = remember(timeline) { timeline.recordIndex() }
+    var sheet by remember { mutableStateOf<TrajectorySheetState?>(null) }
     val groups = remember(nodes, eventTimes) {
         groupByTurn(nodes.filterNot { it is com.labteto.dshmobile.core.session.OtherNode && it.type in STRUCTURAL_EVENT_TYPES })
             .map { (turn, turnNodes) ->
@@ -141,9 +162,20 @@ internal fun TrajectoryTab(
                 }
             }
         }
+        // The loaded session at a glance, above the turns it adds up.
+        if (timeline.turns.isNotEmpty()) {
+            item(key = "timing-summary") {
+                SessionTimingCard(timeline.totals, partial = conversation?.hasMore == true)
+            }
+        }
         groups.forEach { turn ->
             item(key = "turn-${turn.turn}") {
-                TurnHeader(turn)
+                val timing = turnTimings[turn.turn]
+                TurnHeader(
+                    turn = turn,
+                    timing = timing,
+                    onOpen = { sheet = TrajectorySheetState.Turn(turn.turn) },
+                )
             }
             items(
                 count = turn.rows.size,
@@ -158,6 +190,8 @@ internal fun TrajectoryTab(
                         siblings = turn.nodes,
                         cwd = cwd,
                         eventTimes = eventTimes,
+                        recordIndex = recordIndex,
+                        onOpenRecord = { key -> sheet = TrajectorySheetState.Record(key, fromTurn = null) },
                         first = first,
                         last = last,
                     )
@@ -217,6 +251,16 @@ internal fun TrajectoryTab(
             }
         }
     }
+    sheet?.let { state ->
+        TrajectorySheet(
+            state = state,
+            timeline = timeline,
+            records = recordIndex,
+            journal = journal,
+            onNavigate = { sheet = it },
+            onDismiss = { sheet = null },
+        )
+    }
 }
 
 /** One turn of the ledger: its nodes, and the rows drawn for them. */
@@ -265,34 +309,73 @@ private fun isHarnessContext(node: ChatNode): Boolean =
 // Timeline chrome
 // ---------------------------------------------------------------------------
 
+/**
+ * A turn's header: its name, its step count and duration, and, when the journal recorded where its
+ * time went, one stacked bar and the legend that spells it out.
+ *
+ * The whole block is one 48dp+ button that opens the turn's records. The bar is not tapped on its own:
+ * a 12dp strip is no touch target, and "open this turn" is the one thing a tap on any part of it means.
+ */
 @Composable
-private fun TurnHeader(turn: LedgerTurn) {
+private fun TurnHeader(turn: LedgerTurn, timing: TurnTiming?, onOpen: () -> Unit) {
     val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
     val steps = turn.nodes.count { it is ToolCallNode }
+    // The turn's own start-to-end time when the harness recorded both, else the span of its events.
+    val duration = timing?.wallMs ?: turn.durationMs
     val meta = buildList {
         add(pluralStringResource(R.plurals.trajectory_step_count, steps, steps))
-        turn.durationMs?.let { add(formatDurationMs(it)) }
+        if (duration != null) add(formatDurationMs(duration)) else if (timing?.open == true) add(stringResource(R.string.jobs_running))
     }.joinToString(" · ")
-    Row(
+    val openLabel = stringResource(R.string.traj_overview_open, turn.turn)
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = DsSpacing.medium, bottom = DsSpacing.small),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(top = DsSpacing.small, bottom = DsSpacing.xsmall)
+            .clip(DsShapes.row)
+            .then(
+                if (timing != null) {
+                    Modifier.clickable(onClickLabel = openLabel, role = Role.Button) {
+                        haptics.tap()
+                        onOpen()
+                    }
+                } else {
+                    Modifier
+                },
+            )
+            .heightIn(min = DsSpacing.touchTarget)
+            .padding(vertical = DsSpacing.xsmall),
+        verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
     ) {
-        Text(
-            stringResource(R.string.trajectory_turn, turn.turn),
-            style = DsType.rowTitle,
-            color = colors.labelPrimary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
-        Text(
-            meta,
-            style = DsType.mono12,
-            color = colors.accent,
-            maxLines = 1,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.trajectory_turn, turn.turn),
+                style = DsType.rowTitle,
+                color = colors.labelPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                meta,
+                style = DsType.mono12,
+                color = colors.accent,
+                maxLines = 1,
+            )
+            if (timing != null) {
+                Spacer(Modifier.width(DsSpacing.xsmall))
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = colors.labelCaption,
+                )
+            }
+        }
+        if (timing != null && timing.slices.isNotEmpty()) {
+            TimingBar(timing.slices)
+            TimingLegend(timing.slices)
+        }
     }
 }
 
@@ -383,6 +466,8 @@ private fun TrajectoryRow(
     siblings: List<ChatNode>,
     cwd: String?,
     eventTimes: Map<Long, Long>,
+    recordIndex: Map<String, TrajectoryRecord>,
+    onOpenRecord: (String) -> Unit,
     first: Boolean,
     last: Boolean,
 ) {
@@ -402,25 +487,12 @@ private fun TrajectoryRow(
                 }
             }
         }
-        is AssistantMessageNode -> {
-            val snippet = node.plainText.trim().take(240)
-            if (snippet.isNotEmpty()) {
-                StaticRow(icon = FeatherIcons.MessageSquare, first = first, last = last) {
-                    Text(
-                        snippet,
-                        style = DsType.small13,
-                        color = colors.labelTertiary,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
-        }
+        is AssistantMessageNode -> ModelStepRow(node, recordIndex, onOpenRecord, first, last)
         is ToolCallNode -> {
             val result = siblings
                 .filterIsInstance<ToolResultNode>()
                 .firstOrNull { it.callId == node.callId }
-            ToolLedgerRow(node, result, cwd, eventTimes, first, last)
+            ToolLedgerRow(node, result, cwd, eventTimes, recordIndex["t:${node.callId}"], onOpenRecord, first, last)
         }
         // Step boundaries are already counted in the turn header; as rows they put a
         // `step/start` and a `step/end` around every tool call in the ledger. The changes marker
@@ -436,6 +508,72 @@ private fun TrajectoryRow(
             }
         }
         else -> Unit
+    }
+}
+
+/**
+ * One model reply: the start of what it said, how long it took, and a tap that opens its inspector.
+ *
+ * A reply that was only tool calls has no text, and it used to have no row. It has one now, because
+ * the reply is a record with a time to first token, a duration and a token count worth opening, and
+ * the tool calls under it read as what it asked for.
+ */
+@Composable
+private fun ModelStepRow(
+    node: AssistantMessageNode,
+    recordIndex: Map<String, TrajectoryRecord>,
+    onOpenRecord: (String) -> Unit,
+    first: Boolean,
+    last: Boolean,
+) {
+    val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
+    val turn = node.turn
+    val step = node.step
+    val record = if (!node.streaming && turn != null && step != null) recordIndex["m:$turn:$step"] else null
+    val snippet = node.plainText.trim().take(240)
+    if (snippet.isEmpty() && record == null) return
+    val duration = record?.durationMs
+    StaticRow(icon = FeatherIcons.MessageSquare, first = first, last = last) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (record != null) {
+                        Modifier
+                            .clip(DsShapes.row)
+                            .clickable(role = Role.Button) {
+                                haptics.tap()
+                                onOpenRecord(record.key)
+                            }
+                    } else {
+                        Modifier
+                    },
+                )
+                .heightIn(min = DsSpacing.touchTarget),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+        ) {
+            Text(
+                snippet.ifEmpty { stringResource(R.string.traj_insp_kind_model) },
+                style = DsType.small13,
+                color = colors.labelTertiary,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            if (duration != null) {
+                Text(formatDurationMs(duration), style = DsType.mono12, color = colors.labelTertiary, maxLines = 1)
+            }
+            if (record != null) {
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = colors.labelCaption,
+                )
+            }
+        }
     }
 }
 
@@ -456,6 +594,10 @@ private fun ContextLedgerRow(nodes: List<ChatNode>, cwd: String?, first: Boolean
 /**
  * One tool call: glyph on the rail, verb and argument on the reading line, and the outcome's own
  * measure — elapsed time, or the size of the edit — right-aligned where the design puts it.
+ *
+ * Tapping the row opens the record inspector, which shows the call's input and output with Show all
+ * and Copy, its timing and its raw events; that replaces the short inline preview the row used to
+ * unfold, which could show neither a long result nor how long the call waited for approval.
  */
 @Composable
 private fun ToolLedgerRow(
@@ -463,13 +605,14 @@ private fun ToolLedgerRow(
     result: ToolResultNode?,
     cwd: String?,
     eventTimes: Map<Long, Long>,
+    record: TrajectoryRecord?,
+    onOpenRecord: (String) -> Unit,
     first: Boolean,
     last: Boolean,
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     val row = remember(call.callId, cwd) { toolRowModel(call.name, call.arguments, cwd) }
-    var expanded by remember(call.callId) { mutableStateOf(false) }
     val running = result == null
     val failed = result?.isError == true
     val startedAt = eventTimes[call.seq]
@@ -503,10 +646,17 @@ private fun ToolLedgerRow(
             modifier = Modifier
                 .weight(1f)
                 .clip(DsShapes.row)
-                .clickable(role = Role.Button) {
-                    haptics.tap()
-                    expanded = !expanded
-                }
+                .then(
+                    if (record != null) {
+                        Modifier.clickable(role = Role.Button) {
+                            haptics.tap()
+                            onOpenRecord(record.key)
+                        }
+                    } else {
+                        Modifier
+                    },
+                )
+                .heightIn(min = DsSpacing.touchTarget)
                 .padding(vertical = DsSpacing.small, horizontal = DsSpacing.tiny),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -560,54 +710,13 @@ private fun ToolLedgerRow(
                     maxLines = 1,
                 )
             }
-            val rotation by androidx.compose.animation.core.animateFloatAsState(
-                targetValue = if (expanded) 180f else 0f,
-                animationSpec = DsAnimations.chevron,
-                label = "ledgerChevron",
-            )
-            Spacer(Modifier.width(DsSpacing.xsmall))
-            Icon(
-                Icons.Filled.KeyboardArrowDown,
-                contentDescription = stringResource(if (expanded) R.string.ux_b_expanded else R.string.ux_b_collapsed),
-                modifier = Modifier.size(16.dp).graphicsLayer { rotationZ = rotation },
-                tint = colors.labelCaption,
-            )
-        }
-    }
-    androidx.compose.animation.AnimatedVisibility(
-        visible = expanded,
-        enter = androidx.compose.animation.expandVertically(DsAnimations.expand) +
-            androidx.compose.animation.fadeIn(DsAnimations.fade),
-        exit = androidx.compose.animation.shrinkVertically(DsAnimations.expand) +
-            androidx.compose.animation.fadeOut(DsAnimations.fade),
-    ) {
-        // The body is indented past the rail so the reading line stays the only thing at the margin.
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(start = 30.dp + DsSpacing.small, top = DsSpacing.tiny, bottom = DsSpacing.small),
-            verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
-        ) {
-            Text(
-                stringResource(R.string.chat_input_placeholder),
-                style = DsType.caption11,
-                color = colors.labelCaption,
-            )
-            JsonDisclosure(
-                call.name,
-                runCatching { kotlinx.serialization.json.Json.parseToJsonElement(call.arguments) }
-                    .getOrElse { kotlinx.serialization.json.JsonPrimitive(call.arguments) },
-            )
-            result?.content?.let { content ->
-                Text(
-                    stringResource(R.string.chat_output_placeholder),
-                    style = DsType.caption11,
-                    color = colors.labelCaption,
-                )
-                Text(
-                    content.toString(),
-                    style = DsType.mono12,
-                    color = if (result.isError) colors.error else colors.labelTertiary,
+            if (record != null) {
+                Spacer(Modifier.width(DsSpacing.xsmall))
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = colors.labelCaption,
                 )
             }
         }
