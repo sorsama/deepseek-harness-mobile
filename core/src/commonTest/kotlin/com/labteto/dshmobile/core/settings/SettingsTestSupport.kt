@@ -17,9 +17,11 @@ internal fun describedFixture(): SettingsDescribeValue =
     WireJson.decodeFromString(SettingsDescribeValue.serializer(), SettingsFixtures.DESCRIBE)
 
 /** One row of the captured describe, or of the derived `bash-sandbox` row. */
-internal fun fixtureRow(ns: String): SettingsNamespaceView =
-    if (ns == "bash-sandbox") WireJson.decodeFromString(SettingsNamespaceView.serializer(), SettingsFixtures.BASH_SANDBOX_ROW)
-    else describedFixture().namespaces.single { it.ns == ns }
+internal fun fixtureRow(ns: String): SettingsNamespaceView = when (ns) {
+    "bash-sandbox" -> WireJson.decodeFromString(SettingsNamespaceView.serializer(), SettingsFixtures.BASH_SANDBOX_ROW)
+    "ui-chat" -> WireJson.decodeFromString(SettingsNamespaceView.serializer(), SettingsFixtures.UI_CHAT_ROW)
+    else -> describedFixture().namespaces.single { it.ns == ns }
+}
 
 /** The `result` slot of a recorded answer: its value, or its error. */
 internal fun fixtureResult(json: String): RpcResult<JsonElement> =

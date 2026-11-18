@@ -334,6 +334,25 @@ class HarnessSettingsControllerTest {
     }
 
     @Test
+    fun `closing a page forgets its failures but not the harness state`() = runTest {
+        val port = FakePort().apply {
+            onMutate = { err("settings/rejected", "no") }
+            onSetCredential = { _, _ -> err("credentials/rejected", "no") }
+        }
+        val controller = loaded(port)
+        controller.set(field("agent-loop", "maxParallelToolCalls"), JsonPrimitive(0))
+        controller.saveKey("DEEPSEEK_API_KEY", "sk-abc123")
+        advanceUntilIdle()
+        assertTrue(controller.state.value.failures.isNotEmpty())
+        assertTrue(controller.state.value.credentialFailures.isNotEmpty())
+        controller.clearFailures()
+        assertTrue(controller.state.value.failures.isEmpty())
+        assertTrue(controller.state.value.credentialFailures.isEmpty())
+        assertEquals(10, controller.state.value.namespaces.size)
+        assertEquals(SettingsPhase.Ready, controller.state.value.phase)
+    }
+
+    @Test
     fun `each failure carries a new serial so a screen can tell them apart`() = runTest {
         val port = FakePort().apply { onMutate = { err("settings/rejected", "no") } }
         val controller = loaded(port)
@@ -354,6 +373,42 @@ class HarnessSettingsControllerTest {
         advanceUntilIdle()
         assertEquals(SettingsFailure.Unreachable("connection reset"), controller.state.value.failures.getValue(loopId).failure)
         assertEquals(JsonPrimitive(10), settingsFields(controller.row("agent-loop")).single().value)
+    }
+
+    @Test
+    fun `someone else's newer revision is read again and our own is not`() = runTest {
+        val port = FakePort()
+        val controller = loaded(port)
+        assertEquals(1, port.describeCalls)
+        // The revision we hold, and an older one: nothing to read.
+        controller.onDocumentUpdated("agent-loop", 0)
+        advanceUntilIdle()
+        assertEquals(1, port.describeCalls)
+        // A namespace we do not hold is not ours to chase either.
+        controller.onDocumentUpdated("no-such-namespace", 9)
+        advanceUntilIdle()
+        assertEquals(1, port.describeCalls)
+        // A newer one is.
+        controller.onDocumentUpdated("agent-loop", 1)
+        advanceUntilIdle()
+        assertEquals(2, port.describeCalls)
+    }
+
+    @Test
+    fun `a revision announced while our own write is out waits for the answer`() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        val port = FakePort().apply {
+            onMutate = { gate.await(); RpcResult.Ok(writeAnswer(SettingsFixtures.MUTATE_AGENT_LOOP_SET)) }
+        }
+        val controller = loaded(port)
+        controller.set(field("agent-loop", "maxParallelToolCalls"), JsonPrimitive(4))
+        runCurrent()
+        controller.onDocumentUpdated("agent-loop", 1)
+        runCurrent()
+        assertEquals(1, port.describeCalls)
+        gate.complete(Unit)
+        advanceUntilIdle()
+        assertEquals(1, port.describeCalls)
     }
 
     // ---------------------------------------------------------------------------------- secrets

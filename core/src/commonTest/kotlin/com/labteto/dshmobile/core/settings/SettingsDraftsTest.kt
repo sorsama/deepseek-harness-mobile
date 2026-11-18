@@ -158,6 +158,13 @@ class SettingsDraftsTest {
     }
 
     @Test
+    fun `a real choice accepts its own options and nothing else`() {
+        val links = field("ui-chat", "linkOpening")
+        assertEquals(DraftResult.Write(JsonPrimitive("new-tab")), links.draftFromChoice(JsonPrimitive("new-tab")))
+        assertEquals(invalid(FieldProblem.NotAnOption), links.draftFromChoice(JsonPrimitive("popup")))
+    }
+
+    @Test
     fun `a list drops blanks and holds the count`() {
         val tags = settingsFields(syntheticRow()).single { it.key == "tags" }
         assertEquals(

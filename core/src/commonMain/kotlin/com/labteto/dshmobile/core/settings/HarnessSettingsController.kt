@@ -208,6 +208,18 @@ class HarnessSettingsController(
         }
     }
 
+    /**
+     * The harness says a namespace changed (`settings/document-updated`). Our own writes announce
+     * themselves too, with a revision this class already holds or is about to hold, so only a newer
+     * revision with no write of ours in flight on that namespace is someone else's change and read again.
+     */
+    fun onDocumentUpdated(ns: String, revision: Long) {
+        val state = _state.value
+        val known = state.namespaces[ns]?.revision ?: return
+        if (revision <= known || state.writing.keys.any { it.ns == ns }) return
+        load()
+    }
+
     /** Set one field. A secret's value goes into the one call and into nothing this class keeps. */
     fun set(field: SettingsField, value: JsonElement) {
         val secret = (value as? JsonPrimitive)?.contentOrNull?.takeIf { field.kind is FieldKind.Secret }
@@ -226,6 +238,11 @@ class HarnessSettingsController(
     fun dismissFailure(id: FieldId) = _state.update { it.copy(failures = it.failures - id) }
 
     fun dismissNotice() = _state.update { it.copy(notice = null) }
+
+    fun dismissCredentialFailure(ref: String) = _state.update { it.copy(credentialFailures = it.credentialFailures - ref) }
+
+    /** Forget every failure on show, as a page does when it closes: reopened, it should not scold for a change nobody is making. */
+    fun clearFailures() = _state.update { it.copy(failures = emptyMap(), credentialFailures = emptyMap()) }
 
     private fun failuresFor(ids: Set<FieldId>, failure: SettingsFailure): Map<FieldId, FieldFailure> =
         ids.associateWith { FieldFailure(failure, serial.incrementAndGet()) }

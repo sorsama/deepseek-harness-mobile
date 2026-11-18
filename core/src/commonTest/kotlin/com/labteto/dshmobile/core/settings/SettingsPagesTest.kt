@@ -5,6 +5,7 @@ import com.labteto.dshmobile.core.wire.dto.ModelCatalog
 import com.labteto.dshmobile.core.wire.dto.ModelCatalogModel
 import com.labteto.dshmobile.core.wire.dto.ModelProviderGroup
 import com.labteto.dshmobile.core.wire.dto.SettingsDescribeValue
+import com.labteto.dshmobile.core.wire.dto.SettingsNamespaceView
 import com.labteto.dshmobile.core.wire.dto.SettingsPathOpView
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
@@ -89,6 +90,20 @@ class SettingsPagesTest {
     }
 
     @Test
+    fun `each page names the namespaces it reads among those served`() {
+        val served = describedFixture().namespaces.map { it.ns }
+        assertEquals(listOf("web", "web-search-deepseek", "web-deepseek-api"), pageNamespaces(SettingsPage.WebSearch, served))
+        assertEquals(listOf("pwsh-sandbox"), pageNamespaces(SettingsPage.Shell, served))
+        assertEquals(listOf("subagent", "subagent-model-selection-settings"), pageNamespaces(SettingsPage.Subagents, served))
+        assertEquals(listOf("agent-loop"), pageNamespaces(SettingsPage.AgentLoop, served))
+        assertEquals(listOf("session-log-deepseek"), pageNamespaces(SettingsPage.SessionLog, served))
+        assertEquals(listOf("plugin-x"), pageNamespaces(SettingsPage.Generic("plugin-x"), served + "plugin-x"))
+        // A namespace the harness does not serve is not read.
+        assertEquals(listOf("subagent"), pageNamespaces(SettingsPage.Subagents, listOf("subagent")))
+        assertEquals(emptyList(), pageNamespaces(SettingsPage.Shell, listOf("agent-loop")))
+    }
+
+    @Test
     fun `a restart note is owed only when a namespace says restart`() {
         assertFalse(needsRestart(describedFixture().namespaces))
         assertTrue(needsRestart(listOf(fixtureRow("agent-loop").copy(applies = "restart"))))
@@ -154,6 +169,42 @@ class SettingsPagesTest {
         assertEquals("MY_SEARCH_KEY", WebSearchRules.keyRef(custom))
         val blank = fixtureRow("web-deepseek-api").copy(value = obj("apiKeyEnv" to JsonPrimitive("  ")))
         assertEquals("DEEPSEEK_API_KEY", WebSearchRules.keyRef(blank))
+    }
+
+    /** A namespace that names the credential it reads, as the DeepSeek model provider does. */
+    private fun readerOf(ns: String, ref: String, role: String = "credential-ref") = SettingsNamespaceView(
+        ns = ns,
+        schema = obj(
+            "uid" to num(2),
+            "refs" to obj(
+                "1" to obj("type" to str("string"), "meta" to obj("role" to str(role), "default" to str("DEEPSEEK_API_KEY"))),
+                "2" to obj("type" to str("object"), "meta" to obj(), "dict" to obj("apiKeyEnv" to num(1))),
+            ),
+        ),
+        value = obj("apiKeyEnv" to str(ref)),
+        revision = 0,
+    )
+
+    @Test
+    fun `the search key is shared with the model provider that reads the same credential`() {
+        val rows = describedFixture().namespaces + readerOf("llm-deepseek", "DEEPSEEK_API_KEY")
+        assertEquals(listOf("llm-deepseek"), WebSearchRules.otherUsersOf("DEEPSEEK_API_KEY", rows))
+    }
+
+    @Test
+    fun `a credential nobody else reads has no other users`() {
+        // The two search sections name it themselves and are not counted against it.
+        assertEquals(emptyList(), WebSearchRules.otherUsersOf("DEEPSEEK_API_KEY", describedFixture().namespaces))
+        val rows = describedFixture().namespaces + readerOf("llm-deepseek", "OTHER_KEY")
+        assertEquals(emptyList(), WebSearchRules.otherUsersOf("DEEPSEEK_API_KEY", rows))
+    }
+
+    @Test
+    fun `only a field the schema marks as a credential name counts`() {
+        // The same text in a field that is not a credential reference is just a string.
+        val rows = listOf(readerOf("plugin-a", "DEEPSEEK_API_KEY", role = "plain"), readerOf("plugin-b", "DEEPSEEK_API_KEY"))
+        assertEquals(listOf("plugin-b"), WebSearchRules.otherUsersOf("DEEPSEEK_API_KEY", rows))
+        assertEquals(listOf("plugin-b", "plugin-c"), WebSearchRules.otherUsersOf("DEEPSEEK_API_KEY", rows + readerOf("plugin-c", "DEEPSEEK_API_KEY")))
     }
 
     // ------------------------------------------------------------------------ subagent models
@@ -238,9 +289,12 @@ class SettingsPagesTest {
 
     @Test
     fun `the first model chosen after the switch is turned on writes the switch with it`() {
-        val ops = assertIs<RouteToggle.Write>(routeToggle(emptyList(), enabled = false, armed = true, route = flash)).ops
-        assertEquals(listOf(listOf("allowedModels"), listOf("enabled")), ops.map { (it as SettingsPathOpView.Set).path })
-        assertEquals(JsonPrimitive(true), (ops.last() as SettingsPathOpView.Set).value)
+        val toggle = assertIs<RouteToggle.Write>(routeToggle(emptyList(), enabled = false, armed = true, route = flash))
+        assertEquals(listOf(listOf("allowedModels"), listOf("enabled")), toggle.ops.map { (it as SettingsPathOpView.Set).path })
+        assertEquals(JsonPrimitive(true), (toggle.ops.last() as SettingsPathOpView.Set).value)
+        // Both fields read as their new values while the write is out.
+        assertEquals(setOf("allowedModels", "enabled"), toggle.shown.keys)
+        assertEquals(listOf(flash), parseRoutes(toggle.shown.getValue("allowedModels")))
     }
 
     @Test

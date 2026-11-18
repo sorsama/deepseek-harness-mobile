@@ -74,6 +74,19 @@ fun settingsPages(described: SettingsDescribeValue): List<SettingsPage> {
     return known + generic
 }
 
+/** The namespaces a page reads and writes, among those the harness serves. */
+fun pageNamespaces(page: SettingsPage, served: Collection<String>): List<String> {
+    val wanted = when (page) {
+        SettingsPage.WebSearch -> listOf(SettingsNamespaces.WEB, SettingsNamespaces.WEB_SEARCH, SettingsNamespaces.WEB_API)
+        SettingsPage.Shell -> listOfNotNull(shellNamespace(served))
+        SettingsPage.Subagents -> listOf(SettingsNamespaces.SUBAGENT, SettingsNamespaces.SUBAGENT_MODELS)
+        SettingsPage.AgentLoop -> listOf(SettingsNamespaces.AGENT_LOOP)
+        SettingsPage.SessionLog -> listOf(SettingsNamespaces.SESSION_LOG)
+        is SettingsPage.Generic -> listOf(page.ns)
+    }
+    return wanted.filter { it in served }
+}
+
 /**
  * The shell executor namespace to edit: the base bundle composes exactly one per platform, the
  * PowerShell one on Windows and the bash one elsewhere (the phone's own harness is bash).
@@ -125,6 +138,27 @@ object WebSearchRules {
         section?.let { stringIn(it.value, "apiKeyEnv") }?.takeIf { it.isNotBlank() } ?: SettingsNamespaces.DEFAULT_KEY_REF
 
     /**
+     * The other namespaces that read the credential [ref]: any field the schema marks as the name of
+     * a credential (`role('credential-ref')`) whose value is [ref], outside the two search sections.
+     *
+     * The search key is not private to search. Both sections default to `DEEPSEEK_API_KEY`, which is
+     * the key the DeepSeek model provider (`llm-deepseek`) uses too, so replacing or removing it
+     * here changes chat as well. The harness's own page has no remove button; this app does, and
+     * says so before it uses it.
+     */
+    fun otherUsersOf(ref: String, namespaces: Collection<SettingsNamespaceView>): List<String> =
+        namespaces
+            .filter { it.ns != SettingsNamespaces.WEB_SEARCH && it.ns != SettingsNamespaces.WEB_API }
+            .filter { row ->
+                settingsFields(row).any { field ->
+                    (field.kind as? FieldKind.Text)?.credentialRef == true &&
+                        (field.value as? JsonPrimitive)?.contentOrNull == ref
+                }
+            }
+            .map { it.ns }
+            .sorted()
+
+    /**
      * The writes that select one API. A target equal to the deployment's own value clears the
      * override instead of storing a copy of it, so the deployment default keeps applying; a field
      * already at its target needs nothing.
@@ -165,8 +199,12 @@ data class ModelCandidate(
 )
 
 /** The stored routes of a `subagent-model-selection-settings` row; anything unreadable is skipped. */
-fun allowedRoutes(view: SettingsNamespaceView?): List<AllowedRoute> {
-    val list = (view?.value as? JsonObject)?.get("allowedModels") as? JsonArray ?: return emptyList()
+fun allowedRoutes(view: SettingsNamespaceView?): List<AllowedRoute> =
+    parseRoutes((view?.value as? JsonObject)?.get("allowedModels"))
+
+/** The routes in an `allowedModels` array, which may be the stored one or one still being written. */
+fun parseRoutes(array: JsonElement?): List<AllowedRoute> {
+    val list = array as? JsonArray ?: return emptyList()
     return list.mapNotNull { item ->
         val row = item as? JsonObject ?: return@mapNotNull null
         val provider = (row["provider"] as? JsonPrimitive)?.contentOrNull
@@ -199,7 +237,8 @@ fun modelCandidates(groups: List<ModelProviderGroup>, stored: List<AllowedRoute>
 
 /** What tapping a model does. */
 sealed interface RouteToggle {
-    data class Write(val ops: List<SettingsPathOpView>) : RouteToggle
+    /** The writes, and what each field they touch reads as until the harness answers. */
+    data class Write(val ops: List<SettingsPathOpView>, val shown: Map<String, JsonElement>) : RouteToggle
 
     /** The last model of an enabled list: turning the switch off is the way to stop offering models. */
     data object KeepOne : RouteToggle
@@ -215,11 +254,16 @@ sealed interface RouteToggle {
 fun routeToggle(stored: List<AllowedRoute>, enabled: Boolean, armed: Boolean, route: AllowedRoute): RouteToggle {
     val next = if (route in stored) stored - route else stored + route
     if (enabled && next.isEmpty()) return RouteToggle.KeepOne
+    val together = armed && !enabled && next.isNotEmpty()
     val ops = buildList<SettingsPathOpView> {
         add(SettingsPathOpView.Set(listOf("allowedModels"), routesJson(next)))
-        if (armed && !enabled && next.isNotEmpty()) add(SettingsPathOpView.Set(listOf("enabled"), JsonPrimitive(true)))
+        if (together) add(SettingsPathOpView.Set(listOf("enabled"), JsonPrimitive(true)))
     }
-    return RouteToggle.Write(ops)
+    val shown = buildMap<String, JsonElement> {
+        put("allowedModels", routesJson(next))
+        if (together) put("enabled", JsonPrimitive(true))
+    }
+    return RouteToggle.Write(ops, shown)
 }
 
 /** The writes for the switch itself: turning it off keeps the chosen models, as the harness's own page does. */

@@ -131,6 +131,22 @@ class SettingsFieldsTest {
     }
 
     @Test
+    fun `a union of constants in a real namespace is a single choice`() {
+        val fields = settingsFields(fixtureRow("ui-chat")).associateBy { it.key }
+        val timing = assertIs<FieldKind.Choice>(fields.getValue("collapseTiming").kind)
+        assertEquals(listOf("completion", "next-input"), timing.options.map { it.value.content })
+        assertEquals(JsonPrimitive("completion"), fields.getValue("collapseTiming").value)
+        val links = assertIs<FieldKind.Choice>(fields.getValue("linkOpening").kind)
+        assertEquals(listOf("sidebar", "new-tab"), links.options.map { it.value.content })
+        // The harness sends no words for an option, so the value is what there is to show.
+        assertEquals(listOf("sidebar", "new-tab"), links.options.map { it.label })
+        // A choice the harness has no value for yet is still a choice, with six to pick from.
+        val view = assertIs<FieldKind.Choice>(fields.getValue("transcriptView").kind)
+        assertEquals(6, view.options.size)
+        assertNull(fields.getValue("transcriptView").value)
+    }
+
+    @Test
     fun `the permission namespace has one plain text field`() {
         val fields = settingsFields(fixtureRow("permission"))
         assertEquals(listOf("defaultPreset"), fields.map { it.key })
