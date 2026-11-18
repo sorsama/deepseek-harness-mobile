@@ -156,6 +156,13 @@ internal fun ChatTranscript(
     /** Whether to follow the tail as a reply is written; off leaves new rows below the viewport. */
     followStreaming: Boolean = true,
     /**
+     * A notice that belongs to the conversation as its first row: the "no model provider is ready"
+     * strip. It is part of the list, not a bar above it, so it pushes the conversation down instead
+     * of taking room from the viewport (a bar above a list pinned to its newest row cuts off the
+     * rows at the top as it appears), and nothing is ever drawn under it.
+     */
+    header: (@Composable () -> Unit)? = null,
+    /**
      * What this transcript has already acted on. Held by the caller, because the tab swap disposes
      * this composition and a fresh one would otherwise take a session it had scrolled to, and a send
      * it had already followed, for new ones.
@@ -485,6 +492,10 @@ internal fun ChatTranscript(
                     onRetry = onLoadOlder,
                 )
             }
+        }
+        // The far end of a reversed list is the top of the conversation: the notice goes last.
+        if (header != null) {
+            item(key = "conversation-header") { header() }
         }
     }
 

@@ -34,6 +34,23 @@ data class DiffHunk(
     val newText: String? = null,
 )
 
+/** How much a diff changed: lines added, lines removed, files touched. */
+data class DiffTotals(val added: Int, val removed: Int, val files: Int) {
+    companion object {
+        /** The totals of [diffs], line by line the way the card draws them. */
+        fun of(diffs: List<DiffHunk>): DiffTotals {
+            var added = 0
+            var removed = 0
+            diffs.forEach { hunk ->
+                com.labteto.dshmobile.core.session.lineDiff(hunk.oldText, hunk.newText).forEach {
+                    if (it.kind == '+') added++ else if (it.kind == '-') removed++
+                }
+            }
+            return DiffTotals(added, removed, diffs.map { it.path }.distinct().size)
+        }
+    }
+}
+
 /** One file matched by a search, with its matching lines. */
 data class SearchFile(
     val path: String,
@@ -104,8 +121,15 @@ sealed interface ToolCardView {
         val failed: Boolean = false,
     ) : ToolCardView
 
-    /** Diff: per-path hunks with added/removed line counts. */
-    data class DiffCard(val title: String? = null, val diffs: List<DiffHunk>) : ToolCardView
+    /**
+     * Diff: per-path hunks with added/removed line counts. [totals] is set when [diffs] was cut for
+     * an inline preview, so the counts still describe the whole change.
+     */
+    data class DiffCard(
+        val title: String? = null,
+        val diffs: List<DiffHunk>,
+        val totals: DiffTotals? = null,
+    ) : ToolCardView
 
     /** Search: file matches or path list, with truncation info. */
     data class SearchCard(

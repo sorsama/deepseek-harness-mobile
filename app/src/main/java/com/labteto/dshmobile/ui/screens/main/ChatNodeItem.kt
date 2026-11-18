@@ -30,6 +30,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +69,10 @@ import com.labteto.dshmobile.core.session.TurnStartNode
 import com.labteto.dshmobile.core.session.UserMessageNode
 import com.labteto.dshmobile.core.session.WorkflowNode
 import com.labteto.dshmobile.ui.components.AttachmentImage
+import com.labteto.dshmobile.ui.components.CallStateMark
+import com.labteto.dshmobile.ui.components.LeftToRight
+import com.labteto.dshmobile.ui.components.LocalCodeOwner
+import com.labteto.dshmobile.ui.components.OutputViewerDialog
 import com.labteto.dshmobile.ui.components.DisclosureRow
 import com.labteto.dshmobile.ui.components.DisclosureState
 import com.labteto.dshmobile.ui.components.DsPill
@@ -566,9 +571,14 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
     // A tool with a view of its own has a title of its own, in the reader's language, and a summary
     // the view derives (`3 of 7 done`, `Waiting for your answer`) where it has one.
     val ownTitle = toolTitle(node.name)?.let { toolTitleText(it) }
+    val controlSummary = card.controlSummary()?.let(::rowSummaryText)
     val row = baseRow.copy(
         title = ownTitle ?: baseRow.title,
-        summary = card.controlSummary()?.let(::rowSummaryText) ?: baseRow.summary,
+        // A summary the app wrote (`3 of 7 done`) is in the reader's language. One taken from the
+        // call (a command, a path, a pattern, a url) is technical text: isolated left to right so a
+        // right-to-left row cannot reorder it.
+        summary = controlSummary
+            ?: baseRow.summary?.let { if (baseRow.variant == ToolRowVariant.Other) it else technicalDisplay(it) },
     )
     val icon = card.controlIcon() ?: baseRow.variant.featherIcon()
     val failure = remember(result) { toolFailureOf(result) }
@@ -581,11 +591,14 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
     }
     val actions = toolCardActions(card, context)
     // Open or closed by the work-step level; a tap overrides it for this row only (see
-    // RowDisclosureMemory). A row the level opened is a bounded preview until "Show all".
+    // RowDisclosureMemory). However it was opened, only the start of a long body is laid out: the
+    // bounds are the same for a row the reader tapped, and "Show all" opens the rest in the
+    // full-screen viewer, which is lazy by line. (Opening the whole of a megabyte of output as one
+    // text is what made a hand-opened row freeze.)
     val disclosure = rememberRowDisclosure(context.presentation, "tool:${node.callId}", node.seq)
     val expanded = disclosure.open
-    val preview = disclosure.preview
-    val clippedCard = remember(card, preview) { if (preview) clipCardForPreview(card) else ClippedCard(card, false) }
+    val clippedCard = remember(card) { clipCardForPreview(card) }
+    var viewer by remember(node.callId) { mutableStateOf<OutputViewerRequest?>(null) }
     var holdOpen by remember(node.callId) { mutableStateOf(false) }
     var rawOpen by remember(node.callId) { mutableStateOf(false) }
     val holdLabel = stringResource(R.string.hold_tool_actions)
@@ -603,7 +616,8 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
     val elapsed = if (startedAt != null && endedAt != null) {
         com.labteto.dshmobile.ui.components.formatDurationMs((endedAt - startedAt).coerceAtLeast(0))
     } else null
-    if (!compact && elapsed != null) Text(elapsed, style = DsType.caption11, color = colors.labelCaption)
+    // The blocks of this call remember whether the reader wrapped them under the call's id.
+    CompositionLocalProvider(LocalCodeOwner provides node.callId) {
     ToolCard(
         view = clippedCard.view,
         expanded = expanded,
@@ -619,6 +633,8 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         // The summary opens with the figures (progress, then what changed): an open row, and a row
         // with nothing to open, give it a second line rather than cutting them.
         summaryMaxLines = if (expanded || !hasBody) 2 else 1,
+        // How long it took, in the row itself, not as a caption floating above the card.
+        trailingText = if (compact) null else elapsed,
         header = if (compact) ({
             Row(Modifier.fillMaxWidth().heightIn(min = 32.dp)
                 .clickableWithHold(holdLabel, onHold = { holdOpen = true }, role = Role.Button) { if (hasBody) disclosure.toggle() }
@@ -629,13 +645,9 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
                 Text(row.summary.orEmpty(), Modifier.weight(1f), style = DsType.caption11,
                     color = colors.labelCaption, maxLines = if (expanded || !hasBody) 2 else 1, overflow = TextOverflow.Ellipsis)
                 if (expanded && elapsed != null) Text(elapsed, style = DsType.caption11, color = colors.labelCaption)
-                Text(when (state) {
-                    DisclosureState.Error -> "!"; DisclosureState.Running -> "…"; DisclosureState.Stopped -> "■"; else -> "✓"
-                }, style = DsType.caption11, color = when (state) {
-                    DisclosureState.Error -> colors.error
-                    DisclosureState.Stopped -> colors.warnLabel
-                    else -> colors.labelTertiary
-                })
+                // The outcome as a shape with a spoken name (the bare "!", "…", "✓" and "■" read as
+                // punctuation to a screen reader, and done and stopped looked alike).
+                CallStateMark(state)
                 if (hasBody) {
                     val chevron by animateFloatAsState(if (expanded) 90f else 0f, DsAnimations.chevron, label = "toolChevron")
                     Icon(FeatherIcons.ChevronRight, null, Modifier.size(14.dp).graphicsLayer { rotationZ = chevron }, tint = colors.labelTertiary)
@@ -649,6 +661,9 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
     if (rawOpen) {
         val raw = remember(node, result) { toolRawJson(node, result) }
         RawJsonDialog(raw) { rawOpen = false }
+    }
+    viewer?.let { request ->
+        OutputViewerDialog(title = request.title, contentKey = request.key, onDismiss = { viewer = null }, load = request.load)
     }
     AnimatedVisibility(
         visible = expanded && hasBody,
@@ -673,25 +688,27 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
                 ToolResultOutput(
                     content,
                     label = stringResource(R.string.chat_output_placeholder),
-                    clip = preview,
-                    onShowAll = disclosure.showAll,
+                    viewerTitle = row.title,
                 )
             } else {
                 ToolResultOutputRow(
                     stringResource(R.string.chat_output_placeholder),
                     content,
-                    clip = preview,
-                    onShowAll = disclosure.showAll,
+                    viewerTitle = row.title,
                 )
             }
         }
         // The result's `meta` is what the cards are built from, so it is not repeated under them as
         // raw JSON; the hold menu's "Show raw JSON" and Trajectory's raw events still have it.
         val others = remember(context.nodes) { context.nodes.filterIsInstance<OtherNode>() }
-        PtcChildren(node.callId, others, presentation = context.presentation, clip = preview, onShowAll = disclosure.showAll)
-        // The card body was cut to the preview bounds: say so, and let the reader open the rest.
-        if (clippedCard.clipped) ClippedNote(disclosure.showAll)
+        PtcChildren(node.callId, others, presentation = context.presentation)
+        // The card body was cut to the inline bounds: say so, and let the reader open all of it in the
+        // viewer. The text is built from the whole card, on a background thread, only when they do.
+        if (clippedCard.clipped) {
+            ClippedNote { viewer = OutputViewerRequest(row.title, "card:${node.callId}") { cardPlainText(card) } }
+        }
     } }
+    }
     // The dot is colour-only, so the words stay, and the card above keeps what the call tried (the
     // command, the diff). The line says why it did not happen: the tool's own failure text, cut to
     // its first line, or for a refusal the reason in the reader's own words, chosen by its code
@@ -699,6 +716,13 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
     // states its own outcome (a question the reader closed) needs no second line.
     if (failure != null && !card.explainsFailure(result)) ToolFailureLine(failure)
 }
+
+/**
+ * What the full-screen viewer is to show. [key] says when [load] would give another text; [load] runs
+ * on a background thread, so a text that needs building (a whole diff, a result to unwrap) costs
+ * nothing until the reader asks for it.
+ */
+internal class OutputViewerRequest(val title: String, val key: Any, val load: () -> String)
 
 /** What a call's card can open, from what the transcript knows about jobs and subagents. */
 @Composable
@@ -792,15 +816,21 @@ private fun CommandRow(node: CommandNode, context: ChatNodeContext) {
         expanded = disclosure.open,
         onToggle = disclosure.toggle,
     ) {
-        val full = node.data.toString()
-        val shown = if (disclosure.preview) clipPreview(full) else full
-        Text(
-            shown,
-            style = DsType.caption11.copy(fontFamily = DsType.codeFont),
-            color = colors.labelCaption,
-            modifier = Modifier.padding(start = 28.dp, top = 2.dp),
-        )
-        if (shown.length != full.length) ClippedNote(disclosure.showAll)
+        // Bounded however the row was opened; "Show all" opens the whole text in the viewer.
+        val full = remember(node.data) { node.data.toString() }
+        val shown = remember(full) { clipPreview(full) }
+        var viewer by remember(node.seq) { mutableStateOf(false) }
+        // A command's own text is technical: kept left to right in a right-to-left row.
+        LeftToRight {
+            Text(
+                shown,
+                style = DsType.caption11.copy(fontFamily = DsType.codeFont),
+                color = colors.labelCaption,
+                modifier = Modifier.padding(start = 28.dp, top = 2.dp),
+            )
+        }
+        if (shown.length != full.length) ClippedNote { viewer = true }
+        if (viewer) OutputViewerDialog(title = "/$name", contentKey = node.seq, onDismiss = { viewer = false }, load = { full })
     }
 }
 

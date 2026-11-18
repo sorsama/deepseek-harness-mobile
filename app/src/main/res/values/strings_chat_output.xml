@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="code_wrap">Wrap lines</string>
+    <string name="output_viewer_search">Search in output</string>
+    <string name="output_viewer_prev">Previous match</string>
+    <string name="output_viewer_next">Next match</string>
+    <string name="output_viewer_matches">%1$d of %2$s</string>
+    <string name="output_viewer_no_matches">No matches</string>
+    <string name="chat_state_running">Running</string>
+    <string name="chat_state_done">Done</string>
+    <string name="chat_state_failed">Failed</string>
+    <string name="chat_state_stopped">Stopped</string>
+</resources>

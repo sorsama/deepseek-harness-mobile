@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -710,18 +711,29 @@ internal fun StatsFooter(
             .animateContentSize()
             .padding(horizontal = 12.dp),
     ) {
-        Text(
-            parts.joinToString(" · "),
-            style = DsType.statsText,
-            color = colors.labelCaption,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
+        // One line that scrolls sideways, with a fading edge where there is more: the figures used to be
+        // cut with an ellipsis, so the last (the cache hit rate) could never be read on a phone. It
+        // sits centred while it fits. A tap still opens the detail lines below.
+        androidx.compose.foundation.layout.BoxWithConstraints(
+            Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
-                .padding(vertical = 3.dp),
-        )
+                .clickable { expanded = !expanded },
+        ) {
+            val lineWidth = maxWidth
+            com.labteto.dshmobile.ui.components.SideScroll(fadeColor = colors.bgBase, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    parts.joinToString(" · "),
+                    style = DsType.statsText,
+                    color = colors.labelCaption,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier
+                        .widthIn(min = lineWidth)
+                        .padding(vertical = 3.dp),
+                )
+            }
+        }
         if (expanded) {
             stats?.let {
                 DetailLine(

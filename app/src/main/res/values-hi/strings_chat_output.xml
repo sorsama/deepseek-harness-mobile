@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="code_wrap">पंक्तियाँ लपेटें</string>
+    <string name="output_viewer_search">आउटपुट में खोजें</string>
+    <string name="output_viewer_prev">पिछला मिलान</string>
+    <string name="output_viewer_next">अगला मिलान</string>
+    <string name="output_viewer_matches">%2$s में से %1$d</string>
+    <string name="output_viewer_no_matches">कोई मिलान नहीं</string>
+    <string name="chat_state_running">चल रहा है</string>
+    <string name="chat_state_done">पूरा</string>
+    <string name="chat_state_failed">विफल</string>
+    <string name="chat_state_stopped">रोका गया</string>
+</resources>

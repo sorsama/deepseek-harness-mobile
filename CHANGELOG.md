@@ -18,6 +18,17 @@ All notable changes to DSH Mobile are documented here. Format based on
   output with its exit code. The raw metadata under each card and **Show raw JSON** beside each
   output have moved to the call's hold menu, and a tool with no view of its own gets a readable
   title with its arguments folded away. PowerShell rows say PowerShell.
+- **Command output, file reads and diffs keep their columns.** Code in a tool card no longer wraps
+  mid-line: it scrolls sideways as one piece, the line numbers or the `+`/`-` stay in place, a
+  fading edge shows there is more, and **Wrap lines** in the block turns wrapping on for prose. File
+  reads are coloured by language, as code in messages is. An open tool row only ever shows the start
+  of a long result, however you opened it, and **Show all** opens the whole output in a full-screen
+  page that stays smooth on a 200,000-line log, lets you select text, copy it all and search it.
+  Step outcomes in the compact rows are now icons with spoken names (running, done, failed,
+  stopped) instead of "!", "…", "✓" and "■", and a step's time sits in its row. Paths, commands and
+  JSON in these cards stay left to right in Arabic and Urdu. The run statistics under the message box
+  scroll sideways so the cache figure can be read, and the "no model provider is ready" notice is the
+  first row of the conversation, so it pushes the chat down instead of covering it.
 
 ## [0.23.0] - 2026-11-17
 

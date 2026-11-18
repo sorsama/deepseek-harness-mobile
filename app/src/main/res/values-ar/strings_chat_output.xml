@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="code_wrap">التفاف الأسطر</string>
+    <string name="output_viewer_search">بحث في المخرجات</string>
+    <string name="output_viewer_prev">النتيجة السابقة</string>
+    <string name="output_viewer_next">النتيجة التالية</string>
+    <string name="output_viewer_matches">%1$d من %2$s</string>
+    <string name="output_viewer_no_matches">لا توجد نتائج</string>
+    <string name="chat_state_running">قيد التشغيل</string>
+    <string name="chat_state_done">تم</string>
+    <string name="chat_state_failed">فشل</string>
+    <string name="chat_state_stopped">توقّف</string>
+</resources>

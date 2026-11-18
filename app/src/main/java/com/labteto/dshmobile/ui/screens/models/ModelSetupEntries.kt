@@ -101,55 +101,62 @@ fun BuiltInModelsHint(port: Int, signedIn: Boolean, modifier: Modifier = Modifie
 }
 
 /**
- * In the chat: a calm strip when the last turn failed for want of a key (from its failure code),
- * or when the connected harness has no provider that can answer. One button to the Models screen.
+ * In the chat: what to tell the reader when the last turn failed for want of a key (from its failure
+ * code), or when the connected harness has no provider that can answer; null when there is nothing
+ * to say. Shown by [ChatModelSetupStrip] as the first row of the conversation.
  */
 @Composable
-fun ChatModelSetupNotice(problem: ModelSetupProblem?, viewModel: ModelSetupViewModel = hiltViewModel()) {
+fun chatModelSetupText(problem: ModelSetupProblem?, viewModel: ModelSetupViewModel = hiltViewModel()): String? {
     val monitor = viewModel.monitor
     val readiness by monitor.connected.collectAsStateWithLifecycle()
     // A turn that names a key problem may be the first sign that readiness changed.
     LaunchedEffect(problem) { if (problem != null) monitor.refreshConnected() }
-    val text = when (problem) {
+    return when (problem) {
         ModelSetupProblem.MissingKey -> stringResource(R.string.models_chat_missing_key)
         ModelSetupProblem.InvalidKey -> stringResource(R.string.models_chat_invalid_key)
         ModelSetupProblem.SignIn -> stringResource(R.string.models_chat_sign_in)
         ModelSetupProblem.NoProvider -> stringResource(R.string.models_chat_no_provider)
         null -> if (readiness == ModelReadiness.NoneUsable) stringResource(R.string.models_chat_none_ready) else null
     }
-    AnimatedVisibility(
-        visible = text != null,
-        enter = fadeIn(DsAnimations.fade) + expandVertically(DsAnimations.expand),
-        exit = fadeOut(DsAnimations.fade) + shrinkVertically(DsAnimations.expand),
+}
+
+/**
+ * A calm strip saying [text], with one button to the Models screen. It is a row of the conversation,
+ * not a bar over it, so it pushes the transcript down and nothing is drawn under it, whatever the
+ * text size (the words wrap and the button stays below them).
+ */
+@Composable
+fun ChatModelSetupStrip(text: String, viewModel: ModelSetupViewModel = hiltViewModel()) {
+    val monitor = viewModel.monitor
+    val colors = DsTheme.colors
+    val haptics = rememberDsHaptics()
+    Surface(
+        color = colors.warnTertiary,
+        shape = DsShapes.block,
+        border = BorderStroke(1.dp, colors.warnBorder),
+        modifier = Modifier.fillMaxWidth(),
     ) {
-        val colors = DsTheme.colors
-        val haptics = rememberDsHaptics()
-        // Held through the exit so the words do not vanish before the strip folds away.
-        var last by remember { mutableStateOf("") }
-        if (text != null) last = text
-        Surface(color = colors.warnTertiary, border = BorderStroke(1.dp, colors.warnBorder), modifier = Modifier.fillMaxWidth()) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small)
-                    .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
-                verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
-            ) {
-                Row(verticalAlignment = Alignment.Top) {
-                    Icon(DsIcons.Warning, contentDescription = null, tint = colors.warnLabel, modifier = Modifier.padding(top = 1.dp).size(16.dp))
-                    Spacer(Modifier.width(DsSpacing.small))
-                    Text(last, style = DsType.small13, color = colors.warnLabel, modifier = Modifier.weight(1f))
-                }
-                // Signing in to the DeepSeek account is a browser flow on the harness; the screen
-                // can still add a key for another provider, so the button stays.
-                DsConnectButton(
-                    text = stringResource(R.string.models_open),
-                    onClick = {
-                        haptics.tap()
-                        monitor.open(ModelsRequest.Connected)
-                    },
-                )
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.small)
+                .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+            verticalArrangement = Arrangement.spacedBy(DsSpacing.small),
+        ) {
+            Row(verticalAlignment = Alignment.Top) {
+                Icon(DsIcons.Warning, contentDescription = null, tint = colors.warnLabel, modifier = Modifier.padding(top = 1.dp).size(16.dp))
+                Spacer(Modifier.width(DsSpacing.small))
+                Text(text, style = DsType.small13, color = colors.warnLabel, modifier = Modifier.weight(1f))
             }
+            // Signing in to the DeepSeek account is a browser flow on the harness; the screen
+            // can still add a key for another provider, so the button stays.
+            DsConnectButton(
+                text = stringResource(R.string.models_open),
+                onClick = {
+                    haptics.tap()
+                    monitor.open(ModelsRequest.Connected)
+                },
+            )
         }
     }
 }

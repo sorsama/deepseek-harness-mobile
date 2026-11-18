@@ -7,6 +7,7 @@ import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.session.ToolCallNode
@@ -79,7 +80,9 @@ internal fun ToolHoldMenu(
 ) {
     val copy = rememberCopier()
     val open = LocalFileOpener.current
-    val copies = toolCopies(call.arguments, toolOutputText(result))
+    // Once per call and result: the output text of a call can be megabytes, and reading it is not
+    // something to repeat each time the menu recomposes.
+    val copies = remember(call.arguments, result) { toolCopies(call.arguments, toolOutputText(result)) }
     val actions = buildList {
         copies.forEach { item ->
             val label = when (item.kind) {
@@ -111,8 +114,11 @@ internal fun ToolHoldMenu(
             add(HoldAction(stringResource(R.string.tool_output_show_raw), Icons.Outlined.Code) { show() })
         }
     }
-    val preview = copies.firstOrNull { it.kind != ToolCopyKind.Output }?.text ?: call.name
-    HoldMenu(onDismiss = onDismiss, actions = actions, preview = preview, monospacePreview = true)
+    // What the menu is about: the command or path, else the tool in words (`pwsh` is "PowerShell",
+    // `list_agents` is "List agents"), never the wire name.
+    val preview = copies.firstOrNull { it.kind != ToolCopyKind.Output }?.text
+        ?: toolRowModel(call.name, call.arguments, context.cwd).title
+    HoldMenu(onDismiss = onDismiss, actions = actions, preview = technicalDisplay(preview), monospacePreview = true)
 }
 
 /**
