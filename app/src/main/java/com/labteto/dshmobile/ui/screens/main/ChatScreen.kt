@@ -590,6 +590,9 @@ fun ChatScreen(
         com.labteto.dshmobile.ui.components.LocalFolderOpener provides { path: String ->
             store.panels.get(composer.key).browse(path); panelKey = composer.key
         },
+        com.labteto.dshmobile.ui.components.LocalWebLinkOpener provides { url: String ->
+            store.panels.get(composer.key).openBrowser(url); panelKey = composer.key
+        },
     ) {
     // Files and text dropped from another window (the ChromeOS Files app, a browser, an app in the
     // next split) land in the tray and the draft, the same as picking them does.
