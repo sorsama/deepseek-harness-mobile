@@ -77,7 +77,7 @@
     <string name="ux_a_last_run">上次运行：%1$s</string>
     <string name="plugins_filter_on">已启用 %1$d</string>
     <string name="plugins_filter_off">已禁用 %1$d</string>
-    <string name="plugins_count_on">%2$d 个中已启用 %1$d 个</string>
+    <string name="plugins_count_on">%2$d&#160;个中已启用&#160;%1$d&#160;个</string>
     <string name="plugins_open_details">查看详情</string>
     <string name="plugins_more_matches">另有 %1$d 个</string>
     <string name="plugins_no_matches">没有匹配项</string>

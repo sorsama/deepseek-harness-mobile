@@ -293,6 +293,32 @@ internal fun pluginSubjectNames(
     return names
 }
 
+/** The prefixes a module's entry id carries: they say what kind of entry it is, not what it is called. */
+private val PLUGIN_ENTRY_ID_PREFIXES = listOf("include:")
+
+/**
+ * What a subject is called while the list it would be looked up in has not loaded yet (right after
+ * the screen is recreated, for one): a module entry id loses its kind prefix and takes the same
+ * short-name rule the list applies, so `include:repeat-tool-reminder` never shows as a raw id and
+ * then changes to `repeat-tool-reminder` when the list arrives. Anything else keeps its own text.
+ */
+internal fun pluginSubjectFallback(subject: String): String {
+    val prefix = PLUGIN_ENTRY_ID_PREFIXES.firstOrNull { subject.startsWith(it) && subject.length > it.length } ?: return subject
+    return pluginShortName(subject.removePrefix(prefix))
+}
+
+/** The name an operation card draws for [subject]: the list's name for it, or the readable fallback. */
+internal fun pluginSubjectText(subject: String, names: Map<String, String>): String =
+    names[subject] ?: pluginSubjectFallback(subject)
+
+/**
+ * A bundle card's line under its name: the version, then the count. Only the separator can break
+ * (the space before the dot is a no-break space, and the count string keeps its own words together),
+ * so a large font never splits "71 of 96 on" across two lines.
+ */
+internal fun pluginMetaLine(version: String?, countText: String?): String =
+    listOfNotNull(version, countText).joinToString(" · ")
+
 /** The word on an operation's tag. */
 internal fun pluginTagLabel(application: String?, busy: Boolean, unknown: Boolean, failed: Boolean): Int = when {
     busy -> R.string.common_loading

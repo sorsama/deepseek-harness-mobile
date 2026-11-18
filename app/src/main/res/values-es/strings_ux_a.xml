@@ -87,7 +87,7 @@
     <string name="ux_a_last_run">Última ejecución: %1$s</string>
     <string name="plugins_filter_on">Activados %1$d</string>
     <string name="plugins_filter_off">Desactivados %1$d</string>
-    <string name="plugins_count_on">%1$d de %2$d activados</string>
+    <string name="plugins_count_on">%1$d&#160;de&#160;%2$d&#160;activados</string>
     <string name="plugins_open_details">Abrir detalles</string>
     <string name="plugins_more_matches">+%1$d más</string>
     <string name="plugins_no_matches">Sin coincidencias</string>

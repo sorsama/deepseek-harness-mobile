@@ -1,10 +1,11 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import androidx.compose.foundation.LocalIndication
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -22,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -137,7 +139,7 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
     // The names the list and the bundle pages draw, so an operation card calls its subject the same thing.
     val subjectNames = remember(bundles, plugins, model.names) { pluginSubjectNames(bundles, plugins, model.names) }
     fun subjectText(state: PluginOperationState): String? =
-        state.displaySubject()?.let { subjectNames[it] ?: it }?.let(::technicalDisplay)
+        state.displaySubject()?.let { pluginSubjectText(it, subjectNames) }?.let(::technicalDisplay)
     val enabledCounts = remember(bundles, pluginsById) {
         bundles.distinctBy { it.name }.associate { it.name to pluginEnabledCount(pluginModuleRows(it, pluginsById)) }
     }
@@ -390,13 +392,17 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
                 SectionHeader(if (installed) installedHeader else availableHeader)
             }
             items(unbundled.open, key = { "plugin:${it.entryId}" }) { plugin ->
-                DsCard {
+                // The whole card is the target: the row inside shares its press with the card, which draws it.
+                val pressSource = remember { MutableInteractionSource() }
+                DsCard(pressSource = pressSource) {
                     PluginToggleRow(
                         label = technicalDisplay(model.names[plugin.moduleName] ?: plugin.moduleName),
                         checked = plugin.enabled,
                         enabled = !busy,
                         onToggle = { togglePlugin(plugin) },
                         leading = { PluginGlyph(size = 40.dp) },
+                        interactionSource = pressSource,
+                        drawsPress = false,
                     )
                 }
             }
@@ -597,9 +603,10 @@ private fun PluginFilterChips(counts: PluginFilterCounts, selected: PluginFilter
  * the text already says "open details". A bundle the harness locks has no switch to draw: its state
  * is a word beside a lock, as on a locked row of the bundle's page.
  *
- * The text and the chevron share one interaction source and wear the app's own pressed indication,
- * which the card clips to its shape, so pressing either one lights both and the card reads as one
- * thing being pressed.
+ * The text and the chevron share one interaction source, and the card ([DsCard]) fills itself with
+ * the pressed tone while that source is pressed, so pressing either one lights the whole card and it
+ * reads as one thing being pressed. They do not use a ripple: the app's `LocalIndication` draws
+ * nothing (see `FocusRing.kt`), so both clickables pass `indication = null` and the card does the drawing.
  */
 @Composable
 private fun PluginBundleCard(
@@ -618,18 +625,17 @@ private fun PluginBundleCard(
         bundle.rowMatches(search) { names[it] ?: it }
     }
     val countText = count?.let { stringResource(R.string.plugins_count_on, it.on, it.total) }
-    val meta = listOfNotNull(bundle.version?.let(::technicalDisplay), countText).joinToString(" · ")
+    val meta = pluginMetaLine(bundle.version?.let(::technicalDisplay), countText)
     val open = { haptics.tap(); onOpen() }
     val openLabel = stringResource(R.string.plugins_open_details)
     val pressSource = remember { MutableInteractionSource() }
-    val indication = LocalIndication.current
-    DsCard(contentPadding = PaddingValues(0.dp)) {
+    DsCard(contentPadding = PaddingValues(0.dp), pressSource = pressSource) {
         Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
             Row(
                 Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .clickable(interactionSource = pressSource, indication = indication, onClickLabel = openLabel, role = Role.Button, onClick = open)
+                    .clickable(interactionSource = pressSource, indication = null, onClickLabel = openLabel, role = Role.Button, onClick = open)
                     .padding(
                         start = DsSpacing.comfortable,
                         top = DsSpacing.medium,
@@ -679,7 +685,7 @@ private fun PluginBundleCard(
                 Modifier
                     .fillMaxHeight()
                     .width(36.dp)
-                    .clickable(interactionSource = pressSource, indication = indication, onClick = open)
+                    .clickable(interactionSource = pressSource, indication = null, onClick = open)
                     .clearAndSetSemantics { },
                 contentAlignment = Alignment.Center,
             ) {
@@ -908,9 +914,10 @@ private fun PluginNameBlock(
     modifier: Modifier = Modifier,
     style: TextStyle = DsType.mono13,
     color: androidx.compose.ui.graphics.Color = DsTheme.colors.labelPrimary,
+    maxLines: Int = 2,
 ) {
     Column(modifier) {
-        Text(label, style = style, color = color, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Text(label, style = style, color = color, maxLines = maxLines, overflow = TextOverflow.Ellipsis)
         qualifier?.let {
             Text(technicalDisplay(it), style = DsType.mono12, color = DsTheme.colors.labelTertiary, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
@@ -921,6 +928,10 @@ private fun PluginNameBlock(
  * A whole-row switch: the row is the target and its text is the name a screen reader says, like
  * [ToggleRow], but with a technical name that wraps to a second line and ends in an ellipsis after
  * that. [qualifier] is the small second line for a row whose module name another row shares.
+ *
+ * Pressing the row fills it with the pressed tone (a ripple would draw nothing here, see
+ * `FocusRing.kt`). A row that sits in a card passes the card's [interactionSource] and
+ * `drawsPress = false`, and the card does the filling, so the whole card lights and not just the row.
  */
 @Composable
 private fun PluginToggleRow(
@@ -932,16 +943,29 @@ private fun PluginToggleRow(
     labelStyle: TextStyle = DsType.mono13,
     leading: (@Composable () -> Unit)? = null,
     qualifier: String? = null,
+    interactionSource: MutableInteractionSource? = null,
+    drawsPress: Boolean = true,
 ) {
     val haptics = rememberDsHaptics()
+    val colors = DsTheme.colors
+    val source = interactionSource ?: remember { MutableInteractionSource() }
+    val pressed by source.collectIsPressedAsState()
+    val fill by animateColorAsState(
+        targetValue = if (drawsPress && enabled && pressed) colors.active else colors.active.copy(alpha = 0f),
+        animationSpec = DsAnimations.pressFill,
+        label = "rowFill",
+    )
     Row(
         modifier
             .fillMaxWidth()
             .clip(DsShapes.row)
+            .drawBehind { drawRect(fill) }
             .heightIn(min = DsSpacing.touchTarget)
             .handCursor(enabled)
             .toggleable(
                 value = checked,
+                interactionSource = source,
+                indication = null,
                 enabled = enabled,
                 role = Role.Switch,
                 onValueChange = { haptics.toggle(it); onToggle() },
@@ -986,7 +1010,11 @@ private fun PluginLockedHeader(reason: String, modifier: Modifier = Modifier) {
     }
 }
 
-/** A locked row: its name and its state as a word. There is no switch to hint at a state. */
+/**
+ * A locked row: its name and its state as a word. There is no switch to hint at a state. The name
+ * wraps as far as it needs and is never cut: a locked row is information only, so the id is the one
+ * thing it has to show whole, and at a large font two lines were not enough for a long one.
+ */
 @Composable
 private fun PluginLockedRow(label: String, enabled: Boolean, modifier: Modifier = Modifier, qualifier: String? = null) {
     val colors = DsTheme.colors
@@ -998,7 +1026,7 @@ private fun PluginLockedRow(label: String, enabled: Boolean, modifier: Modifier 
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
     ) {
-        PluginNameBlock(label, qualifier, Modifier.weight(1f))
+        PluginNameBlock(label, qualifier, Modifier.weight(1f), maxLines = Int.MAX_VALUE)
         Text(
             stringResource(if (enabled) R.string.plugins_enabled else R.string.plugins_disabled),
             style = DsType.small13,

@@ -82,7 +82,7 @@
     <string name="ux_a_last_run">শেষবার চলেছে: %1$s</string>
     <string name="plugins_filter_on">চালু %1$d</string>
     <string name="plugins_filter_off">বন্ধ %1$d</string>
-    <string name="plugins_count_on">%2$d-এর মধ্যে %1$d চালু</string>
+    <string name="plugins_count_on">%2$d-এর&#160;মধ্যে&#160;%1$d&#160;চালু</string>
     <string name="plugins_open_details">বিস্তারিত দেখুন</string>
     <string name="plugins_more_matches">আরও %1$dটি</string>
     <string name="plugins_no_matches">কিছু মেলেনি</string>

@@ -92,7 +92,7 @@
     <string name="ux_a_last_run">Последний запуск: %1$s</string>
     <string name="plugins_filter_on">Вкл %1$d</string>
     <string name="plugins_filter_off">Выкл %1$d</string>
-    <string name="plugins_count_on">%1$d из %2$d включено</string>
+    <string name="plugins_count_on">%1$d&#160;из&#160;%2$d&#160;включено</string>
     <string name="plugins_open_details">Открыть подробности</string>
     <string name="plugins_more_matches">и ещё %1$d</string>
     <string name="plugins_no_matches">Ничего не найдено</string>
