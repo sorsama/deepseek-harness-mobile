@@ -1,0 +1,28 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-15",
+  "result": {
+    "ok": true,
+    "value": [
+      {
+        "url": "http://127.0.0.1:56394/index.json",
+        "title": {
+          "en": "Example Market",
+          "zh": "示例市场"
+        },
+        "description": {
+          "en": "Community DSH bundles",
+          "zh": "社区 DSH bundle"
+        }
+      },
+      {
+        "url": "http://127.0.0.1:56394/broken.json",
+        "error": "http://127.0.0.1:56394/broken.json: $.plugins[0].name must be a valid npm package name"
+      },
+      {
+        "url": "http://127.0.0.1:56394/missing.json",
+        "error": "Could not fetch http://127.0.0.1:56394/missing.json: HTTP 404"
+      }
+    ]
+  }
+}

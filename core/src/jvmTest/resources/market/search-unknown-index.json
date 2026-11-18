@@ -1,0 +1,14 @@
+{
+  "type": "server-response",
+  "rpcId": "cap-12",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "plugin-market/unknown-index",
+      "message": "Not a configured index source: https://example.invalid/none.json",
+      "details": {
+        "url": "https://example.invalid/none.json"
+      }
+    }
+  }
+}

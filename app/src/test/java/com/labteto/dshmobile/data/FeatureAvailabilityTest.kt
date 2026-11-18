@@ -20,6 +20,7 @@ class FeatureAvailabilityTest {
         HarnessFeature.PLUGIN_MANAGEMENT -> api.pluginBundles()
         HarnessFeature.SESSION_REFERENCES -> api.sessionReferenceCandidates("s", "")
         HarnessFeature.TIMED_QUESTIONS -> api.answerContinuedQuestion("s", "call", AskUserQuestionAnswer(emptyList()))
+        HarnessFeature.PLUGIN_MARKET -> api.marketIndexes()
     }
 
     @Test fun `404 endpoints retire each feature without reporting a connection failure`() = runTest {
@@ -51,6 +52,33 @@ class FeatureAvailabilityTest {
                 assertEquals(true, availability.state(feature).value)
             }
         }
+    }
+
+    @Test fun `an answer to the question itself brings a retired feature back and a retired one goes again`() {
+        // The market is an optional bundle: switched on after the first probe said it was missing, switched off again later.
+        val availability = FeatureAvailability { fail("No error is expected") }
+        val unavailable = RpcResult.Err(RpcError("capability-unavailable", "missing"))
+        val market = HarnessFeature.PLUGIN_MARKET
+        availability.observe(market, availability.generation(), unavailable)
+        assertEquals(false, availability.state(market).value)
+        // An ordinary success (another call racing the first) still cannot restore it...
+        availability.observe(market, availability.generation(), RpcResult.Ok(Unit))
+        assertEquals(false, availability.state(market).value)
+        // ...but the re-probe's own success can.
+        availability.observe(market, availability.generation(), RpcResult.Ok(Unit), authoritative = true)
+        assertEquals(true, availability.state(market).value)
+        // And the same re-probe, after the bundle was turned off, retires it.
+        availability.observe(market, availability.generation(), unavailable, authoritative = true)
+        assertEquals(false, availability.state(market).value)
+    }
+
+    @Test fun `an authoritative answer from an old connection is ignored`() {
+        val availability = FeatureAvailability { fail("No error is expected") }
+        val old = availability.generation()
+        availability.observe(HarnessFeature.PLUGIN_MARKET, old, RpcResult.Err(RpcError("capability-unavailable", "missing")))
+        availability.reset()
+        availability.observe(HarnessFeature.PLUGIN_MARKET, old, RpcResult.Ok(Unit), authoritative = true)
+        assertNull(availability.state(HarnessFeature.PLUGIN_MARKET).value)
     }
 
     @Test fun `HTTP 403 remains visible for every feature`() = runTest {

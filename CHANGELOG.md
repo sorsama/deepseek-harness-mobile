@@ -5,6 +5,22 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **Discover on the Plugins page: browse a plugin market and install from it.** A harness with the
+  optional "custom plugin markets" bundle on now shows **Installed** and **Discover** at the top of
+  the Plugins page; without it the page is exactly as before. The harness fetches and checks each
+  market's list, so the phone never reads an index from the internet itself. Discover lists a
+  market's plugins as cards (name, one line, version, publisher, and **Installed** or **Update
+  available** when you already have it), with search and a chip for each category and label the
+  market declares. A card opens the plugin's own page: the full description, whether it works with
+  this harness, who publishes it, exactly where it installs from, and one button. **Markets** adds
+  or removes the lists the harness reads. Installing goes through the same confirmation as the
+  manual install, which shows the exact package and registry and warns that a market's plugin is
+  third-party code. The harness looks at the package first; if it is not the package the market
+  listed, or the harness has no pnpm to install with (the built-in harness may not), it says so and
+  installs nothing. What a market lists is capped, so a broken or hostile list cannot freeze the page.
+
 ### Changed
 
 - **The Plugins page is a short list, and each bundle opens on its own page.** A bundle with a

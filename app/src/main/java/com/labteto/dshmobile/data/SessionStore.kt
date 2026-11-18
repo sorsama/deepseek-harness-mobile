@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.data
 
 import com.labteto.dshmobile.core.wire.automationCatalog
+import com.labteto.dshmobile.core.wire.marketIndexes
 import com.labteto.dshmobile.core.wire.pluginBundles
 
 import android.util.Base64
@@ -364,6 +365,8 @@ class SessionStore @Inject constructor(
     private val featureAvailability = FeatureAvailability { setConnectionError(it.message) }
     val automationAvailable = featureAvailability.state(HarnessFeature.AUTOMATION)
     val pluginManagementAvailable = featureAvailability.state(HarnessFeature.PLUGIN_MANAGEMENT)
+    /** Whether the harness mounts the plugin market (`pluginMarket`); null until a call has told. */
+    val pluginMarketAvailable = featureAvailability.state(HarnessFeature.PLUGIN_MARKET)
     val timedQuestionsAvailable = featureAvailability.state(HarnessFeature.TIMED_QUESTIONS)
     val sessionReferencesAvailable = featureAvailability.state(HarnessFeature.SESSION_REFERENCES)
     val questionSessions = QuestionSessions(scope, { connectionManager.connectedApi },
@@ -388,19 +391,29 @@ class SessionStore @Inject constructor(
     fun muxForHost(key: String?) = if (key != null && key == activeHostKey) connectionManager.generation?.mux else null
     fun retryConnection() = connectionManager.reconnectIfNeeded()
 
-    suspend fun <T> featureCall(feature: HarnessFeature, api: DshApiClient, call: suspend () -> RpcResult<T>): RpcResult<T> {
-        val observe = featureObserver(feature)
+    suspend fun <T> featureCall(feature: HarnessFeature, api: DshApiClient, authoritative: Boolean = false, call: suspend () -> RpcResult<T>): RpcResult<T> {
+        val observe = featureObserver(feature, authoritative)
         val result = call()
         observe(api, result)
         return result
     }
 
-    private fun featureObserver(feature: HarnessFeature): (DshApiClient, RpcResult<*>) -> Unit {
+    /**
+     * Asks the harness again whether it mounts the plugin market. The answer is cached per connection, and the market
+     * is an optional bundle that is turned on and off while the app is connected, so the Plugins page asks again
+     * whenever plugin state may have changed (it opens, a bundle or plugin is switched, something is installed or
+     * removed, the harness says the plugins changed, Refresh). An answer here can turn the market on as well as off.
+     */
+    suspend fun recheckPluginMarket(api: DshApiClient) {
+        featureCall(HarnessFeature.PLUGIN_MARKET, api, authoritative = true) { api.marketIndexes() }
+    }
+
+    private fun featureObserver(feature: HarnessFeature, authoritative: Boolean = false): (DshApiClient, RpcResult<*>) -> Unit {
         val epoch = featureAvailability.generation()
         val clientId = connectionManager.generation?.clientId
         return { api, result ->
             if (clientId != null && clientId == connectionManager.generation?.clientId && api === connectionManager.connectedApi) {
-                featureAvailability.observe(feature, epoch, result)
+                featureAvailability.observe(feature, epoch, result, authoritative)
             }
         }
     }
@@ -409,6 +422,8 @@ class SessionStore @Inject constructor(
         val api = connectionManager.connectedApi ?: return
         scope.launch { featureCall(HarnessFeature.AUTOMATION, api) { api.automationCatalog() } }
         scope.launch { featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.pluginBundles() } }
+        // `listIndexes` never fetches an index; it only says whether the market is there.
+        scope.launch { featureCall(HarnessFeature.PLUGIN_MARKET, api) { api.marketIndexes() } }
     }
     private val permissionCatalog = MutableStateFlow<PermissionCatalog?>(null)
     private var permissionCatalogEpoch = 0L

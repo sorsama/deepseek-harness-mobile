@@ -46,6 +46,7 @@ import com.labteto.dshmobile.ui.components.*
 import com.labteto.dshmobile.ui.rememberSessionStore
 import com.labteto.dshmobile.ui.theme.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -80,6 +81,19 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
     var detailSearch by remember(host) { mutableStateOf("") }
     var detailFilter by remember(host) { mutableStateOf(PluginFilter.ALL) }
     val listState = rememberLazyListState()
+    // The Discover view (the optional plugin market). It exists only while the harness mounts the market;
+    // without it this page is the Installed list alone. Each view keeps its own search text and scroll position.
+    val marketAvailable by store.pluginMarketAvailable.collectAsStateWithLifecycle()
+    val onBuiltIn by androidx.hilt.navigation.compose.hiltViewModel<com.labteto.dshmobile.ui.screens.runtime.ProjectsViewModel>()
+        .operations.onBuiltInState.collectAsStateWithLifecycle()
+    var viewChoice by remember(host) { mutableStateOf(PluginView.INSTALLED) }
+    val view = if (marketAvailable == true) viewChoice else PluginView.INSTALLED
+    var marketSearch by remember(host) { mutableStateOf("") }
+    val marketListState = rememberLazyListState()
+    val browser = remember(host) { PluginMarketBrowser(scope, store, host) }
+    var marketEntryName by remember(host) { mutableStateOf<String?>(null) }
+    var sourcesOpen by remember(host) { mutableStateOf(false) }
+    val languages = rememberMarketLanguages()
     var installOpen by remember(host) { mutableStateOf(false) }
     var operationOpen by remember(host) { mutableStateOf(false) }
     var installedVersion by remember(host) { mutableStateOf<String?>(null) }
@@ -102,13 +116,33 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
         catch (e: Exception) { error = e.message ?: offline }
         finally { loading = false }
     } }
+    // Whether the harness has the plugin market is cached per connection, and the market is a bundle that is turned on and
+    // off while connected. So it is asked again whenever plugin state may have changed: when this page opens, after a
+    // bundle or plugin is switched, installed or removed (each of those bumps `revision` or the operation result, which
+    // run the load below), on the host's own "plugins changed" event (it bumps `revision`), and on Refresh.
+    fun recheckMarket() { scope.launch { store.apiForHost(host)?.let { store.recheckPluginMarket(it) } } }
     LaunchedEffect(host, connection.phase, revision, current?.result, current?.unknown) { run { api ->
+        store.recheckPluginMarket(api)
         val next = store.featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.pluginBundles() }.featureValue()
         val rows = store.featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.managedPlugins() }.featureValue()
         val sources = store.featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.pluginRegistries() }.featureValue()
         if (store.activeHostKey == host) { bundles = next; plugins = rows; registries = sources; loaded = true }
     } }
     LaunchedEffect(host) { store.hostEvents.collect { if (it.first == "plugin-manager/changed") revision++ } }
+    // The market is read when Discover is first shown, and again (from the host's cached copy) when what is
+    // installed or what the host lists as sources changes, so an installed entry reads Installed at once.
+    LaunchedEffect(host, view) { if (view == PluginView.DISCOVER) browser.ensureLoaded() }
+    LaunchedEffect(host, revision, current?.result, current?.unknown) { if (marketAvailable != false) browser.invalidate() }
+    LaunchedEffect(host) { store.hostEvents.collect { if (it.first == "plugin-market/changed") browser.invalidate() } }
+    // The market bundle was turned off: back to Installed with nothing of Discover left open. Turned on again: read it fresh.
+    LaunchedEffect(host, marketAvailable) {
+        if (marketAvailable == false) { viewChoice = PluginView.INSTALLED; marketEntryName = null; sourcesOpen = false }
+        else if (marketAvailable == true) browser.invalidate()
+    }
+    // Typing waits for a pause before the harness is asked.
+    LaunchedEffect(marketSearch, view) {
+        if (view == PluginView.DISCOVER) { if (marketSearch != browser.query.text) delay(250); browser.setText(marketSearch) }
+    }
 
     val pluginsById = remember(plugins) { plugins.associateBy { it.entryId } }
     val model = remember(bundles, plugins, search, filter) { pluginListModel(bundles, plugins, search, filter) }
@@ -148,6 +182,25 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
         detailSearch = bundle.searchCarriedToDetail(search)
         detailFilter = PluginFilter.ALL
         detailName = bundle.name
+    }
+
+    // The open market entry is held by name and looked up from what was read, as the open bundle is.
+    val marketEntry = marketEntryName?.let { name -> browser.page?.entries?.firstOrNull { it.name == name } }
+    LaunchedEffect(marketEntry == null, browser.status) {
+        if (browser.status == MarketStatus.READY && marketEntry == null && marketEntryName != null) marketEntryName = null
+    }
+
+    /** Install or update a market entry: the harness checks the package, then the existing confirmation opens. */
+    fun beginMarketInstall(entry: com.labteto.dshmobile.core.market.MarketEntry, action: MarketAction) {
+        val (version, update) = when (action) {
+            is MarketAction.Install -> action.version to false
+            is MarketAction.Update -> action.version to true
+            else -> return
+        }
+        val installation = com.labteto.dshmobile.core.market.marketInstallationFor(entry, bundles)
+        val note = marketInstallNote(entry, version, browser.page?.header, installation, languages)
+        val replaces = if (update) com.labteto.dshmobile.core.market.marketInstalledBundle(entry.name, bundles)?.takeIf { it.installed }?.name else null
+        browser.beginInstall(entry, version, marketInstallSubject(version, note, replaces), update) { confirm = it }
     }
 
     @Composable
@@ -234,10 +287,11 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
     val installedHeader = stringResource(R.string.ux_a_installed)
     val availableHeader = stringResource(R.string.ux_a_available)
 
+    val marketAll = stringResource(R.string.market_filter_all)
     LazyFeaturePage(
         title = stringResource(R.string.settings_plugins),
         onClose = onClose,
-        onRefresh = { if (!busy) { revision++ } },
+        onRefresh = { if (!busy) { if (view == PluginView.DISCOVER) { recheckMarket(); browser.refresh() } else revision++ } },
         footer = {
             Text(
                 stringResource(R.string.ink_files_plugins_intro),
@@ -246,13 +300,30 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
             )
         },
         pinned = {
-            DsSearchField(search, { search = it }, stringResource(R.string.plugins_search_hint))
-            PluginFilterChips(model.counts, filter) { filter = it }
+            if (marketAvailable == true) DsSegmented(
+                listOf(
+                    DsSegment(PluginView.INSTALLED.name, stringResource(R.string.ux_a_installed)),
+                    DsSegment(PluginView.DISCOVER.name, stringResource(R.string.market_view_discover)),
+                ),
+                view.name,
+                { viewChoice = PluginView.valueOf(it) },
+                role = Role.Tab,
+                stretch = true,
+                minSegmentHeight = DsSpacing.touchTarget,
+                maxLabelLines = Int.MAX_VALUE,
+            )
+            if (view == PluginView.DISCOVER) {
+                DsSearchField(marketSearch, { marketSearch = it }, stringResource(R.string.market_search_hint))
+                MarketFilterChips(browser.page?.header?.let { marketChips(it, browser.query, languages, marketAll) }.orEmpty()) { browser.applyQuery(browser.query.tap(it)) }
+            } else {
+                DsSearchField(search, { search = it }, stringResource(R.string.plugins_search_hint))
+                PluginFilterChips(model.counts, filter) { filter = it }
+            }
         },
-        progress = busy,
-        listState = listState,
+        progress = busy || (view == PluginView.DISCOVER && (browser.status == MarketStatus.LOADING || browser.status == MarketStatus.MORE)),
+        listState = if (view == PluginView.DISCOVER) marketListState else listState,
     ) {
-        item(key = "actions") {
+        if (view == PluginView.INSTALLED) item(key = "actions") {
             PluginButtonPair {
                 DsButton(
                     text = stringResource(R.string.harness_install_update),
@@ -304,6 +375,10 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
                 }
                 if (state.busy) FeatureProgress()
             }
+        }
+        if (view == PluginView.DISCOVER) {
+            marketListItems(browser, bundles, languages, onOpenEntry = { marketEntryName = it }, onOpenSources = { sourcesOpen = true })
+            return@LazyFeaturePage
         }
         if (busy && !loaded) item(key = "skeleton") { SkeletonPluginCards() }
         // An item with nothing in it still takes a gap in a lazy list, so the failure card only exists while there is one.
@@ -386,6 +461,28 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
             onRemove = { remove = bundle },
         )
     }
+    marketEntry?.let { entry ->
+        PluginMarketEntryPage(
+            entry = entry,
+            header = browser.page?.header,
+            installation = com.labteto.dshmobile.core.market.marketInstallationFor(entry, bundles),
+            installedBundle = com.labteto.dshmobile.core.market.marketInstalledBundle(entry.name, bundles),
+            languages = languages,
+            onBuiltIn = onBuiltIn,
+            busy = busy,
+            check = browser.check,
+            onInstall = { beginMarketInstall(entry, it) },
+            onOpenInstalled = { name ->
+                // As the web client does: to the Installed view, on that bundle's own page.
+                browser.dismissCheck(); marketEntryName = null; viewChoice = PluginView.INSTALLED
+                bundles.firstOrNull { it.name == name }?.let(::openDetail)
+            },
+            onDismissCheck = browser::dismissCheck,
+            onClose = { browser.dismissCheck(); marketEntryName = null },
+            onRefresh = { if (!busy) { recheckMarket(); browser.refresh() } },
+        )
+    }
+    if (sourcesOpen) PluginMarketSourcesPage(browser, languages) { sourcesOpen = false }
     if (operationOpen) FeaturePage(stringResource(R.string.harness_install_update), { operationOpen = false }) { Operations() }
     if (installOpen) FeaturePage(stringResource(R.string.harness_install_update), { installOpen = false }) {
         FeatureField(spec, { spec = it; inspection = null }, R.string.harness_package, !busy, singleLine = true, technical = true)
@@ -421,6 +518,8 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
             Text(technicalDisplay(subject.target), style = DsType.std14Strong, color = colors.labelPrimary)
             subject.registry?.let { Text(technicalDisplay(it), style = DsType.mono12, color = colors.labelSecondary) }
             subject.approvedBuilds?.forEach { Text(technicalDisplay(it), style = DsType.small13, color = colors.labelPrimary) }
+            // From a market: what it is called, who publishes it, the registry that will answer, and the warning.
+            subject.market?.let { MarketConfirmNotes(it, registryNamed = subject.registry != null, defaultRegistry = registries?.let { r -> r.resolved ?: r.registry }) }
         }
         FeatureAction(stringResource(if (subject.approvedBuilds == null) R.string.harness_install_update else R.string.ux_a_approve_retry), variant = DsButtonVariant.Primary) {
             confirm = null; installOpen = false; operationOpen = true
@@ -948,13 +1047,13 @@ private fun PluginLockedRow(label: String, enabled: Boolean, modifier: Modifier 
 }
 
 @Composable
-private fun PluginRowDivider() {
+internal fun PluginRowDivider() {
     Box(Modifier.fillMaxWidth().height(1.dp).background(DsTheme.colors.borderL1))
 }
 
 /** The plugin glyph on its tinted plate, the same shape the design uses for a module. */
 @Composable
-private fun PluginGlyph(size: androidx.compose.ui.unit.Dp = 40.dp) {
+internal fun PluginGlyph(size: androidx.compose.ui.unit.Dp = 40.dp) {
     val colors = DsTheme.colors
     Box(
         Modifier.size(size).clip(DsShapes.buttonSmall).background(colors.bgLayer3),
@@ -997,7 +1096,7 @@ private fun PluginPhaseTag(application: String?, busy: Boolean, unknown: Boolean
 
 /** Placeholder cards while the plugin inventory is on the wire. */
 @Composable
-private fun SkeletonPluginCards() {
+internal fun SkeletonPluginCards() {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.medium)) {
         repeat(3) {
