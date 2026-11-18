@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_tab">เบราว์เซอร์</string>
+    <string name="browser_address">ที่อยู่</string>
+    <string name="browser_forward">ไปข้างหน้า</string>
+    <string name="browser_reload">โหลดใหม่</string>
+    <string name="browser_stop">หยุดโหลด</string>
+    <string name="browser_secure">การเชื่อมต่อปลอดภัย</string>
+    <string name="browser_not_secure">ไม่ปลอดภัย</string>
+    <string name="browser_open_external">เปิดในเบราว์เซอร์</string>
+    <string name="browser_copy_link">คัดลอกลิงก์</string>
+    <string name="browser_clear_data">ล้างข้อมูลเว็บไซต์ของแท็บนี้</string>
+    <string name="browser_data_cleared">ล้างข้อมูลเว็บไซต์แล้ว</string>
+    <string name="browser_no_app">ไม่มีแอปที่เปิดลิงก์นี้ได้</string>
+
+    <string name="browser_start_title">เปิดหน้าเว็บ</string>
+    <string name="browser_start_body">พิมพ์ที่อยู่ด้านบน หรือแตะลิงก์ในเครื่องที่อยู่ในแชท</string>
+    <string name="browser_note_this_device">harness ทำงานอยู่บนโทรศัพท์เครื่องนี้ ที่อยู่ localhost จึงเปิดได้ที่นี่</string>
+    <string name="browser_note_lan">เว็บไซต์สาธารณะและที่อยู่ในเครือข่ายของคุณเปิดได้ที่นี่ แต่โทรศัพท์เครื่องนี้เข้าถึง localhost ของคอมพิวเตอร์ที่รัน harness ไม่ได้</string>
+    <string name="browser_note_relay">เว็บไซต์สาธารณะเปิดได้ที่นี่ รีเลย์ส่งต่อแค่ตัว harness เท่านั้น จึงเข้าถึงหน้าเว็บบน localhost ของคอมพิวเตอร์เครื่องนั้นไม่ได้</string>
+    <string name="browser_from_chat">จากแชทนี้</string>
+    <string name="browser_last_page">หน้าล่าสุด</string>
+    <string name="browser_open_again">เปิดอีกครั้ง</string>
+
+    <string name="browser_loopback_title">หน้านี้อยู่บนคอมพิวเตอร์ที่รัน harness</string>
+    <string name="browser_loopback_lan">localhost ในที่นี้คือคอมพิวเตอร์ที่รัน harness และโทรศัพท์เครื่องนี้เข้าถึง loopback ของเครื่องนั้นผ่านเครือข่ายไม่ได้ ถ้าเซิร์ฟเวอร์รับการเชื่อมต่อจากเครือข่ายด้วย ลองใช้ที่อยู่ของคอมพิวเตอร์ดู</string>
+    <string name="browser_loopback_relay">localhost ในที่นี้คือคอมพิวเตอร์ที่รัน harness รีเลย์ส่งต่อแค่ตัว harness เท่านั้น ไม่รวมหน้าเว็บอื่นบนเครื่องนั้น</string>
+    <string name="browser_try_on">ลองที่ %1$s</string>
+    <string name="browser_open_on_phone">เปิดบนโทรศัพท์เครื่องนี้แทน</string>
+    <string name="browser_harness_title">นี่คือตัว harness เอง</string>
+    <string name="browser_harness_body">แอปแสดง harness นี้อยู่แล้ว หน้าของ harness เองจึงไม่เปิดในแท็บนี้</string>
+    <string name="browser_scheme_title">แท็บนี้เปิดได้เฉพาะหน้าเว็บ</string>
+    <string name="browser_scheme_body">ที่อยู่ที่ขึ้นต้นด้วย %1$s: จะไม่เปิดที่นี่</string>
+    <string name="browser_refused_title">เปิดที่อยู่นี้ที่นี่ไม่ได้</string>
+    <string name="browser_credentials_body">ที่อยู่ที่มีชื่อผู้ใช้หรือรหัสผ่านจะไม่เปิดที่นี่</string>
+    <string name="browser_invalid_body">ดูไม่เหมือนที่อยู่เว็บ</string>
+    <string name="browser_load_title">โหลดหน้าไม่สำเร็จ</string>
+    <string name="browser_load_body">ตรวจดูว่าเซิร์ฟเวอร์ทำงานอยู่ และโทรศัพท์เครื่องนี้เข้าถึงได้</string>
+    <string name="browser_tls_title">การเชื่อมต่อไม่เป็นส่วนตัว</string>
+    <string name="browser_tls_body">ตรวจสอบใบรับรองของเว็บไซต์ไม่ได้ จึงไม่ได้โหลดหน้านี้</string>
+    <string name="browser_crashed">หน้าเว็บหยุดทำงาน โหลดใหม่เพื่อลองอีกครั้ง</string>
+
+    <string name="browser_other_app_title">เปิดแอปอื่นไหม</string>
+    <string name="browser_other_app_body">หน้านี้ต้องการเปิดลิงก์นอกแท็บนี้:</string>
+    <string name="browser_other_app_open">เปิด</string>
+    <string name="browser_download_notice">ดาวน์โหลดในแท็บนี้ไม่ได้ เปิดหน้านี้ในเบราว์เซอร์ของคุณเพื่อรับไฟล์</string>
+    <string name="browser_file_notice">แท็บนี้เลือกไฟล์ไม่ได้ เปิดหน้านี้ในเบราว์เซอร์ของคุณเพื่ออัปโหลด</string>
+    <string name="browser_dismiss_notice">ปิด</string>
+</resources>

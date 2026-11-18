@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_tab">Navegador</string>
+    <string name="browser_address">Dirección</string>
+    <string name="browser_forward">Adelante</string>
+    <string name="browser_reload">Recargar</string>
+    <string name="browser_stop">Detener carga</string>
+    <string name="browser_secure">Conexión segura</string>
+    <string name="browser_not_secure">No es segura</string>
+    <string name="browser_open_external">Abrir en el navegador</string>
+    <string name="browser_copy_link">Copiar enlace</string>
+    <string name="browser_clear_data">Borrar datos de sitios de esta pestaña</string>
+    <string name="browser_data_cleared">Datos de sitios borrados</string>
+    <string name="browser_no_app">Ninguna app puede abrir este enlace</string>
+
+    <string name="browser_start_title">Abre una página</string>
+    <string name="browser_start_body">Escribe una dirección arriba o toca un enlace local en el chat.</string>
+    <string name="browser_note_this_device">El harness funciona en este teléfono, así que las direcciones localhost se abren aquí.</string>
+    <string name="browser_note_lan">Aquí se abren los sitios públicos y las direcciones de tu red. El localhost del ordenador del harness no es accesible desde este teléfono.</string>
+    <string name="browser_note_relay">Aquí se abren los sitios públicos. El relay solo transporta el harness, así que las páginas en el localhost de su ordenador no son accesibles.</string>
+    <string name="browser_from_chat">De este chat</string>
+    <string name="browser_last_page">Última página</string>
+    <string name="browser_open_again">Abrir otra vez</string>
+
+    <string name="browser_loopback_title">Esta página está en el ordenador del harness</string>
+    <string name="browser_loopback_lan">Aquí localhost es el ordenador del harness, y este teléfono no puede llegar a su loopback por la red. Si el servidor también escucha en la red, prueba con la dirección del ordenador.</string>
+    <string name="browser_loopback_relay">Aquí localhost es el ordenador del harness. El relay solo transporta el propio harness, no otras páginas de ese ordenador.</string>
+    <string name="browser_try_on">Probar en %1$s</string>
+    <string name="browser_open_on_phone">Abrir en este teléfono</string>
+    <string name="browser_harness_title">Este es el propio harness</string>
+    <string name="browser_harness_body">La app ya muestra este harness, así que sus páginas no se abren en esta pestaña.</string>
+    <string name="browser_scheme_title">Esta pestaña solo abre páginas web</string>
+    <string name="browser_scheme_body">Las direcciones que empiezan por %1$s: no se abren aquí.</string>
+    <string name="browser_refused_title">Esta dirección no se puede abrir aquí</string>
+    <string name="browser_credentials_body">Las direcciones con usuario o contraseña no se abren aquí.</string>
+    <string name="browser_invalid_body">Eso no parece una dirección web.</string>
+    <string name="browser_load_title">La página no cargó</string>
+    <string name="browser_load_body">Comprueba que el servidor esté en marcha y que este teléfono pueda llegar a él.</string>
+    <string name="browser_tls_title">La conexión no es privada</string>
+    <string name="browser_tls_body">No se pudo comprobar el certificado del sitio, así que la página no se cargó.</string>
+    <string name="browser_crashed">La página dejó de funcionar. Recarga para intentarlo de nuevo.</string>
+
+    <string name="browser_other_app_title">¿Abrir otra app?</string>
+    <string name="browser_other_app_body">Esta página quiere abrir un enlace fuera de esta pestaña:</string>
+    <string name="browser_other_app_open">Abrir</string>
+    <string name="browser_download_notice">Las descargas no funcionan en esta pestaña. Abre la página en tu navegador para obtener el archivo.</string>
+    <string name="browser_file_notice">Esta pestaña no puede elegir archivos. Abre la página en tu navegador para subirlos.</string>
+    <string name="browser_dismiss_notice">Descartar</string>
+</resources>

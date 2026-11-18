@@ -341,6 +341,51 @@ travels in the clear.
 The app keeps no copy: it reads the picked document once, at upload time, and
 holds only the receipt the harness answered with until the message is sent.
 
+## The workspace Browser tab
+
+The Workspace's Browser tab shows `http` and `https` pages in an Android
+WebView, typically a dev server the agent started. The page is untrusted
+content, and the tab is built so that it gets nothing of the app's:
+
+- **No credentials, no bridge.** The page is fetched by the WebView itself,
+  straight from its address. The app never adds a header, a cookie or a token to
+  it: the harness session cookie and relay tokens live in the app's HTTP client
+  and the Android Keystore, never in a web view, and there is no JavaScript
+  interface into the app. A page can send requests to the harness's port like
+  any web page could, but holds no session and fails its `Host`/`Origin` fence;
+  behind a relay it holds no bearer token.
+- **Its own storage.** Cookies, local storage, IndexedDB, service workers and
+  the cache live in a WebView profile of their own, apart from the file preview
+  and the terminal. On a WebView too old for profiles (before about version
+  124) the default profile is shared with those two, whose app-made pages keep
+  nothing there. **Clear site data for this tab** wipes the profile.
+- **Locked down.** JavaScript runs (dev servers need it), but file and content
+  access, mixed content, geolocation, camera and microphone requests, file
+  pickers, downloads and pop-up windows are all refused, and Safe Browsing stays
+  on. A certificate error stops the load; there is no way past it. Only `http`
+  and `https` load in the tab. `javascript:`, `file:`, `content:` and `data:`
+  navigations are dropped; any other scheme (`intent:`, `mailto:`, an app's own)
+  reaches another app only after the reader allows it, never from a redirect or
+  a script, never with an explicit component or URI grants, and never this app's
+  own `dshmobile:` links.
+- **Addresses are read the way the WebView reads them.** Embedded user names
+  and passwords, percent-escaped or backslashed hosts and zone ids are refused,
+  and numeric hosts are parsed as a browser parses them, so `0x7f.1` is known to
+  be loopback.
+
+**What a loopback address reaches.** The harness has no way to fetch a page from
+its own computer's loopback for a client: the official web client's browser tabs
+load pages in the viewer's own browser and do not proxy, and the relay forwards
+only to the harness's own port. So on the built-in harness (or Termux, or
+`adb reverse`) `localhost` is the phone, where the harness and its dev servers
+run, and the page loads. On a local-network or relay connection `localhost`
+would be the phone, not the harness computer, so the tab does not load it: it
+says why and, when the harness is on a private address, offers the same page on
+that address as an explicit choice. It never rewrites an address by itself.
+Cleartext HTTP is allowed in the tab as it is app-wide; the address field shows
+the scheme and, unless the page is on the phone's own loopback, a "Not secure"
+mark for it.
+
 ## Updating inside the app
 
 The update dialog (and **Settings → About**) can download and install a new
@@ -445,6 +490,8 @@ with one exception:
   The harness it runs then makes the requests you ask it to, like any harness:
   the model provider you configured, `git clone` addresses you type, and whatever
   the agent's commands fetch.
+- **The Browser tab** loads the pages you type or tap, and whatever those pages
+  load, directly from the phone (see **The workspace Browser tab**).
 - **Scanning** probes only your own device's IPv4 /24 — with a TCP connect
   followed by one argument-free `session/canOpenWorkspacePath` call in
   local-network mode, or by `/relay/health` in relay mode. Relay mode browses mDNS `_dsh._tcp` first and only sweeps if that

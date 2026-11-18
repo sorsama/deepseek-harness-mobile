@@ -5,6 +5,19 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **A Browser tab in the Workspace.** Next to Files, Preview and Terminal, it shows web pages: an
+  address bar, back, forward, reload or stop, the page title, and **Open in browser**, **Copy link**
+  and **Clear site data for this tab**. Tapping a local link in the chat (`http://localhost:5173`, an
+  address on your network) opens it there, and the tab lists the local addresses the agent and its
+  commands printed in this chat. What it can reach depends on the connection: on the built-in
+  harness `localhost` is this phone and opens; over the local network or a relay the harness
+  computer's `localhost` can't be reached from the phone, so the tab says so and, where it can,
+  offers the computer's address instead. Pages get no access to the app, its sign-ins or other
+  apps' links without asking, and keep their cookies and storage to themselves; see
+  [docs/SECURITY.md](docs/SECURITY.md).
+
 ## [0.24.0] - 2026-11-19
 
 ![Three phones: the Plugins page as a short list, a chat with a task list and a background command, and a Harness settings page](docs/images/releases/0.24.0/devices/hero-whats-new.png)

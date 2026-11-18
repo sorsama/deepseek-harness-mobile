@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_tab">ব্রাউজার</string>
+    <string name="browser_address">ঠিকানা</string>
+    <string name="browser_forward">সামনে</string>
+    <string name="browser_reload">আবার লোড করুন</string>
+    <string name="browser_stop">লোড হওয়া থামান</string>
+    <string name="browser_secure">সুরক্ষিত সংযোগ</string>
+    <string name="browser_not_secure">সুরক্ষিত নয়</string>
+    <string name="browser_open_external">ব্রাউজারে খুলুন</string>
+    <string name="browser_copy_link">লিঙ্ক কপি করুন</string>
+    <string name="browser_clear_data">এই ট্যাবের সাইট ডেটা মুছুন</string>
+    <string name="browser_data_cleared">সাইট ডেটা মুছে ফেলা হয়েছে</string>
+    <string name="browser_no_app">কোনো অ্যাপ এই লিঙ্কটি খুলতে পারে না</string>
+
+    <string name="browser_start_title">একটি পেজ খুলুন</string>
+    <string name="browser_start_body">উপরে ঠিকানা লিখুন, অথবা চ্যাটে কোনো লোকাল লিঙ্কে ট্যাপ করুন।</string>
+    <string name="browser_note_this_device">harness এই ফোনেই চলছে, তাই localhost-এর ঠিকানাগুলো এখানেই খোলে।</string>
+    <string name="browser_note_lan">সর্বজনীন সাইট আর আপনার নেটওয়ার্কের ঠিকানা এখানে খোলে। harness চলা কম্পিউটারের localhost এই ফোন থেকে পাওয়া যায় না।</string>
+    <string name="browser_note_relay">সর্বজনীন সাইট এখানে খোলে। রিলে শুধু harness-কেই আনে, তাই ওই কম্পিউটারের localhost-এর পেজগুলো পাওয়া যায় না।</string>
+    <string name="browser_from_chat">এই চ্যাট থেকে</string>
+    <string name="browser_last_page">শেষ পেজ</string>
+    <string name="browser_open_again">আবার খুলুন</string>
+
+    <string name="browser_loopback_title">এই পেজটি harness চলা কম্পিউটারে আছে</string>
+    <string name="browser_loopback_lan">এখানে localhost মানে harness চলা কম্পিউটার, আর এই ফোন নেটওয়ার্কে তার loopback-এ পৌঁছাতে পারে না। সার্ভার যদি নেটওয়ার্কেও শোনে, তাহলে কম্পিউটারের ঠিকানা দিয়ে চেষ্টা করুন।</string>
+    <string name="browser_loopback_relay">এখানে localhost মানে harness চলা কম্পিউটার। রিলে শুধু harness-কেই আনে, ওই কম্পিউটারের অন্য পেজ নয়।</string>
+    <string name="browser_try_on">%1$s-এ চেষ্টা করুন</string>
+    <string name="browser_open_on_phone">বরং এই ফোনেই খুলুন</string>
+    <string name="browser_harness_title">এটি harness নিজেই</string>
+    <string name="browser_harness_body">অ্যাপ এই harness আগে থেকেই দেখাচ্ছে, তাই এর নিজের পেজ এই ট্যাবে খোলে না।</string>
+    <string name="browser_scheme_title">এই ট্যাব শুধু ওয়েব পেজ খোলে</string>
+    <string name="browser_scheme_body">%1$s: দিয়ে শুরু হওয়া ঠিকানা এখানে খোলে না।</string>
+    <string name="browser_refused_title">এই ঠিকানা এখানে খোলা যাবে না</string>
+    <string name="browser_credentials_body">ইউজারনেম বা পাসওয়ার্ড থাকা ঠিকানা এখানে খোলে না।</string>
+    <string name="browser_invalid_body">এটা ওয়েব ঠিকানার মতো লাগছে না।</string>
+    <string name="browser_load_title">পেজটি লোড হয়নি</string>
+    <string name="browser_load_body">দেখে নিন সার্ভার চলছে কি না আর এই ফোন সেখানে পৌঁছাতে পারে কি না।</string>
+    <string name="browser_tls_title">সংযোগটি ব্যক্তিগত নয়</string>
+    <string name="browser_tls_body">সাইটের সার্টিফিকেট যাচাই করা যায়নি, তাই পেজটি লোড করা হয়নি।</string>
+    <string name="browser_crashed">পেজটি কাজ করা বন্ধ করেছে। আবার চেষ্টা করতে রিলোড করুন।</string>
+
+    <string name="browser_other_app_title">অন্য অ্যাপ খুলবেন?</string>
+    <string name="browser_other_app_body">এই পেজটি এই ট্যাবের বাইরে একটি লিঙ্ক খুলতে চায়:</string>
+    <string name="browser_other_app_open">খুলুন</string>
+    <string name="browser_download_notice">এই ট্যাবে ডাউনলোড কাজ করে না। ফাইলটি পেতে পেজটি আপনার ব্রাউজারে খুলুন।</string>
+    <string name="browser_file_notice">এই ট্যাব ফাইল বাছতে পারে না। আপলোড করতে পেজটি আপনার ব্রাউজারে খুলুন।</string>
+    <string name="browser_dismiss_notice">সরান</string>
+</resources>
