@@ -145,7 +145,9 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
     val colors = DsTheme.colors
     val toast = rememberDsToast()
     var showDisconnectDialog by remember { mutableStateOf(false) }
-    var pluginsOpen by remember { mutableStateOf(false) }
+    // Saveable: a text size, display size, theme or language change recreates the activity, and the
+    // page should still be open afterwards. The confirmations below are not: they ask about a deletion.
+    var pluginsOpen by rememberSaveable { mutableStateOf(false) }
     // Settings and the archive are two different jobs: one is configuration, the other is a list to
     // search and restore from. A tab each keeps the settings reachable without scrolling past a
     // list that can be long, and the archive gets the whole height to be scrolled in.
@@ -654,7 +656,7 @@ private fun PluginsCard(inventory: PluginInventorySnapshot, onOpen: () -> Unit) 
 @Composable
 internal fun PluginsSheet(inventory: PluginInventorySnapshot, onDismiss: () -> Unit) {
     val colors = DsTheme.colors
-    var filter by remember { mutableStateOf("") }
+    var filter by rememberSaveable { mutableStateOf("") }
     val matching = remember(inventory, filter) {
         val q = filter.trim().lowercase(Locale.ROOT)
         if (q.isEmpty()) {
