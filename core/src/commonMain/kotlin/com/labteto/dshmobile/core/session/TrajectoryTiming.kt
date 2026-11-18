@@ -90,8 +90,11 @@ sealed interface TrajectoryRecord {
     /** The `seq` of every journal event this record is made of, for the raw view. */
     val eventSeqs: List<Long>
 
-    /** The model's reply was cut short, or the tool failed. */
+    /** The model's reply was cut short, or the tool failed. A tool the user stopped is [stopped], not failed. */
     val failed: Boolean
+
+    /** The tool call was stopped (an abort), which is its own outcome and not a failure. */
+    val stopped: Boolean get() = false
 
     /** Needs both ends and a clock that did not step backwards; otherwise null, never 0. */
     val durationMs: Long?
@@ -165,7 +168,8 @@ data class ToolRecord(
     val approvalWaitMs: Long?,
 ) : TrajectoryRecord {
     override val key: String get() = "t:${callId.ifEmpty { "seq$seq" }}"
-    override val failed: Boolean get() = isError
+    override val stopped: Boolean get() = isError && isToolAbortError(errorCode, errorName)
+    override val failed: Boolean get() = isError && !stopped
 }
 
 /** One turn: its records, and where its wall-clock time went. */
@@ -180,9 +184,12 @@ data class TurnTiming(
     val slices: List<TimeSlice>,
     val modelSteps: Int,
     val toolCalls: Int,
+    /** Tool calls that failed; calls the user stopped are counted in [stoppedToolCalls] instead. */
     val failedToolCalls: Int,
     /** The replies' token counts added up; null when no reply of the turn reported any. */
     val usage: RecordUsage?,
+    /** Tool calls that were stopped (aborted), which is not a failure. */
+    val stoppedToolCalls: Int = 0,
 )
 
 /** The whole loaded session added up. */
@@ -197,6 +204,8 @@ data class TimelineTotals(
     val usage: RecordUsage?,
     /** True when the last turn has not ended, so the totals leave it out of the time. */
     val hasOpenTurn: Boolean,
+    /** Tool calls that were stopped (aborted); [failedToolCalls] does not include them. */
+    val stoppedToolCalls: Int = 0,
 )
 
 data class TrajectoryTimeline(
@@ -516,8 +525,9 @@ private class TurnBuilder(val turn: Int) {
             slices = slices,
             modelSteps = stepRecords.count { it.settled },
             toolCalls = toolRecords.size,
-            failedToolCalls = toolRecords.count { it.isError },
+            failedToolCalls = toolRecords.count { it.failed },
             usage = usages.takeIf { it.isNotEmpty() }?.reduce { a, b -> a + b },
+            stoppedToolCalls = toolRecords.count { it.stopped },
         )
     }
 }
@@ -576,6 +586,7 @@ private fun totalsOf(turns: List<TurnTiming>): TimelineTotals {
         failedToolCalls = turns.sumOf { it.failedToolCalls },
         usage = usages.takeIf { it.isNotEmpty() }?.reduce { a, b -> a + b },
         hasOpenTurn = turns.any { it.open },
+        stoppedToolCalls = turns.sumOf { it.stoppedToolCalls },
     )
 }
 

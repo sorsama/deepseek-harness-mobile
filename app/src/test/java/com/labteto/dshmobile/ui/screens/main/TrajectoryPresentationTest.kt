@@ -59,6 +59,20 @@ class TrajectoryPresentationTest {
         assertEquals(0, timingPercent(5, 0))
     }
 
+    @Test
+    fun theShellToolsAreNamedByTheirProductNamesNotTheWireNames() {
+        assertEquals("PowerShell", shellToolTitle("pwsh"))
+        assertEquals("PowerShell", shellToolTitle("PWSH"))
+        assertEquals("Bash", shellToolTitle("bash"))
+    }
+
+    @Test
+    fun otherToolsKeepTheirOwnTitle() {
+        assertEquals(null, shellToolTitle("read"))
+        assertEquals(null, shellToolTitle("web_fetch"))
+        assertEquals(null, shellToolTitle(""))
+    }
+
     private companion object {
         /**
          * Not WCAG's 3:1 for graphics, which a bar whose legend carries every number does not need; just

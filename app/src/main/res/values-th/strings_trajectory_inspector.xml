@@ -14,6 +14,8 @@
     <string name="traj_sum_model_steps">คำตอบของโมเดล</string>
     <string name="traj_sum_tool_calls">การเรียกเครื่องมือ</string>
     <string name="traj_sum_tool_calls_failed">%1$d (ล้มเหลว %2$d)</string>
+    <string name="traj_sum_tool_calls_stopped">%1$d (หยุดแล้ว %2$d)</string>
+    <string name="traj_sum_tool_calls_failed_stopped">%1$d (ล้มเหลว %2$d, หยุดแล้ว %3$d)</string>
     <string name="traj_tok_input">โทเค็นอินพุต</string>
     <string name="traj_tok_output">โทเค็นเอาต์พุต</string>
     <string name="traj_tok_cached">โทเค็นอินพุตที่แคชไว้</string>

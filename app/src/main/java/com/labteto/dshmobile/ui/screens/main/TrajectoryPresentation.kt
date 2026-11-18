@@ -16,6 +16,20 @@ internal fun timingPercent(ms: Long, total: Long): Int {
 }
 
 /**
+ * A shell tool's title by its product name: `pwsh` is "PowerShell" and `bash` is "Bash", never the
+ * wire name. Null for any other tool, which keeps whatever title it had.
+ *
+ * The chat reaches the same words through its own tool-row table (the transcript branch); this is the
+ * minimal mapping for the Trajectory, the inspector's title above all, which read "pwsh". The
+ * names are product names and stay the same in every language.
+ */
+internal fun shellToolTitle(toolName: String): String? = when (toolName.lowercase()) {
+    "pwsh" -> "PowerShell"
+    "bash" -> "Bash"
+    else -> null
+}
+
+/**
  * The fill of one kind of time in the stacked bar, from the Ink role tokens.
  *
  * The bar is a visual aid and the legend's words and numbers are the content, but where colour is

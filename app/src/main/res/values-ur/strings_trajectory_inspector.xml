@@ -14,6 +14,8 @@
     <string name="traj_sum_model_steps">ماڈل کے جوابات</string>
     <string name="traj_sum_tool_calls">ٹول کالز</string>
     <string name="traj_sum_tool_calls_failed">%1$d (%2$d ناکام)</string>
+    <string name="traj_sum_tool_calls_stopped">%1$d (%2$d روکی گئیں)</string>
+    <string name="traj_sum_tool_calls_failed_stopped">%1$d (%2$d ناکام، %3$d روکی گئیں)</string>
     <string name="traj_tok_input">ان پٹ ٹوکن</string>
     <string name="traj_tok_output">آؤٹ پٹ ٹوکن</string>
     <string name="traj_tok_cached">کیش شدہ ان پٹ ٹوکن</string>

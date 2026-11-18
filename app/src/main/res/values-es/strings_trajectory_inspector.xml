@@ -14,6 +14,8 @@
     <string name="traj_sum_model_steps">Respuestas del modelo</string>
     <string name="traj_sum_tool_calls">Llamadas a herramientas</string>
     <string name="traj_sum_tool_calls_failed">%1$d (%2$d con error)</string>
+    <string name="traj_sum_tool_calls_stopped">%1$d (%2$d detenidas)</string>
+    <string name="traj_sum_tool_calls_failed_stopped">%1$d (%2$d con error, %3$d detenidas)</string>
     <string name="traj_tok_input">Tokens de entrada</string>
     <string name="traj_tok_output">Tokens de salida</string>
     <string name="traj_tok_cached">Tokens de entrada en caché</string>

@@ -138,7 +138,7 @@ private fun sheetBodyMaxHeight(): Dp = (LocalConfiguration.current.screenHeightD
 @Composable
 private fun recordTitle(record: TrajectoryRecord): String = when (record) {
     is ModelStepRecord -> stringResource(R.string.traj_insp_kind_model)
-    is ToolRecord -> technicalDisplay(record.name)
+    is ToolRecord -> shellToolTitle(record.name) ?: technicalDisplay(record.name)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -160,7 +160,7 @@ private fun TurnRecords(turn: TurnTiming, onOpen: (TrajectoryRecord) -> Unit) {
                 }
                 if (turn.open) FactRow(stringResource(R.string.traj_insp_status), stringResource(R.string.jobs_running))
                 turn.wallMs?.let { FactRow(stringResource(R.string.traj_insp_duration), formatDurationMs(it)) }
-                CountFacts(turn.modelSteps, turn.toolCalls, turn.failedToolCalls)
+                CountFacts(turn.modelSteps, turn.toolCalls, turn.failedToolCalls, turn.stoppedToolCalls)
                 UsageFacts(turn.usage)
             }
         }
@@ -227,6 +227,8 @@ private fun RecordRow(record: TrajectoryRecord, onOpen: () -> Unit) {
                     color = colors.error,
                 )
             }
+            // A call the user stopped is not a failure: its own icon and word, in the warning colour.
+            if (record.stopped) StoppedLabel()
         }
         Icon(
             Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -288,7 +290,7 @@ private fun RecordInspector(record: TrajectoryRecord, journal: List<SessionEvent
                 Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny)) {
                     InspectorHeading(stringResource(R.string.traj_insp_tools))
                     Text(
-                        technicalDisplay(loaded.requestedTools.joinToString(", ")),
+                        technicalDisplay(loaded.requestedTools.joinToString(", ") { shellToolTitle(it) ?: it }),
                         style = DsType.mono12,
                         color = DsTheme.colors.labelSecondary,
                     )
@@ -316,12 +318,18 @@ private fun RecordFacts(record: TrajectoryRecord) {
         )
         val status = when {
             record is ModelStepRecord && record.interrupted -> R.string.traj_status_cut
+            record.stopped -> R.string.chat_stopped
             record is ToolRecord && record.isError -> R.string.traj_status_failed
             record is ModelStepRecord && !record.settled -> R.string.jobs_running
             record is ToolRecord && !record.finished -> R.string.jobs_running
             else -> R.string.traj_status_done
         }
-        FactRow(stringResource(R.string.traj_insp_status), stringResource(status))
+        if (record.stopped) {
+            // The status of a stopped call is a word with its own icon, never only a colour.
+            StoppedStatusRow(stringResource(R.string.traj_insp_status))
+        } else {
+            FactRow(stringResource(R.string.traj_insp_status), stringResource(status))
+        }
         record.startMs?.let { FactRow(stringResource(R.string.traj_insp_started), clockText(it)) }
         record.durationMs?.let { FactRow(stringResource(R.string.traj_insp_duration), formatDurationMs(it)) }
         when (record) {
@@ -336,7 +344,8 @@ private fun RecordFacts(record: TrajectoryRecord) {
             }
             is ToolRecord -> {
                 record.approvalWaitMs?.let { FactRow(stringResource(R.string.traj_insp_approval), formatDurationMs(it)) }
-                if (record.isError) {
+                // The error's name and code are for a failure; a stop is not one.
+                if (record.failed) {
                     listOfNotNull(record.errorName, record.errorCode).takeIf { it.isNotEmpty() }?.let {
                         FactRow(stringResource(R.string.traj_insp_error), technicalDisplay(it.joinToString(" ")))
                     }

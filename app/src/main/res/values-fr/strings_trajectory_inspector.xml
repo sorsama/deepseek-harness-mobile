@@ -14,6 +14,8 @@
     <string name="traj_sum_model_steps">Réponses du modèle</string>
     <string name="traj_sum_tool_calls">Appels d’outils</string>
     <string name="traj_sum_tool_calls_failed">%1$d (%2$d en échec)</string>
+    <string name="traj_sum_tool_calls_stopped">%1$d (%2$d arrêtés)</string>
+    <string name="traj_sum_tool_calls_failed_stopped">%1$d (%2$d en échec, %3$d arrêtés)</string>
     <string name="traj_tok_input">Jetons en entrée</string>
     <string name="traj_tok_output">Jetons en sortie</string>
     <string name="traj_tok_cached">Jetons d’entrée en cache</string>

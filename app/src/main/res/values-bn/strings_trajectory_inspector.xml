@@ -14,6 +14,8 @@
     <string name="traj_sum_model_steps">মডেলের উত্তর</string>
     <string name="traj_sum_tool_calls">টুল কল</string>
     <string name="traj_sum_tool_calls_failed">%1$d (%2$dটি ব্যর্থ)</string>
+    <string name="traj_sum_tool_calls_stopped">%1$d (%2$dটি থামানো)</string>
+    <string name="traj_sum_tool_calls_failed_stopped">%1$d (%2$dটি ব্যর্থ, %3$dটি থামানো)</string>
     <string name="traj_tok_input">ইনপুট টোকেন</string>
     <string name="traj_tok_output">আউটপুট টোকেন</string>
     <string name="traj_tok_cached">ক্যাশ করা ইনপুট টোকেন</string>

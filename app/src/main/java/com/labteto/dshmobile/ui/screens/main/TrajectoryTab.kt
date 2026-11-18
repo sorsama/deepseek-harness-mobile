@@ -51,6 +51,7 @@ import com.labteto.dshmobile.core.session.TrajectoryTimeline
 import com.labteto.dshmobile.core.session.TurnTiming
 import com.labteto.dshmobile.core.session.UserMessageNode
 import com.labteto.dshmobile.core.session.deriveTrajectoryTimeline
+import com.labteto.dshmobile.core.session.isToolAbortError
 import com.labteto.dshmobile.core.session.lineDiff
 import com.labteto.dshmobile.core.wire.dto.SessionStatsView
 import com.labteto.dshmobile.core.wire.dto.TokenUsageView
@@ -405,20 +406,28 @@ private fun GlyphColumn(icon: @Composable () -> Unit) {
 
 /** The 28dp rounded glyph holder of the design's timeline. */
 @Composable
-private fun StepGlyph(icon: androidx.compose.ui.graphics.vector.ImageVector, running: Boolean = false, error: Boolean = false) {
+private fun StepGlyph(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    running: Boolean = false,
+    error: Boolean = false,
+    stopped: Boolean = false,
+) {
     val colors = DsTheme.colors
     val fill = when {
         error -> colors.errorTertiary
+        stopped -> colors.warnTertiary
         running -> colors.accentTertiary
         else -> colors.bgLayer3
     }
     val stroke = when {
         error -> colors.errorBorder
+        stopped -> colors.warnBorder
         running -> colors.accentBorder
         else -> colors.borderL3
     }
     val tint = when {
         error -> colors.error
+        stopped -> colors.warnText
         running -> colors.accent
         else -> colors.labelSecondary
     }
@@ -614,7 +623,9 @@ private fun ToolLedgerRow(
     val haptics = rememberDsHaptics()
     val row = remember(call.callId, cwd) { toolRowModel(call.name, call.arguments, cwd) }
     val running = result == null
-    val failed = result?.isError == true
+    // A command the user stopped is its own outcome: not red, not "failed" (see isToolAbortError).
+    val stopped = result != null && result.isError && isToolAbortError(result.errorCode, result.errorName)
+    val failed = result != null && result.isError && !stopped
     val startedAt = eventTimes[call.seq]
     val endedAt = result?.let { eventTimes[it.seq] }
     val elapsed = if (startedAt != null && endedAt != null) {
@@ -639,6 +650,7 @@ private fun ToolLedgerRow(
                 icon = row.variant.featherIcon(),
                 running = running,
                 error = failed,
+                stopped = stopped,
             )
         }
         Spacer(Modifier.width(DsSpacing.small))
@@ -662,7 +674,7 @@ private fun ToolLedgerRow(
         ) {
             // The verb, then its argument in monospace: the design's whole reading line.
             Text(
-                row.title,
+                shellToolTitle(call.name) ?: row.title,
                 style = DsType.std14Strong,
                 color = if (failed) colors.error else colors.labelPrimary,
                 maxLines = 1,
@@ -680,6 +692,9 @@ private fun ToolLedgerRow(
             }
             Spacer(Modifier.weight(1f))
             when {
+                // The word and its icon, so a stop is never told by colour alone; an edit that was
+                // stopped changed nothing, so its size is not shown either.
+                stopped -> StoppedLabel()
                 diff != null -> Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         "+${diff.first}",

@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.StopCircle
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -144,6 +147,41 @@ internal fun FactRow(label: String, value: String) {
     }
 }
 
+/**
+ * The outcome of a call the user stopped: an icon and the word "Stopped" in the warning colour. A
+ * stop is not a failure, so it is neither red nor shown as "Failed", and it is never only a colour:
+ * the word and the icon say it.
+ */
+@Composable
+internal fun StoppedLabel(modifier: Modifier = Modifier, style: androidx.compose.ui.text.TextStyle = DsType.caption11Strong) {
+    val colors = DsTheme.colors
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
+    ) {
+        Icon(Icons.Outlined.StopCircle, contentDescription = null, modifier = Modifier.size(14.dp), tint = colors.warnText)
+        Text(stringResource(R.string.chat_stopped), style = style, color = colors.warnText, maxLines = 1)
+    }
+}
+
+/** The status line of an inspected record that was stopped: [FactRow]'s layout with the word and its icon as the value. */
+@Composable
+internal fun StoppedStatusRow(label: String) {
+    val colors = DsTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 28.dp)
+            .semantics(mergeDescendants = true) {},
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Text(label, style = DsType.small13, color = colors.labelTertiary, modifier = Modifier.weight(1f))
+        StoppedLabel(style = DsType.small13Strong, modifier = Modifier.weight(1f, fill = false))
+    }
+}
+
 /** A line per token count the harness reported; a count nobody reported is not shown as zero. */
 @Composable
 internal fun UsageFacts(usage: RecordUsage?) {
@@ -155,17 +193,19 @@ internal fun UsageFacts(usage: RecordUsage?) {
     usage.reasoningTokens?.let { FactRow(stringResource(R.string.traj_tok_reasoning), formatTokens(it)) }
 }
 
-/** The counts shared by a turn and a whole session: model replies, tool calls and failures. */
+/** The counts shared by a turn and a whole session: model replies, tool calls, failures and stops. */
 @Composable
-internal fun CountFacts(modelSteps: Int, toolCalls: Int, failedToolCalls: Int) {
+internal fun CountFacts(modelSteps: Int, toolCalls: Int, failedToolCalls: Int, stoppedToolCalls: Int = 0) {
     if (modelSteps > 0) FactRow(stringResource(R.string.traj_sum_model_steps), modelSteps.toString())
     if (toolCalls > 0) {
         FactRow(
             stringResource(R.string.traj_sum_tool_calls),
-            if (failedToolCalls > 0) {
-                stringResource(R.string.traj_sum_tool_calls_failed, toolCalls, failedToolCalls)
-            } else {
-                toolCalls.toString()
+            when {
+                failedToolCalls > 0 && stoppedToolCalls > 0 ->
+                    stringResource(R.string.traj_sum_tool_calls_failed_stopped, toolCalls, failedToolCalls, stoppedToolCalls)
+                failedToolCalls > 0 -> stringResource(R.string.traj_sum_tool_calls_failed, toolCalls, failedToolCalls)
+                stoppedToolCalls > 0 -> stringResource(R.string.traj_sum_tool_calls_stopped, toolCalls, stoppedToolCalls)
+                else -> toolCalls.toString()
             },
         )
     }
@@ -191,7 +231,7 @@ internal fun SessionTimingCard(totals: TimelineTotals, partial: Boolean, modifie
         }
         totals.wallMs?.let { FactRow(stringResource(R.string.traj_sum_time), formatDurationMs(it)) }
         FactRow(stringResource(R.string.traj_sum_turns), totals.turns.toString())
-        CountFacts(totals.modelSteps, totals.toolCalls, totals.failedToolCalls)
+        CountFacts(totals.modelSteps, totals.toolCalls, totals.failedToolCalls, totals.stoppedToolCalls)
         UsageFacts(totals.usage)
         if (partial) {
             Text(

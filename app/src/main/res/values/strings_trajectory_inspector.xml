@@ -14,6 +14,8 @@
     <string name="traj_sum_model_steps">Model replies</string>
     <string name="traj_sum_tool_calls">Tool calls</string>
     <string name="traj_sum_tool_calls_failed">%1$d (%2$d failed)</string>
+    <string name="traj_sum_tool_calls_stopped">%1$d (%2$d stopped)</string>
+    <string name="traj_sum_tool_calls_failed_stopped">%1$d (%2$d failed, %3$d stopped)</string>
     <string name="traj_tok_input">Input tokens</string>
     <string name="traj_tok_output">Output tokens</string>
     <string name="traj_tok_cached">Cached input tokens</string>

@@ -14,6 +14,8 @@
     <string name="traj_sum_model_steps">ردود النموذج</string>
     <string name="traj_sum_tool_calls">استدعاءات الأدوات</string>
     <string name="traj_sum_tool_calls_failed">%1$d (فشل %2$d)</string>
+    <string name="traj_sum_tool_calls_stopped">%1$d (أُوقف %2$d)</string>
+    <string name="traj_sum_tool_calls_failed_stopped">%1$d (فشل %2$d وأُوقف %3$d)</string>
     <string name="traj_tok_input">رموز الإدخال</string>
     <string name="traj_tok_output">رموز الإخراج</string>
     <string name="traj_tok_cached">رموز الإدخال المخزّنة مؤقتًا</string>
