@@ -20,6 +20,7 @@ class FeatureAvailabilityTest {
         HarnessFeature.PLUGIN_MANAGEMENT -> api.pluginBundles()
         HarnessFeature.SESSION_REFERENCES -> api.sessionReferenceCandidates("s", "")
         HarnessFeature.TIMED_QUESTIONS -> api.answerContinuedQuestion("s", "call", AskUserQuestionAnswer(emptyList()))
+        HarnessFeature.PRESET_COMPOSITION -> api.agentPresetRead("standard")
         HarnessFeature.PLUGIN_MARKET -> api.marketIndexes()
         HarnessFeature.HARNESS_SETTINGS -> api.settingsDescribe()
         HarnessFeature.ACCOUNT -> api.accountState()

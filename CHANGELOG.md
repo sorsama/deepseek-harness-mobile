@@ -48,6 +48,24 @@ All notable changes to DSH Mobile are documented here. Format based on
   why) stays on the page, under "Not signed in", until you start the next one, and a sign-in link the
   app will not open offers **Try again**, which starts a fresh sign-in.
 
+- **See what an agent preset is made of.** In the agent preset sheet, **View contents** opens a
+  read-only page that lists the plugins a preset mounts, says for each whether it is always on, off
+  or depends on a condition on the host, and keeps the exact YAML one tap away with **Copy** and
+  **Show all**. The harness (0.2.1) accepts no edits to a preset, because presets change by
+  installing a plugin bundle, so this page reads and never writes. A host that cannot show a preset
+  hides the button.
+
+- **See where a turn's time went, and open any record.** Under each turn in the Trajectory tab, one
+  stacked bar shows how its time split between waiting for the first token, the model writing,
+  tools running, waiting for your approval and everything else, with a legend that gives every
+  label, time and percentage in words, so nothing depends on colour. A card above the turns adds the
+  loaded session up: time, turns, model replies, tool calls and tokens. Tap a turn to see its
+  records, and tap a model reply or a tool call to open its inspector: kind, start, duration, time
+  to first token, token counts, the model, and its input and output with **Show all** and
+  **Copy**. **Show raw JSON** keeps the logged events one explicit tap away. A number the harness did
+  not record is left out, never shown as zero. Tapping a tool call now opens the inspector instead of
+  unfolding a short preview in place.
+
 ### Changed
 
 - **The Plugins page is a short list, and each bundle opens on its own page.** A bundle with a

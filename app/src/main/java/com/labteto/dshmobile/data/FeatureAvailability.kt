@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 /** [PLUGIN_MARKET] is the optional "custom plugin markets" bundle: its `pluginMarket` namespace exists only while that bundle is on. */
 enum class HarnessFeature {
-    AUTOMATION, PLUGIN_MANAGEMENT, TIMED_QUESTIONS, SESSION_REFERENCES, PLUGIN_MARKET,
+    AUTOMATION, PLUGIN_MANAGEMENT, TIMED_QUESTIONS, SESSION_REFERENCES, PRESET_COMPOSITION, PLUGIN_MARKET,
     HARNESS_SETTINGS, ACCOUNT,
 }
 

@@ -1,0 +1,22 @@
+<resources>
+    <string name="preset_comp_open">Ver contenido</string>
+    <string name="preset_comp_open_for">Ver el contenido de %1$s</string>
+    <string name="preset_comp_subtitle">Solo lectura. Este host cambia los preajustes mediante paquetes de complementos.</string>
+    <string name="preset_comp_plugins">Complementos: %1$d</string>
+    <string name="preset_comp_conditional">Condicionales: %1$d</string>
+    <string name="preset_comp_off">Desactivados: %1$d</string>
+    <string name="preset_comp_always_on">Siempre activo</string>
+    <string name="preset_comp_state_off">Desactivado</string>
+    <string name="preset_comp_state_conditional">Condicional</string>
+    <string name="preset_comp_condition">Se carga salvo que esto sea verdadero en el host: %1$s</string>
+    <string name="preset_comp_entry_unnamed">Complemento %1$d</string>
+    <string name="preset_comp_settings">Ajustes (YAML)</string>
+    <string name="preset_comp_raw">Complementos de este preajuste</string>
+    <string name="preset_comp_copy_all">Copiar todo como YAML</string>
+    <string name="preset_comp_loading">Leyendo el preajuste</string>
+    <string name="preset_comp_failed">No se pudo leer este preajuste: %1$s</string>
+    <string name="preset_comp_missing">Este preajuste ya no está en el host.</string>
+    <string name="preset_comp_unsupported">Este host no puede mostrar el contenido de un preajuste.</string>
+    <string name="preset_comp_retry">Reintentar</string>
+    <string name="preset_comp_empty">Este preajuste no incluye complementos.</string>
+</resources>

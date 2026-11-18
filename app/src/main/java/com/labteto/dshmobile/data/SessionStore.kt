@@ -370,6 +370,8 @@ class SessionStore @Inject constructor(
     val pluginMarketAvailable = featureAvailability.state(HarnessFeature.PLUGIN_MARKET)
     val timedQuestionsAvailable = featureAvailability.state(HarnessFeature.TIMED_QUESTIONS)
     val sessionReferencesAvailable = featureAvailability.state(HarnessFeature.SESSION_REFERENCES)
+    /** Whether the host answers `agentPresets/read`; null until a read has shown either way. */
+    val presetCompositionAvailable = featureAvailability.state(HarnessFeature.PRESET_COMPOSITION)
     /** Whether the harness has `settings/describe`; unknown until the Harness settings page first asks. */
     val harnessSettingsAvailable = featureAvailability.state(HarnessFeature.HARNESS_SETTINGS)
     /**
