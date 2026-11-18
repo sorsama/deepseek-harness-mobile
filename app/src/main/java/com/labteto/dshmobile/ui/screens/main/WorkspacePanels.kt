@@ -123,12 +123,15 @@ internal fun WorkspacePanels(
             query = ""
         }
     }
+    // The Browser tab's web view lives as long as the panel is open, whichever tab is showing, and is
+    // destroyed when the panel closes.
+    val browser = com.labteto.dshmobile.ui.screens.main.browser.rememberBrowserViewHolder(state.browser)
     // Back — the system key and the top bar's arrow alike — closes an open search and forgets its
     // query before it leaves the panel. Wired through the dialog's own `onDismissRequest` rather
     // than a `BackHandler`: this panel is a separate window, the system sends it the back key, and a
     // `BackHandler` composed inside it registers with the activity's dispatcher, which that key
     // never reaches while the window is up.
-    val back = {
+    val close = {
         if (searchOpen) {
             searchOpen = false
             query = ""
@@ -136,11 +139,22 @@ internal fun WorkspacePanels(
             onDismiss()
         }
     }
+    // The system Back also steps through the Browser tab first: a message shown over the page, then
+    // the page's own history, and only then the panel. The top bar's arrow always leaves.
+    val back = {
+        val page = state.browser
+        when {
+            state.section != BROWSER_SECTION -> close()
+            page.problem != null -> page.problem = null
+            browser.goBack() -> Unit
+            else -> close()
+        }
+    }
     DsFullScreenDialog(onDismissRequest = back) {
         WorkspaceTopBar(
             title = stringResource(R.string.panel_workspace),
             subtitle = cwd,
-            onBack = back,
+            onBack = close,
             searchVisible = state.section == 0,
             searchOpen = searchOpen,
             onSearch = {
@@ -158,6 +172,7 @@ internal fun WorkspacePanels(
             WorkspacePanelBody(
                 store = store,
                 state = state,
+                browser = browser,
                 modifier = Modifier.fillMaxSize(),
                 onMention = onMention,
                 searchOpen = searchOpen,
@@ -220,13 +235,14 @@ private fun WorkspaceTopBar(
 }
 
 /**
- * The workspace browser itself — Files / Preview / Terminal — without the screen's header, which
- * [WorkspacePanels] draws around it.
+ * The workspace browser itself — Files / Preview / Terminal / Browser — without the screen's header,
+ * which [WorkspacePanels] draws around it.
  */
 @Composable
 internal fun WorkspacePanelBody(
     store: SessionStore,
     state: PanelState,
+    browser: com.labteto.dshmobile.ui.screens.main.browser.BrowserViewHolder,
     modifier: Modifier = Modifier,
     onMention: ((String, Boolean) -> Unit)? = null,
     searchOpen: Boolean = false,
@@ -329,6 +345,7 @@ internal fun WorkspacePanelBody(
     CompositionLocalProvider(
         com.labteto.dshmobile.ui.components.LocalFileOpener provides { path: String -> state.open(resolve(path)) },
         com.labteto.dshmobile.ui.components.LocalFolderOpener provides { path: String -> state.browse(resolve(path)) },
+        com.labteto.dshmobile.ui.components.LocalWebLinkOpener provides { url: String -> state.openBrowser(url) },
     ) {
         Column(
             modifier.fillMaxWidth().padding(horizontal = DsSpacing.comfortable),
@@ -339,6 +356,7 @@ internal fun WorkspacePanelBody(
                     DsSegment("0", stringResource(R.string.panel_files)),
                     DsSegment("1", stringResource(R.string.panel_preview) + state.previews.size.takeIf { it > 0 }?.let { " · $it" }.orEmpty()),
                     DsSegment("2", stringResource(R.string.panel_terminal)),
+                    DsSegment(BROWSER_SECTION.toString(), stringResource(R.string.browser_tab)),
                 ),
                 selectedKey = state.section.toString(),
                 onSelect = {
@@ -347,6 +365,9 @@ internal fun WorkspacePanelBody(
                 role = Role.Tab,
                 stretch = true,
                 minSegmentHeight = 36.dp,
+                // Four tabs share a phone's width; at a large text size a label wraps rather than
+                // being cut.
+                maxLabelLines = 2,
                 modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.xsmall),
             )
             when (state.section) {
@@ -369,6 +390,13 @@ internal fun WorkspacePanelBody(
                 )
                 1 -> PreviewSection(store, key, state, Modifier.weight(1f))
                 2 -> TerminalPanel(store, state, Modifier.weight(1f))
+                BROWSER_SECTION -> com.labteto.dshmobile.ui.screens.main.browser.BrowserSection(
+                    store = store,
+                    key = key,
+                    state = state.browser,
+                    holder = browser,
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
     }
