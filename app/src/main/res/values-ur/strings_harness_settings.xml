@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Harness settings: the area in Settings and its pages. -->
+    <string name="hs_title">harness کی ترتیبات</string>
+    <string name="hs_entry_summary">ویب سرچ، شیل کی حدیں، ذیلی ایجنٹ اور مزید</string>
+    <string name="hs_intro">وہ ترتیبات جو harness اپنے پاس رکھتا ہے۔ یہ اسی harness پر لاگو ہوتی ہیں جس سے آپ جڑے ہیں۔</string>
+    <string name="hs_section_more">مزید ترتیبات</string>
+    <string name="hs_empty">اس harness میں یہاں بدلنے کے لیے کوئی ترتیب نہیں ہے۔</string>
+    <string name="hs_unsupported">یہ harness ایپ کو اپنی ترتیبات بدلنے نہیں دیتا۔ انہیں harness پر ہی بدلیں، یا اسے اپ ڈیٹ کریں۔</string>
+    <string name="hs_read_only">harness یہ ترتیبات صرف پڑھنے کے لیے رکھتا ہے، اس لیے انہیں یہاں سے بدلا نہیں جا سکتا۔</string>
+    <string name="hs_refresh_failed">ریفریش نہیں ہو سکا۔ پہلے لوڈ ہوا ڈیٹا دکھایا جا رہا ہے۔</string>
+    <string name="hs_note_restart">اس صفحے کی تبدیلیاں لاگو ہونے کے لیے harness کو ری اسٹارٹ کریں۔</string>
+
+    <!-- Page names and one-line descriptions. -->
+    <string name="hs_page_web_search">ویب سرچ</string>
+    <string name="hs_page_web_search_desc">ایجنٹ ویب پر کیسے تلاش کرتا ہے، اور کون سی کی استعمال کرتا ہے۔</string>
+    <string name="hs_page_shell">شیل</string>
+    <string name="hs_page_shell_desc">ایک کمانڈ کتنی دیر چل سکتی ہے اور کتنا آؤٹ پٹ رکھتی ہے۔</string>
+    <string name="hs_page_subagents">ذیلی ایجنٹ</string>
+    <string name="hs_page_subagents_desc">کتنی گہرائی تک، کتنے، اور وہ کون سے ماڈل استعمال کر سکتے ہیں۔</string>
+    <string name="hs_page_agent_loop">ایجنٹ لوپ</string>
+    <string name="hs_page_agent_loop_desc">ایجنٹ ایک ساتھ کتنی ٹول کالز چلاتا ہے۔</string>
+    <string name="hs_page_session_log">سیشن لاگ</string>
+    <string name="hs_page_session_log_desc">DeepSeek کو بہتر بنانے میں مدد کے لیے سیشن لاگ شیئر کریں۔</string>
+
+    <!-- Shared field words. -->
+    <string name="hs_overridden">بدلا ہوا</string>
+    <string name="hs_reset">ڈیفالٹ پر لائیں</string>
+    <string name="hs_reset_for">%1$s کو ڈیفالٹ پر لائیں</string>
+    <string name="hs_readonly_note">صرف دکھایا گیا ہے۔ یہ ایپ اسے بدل نہیں سکتی۔</string>
+    <string name="hs_remove">ہٹائیں</string>
+    <string name="hs_remove_item">%1$s ہٹائیں</string>
+    <string name="hs_add">شامل کریں</string>
+    <string name="hs_new_item">نیا آئٹم</string>
+
+    <!-- Agent loop and session log. -->
+    <string name="hs_f_parallel">ایک ساتھ ٹول کالز</string>
+    <string name="hs_f_parallel_hint">ایک مرحلے میں ایک ساتھ چل سکنے والی ٹول کالز کی زیادہ سے زیادہ تعداد۔</string>
+    <string name="hs_f_session_log">سرکاری API درخواستوں کے ساتھ سیشن لاگ اپ لوڈ کریں</string>
+    <string name="hs_f_session_log_hint">DeepSeek کے ماڈلز اور پروڈکٹس کو بہتر بنانے میں مدد کرتا ہے۔</string>
+
+    <!-- Shell. -->
+    <string name="hs_f_timeout">کمانڈ کا ٹائم آؤٹ</string>
+    <string name="hs_f_timeout_hint">ایک کمانڈ روکے جانے سے پہلے کتنی دیر چل سکتی ہے۔</string>
+    <string name="hs_unit_ms">ملی سیکنڈ</string>
+    <string name="hs_f_output">ہر سٹریم کی آؤٹ پٹ حد</string>
+    <string name="hs_f_output_hint">اس حد سے زیادہ آؤٹ پٹ ضائع ہونے کے بجائے ایک عارضی فائل میں چلا جاتا ہے۔</string>
+    <string name="hs_unit_bytes">بائٹس</string>
+
+    <!-- Subagents. -->
+    <string name="hs_sec_limits">حدیں</string>
+    <string name="hs_f_depth">زیادہ سے زیادہ گہرائی</string>
+    <string name="hs_f_depth_hint">ایجنٹ ذیلی ایجنٹ کے کتنے درجے شروع کر سکتا ہے۔ 0 سے ذیلی ایجنٹ بند ہو جاتے ہیں۔ 1 پر صرف مرکزی ایجنٹ انہیں شروع کر سکتا ہے۔ جس ٹول کی اپنی گہرائی کی حد ہو، وہ وہی رکھتا ہے۔</string>
+    <string name="hs_f_width">ایک ساتھ ذیلی ایجنٹ</string>
+    <string name="hs_f_width_hint">ایک مرکزی ایجنٹ کے تحت تمام درجوں میں ایک ساتھ فعال رہ سکنے والے ذیلی ایجنٹ کی زیادہ سے زیادہ تعداد۔ حد پوری ہونے پر نئے مسترد کر دیے جاتے ہیں۔</string>
+    <string name="hs_sec_models">ذیلی ایجنٹ کے ماڈل</string>
+    <string name="hs_f_model_choice">ایجنٹ کو ہر ذیلی ایجنٹ کے لیے ماڈل چننے دیں</string>
+    <string name="hs_f_model_choice_hint">ایجنٹ نیچے آپ کے اجازت دیے ہوئے ماڈلز میں سے چنتا ہے۔ صرف نئے سیشن پر لاگو ہوتا ہے۔</string>
+    <string name="hs_models_list_label">وہ ماڈل جو ایجنٹ چن سکتے ہیں</string>
+    <string name="hs_models_pick_one">آن کرنے کے لیے کم از کم ایک ماڈل چنیں۔</string>
+    <string name="hs_models_keep_one">کم از کم ایک ماڈل رکھیں، یا سوئچ بند کر دیں۔</string>
+    <string name="hs_models_load_failed">ماڈلز لوڈ نہیں ہو سکے۔</string>
+    <string name="hs_models_none_why">ابھی کوئی ماڈل تیار نہیں ہے۔ جب کسی پرووائیڈر کے پاس کام کرنے والی API کی ہو، تب ہی اس کے ماڈل یہاں نظر آتے ہیں۔ «ماڈلز اور API کیز» میں ایک شامل کریں۔</string>
+    <string name="hs_models_retired">ابھی دستیاب نہیں</string>
+
+    <!-- Web search. -->
+    <string name="hs_f_search_api">Search API استعمال کریں</string>
+    <string name="hs_f_search_api_hint">بند ہو تو سرچ DeepSeek Messages سے ہوتا ہے۔ آن ہو تو Search اور Fetch API استعمال ہوتے ہیں، جن کی اپنی خصوصیات اور قیمتیں ہیں۔</string>
+    <string name="hs_f_endpoint_messages">Messages API کا پتہ</string>
+    <string name="hs_f_endpoint_messages_hint">API کا پری فکس بھی لکھیں، جیسے %1$s۔</string>
+    <string name="hs_f_endpoint_search">Search اور Fetch API کا پتہ</string>
+    <string name="hs_f_endpoint_search_hint">API کا پری فکس بھی لکھیں، جیسے %1$s۔</string>
+    <string name="hs_f_max_uses">فی درخواست سرچ</string>
+    <string name="hs_f_max_uses_hint">معاون ماڈل ایک درخواست میں کتنے سرچ کر سکتا ہے۔ صرف Messages والے سرچ پر لاگو ہے۔</string>
+    <string name="hs_f_count">فی سرچ نتائج</string>
+    <string name="hs_f_count_hint">ہر کوئری کتنے نتائج لوٹاتی ہے، 1 سے 50 تک۔ اس سے یہ طے نہیں ہوتا کہ کتنے سرچ چلیں گے۔</string>
+    <string name="hs_key_unset">کوئی کی سیٹ نہیں ہے۔ صرف DeepSeek اکاؤنٹ کے ماڈل والی چیٹس ہی ڈیفالٹ پتے سے سرچ کر سکتی ہیں۔</string>
+    <string name="hs_key_hint">harness پر محفوظ رہتی ہے، اس کی ترتیبات کی فائل میں کبھی نہیں۔ موجودہ کی رکھنے کے لیے خالی چھوڑیں۔</string>
+    <string name="hs_key_remove_title">ویب سرچ کی کی ہٹائیں؟</string>
+    <string name="hs_key_remove_body">harness اس کی کو بھول جائے گا۔ جس ویب سرچ کو اس کی ضرورت ہے وہ نئی کی شامل کرنے تک کام نہیں کرے گا۔</string>
+    <string name="hs_key_shared">یہ کی مشترک ہے۔ یہ ترتیبات بھی اسے استعمال کرتی ہیں: %1$s۔ اسے یہاں بدلنے یا ہٹانے سے وہ بھی بدل جائیں گی۔</string>
+
+    <!-- A secret field the app has no words for. -->
+    <string name="hs_secret_set">harness پر ایک قدر محفوظ ہے۔</string>
+    <string name="hs_secret_unset">ابھی کچھ محفوظ نہیں ہے۔</string>
+    <string name="hs_secret_remove_title">محفوظ کی ہوئی قدر ہٹائیں؟</string>
+    <string name="hs_secret_remove_body">harness اسے بھول جائے گا۔ آپ بعد میں نئی قدر شامل کر سکتے ہیں۔</string>
+
+    <!-- What is wrong with what was typed. -->
+    <string name="hs_err_required">اسے خالی نہیں چھوڑا جا سکتا۔</string>
+    <string name="hs_err_number">کوئی عدد لکھیں۔</string>
+    <string name="hs_err_whole">کوئی مکمل عدد لکھیں۔</string>
+    <string name="hs_err_min">%1$s یا اس سے زیادہ لکھیں۔</string>
+    <string name="hs_err_max">%1$s یا اس سے کم لکھیں۔</string>
+    <string name="hs_err_range">%1$s سے %2$s کے درمیان کوئی مکمل عدد لکھیں۔</string>
+    <string name="hs_err_step">%1$s کا کوئی ضرب لکھیں۔</string>
+    <string name="hs_err_min_length">کم از کم لمبائی: %1$s۔</string>
+    <string name="hs_err_max_length">زیادہ سے زیادہ لمبائی: %1$s۔</string>
+    <string name="hs_err_format">یہ مطلوبہ فارمیٹ میں نہیں ہے۔</string>
+    <string name="hs_err_option">اختیارات میں سے کوئی ایک چنیں۔</string>
+    <string name="hs_err_min_items">آئٹمز کی کم از کم تعداد: %1$s۔</string>
+    <string name="hs_err_max_items">آئٹمز کی زیادہ سے زیادہ تعداد: %1$s۔</string>
+
+    <!-- A change that did not go through. -->
+    <string name="hs_fail_rejected">harness نے اسے قبول نہیں کیا۔ آپ کی پچھلی قدر واپس آ گئی ہے۔</string>
+    <string name="hs_fail_conflict">اسے کسی اور جگہ بدل دیا گیا تھا۔ تازہ ترین قدر دکھائی جا رہی ہے۔</string>
+    <string name="hs_fail_unreachable">harness تک رسائی نہیں ہو سکی۔ کچھ نہیں بدلا۔</string>
+</resources>

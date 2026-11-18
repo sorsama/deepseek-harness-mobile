@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** [PLUGIN_MARKET] is the optional "custom plugin markets" bundle: its `pluginMarket` namespace exists only while that bundle is on. */
-enum class HarnessFeature { AUTOMATION, PLUGIN_MANAGEMENT, TIMED_QUESTIONS, SESSION_REFERENCES, PLUGIN_MARKET }
+enum class HarnessFeature { AUTOMATION, PLUGIN_MANAGEMENT, TIMED_QUESTIONS, SESSION_REFERENCES, PLUGIN_MARKET, HARNESS_SETTINGS }
 
 /** Connection-scoped evidence: authorization failures do not imply a missing capability. */
 internal class FeatureAvailability(private val report: (RpcError) -> Unit) {
@@ -20,6 +20,21 @@ internal class FeatureAvailability(private val report: (RpcError) -> Unit) {
     @Synchronized fun reset() {
         epoch++
         states.values.forEach { it.value = null }
+    }
+
+    /**
+     * The harness's modules changed (a bundle was switched on or off), so what it could not do a
+     * moment ago it may do now. Every one of [probeable] that reads unavailable goes back to unknown
+     * and is returned, for the caller to ask again; without this "unavailable" would last until the
+     * app reconnected. A result still in flight from before the change is dropped. A feature that
+     * reads available is left alone: the next call that finds it gone says so.
+     */
+    @Synchronized fun relax(probeable: Set<HarnessFeature>): List<HarnessFeature> {
+        val lapsed = probeable.filter { states.getValue(it).value == false }
+        if (lapsed.isEmpty()) return emptyList()
+        epoch++
+        lapsed.forEach { states.getValue(it).value = null }
+        return lapsed
     }
 
     /**

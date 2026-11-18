@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Harness settings: the area in Settings and its pages. -->
+    <string name="hs_title">Ajustes del harness</string>
+    <string name="hs_entry_summary">Búsqueda web, límites del shell, subagentes y más</string>
+    <string name="hs_intro">Ajustes que guarda el propio harness. Se aplican al harness al que estás conectado.</string>
+    <string name="hs_section_more">Más ajustes</string>
+    <string name="hs_empty">Este harness no tiene ajustes que cambiar desde aquí.</string>
+    <string name="hs_unsupported">Este harness no deja que la app cambie sus ajustes. Cámbialos en el propio harness o actualízalo.</string>
+    <string name="hs_read_only">El harness guarda estos ajustes como solo lectura, así que no se pueden cambiar desde aquí.</string>
+    <string name="hs_refresh_failed">No se pudo actualizar. Se muestra lo que se cargó antes.</string>
+    <string name="hs_note_restart">Reinicia el harness para que los cambios de esta página surtan efecto.</string>
+
+    <!-- Page names and one-line descriptions. -->
+    <string name="hs_page_web_search">Búsqueda web</string>
+    <string name="hs_page_web_search_desc">Cómo busca el agente en la web y qué clave usa.</string>
+    <string name="hs_page_shell">Shell</string>
+    <string name="hs_page_shell_desc">Cuánto puede durar un comando y cuánta salida conserva.</string>
+    <string name="hs_page_subagents">Subagentes</string>
+    <string name="hs_page_subagents_desc">Hasta qué profundidad, cuántos y qué modelos pueden usar.</string>
+    <string name="hs_page_agent_loop">Bucle del agente</string>
+    <string name="hs_page_agent_loop_desc">Cuántas llamadas a herramientas ejecuta el agente a la vez.</string>
+    <string name="hs_page_session_log">Registro de sesión</string>
+    <string name="hs_page_session_log_desc">Comparte registros de sesión para ayudar a mejorar DeepSeek.</string>
+
+    <!-- Shared field words. -->
+    <string name="hs_overridden">Cambiado</string>
+    <string name="hs_reset">Restablecer valor predeterminado</string>
+    <string name="hs_reset_for">Restablecer %1$s al valor predeterminado</string>
+    <string name="hs_readonly_note">Solo se muestra. Esta app no puede cambiarlo.</string>
+    <string name="hs_remove">Quitar</string>
+    <string name="hs_remove_item">Quitar %1$s</string>
+    <string name="hs_add">Añadir</string>
+    <string name="hs_new_item">Elemento nuevo</string>
+
+    <!-- Agent loop and session log. -->
+    <string name="hs_f_parallel">Llamadas a herramientas en paralelo</string>
+    <string name="hs_f_parallel_hint">El máximo de llamadas a herramientas que pueden ejecutarse a la vez en un mismo paso.</string>
+    <string name="hs_f_session_log">Subir el registro de sesión con las solicitudes a la API oficial</string>
+    <string name="hs_f_session_log_hint">Ayuda a mejorar los modelos y productos de DeepSeek.</string>
+
+    <!-- Shell. -->
+    <string name="hs_f_timeout">Tiempo límite del comando</string>
+    <string name="hs_f_timeout_hint">Cuánto puede ejecutarse un comando antes de que se detenga.</string>
+    <string name="hs_unit_ms">ms</string>
+    <string name="hs_f_output">Límite de salida por flujo</string>
+    <string name="hs_f_output_hint">La salida que pase de este límite va a un archivo temporal en lugar de perderse.</string>
+    <string name="hs_unit_bytes">bytes</string>
+
+    <!-- Subagents. -->
+    <string name="hs_sec_limits">Límites</string>
+    <string name="hs_f_depth">Profundidad máxima</string>
+    <string name="hs_f_depth_hint">Cuántos niveles de subagentes puede iniciar un agente. Con 0 se desactivan los subagentes. Con 1 solo el agente principal puede iniciarlos. Una herramienta con su propio límite de profundidad lo conserva.</string>
+    <string name="hs_f_width">Subagentes a la vez</string>
+    <string name="hs_f_width_hint">El máximo de subagentes que pueden estar activos bajo un mismo agente principal, en todos los niveles. Al llegar al límite se rechazan los nuevos.</string>
+    <string name="hs_sec_models">Modelos para subagentes</string>
+    <string name="hs_f_model_choice">Dejar que los agentes elijan un modelo para cada subagente</string>
+    <string name="hs_f_model_choice_hint">El agente elige entre los modelos que permitas abajo. Solo se aplica a sesiones nuevas.</string>
+    <string name="hs_models_list_label">Modelos que pueden elegir los agentes</string>
+    <string name="hs_models_pick_one">Elige al menos un modelo para activarlo.</string>
+    <string name="hs_models_keep_one">Deja al menos un modelo, o apaga el interruptor.</string>
+    <string name="hs_models_load_failed">No se pudieron cargar los modelos.</string>
+    <string name="hs_models_none_why">Todavía no hay ningún modelo listo. Un proveedor muestra sus modelos aquí cuando tiene una clave de API que funciona. Añade una en «Modelos y claves de API».</string>
+    <string name="hs_models_retired">No disponible ahora</string>
+
+    <!-- Web search. -->
+    <string name="hs_f_search_api">Usar la API de búsqueda</string>
+    <string name="hs_f_search_api_hint">Desactivado, la búsqueda pasa por DeepSeek Messages. Activado, usa las API Search y Fetch, que tienen sus propias funciones y precios.</string>
+    <string name="hs_f_endpoint_messages">Dirección de la API Messages</string>
+    <string name="hs_f_endpoint_messages_hint">Incluye el prefijo de la API, por ejemplo %1$s.</string>
+    <string name="hs_f_endpoint_search">Dirección de las API Search y Fetch</string>
+    <string name="hs_f_endpoint_search_hint">Incluye el prefijo de la API, por ejemplo %1$s.</string>
+    <string name="hs_f_max_uses">Búsquedas por solicitud</string>
+    <string name="hs_f_max_uses_hint">Cuántas búsquedas puede hacer el modelo auxiliar en una solicitud. Solo se aplica a la búsqueda con Messages.</string>
+    <string name="hs_f_count">Resultados por búsqueda</string>
+    <string name="hs_f_count_hint">Cuántos resultados devuelve cada consulta, de 1 a 50. No limita cuántas búsquedas se hacen.</string>
+    <string name="hs_key_unset">No hay ninguna clave. Solo los chats con un modelo de cuenta DeepSeek pueden buscar, a través de la dirección predeterminada.</string>
+    <string name="hs_key_hint">Se guarda en el harness, nunca en su archivo de ajustes. Déjalo vacío para conservar la clave actual.</string>
+    <string name="hs_key_remove_title">¿Quitar la clave de la búsqueda web?</string>
+    <string name="hs_key_remove_body">El harness olvida esta clave. La búsqueda web que la necesite dejará de funcionar hasta que añadas otra.</string>
+    <string name="hs_key_shared">Esta clave es compartida. Estos ajustes también la usan: %1$s. Cambiarla o quitarla aquí los afecta también.</string>
+
+    <!-- A secret field the app has no words for. -->
+    <string name="hs_secret_set">Hay un valor guardado en el harness.</string>
+    <string name="hs_secret_unset">Todavía no hay nada guardado.</string>
+    <string name="hs_secret_remove_title">¿Quitar el valor guardado?</string>
+    <string name="hs_secret_remove_body">El harness lo olvida. Puedes añadir uno nuevo más tarde.</string>
+
+    <!-- What is wrong with what was typed. -->
+    <string name="hs_err_required">Esto no puede quedar vacío.</string>
+    <string name="hs_err_number">Escribe un número.</string>
+    <string name="hs_err_whole">Escribe un número entero.</string>
+    <string name="hs_err_min">Escribe %1$s o más.</string>
+    <string name="hs_err_max">Escribe %1$s o menos.</string>
+    <string name="hs_err_range">Escribe un número entero de %1$s a %2$s.</string>
+    <string name="hs_err_step">Escribe un múltiplo de %1$s.</string>
+    <string name="hs_err_min_length">Longitud mínima: %1$s.</string>
+    <string name="hs_err_max_length">Longitud máxima: %1$s.</string>
+    <string name="hs_err_format">Eso no tiene el formato esperado.</string>
+    <string name="hs_err_option">Elige una de las opciones.</string>
+    <string name="hs_err_min_items">Número mínimo de elementos: %1$s.</string>
+    <string name="hs_err_max_items">Número máximo de elementos: %1$s.</string>
+
+    <!-- A change that did not go through. -->
+    <string name="hs_fail_rejected">El harness no aceptó eso. Se restauró tu valor anterior.</string>
+    <string name="hs_fail_conflict">Esto se cambió en otro sitio. Se muestra el valor más reciente.</string>
+    <string name="hs_fail_unreachable">No se pudo conectar con el harness. No se cambió nada.</string>
+</resources>

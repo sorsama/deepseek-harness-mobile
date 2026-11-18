@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Harness settings: the area in Settings and its pages. -->
+    <string name="hs_title">การตั้งค่า harness</string>
+    <string name="hs_entry_summary">ค้นหาเว็บ ขีดจำกัดของเชลล์ ซับเอเจนต์ และอื่น ๆ</string>
+    <string name="hs_intro">การตั้งค่าที่ harness เก็บไว้เอง ใช้กับ harness ที่คุณเชื่อมต่ออยู่</string>
+    <string name="hs_section_more">การตั้งค่าอื่น ๆ</string>
+    <string name="hs_empty">harness นี้ไม่มีการตั้งค่าให้เปลี่ยนที่นี่</string>
+    <string name="hs_unsupported">harness นี้ไม่ให้แอปเปลี่ยนการตั้งค่าของมัน ให้เปลี่ยนที่ตัว harness เอง หรืออัปเดตมันก่อน</string>
+    <string name="hs_read_only">harness เก็บการตั้งค่านี้เป็นแบบอ่านอย่างเดียว จึงเปลี่ยนจากที่นี่ไม่ได้</string>
+    <string name="hs_refresh_failed">รีเฟรชไม่สำเร็จ กำลังแสดงข้อมูลที่โหลดไว้ก่อนหน้า</string>
+    <string name="hs_note_restart">รีสตาร์ต harness เพื่อให้การเปลี่ยนแปลงในหน้านี้มีผล</string>
+
+    <!-- Page names and one-line descriptions. -->
+    <string name="hs_page_web_search">ค้นหาเว็บ</string>
+    <string name="hs_page_web_search_desc">เอเจนต์ค้นหาบนเว็บอย่างไร และใช้คีย์ใด</string>
+    <string name="hs_page_shell">เชลล์</string>
+    <string name="hs_page_shell_desc">คำสั่งหนึ่งรันได้นานแค่ไหน และเก็บผลลัพธ์ไว้เท่าไร</string>
+    <string name="hs_page_subagents">ซับเอเจนต์</string>
+    <string name="hs_page_subagents_desc">ลึกกี่ชั้น มีได้กี่ตัว และใช้โมเดลใดได้บ้าง</string>
+    <string name="hs_page_agent_loop">ลูปของเอเจนต์</string>
+    <string name="hs_page_agent_loop_desc">เอเจนต์เรียกใช้เครื่องมือพร้อมกันได้กี่ครั้ง</string>
+    <string name="hs_page_session_log">บันทึกเซสชัน</string>
+    <string name="hs_page_session_log_desc">แชร์บันทึกเซสชันเพื่อช่วยปรับปรุง DeepSeek</string>
+
+    <!-- Shared field words. -->
+    <string name="hs_overridden">เปลี่ยนแล้ว</string>
+    <string name="hs_reset">คืนค่าเริ่มต้น</string>
+    <string name="hs_reset_for">คืนค่าเริ่มต้นของ %1$s</string>
+    <string name="hs_readonly_note">แสดงไว้เฉย ๆ แอปนี้เปลี่ยนค่านี้ไม่ได้</string>
+    <string name="hs_remove">ลบ</string>
+    <string name="hs_remove_item">ลบ %1$s</string>
+    <string name="hs_add">เพิ่ม</string>
+    <string name="hs_new_item">รายการใหม่</string>
+
+    <!-- Agent loop and session log. -->
+    <string name="hs_f_parallel">การเรียกเครื่องมือพร้อมกัน</string>
+    <string name="hs_f_parallel_hint">จำนวนการเรียกเครื่องมือสูงสุดที่รันพร้อมกันได้ในหนึ่งขั้นตอน</string>
+    <string name="hs_f_session_log">อัปโหลดบันทึกเซสชันพร้อมคำขอไปยัง API ทางการ</string>
+    <string name="hs_f_session_log_hint">ช่วยปรับปรุงโมเดลและผลิตภัณฑ์ของ DeepSeek</string>
+
+    <!-- Shell. -->
+    <string name="hs_f_timeout">เวลาหมดของคำสั่ง</string>
+    <string name="hs_f_timeout_hint">คำสั่งหนึ่งรันได้นานแค่ไหนก่อนจะถูกหยุด</string>
+    <string name="hs_unit_ms">มิลลิวินาที</string>
+    <string name="hs_f_output">ขีดจำกัดผลลัพธ์ต่อสตรีม</string>
+    <string name="hs_f_output_hint">ผลลัพธ์ที่เกินขีดจำกัดนี้จะไปอยู่ในไฟล์ชั่วคราวแทนที่จะหายไป</string>
+    <string name="hs_unit_bytes">ไบต์</string>
+
+    <!-- Subagents. -->
+    <string name="hs_sec_limits">ขีดจำกัด</string>
+    <string name="hs_f_depth">ความลึกสูงสุด</string>
+    <string name="hs_f_depth_hint">เอเจนต์เริ่มซับเอเจนต์ได้กี่ชั้น ค่า 0 คือปิดซับเอเจนต์ ค่า 1 คือให้เฉพาะเอเจนต์หลักเริ่มได้ เครื่องมือที่มีขีดจำกัดความลึกของตัวเองจะใช้ค่านั้น</string>
+    <string name="hs_f_width">ซับเอเจนต์พร้อมกัน</string>
+    <string name="hs_f_width_hint">จำนวนซับเอเจนต์สูงสุดที่ทำงานอยู่ใต้เอเจนต์หลักตัวเดียวในทุกชั้น เมื่อถึงขีดจำกัด ตัวใหม่จะถูกปฏิเสธ</string>
+    <string name="hs_sec_models">โมเดลสำหรับซับเอเจนต์</string>
+    <string name="hs_f_model_choice">ให้เอเจนต์เลือกโมเดลให้ซับเอเจนต์แต่ละตัว</string>
+    <string name="hs_f_model_choice_hint">เอเจนต์จะเลือกจากโมเดลที่คุณอนุญาตด้านล่าง ใช้กับเซสชันใหม่เท่านั้น</string>
+    <string name="hs_models_list_label">โมเดลที่เอเจนต์เลือกได้</string>
+    <string name="hs_models_pick_one">เลือกอย่างน้อยหนึ่งโมเดลเพื่อเปิดใช้</string>
+    <string name="hs_models_keep_one">เก็บไว้อย่างน้อยหนึ่งโมเดล หรือปิดสวิตช์</string>
+    <string name="hs_models_load_failed">โหลดโมเดลไม่สำเร็จ</string>
+    <string name="hs_models_none_why">ยังไม่มีโมเดลที่พร้อมใช้ โมเดลของผู้ให้บริการจะแสดงที่นี่เมื่อมีคีย์ API ที่ใช้ได้ เพิ่มคีย์ได้ที่ «โมเดลและคีย์ API»</string>
+    <string name="hs_models_retired">ใช้ไม่ได้ในตอนนี้</string>
+
+    <!-- Web search. -->
+    <string name="hs_f_search_api">ใช้ Search API</string>
+    <string name="hs_f_search_api_hint">เมื่อปิด การค้นหาจะผ่าน DeepSeek Messages เมื่อเปิด จะใช้ Search และ Fetch API ซึ่งมีฟีเจอร์และราคาของตัวเอง</string>
+    <string name="hs_f_endpoint_messages">ที่อยู่ของ Messages API</string>
+    <string name="hs_f_endpoint_messages_hint">ใส่คำนำหน้าของ API ด้วย เช่น %1$s</string>
+    <string name="hs_f_endpoint_search">ที่อยู่ของ Search และ Fetch API</string>
+    <string name="hs_f_endpoint_search_hint">ใส่คำนำหน้าของ API ด้วย เช่น %1$s</string>
+    <string name="hs_f_max_uses">จำนวนการค้นหาต่อคำขอ</string>
+    <string name="hs_f_max_uses_hint">โมเดลผู้ช่วยค้นหาได้กี่ครั้งในหนึ่งคำขอ ใช้กับการค้นหาผ่าน Messages เท่านั้น</string>
+    <string name="hs_f_count">จำนวนผลลัพธ์ต่อการค้นหา</string>
+    <string name="hs_f_count_hint">แต่ละคำค้นคืนผลลัพธ์กี่รายการ ตั้งแต่ 1 ถึง 50 ค่านี้ไม่ได้จำกัดจำนวนครั้งที่ค้นหา</string>
+    <string name="hs_key_unset">ยังไม่ได้ตั้งคีย์ เฉพาะแชตที่ใช้โมเดลของบัญชี DeepSeek เท่านั้นที่ค้นหาได้ ผ่านที่อยู่เริ่มต้น</string>
+    <string name="hs_key_hint">เก็บไว้ใน harness ไม่เก็บในไฟล์การตั้งค่าของมัน เว้นว่างไว้เพื่อใช้คีย์เดิม</string>
+    <string name="hs_key_remove_title">ลบคีย์ค้นหาเว็บ?</string>
+    <string name="hs_key_remove_body">harness จะลืมคีย์นี้ การค้นหาเว็บที่ต้องใช้คีย์จะหยุดทำงานจนกว่าคุณจะเพิ่มคีย์ใหม่</string>
+    <string name="hs_key_shared">คีย์นี้ใช้ร่วมกัน การตั้งค่าเหล่านี้ใช้คีย์นี้ด้วย: %1$s การเปลี่ยนหรือลบคีย์ที่นี่จะกระทบการตั้งค่าเหล่านั้นด้วย</string>
+
+    <!-- A secret field the app has no words for. -->
+    <string name="hs_secret_set">มีค่าที่บันทึกไว้ใน harness แล้ว</string>
+    <string name="hs_secret_unset">ยังไม่มีอะไรที่บันทึกไว้</string>
+    <string name="hs_secret_remove_title">ลบค่าที่บันทึกไว้?</string>
+    <string name="hs_secret_remove_body">harness จะลืมค่านี้ คุณเพิ่มค่าใหม่ทีหลังได้</string>
+
+    <!-- What is wrong with what was typed. -->
+    <string name="hs_err_required">ช่องนี้เว้นว่างไม่ได้</string>
+    <string name="hs_err_number">ใส่ตัวเลข</string>
+    <string name="hs_err_whole">ใส่จำนวนเต็ม</string>
+    <string name="hs_err_min">ใส่ %1$s หรือมากกว่า</string>
+    <string name="hs_err_max">ใส่ %1$s หรือน้อยกว่า</string>
+    <string name="hs_err_range">ใส่จำนวนเต็มตั้งแต่ %1$s ถึง %2$s</string>
+    <string name="hs_err_step">ใส่ค่าที่หารด้วย %1$s ลงตัว</string>
+    <string name="hs_err_min_length">ความยาวขั้นต่ำ: %1$s</string>
+    <string name="hs_err_max_length">ความยาวสูงสุด: %1$s</string>
+    <string name="hs_err_format">รูปแบบไม่ตรงตามที่ต้องการ</string>
+    <string name="hs_err_option">เลือกหนึ่งในตัวเลือก</string>
+    <string name="hs_err_min_items">จำนวนรายการขั้นต่ำ: %1$s</string>
+    <string name="hs_err_max_items">จำนวนรายการสูงสุด: %1$s</string>
+
+    <!-- A change that did not go through. -->
+    <string name="hs_fail_rejected">harness ไม่รับค่านี้ ค่าเดิมของคุณกลับมาแล้ว</string>
+    <string name="hs_fail_conflict">ค่านี้ถูกเปลี่ยนที่อื่น กำลังแสดงค่าล่าสุด</string>
+    <string name="hs_fail_unreachable">ติดต่อ harness ไม่ได้ ยังไม่มีอะไรเปลี่ยนแปลง</string>
+</resources>

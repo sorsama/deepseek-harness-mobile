@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Harness settings: the area in Settings and its pages. -->
+    <string name="hs_title">harness-এর সেটিংস</string>
+    <string name="hs_entry_summary">ওয়েব সার্চ, শেলের সীমা, সাবএজেন্ট এবং আরও কিছু</string>
+    <string name="hs_intro">harness নিজের কাছে যে সেটিংস রাখে। এগুলো আপনি যে harness-এ যুক্ত আছেন তার ওপর কাজ করে।</string>
+    <string name="hs_section_more">আরও সেটিংস</string>
+    <string name="hs_empty">এই harness-এ এখানে বদলানোর মতো কোনো সেটিংস নেই।</string>
+    <string name="hs_unsupported">এই harness অ্যাপকে তার সেটিংস বদলাতে দেয় না। harness-এই সেগুলো বদলান, অথবা তাকে আপডেট করুন।</string>
+    <string name="hs_read_only">harness এই সেটিংস শুধু পড়ার জন্য রাখে, তাই এখান থেকে বদলানো যাবে না।</string>
+    <string name="hs_refresh_failed">রিফ্রেশ করা যায়নি। আগে যা লোড হয়েছিল তা-ই দেখানো হচ্ছে।</string>
+    <string name="hs_note_restart">এই পেজের বদল কার্যকর হতে harness রিস্টার্ট করুন।</string>
+
+    <!-- Page names and one-line descriptions. -->
+    <string name="hs_page_web_search">ওয়েব সার্চ</string>
+    <string name="hs_page_web_search_desc">এজেন্ট ওয়েবে কীভাবে খোঁজে এবং কোন কী ব্যবহার করে।</string>
+    <string name="hs_page_shell">শেল</string>
+    <string name="hs_page_shell_desc">একটি কমান্ড কতক্ষণ চলতে পারে এবং কতটা আউটপুট রাখে।</string>
+    <string name="hs_page_subagents">সাবএজেন্ট</string>
+    <string name="hs_page_subagents_desc">কত গভীর পর্যন্ত, কতগুলো, আর কোন মডেল তারা ব্যবহার করতে পারে।</string>
+    <string name="hs_page_agent_loop">এজেন্ট লুপ</string>
+    <string name="hs_page_agent_loop_desc">এজেন্ট একসঙ্গে কতগুলো টুল কল চালায়।</string>
+    <string name="hs_page_session_log">সেশন লগ</string>
+    <string name="hs_page_session_log_desc">DeepSeek-কে আরও ভালো করতে সাহায্য করতে সেশন লগ শেয়ার করুন।</string>
+
+    <!-- Shared field words. -->
+    <string name="hs_overridden">বদলানো</string>
+    <string name="hs_reset">ডিফল্টে ফেরান</string>
+    <string name="hs_reset_for">%1$s ডিফল্টে ফেরান</string>
+    <string name="hs_readonly_note">শুধু দেখানো হচ্ছে। এই অ্যাপ এটি বদলাতে পারে না।</string>
+    <string name="hs_remove">সরান</string>
+    <string name="hs_remove_item">%1$s সরান</string>
+    <string name="hs_add">যোগ করুন</string>
+    <string name="hs_new_item">নতুন আইটেম</string>
+
+    <!-- Agent loop and session log. -->
+    <string name="hs_f_parallel">একসঙ্গে টুল কল</string>
+    <string name="hs_f_parallel_hint">এক ধাপে একসঙ্গে সর্বোচ্চ কতগুলো টুল কল চলতে পারে।</string>
+    <string name="hs_f_session_log">অফিশিয়াল API অনুরোধের সঙ্গে সেশন লগ আপলোড করুন</string>
+    <string name="hs_f_session_log_hint">DeepSeek-এর মডেল ও প্রোডাক্ট আরও ভালো করতে সাহায্য করে।</string>
+
+    <!-- Shell. -->
+    <string name="hs_f_timeout">কমান্ডের টাইমআউট</string>
+    <string name="hs_f_timeout_hint">একটি কমান্ড থামানোর আগে কতক্ষণ চলতে পারে।</string>
+    <string name="hs_unit_ms">মি.সে.</string>
+    <string name="hs_f_output">প্রতি স্ট্রিমে আউটপুটের সীমা</string>
+    <string name="hs_f_output_hint">এই সীমার বেশি আউটপুট হারিয়ে না গিয়ে একটি অস্থায়ী ফাইলে যায়।</string>
+    <string name="hs_unit_bytes">বাইট</string>
+
+    <!-- Subagents. -->
+    <string name="hs_sec_limits">সীমা</string>
+    <string name="hs_f_depth">সর্বোচ্চ গভীরতা</string>
+    <string name="hs_f_depth_hint">একটি এজেন্ট সাবএজেন্টের কত স্তর চালু করতে পারে। 0 দিলে সাবএজেন্ট বন্ধ হয়ে যায়। 1 দিলে শুধু মূল এজেন্ট সেগুলো চালু করতে পারে। যে টুলের নিজস্ব গভীরতার সীমা আছে, সে সেটিই মানে।</string>
+    <string name="hs_f_width">একসঙ্গে সাবএজেন্ট</string>
+    <string name="hs_f_width_hint">এক মূল এজেন্টের অধীনে সব স্তর মিলিয়ে একসঙ্গে সর্বোচ্চ কতগুলো সাবএজেন্ট সক্রিয় থাকতে পারে। সীমায় পৌঁছালে নতুনগুলো ফিরিয়ে দেওয়া হয়।</string>
+    <string name="hs_sec_models">সাবএজেন্টের মডেল</string>
+    <string name="hs_f_model_choice">এজেন্টকে প্রতিটি সাবএজেন্টের জন্য মডেল বেছে নিতে দিন</string>
+    <string name="hs_f_model_choice_hint">এজেন্ট নিচে আপনার অনুমতি দেওয়া মডেলগুলো থেকে বেছে নেয়। শুধু নতুন সেশনে কার্যকর।</string>
+    <string name="hs_models_list_label">যে মডেল এজেন্ট বেছে নিতে পারে</string>
+    <string name="hs_models_pick_one">চালু করতে অন্তত একটি মডেল বেছে নিন।</string>
+    <string name="hs_models_keep_one">অন্তত একটি মডেল রাখুন, নয়তো সুইচ বন্ধ করুন।</string>
+    <string name="hs_models_load_failed">মডেল লোড করা যায়নি।</string>
+    <string name="hs_models_none_why">এখনও কোনো মডেল প্রস্তুত নেই। কোনো প্রোভাইডারের কাজ করা API কী থাকলে তবেই তার মডেল এখানে দেখা যায়। «মডেল ও API কী»-তে একটি যোগ করুন।</string>
+    <string name="hs_models_retired">এখন পাওয়া যাচ্ছে না</string>
+
+    <!-- Web search. -->
+    <string name="hs_f_search_api">Search API ব্যবহার করুন</string>
+    <string name="hs_f_search_api_hint">বন্ধ থাকলে সার্চ DeepSeek Messages দিয়ে চলে। চালু থাকলে Search ও Fetch API ব্যবহার হয়, যেগুলোর নিজস্ব সুবিধা ও দাম আছে।</string>
+    <string name="hs_f_endpoint_messages">Messages API-এর ঠিকানা</string>
+    <string name="hs_f_endpoint_messages_hint">API-এর প্রিফিক্সসহ লিখুন, যেমন %1$s।</string>
+    <string name="hs_f_endpoint_search">Search ও Fetch API-এর ঠিকানা</string>
+    <string name="hs_f_endpoint_search_hint">API-এর প্রিফিক্সসহ লিখুন, যেমন %1$s।</string>
+    <string name="hs_f_max_uses">প্রতি অনুরোধে সার্চ</string>
+    <string name="hs_f_max_uses_hint">সহায়ক মডেল এক অনুরোধে কতগুলো সার্চ করতে পারে। শুধু Messages দিয়ে সার্চে প্রযোজ্য।</string>
+    <string name="hs_f_count">প্রতি সার্চে ফলাফল</string>
+    <string name="hs_f_count_hint">প্রতিটি কোয়েরি কতগুলো ফলাফল ফেরত দেয়, 1 থেকে 50। এতে সার্চের সংখ্যা সীমিত হয় না।</string>
+    <string name="hs_key_unset">কোনো কী সেট করা নেই। শুধু DeepSeek অ্যাকাউন্টের মডেল ব্যবহার করা চ্যাটই ডিফল্ট ঠিকানা দিয়ে সার্চ করতে পারে।</string>
+    <string name="hs_key_hint">harness-এ সেভ থাকে, তার সেটিংস ফাইলে কখনো নয়। বর্তমান কী রাখতে ফাঁকা রাখুন।</string>
+    <string name="hs_key_remove_title">ওয়েব সার্চের কী সরাবেন?</string>
+    <string name="hs_key_remove_body">harness এই কী ভুলে যাবে। যে ওয়েব সার্চের এটি দরকার, নতুন কী যোগ করা পর্যন্ত তা কাজ করবে না।</string>
+    <string name="hs_key_shared">এই কী শেয়ার করা। এই সেটিংসও এটি ব্যবহার করে: %1$s। এখানে এটি বদলালে বা সরালে সেগুলোও বদলে যাবে।</string>
+
+    <!-- A secret field the app has no words for. -->
+    <string name="hs_secret_set">harness-এ একটি মান সেভ করা আছে।</string>
+    <string name="hs_secret_unset">এখনো কিছু সেভ করা নেই।</string>
+    <string name="hs_secret_remove_title">সেভ করা মান সরাবেন?</string>
+    <string name="hs_secret_remove_body">harness সেটি ভুলে যাবে। পরে নতুন একটি যোগ করতে পারবেন।</string>
+
+    <!-- What is wrong with what was typed. -->
+    <string name="hs_err_required">এটি ফাঁকা রাখা যাবে না।</string>
+    <string name="hs_err_number">একটি সংখ্যা লিখুন।</string>
+    <string name="hs_err_whole">একটি পূর্ণসংখ্যা লিখুন।</string>
+    <string name="hs_err_min">%1$s বা তার বেশি লিখুন।</string>
+    <string name="hs_err_max">%1$s বা তার কম লিখুন।</string>
+    <string name="hs_err_range">%1$s থেকে %2$s-এর মধ্যে একটি পূর্ণসংখ্যা লিখুন।</string>
+    <string name="hs_err_step">%1$s-এর একটি গুণিতক লিখুন।</string>
+    <string name="hs_err_min_length">সর্বনিম্ন দৈর্ঘ্য: %1$s।</string>
+    <string name="hs_err_max_length">সর্বোচ্চ দৈর্ঘ্য: %1$s।</string>
+    <string name="hs_err_format">এটি প্রত্যাশিত ফরম্যাটে নেই।</string>
+    <string name="hs_err_option">বিকল্পগুলোর একটি বেছে নিন।</string>
+    <string name="hs_err_min_items">সর্বনিম্ন আইটেম সংখ্যা: %1$s।</string>
+    <string name="hs_err_max_items">সর্বোচ্চ আইটেম সংখ্যা: %1$s।</string>
+
+    <!-- A change that did not go through. -->
+    <string name="hs_fail_rejected">harness এটি মানেনি। আপনার আগের মান ফিরে এসেছে।</string>
+    <string name="hs_fail_conflict">এটি অন্য কোথাও বদলানো হয়েছে। সর্বশেষ মান দেখানো হচ্ছে।</string>
+    <string name="hs_fail_unreachable">harness-এ পৌঁছানো যায়নি। কিছু বদলায়নি।</string>
+</resources>
