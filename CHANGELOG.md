@@ -21,6 +21,16 @@ All notable changes to DSH Mobile are documented here. Format based on
   out of range is explained next to the field before anything is sent, and a change the harness
   refuses puts the old value back and says why. It works on the harness on this phone and on a
   remote one, and the row is hidden once a harness turns out to be too old to describe its settings.
+- **Sign in to DeepSeek from the app.** Harness settings has a new **Account** page. Sign in with your
+  DeepSeek account, cancel a sign-in that is under way, see your name and balance and any bonus DeepSeek
+  has credited, and sign out (the confirmation says whether tasks are running on the account). On the
+  harness on this phone, the page opens DeepSeek's sign-in in your browser, waits for it, and picks the
+  result up as soon as you come back to the app, even if the app was closed in between. A harness on
+  another computer cannot be signed in from a phone: DeepSeek sends the browser back to an address that
+  only works on the same device as the browser, which from a phone is the phone itself. For those the
+  page says so and asks you to sign in on that computer, and it shows the account once that is done. The
+  usage card in the chat updates its balance as soon as you sign in or out, and the page is left out on a
+  harness that has no account support.
 
 ## [0.23.0] - 2026-11-17
 

@@ -167,6 +167,41 @@ harness's own Models page does (`packages/client/ui-settings-models`, 0.2.2-rc.1
 The key crosses the wire in `credentials/set` (and in a check's `apiKey`) and nowhere else;
 the app keeps no copy.
 
+### DeepSeek account sign-in
+
+The Account page (Harness settings) drives the `account` namespace
+(`packages/api/account-controller`, harness 0.2.1-rc.2). The harness keeps the token in its own
+credential store; no call returns it.
+
+- **Read:** `account/getState {}` answers `{status: signed-out | credential-stored, links, attempt}`.
+  The harness keeps the latest attempt after it ends, so `attempt.phase` (`initializing`,
+  `waiting-browser`, `exchanging`, `committing`, `succeeded`, `cancelled`, `expired`, `failed`) is
+  progress only for the first four; a signed-in harness still carries a `succeeded` attempt. Only a
+  `waiting-browser` attempt has `authorizeUrl`, a one-time link. A failed attempt has `errorCode`
+  (`no-response`, `network`, `protocol`, `storage`). `getProfile {client}`, `getBalance {client}` and
+  `getUnnotifiedBonuses {client}` answer null while signed out; `ackBonusNotified {accountId, orderId,
+  client}` answers false when the account changed. `client` is `{version, locale, timezoneOffsetSeconds}`.
+- **Start:** `startSignIn {client, callbackOrigin, loginSource}` answers at once with an `initializing`
+  attempt, or joins the one that runs. The harness never opens a browser. The client does, with
+  `authorizeUrl`, and the sign-in ends when the browser is redirected to
+  `<callbackOrigin>/oauth/callback`, a route the harness serves on its own web server for the length
+  of the attempt (10 minutes at most). The harness accepts only `http://localhost`, `http://127.0.0.1`
+  or `http://[::1]` with an explicit port as `callbackOrigin`; anything else is
+  `gateway/internal` with `account: protocol`. So the browser that approves the sign-in must reach
+  the harness at its own loopback address: the app starts a sign-in only for a harness reached on
+  this phone's loopback (the built-in one, Termux, `adb reverse`), and for any other tells the person
+  to sign in on the harness computer.
+- **Finish:** there is no event for it. The official client follows the `account/watch` stream; the
+  app asks `account/getState` again, every 0.5 to 2 seconds while an attempt runs, and at once when it
+  comes back to the front. `deepseek-account/session-expired` arrives on `$events` when the harness
+  drops a sign-in DeepSeek rejected.
+- **Cancel and sign out:** `cancelSignIn {attemptId}` (a stale id changes nothing) and
+  `signOut {client}`, which keeps API keys and stops tasks running on the account;
+  `hasRunningAccountTasks {}` says whether any do.
+- **No account service:** a harness with its account plugin switched off still exports the calls and
+  answers `gateway/service-unavailable`; an older one answers `gateway/invocation-unavailable`.
+  Either hides the page.
+
 ### Error codes
 
 Every business code is namespaced since 0.1.3, `<service>/<fault>`. The ones
