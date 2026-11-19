@@ -13,6 +13,7 @@ import com.labteto.dshmobile.ui.components.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -177,6 +178,7 @@ fun ChatListDrawer(
     onClose: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenAutomations: () -> Unit = {},
+    pinControl: (@Composable () -> Unit)? = null,
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
@@ -524,33 +526,7 @@ fun ChatListDrawer(
             .padding(horizontal = DsSpacing.comfortable),
     ) {
         // ---- Wordmark, harness status, settings ------------------------------------------------
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.small),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
-        ) {
-            MascotMark(state = MascotState.Idle, size = 30.dp)
-            Text(
-                "DSH",
-                style = DsType.large20,
-                color = colors.labelPrimary,
-                modifier = Modifier.padding(start = 2.dp),
-            )
-            Spacer(Modifier.weight(1f))
-            HarnessPill(
-                name = hostName,
-                phase = connection.phase,
-                onClick = { hapticsTap(); onOpenSettings() },
-            )
-            DsIconButton(
-                icon = Icons.Outlined.Settings,
-                contentDescription = stringResource(R.string.settings_title),
-                onClick = onOpenSettings,
-                tint = colors.labelTertiary,
-                iconSize = 20.dp,
-            )
-        }
-
+        TreeDrawerHeader(hostName, connection.phase, pinControl, onOpenSettings) { hapticsTap(); onOpenSettings() }
         // ---- Hero title, workspace · model, quick actions --------------------------------------
         Row(verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
@@ -1116,7 +1092,7 @@ fun ChatListDrawer(
  * address and reconnect controls live. The caret says it goes somewhere.
  */
 @Composable
-private fun HarnessPill(name: String, phase: ConnectionPhase, onClick: () -> Unit) {
+private fun HarnessPill(name: String, phase: ConnectionPhase, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val colors = DsTheme.colors
     val dot = when (phase) {
         ConnectionPhase.CONNECTED -> StateDotState.Done
@@ -1126,7 +1102,7 @@ private fun HarnessPill(name: String, phase: ConnectionPhase, onClick: () -> Uni
     val label = if (phase == ConnectionPhase.DISCONNECTED) stringResource(R.string.common_offline) else name
     // Drawn 36dp (the same as a filter chip, so the two read as one family), inside a 48dp target.
     Row(
-        modifier = Modifier
+        modifier = modifier
             .widthIn(max = 168.dp)
             .minimumInteractiveComponentSize()
             .height(DsSizes.chip)
@@ -2240,4 +2216,49 @@ internal fun sessionTitle(session: SessionRow): String {
     val title = session.title?.takeIf { it.isNotBlank() }
     val folder = session.cwd?.takeIf { it.isNotBlank() }?.let { basename(it) }?.takeIf { it.isNotBlank() }
     return title ?: folder ?: session.sessionId
+}
+
+@Composable
+internal fun TreeDrawerHeader(
+    hostName: String,
+    phase: ConnectionPhase,
+    pinControl: (@Composable () -> Unit)?,
+    onOpenSettings: () -> Unit,
+    onConnection: () -> Unit,
+) {
+    val colors = DsTheme.colors
+    BoxWithConstraints {
+        val compactHeader = pinControl != null && maxWidth < 300.dp
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.small),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
+        ) {
+            if (!compactHeader) {
+            MascotMark(state = MascotState.Idle, size = 30.dp)
+            Text(
+                "DSH",
+                style = DsType.large20,
+                color = colors.labelPrimary,
+                modifier = Modifier.padding(start = 2.dp),
+            )
+            Spacer(Modifier.weight(1f))
+            }
+            HarnessPill(
+                modifier = if (compactHeader) Modifier.weight(1f) else Modifier,
+                name = hostName,
+                phase = phase,
+                onClick = onConnection,
+            )
+            pinControl?.invoke()
+            DsIconButton(
+                icon = Icons.Outlined.Settings,
+                contentDescription = stringResource(R.string.settings_title),
+                onClick = onOpenSettings,
+                tint = colors.labelTertiary,
+                iconSize = 20.dp,
+            )
+        }
+
+        }
 }
