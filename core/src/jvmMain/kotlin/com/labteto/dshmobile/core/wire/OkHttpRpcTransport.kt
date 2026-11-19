@@ -89,6 +89,17 @@ class OkHttpRpcTransport(
                 override fun onResponse(call: Call, response: Response) {
                     response.use { resp ->
                         val contentType = resp.header("Content-Type")
+                        if (path == "/api/session/list" && resp.isSuccessful && !RpcMultipart.isMultipart(contentType)) {
+                            try {
+                                val compact = resp.body?.charStream()?.let(::compactSessionList).orEmpty()
+                                continuation.resume(RpcHttpResponse(resp.code, compact, contentType))
+                            } catch (e: Exception) {
+                                if (continuation.isActive) continuation.resumeWithException(
+                                    RpcTransportException(0, "Unable to read session list", e),
+                                )
+                            }
+                            return
+                        }
                         if (resp.isSuccessful && RpcMultipart.isMultipart(contentType)) {
                             val bytes = try {
                                 resp.body?.bytes() ?: ByteArray(0)
