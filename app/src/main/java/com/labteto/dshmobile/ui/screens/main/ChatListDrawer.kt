@@ -2227,7 +2227,7 @@ internal fun TreeDrawerHeader(
     onConnection: () -> Unit,
 ) {
     val colors = DsTheme.colors
-        BoxWithConstraints {
+    BoxWithConstraints {
         val compactHeader = pinControl != null && maxWidth < 300.dp
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.small),
