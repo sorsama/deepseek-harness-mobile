@@ -39,16 +39,8 @@ import kotlinx.io.buffered
 /** `application/json; charset=utf-8`, spelled as OkHttp writes it on the wire. */
 private val JSON_CONTENT_TYPE: ContentType = ContentType.parse("application/json; charset=utf-8")
 
-/**
- * Paths whose server work is host-owned and may outlive the ordinary 30s RPC read budget.
- * Package operations run installs in the background, and command execution covers `/compact`,
- * whose summarization of a large session can take minutes on a slow model gateway.
- */
-private val UNBOUNDED_READ_PATHS = setOf(
-    "/api/pluginManager/installBundle",
-    "/api/pluginManager/waitForInstall",
-    "/api/commands/execute",
-)
+/** Package operations are host-owned and may outlive the ordinary RPC read budget. */
+private val UNBOUNDED_READ_PATHS = setOf("/api/pluginManager/installBundle", "/api/pluginManager/waitForInstall", "/api/commands/execute")
 
 /**
  * A multiplatform [RpcTransport] on Ktor: the iOS carrier, and a second, independent implementation
@@ -64,10 +56,10 @@ private val UNBOUNDED_READ_PATHS = setOf(
  * - `Host` is written by hand with [hostHeaderFor]'s rule, `Content-Type` is
  *   `application/json; charset=utf-8` for a unary POST, and `Authorization` / `Cookie` are set
  *   only when given.
- * - [connectTimeoutMs] / [readTimeoutMs] default to 30s. The paths in [UNBOUNDED_READ_PATHS]
- *   (package operations and `commands/execute`) get no read deadline; downloads and uploads get a
- *   ten-minute one, since a session-log ZIP is compressed on the fly and an upload is bounded by
- *   the link. A value of 0 means no deadline, as it does for OkHttp.
+ * - [connectTimeoutMs] / [readTimeoutMs] default to 30s. Package operations
+ *   (`pluginManager/installBundle`, `waitForInstall`) get no read deadline; downloads and uploads
+ *   get a ten-minute one, since a session-log ZIP is compressed on the fly and an upload is bounded
+ *   by the link. A value of 0 means no deadline, as it does for OkHttp.
  * - A non-2xx answer throws [RpcTransportException] with [carrierMessage]'s text, the status, and
  *   a 429's `Retry-After`; a network failure throws it with status 0 and the cause attached, which
  *   is what [TransportFailures.classify] reads.
