@@ -28,8 +28,9 @@ private val JSON_MEDIA_TYPE: MediaType = "application/json; charset=utf-8".toMed
 
 /**
  * OkHttp-backed [RpcTransport]. Sends `Content-Type: application/json`, sets the `Host` header
- * from the base URL, and times out at [connectTimeoutMs]/[readTimeoutMs] (30s by default). Non-2xx
- * responses throw [RpcTransportException] (403 mentions the harness trust fence).
+ * from the base URL, and times out at [connectTimeoutMs]/[readTimeoutMs] (30s by default; package
+ * operations and command execution are exempt from the read deadline). Non-2xx responses throw
+ * [RpcTransportException] (403 mentions the harness trust fence).
  *
  * [baseUrl] may be `http://` or `https://`; see [hostHeaderFor] for how the header is spelled.
  *
@@ -72,9 +73,15 @@ class OkHttpRpcTransport(
                 .cookied(cookie)
                 .post(body.toRequestBody(JSON_MEDIA_TYPE))
                 .build()
-            // Package operations are host-owned and may outlive the ordinary RPC read budget.
+            // Host-owned work may outlive the ordinary RPC read budget: package operations run
+            // installs in the background, and command execution covers /compact, whose
+            // summarization of a large session can take minutes on a slow model gateway.
             // Keep the connection budget, and let explicit cancellation or the host settle them.
-            val carrier = if (path in setOf("/api/pluginManager/installBundle", "/api/pluginManager/waitForInstall")) packageClient else httpClient
+            val carrier = if (path in setOf(
+                "/api/pluginManager/installBundle",
+                "/api/pluginManager/waitForInstall",
+                "/api/commands/execute",
+            )) packageClient else httpClient
             val call = carrier.newCall(request)
             continuation.invokeOnCancellation { call.cancel() }
             call.enqueue(object : Callback {
