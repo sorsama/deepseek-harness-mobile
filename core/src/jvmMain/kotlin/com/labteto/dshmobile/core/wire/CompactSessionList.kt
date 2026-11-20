@@ -11,9 +11,16 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 
-// These are the projections SessionStore.refreshSessions reads for Android list rows. Other
-// projections can contain large snapshots that are used by the desktop, but not by this list.
-private val listProjectionKeys = setOf("title", "agentPreset", "subagent")
+// These projections are consumed by Android list rows and session API clients. Other projections
+// can contain large snapshots that are used by the desktop, but not by these mobile surfaces.
+private val listProjectionKeys = setOf(
+    "title",
+    "agentPreset",
+    "subagent",
+    "userQuestions",
+    "inbox",
+    "sessionListMetadata",
+)
 private val listRowKeys = setOf(
     "sessionId",
     "updatedAt",
