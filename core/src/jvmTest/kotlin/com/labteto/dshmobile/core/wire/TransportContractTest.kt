@@ -222,6 +222,15 @@ class TransportContractTest(private val kind: TransportKind) {
     }
 
     @Test
+    fun `command execution is exempt from the read deadline`() = runBlocking {
+        RecordingServer().route("/api/") { ex, _ -> Thread.sleep(700); ex.reply(200, "{}", json) }.start().use { server ->
+            val transport = kind.rpc(server.baseUrl, readTimeoutMs = 200)
+            // A slow command such as /compact on a large session must not be cut by the 30s default.
+            assertEquals(200, transport.post("/api/commands/execute", "{}").status)
+        }
+    }
+
+    @Test
     fun `cancelling the caller cancels the call and is not a transport failure`() = runBlocking {
         RecordingServer().route("/api/") { ex, _ -> Thread.sleep(3_000); ex.reply(200, "{}", json) }.start().use { server ->
             val seenByCaller = AtomicReference<Throwable?>()

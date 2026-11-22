@@ -74,7 +74,7 @@ class OkHttpRpcTransport(
                 .build()
             // Package operations are host-owned and may outlive the ordinary RPC read budget.
             // Keep the connection budget, and let explicit cancellation or the host settle them.
-            val carrier = if (path in setOf("/api/pluginManager/installBundle", "/api/pluginManager/waitForInstall")) packageClient else httpClient
+            val carrier = if (path in setOf("/api/pluginManager/installBundle", "/api/pluginManager/waitForInstall", "/api/commands/execute")) packageClient else httpClient
             val call = carrier.newCall(request)
             continuation.invokeOnCancellation { call.cancel() }
             call.enqueue(object : Callback {
