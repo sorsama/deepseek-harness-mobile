@@ -5,6 +5,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import com.labteto.dshmobile.core.session.AssistantMessageNode
 import com.labteto.dshmobile.core.session.ChatBlock
@@ -48,12 +50,18 @@ class ChatTranscriptTailTest {
 
     private class Harness {
         var nodes by mutableStateOf<List<ChatNode>>(emptyList())
+        var bottomInset by mutableStateOf(0.dp)
         lateinit var listState: LazyListState
     }
 
-    private fun harness(initial: List<ChatNode>, followStreaming: Boolean = true): Harness {
+    private fun harness(
+        initial: List<ChatNode>,
+        followStreaming: Boolean = true,
+        bottomInset: Dp = 0.dp,
+    ): Harness {
         val h = Harness()
         h.nodes = initial
+        h.bottomInset = bottomInset
         compose.setContent {
             h.listState = rememberLazyListState()
             DshTheme {
@@ -71,6 +79,7 @@ class ChatTranscriptTailTest {
                         onFeedback = { _, _ -> },
                     ),
                     listState = h.listState,
+                    bottomInset = h.bottomInset,
                     onLoadOlder = {},
                     followStreaming = followStreaming,
                 )
@@ -293,5 +302,47 @@ class ChatTranscriptTailTest {
         // And the pair sits at the bottom, with the blank space above rather than below.
         assertTrue("transcript should sit at the bottom", question.top.value > root.height.value * 0.75f)
         assertTrue("answer should reach the bottom", answer.bottom.value > root.height.value * 0.9f)
+    }
+
+    // The composer lifts into a drawer once a draft wraps past one line, and the drawer floats over
+    // the chat without taking room from it. The list is already at its floor at the tail, so before
+    // the inset the end of the newest message sat underneath the drawer and no scroll could bring it
+    // out. The inset is the room the drawer covers, so the tail rests above it instead.
+    @Test
+    fun aBottomInsetKeepsTheNewestRowAboveTheDrawer() {
+        val inset = 240.dp
+        val h = harness(longHistory(), bottomInset = inset)
+
+        val root = compose.onRoot().getUnclippedBoundsInRoot()
+        val answer = compose.onNodeWithText("answer 29").getUnclippedBoundsInRoot()
+
+        assertTrue(h.atTail())
+        assertTrue(
+            "the newest row ends ${root.height.value - answer.bottom.value}dp above the bottom, " +
+                "not above the $inset drawer",
+            root.height.value - answer.bottom.value >= inset.value,
+        )
+    }
+
+    @Test
+    fun growingTheInsetLiftsTheTailWithoutAScroll() {
+        // The drawer grows as the draft wraps further, and nothing scrolls: the reader is watching
+        // the row the drawer is about to cover, so it has to come up with the drawer on its own.
+        val h = harness(longHistory())
+        val root = compose.onRoot().getUnclippedBoundsInRoot()
+        val atRest = compose.onNodeWithText("answer 29").getUnclippedBoundsInRoot()
+        assertTrue(h.atTail())
+
+        val inset = 240.dp
+        compose.runOnIdle { h.bottomInset = inset }
+        compose.waitForIdle()
+
+        val lifted = compose.onNodeWithText("answer 29").getUnclippedBoundsInRoot()
+        assertTrue("the tail should move up with the drawer", lifted.bottom < atRest.bottom)
+        assertTrue(
+            "the tail should end above the drawer",
+            root.height.value - lifted.bottom.value >= inset.value,
+        )
+        assertTrue("the list should still be at the tail, with no scroll", h.atTail())
     }
 }
