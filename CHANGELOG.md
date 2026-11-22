@@ -14,6 +14,13 @@ All notable changes to DSH Mobile are documented here. Format based on
   height as room at its end, so the newest message rests above the drawer and comes up with it as
   the drawer grows, and the way-back-down button sits above the drawer too.
 
+- **Slow slash commands such as `/compact` no longer fail after 30 seconds.** Every slash command
+  is one request to the harness, and the app gave each request 30 seconds to answer. Compacting a
+  large session on a slow model gateway takes longer than that, so the app hung up at exactly 30
+  seconds, said **Command failed: transport failure: timeout**, and the harness's summary was thrown
+  away halfway. Commands now wait for the harness to finish, the way plugin installs already did.
+  (#139)
+
 ## [0.24.0] - 2026-11-19
 
 ![Three phones: the Plugins page as a short list, a chat with a task list and a background command, and a Harness settings page](docs/images/releases/0.24.0/devices/hero-whats-new.png)
