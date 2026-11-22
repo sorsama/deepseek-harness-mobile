@@ -5,6 +5,15 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Fixed
+
+- **The end of the newest message no longer hides under the composer's drawer.** Once a draft wraps
+  past one line the message box lifts into a drawer over the chat, and the drawer covered the bottom
+  of the transcript: the list was already at its floor, so the end of the message being answered
+  could not be scrolled out from underneath it. The transcript now keeps the drawer's measured
+  height as room at its end, so the newest message rests above the drawer and comes up with it as
+  the drawer grows, and the way-back-down button sits above the drawer too.
+
 ## [0.24.0] - 2026-11-19
 
 ![Three phones: the Plugins page as a short list, a chat with a task list and a background command, and a Harness settings page](docs/images/releases/0.24.0/devices/hero-whats-new.png)
