@@ -16,8 +16,12 @@ sealed interface HostProbe {
     /** The probe is in flight. */
     data object Probing : HostProbe
 
-    /** It answered `host.describe`; [description] is what it said. */
-    data class Reachable(val description: HostDescription) : HostProbe
+    /**
+     * A harness answered. [description] is what it said about itself, or null when the endpoint
+     * proved itself but its home could not be read (a relay refuses the directory listing that
+     * carries it to a paired device, under `privilegedMethods: loopback-only`). Reachable either way.
+     */
+    data class Reachable(val description: HostDescription?) : HostProbe
 
     /** No answer — switched off, asleep, or on another network. */
     data object Unreachable : HostProbe

@@ -89,9 +89,6 @@ interface ConnectStore {
 
 /** Looking at the network: probing an address, sweeping the subnet, browsing for relays. */
 interface ConnectNetwork {
-    /** Probe one authority; null when it is not a harness. */
-    suspend fun probe(host: String, port: Int, timeouts: ProbeTimeouts, config: HostConfig? = null): HostDescription?
-
     /** Probe one authority and keep the reason it failed. */
     suspend fun probeOutcome(
         host: String,

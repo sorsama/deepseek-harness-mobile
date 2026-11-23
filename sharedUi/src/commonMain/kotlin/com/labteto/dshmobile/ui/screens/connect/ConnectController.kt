@@ -161,6 +161,10 @@ class ConnectController(
                 _state.update { current ->
                     val connected = conn.phase == ConnectionPhase.CONNECTED
                     val owned = localStage != null
+                    // A live connection is the best proof a row can have, so it outranks an earlier
+                    // probe verdict. Without this a row marked Unreachable (a probe the relay answered
+                    // 403 on its second call, say) stayed that way while the app was connected to it.
+                    val connectedAuthority = conn.host?.authority?.takeIf { connected }
                     current.copy(
                         stage = localStage ?: conn.stage,
                         failure = when {
@@ -176,11 +180,25 @@ class ConnectController(
                         attempts = if (owned) current.attempts else conn.attempts,
                         // The Recent card's liveness dot used to be greyed by the failure callback
                         // that no longer exists; without this a dead entry keeps looking healthy.
-                        recentStatus = current.attempted
-                            ?.takeIf { !owned && conn.failure != null }
-                            ?.let { current.recentStatus + (it to HostProbe.Unreachable) }
-                            ?: current.recentStatus,
+                        recentStatus = when {
+                            connectedAuthority != null ->
+                                current.recentStatus + (connectedAuthority to HostProbe.Reachable(conn.description))
+                            else -> current.attempted
+                                ?.takeIf { !owned && conn.failure != null }
+                                ?.let { current.recentStatus + (it to HostProbe.Unreachable) }
+                                ?: current.recentStatus
+                        },
                     )
+                }
+                // The ready frame carries the home, so a connection fills in the row's subtitle even
+                // where the directory listing that a probe would use is refused. Written only when it
+                // changed: this collector runs on every connection state change.
+                val host = conn.host
+                val home = conn.description
+                if (conn.phase == ConnectionPhase.CONNECTED && host != null && home != null &&
+                    _state.value.remembered.firstOrNull { it.id == host.id }?.lastHome != home.home
+                ) {
+                    store.cacheDescription(host.id, home)
                 }
             }
         }
@@ -238,22 +256,23 @@ class ConnectController(
         supervisorScope {
             hosts.map { host ->
                 async {
-                    val description = runCatching {
-                        // A remembered host is named, not swept — worth waiting for.
-                        network.probe(host.host, host.port, ProbeTimeouts.Manual, config = host)
+                    // A remembered host is named, not swept — worth waiting for. Reachable means a
+                    // harness answered; whether its home could also be read is a separate fact (a
+                    // relay may refuse the directory listing), so a null description is not a failure.
+                    val outcome = runCatching {
+                        network.probeOutcome(host.host, host.port, ProbeTimeouts.Manual, config = host)
                     }.getOrNull()
+                    val reachable = outcome as? ProbeOutcome.Reachable
                     _state.update { current ->
                         current.copy(
                             recentStatus = current.recentStatus + (
                                 host.authority to (
-                                    description?.let { HostProbe.Reachable(it) } ?: HostProbe.Unreachable
+                                    reachable?.let { HostProbe.Reachable(it.description) } ?: HostProbe.Unreachable
                                     )
                                 ),
                         )
                     }
-                    if (description != null) {
-                        store.cacheDescription(host.id, description)
-                    }
+                    reachable?.description?.let { store.cacheDescription(host.id, it) }
                 }
             }.awaitAll()
         }
@@ -294,8 +313,8 @@ class ConnectController(
         if (settings.autoConnectLast) {
             val last = store.hosts.first().firstOrNull { it.belongsTo(mode) }
             if (last != null) {
-                val desc = network.probe(last.host, last.port, ProbeTimeouts.Manual, config = last)
-                if (desc != null) {
+                val outcome = network.probeOutcome(last.host, last.port, ProbeTimeouts.Manual, config = last)
+                if (outcome is ProbeOutcome.Reachable) {
                     connectTo(last)
                     return
                 }
