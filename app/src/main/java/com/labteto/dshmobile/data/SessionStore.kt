@@ -3,6 +3,7 @@ package com.labteto.dshmobile.data
 import com.labteto.dshmobile.core.wire.automationCatalog
 import com.labteto.dshmobile.core.wire.marketIndexes
 import com.labteto.dshmobile.core.wire.pluginBundles
+import com.labteto.dshmobile.core.uisync.uiSyncPresence
 
 import android.util.Base64
 import android.util.Log
@@ -380,6 +381,15 @@ class SessionStore @Inject constructor(
      * missing capability before it reports here. Unknown until the Account page first asks.
      */
     val accountAvailable = featureAvailability.state(HarnessFeature.ACCOUNT)
+    /**
+     * Whether the harness has the `dsh-ui-sync` companion (its `ui-sync` settings namespace), so the chat
+     * can draw desktop web plugin items over itself. Asked on every direct connection; never asked through
+     * a relay, which refuses the settings calls to paired devices today and cannot hand the page its session
+     * yet, so it stays unknown there and the chat looks as it always did.
+     */
+    val uiAddonsAvailable = featureAvailability.state(HarnessFeature.UI_ADDONS)
+    /** The plugin items the harness page last reported, and the way to change their targets (Settings > Add-ons). */
+    val uiAddons = com.labteto.dshmobile.core.uisync.UiSyncState()
     val questionSessions = QuestionSessions(scope, { connectionManager.connectedApi },
         { connectionManager.generation?.mux }, { connectionManager.generation?.clientId },
         onCapability = { clientId, result ->
@@ -435,6 +445,21 @@ class SessionStore @Inject constructor(
         scope.launch { featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.pluginBundles() } }
         // `listIndexes` never fetches an index; it only says whether the market is there.
         scope.launch { featureCall(HarnessFeature.PLUGIN_MARKET, api) { api.marketIndexes() } }
+        probeUiAddons(api, authoritative = false)
+    }
+
+    /**
+     * Asks whether the harness has the `dsh-ui-sync` companion. Direct connections only (see
+     * [uiAddonsAvailable]). [authoritative]: the answer may turn the feature off as well as on, for a
+     * companion bundle switched on or off while connected.
+     */
+    private fun probeUiAddons(api: DshApiClient, authoritative: Boolean) {
+        if (connectionManager.state.value.host?.isRelay != false) return
+        scope.launch {
+            featureCall(HarnessFeature.UI_ADDONS, api, authoritative) {
+                api.settingsDescribe().uiSyncPresence()
+            }
+        }
     }
 
     /** The cheap call that tells whether the harness has [feature] now, for the features that have one. */
@@ -454,6 +479,8 @@ class SessionStore @Inject constructor(
      */
     private fun recheckFeatures() {
         val api = connectionManager.connectedApi ?: return
+        // The companion can be switched off as well as on, so it is asked again either way.
+        probeUiAddons(api, authoritative = true)
         val probes = HarnessFeature.entries.mapNotNull { feature -> featureProbe(feature)?.let { feature to it } }.toMap()
         featureAvailability.relax(probes.keys).forEach { feature ->
             val probe = probes.getValue(feature)
@@ -866,7 +893,10 @@ class SessionStore @Inject constructor(
                     (prev.phase != state.phase && (prev.phase == ConnectionPhase.CONNECTED || state.phase == ConnectionPhase.CONNECTED))) {
                     featureAvailability.reset()
                 }
-                if (prev.host?.id != state.host?.id || prev.host?.baseUrl != state.host?.baseUrl) questionSessions.reset()
+                if (prev.host?.id != state.host?.id || prev.host?.baseUrl != state.host?.baseUrl) {
+                    questionSessions.reset()
+                    uiAddons.reset()
+                }
                 else if (prev.phase == ConnectionPhase.CONNECTED && state.phase != ConnectionPhase.CONNECTED) questionSessions.disconnect()
                 val initialConnect = !prev.hasConnected && state.hasConnected
                 val reconnect = prev.hasConnected &&

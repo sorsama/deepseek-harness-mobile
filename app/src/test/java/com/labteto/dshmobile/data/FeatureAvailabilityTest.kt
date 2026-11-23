@@ -1,9 +1,11 @@
 package com.labteto.dshmobile.data
 
 import com.labteto.dshmobile.core.wire.*
+import com.labteto.dshmobile.core.uisync.uiSyncPresence
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswer
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.Source
+import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -24,6 +26,7 @@ class FeatureAvailabilityTest {
         HarnessFeature.PLUGIN_MARKET -> api.marketIndexes()
         HarnessFeature.HARNESS_SETTINGS -> api.settingsDescribe()
         HarnessFeature.ACCOUNT -> api.accountState()
+        HarnessFeature.UI_ADDONS -> api.settingsDescribe().uiSyncPresence()
     }
 
     @Test fun `404 endpoints retire each feature without reporting a connection failure`() = runTest {
@@ -49,7 +52,8 @@ class FeatureAvailabilityTest {
                 val result = probe(DshApiClient(FailingTransport(status)), feature) as RpcResult.Err
                 availability.observe(feature, availability.generation(), result)
                 assertNull(availability.state(feature).value)
-                assertEquals(listOf(result.error), errors)
+                // An ambient probe was nobody's request, so its failure is not one to show.
+                assertEquals(if (feature.ambient) emptyList() else listOf(result.error), errors)
                 availability.observe(feature, availability.generation(), RpcResult.Ok(Unit))
                 availability.observe(feature, availability.generation(), result)
                 assertEquals(true, availability.state(feature).value)
@@ -90,7 +94,7 @@ class FeatureAvailabilityTest {
             val availability = FeatureAvailability { errors += it }
             availability.observe(feature, availability.generation(), probe(DshApiClient(FailingTransport(403)), feature))
             assertNull(availability.state(feature).value)
-            assertEquals("forbidden", errors.single().code)
+            if (feature.ambient) assertTrue(errors.isEmpty()) else assertEquals("forbidden", errors.single().code)
         }
     }
 
@@ -157,6 +161,41 @@ class FeatureAvailabilityTest {
         // A feature nobody can ask about again keeps its answer rather than turning into a guess.
         assertEquals(false, availability.state(HarnessFeature.TIMED_QUESTIONS).value)
         assertEquals(false, availability.state(HarnessFeature.SESSION_REFERENCES).value)
+    }
+
+    private class DescribeTransport(private val namespaces: List<String>) : RpcTransport {
+        override suspend fun post(path: String, body: String): RpcHttpResponse {
+            val id = WireJson.parseToJsonElement(body).jsonObject.getValue("rpcId")
+            val rows = namespaces.joinToString(",") { """{"ns":"$it","schema":null,"value":{}}""" }
+            val value = """{"writable":true,"hasDocument":true,"namespaces":[$rows]}"""
+            return RpcHttpResponse(200, """{"type":"server-response","rpcId":$id,"result":{"ok":true,"value":$value}}""")
+        }
+        override suspend fun <T> download(path: String, consume: (String?, String?, Source) -> T): T = error("unused")
+        override suspend fun upload(path: String, contentType: String, contentLength: Long, body: Source, onProgress: ((Long) -> Unit)?): RpcHttpResponse = error("unused")
+    }
+
+    @Test fun `ui add-ons read available only while the harness mounts the ui-sync namespace`() = runTest {
+        val feature = HarnessFeature.UI_ADDONS
+        val availability = FeatureAvailability { fail("no error to report") }
+        // A harness with settings but without the companion: off, quietly.
+        availability.observe(feature, availability.generation(), probe(DshApiClient(DescribeTransport(listOf("web", "permission"))), feature))
+        assertEquals(false, availability.state(feature).value)
+        // The companion was switched on while connected; the re-probe is authoritative.
+        availability.observe(feature, availability.generation(), probe(DshApiClient(DescribeTransport(listOf("web", "ui-sync"))), feature), authoritative = true)
+        assertEquals(true, availability.state(feature).value)
+        // And off again.
+        availability.observe(feature, availability.generation(), probe(DshApiClient(DescribeTransport(listOf("web"))), feature), authoritative = true)
+        assertEquals(false, availability.state(feature).value)
+    }
+
+    @Test fun `ui add-ons are the only ambient feature and never report a failure`() = runTest {
+        assertEquals(listOf(HarnessFeature.UI_ADDONS), HarnessFeature.entries.filter { it.ambient })
+        for (status in listOf(0, 401, 403, 500)) {
+            val availability = FeatureAvailability { fail("an ambient probe must not report $it") }
+            val feature = HarnessFeature.UI_ADDONS
+            availability.observe(feature, availability.generation(), probe(DshApiClient(FailingTransport(status)), feature))
+            assertNull(availability.state(feature).value)
+        }
     }
 
     @Test fun `a result still in flight from before a module change is dropped`() {
