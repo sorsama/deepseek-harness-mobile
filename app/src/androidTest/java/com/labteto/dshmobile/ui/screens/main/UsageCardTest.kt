@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +21,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
+import com.labteto.dshmobile.core.rates.RateSource
+import com.labteto.dshmobile.core.rates.RateTable
 import com.labteto.dshmobile.core.usage.*
 import com.labteto.dshmobile.core.wire.dto.*
 import com.labteto.dshmobile.ui.theme.DshTheme
@@ -35,12 +38,16 @@ class UsageCardTest {
     private val row=UsageRow("codex",listOf(RemainingWindow("session",25,now+3600000),RemainingWindow("weekly",58,now+54*3600000)),sampledAt=now)
     private val stats=SessionStatsView(turns=2,steps=3,llmMs=1000,toolMs=2000)
     private val tokens=TokenUsageView(uncachedInputTokens=123,outputTokens=45)
+    /** Composes [content] with the balance estimate pinned off, so the exact-text checks never depend on the device's "Also show balance in" setting. */
+    private fun setCard(estimator: BalanceEstimator = BalanceEstimator.Off, content: @Composable () -> Unit) = compose.setContent {
+        CompositionLocalProvider(LocalBalanceEstimatorOverride provides estimator, content = content)
+    }
     private fun capture(name:String) {
         val context=InstrumentationRegistry.getInstrumentation().targetContext
         File(context.getExternalFilesDir(null),"$name.png").outputStream().use { compose.onRoot().captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG,100,it) }
     }
     @Test fun quotaOnlyInExpandedTokenTextAndSecondTapCollapses() {
-        compose.setContent { DshTheme { StatsFooter(stats,tokens,quotaText="нед:17% · 2д 23ч") } }
+        setCard { DshTheme { StatsFooter(stats,tokens,quotaText="нед:17% · 2д 23ч") } }
         compose.onNodeWithText("нед:17%",substring=true).assertDoesNotExist()
         compose.onAllNodes(hasClickAction()).onFirst().performClick()
         compose.onNode(hasText("123",substring=true) and hasText("45",substring=true) and hasText("нед:17% · 2д 23ч",substring=true)).assertExists().assert(hasNoClickAction())
@@ -49,14 +56,14 @@ class UsageCardTest {
         compose.onNodeWithText("нед:17%",substring=true).assertDoesNotExist()
     }
     @Test fun balanceSharesTokenTextAndQuotaWithoutStatsStaysHidden() {
-        compose.setContent { DshTheme { Column { StatsFooter(stats,tokens,quotaText="54$");StatsFooter(null,null,quotaText="999$") } } }
+        setCard { DshTheme { Column { StatsFooter(stats,tokens,quotaText="54$");StatsFooter(null,null,quotaText="999$") } } }
         compose.onNodeWithText("999$",substring=true).assertDoesNotExist()
         compose.onAllNodes(hasClickAction()).onFirst().performClick()
         compose.onNode(hasText("123",substring=true) and hasText("54$",substring=true)).assertExists()
     }
     @Test fun productionCardBarsRefreshAndAllExpansionWork() {
         var refreshed=0
-        compose.setContent { DshTheme { Column(Modifier.fillMaxWidth().padding(16.dp)) { UsageCard(UsageSnapshot(listOf(row,UsageRow("zai",listOf(RemainingWindow("weekly",50,null)))),subscriptions=true,checkedAt=now),"codex",now){refreshed++} } } }
+        setCard { DshTheme { Column(Modifier.fillMaxWidth().padding(16.dp)) { UsageCard(UsageSnapshot(listOf(row,UsageRow("zai",listOf(RemainingWindow("weekly",50,null)))),subscriptions=true,checkedAt=now),"codex",now){refreshed++} } } }
         capture("usage-refined-card")
         compose.onNodeWithTag("quota-window-0-0").assertExists()
         compose.onNodeWithTag("quota-bar-0-0").assertRangeInfoEquals(androidx.compose.ui.semantics.ProgressBarRangeInfo(.25f,0f..1f))
@@ -65,7 +72,7 @@ class UsageCardTest {
     }
     @Test fun unscopedOtherAndScopedDuplicateWindowsRetained() {
         val other=UsageRow("grok",listOf(RemainingWindow("other",37,null),RemainingWindow("weekly",42,null,"Opus"),RemainingWindow("weekly",15,null,"Sonnet")),sampledAt=now)
-        compose.setContent { DshTheme { UsageCard(UsageSnapshot(listOf(other)),"grok",now){} } }
+        setCard { DshTheme { UsageCard(UsageSnapshot(listOf(other)),"grok",now){} } }
         compose.onNodeWithText("Other limit").assertExists();compose.onNodeWithText("37%").assertExists()
         compose.onNodeWithText("Opus").assertExists();compose.onNodeWithText("42%").assertExists()
         compose.onNodeWithText("Sonnet").assertExists();compose.onNodeWithText("15%").assertExists()
@@ -78,7 +85,7 @@ class UsageCardTest {
         val locale=java.util.Locale.forLanguageTag(language)
         val config=android.content.res.Configuration(base.resources.configuration).apply { setLocale(locale) }
         val localized=base.createConfigurationContext(config)
-        compose.setContent {
+        setCard {
             val density=LocalDensity.current.density
             CompositionLocalProvider(
                 androidx.compose.ui.platform.LocalContext provides localized,
@@ -102,7 +109,7 @@ class UsageCardTest {
         compose.onNodeWithTag("quota-refresh").assertHasClickAction()
     }
     @Test fun productionComponentsSupportLargeFontRtlAndNeverShowUnknownOrZero() {
-        compose.setContent { val density=LocalDensity.current.density;CompositionLocalProvider(LocalDensity provides Density(density,1.5f),LocalLayoutDirection provides LayoutDirection.Rtl) { DshTheme { Column { UsageCard(UsageSnapshot(),"zai",now){};StatsFooter(stats,TokenUsageView(uncachedInputTokens=256_200_000,outputTokens=336_300),quotaText="5ч:25% · нед:17% · 2д 23ч") } } } }
+        setCard { val density=LocalDensity.current.density;CompositionLocalProvider(LocalDensity provides Density(density,1.5f),LocalLayoutDirection provides LayoutDirection.Rtl) { DshTheme { Column { UsageCard(UsageSnapshot(),"zai",now){};StatsFooter(stats,TokenUsageView(uncachedInputTokens=256_200_000,outputTokens=336_300),quotaText="5ч:25% · нед:17% · 2д 23ч") } } } }
         compose.onNodeWithTag("quota-card").assertExists();compose.onNodeWithText("0%").assertDoesNotExist()
         // Nothing to recheck and nothing to say about quotas: no dead refresh button, no "unknown" line.
         compose.onNodeWithTag("quota-refresh").assertDoesNotExist();compose.onNodeWithTag("quota-all").assertDoesNotExist()
@@ -116,7 +123,7 @@ class UsageCardTest {
     private val opencode="OpenCode Go · DeepSeek V4 Flash"
     private val spent=TokenUsageView(uncachedInputTokens=12_000,outputTokens=3_100,cacheReadTokens=400)
     @Test fun sessionRowNamesTheRouteAndShowsCompactTokensForAnyProvider() {
-        compose.setContent { DshTheme { UsageCard(UsageSnapshot(),"opencode-go",now,route=opencode,tokens=spent){} } }
+        setCard { DshTheme { UsageCard(UsageSnapshot(),"opencode-go",now,route=opencode,tokens=spent){} } }
         compose.onNodeWithText(opencode).assertExists()
         compose.onNodeWithTag("usage-input").assert(hasText("12.4k",substring=true))
         compose.onNodeWithTag("usage-output").assert(hasText("3.1k",substring=true))
@@ -128,17 +135,17 @@ class UsageCardTest {
         capture("usage-session-only")
     }
     @Test fun cacheRowStaysHiddenWhenTheProviderReportedNoCacheReads() {
-        compose.setContent { DshTheme { UsageCard(UsageSnapshot(),"opencode-go",now,tokens=TokenUsageView(uncachedInputTokens=900,outputTokens=100)){} } }
+        setCard { DshTheme { UsageCard(UsageSnapshot(),"opencode-go",now,tokens=TokenUsageView(uncachedInputTokens=900,outputTokens=100)){} } }
         compose.onNodeWithTag("usage-total").assert(hasText("1k",substring=true))
         compose.onNodeWithTag("usage-cache").assertDoesNotExist()
     }
     @Test fun aSessionWithNoTokensYetSaysSoInsteadOfShowingZeros() {
-        compose.setContent { DshTheme { UsageCard(UsageSnapshot(),"codex",now,tokens=TokenUsageView()){} } }
+        setCard { DshTheme { UsageCard(UsageSnapshot(),"codex",now,tokens=TokenUsageView()){} } }
         compose.onNodeWithTag("usage-empty").assertExists();compose.onNodeWithTag("usage-input").assertDoesNotExist()
     }
     @Test fun balanceRowShowsExactWalletsAndKeepsBonusApart() {
         val ready=BalanceState.Ready(UsageRow("deepseek-account",wallets=listOf(CurrencyWallet("USD","0E-16"),CurrencyWallet("CNY","54.129")),bonusWallets=listOf(CurrencyWallet("USD","1.5E1")),sampledAt=now))
-        compose.setContent { DshTheme { UsageCard(UsageSnapshot(balance=ready),"opencode-go",now,route=opencode,tokens=spent){} } }
+        setCard { DshTheme { UsageCard(UsageSnapshot(balance=ready),"opencode-go",now,route=opencode,tokens=spent){} } }
         compose.onNodeWithTag("usage-balance").assertExists()
         compose.onNodeWithText("DeepSeek balance").assertExists()
         compose.onNodeWithText("0$ · 54.12¥").assertExists()
@@ -146,19 +153,34 @@ class UsageCardTest {
         compose.onNodeWithTag("quota-refresh").assertHasClickAction()
         capture("usage-balance")
     }
+    @Test fun balanceRowAddsTheEstimateAfterTheRealBalanceOnlyWhenOn() {
+        val ready=BalanceState.Ready(UsageRow("deepseek-account",wallets=listOf(CurrencyWallet("USD","54.12")),bonusWallets=listOf(CurrencyWallet("USD","3.5")),sampledAt=now))
+        val table=RateTable(RateSource.EXCHANGE_RATE_API,fetchedAt=now,publishedAt=now,rates=mapOf("USD" to 1.0,"CNY" to 7.2,"JPY" to 150.0))
+        val nbsp=Char(0xA0)
+        setCard(BalanceEstimator("CNY",table,now,UsageLabels(),"≈ %1$s")) { DshTheme { UsageCard(UsageSnapshot(balance=ready),"opencode-go",now,route=opencode,tokens=spent){} } }
+        // The real balance first and unchanged, then the estimate, cut and not rounded (54.12 x 7.2 = 389.664).
+        compose.onNodeWithText("54.12$ · ≈${nbsp}389.66${nbsp}CNY").assertExists()
+        compose.onNodeWithText("Bonus: 3.50$ · ≈${nbsp}25.20${nbsp}CNY").assertExists()
+    }
+    @Test fun balanceRowHasNoEstimateWhenTheCurrencyIsTheWalletsOwn() {
+        val ready=BalanceState.Ready(UsageRow("deepseek-account",wallets=listOf(CurrencyWallet("CNY","10")),sampledAt=now))
+        val table=RateTable(RateSource.EXCHANGE_RATE_API,fetchedAt=now,publishedAt=now,rates=mapOf("USD" to 1.0,"CNY" to 7.2))
+        setCard(BalanceEstimator("CNY",table,now,UsageLabels(),"≈ %1$s")) { DshTheme { UsageCard(UsageSnapshot(balance=ready),"opencode-go",now,route=opencode,tokens=spent){} } }
+        compose.onNodeWithText("10¥").assertExists()
+    }
     @Test fun failedBalanceLookupSaysSoBriefly() {
-        compose.setContent { DshTheme { UsageCard(UsageSnapshot(balance=BalanceState.Failed),"opencode-go",now,tokens=spent){} } }
+        setCard { DshTheme { UsageCard(UsageSnapshot(balance=BalanceState.Failed),"opencode-go",now,tokens=spent){} } }
         compose.onNodeWithTag("usage-balance-failed").assertExists();compose.onNodeWithText("Couldn't load the balance").assertExists()
     }
     @Test fun signedOutBalanceLeavesNoRowAtAll() {
-        compose.setContent { DshTheme { UsageCard(UsageSnapshot(balance=BalanceState.Hidden),"opencode-go",now,tokens=spent){} } }
+        setCard { DshTheme { UsageCard(UsageSnapshot(balance=BalanceState.Hidden),"opencode-go",now,tokens=spent){} } }
         compose.onNodeWithTag("usage-balance").assertDoesNotExist();compose.onNodeWithTag("usage-balance-failed").assertDoesNotExist()
         compose.onNodeWithText("DeepSeek balance").assertDoesNotExist()
     }
     @Test fun limitLineNamesQuotaAndRateLimitAndHidesForAnotherProvider() {
         var limit by mutableStateOf<LimitHit?>(LimitHit(LimitKind.QUOTA,"opencode-go"))
         var provider by mutableStateOf("opencode-go")
-        compose.setContent { DshTheme { UsageCard(UsageSnapshot(),provider,now,tokens=spent,limit=limit){} } }
+        setCard { DshTheme { UsageCard(UsageSnapshot(),provider,now,tokens=spent,limit=limit){} } }
         compose.onNodeWithTag("usage-limit").assertExists();compose.onNodeWithText("Usage limit reached").assertExists()
         capture("usage-limit-reached")
         compose.runOnIdle { limit=LimitHit(LimitKind.RATE_LIMIT,"opencode-go") }
@@ -167,14 +189,14 @@ class UsageCardTest {
         compose.onNodeWithTag("usage-limit").assertDoesNotExist()
     }
     @Test fun hostWithoutSubscriptionsHidesTheQuotaSectionEntirely() {
-        compose.setContent { DshTheme { UsageCard(UsageSnapshot(subscriptions=false),"codex",now,tokens=spent){} } }
+        setCard { DshTheme { UsageCard(UsageSnapshot(subscriptions=false),"codex",now,tokens=spent){} } }
         compose.onNodeWithTag("quota-all").assertDoesNotExist();compose.onNodeWithTag("quota-window-0-0").assertDoesNotExist()
         compose.onNodeWithTag("usage-total").assertExists()
     }
     @Test fun footerStaysShortAndNeverSaysUnknown() {
         var limit by mutableStateOf<LimitHit?>(null)
         var snapshot by mutableStateOf(UsageSnapshot())
-        compose.setContent { DshTheme { Text(usageFooterText(snapshot,"opencode-go",limit,now),Modifier.testTag("footer")) } }
+        setCard { DshTheme { Text(usageFooterText(snapshot,"opencode-go",limit,now),Modifier.testTag("footer")) } }
         compose.onNodeWithTag("footer").assertTextEquals("")
         compose.runOnIdle { snapshot=UsageSnapshot(balance=BalanceState.Ready(UsageRow("deepseek-account",wallets=listOf(CurrencyWallet("USD","54.12")),sampledAt=now))) }
         compose.onNodeWithTag("footer").assertTextEquals("54.12$")

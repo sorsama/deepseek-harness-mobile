@@ -4,6 +4,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -58,7 +59,19 @@ internal class BalanceEstimator(
     /** [line], the wallets as the card prints them, followed by the estimate when there is one. */
     fun withEstimate(line: String, wallets: List<CurrencyWallet>): String =
         text(wallets)?.let { "$line · $it" } ?: line
+
+    companion object {
+        /** An estimator that never estimates: what a test pins the card to, whatever the device's settings say. */
+        val Off = BalanceEstimator(target = null, table = null, now = 0L, labels = UsageLabels(), format = "≈ %1$s")
+    }
 }
+
+/**
+ * Pins [rememberBalanceEstimator] to a given estimator, for a test: with it provided, the settings
+ * store, the rate repository and the network are not touched, so a card's exact text does not depend
+ * on what "Also show balance in" is set to on the device the test runs on. Null (the default) is production.
+ */
+internal val LocalBalanceEstimatorOverride = compositionLocalOf<BalanceEstimator?> { null }
 
 private val NO_BREAK_SPACE = Char(0x00A0)
 
@@ -102,6 +115,7 @@ internal fun rememberExchangeRates(): ExchangeRateRepository {
  */
 @Composable
 internal fun rememberBalanceEstimator(labels: UsageLabels = quotaLabels()): BalanceEstimator {
+    LocalBalanceEstimatorOverride.current?.let { return it }
     val hostsStore = rememberHostsStore()
     val settings by hostsStore.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
     val repository = rememberExchangeRates()
