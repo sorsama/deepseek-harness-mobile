@@ -59,8 +59,6 @@ class BalanceEstimateTest {
         assertEquals("8118 JPY", estimate(usd("54.12"), "JPY"))
         assertEquals("75768 KRW", estimate(usd("54.12"), "KRW"))
         assertEquals("892980 IDR", estimate(usd("54.12"), "IDR"))
-        // 54.12 x 31 = 1677.72
-        assertEquals("1677 TWD", estimate(usd("54.12"), "TWD"))
         // 0.9999 x 150 = 149.985
         assertEquals("149 JPY", estimate(usd("0.9999"), "JPY"))
     }
@@ -70,9 +68,11 @@ class BalanceEstimateTest {
         assertEquals("292.24 BRL", estimate(usd("54.12"), "BRL"))
         assertEquals("4546.08 INR", estimate(usd("54.12"), "INR"))
         assertEquals("16.236 KWD", estimate(usd("54.12"), "KWD"))
-        for (code in listOf("JPY", "KRW", "IDR", "TWD", "VND", "CLP")) assertEquals(0, BalanceCurrency.fractionDigits(code), code)
+        // 54.12 x 31 = 1677.72: the new Taiwan dollar keeps ISO's two decimals.
+        assertEquals("1677.72 TWD", estimate(usd("54.12"), "TWD"))
+        for (code in listOf("JPY", "KRW", "IDR", "VND", "CLP")) assertEquals(0, BalanceCurrency.fractionDigits(code), code)
         for (code in listOf("KWD", "BHD", "OMR")) assertEquals(3, BalanceCurrency.fractionDigits(code), code)
-        val twoDecimals = listOf("USD", "CNY", "EUR", "GBP", "INR", "HKD", "SGD", "AUD", "CAD", "CHF", "RUB", "BRL", "MXN", "THB", "TRY", "SAR")
+        val twoDecimals = listOf("USD", "CNY", "EUR", "GBP", "INR", "HKD", "SGD", "TWD", "AUD", "CAD", "CHF", "RUB", "BRL", "MXN", "THB", "TRY", "SAR")
         for (code in twoDecimals) assertEquals(2, BalanceCurrency.fractionDigits(code), code)
     }
 

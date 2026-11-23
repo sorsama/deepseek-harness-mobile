@@ -44,12 +44,12 @@ object BalanceCurrency {
     /** Three ASCII capitals, which is what every key of a rate table is. */
     fun isCode(text: String): Boolean = text.length == 3 && text.all { it in 'A'..'Z' }
 
-    // The digits a price in this currency is written with. JPY and KRW have no minor unit in ISO
-    // 4217. IDR and TWD do on paper, but nobody prices anything in them: 54 USD is about 880 000
-    // rupiah, and a cut-off 40.12 of them is noise. The others are the ISO zero- and
-    // three-decimal currencies, for a region that is not in [choices].
+    // The digits a price in this currency is written with, from ISO 4217: JPY and KRW have no
+    // minor unit, and so do the others below (for a region that is not in [choices]). IDR is the
+    // one deliberate exception: ISO gives it two decimals, but 54 USD is about 880 000 rupiah and
+    // nobody prices anything in rupiah cents, so it is shown whole. TWD keeps ISO's two decimals.
     private val noDecimals = setOf(
-        "JPY", "KRW", "IDR", "TWD", "VND", "CLP", "ISK", "PYG", "UGX", "RWF", "XAF", "XOF", "XPF",
+        "JPY", "KRW", "IDR", "VND", "CLP", "ISK", "PYG", "UGX", "RWF", "XAF", "XOF", "XPF",
         "KMF", "GNF", "DJF", "BIF", "VUV",
     )
     private val threeDecimals = setOf("KWD", "BHD", "OMR", "JOD", "TND", "IQD", "LYD")
