@@ -18,6 +18,8 @@ data class UiSyncPage(
     val protocol: Int,
     /** Whether the page's `ui-sync` settings answered; false means every item shows its default target. */
     val settingsLoaded: Boolean,
+    /** What the page adds to protocol 1 ([UiSyncFeature]); empty for a 0.1.0 page. */
+    val features: Set<String> = emptySet(),
 )
 
 /**
@@ -109,7 +111,7 @@ class UiSyncState {
             is UiSyncPageMessage.Ready -> {
                 // Only a page in phone mode is one this app draws; a desktop page has no bridge.
                 _page.value = if (message.mode == PHONE_MODE) {
-                    UiSyncPage(message.version, message.protocol, message.settings)
+                    UiSyncPage(message.version, message.protocol, message.settings, message.features)
                 } else {
                     null
                 }
@@ -118,7 +120,8 @@ class UiSyncState {
             is UiSyncPageMessage.Session -> _pageSession.value = message.sessionId
             is UiSyncPageMessage.Ack -> _acks.tryEmit(message)
             is UiSyncPageMessage.Error -> _errors.tryEmit(message)
-            is UiSyncPageMessage.HitRects -> Unit
+            // The web layer acts on these itself: they are about its view (touch, focus, Back).
+            is UiSyncPageMessage.HitRects, is UiSyncPageMessage.Focus, is UiSyncPageMessage.Dialogs -> Unit
         }
     }
 

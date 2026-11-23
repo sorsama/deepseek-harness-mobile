@@ -14,7 +14,8 @@ import kotlinx.serialization.json.put
  * The bridge between the harness web page in phone mode and this app, protocol version 1.
  *
  * Ported from the companion plugin `dsh-ui-sync` (`docs/BRIDGE.md`, `src/shared/protocol.ts`,
- * 0.1.0). The page is the real harness web client in a transparent web view over the native chat;
+ * 0.1.0, with the 0.2.0 additions announced in [UiSyncFeature]). The page is the real harness web
+ * client in a transparent web view over the native chat;
  * the companion keeps the desktop tree invisible and lifts only plugin items (a pet, composer and
  * header buttons, the dialogs they open). It tells the app where those items are and which exist;
  * the app tells it its insets, its light or dark scheme and the session the chat shows.
@@ -43,6 +44,43 @@ object UiSyncProtocol {
     const val PHONE_FLAG_SCRIPT: String = "window.__DSH_UI_SYNC_HOST__ = 'phone';"
 
     internal val json = Json { ignoreUnknownKeys = true; isLenient = false }
+}
+
+/**
+ * The additions a page announces in `ui-sync/ready.features` (companion 0.2.0). Protocol 1 only
+ * grows: a page without the list is 0.1.0 and has none of them, and a name this app does not know
+ * is ignored.
+ */
+object UiSyncFeature {
+    /** The hidden desktop tree is inert and hidden from screen readers; lifted items are named groups. */
+    const val A11Y: String = "a11y"
+
+    /** `ui-sync/focus` and `host/blur`. */
+    const val FOCUS: String = "focus"
+
+    /** `host/back` with `result.handled` in its ack, and `ui-sync/dialogs`. */
+    const val BACK: String = "back"
+
+    /** `host/motion`. */
+    const val MOTION: String = "motion"
+
+    /** `host/follow-session` waits for the page's session list instead of refusing early. */
+    const val FOLLOW_WAIT: String = "follow-wait"
+
+    /** The page records its items in settings namespace `ui-sync`, field `items`. */
+    const val ITEM_STORE: String = "item-store"
+}
+
+/** Refusal codes of `host/follow-session` the app tells apart. */
+object UiSyncErrorCode {
+    /** The page's loaded session list does not have the session. */
+    const val UNKNOWN_SESSION: String = "ui-sync/unknown-session"
+
+    /** Navigation or the session list did not come up in time (`follow-wait`); ask again after the next ready. */
+    const val NOT_READY: String = "ui-sync/not-ready"
+
+    /** A newer `host/follow-session` replaced this one (`follow-wait`). */
+    const val SUPERSEDED: String = "ui-sync/superseded"
 }
 
 /** Where an item is for. Stored per item in settings namespace `ui-sync`, field `targets`. */
@@ -98,9 +136,20 @@ sealed interface UiSyncPageMessage {
         val dpr: Double?,
         /** False until the `ui-sync` settings namespace answered once; until then items use defaults. */
         val settings: Boolean,
+        /** What the page adds to protocol 1 ([UiSyncFeature]); empty for a 0.1.0 page. */
+        val features: Set<String> = emptySet(),
     ) : UiSyncPageMessage
 
     data class Items(val items: List<UiSyncItem>) : UiSyncPageMessage
+
+    /**
+     * Focus moved into, inside or out of a lifted item or plugin dialog (feature `focus`).
+     * [editable]: a text field has it. [itemId]: the item that holds it, null when focus is not in one.
+     */
+    data class Focus(val editable: Boolean, val itemId: String?) : UiSyncPageMessage
+
+    /** The plugin dialogs open over the chat, bottom to top, by the id of the item that opened each (feature `back`). */
+    data class Dialogs(val items: List<String>) : UiSyncPageMessage
 
     /** Where a touch must go to the web view. An empty list means every touch is native. */
     data class HitRects(val dpr: Double?, val viewport: UiSyncViewport?, val rects: List<UiSyncRect>) : UiSyncPageMessage
@@ -108,7 +157,14 @@ sealed interface UiSyncPageMessage {
     /** The session the page shows, null when none. */
     data class Session(val sessionId: String?) : UiSyncPageMessage
 
-    data class Ack(val requestId: String, val ok: Boolean, val errorCode: String?, val errorMessage: String?) : UiSyncPageMessage
+    data class Ack(
+        val requestId: String,
+        val ok: Boolean,
+        val errorCode: String?,
+        val errorMessage: String?,
+        /** `result.handled` of a `host/back` answer; null when the ack carries none. */
+        val handled: Boolean? = null,
+    ) : UiSyncPageMessage
 
     /** A failure the page could not attach to a request. */
     data class Error(val code: String, val message: String) : UiSyncPageMessage
@@ -138,6 +194,15 @@ sealed interface UiSyncHostMessage {
 
     /** Write one item's target through the page's own connection. */
     data class SetTarget(val id: String, val target: UiSyncTarget, override val requestId: String? = null) : UiSyncHostMessage
+
+    /** Close the topmost plugin dialog (feature `back`); always sent with a request id, the ack says whether one closed. */
+    data class Back(override val requestId: String) : UiSyncHostMessage
+
+    /** The app's reduce-motion setting (feature `motion`). */
+    data class Motion(val reduce: Boolean, override val requestId: String? = null) : UiSyncHostMessage
+
+    /** Take focus out of the page's lifted items: a native view took it (feature `focus`). */
+    data class Blur(override val requestId: String? = null) : UiSyncHostMessage
 
     fun encode(): String = UiSyncProtocol.json.encodeToString(JsonObject.serializer(), toJson())
 
@@ -171,6 +236,12 @@ sealed interface UiSyncHostMessage {
                 put("id", m.id)
                 put("target", m.target.wire)
             }
+            is Back -> put("type", "host/back")
+            is Motion -> {
+                put("type", "host/motion")
+                put("reduce", m.reduce)
+            }
+            is Blur -> put("type", "host/blur")
         }
         requestId?.let { put("requestId", it) }
     }
@@ -203,10 +274,34 @@ fun parseUiSyncPageMessage(text: String): UiSyncPageMessage? {
             viewport = root.viewport(),
             dpr = root.positive("dpr"),
             settings = root.bool("settings") ?: false,
+            // A missing or broken list is a 0.1.0 page; a name that is not a string is skipped.
+            features = (root["features"] as? JsonArray)?.asSequence()
+                ?.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content }
+                ?.take(MAX_FEATURES)?.toSet().orEmpty(),
         )
         "ui-sync/items" -> {
             val items = root["items"] as? JsonArray ?: return null
             UiSyncPageMessage.Items(items.mapNotNull { (it as? JsonObject)?.item() }.distinctBy { it.id })
+        }
+        "ui-sync/focus" -> {
+            val editable = root.bool("editable") ?: return null
+            val itemId = when (val value = root["itemId"]) {
+                null, is JsonNull -> null
+                is JsonPrimitive -> value.takeIf { it.isString }?.content?.takeIf { it.isNotEmpty() } ?: return null
+                else -> return null
+            }
+            // Only a field inside a lifted item counts as editable: the page says so, and a field
+            // with no owner would be one in the hidden tree, which the keyboard must never open for.
+            UiSyncPageMessage.Focus(editable = editable && itemId != null, itemId = itemId)
+        }
+        "ui-sync/dialogs" -> {
+            val items = root["items"] as? JsonArray ?: return null
+            UiSyncPageMessage.Dialogs(
+                items.asSequence()
+                    .mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content?.takeIf { id -> id.isNotEmpty() } }
+                    .take(MAX_RECTS)
+                    .toList(),
+            )
         }
         "ui-sync/hit-rects" -> {
             val rects = root["rects"] as? JsonArray ?: return null
@@ -228,7 +323,8 @@ fun parseUiSyncPageMessage(text: String): UiSyncPageMessage? {
             val requestId = root.string("requestId") ?: return null
             val ok = root.bool("ok") ?: return null
             val error = root["error"] as? JsonObject
-            UiSyncPageMessage.Ack(requestId, ok, error?.string("code"), error?.string("message"))
+            val result = root["result"] as? JsonObject
+            UiSyncPageMessage.Ack(requestId, ok, error?.string("code"), error?.string("message"), result?.bool("handled"))
         }
         "ui-sync/error" -> UiSyncPageMessage.Error(
             code = root.string("code") ?: return null,
@@ -243,6 +339,9 @@ private const val MAX_MESSAGE_CHARS = 512 * 1024
 
 /** More rectangles than any overlay needs; the rest are dropped so a runaway page cannot stall hit tests. */
 internal const val MAX_RECTS = 256
+
+/** More feature names than protocol 1 will ever announce. */
+private const val MAX_FEATURES = 64
 
 private fun JsonObject.item(): UiSyncItem? {
     val id = string("id")?.takeIf { it.isNotEmpty() } ?: return null
