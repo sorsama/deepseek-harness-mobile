@@ -21,6 +21,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +62,7 @@ import com.labteto.dshmobile.ui.adaptive.AdaptiveShell
 import com.labteto.dshmobile.ui.adaptive.ListControl
 import com.labteto.dshmobile.ui.adaptive.planShell
 import com.labteto.dshmobile.ui.adaptive.rememberHinge
+import com.labteto.dshmobile.ui.addons.UiAddonsChat
 import com.labteto.dshmobile.ui.components.DsToastHost
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
@@ -270,6 +272,21 @@ fun MainScreen(onOpenSettings: () -> Unit) {
         }
         val detailsDocked = plan.detailsDockable
 
+        // The plugin add-on layer draws over the chat and steps aside while the drawer slides over it,
+        // from the first pixel of a drag. Closed is the furthest out the sheet has been for this window
+        // size; the drawer's own value only changes once a drag is past its threshold.
+        val listDocked = plan.listDocked
+        val drawerClosedAt = remember(maxWidth, maxHeight) { floatArrayOf(Float.POSITIVE_INFINITY) }
+        val drawerOverChat by remember(drawerState, listDocked, drawerClosedAt) {
+            derivedStateOf {
+                if (listDocked) return@derivedStateOf false
+                val offset = drawerState.currentOffset
+                if (!offset.isNaN() && offset < drawerClosedAt[0]) drawerClosedAt[0] = offset
+                drawerState.currentValue != DrawerValue.Closed || drawerState.targetValue != DrawerValue.Closed ||
+                    (!offset.isNaN() && offset > drawerClosedAt[0] + 0.5f)
+            }
+        }
+
         AdaptiveShell(
             plan = plan,
             drawerState = drawerState,
@@ -292,6 +309,7 @@ fun MainScreen(onOpenSettings: () -> Unit) {
             chat = {
                 ChatWithDetailsOverlay(
                     overlayEnabled = !detailsDocked,
+                    drawerOverChat = drawerOverChat,
                     detailsOpen = detailsOpen,
                     reveal = reveal,
                     settleDetails = ::settleDetails,
@@ -336,6 +354,8 @@ fun MainScreen(onOpenSettings: () -> Unit) {
 @Composable
 private fun ChatWithDetailsOverlay(
     overlayEnabled: Boolean,
+    /** The chat list's drawer is over the chat (open, opening or closing). */
+    drawerOverChat: Boolean,
     detailsOpen: Boolean,
     reveal: Animatable<Float, AnimationVector1D>,
     settleDetails: (open: Boolean, velocity: Float) -> Unit,
@@ -344,12 +364,19 @@ private fun ChatWithDetailsOverlay(
     details: @Composable (Modifier) -> Unit,
 ) {
     if (!overlayEnabled) {
-        Box(Modifier.fillMaxSize()) {
-            chat()
-            DsToastHost(toast, Modifier.align(Alignment.TopCenter))
+        UiAddonsChat(covered = drawerOverChat) {
+            Box(Modifier.fillMaxSize()) {
+                chat()
+                DsToastHost(toast, Modifier.align(Alignment.TopCenter))
+            }
         }
         return
     }
+    // Desktop web plugin items (a pet, composer buttons) are drawn over this pane when the harness
+    // has the dsh-ui-sync companion; they step aside while Details or the drawer covers the chat.
+    // Derived, so this function recomposes when the panel starts or stops covering, not per frame.
+    val detailsOverChat by remember(reveal) { derivedStateOf { reveal.value > 0f } }
+    UiAddonsChat(covered = drawerOverChat || detailsOverChat || detailsOpen) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val density = LocalDensity.current
         val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -464,6 +491,7 @@ private fun ChatWithDetailsOverlay(
             }
             DsToastHost(toast, Modifier.align(Alignment.TopCenter))
         }
+    }
     }
 }
 

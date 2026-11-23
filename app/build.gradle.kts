@@ -146,6 +146,8 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.appcompat)
+    // The plugin add-on layer's web view: phone-mode script, page bridge, its own cookie profile.
+    implementation(libs.androidx.webkit)
     // Folds, hinges and postures for the adaptive shell (see ui/adaptive).
     implementation(libs.androidx.window)
     implementation(libs.androidx.window.core)

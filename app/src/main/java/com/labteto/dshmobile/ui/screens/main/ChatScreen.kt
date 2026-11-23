@@ -49,6 +49,8 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
+import com.labteto.dshmobile.ui.addons.uiAddonsComposer
+import com.labteto.dshmobile.ui.addons.uiAddonsContentTop
 import androidx.compose.ui.layout.positionInWindow
 import com.labteto.dshmobile.ui.adaptive.ListControl
 import com.labteto.dshmobile.ui.adaptive.TabletopSplit
@@ -141,6 +143,8 @@ fun ChatScreen(
     val colors = DsTheme.colors
     val context = LocalContext.current
     val toast = rememberDsToast()
+    // Where the plugin add-on layer over the chat keeps its trays: below the top bar, above the composer.
+    val addonsChrome = com.labteto.dshmobile.ui.addons.LocalUiAddonsChrome.current
 
     val conversation by store.currentConversation.collectAsStateWithLifecycle()
     val currentSessionId by store.currentSessionId.collectAsStateWithLifecycle()
@@ -762,7 +766,8 @@ fun ChatScreen(
                 Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .onGloballyPositioned { contentTopPx = it.positionInWindow().y.toInt() },
+                    .onGloballyPositioned { contentTopPx = it.positionInWindow().y.toInt() }
+                    .uiAddonsContentTop(addonsChrome),
             ) {
                 // Keep transcript/question space even with a long draft. On very short screens,
                 // reserve enough for reference chips, a line of text and the fixed action row.
@@ -1023,7 +1028,8 @@ fun ChatScreen(
                     Modifier.fillMaxWidth()
                         .align(Alignment.BottomCenter)
                         .padding(horizontal = gutter)
-                        .onSizeChanged { composerBlockPx = it.height },
+                        .onSizeChanged { composerBlockPx = it.height }
+                        .uiAddonsComposer(addonsChrome),
                 ) {
                     // The `/` autocomplete sits where the web's does: directly above the composer,
                     // only while the draft is a slash token being typed.
