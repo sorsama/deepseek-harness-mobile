@@ -40,8 +40,13 @@ class ExchangeRateRepository @Inject constructor(
     /** The table to convert with, or null while there is none that may be shown. */
     val table: StateFlow<RateTable?> = _table.asStateFlow()
 
-    /** Fetches if the table is due (at most once a day), then publishes whatever may be shown. */
+    /**
+     * Publishes what is on disk at once, then fetches if the table is due (at most once a day) and
+     * publishes whatever may be shown after that. The first step is what keeps an offline phone, or
+     * a request that takes its full timeout, from holding the estimate back until the request ends.
+     */
     suspend fun refresh() {
+        if (_table.value == null) _table.value = rates.table(allowNetwork = false)
         _table.value = rates.table()
     }
 }
