@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.ui.addons
 
 import com.labteto.dshmobile.connection.HostConfig
+import com.labteto.dshmobile.core.uisync.UiSyncFeature
 import com.labteto.dshmobile.core.uisync.UiSyncHostMessage
 import com.labteto.dshmobile.core.wire.resolveHarnessUrl
 import okhttp3.HttpUrl
@@ -259,6 +260,17 @@ internal fun uiAddonsInsets(bounds: UiAddonsChromeBounds, scale: Float): UiSyncH
 }
 
 private fun Double.roundTenth(): Double = kotlin.math.round(this * 10.0) / 10.0
+
+/**
+ * `host/direction` for a page: the message to send now, or null when none is due.
+ *
+ * Only a page that announced [UiSyncFeature.DIRECTION] understands it (an older page does not know
+ * the type), so any other page gets nothing and keeps laying out left to right as it always did. [sent] is what this document was sent last (null: nothing yet, since its
+ * navigation started), so the first value always goes out, even left to right, and after that only
+ * a change does.
+ */
+internal fun uiAddonsDirection(features: Set<String>, rtl: Boolean, sent: Boolean?): UiSyncHostMessage.Direction? =
+    if (UiSyncFeature.DIRECTION in features && rtl != sent) UiSyncHostMessage.Direction(rtl) else null
 
 /**
  * The "Show plugin add-ons" switch where nobody has set it: on for a phone with 6 GB of memory or

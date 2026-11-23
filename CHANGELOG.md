@@ -24,8 +24,11 @@ All notable changes to DSH Mobile are documented here. Format based on
   switch starts on only on phones with 6 GB or more, and the page loads only while some item is set
   to show on the phone. A text field in a plugin dialog takes the keyboard, Back closes a plugin
   dialog before it does anything else, the system's Remove animations setting reaches the plugins,
-  and TalkBack can read the items. Works on this phone, on the local network and through a relay
-  (relay 0.5.0 or later).
+  and TalkBack can read the items. In a right-to-left language such as Arabic or Urdu the app tells
+  the page which way the chat runs (and again when you switch the language in the app), so the
+  pet's corner and the buttons next to the message box mirror with the chat and a tray no longer
+  sits over a reply or the composer's buttons; this needs `dsh-ui-sync` 0.2.1. Works on this phone,
+  on the local network and through a relay (relay 0.5.0 or later).
 
 - **Add-ons show up without opening the harness on the desktop first.** A harness lists its plugin
   items only once its web page has been opened, so on a harness nobody opened in a browser since the

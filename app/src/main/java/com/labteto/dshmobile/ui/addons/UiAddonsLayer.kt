@@ -24,6 +24,8 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -159,6 +161,9 @@ internal fun UiAddonsChat(covered: Boolean, content: @Composable () -> Unit) {
     val store = rememberSessionStore()
     val session by store.currentSessionId.collectAsStateWithLifecycle()
     val dark = isDsDark(LocalThemeCustomization.current)
+    // The app's layout direction, which follows the in-app locale (the activity handles locale and
+    // layout direction changes itself, so a switch recomposes this instead of recreating the layer).
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val chrome = remember { UiAddonsChrome() }
     // Back on the chat (from Settings, from the background): what the host's item store says may
     // have changed meanwhile, so read it again. Only where the companion is there to ask.
@@ -169,7 +174,7 @@ internal fun UiAddonsChat(covered: Boolean, content: @Composable () -> Unit) {
         }
     }
     val pane = remember { mutableStateOf<Rect?>(null) }
-    val now by rememberUpdatedState(Triple(covered, dark, session))
+    val now by rememberUpdatedState(ChatNow(covered, dark, session, rtl))
 
     // Read through a snapshot flow, not in composition: the chat does not recompose when the
     // keyboard moves its composer, and the layer hears each change once.
@@ -177,7 +182,7 @@ internal fun UiAddonsChat(covered: Boolean, content: @Composable () -> Unit) {
         try {
             snapshotFlow {
                 val bounds = pane.value ?: return@snapshotFlow null
-                val (isCovered, isDark, sessionId) = now
+                val (isCovered, isDark, sessionId, isRtl) = now
                 val composer = chrome.composer
                 UiAddonsPresence(
                     left = bounds.left.roundToInt(),
@@ -197,6 +202,7 @@ internal fun UiAddonsChat(covered: Boolean, content: @Composable () -> Unit) {
                     covered = isCovered,
                     dark = isDark,
                     sessionId = sessionId,
+                    rtl = isRtl,
                 )
             }.collect { host.present(it) }
         } finally {
@@ -208,6 +214,9 @@ internal fun UiAddonsChat(covered: Boolean, content: @Composable () -> Unit) {
         Box(Modifier.fillMaxSize().onGloballyPositioned { pane.value = it.boundsInRoot() }) { content() }
     }
 }
+
+/** What the chat reads in composition and the layer's snapshot flow reads back out of it. */
+private data class ChatNow(val covered: Boolean, val dark: Boolean, val sessionId: String?, val rtl: Boolean)
 
 private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this

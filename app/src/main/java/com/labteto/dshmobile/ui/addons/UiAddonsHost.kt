@@ -91,6 +91,8 @@ internal data class UiAddonsPresence(
     val covered: Boolean,
     val dark: Boolean,
     val sessionId: String?,
+    /** The chat lays out right to left (the app's layout direction, which follows the in-app locale). */
+    val rtl: Boolean = false,
 )
 
 /** What the activity root tells the layer about the connected host and this device. */
@@ -137,7 +139,11 @@ internal data class UiAddonsBinding(
  * field focus and the app gives the view the keyboard ([UiAddonsFocus]); Back closes plugin dialogs
  * ([UiAddonsBack]); the system's animation setting goes to the page as `host/motion`; TalkBack may
  * read the lifted items (`a11y`); and `host/follow-session` waits on the page (`follow-wait`), so
- * the app's own retry is only for 0.1.0 pages.
+ * the app's own retry is only for 0.1.0 pages. Companion 0.2.1 adds `direction`: the chat's layout
+ * direction (which follows the in-app locale) goes to the page as `host/direction`, first after the
+ * hello and then on every change, so its trays and dialogs mirror with the chat. The page reports a
+ * part that animates in place as one stable touch area; the touch region is replaced by each
+ * `ui-sync/hit-rects` as it comes and nothing here assumes the rectangles move.
  *
  * Locked down like the workspace browser, with one difference that is the point of it: this page is
  * the harness, signed in. It runs only at the harness origin (other navigations are dropped), the
@@ -513,6 +519,8 @@ internal class UiAddonsHost(
         var sentDark: Boolean? = null
         var sentSession: String? = null
         var sentMotion: Boolean? = null
+        /** The `host/direction` this document was sent last: true is right to left. */
+        var sentRtl: Boolean? = null
         var placed: IntArray? = null
         /** The `host/follow-session` in flight, and how often the page refused this session so far. */
         var followRequest: String? = null
@@ -655,6 +663,7 @@ internal class UiAddonsHost(
                 if (insets != sentInsets && post(insets)) sentInsets = insets
             }
             if (presence.dark != sentDark && post(UiSyncHostMessage.Theme(presence.dark))) sentDark = presence.dark
+            sendDirection(presence.rtl)
             sendMotion()
             follow(presence.sessionId)
         }
@@ -669,6 +678,13 @@ internal class UiAddonsHost(
                 followedOnce = session
                 followRequest = requestId
             }
+        }
+
+        /** `host/direction` for a page that has the feature, when the chat's direction differs from what it was sent ([uiAddonsDirection]). */
+        fun sendDirection(rtl: Boolean) {
+            if (!greeted) return
+            val message = uiAddonsDirection(features, rtl, sentRtl) ?: return
+            if (post(message)) sentRtl = rtl
         }
 
         /** `host/motion` for a page that has the feature, when the system setting differs from what it was sent. */
@@ -748,6 +764,7 @@ internal class UiAddonsHost(
             sentDark = null
             sentSession = null
             sentMotion = null
+            sentRtl = null
             followRequest = null
             followRefusals = 0
             view.router.region = UiSyncHitRegion.Empty

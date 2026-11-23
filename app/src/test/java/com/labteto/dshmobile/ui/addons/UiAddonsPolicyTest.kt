@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.ui.addons
 
 import com.labteto.dshmobile.connection.HostConfig
+import com.labteto.dshmobile.core.uisync.UiSyncFeature
 import com.labteto.dshmobile.core.uisync.UiSyncHostMessage
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -264,5 +265,40 @@ class UiAddonsPolicyTest {
     @Test fun `a composer pushed past the pane edge never gives a negative inset`() {
         val odd = UiAddonsChromeBounds(0f, 0f, 100f, 100f, contentTop = -5f, composerLeft = -10f, composerTop = 120f, composerRight = 130f)
         assertEquals(UiSyncHostMessage.Insets(0.0, 0.0, 0.0, 0.0), uiAddonsInsets(odd, 1f))
+    }
+
+    // ------------------------------------------------------------------ host/direction
+
+    private val withDirection = setOf(UiSyncFeature.A11Y, UiSyncFeature.MOTION, UiSyncFeature.DIRECTION)
+    private val without = setOf(UiSyncFeature.A11Y, UiSyncFeature.MOTION, UiSyncFeature.ITEM_STORE)
+
+    @Test fun `a page with the direction feature is sent right to left on its first state`() {
+        assertEquals(UiSyncHostMessage.Direction(rtl = true), uiAddonsDirection(withDirection, rtl = true, sent = null))
+    }
+
+    @Test fun `a left to right chat is sent too the first time so the page is never left guessing`() {
+        assertEquals(UiSyncHostMessage.Direction(rtl = false), uiAddonsDirection(withDirection, rtl = false, sent = null))
+    }
+
+    @Test fun `a page without the direction feature is never sent it`() {
+        assertNull(uiAddonsDirection(without, rtl = true, sent = null))
+        assertNull(uiAddonsDirection(without, rtl = false, sent = null))
+        assertNull(uiAddonsDirection(emptySet(), rtl = true, sent = null))
+    }
+
+    @Test fun `the same direction is not sent twice`() {
+        assertNull(uiAddonsDirection(withDirection, rtl = true, sent = true))
+        assertNull(uiAddonsDirection(withDirection, rtl = false, sent = false))
+    }
+
+    @Test fun `a locale switch sends the new direction each time it changes`() {
+        assertEquals(UiSyncHostMessage.Direction(rtl = false), uiAddonsDirection(withDirection, rtl = false, sent = true))
+        assertEquals(UiSyncHostMessage.Direction(rtl = true), uiAddonsDirection(withDirection, rtl = true, sent = false))
+    }
+
+    @Test fun `the direction message is the host direction wire message`() {
+        val json = uiAddonsDirection(withDirection, rtl = true, sent = null)!!.encode()
+        assertEquals("""{"v":1,"type":"host/direction","dir":"rtl"}""", json)
+        assertEquals("""{"v":1,"type":"host/direction","dir":"ltr"}""", uiAddonsDirection(withDirection, rtl = false, sent = null)!!.encode())
     }
 }
