@@ -7,6 +7,8 @@ import android.content.res.Configuration
 import android.database.ContentObserver
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.net.ConnectivityManager
+import android.net.Network
 import android.net.Uri
 import android.net.http.SslCertificate
 import android.net.http.SslError
@@ -144,6 +146,13 @@ internal data class UiAddonsBinding(
  * hello and then on every change, so its trays and dialogs mirror with the chat. The page reports a
  * part that animates in place as one stable touch area; the touch region is replaced by each
  * `ui-sync/hit-rects` as it comes and nothing here assumes the rectangles move.
+ *
+ * A page that lived through a dropped connection is loaded again once the connection (and the
+ * device network under it) has held for a second ([UiAddonsRecovery], fed by [onConnection] and the
+ * default network): left alone it can make TalkBack log about nine "node is null" events a second.
+ * The reload goes through the same path as a new page (the relay's handoff again, then ready, hello,
+ * insets, theme, motion, direction and the open session), and waits for the chat to come back when
+ * the page is paused.
  *
  * Locked down like the workspace browser, with one difference that is the point of it: this page is
  * the harness, signed in. It runs only at the harness origin (other navigations are dropped), the
@@ -311,6 +320,18 @@ internal class UiAddonsHost(
         checkDiscovery()
     }
 
+    // Recovery state; declared before init, which starts listening to the network.
+    private val recovery = UiAddonsRecovery()
+    private var connectionHost: String? = null
+    private var connectionUp = false
+    /** Whether a device network change can reach the host (false for the phone's own harness). */
+    private var networkMatters = true
+    /** The default network callback is registered: until then the connection state alone decides. */
+    private var networkWatched = false
+    private val networks = mutableSetOf<Network>()
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private val recoveryCheck = Runnable { onRecoveryCheck() }
+
     init {
         activity.lifecycle.addObserver(this)
         activity.registerComponentCallbacks(this)
@@ -325,6 +346,7 @@ internal class UiAddonsHost(
         discoveryJob = activity.lifecycleScope.launch {
             discovery.state.collect { phase -> main.post { onDiscoveryPhase(phase) } }
         }
+        watchNetwork()
     }
 
     /** The connected host and whether the layer may load for it (see [UiAddonsBinding]). */
@@ -334,6 +356,69 @@ internal class UiAddonsHost(
         sync()
         checkDiscovery()
         considerDiscovery()
+    }
+
+    // ------------------------------------------------------------------ recovery
+
+    /**
+     * The app's connection to [hostKey] ([uiAddonsHostKey]; null: none) is up or not. [loopback]: the
+     * host is this phone's own harness, which no network change reaches.
+     */
+    fun onConnection(hostKey: String?, connected: Boolean, loopback: Boolean) {
+        if (destroyed) return
+        connectionHost = hostKey
+        connectionUp = connected
+        networkMatters = uiAddonsNetworkMatters(loopback)
+        feedRecovery()
+    }
+
+    /** The connection and the device network are both up, as far as this layer can tell. */
+    private fun linkUp(): Boolean = connectionUp && (!networkMatters || !networkWatched || networks.isNotEmpty())
+
+    private fun feedRecovery() {
+        recovery.onConnection(connectionHost, linkUp(), elapsed())
+        scheduleRecoveryCheck()
+    }
+
+    private fun scheduleRecoveryCheck() {
+        main.removeCallbacks(recoveryCheck)
+        recovery.waitMs(elapsed())?.let { main.postDelayed(recoveryCheck, it) }
+    }
+
+    private fun onRecoveryCheck() {
+        if (destroyed) return
+        val live = page
+        if (recovery.take(elapsed(), hasPage = live != null)) {
+            Log.i(TAG, "connection recovered: loading the add-on page again")
+            live?.reloadAfterRecovery()
+        } else {
+            // Not due yet (two reloads keep their distance): asked again then.
+            scheduleRecoveryCheck()
+        }
+    }
+
+    /** The default network, so a page is also reloaded when only the device network dropped and came back. */
+    private fun watchNetwork() {
+        val cm = activity.getSystemService(ConnectivityManager::class.java) ?: return
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                if (networks.add(network)) feedRecovery()
+            }
+
+            override fun onLost(network: Network) {
+                if (networks.remove(network)) feedRecovery()
+            }
+        }
+        networkCallback = callback
+        networkWatched = runCatching { cm.registerDefaultNetworkCallback(callback, main) }.isSuccess
+        if (!networkWatched) networkCallback = null
+    }
+
+    private fun unwatchNetwork() {
+        val callback = networkCallback ?: return
+        networkCallback = null
+        networkWatched = false
+        runCatching { activity.getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(callback) }
     }
 
     // ------------------------------------------------------------------ discovery
@@ -442,6 +527,8 @@ internal class UiAddonsHost(
         // A discovery in progress is not ended here: the next activity (a rotation) picks it up.
         discoveryJob?.cancel()
         main.removeCallbacks(tick)
+        main.removeCallbacks(recoveryCheck)
+        unwatchNetwork()
         teardown(rendererGone = false)
         backCallback.remove()
         activity.lifecycle.removeObserver(this)
@@ -503,6 +590,8 @@ internal class UiAddonsHost(
     ) {
         /** The page said it is in phone mode since its last navigation started. */
         var ready = false
+        /** A recovery wants this page loaded again, and it is paused: the chat coming back does it. */
+        var stale = false
         /** `host/hello` and the current insets, theme and session went to this document. */
         var greeted = false
         var proxy: JavaScriptReplyProxy? = null
@@ -540,8 +629,8 @@ internal class UiAddonsHost(
             } else if (!away && paused) {
                 paused = false
                 view.onResume()
-                // A page that could not load is tried again when the chat comes back, not in a loop.
-                if (failed) reload()
+                // A page that could not load, or that a recovery found paused, is loaded again when the chat comes back, not in a loop.
+                if (failed || stale) reload()
             }
             val shown = mode == UiAddonsMode.Shown && ready
             view.router.enabled = shown
@@ -559,7 +648,21 @@ internal class UiAddonsHost(
         /** Load the page again: through a new relay code, or the host's index with the cookie already in place. */
         fun reload() {
             failed = false
+            stale = false
             if (target.relay) handoff() else view.loadUrl(target.pageUrl)
+        }
+
+        /**
+         * The connection dropped and came back while this page lived: a fresh document, as a new page
+         * would get (the new load runs [onNavigation], and the page's own ready brings hello, the chat's
+         * state and the open session). A paused page waits for [apply] to resume it first.
+         */
+        fun reloadAfterRecovery() {
+            if (paused) {
+                stale = true
+                return
+            }
+            reload()
         }
 
         /**
@@ -867,6 +970,7 @@ internal class UiAddonsHost(
             page.placed = null
             this.page = page
             livePages.incrementAndGet()
+            recovery.onPageMade()
             when (val auth = target.auth) {
                 is UiAddonsAuth.Session -> cookieManager(isolated).setCookie(auth.cookieUrl, auth.cookieLine) { stored ->
                     if (this.page !== page) return@setCookie

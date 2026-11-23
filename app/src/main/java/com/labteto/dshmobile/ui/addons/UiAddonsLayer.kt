@@ -30,6 +30,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.connection.HarnessSessionStore
 import com.labteto.dshmobile.connection.HostsStore
 import com.labteto.dshmobile.connection.RelayHandoffOutcome
@@ -117,6 +118,17 @@ internal fun rememberUiAddonsHost(): UiAddonsHost? {
         }
     }
     DisposableEffect(host) { onDispose { host.destroy() } }
+    // The connection itself, not through the lifecycle: a drop and a recovery while the app is in the
+    // background still count (a page that lived through them is loaded again, see UiAddonsRecovery).
+    LaunchedEffect(host, store) {
+        store.connectionState.collect { state ->
+            host.onConnection(
+                hostKey = state.host?.let { uiAddonsHostKey(it) },
+                connected = state.phase == ConnectionPhase.CONNECTED,
+                loopback = state.host?.isLoopback == true,
+            )
+        }
+    }
 
     val connection by store.connectionState.collectAsStateWithLifecycle()
     val available by store.uiAddonsAvailable.collectAsStateWithLifecycle()
