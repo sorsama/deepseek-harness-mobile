@@ -12,7 +12,12 @@ All notable changes to DSH Mobile are documented here. Format based on
   the chat or a button next to the message box, now show over the app's chat too, with the dialogs
   they open. Settings has a new **Add-ons** card: **Show plugin add-ons** turns the whole thing on
   or off for this phone, and **Choose where each add-on shows** lists every item by plugin with
-  **Both**, **Phone only**, **Desktop only** or **Off**. The choice is kept on the harness, so the
+  **Both**, **Phone**, **Desktop** or **Off**. Each plugin is headed by its own title, and each
+  item says where it sits in the harness (**Sidebar footer button**, **Over the chat**, and so on)
+  instead of a raw slot id. An item whose spot exists only on the desktop gets just **Show on
+  desktop** and **Off**, so nothing is offered that cannot happen. On a narrow phone, a large font
+  or a long translation the choices stack as a list instead of wrapping or being cut off. The
+  choice is kept on the harness, so the
   desktop follows a change made on the phone at once, and the other way round. The items come from
   the real web plugins, drawn by the harness's own web page in a see-through layer, so a plugin
   that works on the desktop needs nothing extra. That page costs about 250 MB of memory, so the

@@ -73,6 +73,43 @@ class UiAddonsStringsTest {
     }
 
     @Test
+    fun `the long names say the full meaning and differ from each other`() {
+        // Read out by a screen reader, and shown when the picker stacks: four ways to set an item, four names.
+        locales.forEach { directory ->
+            val translated = strings(directory)
+            val long = listOf("ua_target_both_long", "ua_target_phone_long", "ua_target_desktop_long", "ua_target_off").map { translated.getValue(it) }
+            assertEquals(directory.name, 4, long.toSet().size)
+            // The two choices of an item with no phone slot are different words too.
+            assertFalse(directory.name, translated.getValue("ua_target_show_desktop") == translated.getValue("ua_target_off"))
+        }
+    }
+
+    @Test
+    fun `the slot words are six different phrases and never a raw slot id`() {
+        val keys = listOf(
+            "ua_slot_overlay", "ua_slot_message_box", "ua_slot_session_header",
+            "ua_slot_plugin_row", "ua_slot_sidebar_footer", "ua_slot_other",
+        )
+        val ids = Regex("(plugins|sidebar|conversation|shell)[.][a-z]")
+        locales.forEach { directory ->
+            val translated = strings(directory)
+            val words = keys.map { translated.getValue(it) }
+            assertEquals(directory.name, keys.size, words.toSet().size)
+            words.forEach { assertFalse("${directory.name}: $it", ids.containsMatchIn(it)) }
+        }
+    }
+
+    @Test
+    fun `the three strings that said where the phone draws an item are gone`() {
+        // The slot words replaced them: the page now says where an item sits, not where the phone would put it.
+        locales.forEach { directory ->
+            val translated = strings(directory)
+            listOf("ua_place_overlay", "ua_place_input", "ua_place_header").forEach { assertFalse("${directory.name}/$it", it in translated) }
+            assertTrue(directory.name, "ua_place_none" in translated)
+        }
+    }
+
+    @Test
     fun `the Add-ons title is not the word the language already uses for plugins`() {
         // Two cards side by side in Settings must not carry the same heading.
         locales.forEach { directory ->
