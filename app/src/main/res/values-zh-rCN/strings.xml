@@ -606,4 +606,10 @@
     <string name="runtime_notif_starting">正在本机上启动 harness</string>
     <string name="runtime_notif_running">harness 正在本机上运行</string>
     <string name="runtime_notif_running_text">正在监听端口 %1$d</string>
+    <string name="chatlist_pin">固定聊天列表</string>
+    <string name="chatlist_unpin">取消固定聊天列表</string>
+    <string name="chatlist_release_to_open">松开以打开</string>
+    <string name="chatlist_drag_to_open">继续拖动或快速滑动以打开</string>
+    <string name="chatlist_width_increase">增加会话列表宽度</string>
+    <string name="chatlist_width_decrease">减少会话列表宽度</string>
 </resources>

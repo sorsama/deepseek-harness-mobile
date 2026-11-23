@@ -1,6 +1,16 @@
 package com.labteto.dshmobile.ui.adaptive
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -13,9 +23,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.runtime.key
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
@@ -24,6 +45,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.labteto.dshmobile.R
+import com.labteto.dshmobile.ui.components.DsPill
+import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 
 /** What the chat's top bar offers for the chat list, which depends on where the list lives. */
@@ -39,6 +64,20 @@ enum class ListControl {
 
     /** The list is half of a hinge split and always there: no button. */
     None,
+}
+
+internal fun sessionListControl(
+    listDocked: Boolean,
+    overlayList: Boolean,
+    drawerOpen: Boolean,
+    canCollapse: Boolean,
+    listShown: Boolean,
+): ListControl = when {
+    overlayList -> if (drawerOpen) ListControl.Collapse else ListControl.Expand
+    !listDocked -> ListControl.OpenDrawer
+    !canCollapse -> ListControl.None
+    listShown -> ListControl.Collapse
+    else -> ListControl.Expand
 }
 
 /** The share of a phone's width the chat list drawer takes; the rest is the strip you tap to go back. */
@@ -76,13 +115,21 @@ fun AdaptiveShell(
     details: @Composable () -> Unit,
     chat: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    preferredListWidth: androidx.compose.ui.unit.Dp? = null,
+    onListWidthChange: (androidx.compose.ui.unit.Dp) -> Unit = {},
+    onListShownChange: (Boolean) -> Unit = {},
+    /** Large-screen overlay uses the remembered pane width; phone remains 90% wide. */
+    overlayListWidth: androidx.compose.ui.unit.Dp? = null,
+    overlayList: Boolean = false,
+    allowListReveal: Boolean = true,
+    minimumListContentWidth: androidx.compose.ui.unit.Dp = 240.dp,
 ) {
     val currentList by rememberUpdatedState(list)
     val currentChat by rememberUpdatedState(chat)
     val listSlot = remember { movableContentOf<Boolean> { docked -> currentList(docked) } }
     val chatSlot = remember { movableContentOf { currentChat() } }
 
-    if (plan.kind == ShellKind.Compact) {
+    if (plan.kind == ShellKind.Compact || overlayList) {
         ModalNavigationDrawer(
             drawerState = drawerState,
             modifier = modifier,
@@ -95,10 +142,22 @@ fun AdaptiveShell(
                     drawerShape = RectangleShape,
                     drawerContainerColor = DsTheme.colors.sidebar,
                     windowInsets = WindowInsets(0, 0, 0, 0),
-                    modifier = Modifier.fillMaxWidth(DrawerWidthFraction),
+                    modifier = if (overlayListWidth != null) Modifier.width(overlayListWidth)
+                        else Modifier.fillMaxWidth(DrawerWidthFraction),
                 ) { listSlot(false) }
             },
-        ) { chatSlot() }
+        ) {
+            if (overlayList && plan.detailsDockable && detailsShown) {
+                Row(Modifier.fillMaxSize()) {
+                    Box(Modifier.weight(1f).fillMaxHeight().consumeWindowInsets(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.End),
+                    )) { chatSlot() }
+                    Box(Modifier.width(plan.detailsWidth).fillMaxHeight().consumeWindowInsets(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Start),
+                    )) { details() }
+                }
+            } else chatSlot()
+        }
         return
     }
 
@@ -106,38 +165,158 @@ fun AdaptiveShell(
     val showList = plan.listDocked && (listShown || !plan.listCanCollapse)
     val showDetails = plan.detailsDockable && detailsShown
     val sides = WindowInsets.safeDrawing
-    Row(modifier.fillMaxSize()) {
-        if (showList) {
-            Box(
-                Modifier
-                    .width(plan.listWidth)
-                    .fillMaxHeight()
-                    // The list is the first pane, so it pads the start edge of the window and leaves the end.
-                    .consumeWindowInsets(sides.only(WindowInsetsSides.End)),
-            ) { listSlot(true) }
-            if (plan.listGap > 0.dp) {
-                // A hinge between the list and the chat: nothing is drawn on it, and nothing sits on it.
-                Box(Modifier.width(plan.listGap).fillMaxHeight().background(colors.bgBase))
-            } else {
-                Box(Modifier.width(1.dp).fillMaxHeight().background(colors.borderL2))
+    androidx.compose.foundation.layout.BoxWithConstraints(modifier.fillMaxSize()) {
+        val listWidth = resolveListWidth(plan, maxWidth, preferredListWidth, detailsShown, minimumListContentWidth)
+        val density = LocalDensity.current
+        val direction = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1f else 1f
+        val currentWidth by rememberUpdatedState(listWidth)
+        val changeWidth by rememberUpdatedState(onListWidthChange)
+        val changeShown by rememberUpdatedState(onListShownChange)
+        val scope = rememberCoroutineScope()
+        val animated = remember { Animatable(if (showList) listWidth.value else 0f) }
+        var dragged by remember { mutableStateOf<Float?>(null) }
+        var cancelledWidth by remember { mutableStateOf<Float?>(null) }
+        var openingDrag by remember { mutableStateOf(false) }
+        var shownIntent by remember { mutableStateOf(showList) }
+        var settling by remember { mutableStateOf<Job?>(null) }
+        LaunchedEffect(showList, listWidth) {
+            shownIntent = showList
+            if (dragged == null) animated.animateTo(if (showList) listWidth.value else 0f, spring())
+        }
+        val maximumWidth = resolveListWidth(plan, maxWidth, maxWidth, detailsShown, minimumListContentWidth).value.coerceAtLeast(0f)
+        val visibleWidth = (if (!plan.listCanCollapse) listWidth.value else dragged ?: cancelledWidth ?: animated.value)
+            .coerceIn(0f, maximumWidth).dp
+        val visible = visibleWidth > 0.dp
+        fun startDrag() {
+            settling?.cancel()
+            openingDrag = !shownIntent
+            // Regrab the rendered boundary, even while a close is still settling.
+            dragged = (dragged ?: cancelledWidth ?: animated.value).coerceIn(0f, maximumWidth)
+            cancelledWidth = null
+        }
+        fun cancelDrag() {
+            val width = dragged ?: return
+            settling?.cancel()
+            val target = if (shownIntent) listWidth.value else 0f
+            // Invalidate the gesture immediately, but keep its rendered width until the animation owns it.
+            cancelledWidth = width
+            dragged = null
+            settling = scope.launch {
+                animated.snapTo(width)
+                cancelledWidth = null
+                animated.animateTo(target, spring())
             }
         }
-        var chatInsets = WindowInsets(0, 0, 0, 0)
-        if (showList) chatInsets = chatInsets.add(sides.only(WindowInsetsSides.Start))
-        if (showDetails) chatInsets = chatInsets.add(sides.only(WindowInsetsSides.End))
-        Box(
-            Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .consumeWindowInsets(chatInsets),
-        ) { chatSlot() }
-        if (showDetails) {
+        val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+        val cancelCurrent by rememberUpdatedState({ cancelDrag() })
+        androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
+            val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+                if (event == androidx.lifecycle.Lifecycle.Event.ON_PAUSE) cancelCurrent()
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
+        fun moveDrag(pixels: Float) {
+            // Ignore late pointer events from a gesture cancelled by lifecycle or focus loss.
+            val width = dragged ?: return
+            val maximum = resolveListWidth(plan, maxWidth, maxWidth, detailsShown, minimumListContentWidth).value
+            dragged = (width + pixels / density.density).coerceIn(0f, maximum)
+        }
+        fun finishDrag(velocity: Float) {
+            val width = dragged ?: return
+            val minimum = resolveListWidth(plan, maxWidth, 0.dp, detailsShown, minimumListContentWidth).value
+            val target = if (openingDrag) {
+                when {
+                    velocity / density.density >= 800f -> listWidth.value
+                    width >= minimum -> width.coerceAtMost(maximumWidth)
+                    else -> 0f
+                }
+            } else settleListDrag(width, velocity / density.density, minimum, listWidth.value,
+                resolveListWidth(plan, maxWidth, maxWidth, detailsShown, minimumListContentWidth).value)
+            settling = scope.launch {
+                animated.snapTo(width)
+                dragged = null
+                if (target > 0f && (!openingDrag || velocity / density.density < 800f)) changeWidth(target.dp)
+                shownIntent = target > 0f
+                changeShown(target > 0f)
+                animated.animateTo(target, spring(), initialVelocity = velocity / density.density)
+            }
+        }
+        if (openingDrag && dragged != null) {
+            val ready = dragged!! >= resolveListWidth(plan, maxWidth, 0.dp, detailsShown, minimumListContentWidth).value
+            DsPill(
+                text = stringResource(if (ready) R.string.chatlist_release_to_open else R.string.chatlist_drag_to_open),
+                selected = ready,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
+                    .padding(top = DsSpacing.small)
+                    .zIndex(2f)
+                    .testTag("list-open-hint"),
+            )
+        }
+        Row(Modifier.fillMaxSize()) {
+            // Keep the gesture owner composed even at zero width until the finger releases.
+            if (visible || dragged != null) {
+                key("session-list-pane") { Box(
+                    Modifier
+                        .width(visibleWidth)
+                        .fillMaxHeight()
+                        // The list is the first pane, so it pads the start edge of the window and leaves the end.
+                        .consumeWindowInsets(sides.only(WindowInsetsSides.End))
+                        .listPanelDrag(plan.listCanCollapse, direction, ::startDrag, ::moveDrag, ::finishDrag,
+                            { cancelDrag() }),
+                ) { listSlot(true) } }
+                if (plan.listGap > 0.dp) {
+                    // A hinge between the list and the chat: nothing is drawn on it, and nothing sits on it.
+                    Box(Modifier.width(plan.listGap).fillMaxHeight().background(colors.bgBase))
+                } else {
+                    Box(Modifier.width(1.dp).fillMaxHeight().background(colors.borderL2))
+                }
+            }
+            var chatInsets = WindowInsets(0, 0, 0, 0)
+            if (showList) chatInsets = chatInsets.add(sides.only(WindowInsetsSides.Start))
+            if (showDetails) chatInsets = chatInsets.add(sides.only(WindowInsetsSides.End))
+            key("chat-pane") { Box(
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .consumeWindowInsets(chatInsets)
+                    .listPanelDrag(plan.listCanCollapse && (showList || allowListReveal), direction, ::startDrag, ::moveDrag,
+                        ::finishDrag, { cancelDrag() }),
+            ) { chatSlot() } }
+            if (showDetails) {
+                Box(
+                    Modifier
+                        .width(plan.detailsWidth)
+                        .fillMaxHeight()
+                        .consumeWindowInsets(sides.only(WindowInsetsSides.Start)),
+                ) { details() }
+            }
+        }
+        if (showList && plan.listCanCollapse) {
+            val increaseWidthDescription = stringResource(R.string.chatlist_width_increase)
+            val decreaseWidthDescription = stringResource(R.string.chatlist_width_decrease)
             Box(
                 Modifier
-                    .width(plan.detailsWidth)
+                    .align(Alignment.CenterStart)
+                    .offset(x = visibleWidth - 12.dp)
+                    .width(24.dp)
                     .fillMaxHeight()
-                    .consumeWindowInsets(sides.only(WindowInsetsSides.Start)),
-            ) { details() }
+                    .testTag("list-resize-handle")
+                    .semantics {
+                        customActions = listOf(
+                            CustomAccessibilityAction(increaseWidthDescription) {
+                                changeWidth(resolveListWidth(plan, maxWidth, currentWidth + 32.dp, detailsShown, minimumListContentWidth)); true
+                            },
+                            CustomAccessibilityAction(decreaseWidthDescription) {
+                                changeWidth(resolveListWidth(plan, maxWidth, currentWidth - 32.dp, detailsShown, minimumListContentWidth)); true
+                            },
+                        )
+                    }
+                    .listPanelDrag(true, direction, ::startDrag, ::moveDrag, ::finishDrag,
+                        { cancelDrag() }),
+            )
         }
     }
 }

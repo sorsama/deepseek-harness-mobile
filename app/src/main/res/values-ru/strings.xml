@@ -606,4 +606,10 @@
     <string name="runtime_notif_starting">Запуск harness на этом телефоне</string>
     <string name="runtime_notif_running">Harness работает на этом телефоне</string>
     <string name="runtime_notif_running_text">Ожидает подключений на порту %1$d</string>
+    <string name="chatlist_pin">Закрепить дерево чатов</string>
+    <string name="chatlist_unpin">Открепить дерево чатов</string>
+    <string name="chatlist_release_to_open">Отпустите, чтобы открыть</string>
+    <string name="chatlist_drag_to_open">Потяните дальше или быстро смахните, чтобы открыть</string>
+    <string name="chatlist_width_increase">Увеличить ширину списка сеансов</string>
+    <string name="chatlist_width_decrease">Уменьшить ширину списка сеансов</string>
 </resources>

@@ -23,6 +23,7 @@ import dagger.hilt.components.SingletonComponent
 interface SessionStoreEntryPoint {
     fun sessionStore(): SessionStore
     fun hostsStore(): HostsStore
+    fun chatPanePreferences(): com.labteto.dshmobile.connection.ChatPanePreferences
     fun reasoningTranslations(): com.labteto.dshmobile.translation.ReasoningTranslations
 }
 
@@ -58,5 +59,14 @@ internal fun rememberHostsStore(): HostsStore {
     val context = LocalContext.current.applicationContext
     return remember {
         EntryPointAccessors.fromApplication(context, SessionStoreEntryPoint::class.java).hostsStore()
+    }
+}
+
+/** Resolves the DataStore-backed preferences of the resizable session pane. */
+@Composable
+internal fun rememberChatPanePreferences(): com.labteto.dshmobile.connection.ChatPanePreferences {
+    val context = LocalContext.current.applicationContext
+    return remember {
+        EntryPointAccessors.fromApplication(context, SessionStoreEntryPoint::class.java).chatPanePreferences()
     }
 }

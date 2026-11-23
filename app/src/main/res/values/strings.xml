@@ -614,4 +614,10 @@
     <string name="runtime_notif_starting">Starting the harness on this phone</string>
     <string name="runtime_notif_running">Harness running on this phone</string>
     <string name="runtime_notif_running_text">Listening on port %1$d</string>
+    <string name="chatlist_pin">Pin chat list</string>
+    <string name="chatlist_unpin">Unpin chat list</string>
+    <string name="chatlist_release_to_open">Release to open</string>
+    <string name="chatlist_drag_to_open">Drag farther or fling to open</string>
+    <string name="chatlist_width_increase">Increase session list width</string>
+    <string name="chatlist_width_decrease">Decrease session list width</string>
 </resources>

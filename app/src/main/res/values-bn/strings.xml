@@ -606,4 +606,10 @@
     <string name="runtime_notif_starting">এই ফোনে harness চালু হচ্ছে</string>
     <string name="runtime_notif_running">এই ফোনে harness চলছে</string>
     <string name="runtime_notif_running_text">পোর্ট %1$d-এ শুনছে</string>
+    <string name="chatlist_pin">চ্যাট তালিকা পিন করুন</string>
+    <string name="chatlist_unpin">চ্যাট তালিকার পিন সরান</string>
+    <string name="chatlist_release_to_open">খুলতে ছেড়ে দিন</string>
+    <string name="chatlist_drag_to_open">আরও টানুন বা দ্রুত সোয়াইপ করে খুলুন</string>
+    <string name="chatlist_width_increase">সেশন তালিকার প্রস্থ বাড়ান</string>
+    <string name="chatlist_width_decrease">সেশন তালিকার প্রস্থ কমান</string>
 </resources>
