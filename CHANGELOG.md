@@ -29,8 +29,8 @@ All notable changes to DSH Mobile are documented here. Format based on
   pet's corner and the buttons next to the message box mirror with the chat and a tray no longer
   sits over a reply or the composer's buttons; this needs `dsh-ui-sync` 0.2.1. When the connection
   drops and comes back (Wi-Fi off and on, a lost signal), the add-on page is loaded again once the
-  link has held for a second, on the chat you had open, so a page that lived through the drop no
-  longer makes TalkBack chatter. Works on this phone,
+  link has held for a second, on the chat you had open, instead of being left as it was. Works on
+  this phone,
   on the local network and through a relay (relay 0.5.0 or later).
 
 - **Add-ons show up without opening the harness on the desktop first.** A harness lists its plugin

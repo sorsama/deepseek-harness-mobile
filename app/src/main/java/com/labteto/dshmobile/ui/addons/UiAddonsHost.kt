@@ -149,7 +149,7 @@ internal data class UiAddonsBinding(
  *
  * A page that lived through a dropped connection is loaded again once the connection (and the
  * device network under it) has held for a second ([UiAddonsRecovery], fed by [onConnection] and the
- * default network): left alone it can make TalkBack log about nine "node is null" events a second.
+ * default network), so a page whose own connection broke starts again from a clean document.
  * The reload goes through the same path as a new page (the relay's handoff again, then ready, hello,
  * insets, theme, motion, direction and the open session), and waits for the chat to come back when
  * the page is paused.

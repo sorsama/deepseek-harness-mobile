@@ -3,10 +3,11 @@ package com.labteto.dshmobile.ui.addons
 /**
  * When a page that lived through a dropped connection is loaded again, without a device.
  *
- * A page that was up while the harness connection (or the device network under it) dropped can be
- * left in a state TalkBack answers with about nine `windowContentChanged: node is null` events a
- * second until the document is replaced; a reload clears it. So a drop followed by a recovery
- * reloads the page once. The rule:
+ * A page that was up while the harness connection (or the device network under it) dropped has
+ * lost its own connection to the harness, so a drop followed by a recovery loads it again once,
+ * onto a clean document and the open session. This is not a cure for the stream of TalkBack
+ * `windowContentChanged: node is null` events that follows a drop: that stream also runs with no
+ * page at all, and only a TalkBack restart ended it on the device. The rule:
  *
  * - The first connect for a host is never a recovery: only a drop after being connected counts.
  * - Many drops before the connection holds again are one recovery, not many.
