@@ -39,7 +39,7 @@ import java.text.DateFormat
 import java.util.Date
 
 @Composable internal fun quotaLabels(): UsageLabels {
-    val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
+    val locale = appLocale()
     val symbols = java.text.DecimalFormatSymbols.getInstance(locale)
     return UsageLabels(
         stringResource(R.string.quota_compact_session), stringResource(R.string.quota_compact_week),
@@ -87,7 +87,7 @@ import java.util.Date
     LaunchedEffect(expanded) { onExpanded(expanded) }
     val colors = DsTheme.colors
     val labels = quotaLabels()
-    val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
+    val locale = appLocale()
     val balance = snapshot.balance
     // The quota-window section exists only when the host reports windows. A host that has no
     // subscription service, or a provider it lists no quota for, leaves no empty "unknown" rows.
