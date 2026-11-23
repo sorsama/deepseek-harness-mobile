@@ -84,6 +84,7 @@
     <string name="connect_scanning">आपका नेटवर्क स्कैन हो रहा है…</string>
     <string name="connect_section_discovered">मिले हुए</string>
     <string name="connect_section_discovered_relay">मिले रिले</string>
+    <string name="connect_session_count">सेशन %1$s</string>
     <string name="connect_sign_in">साइन इन</string>
     <string name="connect_sign_in_label">स्टार्टअप लिंक या टोकन</string>
     <string name="connect_sign_in_link_body">harness शुरू होने पर एक लिंक दिखाता है। वह लिंक पेस्ट करें, या ?token= के बाद वाला टोकन।</string>

@@ -38,6 +38,11 @@ All notable changes to DSH Mobile are documented here. Format based on
   the Compose BOM, Hilt, KSP and atomicfu moved to match, so the iOS screens to come get the common
   back handler and the newer iOS text input. Android draws the same screens as before; the checked
   shots are listed in the pull request.
+- iOS has a live connection behind the Connect screen: after connecting, the iPhone app reads the
+  harness's session list and shows how many sessions it has. The connection it reads through is one
+  port shared with Android (`HarnessConnection`), which the session list and chat build on next, and
+  `mock-harness --ci-fixtures` serves a demo harness with sessions, a transcript and a streamed reply
+  on port 3190 for those checks. (#141)
 
 ## [0.24.0] - 2026-11-19
 
