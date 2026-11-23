@@ -62,17 +62,20 @@ fun main(args: Array<String>) {
                 pairPort = CiFixtures.PAIR_PORT,
                 pairTlsPort = CiFixtures.PAIR_TLS_PORT,
                 withPairTls = true,
+                refusingPort = CiFixtures.REFUSING_PORT,
+                withRefusingRelay = true,
             )
             println(
                 "ci fixtures listening: plain=${servers.plainUrl} session=${servers.sessionUrl} " +
                     "relay=${servers.relayUrl} keepalive=${servers.keepAliveUrl} drop=${servers.dropUrl} " +
-                    "pair=${servers.pairUrl} pairTls=${servers.pairTlsUrl}",
+                    "pair=${servers.pairUrl} pairTls=${servers.pairTlsUrl} refusing=${servers.refusingUrl}",
             )
             // The pairing relays: what a script needs to build a pairing QR for them. The code is the one
             // the operator would read off the relay's pairing page; the fingerprint is the TLS relay's key.
             println(
                 "ci pairing: code=${CiFixtures.pairRelayMode.pairingCode} rateLimitedCode=${CiFixtures.RATE_LIMITED_CODE} " +
-                    "plain=${servers.pairUrl} tls=${servers.pairTlsUrl} fingerprint=${servers.pairTlsFingerprint}",
+                    "plain=${servers.pairUrl} tls=${servers.pairTlsUrl} fingerprint=${servers.pairTlsFingerprint} " +
+                    "refusing=${servers.refusingUrl}",
             )
             awaitCancellation()
         }

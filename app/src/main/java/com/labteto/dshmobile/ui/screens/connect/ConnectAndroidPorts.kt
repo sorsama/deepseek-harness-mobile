@@ -95,9 +95,6 @@ class AndroidConnectNetwork(
     private val discovery: DiscoveryEngine,
     private val mdns: MdnsDiscovery,
 ) : ConnectNetwork {
-    override suspend fun probe(host: String, port: Int, timeouts: ProbeTimeouts, config: HostConfig?): HostDescription? =
-        discovery.probe(host, port, timeouts, config = config)
-
     override suspend fun probeOutcome(
         host: String,
         port: Int,

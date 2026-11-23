@@ -70,15 +70,18 @@ internal val IosConnectFeatures = ConnectFeatures(
     settings = false,
 )
 
-/** Probing an address over the Darwin engine. No sweep, no relay browsing, no raw-socket pre-flight. */
+/**
+ * Probing an address over the Darwin engine. No sweep, no relay browsing, no raw-socket pre-flight.
+ *
+ * [onProbe] hears one `DSH_PROBE authority=… outcome=…` line per probe; null outside a debug launch that asks for
+ * reports. It says which call failed when a row reads Unreachable.
+ */
 internal class IosConnectNetwork(
     private val client: HttpClient,
     private val sessions: KeychainSessionStore,
     private val relayTokens: KeychainRelayTokens,
+    private val onProbe: ((String) -> Unit)? = null,
 ) : ConnectNetwork {
-
-    override suspend fun probe(host: String, port: Int, timeouts: ProbeTimeouts, config: HostConfig?): HostDescription? =
-        (probeOutcome(host, port, timeouts, config = config) as? ProbeOutcome.Reachable)?.description
 
     /**
      * One unary call, `session/canOpenWorkspacePath`, which is what the Android probe asks too: no arguments, served
@@ -91,6 +94,22 @@ internal class IosConnectNetwork(
         port: Int,
         timeouts: ProbeTimeouts,
         preflight: Boolean,
+        useTls: Boolean,
+        config: HostConfig?,
+        basePath: String,
+    ): ProbeOutcome {
+        val outcome = probeOnce(host, port, timeouts, useTls, config, basePath)
+        onProbe?.invoke(
+            "DSH_PROBE authority=${config?.authority ?: "$host:$port"} outcome=${outcome::class.simpleName} " +
+                "home=${(outcome as? ProbeOutcome.Reachable)?.description?.home}",
+        )
+        return outcome
+    }
+
+    private suspend fun probeOnce(
+        host: String,
+        port: Int,
+        timeouts: ProbeTimeouts,
         useTls: Boolean,
         config: HostConfig?,
         basePath: String,
@@ -188,7 +207,14 @@ internal class IosConnectionLink(
 
         override fun onConnected(generation: HostGeneration) {
             val host = activeHost
-            if (host != null) scope.launch { store.touchHost(host.id) }
+            if (host != null) {
+                scope.launch {
+                    store.touchHost(host.id)
+                    // The ready frame's home, so a relay row has a subtitle even when it refuses the
+                    // directory listing the probe would otherwise read it from.
+                    store.cacheDescription(host.id, generation.description)
+                }
+            }
             _state.value = ConnectionUiState(
                 phase = ConnectionPhase.CONNECTED,
                 host = host,
@@ -303,10 +329,14 @@ internal class IosConnectionLink(
 /**
  * The iOS app's Connect and Pair controllers and what they were built from.
  *
- * [reportPair] hears the lines a script reads for the pairing flow (`DSH_PAIR_RESULT …`); null outside a
- * debug launch that asks for them.
+ * [reportPair] hears the lines a script reads for the pairing flow (`DSH_PAIR_RESULT …`) and [reportProbe] the
+ * probe verdicts (`DSH_PROBE …`); both are null outside a debug launch that asks for them.
  */
-internal class IosApp(scope: CoroutineScope, reportPair: ((String) -> Unit)? = null) {
+internal class IosApp(
+    scope: CoroutineScope,
+    reportPair: ((String) -> Unit)? = null,
+    reportProbe: ((String) -> Unit)? = null,
+) {
     private val sessions = KeychainSessionStore()
     private val relayTokens = KeychainRelayTokens()
     private val store = UserDefaultsConnectStore(sessions, relayTokens)
@@ -315,7 +345,7 @@ internal class IosApp(scope: CoroutineScope, reportPair: ((String) -> Unit)? = n
     val controller = ConnectController(
         scope = scope,
         store = store,
-        network = IosConnectNetwork(client, sessions, relayTokens),
+        network = IosConnectNetwork(client, sessions, relayTokens, reportProbe),
         link = link,
         sessions = IosHarnessSignIn(client, sessions),
         loopbackHarness = NoLoopbackHarness,
