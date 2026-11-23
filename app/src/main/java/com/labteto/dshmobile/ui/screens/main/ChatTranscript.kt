@@ -45,7 +45,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -409,12 +408,8 @@ internal fun ChatTranscript(
         listState.animateScrollToItem(0)
     }
 
-    val readingAnchor = remember(listState, sessionId) { TranscriptReadingAnchor() }
-    val readingScope = rememberCoroutineScope()
     // A tap anywhere on the transcript ends a text selection made in it (issue #90); see the modifier.
-    Box(modifier.fillMaxSize().clearSelectionOnTap().onGloballyPositioned { viewport ->
-        readingAnchor.schedule(readingScope, viewport, listState) { followTail }
-    }) {
+    Box(modifier.fillMaxSize().clearSelectionOnTap()) {
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
@@ -472,11 +467,7 @@ internal fun ChatTranscript(
                 }
                 Column(arrival) {
                     when (row) {
-                        is TranscriptRow.Message -> androidx.compose.runtime.CompositionLocalProvider(
-                            com.labteto.dshmobile.ui.components.LocalMarkdownReadingObserver provides { block, coordinates ->
-                                readingAnchor.record(transcriptRowKey(row) to block, coordinates)
-                            },
-                        ) { ChatNodeItem(node = row.node, context = context) }
+                        is TranscriptRow.Message -> ChatNodeItem(node = row.node, context = context)
                         is TranscriptRow.Tools -> ToolsRowContent(row, context)
                         is TranscriptRow.Context -> ContextGroupRow(row.nodes, context)
                         is TranscriptRow.Process -> ProcessRow(row, context)
