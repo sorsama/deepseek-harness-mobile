@@ -162,6 +162,9 @@ internal fun goalRefFromProjection(value: JsonElement?): GoalRef? {
     }?.takeIf { it.id.isNotBlank() && it.revision > 0 }
 }
 
+/** The plugin list of host [host] (an [SessionStore.activeHostKey]) for the add-on discovery; [entries] null when the harness refused it. */
+data class UiAddonsInventory(val host: String, val entries: List<com.labteto.dshmobile.core.wire.dto.PluginInventoryEntry>?)
+
 /** One renderable session list row (manual order, live). */
 data class SessionRow(
     val sessionId: String,
@@ -421,8 +424,48 @@ class SessionStore @Inject constructor(
         },
     )
 
-    /** Read the add-on settings row again (the chat came back, Settings > Add-ons opened or asked). */
-    fun refreshUiAddons() = uiAddonsSettings.refresh()
+    /**
+     * Read the add-on settings row again (the chat came back, Settings > Add-ons opened or asked), and
+     * the plugin list with it: a plugin added on the computer with the CLI sends no change notice,
+     * and the list is how the app sees that the item store misses it.
+     */
+    fun refreshUiAddons() {
+        uiAddonsSettings.refresh()
+        if (uiAddonsAvailable.value == true) scope.launch { readUiAddonsInventory() }
+    }
+
+    /**
+     * The discovery load that fills the item store when no page has (see [com.labteto.dshmobile.core.uisync.UiSyncDiscovery]):
+     * started by the web layer when the store looks incomplete, or by "Find add-ons"; the Add-ons page shows its progress.
+     */
+    val uiAddonsDiscovery = com.labteto.dshmobile.core.uisync.UiSyncDiscovery()
+
+    private val _uiAddonsInventory = MutableStateFlow<UiAddonsInventory?>(null)
+
+    /**
+     * The connected host's plugin list as the add-on discovery reads it, to tell whether a plugin has
+     * nothing in the item store yet. Null until read; entries null when the harness refused the list
+     * (a relay that keeps it to its own machine).
+     */
+    val uiAddonsInventory: StateFlow<UiAddonsInventory?> = _uiAddonsInventory.asStateFlow()
+
+    /**
+     * Read the plugin list for the add-on discovery. Straight from the API on purpose: a refusal
+     * here must not take the Plugins card off Settings.
+     */
+    private suspend fun readUiAddonsInventory() {
+        val host = activeHostKey ?: return
+        val api = apiForHost(host) ?: return
+        val result = try {
+            api.pluginInventoryList()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            RpcResult.Err(com.labteto.dshmobile.core.wire.RpcError(code = "internal", message = e.message.orEmpty()))
+        }
+        if (activeHostKey != host) return
+        _uiAddonsInventory.value = UiAddonsInventory(host, (result as? RpcResult.Ok)?.value?.entries)
+    }
     val questionSessions = QuestionSessions(scope, { connectionManager.connectedApi },
         { connectionManager.generation?.mux }, { connectionManager.generation?.clientId },
         onCapability = { clientId, result ->
@@ -488,7 +531,11 @@ class SessionStore @Inject constructor(
      */
     private fun probeUiAddons() {
         if (connectionManager.state.value.host == null) return
-        scope.launch { uiAddonsSettings.reload() }
+        scope.launch {
+            uiAddonsSettings.reload()
+            // With the companion there, the plugin list says whether the item store misses a plugin.
+            if (uiAddonsAvailable.value == true) readUiAddonsInventory()
+        }
     }
 
     /** The cheap call that tells whether the harness has [feature] now, for the features that have one. */
@@ -926,6 +973,8 @@ class SessionStore @Inject constructor(
                     questionSessions.reset()
                     uiAddons.reset()
                     uiAddonsSettings.reset()
+                    uiAddonsDiscovery.cancel()
+                    _uiAddonsInventory.value = null
                 }
                 else if (prev.phase == ConnectionPhase.CONNECTED && state.phase != ConnectionPhase.CONNECTED) questionSessions.disconnect()
                 val initialConnect = !prev.hasConnected && state.hasConnected

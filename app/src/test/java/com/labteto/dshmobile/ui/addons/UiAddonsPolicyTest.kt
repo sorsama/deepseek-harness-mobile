@@ -170,6 +170,70 @@ class UiAddonsPolicyTest {
         assertEquals(UiAddonsMode.Shown, uiAddonsMode(shown.copy(sessionOpen = false)))
     }
 
+    // ------------------------------------------------------------------ discovery
+
+    /** A discovery on Settings: switch off, nothing for the phone in the store, no chat on screen, no view yet. */
+    private val looking = shown.copy(
+        enabled = false, phoneItems = false, chatShown = false, sessionOpen = false, hasView = false, discovering = true,
+    )
+
+    @Test fun `a discovery makes the page whatever the switch the store or the chat say`() {
+        assertEquals(UiAddonsMode.Discover, uiAddonsMode(looking))
+        assertEquals(UiAddonsMode.Discover, uiAddonsMode(looking.copy(phoneItems = null)))
+        assertEquals(UiAddonsMode.Discover, uiAddonsMode(looking.copy(enabled = true)))
+        // Over a covered chat, or a chat with no session open.
+        assertEquals(UiAddonsMode.Discover, uiAddonsMode(looking.copy(chatShown = true, covered = true)))
+        assertEquals(UiAddonsMode.Discover, uiAddonsMode(looking.copy(chatShown = true)))
+        // The existing view keeps running for it instead of pausing.
+        assertEquals(UiAddonsMode.Discover, uiAddonsMode(looking.copy(hasView = true, discoveryView = true)))
+    }
+
+    @Test fun `a discovery never overrides a missing companion target or web view`() {
+        assertEquals(UiAddonsMode.Off, uiAddonsMode(looking.copy(available = false)))
+        assertEquals(UiAddonsMode.Off, uiAddonsMode(looking.copy(target = null)))
+        assertEquals(UiAddonsMode.Off, uiAddonsMode(looking.copy(supported = false)))
+        assertEquals(UiAddonsMode.Off, uiAddonsMode(looking.copy(givenUp = true)))
+        // While the companion is unknown no view is made for it either.
+        assertEquals(UiAddonsMode.Off, uiAddonsMode(looking.copy(available = null)))
+    }
+
+    @Test fun `a discovery waits in the background and makes nothing there`() {
+        assertEquals(UiAddonsMode.Off, uiAddonsMode(looking.copy(started = false)))
+        assertEquals(UiAddonsMode.Away, uiAddonsMode(looking.copy(started = false, hasView = true, discoveryView = true)))
+    }
+
+    @Test fun `when the normal rules would draw the page they win over the discovery`() {
+        // The page found an item for the phone and the store says so: the chat shows it at once.
+        val found = shown.copy(hasView = true, discoveryView = true, discovering = true)
+        assertEquals(UiAddonsMode.Shown, uiAddonsMode(found))
+        // Under the drawer the rules would make no page, so it stays an invisible discovery page.
+        assertEquals(UiAddonsMode.Discover, uiAddonsMode(found.copy(covered = true)))
+        // A page the chat already owns steps aside as before.
+        assertEquals(UiAddonsMode.Covered, uiAddonsMode(found.copy(covered = true, discoveryView = false)))
+        // The chat is open, but the store has nothing for the phone yet: still invisible.
+        assertEquals(UiAddonsMode.Discover, uiAddonsMode(found.copy(phoneItems = false)))
+    }
+
+    @Test fun `after a discovery its page stays only if the normal rules would make it now`() {
+        val over = shown.copy(hasView = true, discoveryView = true, discovering = false)
+        // On the chat with a session and an item for the phone: kept and shown.
+        assertEquals(UiAddonsMode.Shown, uiAddonsMode(over))
+        // On Settings: the rules would not make a page there, so it goes (an own page would only pause).
+        assertEquals(UiAddonsMode.Off, uiAddonsMode(over.copy(chatShown = false)))
+        assertEquals(UiAddonsMode.Away, uiAddonsMode(over.copy(chatShown = false, discoveryView = false)))
+        // Nothing for the phone, or the switch off: it goes.
+        assertEquals(UiAddonsMode.Off, uiAddonsMode(over.copy(phoneItems = false)))
+        assertEquals(UiAddonsMode.Off, uiAddonsMode(over.copy(enabled = false)))
+        // No session open: the rules make no page, so the discovery page goes too.
+        assertEquals(UiAddonsMode.Off, uiAddonsMode(over.copy(sessionOpen = false)))
+    }
+
+    @Test fun `the host key names the host id and address`() {
+        assertEquals("a|${lan.baseUrl}", uiAddonsHostKey(lan))
+        assertEquals(uiAddonsHostKey(lan), uiAddonsTarget(lan, cookie)!!.key)
+        assertEquals(uiAddonsHostKey(relay), uiAddonsTarget(relay, null)!!.key)
+    }
+
     @Test fun `insets are the chat chrome in CSS pixels`() {
         // A 1080 x 2400 phone at density 2.625: pane from y 0 to 2400, top bar ends at 252 px
         // (status bar and bar), composer block from y 2100, gutters of 42 px.

@@ -23,7 +23,7 @@
     <string name="ua_slot_sidebar_footer">Botón al pie de la barra lateral</string>
     <string name="ua_slot_other">En otro lugar del harness</string>
     <string name="ua_place_none">Solo el escritorio tiene un lugar para este.</string>
-    <string name="ua_empty">Todavía no hay extras. Aparecen aquí después de abrir una vez la página web del harness con el complemento instalado.</string>
+    <string name="ua_empty">Las mascotas, los botones extra y otros elementos de los complementos del harness aparecen aquí cuando la página del harness los ha listado.</string>
     <string name="ua_off_notice">Los extras están ocultos en este teléfono. Lo que elijas aquí sigue valiendo para el escritorio.</string>
     <string name="ua_read_only">El harness guarda estos ajustes como solo lectura, así que no se pueden cambiar desde aquí.</string>
     <string name="ua_missing">El harness ya no tiene el complemento dsh-ui-sync.</string>
@@ -32,4 +32,16 @@
     <string name="ua_err_rejected">El harness no aceptó este cambio.</string>
     <string name="ua_err_unreachable">No se pudo conectar con el harness. No se guardó nada.</string>
     <string name="ua_err_unavailable">Esta conexión no puede cambiar los extras.</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">Todavía no hay extras</string>
+    <string name="ua_stale">Se añadió o cambió un complemento después de hacer esta lista, así que puede faltar algo.</string>
+    <string name="ua_find">Buscar extras</string>
+    <string name="ua_find_more">Buscar extras nuevos</string>
+    <string name="ua_find_again">Buscar otra vez</string>
+    <string name="ua_find_hint">Esto abre la página del harness sin mostrarla durante unos segundos para que sus complementos digan qué añaden. Se cierra sola al terminar.</string>
+    <string name="ua_finding">Buscando extras</string>
+    <string name="ua_found">Se encontraron extras. Elige dónde aparece cada uno.</string>
+    <string name="ua_nothing_title">No se encontró nada</string>
+    <string name="ua_nothing">Ningún complemento de este harness añade una mascota, un botón ni nada más que el teléfono o el escritorio puedan mostrar.</string>
+    <string name="ua_find_failed">No se pudo abrir la página del harness para buscar. Revisa la conexión y vuelve a intentarlo.</string>
 </resources>

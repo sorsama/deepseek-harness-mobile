@@ -1,5 +1,6 @@
 package com.labteto.dshmobile.ui.screens.addons
 
+import android.os.SystemClock
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -41,13 +44,22 @@ import com.labteto.dshmobile.R
 import com.labteto.dshmobile.connection.AppSettings
 import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.core.settings.SettingsFailure
+import com.labteto.dshmobile.core.uisync.UiSyncDiscoveryOutcome
+import com.labteto.dshmobile.core.uisync.UiSyncDiscoveryPhase
+import com.labteto.dshmobile.core.uisync.UiSyncDiscoveryTrigger
 import com.labteto.dshmobile.core.uisync.UiSyncSettingsPhase
 import com.labteto.dshmobile.core.uisync.UiSyncSettingsState
 import com.labteto.dshmobile.core.uisync.UiSyncStoredItem
+import com.labteto.dshmobile.core.uisync.uiSyncDiscoveryNeed
+import com.labteto.dshmobile.core.uisync.uiSyncDiscoveryStale
 import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.core.wire.managedPlugins
 import com.labteto.dshmobile.data.SessionStore
+import com.labteto.dshmobile.ui.addons.LocalUiAddonsHost
+import com.labteto.dshmobile.ui.addons.UiAddonsDiscoveryRecords
 import com.labteto.dshmobile.ui.addons.uiAddonsDefaultOn
+import com.labteto.dshmobile.ui.addons.uiAddonsHostKey
+import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsCard
 import com.labteto.dshmobile.ui.components.SectionHeader
 import com.labteto.dshmobile.ui.components.ToggleRow
@@ -140,7 +152,36 @@ fun UiAddonsScreen(settings: AppSettings, onClose: () -> Unit) {
     LaunchedEffect(Unit) { store.refreshUiAddons() }
     // Reopened, the page should not scold for a change nobody is making.
     DisposableEffect(store) { onDispose { store.uiAddonsSettings.clearFailures() } }
-    val titles = rememberAddonPackageTitles(store, host, connection.phase == ConnectionPhase.CONNECTED)
+    val connected = connection.phase == ConnectionPhase.CONNECTED
+    val titles = rememberAddonPackageTitles(store, host, connected)
+
+    // Finding add-ons the harness has not listed yet: the web layer runs the page, this page shows how it goes.
+    val discovery by store.uiAddonsDiscovery.state.collectAsStateWithLifecycle()
+    val inventory by store.uiAddonsInventory.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val records = remember(context) { UiAddonsDiscoveryRecords(context) }
+    val canDiscover = LocalUiAddonsHost.current != null
+    // The run whose result this page shows: one started here, or one it saw running.
+    var watchedRun by rememberSaveable { mutableStateOf<Long?>(null) }
+    LaunchedEffect(discovery) { (discovery as? UiSyncDiscoveryPhase.Running)?.let { watchedRun = it.run } }
+    val plugins = inventory?.takeIf { it.host == host }
+    val need = remember(state.row, state.store, plugins) {
+        if (state.row != null && plugins != null) uiSyncDiscoveryNeed(state.store, plugins.entries) else null
+    }
+    val hostConfig = connection.host
+    // Read again with every step of a run: its end writes the record.
+    val record = remember(hostConfig, discovery) { hostConfig?.let { records.get(uiAddonsHostKey(it)) } }
+    val find: (() -> Unit)? = if (canDiscover && connected) {
+        { watchedRun = store.uiAddonsDiscovery.start(UiSyncDiscoveryTrigger.MANUAL, SystemClock.elapsedRealtime()) }
+    } else {
+        null
+    }
+    val finding = AddonsFinding(
+        phase = discovery,
+        result = (discovery as? UiSyncDiscoveryPhase.Done)?.takeIf { it.run == watchedRun }?.outcome,
+        stale = uiSyncDiscoveryStale(need, record),
+        find = find,
+    )
 
     FeaturePage(
         title = stringResource(R.string.ua_title),
@@ -148,10 +189,20 @@ fun UiAddonsScreen(settings: AppSettings, onClose: () -> Unit) {
         onClose = onClose,
         onRefresh = { store.refreshUiAddons() },
     ) {
-        if (connection.phase != ConnectionPhase.CONNECTED) Notice(stringResource(R.string.common_offline), warning = true)
+        if (!connected) Notice(stringResource(R.string.common_offline), warning = true)
         if (!shownHere) Notice(stringResource(R.string.ua_off_notice), warning = false)
-        UiAddonsBody(state, store, titles)
+        UiAddonsBody(state, store, titles, finding)
     }
+}
+
+/** What the page knows about finding add-ons: the run, the result of the one it watched, whether the list looks stale, and the action (null when none can run). */
+private data class AddonsFinding(
+    val phase: UiSyncDiscoveryPhase,
+    val result: UiSyncDiscoveryOutcome?,
+    val stale: Boolean,
+    val find: (() -> Unit)?,
+) {
+    val running: Boolean get() = phase is UiSyncDiscoveryPhase.Running
 }
 
 /**
@@ -181,7 +232,7 @@ private fun rememberAddonPackageTitles(store: SessionStore, host: String?, conne
 }
 
 @Composable
-private fun UiAddonsBody(state: UiSyncSettingsState, store: SessionStore, titles: Map<String, String>) {
+private fun UiAddonsBody(state: UiSyncSettingsState, store: SessionStore, titles: Map<String, String>, finding: AddonsFinding) {
     val colors = DsTheme.colors
     when (val phase = state.phase) {
         UiSyncSettingsPhase.Idle, UiSyncSettingsPhase.Loading -> if (state.row == null) Skeleton()
@@ -204,9 +255,10 @@ private fun UiAddonsBody(state: UiSyncSettingsState, store: SessionStore, titles
     }
     val groups = state.store.byPackage
     if (groups.isEmpty()) {
-        Text(stringResource(R.string.ua_empty), style = DsType.std14, color = colors.labelTertiary)
+        EmptyAddons(finding)
         return
     }
+    FindingAboveList(finding)
     val headings = groups.map { (pkg, _) -> addonPackageTitle(pkg, titles) }
     groups.forEachIndexed { groupIndex, (pkg, items) ->
         val heading = headings[groupIndex]
@@ -220,6 +272,99 @@ private fun UiAddonsBody(state: UiSyncSettingsState, store: SessionStore, titles
             }
         }
     }
+    // A quiet way to look again, for a plugin added since (the list cannot always tell).
+    val find = finding.find
+    if (find != null && !finding.running && !finding.stale && finding.result != UiSyncDiscoveryOutcome.FAILED) {
+        FeatureAction(stringResource(R.string.ua_find_more), variant = DsButtonVariant.Ghost, onClick = find)
+    }
+}
+
+/**
+ * The list is empty: say what belongs here and offer to look. While a look runs, it says so; when
+ * one this page watched found nothing, or failed, it says that and offers to look again.
+ */
+@Composable
+private fun EmptyAddons(finding: AddonsFinding) {
+    val colors = DsTheme.colors
+    val nothing = finding.result == UiSyncDiscoveryOutcome.NOTHING && !finding.running
+    val failed = finding.result == UiSyncDiscoveryOutcome.FAILED && !finding.running
+    DsCard(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+        Text(
+            stringResource(if (nothing) R.string.ua_nothing_title else R.string.ua_empty_title),
+            style = DsType.rowTitle,
+            color = colors.labelPrimary,
+            modifier = Modifier.semantics { heading() },
+        )
+        Text(
+            stringResource(if (nothing) R.string.ua_nothing else R.string.ua_empty),
+            style = DsType.std14,
+            color = colors.labelSecondary,
+            modifier = if (nothing) Modifier.semantics { liveRegion = LiveRegionMode.Polite } else Modifier,
+        )
+        when {
+            finding.running -> FindingProgress()
+            failed -> FindFailed()
+            finding.find != null && !nothing -> Text(stringResource(R.string.ua_find_hint), style = DsType.small13, color = colors.labelTertiary)
+        }
+        val find = finding.find
+        if (find != null && !finding.running) {
+            FeatureAction(
+                stringResource(if (nothing || failed) R.string.ua_find_again else R.string.ua_find),
+                variant = DsButtonVariant.Outline,
+                onClick = find,
+            )
+        }
+    }
+}
+
+/** The list has items: a look in progress, its result, or a note that a plugin may be missing. */
+@Composable
+private fun FindingAboveList(finding: AddonsFinding) {
+    val colors = DsTheme.colors
+    val find = finding.find
+    when {
+        finding.running -> DsCard { FindingProgress() }
+        finding.result == UiSyncDiscoveryOutcome.FAILED -> DsCard(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+            FindFailed()
+            if (find != null) FeatureAction(stringResource(R.string.ua_find_again), onClick = find)
+        }
+        finding.result == UiSyncDiscoveryOutcome.FOUND -> Box(Modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
+            Notice(stringResource(R.string.ua_found), warning = false)
+        }
+        finding.stale && find != null -> DsCard(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
+            Text(stringResource(R.string.ua_stale), style = DsType.std14, color = colors.labelSecondary)
+            Text(stringResource(R.string.ua_find_hint), style = DsType.small13, color = colors.labelTertiary)
+            FeatureAction(stringResource(R.string.ua_find), onClick = find)
+        }
+    }
+}
+
+/** "Looking for add-ons", with a spinner; read out once when it appears. */
+@Composable
+private fun FindingProgress() {
+    val colors = DsTheme.colors
+    val text = stringResource(R.string.ua_finding)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = DsSpacing.touchTarget)
+            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
+    ) {
+        CircularProgressIndicator(Modifier.size(18.dp), color = colors.labelSecondary, strokeWidth = 2.dp)
+        Text(text, style = DsType.std14, color = colors.labelSecondary)
+    }
+}
+
+@Composable
+private fun FindFailed() {
+    Text(
+        stringResource(R.string.ua_find_failed),
+        style = DsType.small13,
+        color = DsTheme.colors.error,
+        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+    )
 }
 
 /** A technical id as a small, secondary line a person can select and copy, left to right in every language. */

@@ -23,7 +23,7 @@
     <string name="ua_slot_sidebar_footer">Кнопка внизу боковой панели</string>
     <string name="ua_slot_other">В другом месте harness</string>
     <string name="ua_place_none">Для этого элемента место есть только на компьютере.</string>
-    <string name="ua_empty">Пока дополнений нет. Они появятся здесь, когда веб-страницу harness хотя бы раз откроют с установленным плагином.</string>
+    <string name="ua_empty">Питомцы, дополнительные кнопки и другие элементы из плагинов harness появятся здесь, когда страница harness их перечислит.</string>
     <string name="ua_off_notice">Дополнения скрыты на этом телефоне. Ваш выбор здесь по-прежнему действует на компьютере.</string>
     <string name="ua_read_only">Harness хранит эти настройки только для чтения, поэтому отсюда их изменить нельзя.</string>
     <string name="ua_missing">В harness больше нет плагина dsh-ui-sync.</string>
@@ -32,4 +32,16 @@
     <string name="ua_err_rejected">Harness не принял это изменение.</string>
     <string name="ua_err_unreachable">Не удалось связаться с harness. Ничего не сохранено.</string>
     <string name="ua_err_unavailable">Через это подключение нельзя менять дополнения.</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">Пока дополнений нет</string>
+    <string name="ua_stale">Плагин добавили или изменили после того, как был составлен этот список, поэтому он может быть неполным.</string>
+    <string name="ua_find">Найти дополнения</string>
+    <string name="ua_find_more">Поискать новые дополнения</string>
+    <string name="ua_find_again">Поискать ещё раз</string>
+    <string name="ua_find_hint">Страница harness незаметно откроется на несколько секунд, чтобы плагины сообщили, что они добавляют. Потом она закроется сама.</string>
+    <string name="ua_finding">Ищем дополнения</string>
+    <string name="ua_found">Дополнения найдены. Выберите, где показывать каждое.</string>
+    <string name="ua_nothing_title">Ничего не найдено</string>
+    <string name="ua_nothing">Плагины этого harness не добавляют ни питомца, ни кнопок, ничего, что могут показать телефон или компьютер.</string>
+    <string name="ua_find_failed">Не удалось открыть страницу harness для поиска. Проверьте подключение и попробуйте ещё раз.</string>
 </resources>

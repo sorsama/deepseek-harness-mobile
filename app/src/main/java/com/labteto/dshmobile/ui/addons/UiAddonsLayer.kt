@@ -32,6 +32,8 @@ import com.labteto.dshmobile.connection.HarnessSessionStore
 import com.labteto.dshmobile.connection.HostsStore
 import com.labteto.dshmobile.connection.RelayHandoffOutcome
 import com.labteto.dshmobile.connection.RelaySessionHandoff
+import com.labteto.dshmobile.core.uisync.uiSyncDiscoveryNeed
+import com.labteto.dshmobile.core.uisync.uiSyncPluginFingerprint
 import com.labteto.dshmobile.ui.rememberSessionStore
 import com.labteto.dshmobile.ui.theme.LocalThemeCustomization
 import com.labteto.dshmobile.ui.theme.isDsDark
@@ -102,8 +104,9 @@ internal fun rememberUiAddonsHost(): UiAddonsHost? {
     val entry = remember(context) { EntryPointAccessors.fromApplication(context.applicationContext, UiAddonsEntryPoint::class.java) }
     val sessions = remember(entry) { entry.uiAddonsHarnessSessions() }
     val relayHandoff = remember(entry) { entry.uiAddonsRelayHandoff() }
+    val records = remember(context) { UiAddonsDiscoveryRecords(context) }
     val host = remember(activity, store) {
-        UiAddonsHost(activity, store.uiAddons) handoff@{ target ->
+        UiAddonsHost(activity, store.uiAddons, store.uiAddonsDiscovery, records, refreshStore = { store.uiAddonsSettings.refresh() }) handoff@{ target ->
             // Only for the relay the page belongs to: a host switch while the code was on its way drops it.
             val config = store.connectionState.value.host
                 ?.takeIf { it.isRelay && uiAddonsTarget(it, null)?.key == target.key }
@@ -127,7 +130,16 @@ internal fun rememberUiAddonsHost(): UiAddonsHost? {
         cookie = config?.takeIf { !it.isRelay }?.let { sessions.cookie(it.id) }
     }
     val target = remember(config, cookie) { config?.let { uiAddonsTarget(it, cookie) } }
-    val binding = UiAddonsBinding(target, available, enabled, addonSettings.phoneItems)
+    // Discovery: does the item store miss something the plugin list has? Judged only once both are read for this host.
+    val inventory by store.uiAddonsInventory.collectAsStateWithLifecycle()
+    val session by store.currentSessionId.collectAsStateWithLifecycle()
+    val plugins = inventory?.takeIf { it.host == store.activeHostKey }
+    val storeRead = addonSettings.row?.let { addonSettings.store }
+    val (need, fingerprint) = remember(storeRead, plugins) {
+        val need = if (storeRead != null && plugins != null) uiSyncDiscoveryNeed(storeRead, plugins.entries) else null
+        need to uiSyncPluginFingerprint(plugins?.entries)
+    }
+    val binding = UiAddonsBinding(target, available, enabled, addonSettings.phoneItems, storeRead, need, fingerprint, session)
     LaunchedEffect(host, binding) { host.bind(binding) }
     return host
 }

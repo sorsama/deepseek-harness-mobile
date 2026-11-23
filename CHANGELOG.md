@@ -27,6 +27,15 @@ All notable changes to DSH Mobile are documented here. Format based on
   and TalkBack can read the items. Works on this phone, on the local network and through a relay
   (relay 0.5.0 or later).
 
+- **Add-ons show up without opening the harness on the desktop first.** A harness lists its plugin
+  items only once its web page has been opened, so on a harness nobody opened in a browser since the
+  plugin went in, the phone had nothing to show and Settings > Add-ons stayed empty. Now the app
+  notices that the list is missing something next to the harness's plugin list and opens the page
+  itself for a few seconds, out of sight, once per set of plugins; the pet then simply appears. The
+  Add-ons page has a **Find add-ons** button for the same look by hand (it works with the switch off
+  too), shows its progress, and says **Nothing found** when no plugin adds anything. Works on this
+  phone, on the local network and through a relay.
+
 ### Fixed
 
 - **The end of the newest message no longer hides under the composer's drawer.** Once a draft wraps

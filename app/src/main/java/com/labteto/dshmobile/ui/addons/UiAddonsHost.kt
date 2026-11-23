@@ -13,6 +13,7 @@ import android.net.http.SslError
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
@@ -53,13 +54,22 @@ import androidx.webkit.WebViewFeature
 import androidx.webkit.WebViewRenderProcess
 import com.labteto.dshmobile.BuildConfig
 import com.labteto.dshmobile.connection.RelayHandoffOutcome
+import com.labteto.dshmobile.core.uisync.UI_SYNC_UNKNOWN_PLUGINS
+import com.labteto.dshmobile.core.uisync.UiSyncDiscovery
+import com.labteto.dshmobile.core.uisync.UiSyncDiscoveryNeed
+import com.labteto.dshmobile.core.uisync.UiSyncDiscoveryOutcome
+import com.labteto.dshmobile.core.uisync.UiSyncDiscoveryPhase
+import com.labteto.dshmobile.core.uisync.UiSyncDiscoveryRecord
+import com.labteto.dshmobile.core.uisync.UiSyncDiscoveryTrigger
 import com.labteto.dshmobile.core.uisync.UiSyncErrorCode
 import com.labteto.dshmobile.core.uisync.UiSyncFeature
 import com.labteto.dshmobile.core.uisync.UiSyncHitRegion
 import com.labteto.dshmobile.core.uisync.UiSyncHostMessage
+import com.labteto.dshmobile.core.uisync.UiSyncItemStore
 import com.labteto.dshmobile.core.uisync.UiSyncPageMessage
 import com.labteto.dshmobile.core.uisync.UiSyncProtocol
 import com.labteto.dshmobile.core.uisync.UiSyncState
+import com.labteto.dshmobile.core.uisync.uiSyncAutoDiscoveryAllowed
 import com.labteto.dshmobile.core.wire.RelayTls
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -93,6 +103,17 @@ internal data class UiAddonsBinding(
     val enabled: Boolean,
     /** Some item would show on the phone (the host's item store): true, false, or null while unknown. */
     val phoneItems: Boolean?,
+    /** The host's item store as last read, null until read: a discovery load ends once the page's items are in it. */
+    val store: UiSyncItemStore? = null,
+    /**
+     * The item store looks incomplete next to the host's plugin list ([uiSyncDiscoveryNeed]); null
+     * when it looks complete, or before both were read.
+     */
+    val need: UiSyncDiscoveryNeed? = null,
+    /** The host's plugin set as a discovery load records it ([uiSyncPluginFingerprint]). */
+    val fingerprint: String = UI_SYNC_UNKNOWN_PLUGINS,
+    /** The chat's open session: a discovery page follows it while the chat is not on screen. */
+    val sessionId: String? = null,
 )
 
 /**
@@ -125,11 +146,25 @@ internal data class UiAddonsBinding(
  * profile of its own where the platform has profiles (elsewhere the sign-in cookie is removed again
  * when the view goes).
  *
+ * Discovery ([UiSyncDiscovery]): the host's item store fills only when a page loads, so on a
+ * harness where none has since the companion or a plugin went in, the store is empty or misses that
+ * plugin, and the rules above would never load the page that fills it. When the store looks
+ * incomplete ([UiAddonsBinding.need]), at most once per plugin set ([UiAddonsDiscoveryRecords]), or
+ * when someone taps "Find add-ons", the layer loads the page anyway in [UiAddonsMode.Discover]:
+ * live, but invisible, untouchable and hidden from TalkBack, over whatever is on screen. It waits
+ * for the page's items to reach the store, then takes the page down again (renderer included)
+ * unless the normal rules would now make it, as they do when the chat is open and an item can show.
+ *
  * A failure is quiet: logged, nothing on screen. Main thread only.
  */
 internal class UiAddonsHost(
     private val activity: ComponentActivity,
     private val state: UiSyncState,
+    /** The process's discovery load, shared with the Add-ons page that shows it. */
+    private val discovery: UiSyncDiscovery,
+    private val records: UiAddonsDiscoveryRecords,
+    /** Read the host's `ui-sync` row again. */
+    private val refreshStore: () -> Unit,
     /** Trade the relay's device token for a one-time web view code (relay targets only). */
     private val handoff: suspend (UiAddonsTarget) -> RelayHandoffOutcome,
 ) : DefaultLifecycleObserver, ComponentCallbacks2 {
@@ -259,6 +294,17 @@ internal class UiAddonsHost(
         }
     }
 
+    // Discovery state; declared before init, which starts listening to the runs.
+    private var discoveryJob: Job? = null
+    /** The last phase heard, to tell a new run and an ending one from progress within a run. */
+    private var heardPhase: UiSyncDiscoveryPhase = UiSyncDiscoveryPhase.Idle
+    private var ticking = false
+    private var storeAskedAt = 0L
+    private val tick = Runnable {
+        ticking = false
+        checkDiscovery()
+    }
+
     init {
         activity.lifecycle.addObserver(this)
         activity.registerComponentCallbacks(this)
@@ -269,6 +315,10 @@ internal class UiAddonsHost(
                 Settings.Global.getUriFor(Settings.Global.ANIMATOR_DURATION_SCALE), false, motionObserver,
             )
         }
+        // Posted, never run inside the change: a run that fails in the middle of sync() must not start another sync().
+        discoveryJob = activity.lifecycleScope.launch {
+            discovery.state.collect { phase -> main.post { onDiscoveryPhase(phase) } }
+        }
     }
 
     /** The connected host and whether the layer may load for it (see [UiAddonsBinding]). */
@@ -276,6 +326,100 @@ internal class UiAddonsHost(
         if (this.binding == binding) return
         this.binding = binding
         sync()
+        checkDiscovery()
+        considerDiscovery()
+    }
+
+    // ------------------------------------------------------------------ discovery
+
+    private fun elapsed(): Long = SystemClock.elapsedRealtime()
+
+    private fun onDiscoveryPhase(phase: UiSyncDiscoveryPhase) {
+        if (destroyed) return
+        val before = heardPhase
+        heardPhase = phase
+        val wasRunning = before as? UiSyncDiscoveryPhase.Running
+        when (phase) {
+            is UiSyncDiscoveryPhase.Running -> if (wasRunning?.run != phase.run) {
+                onRunStarted(phase)
+                sync()
+            }
+            is UiSyncDiscoveryPhase.Done -> {
+                onRunDone(phase)
+                if (wasRunning != null) sync()
+            }
+            UiSyncDiscoveryPhase.Idle -> if (wasRunning != null) sync()
+        }
+        if (phase is UiSyncDiscoveryPhase.Running) scheduleTick()
+    }
+
+    private fun onRunStarted(run: UiSyncDiscoveryPhase.Running) {
+        Log.i(TAG, "discovery ${run.run}: looking for add-ons (${run.trigger.name.lowercase()})")
+        val target = binding.target
+        if (target != null && run.run !in pendingRuns) {
+            val info = RunInfo(target.key, binding.fingerprint, System.currentTimeMillis())
+            pendingRuns[run.run] = info
+            // Written now as a failure: a run the process does not live to finish is tried again later, not never.
+            records.put(info.hostKey, UiSyncDiscoveryRecord(info.fingerprint, info.startedAt, UiSyncDiscoveryOutcome.FAILED))
+        }
+        storeAskedAt = 0L
+        // A page that is up already (the chat's own) is asked for a fresh snapshot rather than loaded again.
+        page?.takeIf { it.ready }?.post(UiSyncHostMessage.Hello(APP_NAME, BuildConfig.VERSION_NAME))
+    }
+
+    private fun onRunDone(done: UiSyncDiscoveryPhase.Done) {
+        main.removeCallbacks(tick)
+        ticking = false
+        val info = pendingRuns.remove(done.run) ?: return
+        Log.i(TAG, "discovery ${done.run}: ${done.outcome.name.lowercase()}")
+        records.put(info.hostKey, UiSyncDiscoveryRecord(info.fingerprint, info.startedAt, done.outcome))
+        // What the harness holds now, for the Add-ons page and the phone gate.
+        refreshStore()
+    }
+
+    private fun scheduleTick() {
+        if (ticking || destroyed) return
+        ticking = true
+        main.postDelayed(tick, DISCOVERY_TICK_MS)
+    }
+
+    /** Ask the run whether it is over; while the page's items are not in the store yet, read the store again now and then. */
+    private fun checkDiscovery() {
+        if (destroyed || !discovery.running) return
+        val now = elapsed()
+        val phase = discovery.check(now, binding.store)
+        if (phase !is UiSyncDiscoveryPhase.Running) return
+        val reported = phase.pageItems
+        val stored = binding.store?.items?.mapTo(HashSet()) { it.id }
+        // The page's change notice may not reach this app (a missed event); one read every few seconds is cheap.
+        if (!reported.isNullOrEmpty() && (stored == null || !stored.containsAll(reported)) && now - storeAskedAt >= STORE_ASK_MS) {
+            storeAskedAt = now
+            refreshStore()
+        }
+        scheduleTick()
+    }
+
+    /** The page cannot do its part ([reason], for the log): a discovery in progress ends as a failure. */
+    private fun failDiscovery(reason: String) {
+        if (!discovery.running) return
+        Log.i(TAG, "discovery page failed: $reason")
+        discovery.onPageFailed(elapsed())
+    }
+
+    /**
+     * Start a discovery on the app's own when the item store looks incomplete: only with the switch
+     * on and the companion there, the app in front, no page up already (a live page records its
+     * items itself), and at most once per plugin set and host.
+     */
+    private fun considerDiscovery() {
+        if (destroyed || !started || discovery.running || page != null || !supported) return
+        val need = binding.need ?: return
+        val target = binding.target ?: return
+        if (!binding.enabled || binding.available != true) return
+        if ((crashes[target.key] ?: 0) >= MAX_RENDERER_CRASHES) return
+        if (!uiSyncAutoDiscoveryAllowed(records.get(target.key), need, System.currentTimeMillis())) return
+        Log.i(TAG, "item store looks incomplete (${need.reason.name.lowercase()})")
+        discovery.start(UiSyncDiscoveryTrigger.AUTO, elapsed())
     }
 
     /** The chat is on screen as [presence] describes, or off screen (null). */
@@ -289,6 +433,9 @@ internal class UiAddonsHost(
     fun destroy() {
         if (destroyed) return
         destroyed = true
+        // A discovery in progress is not ended here: the next activity (a rotation) picks it up.
+        discoveryJob?.cancel()
+        main.removeCallbacks(tick)
         teardown(rendererGone = false)
         backCallback.remove()
         activity.lifecycle.removeObserver(this)
@@ -305,6 +452,7 @@ internal class UiAddonsHost(
         val target = binding.target
         page?.let { if (it.target != target) teardown(rendererGone = false, release = target == null) }
         val presence = presence
+        val discovering = discovery.running
         val mode = uiAddonsMode(
             UiAddonsInputs(
                 available = binding.available,
@@ -318,13 +466,22 @@ internal class UiAddonsHost(
                 started = started,
                 hasView = page != null,
                 givenUp = target != null && (crashes[target.key] ?: 0) >= MAX_RENDERER_CRASHES,
+                discovering = discovering,
+                discoveryView = page?.forDiscovery == true,
             ),
         )
         if (mode == UiAddonsMode.Off || target == null) {
             teardown(rendererGone = false)
+            if (discovering) failDiscovery(if (target == null) "no page for this host" else "the page cannot load now")
             return
         }
-        val live = page ?: create(target) ?: return
+        val live = page ?: create(target)?.also { it.forDiscovery = mode == UiAddonsMode.Discover }
+        if (live == null) {
+            if (discovering) failDiscovery("no web view")
+            return
+        }
+        // The normal rules draw it now: it is the chat's page from here on, whatever the discovery does.
+        if (mode == UiAddonsMode.Shown || mode == UiAddonsMode.Covered) live.forDiscovery = false
         live.apply(mode, presence)
     }
 
@@ -350,6 +507,8 @@ internal class UiAddonsHost(
         var failed = false
         var paused = false
         var mode = UiAddonsMode.Off
+        /** Made for a discovery load, and not taken over by the chat since (see [UiAddonsInputs.discoveryView]). */
+        var forDiscovery = false
         var sentInsets: UiSyncHostMessage.Insets? = null
         var sentDark: Boolean? = null
         var sentSession: String? = null
@@ -364,7 +523,7 @@ internal class UiAddonsHost(
 
         fun apply(mode: UiAddonsMode, presence: UiAddonsPresence?) {
             this.mode = mode
-            if (presence != null) place(presence)
+            if (presence != null) place(presence) else if (mode == UiAddonsMode.Discover) placeFull()
             val away = mode == UiAddonsMode.Away
             view.visibility = if (away) View.INVISIBLE else View.VISIBLE
             if (away && !paused) {
@@ -383,7 +542,10 @@ internal class UiAddonsHost(
             back.update(supported = ready && UiSyncFeature.BACK in features, shown = shown)
             // A field the page holds focus in lets go when the layer steps aside.
             if (!shown && focus.itemId != null && !post(UiSyncHostMessage.Blur())) focus.reset()
-            if (greeted && presence != null) sendState(presence)
+            if (greeted) {
+                // Off the chat, a discovery page still opens the chat's session, so its session slots can mount.
+                if (presence != null) sendState(presence) else if (mode == UiAddonsMode.Discover) follow(binding.sessionId)
+            }
         }
 
         /** Load the page again: through a new relay code, or the host's index with the cookie already in place. */
@@ -402,6 +564,7 @@ internal class UiAddonsHost(
             if (handoffs >= MAX_HANDOFFS) {
                 Log.w(TAG, "relay handoff given up after $handoffs tries")
                 failed = true
+                failDiscovery("relay handoff given up")
                 return
             }
             handoffs++
@@ -421,16 +584,19 @@ internal class UiAddonsHost(
                         // The device token itself is refused; the app's own calls will say "pair again".
                         Log.w(TAG, "relay refused the web view handoff")
                         failed = true
+                        failDiscovery("relay refused the handoff")
                     }
                     RelayHandoffOutcome.Unsupported -> {
                         // A relay older than 0.5.0: no page for this host until it changes.
                         Log.i(TAG, "relay has no web view handoff")
                         crashes[target.key] = MAX_RENDERER_CRASHES
                         teardown(rendererGone = false)
+                        failDiscovery("relay has no handoff")
                     }
                     is RelayHandoffOutcome.Failed -> {
                         Log.w(TAG, "relay handoff failed: ${outcome.reason}")
                         failed = true
+                        failDiscovery("relay handoff failed")
                     }
                 }
             }
@@ -454,6 +620,24 @@ internal class UiAddonsHost(
             view.layoutParams = params
         }
 
+        /**
+         * A discovery page with no chat to sit over (Settings is open): the whole content frame, so
+         * the page lays out at a phone's size. It draws nothing and takes no touch there.
+         */
+        @SuppressLint("RtlHardcoded")
+        private fun placeFull() {
+            if (placed?.contentEquals(FULL_FRAME) == true) return
+            placed = FULL_FRAME.copyOf()
+            val params = (view.layoutParams as? FrameLayout.LayoutParams)
+                ?: FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT
+            params.height = ViewGroup.LayoutParams.MATCH_PARENT
+            params.gravity = Gravity.TOP or Gravity.LEFT
+            params.leftMargin = 0
+            params.topMargin = 0
+            view.layoutParams = params
+        }
+
         /** Where the view's alpha is going; it starts invisible. */
         private var fadeTarget = 0f
 
@@ -472,15 +656,18 @@ internal class UiAddonsHost(
             }
             if (presence.dark != sentDark && post(UiSyncHostMessage.Theme(presence.dark))) sentDark = presence.dark
             sendMotion()
-            val session = presence.sessionId
-            if (session != null && session != sentSession) {
-                if (session != followedOnce) followRefusals = 0
-                val requestId = UiSyncState.requestId("f")
-                if (post(UiSyncHostMessage.FollowSession(session, requestId))) {
-                    sentSession = session
-                    followedOnce = session
-                    followRequest = requestId
-                }
+            follow(presence.sessionId)
+        }
+
+        /** `host/follow-session` for [session], unless the page was sent it already. */
+        fun follow(session: String?) {
+            if (session == null || session == sentSession) return
+            if (session != followedOnce) followRefusals = 0
+            val requestId = UiSyncState.requestId("f")
+            if (post(UiSyncHostMessage.FollowSession(session, requestId))) {
+                sentSession = session
+                followedOnce = session
+                followRequest = requestId
             }
         }
 
@@ -596,6 +783,7 @@ internal class UiAddonsHost(
                     handoffs = 0
                     focus.supported = UiSyncFeature.FOCUS in features
                     state.attach { json -> main.post { if (page === this) postJson(json) } }
+                    if (discovery.running) discovery.onPageReady(elapsed())
                     if (!greeted) {
                         greeted = true
                         post(UiSyncHostMessage.Hello(APP_NAME, BuildConfig.VERSION_NAME))
@@ -606,6 +794,10 @@ internal class UiAddonsHost(
                 is UiSyncPageMessage.HitRects -> {
                     message.dpr?.let { dpr = it.toFloat() }
                     view.router.region = UiSyncHitRegion.of(message, view.resources.displayMetrics.density)
+                }
+                is UiSyncPageMessage.Items -> if (ready && discovery.running) {
+                    discovery.onPageItems(message.items.mapTo(HashSet()) { it.id }, elapsed())
+                    checkDiscovery()
                 }
                 is UiSyncPageMessage.Focus -> focus.onPageFocus(message.editable, message.itemId)
                 is UiSyncPageMessage.Dialogs -> back.update(dialogs = message.items)
@@ -774,6 +966,7 @@ internal class UiAddonsHost(
             if (request?.isForMainFrame != true || this@UiAddonsHost.page !== page) return
             page.failed = true
             Log.w(TAG, "page failed to load: ${error?.errorCode}")
+            failDiscovery("page failed to load")
         }
 
         override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
@@ -809,6 +1002,7 @@ internal class UiAddonsHost(
             crashes[page.target.key] = (crashes[page.target.key] ?: 0) + 1
             Log.w(TAG, "page renderer gone (crash=${detail?.didCrash()})")
             teardown(rendererGone = true)
+            failDiscovery("renderer gone")
             main.post { sync() }
             return true
         }
@@ -926,6 +1120,7 @@ internal class UiAddonsHost(
     override fun onStart(owner: LifecycleOwner) {
         started = true
         sync()
+        considerDiscovery()
     }
 
     override fun onStop(owner: LifecycleOwner) {
@@ -944,6 +1139,7 @@ internal class UiAddonsHost(
         if (critical || (!started && level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND)) {
             if (page != null) Log.i(TAG, "add-on page released (trim level $level)")
             teardown(rendererGone = false)
+            failDiscovery("memory trim")
         }
     }
 
@@ -952,6 +1148,7 @@ internal class UiAddonsHost(
     @Suppress("OVERRIDE_DEPRECATION")
     override fun onLowMemory() {
         teardown(rendererGone = false)
+        failDiscovery("low memory")
     }
 
     // ------------------------------------------------------------------ profile and cookie
@@ -993,10 +1190,25 @@ internal class UiAddonsHost(
         /** How long a discarded page's renderer waits for a new page before it is ended. */
         const val RENDERER_RELEASE_MS = 2_000L
 
+        /** How often a discovery in progress is checked. */
+        const val DISCOVERY_TICK_MS = 500L
+
+        /** How often a discovery reads the store again while the page's items are not in it. */
+        const val STORE_ASK_MS = 3_000L
+
+        /** [Page.placed] for a page laid over the whole content frame. */
+        val FULL_FRAME = intArrayOf(-1, -1, -1, -1)
+
+        /** What each discovery run in this process is for, to record how it ended (it may outlive an activity). */
+        val pendingRuns = mutableMapOf<Long, RunInfo>()
+
         /** Add-on pages alive in this process, over every activity: the renderer is ended only at zero. */
         val livePages = AtomicInteger(0)
     }
 }
+
+/** A discovery run's host ([UiAddonsTarget.key]), plugin set and start (wall clock), to record how it ended. */
+internal data class RunInfo(val hostKey: String, val fingerprint: String, val startedAt: Long)
 
 /** The X.509 form of a WebView certificate, to compare its key with a pin. */
 private fun x509Of(certificate: SslCertificate): X509Certificate? {

@@ -71,7 +71,7 @@ internal data class UiAddonsTarget(
 internal fun uiAddonsTarget(host: HostConfig, cookie: String?): UiAddonsTarget? {
     val page = runCatching { resolveHarnessUrl(host.baseUrl, "/") }.getOrNull() ?: return null
     if (page.scheme != "http" && page.scheme != "https") return null
-    val key = "${host.id}|${host.baseUrl}"
+    val key = uiAddonsHostKey(host)
     if (host.isRelay) {
         return UiAddonsTarget(key = key, pageUrl = page.toString(), origin = originOf(page), auth = UiAddonsAuth.RelayHandoff, pin = host.relayFingerprint)
     }
@@ -140,6 +140,12 @@ internal enum class UiAddonsMode {
 
     /** Drawn over the chat, with touches inside its hit rectangles. */
     Shown,
+
+    /**
+     * A discovery load: the page runs live so it can record its items in the host's item store, but
+     * shows nothing, takes no touch and is hidden from TalkBack, wherever the app is (Settings too).
+     */
+    Discover,
 }
 
 /** Everything [uiAddonsMode] decides from. */
@@ -171,6 +177,16 @@ internal data class UiAddonsInputs(
     val hasView: Boolean,
     /** The page for [target] failed for good (its renderer kept dying); no new view is made for it. */
     val givenUp: Boolean = false,
+    /**
+     * A discovery load wants the page (the item store looked incomplete, or someone tapped "Find
+     * add-ons"). It needs neither the switch, nor items for the phone, nor the chat.
+     */
+    val discovering: Boolean = false,
+    /**
+     * The view that exists was made for a discovery load. The normal rules then decide as if there
+     * were none: once the load is over, it stays only if they would make it now.
+     */
+    val discoveryView: Boolean = false,
 )
 
 /**
@@ -184,12 +200,26 @@ internal data class UiAddonsInputs(
  * - A view is made only for an open session on a chat that is on screen, with the app in front.
  * - Once made it stays across the chat going off screen or the app going to the background (Away),
  *   and across the drawer or Details covering it (Covered); it is destroyed with the host.
+ * - A discovery load makes the page whatever the switch, the item store or the chat say, as long as
+ *   the app is in front (Discover); when the normal rules would draw or keep it, they win, so a page
+ *   that finds items for the phone is simply shown. In the background a discovery page waits (Away).
  */
 internal fun uiAddonsMode(inputs: UiAddonsInputs): UiAddonsMode = with(inputs) {
-    if (target == null || available == false || !supported || !enabled || phoneItems == false || givenUp) return UiAddonsMode.Off
-    if ((available == null || phoneItems == null) && !hasView) return UiAddonsMode.Off
-    if (!hasView && !(chatShown && started && sessionOpen && !covered)) return UiAddonsMode.Off
-    when {
+    if (target == null || available == false || !supported || givenUp) return UiAddonsMode.Off
+    val normal = normalMode()
+    if (!discovering || normal == UiAddonsMode.Shown || normal == UiAddonsMode.Covered) return normal
+    if (available == null && !hasView) return UiAddonsMode.Off
+    if (!started) return if (hasView) UiAddonsMode.Away else UiAddonsMode.Off
+    UiAddonsMode.Discover
+}
+
+/** [uiAddonsMode] without a discovery load, once the host has a page to load at all. */
+private fun UiAddonsInputs.normalMode(): UiAddonsMode {
+    val ownView = hasView && !discoveryView
+    if (!enabled || phoneItems == false) return UiAddonsMode.Off
+    if ((available == null || phoneItems == null) && !ownView) return UiAddonsMode.Off
+    if (!ownView && !(chatShown && started && sessionOpen && !covered)) return UiAddonsMode.Off
+    return when {
         !chatShown || !started -> UiAddonsMode.Away
         covered -> UiAddonsMode.Covered
         else -> UiAddonsMode.Shown

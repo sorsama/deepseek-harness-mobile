@@ -23,7 +23,7 @@
     <string name="ua_slot_sidebar_footer">侧边栏底部的按钮</string>
     <string name="ua_slot_other">harness 里的其他位置</string>
     <string name="ua_place_none">只有电脑端有地方放它。</string>
-    <string name="ua_empty">还没有界面扩展。装好插件并打开一次 harness 网页后，它们就会出现在这里。</string>
+    <string name="ua_empty">harness 插件提供的宠物、额外按钮等元素，会在 harness 网页列出后显示在这里。</string>
     <string name="ua_off_notice">界面扩展在这台手机上已隐藏。你在这里的选择对电脑端仍然有效。</string>
     <string name="ua_read_only">harness 把这些设置保存为只读，所以无法在这里更改。</string>
     <string name="ua_missing">harness 已经没有 dsh-ui-sync 插件了。</string>
@@ -32,4 +32,16 @@
     <string name="ua_err_rejected">harness 没有接受这次更改。</string>
     <string name="ua_err_unreachable">连不上 harness，什么都没有保存。</string>
     <string name="ua_err_unavailable">这个连接不能更改界面扩展。</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">还没有界面扩展</string>
+    <string name="ua_stale">这份列表生成后有插件被添加或更改，可能缺了一些。</string>
+    <string name="ua_find">查找界面扩展</string>
+    <string name="ua_find_more">查找新的界面扩展</string>
+    <string name="ua_find_again">再找一次</string>
+    <string name="ua_find_hint">这会在后台悄悄打开 harness 网页几秒钟，让插件报告它们添加了什么，完成后自动关闭。</string>
+    <string name="ua_finding">正在查找界面扩展</string>
+    <string name="ua_found">找到了界面扩展。选择每个项目显示的位置。</string>
+    <string name="ua_nothing_title">什么也没找到</string>
+    <string name="ua_nothing">这个 harness 上的插件都没有添加宠物、按钮或其他能在手机或电脑上显示的东西。</string>
+    <string name="ua_find_failed">无法打开 harness 网页进行查找。请检查连接后再试。</string>
 </resources>

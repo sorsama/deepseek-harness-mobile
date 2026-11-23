@@ -23,7 +23,7 @@
     <string name="ua_slot_sidebar_footer">ปุ่มด้านล่างของแถบด้านข้าง</string>
     <string name="ua_slot_other">ที่อื่นใน harness</string>
     <string name="ua_place_none">มีที่สำหรับรายการนี้บนคอมพิวเตอร์เท่านั้น</string>
-    <string name="ua_empty">ยังไม่มีส่วนเสริม รายการจะขึ้นที่นี่หลังจากเปิดหน้าเว็บของ harness หนึ่งครั้งโดยติดตั้งปลั๊กอินไว้แล้ว</string>
+    <string name="ua_empty">สัตว์เลี้ยง ปุ่มเพิ่มเติม และสิ่งอื่นๆ จากปลั๊กอินของ harness จะขึ้นที่นี่เมื่อหน้าของ harness แสดงรายการแล้ว</string>
     <string name="ua_off_notice">ส่วนเสริมถูกซ่อนบนโทรศัพท์เครื่องนี้ ตัวเลือกของคุณที่นี่ยังมีผลกับคอมพิวเตอร์</string>
     <string name="ua_read_only">harness เก็บการตั้งค่านี้เป็นแบบอ่านอย่างเดียว จึงเปลี่ยนจากที่นี่ไม่ได้</string>
     <string name="ua_missing">harness ไม่มีปลั๊กอิน dsh-ui-sync แล้ว</string>
@@ -32,4 +32,16 @@
     <string name="ua_err_rejected">harness ไม่ยอมรับการเปลี่ยนแปลงนี้</string>
     <string name="ua_err_unreachable">ติดต่อ harness ไม่ได้ จึงไม่ได้บันทึกอะไรเลย</string>
     <string name="ua_err_unavailable">การเชื่อมต่อนี้เปลี่ยนส่วนเสริมไม่ได้</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">ยังไม่มีส่วนเสริม</string>
+    <string name="ua_stale">มีการเพิ่มหรือเปลี่ยนปลั๊กอินหลังจากทำรายการนี้ จึงอาจมีบางอย่างขาดไป</string>
+    <string name="ua_find">ค้นหาส่วนเสริม</string>
+    <string name="ua_find_more">ค้นหาส่วนเสริมใหม่</string>
+    <string name="ua_find_again">ค้นหาอีกครั้ง</string>
+    <string name="ua_find_hint">การค้นหาจะเปิดหน้าของ harness แบบไม่ให้เห็นสักครู่ เพื่อให้ปลั๊กอินบอกว่าเพิ่มอะไรบ้าง แล้วจะปิดเองเมื่อเสร็จ</string>
+    <string name="ua_finding">กำลังค้นหาส่วนเสริม</string>
+    <string name="ua_found">พบส่วนเสริมแล้ว เลือกว่าแต่ละรายการจะแสดงที่ไหน</string>
+    <string name="ua_nothing_title">ไม่พบอะไรเลย</string>
+    <string name="ua_nothing">ไม่มีปลั๊กอินใดใน harness นี้ที่เพิ่มสัตว์เลี้ยง ปุ่ม หรือสิ่งอื่นที่โทรศัพท์หรือคอมพิวเตอร์แสดงได้</string>
+    <string name="ua_find_failed">เปิดหน้าของ harness เพื่อค้นหาไม่ได้ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง</string>
 </resources>

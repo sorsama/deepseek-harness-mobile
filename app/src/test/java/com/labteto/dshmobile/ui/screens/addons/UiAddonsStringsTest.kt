@@ -110,6 +110,30 @@ class UiAddonsStringsTest {
     }
 
     @Test
+    fun `the finding strings are there in every language and say different things`() {
+        locales.forEach { directory ->
+            val translated = strings(directory)
+            // Three buttons that do the same thing in three situations, three labels.
+            val actions = listOf("ua_find", "ua_find_more", "ua_find_again").map { translated.getValue(it) }
+            assertEquals(directory.name, 3, actions.toSet().size)
+            assertFalse(directory.name, translated.getValue("ua_empty_title") == translated.getValue("ua_nothing_title"))
+            // A result never reads like the progress line.
+            listOf("ua_found", "ua_nothing", "ua_find_failed").forEach {
+                assertFalse("${directory.name}/$it", translated.getValue(it) == translated.getValue("ua_finding"))
+            }
+        }
+    }
+
+    @Test
+    fun `the empty list no longer sends people to the web page`() {
+        // "Find add-ons" opens it for them now, and says it does, briefly.
+        val base = strings(File(res, "values"))
+        assertFalse(base.getValue("ua_empty").contains("opened once"))
+        assertTrue(base.getValue("ua_find_hint").contains("few seconds"))
+        assertTrue(base.getValue("ua_find_hint").length < 160)
+    }
+
+    @Test
     fun `the Add-ons title is not the word the language already uses for plugins`() {
         // Two cards side by side in Settings must not carry the same heading.
         locales.forEach { directory ->

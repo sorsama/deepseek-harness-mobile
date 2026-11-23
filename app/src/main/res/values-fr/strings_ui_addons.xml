@@ -23,7 +23,7 @@
     <string name="ua_slot_sidebar_footer">Bouton en bas de la barre latérale</string>
     <string name="ua_slot_other">Ailleurs dans le harness</string>
     <string name="ua_place_none">Seul l\'ordinateur a une place pour celui-ci.</string>
-    <string name="ua_empty">Aucun module pour l\'instant. Ils apparaissent ici une fois la page web du harness ouverte avec le plugin installé.</string>
+    <string name="ua_empty">Les animaux, les boutons en plus et les autres éléments des plugins du harness apparaissent ici une fois que la page du harness les a listés.</string>
     <string name="ua_off_notice">Les modules sont masqués sur ce téléphone. Vos choix ici valent toujours pour l\'ordinateur.</string>
     <string name="ua_read_only">Le harness garde ces réglages en lecture seule, ils ne peuvent donc pas être modifiés d\'ici.</string>
     <string name="ua_missing">Le harness n\'a plus le plugin dsh-ui-sync.</string>
@@ -32,4 +32,16 @@
     <string name="ua_err_rejected">Le harness n\'a pas accepté ce changement.</string>
     <string name="ua_err_unreachable">Impossible de joindre le harness. Rien n\'a été enregistré.</string>
     <string name="ua_err_unavailable">Cette connexion ne permet pas de modifier les modules.</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">Aucun module pour l\'instant</string>
+    <string name="ua_stale">Un plugin a été ajouté ou modifié depuis cette liste, il peut donc en manquer.</string>
+    <string name="ua_find">Chercher des modules</string>
+    <string name="ua_find_more">Chercher de nouveaux modules</string>
+    <string name="ua_find_again">Chercher à nouveau</string>
+    <string name="ua_find_hint">La page du harness s\'ouvre quelques secondes sans s\'afficher, pour que ses plugins disent ce qu\'ils ajoutent. Elle se referme ensuite.</string>
+    <string name="ua_finding">Recherche de modules</string>
+    <string name="ua_found">Modules trouvés. Choisissez où s\'affiche chacun.</string>
+    <string name="ua_nothing_title">Aucun résultat</string>
+    <string name="ua_nothing">Aucun plugin de ce harness n\'ajoute d\'animal, de bouton ni rien d\'autre que le téléphone ou l\'ordinateur peut afficher.</string>
+    <string name="ua_find_failed">Impossible d\'ouvrir la page du harness pour chercher. Vérifiez la connexion et réessayez.</string>
 </resources>

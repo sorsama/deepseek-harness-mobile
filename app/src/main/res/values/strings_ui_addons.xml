@@ -23,7 +23,7 @@
     <string name="ua_slot_sidebar_footer">Sidebar footer button</string>
     <string name="ua_slot_other">Elsewhere in the harness</string>
     <string name="ua_place_none">Only the desktop has a spot for this one.</string>
-    <string name="ua_empty">No add-ons yet. They appear here after the harness web page has been opened once with the plugin installed.</string>
+    <string name="ua_empty">Pets, extra buttons and other items from harness plugins show up here once the harness page has listed them.</string>
     <string name="ua_off_notice">Add-ons are hidden on this phone. Your choices here still apply to the desktop.</string>
     <string name="ua_read_only">The harness keeps these settings read only, so they cannot be changed from here.</string>
     <string name="ua_missing">The harness does not have the dsh-ui-sync plugin any more.</string>
@@ -32,4 +32,16 @@
     <string name="ua_err_rejected">The harness did not accept this change.</string>
     <string name="ua_err_unreachable">Could not reach the harness. Nothing was saved.</string>
     <string name="ua_err_unavailable">This connection cannot change add-ons.</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">No add-ons yet</string>
+    <string name="ua_stale">A plugin was added or changed since this list was made, so something may be missing.</string>
+    <string name="ua_find">Find add-ons</string>
+    <string name="ua_find_more">Look for new add-ons</string>
+    <string name="ua_find_again">Look again</string>
+    <string name="ua_find_hint">This opens the harness page out of sight for a few seconds so its plugins can list what they add. It closes again when done.</string>
+    <string name="ua_finding">Looking for add-ons</string>
+    <string name="ua_found">Add-ons found. Pick where each one shows.</string>
+    <string name="ua_nothing_title">Nothing found</string>
+    <string name="ua_nothing">None of the plugins on this harness add a pet, a button or anything else the phone or the desktop can show.</string>
+    <string name="ua_find_failed">Could not open the harness page to look. Check the connection and try again.</string>
 </resources>
