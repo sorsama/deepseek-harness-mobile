@@ -8,8 +8,8 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -81,13 +81,11 @@ private val NO_BREAK_SPACE = Char(0x00A0)
  * `LocalConfiguration` is the device's in a sheet or a dialog window below Android 13, while the
  * strings (and so everything written beside them: a date, a currency name, the digits) come from the
  * app's own language, so a sheet would name the currencies in the phone's language under an
- * English title. The resources the strings come from are the reliable source.
+ * English title. `LocalResources` is what `stringResource` reads, and it follows configuration
+ * changes, so the locale taken from it always agrees with the words beside it.
  */
 @Composable
-internal fun appLocale(): Locale {
-    LocalConfiguration.current // read, so a configuration change recomposes
-    return LocalContext.current.resources.configuration.locales[0]
-}
+internal fun appLocale(): Locale = LocalResources.current.configuration.locales[0]
 
 /** The currency of the device's region, or null when it has none or the locale carries no region. */
 internal fun deviceRegionCurrency(): String? = runCatching {
