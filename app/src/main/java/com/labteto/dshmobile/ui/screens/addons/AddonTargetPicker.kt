@@ -167,9 +167,17 @@ private fun AddonChoice(
             .background(fill)
             .handCursor(enabled)
             .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
-            .semantics { contentDescription = description }
             .padding(horizontal = if (singleLine) SegmentPadding else DsSpacing.medium, vertical = DsSpacing.tiny),
     ) {
-        Text(label, style = DsType.tabText, color = text, maxLines = if (singleLine) 1 else Int.MAX_VALUE, softWrap = !singleLine)
+        // The full meaning rides on the label, which the selectable box merges: a separate semantics
+        // modifier on the box itself took the selected state and the click action off the node.
+        Text(
+            label,
+            style = DsType.tabText,
+            color = text,
+            maxLines = if (singleLine) 1 else Int.MAX_VALUE,
+            softWrap = !singleLine,
+            modifier = Modifier.semantics { contentDescription = description },
+        )
     }
 }
