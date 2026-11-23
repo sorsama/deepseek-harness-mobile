@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +46,9 @@ import com.labteto.dshmobile.ui.theme.DsType
 import com.labteto.dshmobile.ui.theme.DshTheme
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
+import platform.UIKit.UIApplicationDidBecomeActiveNotification
 
 /**
  * What the host asked the app to do when it opened, beyond showing the Connect screen.
@@ -63,6 +68,7 @@ import org.jetbrains.compose.resources.stringResource
  *   as a person would: [pairUrl] and [pairCode] fill the form and [pairSubmit] taps Pair; [pairPayload] hands the
  *   controller the text a QR scan would have decoded (a simulator has no camera); [pairScanner] opens the camera
  *   sheet. [onPairOutcome] hears the pairing result line (`DSH_PAIR_RESULT …`).
+ * - [onProbe] hears one `DSH_PROBE authority=… outcome=…` line per probe of a remembered host.
  */
 internal class LaunchRequest(
     val address: String? = null,
@@ -79,6 +85,7 @@ internal class LaunchRequest(
     val pairScanner: Boolean = false,
     val onOutcome: ((String) -> Unit)? = null,
     val onPairOutcome: ((String) -> Unit)? = null,
+    val onProbe: ((String) -> Unit)? = null,
 ) {
     /** Whether the app starts on the Pair screen. */
     val startsPairing: Boolean
@@ -109,6 +116,29 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
         var pairPrefill by remember { mutableStateOf<String?>(null) }
         // The debug launch that asks for the camera sheet gets it once, not each time Pair is reopened.
         var scanFirst by remember { mutableStateOf(request.pairScanner) }
+
+        // The Recent rows are probed once when the controller is built, and a verdict was otherwise never revisited:
+        // a row that read Unreachable (the relay was asleep, the phone had no signal at launch) stayed that way for the
+        // life of the process. Android re-probes on every resume; this is the same for iOS, when the Connect screen
+        // comes back (after a disconnect, or after closing Pair) and when the app returns to the foreground.
+        var firstComposition by remember { mutableStateOf(true) }
+        LaunchedEffect(connected, pairing) {
+            if (firstComposition) {
+                // The controller's own first pass is already running.
+                firstComposition = false
+            } else if (!connected && !pairing) {
+                app.controller.refreshRecent()
+            }
+        }
+        val connectScreenShown by rememberUpdatedState(!connected && !pairing)
+        DisposableEffect(app) {
+            val observer = NSNotificationCenter.defaultCenter.addObserverForName(
+                name = UIApplicationDidBecomeActiveNotification,
+                `object` = null,
+                queue = NSOperationQueue.mainQueue,
+            ) { _ -> if (connectScreenShown) app.controller.refreshRecent() }
+            onDispose { NSNotificationCenter.defaultCenter.removeObserver(observer) }
+        }
 
         // Debug-launch behaviours, once. A tap on Connect is `connectManual`, so this is one.
         LaunchedEffect(Unit) {
