@@ -26,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -41,6 +40,7 @@ import com.labteto.dshmobile.ui.components.DsBottomSheet
 import com.labteto.dshmobile.ui.components.LocalDsSheetHide
 import com.labteto.dshmobile.ui.components.clickable
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
+import com.labteto.dshmobile.ui.screens.main.appLocale
 import com.labteto.dshmobile.ui.screens.main.deviceRegionCurrency
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
@@ -106,7 +106,7 @@ internal fun BalanceCurrencyRow(settings: AppSettings, onSelect: (String) -> Uni
 @Composable
 internal fun BalanceCurrencySheet(selected: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
     val colors = DsTheme.colors
-    val locale = LocalConfiguration.current.locales[0]
+    val locale = appLocale()
     // "EUR · Euro": the region's own currency, so the row says what it would pick.
     val region = remember(locale) { deviceRegionCurrency()?.let { code -> code + currencyName(code, locale)?.let { " · $it" }.orEmpty() } }
     val uriHandler = LocalUriHandler.current

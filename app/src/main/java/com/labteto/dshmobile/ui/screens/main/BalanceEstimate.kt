@@ -32,6 +32,7 @@ import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.delay
 import java.text.DateFormat
 import java.util.Date
+import java.util.Locale
 
 /**
  * What a card that prints the DeepSeek balance adds after it: ` · ≈ 389.66 CNY`.
@@ -60,6 +61,20 @@ internal class BalanceEstimator(
 }
 
 private val NO_BREAK_SPACE = Char(0x00A0)
+
+/**
+ * The locale the strings on screen are in.
+ *
+ * `LocalConfiguration` is the device's in a sheet or a dialog window below Android 13, while the
+ * strings (and so everything written beside them: a date, a currency name, the digits) come from the
+ * app's own language, so a sheet would name the currencies in the phone's language under an
+ * English title. The resources the strings come from are the reliable source.
+ */
+@Composable
+internal fun appLocale(): Locale {
+    LocalConfiguration.current // read, so a configuration change recomposes
+    return LocalContext.current.resources.configuration.locales[0]
+}
 
 /** The currency of the device's region, or null when it has none or the locale carries no region. */
 internal fun deviceRegionCurrency(): String? = runCatching {
@@ -114,7 +129,7 @@ private const val REFRESH_CHECK_MS = 60L * 60 * 1000
 internal fun RatesSourceNote(table: RateTable, modifier: Modifier = Modifier) {
     val colors = DsTheme.colors
     val uriHandler = LocalUriHandler.current
-    val locale = LocalConfiguration.current.locales[0]
+    val locale = appLocale()
     val date = remember(table.asOf, locale) { DateFormat.getDateInstance(DateFormat.MEDIUM, locale).format(Date(table.asOf)) }
     Text(
         stringResource(
