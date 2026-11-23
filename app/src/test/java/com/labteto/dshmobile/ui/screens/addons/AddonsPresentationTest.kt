@@ -178,7 +178,7 @@ class AddonsPresentationTest {
             """
             [
               {"entryId":"a","moduleName":"dsh-relay","enabled":true,"fiberPhase":"active","patchId":"p",
-               "meta":{"title":{"en":"Relay","zh-cn":"中继","ru":"Ретранслятор"},"description":"x","icon":"data:image/png;base64,AAAA"}},
+               "meta":{"title":{"en":"Phone Relay","zh-cn":"中继","ru":"Ретранслятор"},"description":"x","icon":"data:image/png;base64,AAAA"}},
               {"entryId":"b","moduleName":"dsh-ui-sync-example-pet","enabled":true,"patchId":"p","meta":{"title":"Example pet"}},
               {"entryId":"c","moduleName":"dsh-nometa","enabled":true,"patchId":"p"},
               {"entryId":"d","moduleName":"dsh-blank","enabled":false,"readOnlyReason":"unmanaged","meta":{"title":"  "}}
@@ -189,8 +189,26 @@ class AddonsPresentationTest {
             mapOf("dsh-relay" to "中继", "dsh-ui-sync-example-pet" to "Example pet"),
             addonTitleMap(plugins, listOf("zh-CN", "zh")),
         )
-        assertEquals("Relay", addonTitleMap(plugins, listOf("de-DE", "de")).getValue("dsh-relay"))
+        assertEquals("Phone Relay", addonTitleMap(plugins, listOf("de-DE", "de")).getValue("dsh-relay"))
         assertEquals("Ретранслятор", addonTitleMap(plugins, listOf("ru-RU", "ru")).getValue("dsh-relay"))
+    }
+
+    @Test
+    fun `a title that is only the package name is not a title`() {
+        // What the harness lists for a plugin with no title of its own (seen on rc2 for the example pet).
+        val plugins = Json { ignoreUnknownKeys = true }.decodeFromString<List<ManagedPlugin>>(
+            """
+            [
+              {"entryId":"a","moduleName":"dsh-ui-sync-example-pet","enabled":true,"patchId":"p","meta":{"title":"dsh-ui-sync-example-pet"}},
+              {"entryId":"b","moduleName":"@deepseek-ai/dsh-plugin-manager","enabled":true,"readOnlyReason":"management-required","meta":{"title":{"en":"plugin-manager","zh":"插件管理服务"}}},
+              {"entryId":"c","moduleName":"dsh-relay","enabled":true,"patchId":"p","meta":{"title":"Phone Relay"}}
+            ]
+            """.trimIndent(),
+        )
+        // The English fallback is the package name; a real translation is still a title.
+        assertEquals(mapOf("dsh-relay" to "Phone Relay", "@deepseek-ai/dsh-plugin-manager" to "插件管理服务"), addonTitleMap(plugins, listOf("zh-CN", "zh")))
+        assertEquals(mapOf("dsh-relay" to "Phone Relay"), addonTitleMap(plugins, listOf("en-US", "en")))
+        assertEquals("UI Sync Example Pet", addonPackageTitle("dsh-ui-sync-example-pet", addonTitleMap(plugins, listOf("en"))))
     }
 
     @Test

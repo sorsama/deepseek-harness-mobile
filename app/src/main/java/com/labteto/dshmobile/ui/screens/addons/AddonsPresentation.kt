@@ -111,10 +111,16 @@ internal fun addonTitleMap(plugins: List<ManagedPlugin>, languageTags: List<Stri
     val titles = LinkedHashMap<String, String>()
     plugins.forEach { plugin ->
         val title = plugin.meta?.titleFor(languageTags) ?: return@forEach
+        // A plugin that gives no title of its own is listed under its package name: not a title.
+        if (technicalForm(title) == technicalForm(plugin.moduleName)) return@forEach
         titles.putIfAbsent(plugin.moduleName, title)
     }
     return titles
 }
+
+/** A name with its case, scope and leading `dsh-` taken off, so a title can be compared with the package it came from. */
+private fun technicalForm(name: String): String =
+    name.trim().lowercase().replace(Regex("^@[^/]+/"), "").removePrefix("dsh-")
 
 /** Words kept in capitals when a package name is turned into words (`ui` reads "UI", not "Ui"). */
 private val ACRONYMS = setOf("ui", "ux", "api", "ai", "id", "url", "cli", "mcp", "css", "html", "sdk", "tts", "stt")
