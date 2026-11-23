@@ -5,6 +5,21 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **Show your DeepSeek balance in a second currency.** Settings, General has a new **Also show balance
+  in** row. Pick **Off** (the default), **Match my region**, or one of 20 currencies (USD, CNY, EUR,
+  JPY, GBP, KRW, INR, HKD, SGD, TWD, AUD, CAD, CHF, RUB, BRL, MXN, THB, IDR, TRY, SAR), and the usage
+  card and the Account page add an approximate amount after your real balance, such as
+  `54.12$ · ≈ 361.59 CNY`. The real balance stays first and exactly as before. The estimate is cut,
+  never rounded, so it can never read higher than the money, and it is left out when you pick the
+  wallet's own currency. The rates come from the free ExchangeRate-API (open.er-api.com), with a
+  copy on jsDelivr as a fallback when it is down. The app fetches them at most once a day and only
+  while the setting is on, and the request carries nothing about you or your account. The last good
+  rates are kept on the phone and used when you are offline, and once they are more than 7 days old
+  the estimate disappears rather than guess. The Account page links to the rate source. Every
+  language has its own wording for the row. (#136)
+
 ### Fixed
 
 - **A paired relay no longer shows as Unreachable when you can connect to it.** The Connect screen
