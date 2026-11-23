@@ -32,6 +32,13 @@ All notable changes to DSH Mobile are documented here. Format based on
   away halfway. Commands now wait for the harness to finish, the way plugin installs already did.
   (#139)
 
+### Internal
+
+- The shared UI is on Compose Multiplatform 1.11.1 and Kotlin 2.3.21 (from 1.7.1 and 2.0.21), with
+  the Compose BOM, Hilt, KSP and atomicfu moved to match, so the iOS screens to come get the common
+  back handler and the newer iOS text input. Android draws the same screens as before; the checked
+  shots are listed in the pull request.
+
 ## [0.24.0] - 2026-11-19
 
 ![Three phones: the Plugins page as a short list, a chat with a task list and a background command, and a Harness settings page](docs/images/releases/0.24.0/devices/hero-whats-new.png)

@@ -70,15 +70,23 @@ jobs:
       - name: Compile shared code for iOS
         run: ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :core:compileKotlinIosX64 :sharedUi:compileKotlinIosArm64 :sharedUi:compileKotlinIosSimulatorArm64 --stacktrace
       # A skipped task is a green build, so assert the klibs exist rather than trusting the exit code.
+      # Kotlin 2.1+ writes the klib unpacked (a directory, <module>/default/manifest inside) at the
+      # path the packed <module>.klib file used to have; accept both layouts.
       - name: Check the iOS klibs were produced
         run: |
+          has_klib() {
+            # $1 = module, $2 = target
+            base="$1/build/classes/kotlin/$2/main/klib"
+            [ -s "$base/$1.klib" ] && [ -f "$base/$1.klib" ] && return 0
+            [ -f "$base/$1/default/manifest" ] && return 0
+            [ -f "$base/$1.klib/default/manifest" ] && return 0
+            return 1
+          }
           for target in iosArm64 iosSimulatorArm64 iosX64; do
-            klib="core/build/classes/kotlin/$target/main/klib/core.klib"
-            test -s "$klib" || { echo "::error::$klib was not produced; the iOS compile was skipped"; exit 1; }
+            has_klib core "$target" || { echo "::error::core/build/classes/kotlin/$target/main/klib/core was not produced; the iOS compile was skipped"; exit 1; }
           done
           for target in iosArm64 iosSimulatorArm64; do
-            klib="sharedUi/build/classes/kotlin/$target/main/klib/sharedUi.klib"
-            test -s "$klib" || { echo "::error::$klib was not produced; the shared UI was not compiled for iOS"; exit 1; }
+            has_klib sharedUi "$target" || { echo "::error::sharedUi/build/classes/kotlin/$target/main/klib/sharedUi was not produced; the shared UI was not compiled for iOS"; exit 1; }
           done
 
   harness-conformance:
