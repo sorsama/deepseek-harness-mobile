@@ -59,6 +59,7 @@ class HostsStore @Inject constructor(
         val FOLLOW_STREAMING = booleanPreferencesKey("follow_streaming")
         val DEFAULT_DELIVERY_MODE = stringPreferencesKey("default_delivery_mode")
         val AUTO_TRANSLATE_REASONING = booleanPreferencesKey("auto_translate_reasoning")
+        val SHOW_UI_ADDONS = booleanPreferencesKey("show_ui_addons")
     }
 
     private val hostsSerializer = ListSerializer(HostConfig.serializer())
@@ -105,6 +106,7 @@ class HostsStore @Inject constructor(
             defaultDeliveryMode = normalizeDeliveryMode(prefs[Keys.DEFAULT_DELIVERY_MODE] ?: DELIVERY_QUEUE),
             workStepDisplay = prefs.readWorkStepDisplay(),
             autoTranslateReasoning = prefs[Keys.AUTO_TRANSLATE_REASONING] ?: false,
+            showUiAddons = prefs[Keys.SHOW_UI_ADDONS],
         )
     }
 
@@ -312,6 +314,8 @@ class HostsStore @Inject constructor(
             prefs[Keys.DEFAULT_DELIVERY_MODE] = normalizeDeliveryMode(next.defaultDeliveryMode)
             prefs.writeWorkStepDisplay(next.workStepDisplay)
             prefs[Keys.AUTO_TRANSLATE_REASONING] = next.autoTranslateReasoning
+            // Absent until someone sets it, so the memory-based default keeps applying until then.
+            next.showUiAddons?.let { prefs[Keys.SHOW_UI_ADDONS] = it } ?: prefs.remove(Keys.SHOW_UI_ADDONS)
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)
         }
     }

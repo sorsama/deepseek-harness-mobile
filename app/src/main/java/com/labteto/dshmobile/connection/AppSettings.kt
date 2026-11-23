@@ -99,4 +99,11 @@ data class AppSettings(
      * provider. Per device.
      */
     val autoTranslateReasoning: Boolean = false,
+    /**
+     * "Show plugin add-ons": whether the chat may load the harness web page that draws desktop web
+     * plugin items (a pet, extra buttons) over it. Per device. Null until someone sets it, which
+     * reads as on for a phone with 6 GB of memory or more and off below (`uiAddonsDefaultOn`): the
+     * page is a whole web client, about 250 MB.
+     */
+    val showUiAddons: Boolean? = null,
 )

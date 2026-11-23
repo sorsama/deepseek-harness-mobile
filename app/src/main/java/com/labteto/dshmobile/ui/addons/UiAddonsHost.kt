@@ -1,9 +1,10 @@
 package com.labteto.dshmobile.ui.addons
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.ActivityManager
 import android.content.ComponentCallbacks2
 import android.content.res.Configuration
+import android.database.ContentObserver
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
@@ -12,10 +13,13 @@ import android.net.http.SslError
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
+import android.view.inputmethod.InputMethodManager
 import android.webkit.CookieManager
 import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
@@ -32,11 +36,13 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.webkit.JavaScriptReplyProxy
 import androidx.webkit.ProfileStore
 import androidx.webkit.ScriptHandler
@@ -44,18 +50,25 @@ import androidx.webkit.WebMessageCompat
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import androidx.webkit.WebViewRenderProcess
 import com.labteto.dshmobile.BuildConfig
+import com.labteto.dshmobile.connection.RelayHandoffOutcome
+import com.labteto.dshmobile.core.uisync.UiSyncErrorCode
+import com.labteto.dshmobile.core.uisync.UiSyncFeature
 import com.labteto.dshmobile.core.uisync.UiSyncHitRegion
 import com.labteto.dshmobile.core.uisync.UiSyncHostMessage
 import com.labteto.dshmobile.core.uisync.UiSyncPageMessage
 import com.labteto.dshmobile.core.uisync.UiSyncProtocol
 import com.labteto.dshmobile.core.uisync.UiSyncState
 import com.labteto.dshmobile.core.wire.RelayTls
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.util.concurrent.atomic.AtomicInteger
 
 /** What the chat tells the layer about itself while it is on screen. */
 internal data class UiAddonsPresence(
@@ -70,27 +83,46 @@ internal data class UiAddonsPresence(
     val sessionId: String?,
 )
 
+/** What the activity root tells the layer about the connected host and this device. */
+internal data class UiAddonsBinding(
+    /** The connected host's page, null when there is none to load. */
+    val target: UiAddonsTarget?,
+    /** The harness has the `dsh-ui-sync` companion: true, false, or null while unknown. */
+    val available: Boolean?,
+    /** The "Show plugin add-ons" switch, as it reads on this device. */
+    val enabled: Boolean,
+    /** Some item would show on the phone (the host's item store): true, false, or null while unknown. */
+    val phoneItems: Boolean?,
+)
+
 /**
  * The one web view that draws desktop web plugin items (a pet, composer and header buttons, their
  * dialogs) over the chat, and everything that keeps it honest.
  *
  * One per activity. The chat reports itself through [present]; the activity root reports the
- * connected host and whether it has the `dsh-ui-sync` companion through [bind]. [uiAddonsMode] turns
- * that into what the view does. The view goes into the activity's content frame above the Compose
- * view (see [UiAddonsWebView] for why a plain view sibling and not a Compose `AndroidView`), placed
- * over the chat pane.
+ * connected host, whether it has the `dsh-ui-sync` companion, the device switch and the item store
+ * through [bind]. [uiAddonsMode] turns that into what the view does. The view goes into the
+ * activity's content frame above the Compose view (see [UiAddonsWebView] for why a plain view
+ * sibling and not a Compose `AndroidView`), placed over the chat pane.
  *
- * The page is the harness's own web client at the host's `/`, loaded with the host's browser session
- * (copied into this view's own cookie store) and switched into phone mode by a document-start script,
- * so the companion shows only lifted plugin items and keeps the rest invisible. Nothing shows until
- * the page has said it is in phone mode (`ui-sync/ready`): a sign-in page, an error page or the
- * desktop client before the companion starts never covers the chat.
+ * The page is the harness's own web client at the host's `/`, signed in the way [UiAddonsAuth]
+ * says (the host's browser session in this view's cookie store, or a relay's one-time handoff) and
+ * switched into phone mode by a document-start script, so the companion shows only lifted plugin
+ * items and keeps the rest invisible. Nothing shows until the page has said it is in phone mode
+ * (`ui-sync/ready`): a sign-in page, an error page or the desktop client before the companion
+ * starts never covers the chat.
+ *
+ * Companion 0.2.0 features, each only when the page announces it: the page reports plugin text
+ * field focus and the app gives the view the keyboard ([UiAddonsFocus]); Back closes plugin dialogs
+ * ([UiAddonsBack]); the system's animation setting goes to the page as `host/motion`; TalkBack may
+ * read the lifted items (`a11y`); and `host/follow-session` waits on the page (`follow-wait`), so
+ * the app's own retry is only for 0.1.0 pages.
  *
  * Locked down like the workspace browser, with one difference that is the point of it: this page is
  * the harness, signed in. It runs only at the harness origin (other navigations are dropped), the
- * bridge and the phone flag are only for that origin (see [modernBridge] for older WebViews), it has
- * no file access, no permissions, no new windows, and its cookies and storage live in a WebView
- * profile of its own where the platform has profiles (elsewhere the session cookie is removed again
+ * bridge and the start script are only for that origin (see [modernBridge] for older WebViews), it
+ * has no file access, no permissions, no new windows, and its cookies and storage live in a WebView
+ * profile of its own where the platform has profiles (elsewhere the sign-in cookie is removed again
  * when the view goes).
  *
  * A failure is quiet: logged, nothing on screen. Main thread only.
@@ -98,16 +130,16 @@ internal data class UiAddonsPresence(
 internal class UiAddonsHost(
     private val activity: ComponentActivity,
     private val state: UiSyncState,
+    /** Trade the relay's device token for a one-time web view code (relay targets only). */
+    private val handoff: suspend (UiAddonsTarget) -> RelayHandoffOutcome,
 ) : DefaultLifecycleObserver, ComponentCallbacks2 {
     private val main = Handler(Looper.getMainLooper())
     private var page: Page? = null
-    private var target: UiAddonsTarget? = null
-    private var available: Boolean? = null
+    private var binding = UiAddonsBinding(target = null, available = null, enabled = false, phoneItems = null)
     private var presence: UiAddonsPresence? = null
     private var started = activity.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
     private var destroyed = false
     private val crashes = mutableMapOf<String, Int>()
-    private val lowRam = activity.getSystemService(ActivityManager::class.java)?.isLowRamDevice == true
     /** A WebView is installed and enabled; without one there is nothing to draw with. */
     private val supported: Boolean by lazy {
         runCatching { WebViewCompat.getCurrentWebViewPackage(activity) != null }.getOrDefault(false)
@@ -129,15 +161,120 @@ internal class UiAddonsHost(
         }.getOrDefault(false)
     }
 
+    // ------------------------------------------------------------------ Back, focus, motion
+
+    private val backCallback: OnBackPressedCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() = back.onBack()
+    }
+
+    private val back: UiAddonsBack = UiAddonsBack(object : UiAddonsBack.Effects {
+        override fun setEnabled(enabled: Boolean) {
+            if (enabled) {
+                // In front of every callback added since this one was: the dialog over the chat is
+                // the topmost thing Back can close. A screen opened later adds its own after this.
+                backCallback.remove()
+                activity.onBackPressedDispatcher.addCallback(activity, backCallback)
+            }
+            backCallback.isEnabled = enabled
+        }
+
+        override fun sendBack(requestId: String): Boolean = page?.post(UiSyncHostMessage.Back(requestId)) == true
+
+        override fun fallThrough() {
+            val was = backCallback.isEnabled
+            backCallback.isEnabled = false
+            try {
+                activity.onBackPressedDispatcher.onBackPressed()
+            } finally {
+                if (!destroyed) backCallback.isEnabled = was && (back.wanted || back.waiting != null)
+            }
+        }
+
+        override fun schedule(delayMs: Long, block: () -> Unit): () -> Unit {
+            val runnable = Runnable { block() }
+            main.postDelayed(runnable, delayMs)
+            return { main.removeCallbacks(runnable) }
+        }
+
+        override fun newRequestId(): String = UiSyncState.requestId("b")
+    })
+
+    private val focus: UiAddonsFocus = UiAddonsFocus(object : UiAddonsFocus.Effects {
+        override fun allowFocus(allowed: Boolean) {
+            page?.view?.focusAllowed = allowed
+        }
+
+        override fun focusAndShowKeyboard() {
+            val view = page?.view ?: return
+            if (!view.hasFocus()) view.requestFocus()
+            imm()?.showSoftInput(view, 0)
+        }
+
+        override fun hideKeyboardIfFocused() {
+            val view = page?.view ?: return
+            if (view.hasFocus()) imm()?.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+
+        override fun releaseFocus() {
+            val view = page?.view ?: return
+            if (view.hasFocus()) {
+                imm()?.hideSoftInputFromWindow(view.windowToken, 0)
+                view.clearFocus()
+            }
+            view.focusAllowed = false
+        }
+
+        override fun sendBlur(): Boolean = page?.post(UiSyncHostMessage.Blur()) == true
+    })
+
+    private fun imm(): InputMethodManager? = activity.getSystemService(InputMethodManager::class.java)
+
+    /** A native view took focus away from the page: tell the page, so its field lets go too. */
+    private val focusListener = ViewTreeObserver.OnGlobalFocusChangeListener { _, newFocus ->
+        val live = page ?: return@OnGlobalFocusChangeListener
+        if (newFocus != null && newFocus !== live.view && !isInside(newFocus, live.view)) focus.onNativeFocus()
+    }
+
+    private fun isInside(view: View, ancestor: View): Boolean {
+        var parent = view.parent
+        while (parent is View) {
+            if (parent === ancestor) return true
+            parent = parent.parent
+        }
+        return false
+    }
+
+    /**
+     * The system's "Remove animations" (animator duration scale 0), sent to the page as `host/motion`.
+     * Read from the setting itself: the observer below fires before this process's own animator
+     * scale (`ValueAnimator.areAnimatorsEnabled`) has caught up, which would send the old value.
+     */
+    private fun reduceMotion(): Boolean = runCatching {
+        Settings.Global.getFloat(activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+    }.getOrElse { !ValueAnimator.areAnimatorsEnabled() }
+
+    private val motionObserver = object : ContentObserver(main) {
+        override fun onChange(selfChange: Boolean) {
+            page?.sendMotion()
+        }
+    }
+
     init {
         activity.lifecycle.addObserver(this)
         activity.registerComponentCallbacks(this)
+        activity.onBackPressedDispatcher.addCallback(activity, backCallback)
+        runCatching { activity.window.decorView.viewTreeObserver.addOnGlobalFocusChangeListener(focusListener) }
+        runCatching {
+            activity.contentResolver.registerContentObserver(
+                Settings.Global.getUriFor(Settings.Global.ANIMATOR_DURATION_SCALE), false, motionObserver,
+            )
+        }
     }
 
-    /** The connected host's page ([target], null when there is none to load) and whether it has the companion. */
-    fun bind(target: UiAddonsTarget?, available: Boolean?) {
-        this.target = target
-        this.available = available
+    /** The connected host and whether the layer may load for it (see [UiAddonsBinding]). */
+    fun bind(binding: UiAddonsBinding) {
+        if (this.binding == binding) return
+        this.binding = binding
         sync()
     }
 
@@ -153,21 +290,28 @@ internal class UiAddonsHost(
         if (destroyed) return
         destroyed = true
         teardown(rendererGone = false)
+        backCallback.remove()
         activity.lifecycle.removeObserver(this)
         runCatching { activity.unregisterComponentCallbacks(this) }
+        runCatching {
+            val observer = activity.window.decorView.viewTreeObserver
+            if (observer.isAlive) observer.removeOnGlobalFocusChangeListener(focusListener)
+        }
+        runCatching { activity.contentResolver.unregisterContentObserver(motionObserver) }
     }
 
     private fun sync() {
         if (destroyed) return
-        val target = target
-        page?.let { if (it.target != target) teardown(rendererGone = false) }
+        val target = binding.target
+        page?.let { if (it.target != target) teardown(rendererGone = false, release = target == null) }
         val presence = presence
         val mode = uiAddonsMode(
             UiAddonsInputs(
-                available = available,
+                available = binding.available,
                 target = target,
                 supported = supported,
-                lowRam = lowRam,
+                enabled = binding.enabled,
+                phoneItems = binding.phoneItems,
                 chatShown = presence != null,
                 sessionOpen = presence?.sessionId != null,
                 covered = presence?.covered == true,
@@ -201,16 +345,22 @@ internal class UiAddonsHost(
         var proxy: JavaScriptReplyProxy? = null
         /** The page's CSS-to-view pixel ratio, from its own `ready` or `hit-rects`. */
         var dpr: Float? = null
+        /** What the page adds to protocol 1, from its last `ready`. */
+        var features: Set<String> = emptySet()
         var failed = false
         var paused = false
         var mode = UiAddonsMode.Off
         var sentInsets: UiSyncHostMessage.Insets? = null
         var sentDark: Boolean? = null
         var sentSession: String? = null
+        var sentMotion: Boolean? = null
         var placed: IntArray? = null
         /** The `host/follow-session` in flight, and how often the page refused this session so far. */
         var followRequest: String? = null
         var followRefusals = 0
+        /** The relay handoff on its way, and how many this page asked for since it was last ready. */
+        var handoffJob: Job? = null
+        var handoffs = 0
 
         fun apply(mode: UiAddonsMode, presence: UiAddonsPresence?) {
             this.mode = mode
@@ -228,13 +378,62 @@ internal class UiAddonsHost(
             }
             val shown = mode == UiAddonsMode.Shown && ready
             view.router.enabled = shown
+            view.accessible = shown && UiSyncFeature.A11Y in features
             fade(if (shown) 1f else 0f)
+            back.update(supported = ready && UiSyncFeature.BACK in features, shown = shown)
+            // A field the page holds focus in lets go when the layer steps aside.
+            if (!shown && focus.itemId != null && !post(UiSyncHostMessage.Blur())) focus.reset()
             if (greeted && presence != null) sendState(presence)
         }
 
+        /** Load the page again: through a new relay code, or the host's index with the cookie already in place. */
         fun reload() {
             failed = false
-            view.loadUrl(target.pageUrl)
+            if (target.relay) handoff() else view.loadUrl(target.pageUrl)
+        }
+
+        /**
+         * Ask the relay for a fresh one-time code and load it: when the view is made, when the page
+         * lands on the relay's sign-in page (its device cookie ended), and when a code was refused.
+         * Bounded, so a relay that keeps refusing is not asked in a loop.
+         */
+        fun handoff() {
+            if (handoffJob?.isActive == true) return
+            if (handoffs >= MAX_HANDOFFS) {
+                Log.w(TAG, "relay handoff given up after $handoffs tries")
+                failed = true
+                return
+            }
+            handoffs++
+            handoffJob = activity.lifecycleScope.launch {
+                val outcome = try {
+                    handoff(target)
+                } catch (e: RuntimeException) {
+                    RelayHandoffOutcome.Failed(e.javaClass.simpleName)
+                }
+                if (page !== this@Page) return@launch
+                when (outcome) {
+                    is RelayHandoffOutcome.Code -> {
+                        Log.i(TAG, "relay handoff: loading a new code (try $handoffs)")
+                        view.loadUrl(outcome.enterUrl)
+                    }
+                    RelayHandoffOutcome.Refused -> {
+                        // The device token itself is refused; the app's own calls will say "pair again".
+                        Log.w(TAG, "relay refused the web view handoff")
+                        failed = true
+                    }
+                    RelayHandoffOutcome.Unsupported -> {
+                        // A relay older than 0.5.0: no page for this host until it changes.
+                        Log.i(TAG, "relay has no web view handoff")
+                        crashes[target.key] = MAX_RENDERER_CRASHES
+                        teardown(rendererGone = false)
+                    }
+                    is RelayHandoffOutcome.Failed -> {
+                        Log.w(TAG, "relay handoff failed: ${outcome.reason}")
+                        failed = true
+                    }
+                }
+            }
         }
 
         // LEFT, not START: the pane's bounds are physical pixels from the window's left edge in every
@@ -272,6 +471,7 @@ internal class UiAddonsHost(
                 if (insets != sentInsets && post(insets)) sentInsets = insets
             }
             if (presence.dark != sentDark && post(UiSyncHostMessage.Theme(presence.dark))) sentDark = presence.dark
+            sendMotion()
             val session = presence.sessionId
             if (session != null && session != sentSession) {
                 if (session != followedOnce) followRefusals = 0
@@ -284,13 +484,21 @@ internal class UiAddonsHost(
             }
         }
 
+        /** `host/motion` for a page that has the feature, when the system setting differs from what it was sent. */
+        fun sendMotion() {
+            if (!greeted || UiSyncFeature.MOTION !in features) return
+            val reduce = reduceMotion()
+            if (reduce != sentMotion && post(UiSyncHostMessage.Motion(reduce))) sentMotion = reduce
+        }
+
         /** The session the refusal count belongs to. */
         private var followedOnce: String? = null
 
         /**
-         * The page refused to follow: right after it boots its session list is still loading and the
-         * harness's navigation throws for a session it does not list yet. Asked again a few times with a
-         * growing pause; a session that stays unknown is left alone.
+         * A 0.1.0 page refused to follow: right after it boots its session list is still loading and
+         * the harness's navigation throws for a session it does not list yet. Asked again a few times
+         * with a growing pause; a session that stays unknown is left alone. A page with `follow-wait`
+         * does this waiting itself (see [onFollowAck]).
          */
         fun onFollowRefused() {
             followRequest = null
@@ -301,6 +509,25 @@ internal class UiAddonsHost(
             main.postDelayed({
                 if (page === this && greeted) presence?.let { sendState(it) }
             }, wait)
+        }
+
+        private fun onFollowAck(message: UiSyncPageMessage.Ack) {
+            followRequest = null
+            if (message.ok) {
+                followRefusals = 0
+                return
+            }
+            Log.i(TAG, "page did not follow the session: ${message.errorCode}")
+            if (UiSyncFeature.FOLLOW_WAIT !in features) {
+                onFollowRefused()
+                return
+            }
+            when (message.errorCode) {
+                // Nothing came up in time: asked again with the next state the chat sends, or after the next ready.
+                UiSyncErrorCode.NOT_READY -> sentSession = null
+                // A newer request replaced it; the list has no such session: nothing to repeat.
+                else -> Unit
+            }
         }
 
         fun post(message: UiSyncHostMessage): Boolean = postJson(message.encode())
@@ -329,22 +556,27 @@ internal class UiAddonsHost(
             ready = false
             greeted = false
             proxy = null
+            features = emptySet()
             sentInsets = null
             sentDark = null
             sentSession = null
+            sentMotion = null
             followRequest = null
             followRefusals = 0
             view.router.region = UiSyncHitRegion.Empty
             view.router.enabled = false
+            view.accessible = false
+            back.reset()
+            focus.supported = false
             fade(0f)
             state.detach()
         }
 
-        /** The document committed: on the fallback path this is where the phone flag goes in. */
+        /** The document committed: on the fallback path this is where the start script goes in. */
         fun onCommitted(url: String?) {
             if (script != null) return
             if (url?.toHttpUrlOrNull()?.let { originOf(it) } != target.origin) return
-            view.evaluateJavascript(UiSyncProtocol.PHONE_FLAG_SCRIPT, null)
+            view.evaluateJavascript(uiAddonsStartScript(target), null)
         }
 
         fun onPageMessage(data: String, reply: JavaScriptReplyProxy?) {
@@ -359,28 +591,28 @@ internal class UiAddonsHost(
                     }
                     if (reply != null) proxy = reply
                     message.dpr?.let { dpr = it.toFloat() }
+                    features = message.features
                     ready = true
+                    handoffs = 0
+                    focus.supported = UiSyncFeature.FOCUS in features
                     state.attach { json -> main.post { if (page === this) postJson(json) } }
                     if (!greeted) {
                         greeted = true
                         post(UiSyncHostMessage.Hello(APP_NAME, BuildConfig.VERSION_NAME))
                     }
+                    // Sends the chat's state; a session the page could not follow yet is asked for again.
                     apply(mode, presence)
                 }
                 is UiSyncPageMessage.HitRects -> {
                     message.dpr?.let { dpr = it.toFloat() }
                     view.router.region = UiSyncHitRegion.of(message, view.resources.displayMetrics.density)
                 }
-                is UiSyncPageMessage.Ack -> if (message.requestId == followRequest) {
-                    if (message.ok) {
-                        followRequest = null
-                        followRefusals = 0
-                    } else {
-                        Log.i(TAG, "page did not follow the session yet: ${message.errorCode}")
-                        onFollowRefused()
-                    }
-                } else if (!message.ok) {
-                    Log.i(TAG, "page refused a request: ${message.errorCode}")
+                is UiSyncPageMessage.Focus -> focus.onPageFocus(message.editable, message.itemId)
+                is UiSyncPageMessage.Dialogs -> back.update(dialogs = message.items)
+                is UiSyncPageMessage.Ack -> when {
+                    message.requestId == followRequest -> onFollowAck(message)
+                    back.onAck(message.requestId, message.ok, message.handled) -> Unit
+                    !message.ok -> Log.i(TAG, "page refused a request: ${message.errorCode}")
                 }
                 is UiSyncPageMessage.Error -> Log.i(TAG, "page reported ${message.code}")
                 else -> Unit
@@ -411,7 +643,7 @@ internal class UiAddonsHost(
                 WebViewCompat.addWebMessageListener(view, UiSyncProtocol.NATIVE_OBJECT, origins) { _, message, sourceOrigin, isMainFrame, reply ->
                     onMessage(view, message, sourceOrigin, isMainFrame, reply)
                 }
-                WebViewCompat.addDocumentStartJavaScript(view, UiSyncProtocol.PHONE_FLAG_SCRIPT, origins)
+                WebViewCompat.addDocumentStartJavaScript(view, uiAddonsStartScript(target), origins)
             } else {
                 view.addJavascriptInterface(LegacyBridge(view), UiSyncProtocol.NATIVE_OBJECT)
                 null
@@ -425,16 +657,24 @@ internal class UiAddonsHost(
             content.addView(view, FrameLayout.LayoutParams(1, 1, Gravity.TOP or Gravity.LEFT))
             page.placed = null
             this.page = page
-            cookieManager(isolated).setCookie(target.cookieUrl, target.cookieLine) { stored ->
-                if (this.page !== page) return@setCookie
-                if (stored != true) Log.w(TAG, "harness session not stored in the web view")
-                view.loadUrl(target.pageUrl)
+            livePages.incrementAndGet()
+            when (val auth = target.auth) {
+                is UiAddonsAuth.Session -> cookieManager(isolated).setCookie(auth.cookieUrl, auth.cookieLine) { stored ->
+                    if (this.page !== page) return@setCookie
+                    if (stored != true) Log.w(TAG, "harness session not stored in the web view")
+                    view.loadUrl(target.pageUrl)
+                }
+                // A fresh code for every new view: a code works once, within a minute.
+                UiAddonsAuth.RelayHandoff -> page.handoff()
             }
             return page
         } catch (e: RuntimeException) {
             Log.w(TAG, "add-on layer not created: ${e.javaClass.simpleName}")
-            if (made != null && page === made) page = null
-            discard(view, rendererGone = false)
+            if (made != null && page === made) {
+                page = null
+                livePages.decrementAndGet()
+            }
+            discard(view, rendererGone = false, release = false)
             return null
         }
     }
@@ -501,6 +741,12 @@ internal class UiAddonsHost(
             val scheme = url.scheme?.lowercase()
             if (scheme != "http" && scheme != "https") return true
             if (!request.isForMainFrame) return false
+            // The relay's sign-in page means its device cookie ended: a new handoff, never that page.
+            if (isRelaySignIn(page.target, url.toString())) {
+                Log.i(TAG, "relay sent the page to its sign-in: new handoff")
+                if (this@UiAddonsHost.page === page) page.handoff()
+                return true
+            }
             // The page may move within the harness (a route change that reloads); nowhere else.
             val same = url.toString().toHttpUrlOrNull()?.let { originOf(it) } == page.target.origin
             if (!same) Log.i(TAG, "blocked a navigation away from the harness")
@@ -510,6 +756,12 @@ internal class UiAddonsHost(
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             if (this@UiAddonsHost.page !== page) return
             page.onNavigation()
+            // A redirect the client hook did not see still never shows the relay's sign-in page.
+            if (isRelaySignIn(page.target, url)) {
+                view?.stopLoading()
+                page.handoff()
+                return
+            }
             page.onCommitted(url)
         }
 
@@ -526,6 +778,13 @@ internal class UiAddonsHost(
 
         override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
             if (request?.isForMainFrame != true) return
+            // A relay code that was used, expired or never issued: ask for a new one (bounded).
+            val path = request.url?.path.orEmpty()
+            if (page.target.relay && path.startsWith(RELAY_ENTER_PATH) && this@UiAddonsHost.page === page) {
+                Log.w(TAG, "relay refused the code (${errorResponse?.statusCode}); asking again")
+                page.handoff()
+                return
+            }
             // Most likely a session the harness no longer accepts; the page then never says it is ready.
             Log.w(TAG, "page answered ${errorResponse?.statusCode}")
         }
@@ -576,11 +835,20 @@ internal class UiAddonsHost(
 
     // ------------------------------------------------------------------ teardown
 
+    /**
+     * Take the page down. [release]: no new page follows right away (the layer is off, the activity
+     * or the host is going), so the add-on profile's renderer may be let go too (see [discard]).
+     */
     // RequiresFeature: a page that is not legacy was made on the path that checked both features.
     @SuppressLint("RequiresFeature")
-    private fun teardown(rendererGone: Boolean) {
+    private fun teardown(rendererGone: Boolean, release: Boolean = true) {
         val dead = page ?: return
+        // Focus and Back are about this view; settle them while it is still the page.
+        focus.reset()
+        back.reset()
         page = null
+        livePages.decrementAndGet()
+        dead.handoffJob?.cancel()
         state.detach()
         if (!rendererGone) {
             if (dead.legacy) {
@@ -590,17 +858,33 @@ internal class UiAddonsHost(
                 runCatching { WebViewCompat.removeWebMessageListener(dead.view, UiSyncProtocol.NATIVE_OBJECT) }
             }
         }
-        discard(dead.view, rendererGone)
+        discard(dead.view, rendererGone, release = release && dead.isolated)
         if (!dead.isolated) forgetCookie(dead.target)
     }
 
-    /** The teardown order the workspace browser uses: out of the tree, stopped, emptied, destroyed. */
-    private fun discard(view: WebView, rendererGone: Boolean) {
+    /**
+     * The teardown order the workspace browser uses: out of the tree, stopped, emptied, destroyed.
+     *
+     * [release]: the view lived in the add-on profile, and no new page is about to take its place.
+     * WebView keeps a profile's renderer running, cached, after its last view is destroyed: about
+     * 150 to 280 MB that "Show plugin add-ons" off is meant to give back. Renderers are never shared
+     * between profiles, so once no add-on page is left anywhere in the app, that renderer is ended.
+     * The other web views of the app (previews, the terminal) use the default profile and are not
+     * touched. The check waits a moment, so a page made again right away (the switch back on, the
+     * activity recreated) keeps it.
+     */
+    @SuppressLint("RequiresFeature")
+    private fun discard(view: WebView, rendererGone: Boolean, release: Boolean) {
+        val renderer: WebViewRenderProcess? = if (release && !rendererGone && canEndRenderer) {
+            runCatching { WebViewCompat.getWebViewRenderProcess(view) }.getOrNull()
+        } else {
+            null
+        }
         step { view.animate().cancel() }
         step { (view.parent as? ViewGroup)?.removeView(view) }
         if (!rendererGone) {
             step { view.stopLoading() }
-            step { view.webViewClient = WebViewClient() }
+            step { view.webViewClient = Discarded }
             step { view.webChromeClient = null }
             step { view.setDownloadListener(null) }
             step { view.loadUrl("about:blank") }
@@ -608,6 +892,26 @@ internal class UiAddonsHost(
         }
         step { view.removeAllViews() }
         step { view.destroy() }
+        if (renderer != null) {
+            main.postDelayed({
+                if (livePages.get() == 0 && runCatching { renderer.terminate() }.getOrDefault(false)) {
+                    Log.i(TAG, "add-on renderer ended")
+                }
+            }, RENDERER_RELEASE_MS)
+        }
+    }
+
+    /** The web view can hand out its renderer and end it (androidx.webkit features). */
+    private val canEndRenderer: Boolean by lazy {
+        runCatching {
+            WebViewFeature.isFeatureSupported(WebViewFeature.GET_WEB_VIEW_RENDERER) &&
+                WebViewFeature.isFeatureSupported(WebViewFeature.WEB_VIEW_RENDERER_TERMINATE)
+        }.getOrDefault(false)
+    }
+
+    /** The client a discarded view keeps: a renderer that ends under it must not take the app with it. */
+    private object Discarded : WebViewClient() {
+        override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean = true
     }
 
     private inline fun step(block: () -> Unit) {
@@ -663,10 +967,10 @@ internal class UiAddonsHost(
     private fun cookieManager(isolated: Boolean): CookieManager =
         if (isolated) ProfileStore.getInstance().getOrCreateProfile(PROFILE).cookieManager else CookieManager.getInstance()
 
-    /** In the shared default profile the session must not outlive the layer. */
+    /** In the shared default profile the sign-in (a harness session, a relay device cookie) must not outlive the layer. */
     private fun forgetCookie(target: UiAddonsTarget) {
-        val name = target.cookieLine.substringBefore('=')
-        runCatching { CookieManager.getInstance().setCookie(target.cookieUrl, "$name=; Max-Age=0; Path=/") }
+        val url = (target.auth as? UiAddonsAuth.Session)?.cookieUrl ?: target.pageUrl
+        runCatching { CookieManager.getInstance().setCookie(url, "${target.auth.cookieName}=; Max-Age=0; Path=/") }
     }
 
     private companion object {
@@ -676,12 +980,21 @@ internal class UiAddonsHost(
         const val FADE_IN_MS = 150L
         const val FADE_OUT_MS = 90L
 
-        /** How often a refused `host/follow-session` is asked again, starting this many ms apart and doubling. */
+        /** How often a 0.1.0 page's refused `host/follow-session` is asked again, starting this many ms apart and doubling. */
         const val FOLLOW_RETRIES = 6
         const val FOLLOW_RETRY_MS = 500L
 
         /** A page whose renderer died this many times for one host is not made again until the host changes. */
         const val MAX_RENDERER_CRASHES = 2
+
+        /** Relay codes one page may ask for before it is ready; a ready page starts the count again. */
+        const val MAX_HANDOFFS = 4
+
+        /** How long a discarded page's renderer waits for a new page before it is ended. */
+        const val RENDERER_RELEASE_MS = 2_000L
+
+        /** Add-on pages alive in this process, over every activity: the renderer is ended only at zero. */
+        val livePages = AtomicInteger(0)
     }
 }
 

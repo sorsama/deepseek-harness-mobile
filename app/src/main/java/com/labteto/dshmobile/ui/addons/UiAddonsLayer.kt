@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.ui.addons
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.activity.ComponentActivity
@@ -23,8 +24,14 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.labteto.dshmobile.connection.HarnessSessionStore
+import com.labteto.dshmobile.connection.HostsStore
+import com.labteto.dshmobile.connection.RelayHandoffOutcome
+import com.labteto.dshmobile.connection.RelaySessionHandoff
 import com.labteto.dshmobile.ui.rememberSessionStore
 import com.labteto.dshmobile.ui.theme.LocalThemeCustomization
 import com.labteto.dshmobile.ui.theme.isDsDark
@@ -63,6 +70,21 @@ internal fun Modifier.uiAddonsComposer(chrome: UiAddonsChrome?): Modifier =
 interface UiAddonsEntryPoint {
     /** Named for this entry point alone: two entry points with one getter name clash in Hilt. */
     fun uiAddonsHarnessSessions(): HarnessSessionStore
+
+    fun uiAddonsHostsStore(): HostsStore
+
+    fun uiAddonsRelayHandoff(): RelaySessionHandoff
+}
+
+/**
+ * Whether "Show plugin add-ons" reads as on where nobody has set it, for this device: 6 GB of memory
+ * or more, and not a low-RAM phone (see [uiAddonsDefaultOn]).
+ */
+internal fun uiAddonsDefaultOn(context: Context): Boolean {
+    val manager = context.getSystemService(ActivityManager::class.java) ?: return false
+    val info = ActivityManager.MemoryInfo()
+    manager.getMemoryInfo(info)
+    return uiAddonsDefaultOn(info.totalMem, manager.isLowRamDevice)
 }
 
 /**
@@ -77,22 +99,36 @@ internal fun rememberUiAddonsHost(): UiAddonsHost? {
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() as? ComponentActivity } ?: return null
     val store = rememberSessionStore()
-    val sessions = remember(context) {
-        EntryPointAccessors.fromApplication(context.applicationContext, UiAddonsEntryPoint::class.java).uiAddonsHarnessSessions()
+    val entry = remember(context) { EntryPointAccessors.fromApplication(context.applicationContext, UiAddonsEntryPoint::class.java) }
+    val sessions = remember(entry) { entry.uiAddonsHarnessSessions() }
+    val relayHandoff = remember(entry) { entry.uiAddonsRelayHandoff() }
+    val host = remember(activity, store) {
+        UiAddonsHost(activity, store.uiAddons) handoff@{ target ->
+            // Only for the relay the page belongs to: a host switch while the code was on its way drops it.
+            val config = store.connectionState.value.host
+                ?.takeIf { it.isRelay && uiAddonsTarget(it, null)?.key == target.key }
+                ?: return@handoff RelayHandoffOutcome.Failed("host changed")
+            relayHandoff.open(config)
+        }
     }
-    val host = remember(activity, store) { UiAddonsHost(activity, store.uiAddons) }
     DisposableEffect(host) { onDispose { host.destroy() } }
 
     val connection by store.connectionState.collectAsStateWithLifecycle()
     val available by store.uiAddonsAvailable.collectAsStateWithLifecycle()
+    val addonSettings by store.uiAddonsSettings.state.collectAsStateWithLifecycle()
+    val appSettings by remember(entry) { entry.uiAddonsHostsStore().settings }.collectAsStateWithLifecycle(initialValue = null)
+    val defaultOn = remember(context) { uiAddonsDefaultOn(context) }
+    // Off until the stored settings are read: a page is never made on a guess.
+    val enabled = appSettings?.let { it.showUiAddons ?: defaultOn } ?: false
     val config = connection.host
     var cookie by remember(config?.id, config?.baseUrl) { mutableStateOf<String?>(null) }
     LaunchedEffect(config?.id, config?.baseUrl, config?.isRelay) {
-        // A relay never gets here with a session: the phone holds none for it.
+        // A relay needs none: the page signs in through the relay's own handoff.
         cookie = config?.takeIf { !it.isRelay }?.let { sessions.cookie(it.id) }
     }
     val target = remember(config, cookie) { config?.let { uiAddonsTarget(it, cookie) } }
-    LaunchedEffect(host, target, available) { host.bind(target, available) }
+    val binding = UiAddonsBinding(target, available, enabled, addonSettings.phoneItems)
+    LaunchedEffect(host, binding) { host.bind(binding) }
     return host
 }
 
@@ -112,6 +148,14 @@ internal fun UiAddonsChat(covered: Boolean, content: @Composable () -> Unit) {
     val session by store.currentSessionId.collectAsStateWithLifecycle()
     val dark = isDsDark(LocalThemeCustomization.current)
     val chrome = remember { UiAddonsChrome() }
+    // Back on the chat (from Settings, from the background): what the host's item store says may
+    // have changed meanwhile, so read it again. Only where the companion is there to ask.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(store, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            if (store.uiAddonsAvailable.value == true) store.refreshUiAddons()
+        }
+    }
     val pane = remember { mutableStateOf<Rect?>(null) }
     val now by rememberUpdatedState(Triple(covered, dark, session))
 
