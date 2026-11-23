@@ -14,7 +14,7 @@ import kotlinx.serialization.json.put
  * The bridge between the harness web page in phone mode and this app, protocol version 1.
  *
  * Ported from the companion plugin `dsh-ui-sync` (`docs/BRIDGE.md`, `src/shared/protocol.ts`,
- * 0.1.0, with the 0.2.0 additions announced in [UiSyncFeature]). The page is the real harness web
+ * 0.1.0, with the 0.2.0 and 0.2.1 additions announced in [UiSyncFeature]). The page is the real harness web
  * client in a transparent web view over the native chat;
  * the companion keeps the desktop tree invisible and lifts only plugin items (a pet, composer and
  * header buttons, the dialogs they open). It tells the app where those items are and which exist;
@@ -69,6 +69,9 @@ object UiSyncFeature {
 
     /** The page records its items in settings namespace `ui-sync`, field `items`. */
     const val ITEM_STORE: String = "item-store"
+
+    /** `host/direction` (companion 0.2.1): the page mirrors its trays and sets `dir` for right-to-left. */
+    const val DIRECTION: String = "direction"
 }
 
 /** Refusal codes of `host/follow-session` the app tells apart. */
@@ -204,6 +207,12 @@ sealed interface UiSyncHostMessage {
     /** Take focus out of the page's lifted items: a native view took it (feature `focus`). */
     data class Blur(override val requestId: String? = null) : UiSyncHostMessage
 
+    /**
+     * The chat's text direction (feature `direction`): [rtl] puts the page's trays and dialogs in
+     * right-to-left order. The wire value is `"rtl"` or `"ltr"`; the insets stay physical.
+     */
+    data class Direction(val rtl: Boolean, override val requestId: String? = null) : UiSyncHostMessage
+
     fun encode(): String = UiSyncProtocol.json.encodeToString(JsonObject.serializer(), toJson())
 
     fun toJson(): JsonObject = buildJsonObject {
@@ -242,6 +251,10 @@ sealed interface UiSyncHostMessage {
                 put("reduce", m.reduce)
             }
             is Blur -> put("type", "host/blur")
+            is Direction -> {
+                put("type", "host/direction")
+                put("dir", if (m.rtl) "rtl" else "ltr")
+            }
         }
         requestId?.let { put("requestId", it) }
     }

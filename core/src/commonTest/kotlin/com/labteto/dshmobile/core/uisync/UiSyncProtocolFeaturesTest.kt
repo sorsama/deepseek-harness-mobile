@@ -124,4 +124,34 @@ class UiSyncProtocolFeaturesTest {
         assertEquals(setOf("v", "type"), blur.keys)
         assertEquals("host/blur", blur.getValue("type").jsonPrimitive.content)
     }
+
+    @Test
+    fun `direction encodes as rtl or ltr`() {
+        val rtl = Json.parseToJsonElement(UiSyncHostMessage.Direction(rtl = true).encode()).jsonObject
+        assertEquals(setOf("v", "type", "dir"), rtl.keys)
+        assertEquals(1, rtl.getValue("v").jsonPrimitive.content.toInt())
+        assertEquals("host/direction", rtl.getValue("type").jsonPrimitive.content)
+        assertEquals("rtl", rtl.getValue("dir").jsonPrimitive.content)
+
+        val ltr = Json.parseToJsonElement(UiSyncHostMessage.Direction(rtl = false).encode()).jsonObject
+        assertEquals("ltr", ltr.getValue("dir").jsonPrimitive.content)
+    }
+
+    @Test
+    fun `direction carries a request id when it has one`() {
+        val message = Json.parseToJsonElement(UiSyncHostMessage.Direction(rtl = true, requestId = "d1").encode()).jsonObject
+        assertEquals("d1", message.getValue("requestId").jsonPrimitive.content)
+        assertEquals("rtl", message.getValue("dir").jsonPrimitive.content)
+    }
+
+    @Test
+    fun `a 0 2 1 ready announces direction`() {
+        val ready = assertIs<UiSyncPageMessage.Ready>(
+            parseUiSyncPageMessage(
+                """{"v":1,"type":"ui-sync/ready","version":"0.2.1","protocol":1,"features":["a11y","focus","back","motion","follow-wait","item-store","direction"],"mode":"phone","viewport":{"w":390,"h":844},"dpr":2,"settings":true}""",
+            ),
+        )
+        assertTrue(UiSyncFeature.DIRECTION in ready.features)
+        assertEquals("direction", UiSyncFeature.DIRECTION)
+    }
 }
