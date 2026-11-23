@@ -606,4 +606,10 @@
     <string name="runtime_notif_starting">Démarrage du harness sur ce téléphone</string>
     <string name="runtime_notif_running">Harness actif sur ce téléphone</string>
     <string name="runtime_notif_running_text">En écoute sur le port %1$d</string>
+    <string name="chatlist_pin">Épingler la liste des discussions</string>
+    <string name="chatlist_unpin">Détacher la liste des discussions</string>
+    <string name="chatlist_release_to_open">Relâchez pour ouvrir</string>
+    <string name="chatlist_drag_to_open">Faites glisser davantage ou balayez rapidement pour ouvrir</string>
+    <string name="chatlist_width_increase">Augmenter la largeur de la liste des sessions</string>
+    <string name="chatlist_width_decrease">Réduire la largeur de la liste des sessions</string>
 </resources>

@@ -105,6 +105,7 @@ class AdaptiveShellTest {
             moveBy(androidx.compose.ui.geometry.Offset(distance, 0f), 700)
         }
         compose.onNodeWithTag("list-open-hint").assertExists()
+        assertTrue("hint must sit below the window's top edge", bounds("list-open-hint").top.value > 0f)
         compose.onNodeWithTag("chat").performTouchInput { up() }
         compose.onNodeWithTag("list-open-hint").assertDoesNotExist()
     }

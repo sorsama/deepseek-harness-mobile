@@ -2227,14 +2227,14 @@ internal fun TreeDrawerHeader(
     onConnection: () -> Unit,
 ) {
     val colors = DsTheme.colors
-    BoxWithConstraints {
-        val compactHeader = pinControl != null && maxWidth < 300.dp
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.small),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
-        ) {
-            if (!compactHeader) {
+    // A resizable pane needs the connection and both actions before the optional wordmark.
+    val compactHeader = pinControl != null
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = DsSpacing.small),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
+    ) {
+        if (!compactHeader) {
             MascotMark(state = MascotState.Idle, size = 30.dp)
             Text(
                 "DSH",
@@ -2243,22 +2243,20 @@ internal fun TreeDrawerHeader(
                 modifier = Modifier.padding(start = 2.dp),
             )
             Spacer(Modifier.weight(1f))
-            }
-            HarnessPill(
-                modifier = if (compactHeader) Modifier.weight(1f) else Modifier,
-                name = hostName,
-                phase = phase,
-                onClick = onConnection,
-            )
-            pinControl?.invoke()
-            DsIconButton(
-                icon = Icons.Outlined.Settings,
-                contentDescription = stringResource(R.string.settings_title),
-                onClick = onOpenSettings,
-                tint = colors.labelTertiary,
-                iconSize = 20.dp,
-            )
         }
-
-        }
+        HarnessPill(
+            modifier = if (compactHeader) Modifier.weight(1f) else Modifier,
+            name = hostName,
+            phase = phase,
+            onClick = onConnection,
+        )
+        pinControl?.invoke()
+        DsIconButton(
+            icon = Icons.Outlined.Settings,
+            contentDescription = stringResource(R.string.settings_title),
+            onClick = onOpenSettings,
+            tint = colors.labelTertiary,
+            iconSize = 20.dp,
+        )
+    }
 }

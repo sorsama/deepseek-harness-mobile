@@ -5,6 +5,13 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **Resize and pin the session tree on foldables and tablets.** On wide layouts the session list can
+  stay beside the chat or open as a drawer. Drag its edge to choose a comfortable width, use the
+  accessible resize actions, or hide it to give the chat the full window. The chosen width and pin
+  state are remembered on this device, and the phone drawer keeps its existing behavior. (#135)
+
 ### Fixed
 
 - **A paired relay no longer shows as Unreachable when you can connect to it.** The Connect screen

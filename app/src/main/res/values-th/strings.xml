@@ -606,4 +606,10 @@
     <string name="runtime_notif_starting">กำลังเริ่ม harness บนเครื่องนี้</string>
     <string name="runtime_notif_running">harness ทำงานอยู่บนเครื่องนี้</string>
     <string name="runtime_notif_running_text">รอการเชื่อมต่อที่พอร์ต %1$d</string>
+    <string name="chatlist_pin">ปักหมุดรายการแชต</string>
+    <string name="chatlist_unpin">เลิกปักหมุดรายการแชต</string>
+    <string name="chatlist_release_to_open">ปล่อยเพื่อเปิด</string>
+    <string name="chatlist_drag_to_open">ลากให้ไกลขึ้นหรือปัดเร็วเพื่อเปิด</string>
+    <string name="chatlist_width_increase">เพิ่มความกว้างรายการเซสชัน</string>
+    <string name="chatlist_width_decrease">ลดความกว้างรายการเซสชัน</string>
 </resources>

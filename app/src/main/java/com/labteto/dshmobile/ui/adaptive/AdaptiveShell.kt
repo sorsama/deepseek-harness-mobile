@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -43,6 +45,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.labteto.dshmobile.R
+import com.labteto.dshmobile.ui.components.DsPill
+import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 
 /** What the chat's top bar offers for the chat list, which depends on where the list lives. */
@@ -58,6 +64,20 @@ enum class ListControl {
 
     /** The list is half of a hinge split and always there: no button. */
     None,
+}
+
+internal fun sessionListControl(
+    listDocked: Boolean,
+    overlayList: Boolean,
+    drawerOpen: Boolean,
+    canCollapse: Boolean,
+    listShown: Boolean,
+): ListControl = when {
+    overlayList -> if (drawerOpen) ListControl.Collapse else ListControl.Expand
+    !listDocked -> ListControl.OpenDrawer
+    !canCollapse -> ListControl.None
+    listShown -> ListControl.Collapse
+    else -> ListControl.Expand
 }
 
 /** The share of a phone's width the chat list drawer takes; the rest is the strip you tap to go back. */
@@ -224,14 +244,16 @@ fun AdaptiveShell(
         }
         if (openingDrag && dragged != null) {
             val ready = dragged!! >= resolveListWidth(plan, maxWidth, 0.dp, detailsShown, minimumListContentWidth).value
-            androidx.compose.material3.Surface(
-                modifier = Modifier.align(Alignment.TopCenter).zIndex(2f).testTag("list-open-hint"),
-                tonalElevation = 3.dp,
-            ) {
-                androidx.compose.material3.Text(
-                    if (ready) "Отпустите, чтобы открыть" else "Потяните дальше или быстро смахните вправо",
-                )
-            }
+            DsPill(
+                text = stringResource(if (ready) R.string.chatlist_release_to_open else R.string.chatlist_drag_to_open),
+                selected = ready,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
+                    .padding(top = DsSpacing.small)
+                    .zIndex(2f)
+                    .testTag("list-open-hint"),
+            )
         }
         Row(Modifier.fillMaxSize()) {
             // Keep the gesture owner composed even at zero width until the finger releases.
@@ -273,6 +295,8 @@ fun AdaptiveShell(
             }
         }
         if (showList && plan.listCanCollapse) {
+            val increaseWidthDescription = stringResource(R.string.chatlist_width_increase)
+            val decreaseWidthDescription = stringResource(R.string.chatlist_width_decrease)
             Box(
                 Modifier
                     .align(Alignment.CenterStart)
@@ -282,10 +306,10 @@ fun AdaptiveShell(
                     .testTag("list-resize-handle")
                     .semantics {
                         customActions = listOf(
-                            CustomAccessibilityAction("Increase session list width") {
+                            CustomAccessibilityAction(increaseWidthDescription) {
                                 changeWidth(resolveListWidth(plan, maxWidth, currentWidth + 32.dp, detailsShown, minimumListContentWidth)); true
                             },
-                            CustomAccessibilityAction("Decrease session list width") {
+                            CustomAccessibilityAction(decreaseWidthDescription) {
                                 changeWidth(resolveListWidth(plan, maxWidth, currentWidth - 32.dp, detailsShown, minimumListContentWidth)); true
                             },
                         )

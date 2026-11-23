@@ -63,15 +63,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.adaptive.AdaptiveShell
-import com.labteto.dshmobile.ui.adaptive.ListControl
 import com.labteto.dshmobile.ui.adaptive.planShell
 import com.labteto.dshmobile.ui.adaptive.rememberHinge
+import com.labteto.dshmobile.ui.adaptive.sessionListControl
+import com.labteto.dshmobile.ui.components.DsIconButton
 import com.labteto.dshmobile.ui.components.DsToastHost
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.input.AppShortcut
 import com.labteto.dshmobile.ui.input.LocalShortcutRouter
 import com.labteto.dshmobile.ui.input.matchAppShortcut
+import com.labteto.dshmobile.ui.rememberChatPanePreferences
 import com.labteto.dshmobile.ui.theme.DsTheme
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -147,17 +149,9 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     var detailsShown by rememberSaveable { mutableStateOf(true) }
     // The docked chat list's switch. Only the reader sets it; the plan decides whether it applies.
     var listShown by rememberSaveable { mutableStateOf(true) }
-    val paneContext = androidx.compose.ui.platform.LocalContext.current.applicationContext
-    val panePrefs = remember(paneContext) { paneContext.getSharedPreferences("chat-pane", android.content.Context.MODE_PRIVATE) }
-    var preferredListWidthDp by rememberSaveable {
-        mutableStateOf<Float?>(if (panePrefs.contains("width")) panePrefs.getFloat("width", 320f) else null)
-    }
-    var listPinned by rememberSaveable { mutableStateOf(panePrefs.getBoolean("pinned", true)) }
-    LaunchedEffect(listPinned, preferredListWidthDp) {
-        panePrefs.edit().putBoolean("pinned", listPinned).apply {
-            preferredListWidthDp?.let { putFloat("width", it) }
-        }.apply()
-    }
+    val panePrefs = rememberChatPanePreferences()
+    val preferredListWidthDp by panePrefs.listWidthDp.collectAsStateWithLifecycle(initialValue = null)
+    val listPinned by panePrefs.listPinned.collectAsStateWithLifecycle(initialValue = true)
     val reveal = remember { Animatable(if (detailsOpen) 1f else 0f) }
     val haptics = rememberDsHaptics()
     fun settleDetails(open: Boolean, velocity: Float = 0f) {
@@ -282,12 +276,13 @@ fun MainScreen(onOpenSettings: () -> Unit) {
             )
         }
 
-        val listControl = when {
-            !listDocked -> ListControl.OpenDrawer
-            !plan.listCanCollapse -> ListControl.None
-            listShown -> ListControl.Collapse
-            else -> ListControl.Expand
-        }
+        val listControl = sessionListControl(
+            listDocked = listDocked,
+            overlayList = overlayList,
+            drawerOpen = drawerState.targetValue == DrawerValue.Open,
+            canCollapse = plan.listCanCollapse,
+            listShown = listShown,
+        )
         val detailsDocked = plan.detailsDockable
 
         val treeMinimum = if (canPinList) treeContentMinimumWidth() else 240.dp
@@ -302,7 +297,7 @@ fun MainScreen(onOpenSettings: () -> Unit) {
             overlayListWidth = if (overlayList)
                 com.labteto.dshmobile.ui.adaptive.resolveListWidth(basePlan, maxWidth, preferredListWidthDp?.dp, false) else null,
             preferredListWidth = preferredListWidthDp?.dp,
-            onListWidthChange = { preferredListWidthDp = it.value },
+            onListWidthChange = { width -> scope.launch { panePrefs.setListWidthDp(width.value) } },
             onListShownChange = { shown ->
                 // An open Details overlay owns its dismissal; do not reveal the list behind it.
                 if (!shown || !detailsOpen) listShown = shown
@@ -319,18 +314,18 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                     onOpenSettings = { currentOpenSettings.value() },
                     onOpenAutomations = { automationSession = null; automationsOpen = true; closeList() },
                     pinControl = if (!canPinList) null else { {
-                    androidx.compose.material3.IconButton(onClick = {
-                        listPinned = !listPinned
-                        listShown = true
-                        if (!listPinned) scope.launch { drawerState.open() }
-                    }) {
-                        androidx.compose.material3.Icon(
-                            if (listPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
-                            contentDescription = if (listPinned) "Открепить дерево чатов" else "Закрепить дерево чатов",
+                        DsIconButton(
+                            icon = if (listPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                            contentDescription = stringResource(if (listPinned) R.string.chatlist_unpin else R.string.chatlist_pin),
+                            onClick = {
+                                val pinned = !listPinned
+                                scope.launch { panePrefs.setListPinned(pinned) }
+                                listShown = true
+                                if (pinned) scope.launch { drawerState.open() }
+                            },
                             modifier = Modifier.rotate(if (listPinned) 0f else 45f),
-                            tint = if (listPinned) DsTheme.colors.accent else DsTheme.colors.labelSecondary,
+                            selected = listPinned,
                         )
-                    }
                     } },
                 )
             },
@@ -354,7 +349,11 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                             },
                             onOpenDrawer = {
                                 haptics.tap()
-                                if (listDocked) listShown = !listShown else scope.launch { drawerState.open() }
+                                if (listDocked) {
+                                    listShown = !listShown
+                                } else {
+                                    scope.launch { if (drawerState.isOpen) drawerState.close() else drawerState.open() }
+                                }
                             },
                             detailsOpen = if (detailsDocked) detailsShown else detailsOpen,
                             subagentRequest = subagentRequest,

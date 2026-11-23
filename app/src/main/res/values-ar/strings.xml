@@ -606,4 +606,10 @@
     <string name="runtime_notif_starting">جارٍ بدء harness على هذا الهاتف</string>
     <string name="runtime_notif_running">harness يعمل على هذا الهاتف</string>
     <string name="runtime_notif_running_text">يستمع على المنفذ %1$d</string>
+    <string name="chatlist_pin">تثبيت قائمة الدردشات</string>
+    <string name="chatlist_unpin">إلغاء تثبيت قائمة الدردشات</string>
+    <string name="chatlist_release_to_open">اتركها للفتح</string>
+    <string name="chatlist_drag_to_open">اسحب أكثر أو مرّر بسرعة للفتح</string>
+    <string name="chatlist_width_increase">زيادة عرض قائمة الجلسات</string>
+    <string name="chatlist_width_decrease">تقليل عرض قائمة الجلسات</string>
 </resources>

@@ -39,7 +39,7 @@ class TreeContentWidthTest {
         compose.onNodeWithContentDescription(settings).assertIsDisplayed().assertHasClickAction()
     }
 
-    @Test fun minimumAllowsNarrowTreeAndGrowsWithTextScale() {
+    @Test fun minimumKeepsHeaderUsableAndGrowsWithTextScale() {
         var normal = Dp.Unspecified
         var enlarged = Dp.Unspecified
         compose.setContent {
@@ -53,7 +53,7 @@ class TreeContentWidthTest {
             }
         }
         compose.runOnIdle {
-            assertTrue("normal minimum: $normal", normal < 240.dp)
+            assertTrue("normal minimum: $normal", normal >= 320.dp)
             assertTrue("enlarged minimum: $enlarged, normal: $normal", enlarged > normal)
         }
     }
