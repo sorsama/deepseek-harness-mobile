@@ -5,6 +5,23 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **Desktop web plugin items on the phone, and where each one shows.** With the `dsh-ui-sync`
+  plugin on the harness (0.2.0), items that web UI plugins draw on the desktop, such as a pet over
+  the chat or a button next to the message box, now show over the app's chat too, with the dialogs
+  they open. Settings has a new **Add-ons** card: **Show plugin add-ons** turns the whole thing on
+  or off for this phone, and **Choose where each add-on shows** lists every item by plugin with
+  **Both**, **Phone only**, **Desktop only** or **Off**. The choice is kept on the harness, so the
+  desktop follows a change made on the phone at once, and the other way round. The items come from
+  the real web plugins, drawn by the harness's own web page in a see-through layer, so a plugin
+  that works on the desktop needs nothing extra. That page costs about 250 MB of memory, so the
+  switch starts on only on phones with 6 GB or more, and the page loads only while some item is set
+  to show on the phone. A text field in a plugin dialog takes the keyboard, Back closes a plugin
+  dialog before it does anything else, the system's Remove animations setting reaches the plugins,
+  and TalkBack can read the items. Works on this phone, on the local network and through a relay
+  (relay 0.5.0 or later).
+
 ### Fixed
 
 - **The end of the newest message no longer hides under the composer's drawer.** Once a draft wraps

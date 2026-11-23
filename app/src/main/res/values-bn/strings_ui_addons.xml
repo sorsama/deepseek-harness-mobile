@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">অ্যাড-অন</string>
+    <string name="ua_entry">প্রতিটি অ্যাড-অন কোথায় দেখাবে বেছে নিন</string>
+    <string name="ua_switch">প্লাগইনের অ্যাড-অন দেখান</string>
+    <string name="ua_switch_hint">চ্যাটের ওপরে harness প্লাগইনের জিনিস দেখায়, যেমন একটি পোষা প্রাণী বা বাড়তি বোতাম। চ্যাট খোলা থাকলে প্রায় 250 MB মেমরি নেয়।</string>
+    <string name="ua_switch_low_memory">এই ফোনে 6 GB-এর কম মেমরি আছে, তাই শুরুতে এটি বন্ধ থাকে।</string>
+    <string name="ua_intro">প্রতিটি জিনিস কোথায় দেখাবে বেছে নিন। harness আপনার পছন্দ রেখে দেয়, তাই কম্পিউটারেও সেটাই মানা হয়।</string>
+    <string name="ua_target_both">দুটোতেই</string>
+    <string name="ua_target_phone">শুধু ফোনে</string>
+    <string name="ua_target_desktop">শুধু কম্পিউটারে</string>
+    <string name="ua_target_off">বন্ধ</string>
+    <string name="ua_target_group">%1$s কোথায় দেখাবে</string>
+    <string name="ua_place_overlay">চ্যাটের ওপরে</string>
+    <string name="ua_place_input">মেসেজ বক্সের পাশে</string>
+    <string name="ua_place_header">চ্যাটের একদম ওপরে</string>
+    <string name="ua_place_none">এটির জায়গা শুধু কম্পিউটারে আছে।</string>
+    <string name="ua_empty">এখনো কোনো অ্যাড-অন নেই। প্লাগইন ইনস্টল করে harness-এর ওয়েব পেজ একবার খুললে এগুলো এখানে দেখা যাবে।</string>
+    <string name="ua_off_notice">এই ফোনে অ্যাড-অন লুকানো আছে। এখানে যা বেছে নেবেন, কম্পিউটারে তা তবুও খাটে।</string>
+    <string name="ua_read_only">harness এই সেটিংস শুধু পড়ার জন্য রাখে, তাই এখান থেকে বদলানো যাবে না।</string>
+    <string name="ua_missing">harness-এ আর dsh-ui-sync প্লাগইন নেই।</string>
+    <string name="ua_refresh_failed">রিফ্রেশ করা যায়নি। আগে যা লোড হয়েছিল তা-ই দেখানো হচ্ছে।</string>
+    <string name="ua_err_conflict">একই সময়ে অন্য কেউ এই সেটিংস বদলেছে। আবার চেষ্টা করুন।</string>
+    <string name="ua_err_rejected">harness এই পরিবর্তন নেয়নি।</string>
+    <string name="ua_err_unreachable">harness-এর সঙ্গে যোগাযোগ করা যায়নি। কিছুই সেভ হয়নি।</string>
+    <string name="ua_err_unavailable">এই সংযোগ থেকে অ্যাড-অন বদলানো যায় না।</string>
+</resources>

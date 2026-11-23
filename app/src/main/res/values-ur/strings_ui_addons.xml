@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">ایڈ آنز</string>
+    <string name="ua_entry">چنیں کہ ہر ایڈ آن کہاں دکھے</string>
+    <string name="ua_switch">پلگ ان کے ایڈ آنز دکھائیں</string>
+    <string name="ua_switch_hint">چیٹ کے اوپر harness پلگ انز کی چیزیں دکھاتا ہے، جیسے کوئی پالتو جانور یا اضافی بٹن۔ چیٹ کھلی رہنے تک تقریباً 250 MB میموری لیتا ہے۔</string>
+    <string name="ua_switch_low_memory">اس فون میں 6 GB سے کم میموری ہے، اس لیے یہ پہلے سے بند ہے۔</string>
+    <string name="ua_intro">چنیں کہ ہر چیز کہاں دکھے۔ harness آپ کی پسند محفوظ رکھتا ہے، اس لیے کمپیوٹر پر بھی وہی لاگو ہوتی ہے۔</string>
+    <string name="ua_target_both">دونوں</string>
+    <string name="ua_target_phone">صرف فون</string>
+    <string name="ua_target_desktop">صرف کمپیوٹر</string>
+    <string name="ua_target_off">بند</string>
+    <string name="ua_target_group">%1$s کہاں دکھے</string>
+    <string name="ua_place_overlay">چیٹ کے اوپر</string>
+    <string name="ua_place_input">میسج باکس کے ساتھ</string>
+    <string name="ua_place_header">چیٹ میں سب سے اوپر</string>
+    <string name="ua_place_none">اس کی جگہ صرف کمپیوٹر پر ہے۔</string>
+    <string name="ua_empty">ابھی کوئی ایڈ آن نہیں۔ پلگ ان انسٹال ہونے کے بعد harness کا ویب پیج ایک بار کھولنے پر یہ یہاں دکھیں گے۔</string>
+    <string name="ua_off_notice">اس فون پر ایڈ آنز چھپے ہوئے ہیں۔ یہاں آپ کی پسند پھر بھی کمپیوٹر پر لاگو ہوتی ہے۔</string>
+    <string name="ua_read_only">harness یہ ترتیبات صرف پڑھنے کے لیے رکھتا ہے، اس لیے انہیں یہاں سے بدلا نہیں جا سکتا۔</string>
+    <string name="ua_missing">harness میں اب dsh-ui-sync پلگ ان نہیں ہے۔</string>
+    <string name="ua_refresh_failed">ریفریش نہیں ہو سکا۔ پہلے لوڈ ہوا ڈیٹا دکھایا جا رہا ہے۔</string>
+    <string name="ua_err_conflict">کسی اور نے اسی وقت یہ ترتیبات بدل دیں۔ دوبارہ کوشش کریں۔</string>
+    <string name="ua_err_rejected">harness نے یہ تبدیلی قبول نہیں کی۔</string>
+    <string name="ua_err_unreachable">harness تک رسائی نہیں ہو سکی۔ کچھ بھی محفوظ نہیں ہوا۔</string>
+    <string name="ua_err_unavailable">اس کنکشن سے ایڈ آنز نہیں بدلے جا سکتے۔</string>
+</resources>

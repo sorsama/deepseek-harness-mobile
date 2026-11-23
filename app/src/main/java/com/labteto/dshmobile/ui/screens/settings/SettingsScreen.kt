@@ -154,6 +154,9 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
     // is typed on its pages is not saved (a key entry comes back closed and empty), and the area closes
     // itself when the harness it was opened for is gone.
     var harnessSettingsOpen by rememberSaveable { mutableStateOf(false) }
+    // Saveable for the same reason. Offered only while the harness has the dsh-ui-sync companion.
+    var addonsOpen by rememberSaveable { mutableStateOf(false) }
+    val uiAddonsAvailable by store.uiAddonsAvailable.collectAsStateWithLifecycle()
     // Settings and the archive are two different jobs: one is configuration, the other is a list to
     // search and restore from. A tab each keeps the settings reachable without scrolling past a
     // list that can be long, and the archive gets the whole height to be scrolled in.
@@ -427,6 +430,18 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                     )
                 }
 
+                // Desktop web plugin items drawn over the chat: this phone's own switch, and where
+                // each item shows (kept on the harness). Beside Plugins, which they come from.
+                if (uiAddonsAvailable == true) {
+                    SettingsCard(stringResource(R.string.ua_title)) {
+                        com.labteto.dshmobile.ui.screens.addons.UiAddonsSettingsCardContent(
+                            settings = settings,
+                            onToggle = { on -> viewModel.set { it.copy(showUiAddons = on) } },
+                            onOpen = { addonsOpen = true },
+                        )
+                    }
+                }
+
                 // Its own card rather than an addition to the harness one above: that card's
                 // read-only banner is scoped to the facts it shows, and plugins are a different
                 // subject managed through the pluginManager capability.
@@ -553,6 +568,10 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
 
     if (harnessSettingsOpen) {
         com.labteto.dshmobile.ui.screens.harnesssettings.HarnessSettingsScreen(onClose = { harnessSettingsOpen = false })
+    }
+
+    if (addonsOpen) {
+        com.labteto.dshmobile.ui.screens.addons.UiAddonsScreen(settings, onClose = { addonsOpen = false })
     }
 
     if (showDisconnectDialog) {

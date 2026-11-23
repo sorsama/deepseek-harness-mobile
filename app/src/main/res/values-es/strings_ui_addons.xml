@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">Extras</string>
+    <string name="ua_entry">Elige dónde aparece cada extra</string>
+    <string name="ua_switch">Mostrar extras de complementos</string>
+    <string name="ua_switch_hint">Muestra sobre el chat elementos de los complementos del harness, como una mascota o botones extra. Usa unos 250 MB de memoria mientras hay un chat abierto.</string>
+    <string name="ua_switch_low_memory">Desactivado de forma predeterminada en este teléfono porque tiene menos de 6 GB de memoria.</string>
+    <string name="ua_intro">Elige dónde aparece cada elemento. El harness guarda tu elección, así que el escritorio también la sigue.</string>
+    <string name="ua_target_both">Ambos</string>
+    <string name="ua_target_phone">Solo teléfono</string>
+    <string name="ua_target_desktop">Solo escritorio</string>
+    <string name="ua_target_off">Desactivado</string>
+    <string name="ua_target_group">Dónde aparece %1$s</string>
+    <string name="ua_place_overlay">Sobre el chat</string>
+    <string name="ua_place_input">Junto al cuadro de mensaje</string>
+    <string name="ua_place_header">Arriba del chat</string>
+    <string name="ua_place_none">Solo el escritorio tiene un lugar para este.</string>
+    <string name="ua_empty">Todavía no hay extras. Aparecen aquí después de abrir una vez la página web del harness con el complemento instalado.</string>
+    <string name="ua_off_notice">Los extras están ocultos en este teléfono. Lo que elijas aquí sigue valiendo para el escritorio.</string>
+    <string name="ua_read_only">El harness guarda estos ajustes como solo lectura, así que no se pueden cambiar desde aquí.</string>
+    <string name="ua_missing">El harness ya no tiene el complemento dsh-ui-sync.</string>
+    <string name="ua_refresh_failed">No se pudo actualizar. Se muestra lo que se cargó antes.</string>
+    <string name="ua_err_conflict">Alguien más cambió estos ajustes al mismo tiempo. Inténtalo de nuevo.</string>
+    <string name="ua_err_rejected">El harness no aceptó este cambio.</string>
+    <string name="ua_err_unreachable">No se pudo conectar con el harness. No se guardó nada.</string>
+    <string name="ua_err_unavailable">Esta conexión no puede cambiar los extras.</string>
+</resources>

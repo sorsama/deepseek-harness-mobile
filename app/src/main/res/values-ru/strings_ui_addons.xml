@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">Дополнения</string>
+    <string name="ua_entry">Выберите, где показывать каждое дополнение</string>
+    <string name="ua_switch">Показывать дополнения плагинов</string>
+    <string name="ua_switch_hint">Показывает поверх чата элементы из плагинов harness, например питомца или дополнительные кнопки. Пока открыт чат, занимает около 250 МБ памяти.</string>
+    <string name="ua_switch_low_memory">По умолчанию выключено на этом телефоне: у него меньше 6 ГБ памяти.</string>
+    <string name="ua_intro">Выберите, где показывать каждый элемент. Harness сохраняет ваш выбор, поэтому компьютер тоже его учитывает.</string>
+    <string name="ua_target_both">Везде</string>
+    <string name="ua_target_phone">Только телефон</string>
+    <string name="ua_target_desktop">Только компьютер</string>
+    <string name="ua_target_off">Выкл.</string>
+    <string name="ua_target_group">Где показывать %1$s</string>
+    <string name="ua_place_overlay">Поверх чата</string>
+    <string name="ua_place_input">Рядом с полем сообщения</string>
+    <string name="ua_place_header">Вверху чата</string>
+    <string name="ua_place_none">Для этого элемента место есть только на компьютере.</string>
+    <string name="ua_empty">Пока дополнений нет. Они появятся здесь, когда веб-страницу harness хотя бы раз откроют с установленным плагином.</string>
+    <string name="ua_off_notice">Дополнения скрыты на этом телефоне. Ваш выбор здесь по-прежнему действует на компьютере.</string>
+    <string name="ua_read_only">Harness хранит эти настройки только для чтения, поэтому отсюда их изменить нельзя.</string>
+    <string name="ua_missing">В harness больше нет плагина dsh-ui-sync.</string>
+    <string name="ua_refresh_failed">Не удалось обновить. Показано то, что загрузилось раньше.</string>
+    <string name="ua_err_conflict">Кто-то другой изменил эти настройки в тот же момент. Попробуйте ещё раз.</string>
+    <string name="ua_err_rejected">Harness не принял это изменение.</string>
+    <string name="ua_err_unreachable">Не удалось связаться с harness. Ничего не сохранено.</string>
+    <string name="ua_err_unavailable">Через это подключение нельзя менять дополнения.</string>
+</resources>

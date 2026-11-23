@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">界面扩展</string>
+    <string name="ua_entry">选择每个扩展显示的位置</string>
+    <string name="ua_switch">显示插件的界面扩展</string>
+    <string name="ua_switch_hint">在聊天上方显示 harness 插件提供的元素，比如宠物或额外的按钮。打开聊天时大约占用 250 MB 内存。</string>
+    <string name="ua_switch_low_memory">这台手机的内存不到 6 GB，所以默认关闭。</string>
+    <string name="ua_intro">选择每个项目显示的位置。harness 会保存你的选择，电脑端也会跟着变。</string>
+    <string name="ua_target_both">两端</string>
+    <string name="ua_target_phone">仅手机</string>
+    <string name="ua_target_desktop">仅电脑</string>
+    <string name="ua_target_off">关闭</string>
+    <string name="ua_target_group">%1$s 的显示位置</string>
+    <string name="ua_place_overlay">在聊天上方</string>
+    <string name="ua_place_input">在输入框旁边</string>
+    <string name="ua_place_header">在聊天顶部</string>
+    <string name="ua_place_none">只有电脑端有地方放它。</string>
+    <string name="ua_empty">还没有界面扩展。装好插件并打开一次 harness 网页后，它们就会出现在这里。</string>
+    <string name="ua_off_notice">界面扩展在这台手机上已隐藏。你在这里的选择对电脑端仍然有效。</string>
+    <string name="ua_read_only">harness 把这些设置保存为只读，所以无法在这里更改。</string>
+    <string name="ua_missing">harness 已经没有 dsh-ui-sync 插件了。</string>
+    <string name="ua_refresh_failed">刷新失败，显示的是之前加载的内容。</string>
+    <string name="ua_err_conflict">有人同时改了这些设置，请再试一次。</string>
+    <string name="ua_err_rejected">harness 没有接受这次更改。</string>
+    <string name="ua_err_unreachable">连不上 harness，什么都没有保存。</string>
+    <string name="ua_err_unavailable">这个连接不能更改界面扩展。</string>
+</resources>

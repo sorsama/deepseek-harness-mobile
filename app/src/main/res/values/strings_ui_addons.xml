@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">Add-ons</string>
+    <string name="ua_entry">Choose where each add-on shows</string>
+    <string name="ua_switch">Show plugin add-ons</string>
+    <string name="ua_switch_hint">Draws items from harness plugins over the chat, like a pet or extra buttons. Uses about 250 MB of memory while a chat is open.</string>
+    <string name="ua_switch_low_memory">Off by default on this phone because it has less than 6 GB of memory.</string>
+    <string name="ua_intro">Pick where each plugin item shows. The harness keeps your choice, so the desktop follows it too.</string>
+    <string name="ua_target_both">Both</string>
+    <string name="ua_target_phone">Phone only</string>
+    <string name="ua_target_desktop">Desktop only</string>
+    <string name="ua_target_off">Off</string>
+    <string name="ua_target_group">Where %1$s shows</string>
+    <string name="ua_place_overlay">Over the chat</string>
+    <string name="ua_place_input">Next to the message box</string>
+    <string name="ua_place_header">At the top of the chat</string>
+    <string name="ua_place_none">Only the desktop has a spot for this one.</string>
+    <string name="ua_empty">No add-ons yet. They appear here after the harness web page has been opened once with the plugin installed.</string>
+    <string name="ua_off_notice">Add-ons are hidden on this phone. Your choices here still apply to the desktop.</string>
+    <string name="ua_read_only">The harness keeps these settings read only, so they cannot be changed from here.</string>
+    <string name="ua_missing">The harness does not have the dsh-ui-sync plugin any more.</string>
+    <string name="ua_refresh_failed">Could not refresh. Showing what was loaded before.</string>
+    <string name="ua_err_conflict">Someone else changed these settings at the same time. Try again.</string>
+    <string name="ua_err_rejected">The harness did not accept this change.</string>
+    <string name="ua_err_unreachable">Could not reach the harness. Nothing was saved.</string>
+    <string name="ua_err_unavailable">This connection cannot change add-ons.</string>
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">إضافات الواجهة</string>
+    <string name="ua_entry">اختر أين تظهر كل إضافة</string>
+    <string name="ua_switch">إظهار إضافات الواجهة</string>
+    <string name="ua_switch_hint">تعرض فوق الدردشة عناصر من إضافات الـ harness، مثل حيوان أليف أو أزرار إضافية. تستهلك نحو 250 ميغابايت من الذاكرة ما دامت الدردشة مفتوحة.</string>
+    <string name="ua_switch_low_memory">متوقفة افتراضيًا على هذا الهاتف لأن ذاكرته أقل من 6 غيغابايت.</string>
+    <string name="ua_intro">اختر أين يظهر كل عنصر. يحتفظ الـ harness باختيارك، فيتبعه الحاسوب أيضًا.</string>
+    <string name="ua_target_both">كلاهما</string>
+    <string name="ua_target_phone">الهاتف فقط</string>
+    <string name="ua_target_desktop">الحاسوب فقط</string>
+    <string name="ua_target_off">متوقفة</string>
+    <string name="ua_target_group">أين يظهر %1$s</string>
+    <string name="ua_place_overlay">فوق الدردشة</string>
+    <string name="ua_place_input">بجانب مربع الرسالة</string>
+    <string name="ua_place_header">أعلى الدردشة</string>
+    <string name="ua_place_none">لا مكان لهذا العنصر إلا على الحاسوب.</string>
+    <string name="ua_empty">لا توجد إضافات بعد. ستظهر هنا بعد فتح صفحة الويب الخاصة بالـ harness مرة واحدة والإضافة مثبّتة.</string>
+    <string name="ua_off_notice">إضافات الواجهة مخفية على هذا الهاتف. ما تختاره هنا يبقى ساريًا على الحاسوب.</string>
+    <string name="ua_read_only">يحتفظ الـ harness بهذه الإعدادات للقراءة فقط، لذا لا يمكن تغييرها من هنا.</string>
+    <string name="ua_missing">لم تعد الإضافة dsh-ui-sync موجودة في الـ harness.</string>
+    <string name="ua_refresh_failed">تعذّر التحديث. نعرض ما جرى تحميله سابقًا.</string>
+    <string name="ua_err_conflict">غيّر شخص آخر هذه الإعدادات في اللحظة نفسها. حاول مرة أخرى.</string>
+    <string name="ua_err_rejected">لم يقبل الـ harness هذا التغيير.</string>
+    <string name="ua_err_unreachable">تعذّر الوصول إلى الـ harness، فلم يُحفظ شيء.</string>
+    <string name="ua_err_unavailable">لا يمكن تغيير إضافات الواجهة عبر هذا الاتصال.</string>
+</resources>
