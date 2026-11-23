@@ -7,6 +7,17 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ### Fixed
 
+- **A paired relay no longer shows as Unreachable when you can connect to it.** The Connect screen
+  decided a saved harness was reachable only if it could also read the host's home folder, and a
+  relay run with `privilegedMethods: loopback-only` (the setting its README recommends for a relay on
+  the internet) refuses exactly that request. The relay answered, a tap on its row connected, and the
+  row still said Unreachable; "reconnect to the last harness" skipped it for the same reason. A row is
+  now Reachable whenever the harness answers, with or without a home folder, and a successful
+  connection turns an Unreachable row Reachable and fills in its home. On iPhone the list is also
+  checked again when you come back to the Connect screen and when the app returns to the foreground,
+  as it already was on Android, instead of keeping the first answer until the app is closed.
+  (#141)
+
 - **The end of the newest message no longer hides under the composer's drawer.** Once a draft wraps
   past one line the message box lifts into a drawer over the chat, and the drawer covered the bottom
   of the transcript: the list was already at its floor, so the end of the message being answered
