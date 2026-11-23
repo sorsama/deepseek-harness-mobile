@@ -74,7 +74,7 @@ class OkHttpRpcTransport(
                 .build()
             // Package operations are host-owned and may outlive the ordinary RPC read budget.
             // Keep the connection budget, and let explicit cancellation or the host settle them.
-            val carrier = if (path in setOf("/api/pluginManager/installBundle", "/api/pluginManager/waitForInstall")) packageClient else httpClient
+            val carrier = if (path in setOf("/api/pluginManager/installBundle", "/api/pluginManager/waitForInstall", "/api/commands/execute")) packageClient else httpClient
             val call = carrier.newCall(request)
             continuation.invokeOnCancellation { call.cancel() }
             call.enqueue(object : Callback {
@@ -89,6 +89,17 @@ class OkHttpRpcTransport(
                 override fun onResponse(call: Call, response: Response) {
                     response.use { resp ->
                         val contentType = resp.header("Content-Type")
+                        if (path == "/api/session/list" && resp.isSuccessful && !RpcMultipart.isMultipart(contentType)) {
+                            try {
+                                val compact = resp.body?.charStream()?.let(::compactSessionList).orEmpty()
+                                continuation.resume(RpcHttpResponse(resp.code, compact, contentType))
+                            } catch (e: Exception) {
+                                if (continuation.isActive) continuation.resumeWithException(
+                                    RpcTransportException(0, "Unable to read session list", e),
+                                )
+                            }
+                            return
+                        }
                         if (resp.isSuccessful && RpcMultipart.isMultipart(contentType)) {
                             val bytes = try {
                                 resp.body?.bytes() ?: ByteArray(0)

@@ -35,6 +35,7 @@ xcrun simctl install "$udid" "$app"
 data="$(xcrun simctl get_app_container "$udid" "$bundle" data)"
 result="$data/Documents/dsh-connect-result.txt"
 pair_result="$data/Documents/dsh-pair-result.txt"
+probe_result="$data/Documents/dsh-probe-result.txt"
 fixtures="${4:-${SIM_REPORTS:-build/ios-reports}/fixtures.log}"
 
 shot() {
@@ -43,7 +44,7 @@ shot() {
 
 # Starts the app with the given arguments; its console output goes to console.log, tagged.
 launch() {
-  rm -f "$result" "$pair_result"
+  rm -f "$result" "$pair_result" "$probe_result"
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
   echo "=== launch: $*" >> "$out/console.log"
   xcrun simctl launch --console "$udid" "$bundle" "$@" >> "$out/console.log" 2>&1 &
@@ -79,6 +80,25 @@ expect_pair() {
   echo "[$label] $line" | cut -c1-400
   if ! grep -q -- "$pattern" <<<"$line"; then
     echo "::error::[$label] expected a pairing result matching: $pattern"
+    failures=$((failures + 1))
+  fi
+  sleep 3
+}
+
+# Like `expect`, for the probe lines (Documents/dsh-probe-result.txt, written when the launch asks for reports): one
+# `DSH_PROBE authority=… outcome=…` per remembered host, appended as each probe finishes. Passes when any line matches,
+# since a launch probes every host it remembers (and again when the app comes back to the foreground).
+expect_probe() {
+  local label="$1" pattern="$2" lines=""
+  for _ in $(seq 1 45); do
+    lines="$(cat "$probe_result" 2>/dev/null || true)"
+    grep -q -- "$pattern" <<<"$lines" && break
+    sleep 1
+  done
+  echo "[$label] ${lines:-<no probe line within 45 s>}" | tr '\n' ' ' | cut -c1-400
+  echo
+  if ! grep -q -- "$pattern" <<<"$lines"; then
+    echo "::error::[$label] expected a probe line matching: $pattern"
     failures=$((failures + 1))
   fi
   sleep 3
@@ -211,8 +231,9 @@ lockout_code="$(sed -n 's/.*rateLimitedCode=\([0-9]*\).*/\1/p' <<<"$pairing_line
 plain_url="$(sed -n 's/.* plain=\([^ ]*\).*/\1/p' <<<"$pairing_line")"
 tls_url="$(sed -n 's/.* tls=\([^ ]*\).*/\1/p' <<<"$pairing_line")"
 tls_pin="$(sed -n 's/.* fingerprint=\([^ ]*\).*/\1/p' <<<"$pairing_line")"
+refusing_url="$(sed -n 's/.* refusing=\([^ ]*\).*/\1/p' <<<"$pairing_line")"
 echo "pairing fixtures: plain=$plain_url tls=$tls_url code=$pair_code lockout=$lockout_code pin=${tls_pin:0:12}…"
-if [ -z "$pair_code" ] || [ -z "$plain_url" ] || [ -z "$tls_url" ] || [ -z "$tls_pin" ]; then
+if [ -z "$pair_code" ] || [ -z "$plain_url" ] || [ -z "$tls_url" ] || [ -z "$tls_pin" ] || [ -z "$refusing_url" ] || [ "$refusing_url" = "null" ]; then
   echo "::error::the fixtures log has no usable 'ci pairing:' line ($fixtures)"
   failures=$((failures + 1))
 else
@@ -326,6 +347,21 @@ else
   expect_pair paired-first-use "DSH_PAIR_RESULT paired authority=.*127.0.0.1:3187 tls=true pinned=true"
   expect connected-first-use "DSH_CONNECT_RESULT connected authority=.*127.0.0.1:3187"
   shot "33-paired-trust-on-first-use"
+
+  # 34. A relay running `privilegedMethods: loopback-only` (the fixture on 3188) refuses the directory listing a
+  #     Recent row used to read the host's home from, and the row said "Unreachable" and was not reconnected to
+  #     although the relay was up and a tap connected. Pair with it, then relaunch: the app must reconnect by itself
+  #     (the launch-time probe counted it reachable) and say so in its probe line.
+  launch -DshReset YES -DshConnectMode relay -DshPairUrl "$refusing_url" -DshPairCode "$pair_code" -DshPairSubmit YES
+  expect_pair paired-refusing "DSH_PAIR_RESULT paired authority=127.0.0.1:3188 tls=false pinned=false"
+  expect connected-refusing "DSH_CONNECT_RESULT connected authority=127.0.0.1:3188"
+  launch -DshAutoReconnect YES -DshReport YES
+  expect reconnect-refusing "DSH_CONNECT_RESULT connected authority=127.0.0.1:3188"
+  expect_probe probe-refusing "DSH_PROBE authority=127.0.0.1:3188 outcome=Reachable"
+  # With reconnecting off the Connect screen stays up, and the row is the thing to look at.
+  launch -DshAutoReconnect NO -DshReport YES
+  expect_probe probe-refusing-listed "DSH_PROBE authority=127.0.0.1:3188 outcome=Reachable"
+  shot "34-relay-refusing-the-listing-reads-reachable"
 fi
 
 xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true

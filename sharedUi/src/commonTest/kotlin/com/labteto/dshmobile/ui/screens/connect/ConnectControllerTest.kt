@@ -2,6 +2,7 @@ package com.labteto.dshmobile.ui.screens.connect
 
 import com.labteto.dshmobile.connection.ConnectMode
 import com.labteto.dshmobile.connection.ConnectStage
+import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.connection.ConnectionUiState
 import com.labteto.dshmobile.connection.DiscoveredHost
 import com.labteto.dshmobile.connection.HostConfig
@@ -76,7 +77,12 @@ class ConnectControllerTest {
             return config
         }
 
-        override suspend fun cacheDescription(id: String, description: HostDescription) = Unit
+        /** Every `cacheDescription` call, as host id to home. */
+        val cached = mutableListOf<Pair<String, String>>()
+
+        override suspend fun cacheDescription(id: String, description: HostDescription) {
+            cached += id to description.home
+        }
 
         override suspend fun removeHost(id: String) {
             hostList.value = hostList.value.filterNot { it.id == id }
@@ -91,9 +97,6 @@ class ConnectControllerTest {
         var outcome: ProbeOutcome = ProbeOutcome.Refused
         var gate: CompletableDeferred<Unit>? = null
         val probed = mutableListOf<String>()
-
-        override suspend fun probe(host: String, port: Int, timeouts: ProbeTimeouts, config: HostConfig?): HostDescription? =
-            (probeOutcome(host, port, timeouts, config = config) as? ProbeOutcome.Reachable)?.description
 
         override suspend fun probeOutcome(
             host: String,
@@ -127,6 +130,11 @@ class ConnectControllerTest {
         override val state: StateFlow<ConnectionUiState> = mutable.asStateFlow()
         val connected = mutableListOf<HostConfig>()
         var disconnects = 0
+
+        /** Publish a connection state, as the real link does when the ready frame arrives. */
+        fun emit(next: ConnectionUiState) {
+            mutable.value = next
+        }
 
         override suspend fun connect(config: HostConfig) {
             connected += config
@@ -282,6 +290,73 @@ class ConnectControllerTest {
         ConnectController(backgroundScope, store, network, link, FakeSignIn(), NoLoopbackHarness, true)
         runCurrent()
         assertEquals(listOf(last), link.connected)
+    }
+
+    /** A relay this device paired with, which is all the controller needs to treat it as one. */
+    private val pairedRelay = HostConfig(
+        id = "relay-1",
+        name = "relay",
+        host = "relay.example",
+        port = 3443,
+        useTls = true,
+        relayFingerprint = "pin",
+        relayDeviceId = "device-1",
+    )
+
+    @Test
+    fun `a paired relay that answers without a home is reachable and reconnected to`() = runTest {
+        // The relay's directory listing is refused for a paired device under privilegedMethods: loopback-only,
+        // so the probe proves the harness is there and cannot read its home: Reachable(null). That used to be
+        // folded into "unreachable" for the row and for the launch-time reconnect alike.
+        val store = FakeStore()
+        store.hostList.value = listOf(pairedRelay)
+        store.current = ConnectSettings(connectMode = ConnectMode.RELAY)
+        val network = FakeNetwork().apply { outcome = ProbeOutcome.Reachable(null) }
+        val link = FakeLink()
+        val controller = ConnectController(backgroundScope, store, network, link, FakeSignIn(), NoLoopbackHarness, true)
+        runCurrent()
+        assertEquals(HostProbe.Reachable(null), controller.state.value.recentStatus[pairedRelay.authority])
+        assertEquals(listOf(pairedRelay), link.connected)
+        // There is no home to remember, so nothing is cached.
+        assertTrue(store.cached.isEmpty())
+    }
+
+    @Test
+    fun `a probe that reads the home caches it`() = runTest {
+        val store = FakeStore()
+        store.hostList.value = listOf(pairedRelay)
+        store.current = ConnectSettings(connectMode = ConnectMode.RELAY, autoConnectLast = false)
+        val network = FakeNetwork().apply { outcome = ProbeOutcome.Reachable(HostDescription("/home/demo")) }
+        val controller = ConnectController(backgroundScope, store, network, FakeLink(), FakeSignIn(), NoLoopbackHarness, true)
+        runCurrent()
+        assertEquals(HostProbe.Reachable(HostDescription("/home/demo")), controller.state.value.recentStatus[pairedRelay.authority])
+        assertEquals(listOf(pairedRelay.id to "/home/demo"), store.cached)
+    }
+
+    @Test
+    fun `a refused probe reads unreachable and a later connection turns the row reachable`() = runTest {
+        val store = FakeStore()
+        store.hostList.value = listOf(pairedRelay)
+        store.current = ConnectSettings(connectMode = ConnectMode.RELAY, autoConnectLast = false)
+        val network = FakeNetwork().apply { outcome = ProbeOutcome.Refused }
+        val link = FakeLink()
+        val controller = ConnectController(backgroundScope, store, network, link, FakeSignIn(), NoLoopbackHarness, true)
+        runCurrent()
+        assertEquals(HostProbe.Unreachable, controller.state.value.recentStatus[pairedRelay.authority])
+
+        // A tap connects through the mux without probing, and the ready frame names the home.
+        link.emit(
+            ConnectionUiState(
+                phase = ConnectionPhase.CONNECTED,
+                host = pairedRelay,
+                description = HostDescription("/home/demo"),
+                stage = ConnectStage.Connected,
+                hasConnected = true,
+            ),
+        )
+        runCurrent()
+        assertEquals(HostProbe.Reachable(HostDescription("/home/demo")), controller.state.value.recentStatus[pairedRelay.authority])
+        assertEquals(listOf(pairedRelay.id to "/home/demo"), store.cached)
     }
 
     @Test

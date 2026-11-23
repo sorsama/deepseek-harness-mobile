@@ -5,6 +5,40 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Fixed
+
+- **A paired relay no longer shows as Unreachable when you can connect to it.** The Connect screen
+  decided a saved harness was reachable only if it could also read the host's home folder, and a
+  relay run with `privilegedMethods: loopback-only` (the setting its README recommends for a relay on
+  the internet) refuses exactly that request. The relay answered, a tap on its row connected, and the
+  row still said Unreachable; "reconnect to the last harness" skipped it for the same reason. A row is
+  now Reachable whenever the harness answers, with or without a home folder, and a successful
+  connection turns an Unreachable row Reachable and fills in its home. On iPhone the list is also
+  checked again when you come back to the Connect screen and when the app returns to the foreground,
+  as it already was on Android, instead of keeping the first answer until the app is closed.
+  (#141)
+
+- **The end of the newest message no longer hides under the composer's drawer.** Once a draft wraps
+  past one line the message box lifts into a drawer over the chat, and the drawer covered the bottom
+  of the transcript: the list was already at its floor, so the end of the message being answered
+  could not be scrolled out from underneath it. The transcript now keeps the drawer's measured
+  height as room at its end, so the newest message rests above the drawer and comes up with it as
+  the drawer grows, and the way-back-down button sits above the drawer too.
+
+- **Slow slash commands such as `/compact` no longer fail after 30 seconds.** Every slash command
+  is one request to the harness, and the app gave each request 30 seconds to answer. Compacting a
+  large session on a slow model gateway takes longer than that, so the app hung up at exactly 30
+  seconds, said **Command failed: transport failure: timeout**, and the harness's summary was thrown
+  away halfway. Commands now wait for the harness to finish, the way plugin installs already did.
+  (#139)
+
+### Internal
+
+- The shared UI is on Compose Multiplatform 1.11.1 and Kotlin 2.3.21 (from 1.7.1 and 2.0.21), with
+  the Compose BOM, Hilt, KSP and atomicfu moved to match, so the iOS screens to come get the common
+  back handler and the newer iOS text input. Android draws the same screens as before; the checked
+  shots are listed in the pull request.
+
 ## [0.24.0] - 2026-11-19
 
 ![Three phones: the Plugins page as a short list, a chat with a task list and a background command, and a Harness settings page](docs/images/releases/0.24.0/devices/hero-whats-new.png)

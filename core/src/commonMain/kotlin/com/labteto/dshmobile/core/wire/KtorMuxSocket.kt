@@ -12,7 +12,6 @@ import io.ktor.client.request.prepareGet
 import io.ktor.client.request.url
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
-import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
 import kotlin.concurrent.Volatile
@@ -217,7 +216,7 @@ class KtorMuxSocket(
                 // that as a failure, and so must this: "the host closed the stream" and "the link
                 // died" are different explanations for the same reconnect.
                 val reason = withTimeoutOrNull(CLOSE_REASON_WAIT_MS) { session.closeReason.await() }
-                if (reason != null && reason.code == CloseReason.Codes.CLOSED_ABNORMALLY.code) {
+                if (reason != null && reason.code == CLOSED_ABNORMALLY) {
                     readFailure = IOException("websocket closed without a close frame: ${reason.message}")
                 }
             } catch (e: CancellationException) {
@@ -236,6 +235,13 @@ class KtorMuxSocket(
 
         /** How long to wait for the close reason once the incoming channel has ended. */
         const val CLOSE_REASON_WAIT_MS = 1_000L
+
+        /**
+         * 1006, the code Ktor puts on a session that ended with no Close frame. Ktor marks its own
+         * `CloseReason.Codes.CLOSED_ABNORMALLY` internal (Kotlin 2.3 enforces that opt-in), and the code is
+         * fixed by RFC 6455, so it is spelled out here.
+         */
+        const val CLOSED_ABNORMALLY: Short = 1006
 
         /** OkHttp's own cap on queued outgoing bytes. */
         const val MAX_QUEUE_BYTES = 16L * 1024 * 1024

@@ -421,7 +421,7 @@ it replaced.
 
 ### Layout
 
-`:sharedUi` is a Kotlin Multiplatform library with Compose Multiplatform **1.7.1** (see "The iOS app" for why that
+`:sharedUi` is a Kotlin Multiplatform library with Compose Multiplatform **1.11.1** (1.7.1 until the upgrade; see "The iOS app" for why that
 version), with `androidTarget()`, `iosArm64()` and `iosSimulatorArm64()`. It was `:iosShared` until M4a gave it the
 Android target and a name that is not about iOS; it is a module of its own and not a `composeApp` inside `:app`
 so that the iOS framework does not have to build the Android app to get at the shared half.
@@ -650,9 +650,10 @@ script to put in a QR. The code of both relays works every time (a real relay's 
 Two pieces:
 
 - **`:sharedUi`** (see "The shared UI") is the Compose Multiplatform module. For iOS it builds one static framework,
-  `DshShared`, which holds the screens and the iOS wiring. Compose Multiplatform is **1.7.1**: it is the release built for
-  this repo's Kotlin 2.0.21, and 1.7.3 and later are built for Kotlin 2.1 and their klibs do not read on 2.0.21. It
-  moves together with `kotlin` (the catalog says so). `iosX64` (the Intel simulator) is left out of the framework:
+  `DshShared`, which holds the screens and the iOS wiring. Compose Multiplatform is **1.11.1** on Kotlin 2.3.21: its
+  klibs need Kotlin 2.3, and it is the newest release whose Android side still builds with compileSdk 35 (1.12 is built
+  on androidx Compose 1.12, which needs compileSdk 37 and AGP 9.1). It moves together with `kotlin` and the Compose BOM
+  (the catalog says why). `iosX64` (the Intel simulator) is left out of the framework:
   every Mac and every macOS runner that matters is Apple Silicon. `:core` still compiles it.
 - **`iosApp/`** is a SwiftUI shell: an `@main App` whose one view wraps the Kotlin `MainViewController`.
   There is no checked-in `.xcodeproj`. `project.yml` is the whole project, `iosApp/generate.sh` runs XcodeGen
@@ -951,9 +952,12 @@ Open items the port knows about and has deliberately not done, so they are not r
   of a pinned relay); caching one per pin is the change if it ever shows.
 - **The permission text and display name are translated, but the app has no language setting of its own**:
   it follows the device (and iOS's per-app language setting, which `CFBundleLocalizations` enables).
-- **Compose Multiplatform 1.7.1 is pinned to Kotlin 2.0.21** and moves with it. Kotlin/Native 2.0.21 builds
-  and links on Xcode 26.6 (the runner today) with no changes, but a Kotlin upgrade is also where the CMP
-  version, the `kotlinx-atomicfu` plugin and the Xcode compatibility have to be looked at together.
+- **Compose Multiplatform 1.11.1 needs Kotlin 2.3** and moves with it, together with the Compose BOM (which must list
+  the androidx Compose it is built on, 1.11.2), KSP (2.3.7, the last that runs on AGP 8.7) and Hilt (2.57.2, with
+  `kotlin-metadata-jvm` raised to the Kotlin version in `app/build.gradle.kts`). Kotlin 2.3 supports Xcode 26.0 and
+  needs iOS 14 or later (the app targets 15). A Kotlin upgrade is still where the CMP version, the
+  `kotlinx-atomicfu` plugin and the Xcode compatibility have to be looked at together; the next CMP (1.12) also
+  needs compileSdk 37 and AGP 9.1.
 - **The `ios-ipa` job takes 10 to 25 minutes** (the Release link, cold or cached). It runs on every push; if that becomes a
   cost, restrict it to changes under `iosApp/`, `sharedUi/` and `core/`, or to main and tags.
 
