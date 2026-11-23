@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.labteto.dshmobile.DshApplication
+import com.labteto.dshmobile.core.rates.BalanceCurrency
 import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.core.wire.dto.HostDescription
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -59,6 +60,7 @@ class HostsStore @Inject constructor(
         val FOLLOW_STREAMING = booleanPreferencesKey("follow_streaming")
         val DEFAULT_DELIVERY_MODE = stringPreferencesKey("default_delivery_mode")
         val AUTO_TRANSLATE_REASONING = booleanPreferencesKey("auto_translate_reasoning")
+        val BALANCE_CURRENCY = stringPreferencesKey("balance_currency")
     }
 
     private val hostsSerializer = ListSerializer(HostConfig.serializer())
@@ -105,6 +107,7 @@ class HostsStore @Inject constructor(
             defaultDeliveryMode = normalizeDeliveryMode(prefs[Keys.DEFAULT_DELIVERY_MODE] ?: DELIVERY_QUEUE),
             workStepDisplay = prefs.readWorkStepDisplay(),
             autoTranslateReasoning = prefs[Keys.AUTO_TRANSLATE_REASONING] ?: false,
+            balanceCurrency = BalanceCurrency.normalize(prefs[Keys.BALANCE_CURRENCY]),
         )
     }
 
@@ -312,6 +315,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.DEFAULT_DELIVERY_MODE] = normalizeDeliveryMode(next.defaultDeliveryMode)
             prefs.writeWorkStepDisplay(next.workStepDisplay)
             prefs[Keys.AUTO_TRANSLATE_REASONING] = next.autoTranslateReasoning
+            prefs[Keys.BALANCE_CURRENCY] = BalanceCurrency.normalize(next.balanceCurrency)
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)
         }
     }

@@ -1,5 +1,7 @@
 package com.labteto.dshmobile.connection
 
+import com.labteto.dshmobile.core.rates.BalanceCurrency
+
 /** Read endpoint-specific history first, retaining the pre-prefix key as an upgrade fallback. */
 internal fun HostConfig.rememberedSession(saved: Map<String, String>): String? =
     saved[baseUrl] ?: saved["$host:$port"]
@@ -99,4 +101,10 @@ data class AppSettings(
      * provider. Per device.
      */
     val autoTranslateReasoning: Boolean = false,
+    /**
+     * Which currency the DeepSeek balance is also estimated in: `off` (the default), `region` (the
+     * phone's own) or one of the codes in `BalanceCurrency.choices`. Anything else reads as off. While
+     * it is off the app asks nobody for exchange rates. Per device.
+     */
+    val balanceCurrency: String = BalanceCurrency.OFF,
 )

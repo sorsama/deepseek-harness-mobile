@@ -45,6 +45,7 @@ import java.util.Date
         stringResource(R.string.quota_compact_session), stringResource(R.string.quota_compact_week),
         stringResource(R.string.quota_compact_day), stringResource(R.string.quota_compact_hour), stringResource(R.string.quota_compact_minute),
         symbols.decimalSeparator.toString(), (0..9).map { symbols.zeroDigit + it }.joinToString(""),
+        symbols.groupingSeparator.toString(),
     )
 }
 
@@ -133,10 +134,18 @@ import java.util.Date
                 Text(stringResource(R.string.quota_balance_failed), style = DsType.small13, color = colors.labelTertiary)
             }
             is BalanceState.Ready -> Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall), modifier = Modifier.padding(top = DsSpacing.small).testTag("usage-balance")) {
+                // The real balance first and unchanged; an estimate in the reader's chosen currency follows it when there is one.
+                val estimator = rememberBalanceEstimator(labels)
                 Text(stringResource(R.string.quota_balance_title), style = DsType.caption11, color = colors.labelTertiary)
-                Text(balance.row.wallets.joinToString(" · ") { walletText(it, labels) }, style = DsType.rowTitle, color = colors.labelPrimary)
+                Text(
+                    estimator.withEstimate(balance.row.wallets.joinToString(" · ") { walletText(it, labels) }, balance.row.wallets),
+                    style = DsType.rowTitle, color = colors.labelPrimary, modifier = Modifier.testTag("usage-balance-main"),
+                )
                 balance.row.bonusWallets.forEach {
-                    Text(stringResource(R.string.quota_balance_bonus, walletText(it, labels)), style = DsType.small13, color = colors.labelSecondary)
+                    Text(
+                        stringResource(R.string.quota_balance_bonus, estimator.withEstimate(walletText(it, labels), listOf(it))),
+                        style = DsType.small13, color = colors.labelSecondary,
+                    )
                 }
                 balance.row.sampledAt?.let {
                     val updated = stringResource(R.string.quota_updated, DateFormat.getTimeInstance(DateFormat.SHORT, locale).format(Date(it)))

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="balance_currency_title">Mostrar também o saldo em</string>
+    <string name="balance_currency_hint">Acrescenta uma estimativa ao lado do seu saldo da DeepSeek. As taxas de câmbio são consultadas uma vez por dia em um serviço público, e nada sobre você é enviado.</string>
+    <string name="balance_currency_off">Desativado</string>
+    <string name="balance_currency_region">Usar minha região</string>
+    <string name="balance_currency_region_hint">A região do seu telefone usa %1$s</string>
+    <string name="balance_currency_region_none">Nenhuma moeda encontrada para a sua região</string>
+    <string name="balance_estimate">≈ %1$s</string>
+    <string name="balance_rates_source">Taxas da ExchangeRate-API, atualizadas em %1$s</string>
+    <string name="balance_rates_source_fallback">Taxas da Currency API, atualizadas em %1$s</string>
+    <string name="balance_rates_credit">Taxas de câmbio da ExchangeRate-API</string>
+</resources>
