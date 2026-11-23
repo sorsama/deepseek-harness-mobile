@@ -62,7 +62,7 @@ internal class BalanceEstimator(
 
     companion object {
         /** An estimator that never estimates: what a test pins the card to, whatever the device's settings say. */
-        val Off = BalanceEstimator(target = null, table = null, now = 0L, labels = UsageLabels(), format = "≈ %1$s")
+        val Off = BalanceEstimator(target = null, table = null, now = 0L, labels = UsageLabels(), format = "≈ %1\$s")
     }
 }
 

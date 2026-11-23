@@ -157,7 +157,7 @@ class UsageCardTest {
         val ready=BalanceState.Ready(UsageRow("deepseek-account",wallets=listOf(CurrencyWallet("USD","54.12")),bonusWallets=listOf(CurrencyWallet("USD","3.5")),sampledAt=now))
         val table=RateTable(RateSource.EXCHANGE_RATE_API,fetchedAt=now,publishedAt=now,rates=mapOf("USD" to 1.0,"CNY" to 7.2,"JPY" to 150.0))
         val nbsp=Char(0xA0)
-        setCard(BalanceEstimator("CNY",table,now,UsageLabels(),"≈ %1$s")) { DshTheme { UsageCard(UsageSnapshot(balance=ready),"opencode-go",now,route=opencode,tokens=spent){} } }
+        setCard(BalanceEstimator("CNY",table,now,UsageLabels(),"≈ %1\$s")) { DshTheme { UsageCard(UsageSnapshot(balance=ready),"opencode-go",now,route=opencode,tokens=spent){} } }
         // The real balance first and unchanged, then the estimate, cut and not rounded (54.12 x 7.2 = 389.664).
         compose.onNodeWithText("54.12$ · ≈${nbsp}389.66${nbsp}CNY").assertExists()
         compose.onNodeWithText("Bonus: 3.50$ · ≈${nbsp}25.20${nbsp}CNY").assertExists()
@@ -165,7 +165,7 @@ class UsageCardTest {
     @Test fun balanceRowHasNoEstimateWhenTheCurrencyIsTheWalletsOwn() {
         val ready=BalanceState.Ready(UsageRow("deepseek-account",wallets=listOf(CurrencyWallet("CNY","10")),sampledAt=now))
         val table=RateTable(RateSource.EXCHANGE_RATE_API,fetchedAt=now,publishedAt=now,rates=mapOf("USD" to 1.0,"CNY" to 7.2))
-        setCard(BalanceEstimator("CNY",table,now,UsageLabels(),"≈ %1$s")) { DshTheme { UsageCard(UsageSnapshot(balance=ready),"opencode-go",now,route=opencode,tokens=spent){} } }
+        setCard(BalanceEstimator("CNY",table,now,UsageLabels(),"≈ %1\$s")) { DshTheme { UsageCard(UsageSnapshot(balance=ready),"opencode-go",now,route=opencode,tokens=spent){} } }
         compose.onNodeWithText("10¥").assertExists()
     }
     @Test fun failedBalanceLookupSaysSoBriefly() {
