@@ -7,6 +7,10 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ### Fixed
 
+- **Keep your place in the transcript when its width changes.** Resizing the chat now preserves the
+  visible reading paragraph and the first visible history row without changing follow-tail behavior.
+  A reply still streaming also keeps its own stable row key while its text and caret update.
+
 - **A paired relay no longer shows as Unreachable when you can connect to it.** The Connect screen
   decided a saved harness was reachable only if it could also read the host's home folder, and a
   relay run with `privilegedMethods: loopback-only` (the setting its README recommends for a relay on

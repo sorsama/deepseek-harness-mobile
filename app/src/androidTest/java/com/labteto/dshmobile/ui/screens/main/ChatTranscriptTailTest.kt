@@ -1,5 +1,8 @@
 package com.labteto.dshmobile.ui.screens.main
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Modifier
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
@@ -50,6 +53,7 @@ class ChatTranscriptTailTest {
 
     private class Harness {
         var nodes by mutableStateOf<List<ChatNode>>(emptyList())
+        var width by mutableStateOf<Dp?>(null)
         var bottomInset by mutableStateOf(0.dp)
         lateinit var listState: LazyListState
     }
@@ -57,32 +61,38 @@ class ChatTranscriptTailTest {
     private fun harness(
         initial: List<ChatNode>,
         followStreaming: Boolean = true,
+        resizable: Boolean = false,
         bottomInset: Dp = 0.dp,
     ): Harness {
         val h = Harness()
         h.nodes = initial
         h.bottomInset = bottomInset
+        if (resizable) h.width = 360.dp
         compose.setContent {
             h.listState = rememberLazyListState()
             DshTheme {
-                ChatTranscript(
-                    conversation = ConversationSnapshot(sessionId = "s1", nodes = h.nodes, running = true),
-                    loading = false,
-                    loadingOlder = false,
-                    loadOlderFailed = false,
-                    context = ChatNodeContext(
-                        nodes = h.nodes,
-                        running = true,
-                        cwd = null,
-                        onOpenSubagent = {},
-                        onBranchFrom = {},
-                        onFeedback = { _, _ -> },
-                    ),
-                    listState = h.listState,
-                    bottomInset = h.bottomInset,
-                    onLoadOlder = {},
-                    followStreaming = followStreaming,
-                )
+                val transcript: @Composable () -> Unit = {
+                    ChatTranscript(
+                        conversation = ConversationSnapshot(sessionId = "s1", nodes = h.nodes, running = true),
+                        loading = false,
+                        loadingOlder = false,
+                        loadOlderFailed = false,
+                        context = ChatNodeContext(
+                            nodes = h.nodes,
+                            running = true,
+                            cwd = null,
+                            onOpenSubagent = {},
+                            onBranchFrom = {},
+                            onFeedback = { _, _ -> },
+                        ),
+                        listState = h.listState,
+                        bottomInset = h.bottomInset,
+                        onLoadOlder = {},
+                        followStreaming = followStreaming,
+                    )
+                }
+                val width = h.width
+                if (width == null) transcript() else Box(Modifier.width(width)) { transcript() }
             }
         }
         compose.waitForIdle()
@@ -111,6 +121,69 @@ class ChatTranscriptTailTest {
             compose.waitForIdle()
         }
         assertTrue("never got back to the bottom", atTail())
+    }
+
+    @Test
+    fun widthChangesKeepReadingParagraphVisible() = verifyReadingParagraph()
+
+    private fun verifyReadingParagraph() {
+        val marker = "Reading marker paragraph"
+        val reply = ("A historical paragraph that wraps as the chat narrows. ".repeat(30)) +
+            "\n\n$marker\n\n" + "A later paragraph that also wraps when resized. ".repeat(45)
+        val history = longHistory().map { if (it.seq == 35L) assistant(35, reply) else it }
+        val h = harness(history, resizable = true)
+        val index = history.asReversed().indexOfFirst { it.seq == 35L }
+        compose.runOnIdle { runBlocking { h.listState.scrollToItem(index) } }
+        val markerNode = compose.onNodeWithText(marker, useUnmergedTree = true)
+        val listNode = compose.onNode(hasScrollToIndexAction())
+        val markerBounds = markerNode.getUnclippedBoundsInRoot()
+        val listBounds = listNode.getUnclippedBoundsInRoot()
+        val dy = ((markerBounds.top + markerBounds.bottom) - (listBounds.top + listBounds.bottom)) / 2f
+        val pixels = with(compose.density) { dy.toPx() }
+        compose.runOnIdle {
+            runBlocking { h.listState.scroll { scrollBy(-pixels) } }
+        }
+        markerNode.assertIsDisplayed()
+        val before = markerNode.getUnclippedBoundsInRoot().top
+        for (width in listOf(340.dp, 320.dp, 300.dp, 280.dp, 260.dp, 300.dp, 360.dp)) {
+            compose.runOnIdle { h.width = width }
+            markerNode.assertIsDisplayed()
+            val after = markerNode.getUnclippedBoundsInRoot().top
+            assertEquals("Reading paragraph at $width", before.value, after.value, 24f)
+        }
+    }
+
+    @Test
+    fun widthChangesKeepTheHistoryMessageAnchored() {
+        val history = longHistory().map { node ->
+            if (node.seq == 35L) assistant(35, "A long historical reply with wrapping text. ".repeat(80)) else node
+        }
+        val h = harness(history, resizable = true)
+        val index = history.asReversed().indexOfFirst { it.seq == 35L }
+        compose.runOnIdle { runBlocking { h.listState.scrollToItem(index, 200) } }
+        val anchor = h.firstVisibleKey()
+        assertEquals(35L, anchor)
+        for (width in listOf(260.dp, 340.dp, 280.dp, 360.dp)) {
+            compose.runOnIdle { h.width = width }
+            assertEquals("history anchor at width $width", anchor, h.firstVisibleKey())
+            assertFalse("resize returned to the newest message", h.atTail())
+        }
+    }
+
+    @Test
+    fun widthChangesKeepFollowingTheTail() {
+        val history = longHistory()
+        val h = harness(
+            history + assistant(1000, "A long streaming reply with wrapping text. ".repeat(30), streaming = true),
+            resizable = true,
+        )
+        for (width in listOf(260.dp, 340.dp, 280.dp)) {
+            compose.runOnIdle { h.width = width }
+            assertTrue("tail moved when transcript width became $width", h.atTail())
+        }
+        compose.runOnIdle { h.nodes = h.nodes + user(1001, "New message after resize") }
+        assertTrue(h.atTail())
+        compose.onNodeWithText("New message after resize").assertIsDisplayed()
     }
 
     @Test
@@ -225,6 +298,9 @@ class ChatTranscriptTailTest {
         val history = longHistory()
         val h = harness(history, followStreaming = false)
         val anchor = compose.onNodeWithText("answer 29").getUnclippedBoundsInRoot()
+        val beforeLayout = compose.runOnIdle {
+            h.listState.layoutInfo.visibleItemsInfo.take(3).map { Triple(it.key, it.offset, it.size) }
+        }
 
         compose.runOnIdle { h.nodes = history + assistant(60, "a reply nobody asked to follow") }
         compose.waitForIdle()
@@ -232,7 +308,12 @@ class ChatTranscriptTailTest {
         // No pin: the reader keeps the row they were on, and the arrival waits below for the jump
         // pill rather than pulling the page down. The pill counts it, because nobody read it.
         assertFalse(h.atTail())
-        assertEquals(anchor.top, compose.onNodeWithText("answer 29").getUnclippedBoundsInRoot().top)
+        val layout = compose.runOnIdle {
+            val state = h.listState
+            "viewport=${state.layoutInfo.viewportSize}, first=${state.firstVisibleItemIndex}/${state.firstVisibleItemScrollOffset}, " +
+                "rows=${state.layoutInfo.visibleItemsInfo.take(3).map { Triple(it.key, it.offset, it.size) }}"
+        }
+        assertEquals("before=$beforeLayout; after=$layout", anchor.top, compose.onNodeWithText("answer 29").getUnclippedBoundsInRoot().top)
         compose.onNodeWithContentDescription("1 new").assertExists()
     }
 
