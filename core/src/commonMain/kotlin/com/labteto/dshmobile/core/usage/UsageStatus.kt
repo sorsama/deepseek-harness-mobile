@@ -96,6 +96,8 @@ data class UsageLabels(
     val session: String = "5h", val week: String = "week",
     val day: String = "d", val hour: String = "h", val minute: String = "m",
     val decimalSeparator: String = ".", val digits: String = "0123456789",
+    /** The reader's thousands mark. Empty (the default) writes no grouping; only the balance estimate uses it. */
+    val groupingSeparator: String = "",
 )
 fun localizedNumber(value: String, labels: UsageLabels): String = value.map { char ->
     if (char in '0'..'9' && labels.digits.length == 10) labels.digits[char - '0'] else char

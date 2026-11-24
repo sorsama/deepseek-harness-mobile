@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="balance_currency_title">بیلنس اس کرنسی میں بھی دکھائیں</string>
+    <string name="balance_currency_hint">آپ کے DeepSeek بیلنس کے ساتھ ایک تخمینہ شامل کرتا ہے۔ شرحِ تبادلہ دن میں ایک بار ایک عوامی سروس سے لی جاتی ہے، اور آپ کے بارے میں کچھ نہیں بھیجا جاتا۔</string>
+    <string name="balance_currency_off">بند</string>
+    <string name="balance_currency_region">میرے علاقے کے مطابق</string>
+    <string name="balance_currency_region_hint">آپ کے فون کا علاقہ %1$s استعمال کرتا ہے</string>
+    <string name="balance_currency_region_none">آپ کے علاقے کی کوئی کرنسی نہیں ملی</string>
+    <string name="balance_estimate">≈ %1$s</string>
+    <string name="balance_rates_source">شرحیں ExchangeRate-API سے، تازہ کاری: %1$s</string>
+    <string name="balance_rates_source_fallback">شرحیں Currency API سے، تازہ کاری: %1$s</string>
+    <string name="balance_rates_credit">شرحِ تبادلہ ExchangeRate-API سے</string>
+</resources>

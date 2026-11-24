@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="balance_currency_title">Показывать баланс также в</string>
+    <string name="balance_currency_hint">Добавляет примерную сумму рядом с балансом DeepSeek. Курсы валют загружаются раз в сутки из открытого сервиса, и о вас ничего не передаётся.</string>
+    <string name="balance_currency_off">Выкл.</string>
+    <string name="balance_currency_region">Как в моём регионе</string>
+    <string name="balance_currency_region_hint">В регионе вашего телефона валюта: %1$s</string>
+    <string name="balance_currency_region_none">Для вашего региона валюта не найдена</string>
+    <string name="balance_estimate">≈ %1$s</string>
+    <string name="balance_rates_source">Курсы от ExchangeRate-API, обновлены %1$s</string>
+    <string name="balance_rates_source_fallback">Курсы от Currency API, обновлены %1$s</string>
+    <string name="balance_rates_credit">Курсы валют от ExchangeRate-API</string>
+</resources>
