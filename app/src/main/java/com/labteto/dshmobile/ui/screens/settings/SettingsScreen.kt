@@ -290,6 +290,7 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                     AutoTranslateReasoningRow(settings.autoTranslateReasoning) {
                         viewModel.set { it.copy(autoTranslateReasoning = !it.autoTranslateReasoning) }
                     }
+                    DictationSettingsRows(settings) { transform -> viewModel.set(transform) }
                 }
 
                 SettingsCard(stringResource(R.string.settings_connection)) {

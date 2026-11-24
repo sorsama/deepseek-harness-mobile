@@ -60,6 +60,9 @@ class HostsStore @Inject constructor(
         val FOLLOW_STREAMING = booleanPreferencesKey("follow_streaming")
         val DEFAULT_DELIVERY_MODE = stringPreferencesKey("default_delivery_mode")
         val AUTO_TRANSLATE_REASONING = booleanPreferencesKey("auto_translate_reasoning")
+        val DICTATION_ENABLED = booleanPreferencesKey("dictation_enabled")
+        val DICTATION_LANGUAGE = stringPreferencesKey("dictation_language")
+        val DICTATION_NOTICE_SEEN = booleanPreferencesKey("dictation_notice_seen")
         val BALANCE_CURRENCY = stringPreferencesKey("balance_currency")
     }
 
@@ -107,6 +110,9 @@ class HostsStore @Inject constructor(
             defaultDeliveryMode = normalizeDeliveryMode(prefs[Keys.DEFAULT_DELIVERY_MODE] ?: DELIVERY_QUEUE),
             workStepDisplay = prefs.readWorkStepDisplay(),
             autoTranslateReasoning = prefs[Keys.AUTO_TRANSLATE_REASONING] ?: false,
+            dictationEnabled = prefs[Keys.DICTATION_ENABLED] ?: true,
+            dictationLanguage = prefs[Keys.DICTATION_LANGUAGE],
+            dictationNoticeSeen = prefs[Keys.DICTATION_NOTICE_SEEN] ?: false,
             balanceCurrency = BalanceCurrency.normalize(prefs[Keys.BALANCE_CURRENCY]),
         )
     }
@@ -315,6 +321,9 @@ class HostsStore @Inject constructor(
             prefs[Keys.DEFAULT_DELIVERY_MODE] = normalizeDeliveryMode(next.defaultDeliveryMode)
             prefs.writeWorkStepDisplay(next.workStepDisplay)
             prefs[Keys.AUTO_TRANSLATE_REASONING] = next.autoTranslateReasoning
+            prefs[Keys.DICTATION_ENABLED] = next.dictationEnabled
+            next.dictationLanguage?.let { prefs[Keys.DICTATION_LANGUAGE] = it } ?: prefs.remove(Keys.DICTATION_LANGUAGE)
+            prefs[Keys.DICTATION_NOTICE_SEEN] = next.dictationNoticeSeen
             prefs[Keys.BALANCE_CURRENCY] = BalanceCurrency.normalize(next.balanceCurrency)
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)
         }

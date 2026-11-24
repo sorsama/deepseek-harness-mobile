@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_start">Iniciar ditado</string>
+    <string name="voice_stop">Parar ditado</string>
+    <string name="voice_in_progress">Ditado em andamento</string>
+    <string name="voice_listening">Ouvindo…</string>
+    <string name="voice_starting">Preparando…</string>
+    <string name="voice_finishing">Finalizando…</string>
+    <string name="voice_shortcut_toggle">Ditar (iniciar ou parar)</string>
+
+    <string name="voice_language_title">Idioma do ditado</string>
+    <string name="voice_language_hold_label">Escolher idioma do ditado</string>
+    <string name="voice_language_follow_app">Igual ao app</string>
+    <string name="voice_language_device">Padrão do telefone</string>
+
+    <string name="voice_setting_title">Botão de ditado</string>
+    <string name="voice_setting_hint">Adiciona um microfone à caixa de mensagem. O serviço de voz do telefone transforma a fala em texto.</string>
+    <string name="voice_unavailable_hint">Este telefone não tem serviço de reconhecimento de voz, por isso o microfone não aparece.</string>
+
+    <string name="voice_notice_title">Ditado</string>
+    <string name="voice_notice_body">A fala é processada pelo serviço de voz do telefone, que pode ser um serviço on-line do fabricante. Ela não é enviada ao harness.</string>
+    <string name="voice_notice_continue">Continuar</string>
+
+    <string name="voice_err_no_match">Não entendi. Tente de novo.</string>
+    <string name="voice_err_timeout">Não ouvi nada. Tente de novo.</string>
+    <string name="voice_err_network">Não foi possível acessar o serviço de voz. Verifique sua conexão.</string>
+    <string name="voice_err_busy">O serviço de voz está ocupado. Tente de novo em instantes.</string>
+    <string name="voice_err_audio">Não foi possível usar o microfone.</string>
+    <string name="voice_err_service">O serviço de voz não está disponível agora.</string>
+    <string name="voice_err_language">O ditado não está disponível neste idioma.</string>
+    <string name="voice_err_failed">O ditado parou. Tente de novo.</string>
+    <string name="voice_err_interrupted">O ditado foi interrompido. Tente de novo.</string>
+    <string name="voice_perm_denied">O ditado precisa do microfone.</string>
+    <string name="voice_perm_blocked">O acesso ao microfone está desativado para este app.</string>
+    <string name="voice_open_settings">Abrir configurações</string>
+</resources>
