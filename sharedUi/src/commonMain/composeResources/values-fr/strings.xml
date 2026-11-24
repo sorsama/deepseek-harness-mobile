@@ -84,6 +84,7 @@
     <string name="connect_scanning">Analyse de votre réseau…</string>
     <string name="connect_section_discovered">Détectés</string>
     <string name="connect_section_discovered_relay">Relais détectés</string>
+    <string name="connect_session_count">Sessions %1$s</string>
     <string name="connect_sign_in">Se connecter</string>
     <string name="connect_sign_in_label">Lien de démarrage ou jeton</string>
     <string name="connect_sign_in_link_body">Le harness affiche un lien au démarrage. Collez ce lien, ou juste le jeton après ?token=.</string>

@@ -76,12 +76,12 @@ kotlin {
             api(project(":core"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.cmp.runtime)
+            implementation(libs.cmp.foundation)
+            implementation(libs.cmp.material3)
+            implementation(libs.cmp.ui)
+            implementation(libs.cmp.components.resources)
+            implementation(libs.cmp.ui.tooling.preview)
         }
         iosMain.dependencies {
             // `HttpClient` appears in the iOS wiring's own signatures, and `:core` keeps Ktor on its

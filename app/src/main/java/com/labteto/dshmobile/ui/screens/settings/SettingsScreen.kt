@@ -246,6 +246,7 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
 
                 SettingsCard(stringResource(R.string.settings_general)) {
                     LanguageRow(settings) { tag -> viewModel.set { it.copy(localeOverride = tag) } }
+                    BalanceCurrencyRow(settings) { choice -> viewModel.set { it.copy(balanceCurrency = choice) } }
                 }
 
                 // The customizable theme: scheme, accent, OLED canvas, text size and touch feedback.

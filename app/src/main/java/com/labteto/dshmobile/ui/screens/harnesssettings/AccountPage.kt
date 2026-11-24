@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
@@ -68,7 +69,9 @@ import com.labteto.dshmobile.ui.screens.main.ConfirmDialog
 import com.labteto.dshmobile.ui.screens.main.FeatureAction
 import com.labteto.dshmobile.ui.screens.main.FeatureDiagnostics
 import com.labteto.dshmobile.ui.screens.main.FeaturePage
+import com.labteto.dshmobile.ui.screens.main.RatesSourceNote
 import com.labteto.dshmobile.ui.screens.main.quotaLabels
+import com.labteto.dshmobile.ui.screens.main.rememberBalanceEstimator
 import com.labteto.dshmobile.ui.screens.main.technicalDisplay
 import com.labteto.dshmobile.ui.screens.models.Notice
 import com.labteto.dshmobile.ui.theme.DsShapes
@@ -439,12 +442,23 @@ private fun BalanceCard(balance: Loadable<AccountWallet>, onRetry: () -> Unit) {
                 if (row.wallets.isEmpty() && row.bonusWallets.isEmpty()) {
                     Text(stringResource(R.string.acct_balance_none), style = DsType.std14, color = colors.labelTertiary)
                 }
+                // The real balance first and unchanged; an estimate in the chosen currency follows it when there is one.
+                val estimator = rememberBalanceEstimator(labels)
                 if (row.wallets.isNotEmpty()) {
-                    Text(row.wallets.joinToString(" · ") { walletText(it, labels) }, style = DsType.rowTitle, color = colors.labelPrimary)
+                    Text(
+                        estimator.withEstimate(row.wallets.joinToString(" · ") { walletText(it, labels) }, row.wallets),
+                        style = DsType.rowTitle, color = colors.labelPrimary, modifier = Modifier.testTag("account-balance-main"),
+                    )
                 }
                 row.bonusWallets.forEach {
-                    Text(stringResource(R.string.quota_balance_bonus, walletText(it, labels)), style = DsType.small13, color = colors.labelSecondary)
+                    Text(
+                        stringResource(R.string.quota_balance_bonus, estimator.withEstimate(walletText(it, labels), listOf(it))),
+                        style = DsType.small13, color = colors.labelSecondary,
+                    )
                 }
+                // Where the rates come from, only while an estimate is actually on screen.
+                val shown = estimator.text(row.wallets) != null || row.bonusWallets.any { estimator.text(listOf(it)) != null }
+                if (shown) estimator.table?.let { RatesSourceNote(it, Modifier.testTag("account-rates-source")) }
             }
         }
     }

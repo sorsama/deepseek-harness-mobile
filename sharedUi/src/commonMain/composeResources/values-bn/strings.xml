@@ -84,6 +84,7 @@
     <string name="connect_scanning">আপনার নেটওয়ার্ক স্ক্যান হচ্ছে…</string>
     <string name="connect_section_discovered">পাওয়া গেছে</string>
     <string name="connect_section_discovered_relay">পাওয়া রিলে</string>
+    <string name="connect_session_count">সেশন %1$s</string>
     <string name="connect_sign_in">সাইন ইন</string>
     <string name="connect_sign_in_label">স্টার্টআপ লিংক বা টোকেন</string>
     <string name="connect_sign_in_link_body">harness চালু হলে একটি লিংক দেখায়। সেই লিংক পেস্ট করুন, অথবা ?token=-এর পরের টোকেন।</string>

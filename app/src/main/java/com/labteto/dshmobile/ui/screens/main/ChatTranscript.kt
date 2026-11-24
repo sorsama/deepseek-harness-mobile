@@ -45,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -146,6 +147,13 @@ internal fun ChatTranscript(
      * list itself still spans the pane and scrolls from anywhere on it.
      */
     gutter: Dp = 0.dp,
+    /**
+     * Room at the bottom that something else covers — the composer, when it lifts into its drawer
+     * past one wrapped line. Added to the content padding rather than taken off the viewport: the
+     * newest row then rests above the drawer instead of ending underneath it, and history still
+     * scrolls under the drawer the way a floating composer should.
+     */
+    bottomInset: Dp = 0.dp,
     /** A message the reader picked out of the history sheet, still waiting to be scrolled to. */
     jumpToSeq: Long? = null,
     onJumpConsumed: () -> Unit = {},
@@ -408,12 +416,21 @@ internal fun ChatTranscript(
         listState.animateScrollToItem(0)
     }
 
+    val readingAnchor = remember(listState, sessionId) { TranscriptReadingAnchor() }
+    val readingScope = rememberCoroutineScope()
     // A tap anywhere on the transcript ends a text selection made in it (issue #90); see the modifier.
-    Box(modifier.fillMaxSize().clearSelectionOnTap()) {
+    Box(modifier.fillMaxSize().clearSelectionOnTap().onGloballyPositioned { viewport ->
+        readingAnchor.schedule(readingScope, viewport, listState) { followTail }
+    }) {
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp + gutter, vertical = 10.dp),
+        contentPadding = PaddingValues(
+            start = 16.dp + gutter,
+            top = 10.dp,
+            end = 16.dp + gutter,
+            bottom = 10.dp + bottomInset,
+        ),
         // Newest first, so the row the viewport anchors on is the one that grows.
         reverseLayout = true,
         // Still bottom-aligned: a transcript shorter than the viewport belongs above the composer,
@@ -467,7 +484,11 @@ internal fun ChatTranscript(
                 }
                 Column(arrival) {
                     when (row) {
-                        is TranscriptRow.Message -> ChatNodeItem(node = row.node, context = context)
+                        is TranscriptRow.Message -> androidx.compose.runtime.CompositionLocalProvider(
+                            com.labteto.dshmobile.ui.components.LocalMarkdownReadingObserver provides { block, coordinates ->
+                                readingAnchor.record(transcriptRowKey(row) to block, coordinates)
+                            },
+                        ) { ChatNodeItem(node = row.node, context = context) }
                         is TranscriptRow.Tools -> ToolsRowContent(row, context)
                         is TranscriptRow.Context -> ContextGroupRow(row.nodes, context)
                         is TranscriptRow.Process -> ProcessRow(row, context)
@@ -495,7 +516,7 @@ internal fun ChatTranscript(
         visible = awayFromTail && displayRows.isNotEmpty(),
         enter = DsAnimations.popEnter,
         exit = DsAnimations.popExit,
-        modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 12.dp),
+        modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 12.dp + bottomInset),
     ) {
         JumpToLatestButton(
             unseen = unseen,

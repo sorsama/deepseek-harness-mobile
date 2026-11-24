@@ -434,10 +434,16 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
                     // The live reply's last prose block carries the shared blinking caret. It is
                     // the renderer's own component, so it sits inline after the final line instead
                     // of being glued onto the markdown source as a glyph.
-                    MarkdownText(
-                        block.text.orEmpty(),
-                        streamingCaret = streaming && index == lastTextBlock,
-                    )
+                    val observer = com.labteto.dshmobile.ui.components.LocalMarkdownReadingObserver.current
+                    androidx.compose.runtime.CompositionLocalProvider(
+                        com.labteto.dshmobile.ui.components.LocalMarkdownReadingObserver provides
+                            observer?.let { parent -> { paragraph, coordinates -> parent(index to paragraph, coordinates) } },
+                    ) {
+                        MarkdownText(
+                            block.text.orEmpty(),
+                            streamingCaret = streaming && node.streaming && index == lastTextBlock,
+                        )
+                    }
                 }
                 "reasoning" -> if (!block.text.isNullOrBlank() || streaming) {
                     val expanded = reasoningExpanded[index] ?: false

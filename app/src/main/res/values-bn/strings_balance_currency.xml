@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="balance_currency_title">ব্যালেন্স এই মুদ্রাতেও দেখান</string>
+    <string name="balance_currency_hint">আপনার DeepSeek ব্যালেন্সের পাশে একটি আনুমানিক অঙ্ক যোগ করে। বিনিময় হার দিনে একবার একটি পাবলিক সেবা থেকে আনা হয়, আর আপনার সম্পর্কে কিছুই পাঠানো হয় না।</string>
+    <string name="balance_currency_off">বন্ধ</string>
+    <string name="balance_currency_region">আমার অঞ্চল অনুযায়ী</string>
+    <string name="balance_currency_region_hint">আপনার ফোনের অঞ্চল %1$s ব্যবহার করে</string>
+    <string name="balance_currency_region_none">আপনার অঞ্চলের কোনো মুদ্রা পাওয়া যায়নি</string>
+    <string name="balance_estimate">≈ %1$s</string>
+    <string name="balance_rates_source">হার ExchangeRate-API থেকে, আপডেট: %1$s</string>
+    <string name="balance_rates_source_fallback">হার Currency API থেকে, আপডেট: %1$s</string>
+    <string name="balance_rates_credit">বিনিময় হার ExchangeRate-API থেকে</string>
+</resources>

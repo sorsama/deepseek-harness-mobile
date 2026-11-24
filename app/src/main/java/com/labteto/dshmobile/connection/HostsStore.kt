@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.labteto.dshmobile.DshApplication
+import com.labteto.dshmobile.core.rates.BalanceCurrency
 import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.core.wire.dto.HostDescription
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -62,6 +63,7 @@ class HostsStore @Inject constructor(
         val DICTATION_ENABLED = booleanPreferencesKey("dictation_enabled")
         val DICTATION_LANGUAGE = stringPreferencesKey("dictation_language")
         val DICTATION_NOTICE_SEEN = booleanPreferencesKey("dictation_notice_seen")
+        val BALANCE_CURRENCY = stringPreferencesKey("balance_currency")
     }
 
     private val hostsSerializer = ListSerializer(HostConfig.serializer())
@@ -111,6 +113,7 @@ class HostsStore @Inject constructor(
             dictationEnabled = prefs[Keys.DICTATION_ENABLED] ?: true,
             dictationLanguage = prefs[Keys.DICTATION_LANGUAGE],
             dictationNoticeSeen = prefs[Keys.DICTATION_NOTICE_SEEN] ?: false,
+            balanceCurrency = BalanceCurrency.normalize(prefs[Keys.BALANCE_CURRENCY]),
         )
     }
 
@@ -321,6 +324,7 @@ class HostsStore @Inject constructor(
             prefs[Keys.DICTATION_ENABLED] = next.dictationEnabled
             next.dictationLanguage?.let { prefs[Keys.DICTATION_LANGUAGE] = it } ?: prefs.remove(Keys.DICTATION_LANGUAGE)
             prefs[Keys.DICTATION_NOTICE_SEEN] = next.dictationNoticeSeen
+            prefs[Keys.BALANCE_CURRENCY] = BalanceCurrency.normalize(next.balanceCurrency)
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)
         }
     }

@@ -811,6 +811,17 @@ fun ChatScreen(
                 // reserved height that drifts from the card's is how the composer came to hide its
                 // own action row (#87).
                 var composerBlockPx by remember { mutableIntStateOf(0) }
+                // Lifted, the block floats over the conversation instead of taking room from it, so
+                // the newest row used to end underneath the drawer and no scroll could bring it out:
+                // the list was already at its floor. Give the transcript the block's measured height
+                // as a bottom inset, which is exactly the room the block took in flow — the tail
+                // rests above the drawer, and history still scrolls under it. A tabletop split keeps
+                // the transcript above the hinge, where the drawer cannot reach it.
+                val transcriptBottomInset = if (composerLifted && regions == null) {
+                    with(density) { composerBlockPx.toDp() }
+                } else {
+                    0.dp
+                }
                 Column(Modifier.fillMaxSize()) {
                 AnimatedContent(
                     targetState = tab,
@@ -834,6 +845,7 @@ fun ChatScreen(
                             context = nodeContext,
                             listState = chatListState,
                             gutter = gutter,
+                            bottomInset = transcriptBottomInset,
                             onLoadOlder = { scope.launch { store.loadOlder() } },
                             jumpToSeq = pendingJumpSeq,
                             onJumpConsumed = { pendingJumpSeq = null },

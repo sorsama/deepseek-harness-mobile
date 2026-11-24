@@ -133,6 +133,36 @@ class RelayConformanceTest {
     }
 
     /**
+     * A relay run with `privilegedMethods: loopback-only`, which its README recommends for one exposed to the internet.
+     *
+     * A paired device is then refused the host's directory listing with a 403 while the probe and the connection
+     * itself work. The Connect screen reads a host's home from that listing, and used to show the relay as
+     * unreachable whenever it failed, so this pins the real relay's behaviour that the mock's `refusePrivileged`
+     * stands in for: the probe call is served, the listing is a 403 the client classifies as a fence, and the
+     * mux upgrade still opens, which is why a tap connected.
+     */
+    @Test
+    fun `a loopback-only relay serves the probe and the mux but refuses the directory listing`() = runBlocking {
+        val started = startRelay(tls = "off", privilegedMethods = "loopback-only")
+        val origin = "http://${started.host}:${started.port}"
+        val token = (RelayPairing.claim(origin, started.code, "Conformance", http) as RelayPairOutcome.Paired).response.token
+        val client = clientFor(origin, "Bearer $token")
+
+        assertTrue(client.sessionCanOpenWorkspacePath() is RpcResult.Ok)
+
+        val listing = (client.hostListDirectory() as RpcResult.Err).error
+        assertEquals(403, TransportFailures.statusOf(listing))
+        assertEquals(TransportFailure.TRUST_FENCE, TransportFailures.of(listing))
+
+        val sink = LatchSink()
+        val socket = WsChannel("$origin/api/remote.mux", http, sink, "Bearer $token")
+        socket.start()
+        assertTrue("the mux did not open", sink.opened.await(10, TimeUnit.SECONDS))
+        assertNull(sink.failure)
+        socket.close()
+    }
+
+    /**
      * The relay's fence, which is what "untrusted-host" in the harness log actually is.
      *
      * It runs before every route, so even the unauthenticated liveness probe gets it. An address
@@ -211,7 +241,7 @@ class RelayConformanceTest {
      * Node's strip-only TypeScript mode cannot load these sources — they use parameter properties —
      * so the full transform is requested explicitly.
      */
-    private fun startRelay(tls: String): Started {
+    private fun startRelay(tls: String, privilegedMethods: String = "allow-authenticated"): Started {
         // Written to a temp file rather than into the plugin checkout, which is somebody else's
         // repository; the sources are reached by absolute URL instead.
         val driver = File.createTempFile("dsh-relay-conformance", ".mjs").also {
@@ -225,6 +255,7 @@ class RelayConformanceTest {
             pluginRoot().toURI().toString().trimEnd('/'),
             upstreamPort.toString(),
             tls,
+            privilegedMethods,
         ).redirectErrorStream(false).start()
         relay = process
         val line = process.inputStream.bufferedReader().let(BufferedReader::readLine)
@@ -295,7 +326,7 @@ class RelayConformanceTest {
             import { tmpdir } from 'node:os'
             import { join } from 'node:path'
 
-            const [root, upstreamArg, tlsMode] = process.argv.slice(2)
+            const [root, upstreamArg, tlsMode, privilegedMethods] = process.argv.slice(2)
             const load = (name) => import(root + '/src/' + name)
 
             const { Config } = await load('config.ts')
@@ -313,6 +344,7 @@ class RelayConformanceTest {
               port: 0,
               tls: tlsMode,
               mdns: false,
+              privilegedMethods,
               compat: { addressGrants: false, addressGrantTtlMs: 86400000, plainPort: 0 },
             })
             const auth = new Authenticator(store, config)

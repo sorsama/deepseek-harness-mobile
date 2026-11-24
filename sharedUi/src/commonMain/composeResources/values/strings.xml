@@ -84,6 +84,7 @@
     <string name="connect_scanning">Scanning your network…</string>
     <string name="connect_section_discovered">Discovered</string>
     <string name="connect_section_discovered_relay">Discovered relays</string>
+    <string name="connect_session_count">Sessions %1$s</string>
     <string name="connect_sign_in">Sign in</string>
     <string name="connect_sign_in_label">Startup link or token</string>
     <string name="connect_sign_in_link_body">The harness prints a link when it starts. Paste the link, or only the token after ?token=.</string>
