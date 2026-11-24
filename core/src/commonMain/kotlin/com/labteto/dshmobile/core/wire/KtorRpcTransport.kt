@@ -40,7 +40,7 @@ import kotlinx.io.buffered
 private val JSON_CONTENT_TYPE: ContentType = ContentType.parse("application/json; charset=utf-8")
 
 /** Package operations are host-owned and may outlive the ordinary RPC read budget. */
-private val UNBOUNDED_READ_PATHS = setOf("/api/pluginManager/installBundle", "/api/pluginManager/waitForInstall")
+private val UNBOUNDED_READ_PATHS = setOf("/api/pluginManager/installBundle", "/api/pluginManager/waitForInstall", "/api/commands/execute")
 
 /**
  * A multiplatform [RpcTransport] on Ktor: the iOS carrier, and a second, independent implementation

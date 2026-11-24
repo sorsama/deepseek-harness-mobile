@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="balance_currency_title">同时以此货币显示余额</string>
+    <string name="balance_currency_hint">在 DeepSeek 余额旁显示一个约数。汇率每天从公开服务获取一次，不会发送任何与你有关的信息。</string>
+    <string name="balance_currency_off">关闭</string>
+    <string name="balance_currency_region">跟随我的地区</string>
+    <string name="balance_currency_region_hint">你手机所在地区使用 %1$s</string>
+    <string name="balance_currency_region_none">找不到你所在地区的货币</string>
+    <string name="balance_estimate">约 %1$s</string>
+    <string name="balance_rates_source">汇率来自 ExchangeRate-API，更新于 %1$s</string>
+    <string name="balance_rates_source_fallback">汇率来自 Currency API，更新于 %1$s</string>
+    <string name="balance_rates_credit">汇率来自 ExchangeRate-API</string>
+</resources>

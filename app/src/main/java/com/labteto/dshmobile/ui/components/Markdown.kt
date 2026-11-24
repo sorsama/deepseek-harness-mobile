@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import com.labteto.dshmobile.ui.components.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -123,8 +124,10 @@ fun MarkdownText(text: String, modifier: Modifier = Modifier, streamingCaret: Bo
     // An agent's reply sometimes carries a little HTML (`<b>`, `<br>`, `<a href>`, comments): turned into
     // the Markdown below so its tags are not shown as text.
     val blocks = remember(text) { groupListBlocks(parseMarkdown(inlineHtmlToMarkdown(text))) }
+    val readingObserver = LocalMarkdownReadingObserver.current
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        blocks.forEach { render ->
+        blocks.forEachIndexed { index, render ->
+            val content: @Composable () -> Unit = {
             when (render) {
                 is RenderBlock.ListRun -> MdListBlock(render)
                 is RenderBlock.Of -> when (val block = render.block) {
@@ -152,6 +155,10 @@ fun MarkdownText(text: String, modifier: Modifier = Modifier, streamingCaret: Bo
                     // Grouped away above; the parser never hands a bare item to the renderer.
                     is MdBlock.ListItem -> Unit
                 }
+            }
+            }
+            if (readingObserver == null) content() else {
+                Box(Modifier.fillMaxWidth().onGloballyPositioned { readingObserver(index, it) }) { content() }
             }
         }
         // The design's live-write signal: a small accent block that blinks while a reply is being

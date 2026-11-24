@@ -18,6 +18,62 @@ All notable changes to DSH Mobile are documented here. Format based on
   apps' links without asking, and keep their cookies and storage to themselves; see
   [docs/SECURITY.md](docs/SECURITY.md).
 
+- **Show your DeepSeek balance in a second currency.** Settings, General has a new **Also show balance
+  in** row. Pick **Off** (the default), **Match my region**, or one of 20 currencies (USD, CNY, EUR,
+  JPY, GBP, KRW, INR, HKD, SGD, TWD, AUD, CAD, CHF, RUB, BRL, MXN, THB, IDR, TRY, SAR), and the usage
+  card and the Account page add an approximate amount after your real balance, such as
+  `54.12$ · ≈ 361.59 CNY`. The real balance stays first and exactly as before. The estimate is cut,
+  never rounded, so it can never read higher than the money, and it is left out when you pick the
+  wallet's own currency. The rates come from the free ExchangeRate-API (open.er-api.com), with a
+  copy on jsDelivr as a fallback when it is down. The app fetches them at most once a day and only
+  while the setting is on, and the request carries nothing about you or your account. The last good
+  rates are kept on the phone and used when you are offline, and once they are more than 7 days old
+  the estimate disappears rather than guess. The Account page links to the rate source. Every
+  language has its own wording for the row. (#136)
+
+### Fixed
+
+- **Keep your place in the transcript when its width changes.** Resizing the chat now preserves the
+  visible reading paragraph and the first visible history row without changing follow-tail behavior.
+  A reply still streaming also keeps its own stable row key while its text and caret update.
+
+- **A paired relay no longer shows as Unreachable when you can connect to it.** The Connect screen
+  decided a saved harness was reachable only if it could also read the host's home folder, and a
+  relay run with `privilegedMethods: loopback-only` (the setting its README recommends for a relay on
+  the internet) refuses exactly that request. The relay answered, a tap on its row connected, and the
+  row still said Unreachable; "reconnect to the last harness" skipped it for the same reason. A row is
+  now Reachable whenever the harness answers, with or without a home folder, and a successful
+  connection turns an Unreachable row Reachable and fills in its home. On iPhone the list is also
+  checked again when you come back to the Connect screen and when the app returns to the foreground,
+  as it already was on Android, instead of keeping the first answer until the app is closed.
+  (#141)
+
+- **The end of the newest message no longer hides under the composer's drawer.** Once a draft wraps
+  past one line the message box lifts into a drawer over the chat, and the drawer covered the bottom
+  of the transcript: the list was already at its floor, so the end of the message being answered
+  could not be scrolled out from underneath it. The transcript now keeps the drawer's measured
+  height as room at its end, so the newest message rests above the drawer and comes up with it as
+  the drawer grows, and the way-back-down button sits above the drawer too.
+
+- **Slow slash commands such as `/compact` no longer fail after 30 seconds.** Every slash command
+  is one request to the harness, and the app gave each request 30 seconds to answer. Compacting a
+  large session on a slow model gateway takes longer than that, so the app hung up at exactly 30
+  seconds, said **Command failed: transport failure: timeout**, and the harness's summary was thrown
+  away halfway. Commands now wait for the harness to finish, the way plugin installs already did.
+  (#139)
+
+### Internal
+
+- The shared UI is on Compose Multiplatform 1.11.1 and Kotlin 2.3.21 (from 1.7.1 and 2.0.21), with
+  the Compose BOM, Hilt, KSP and atomicfu moved to match, so the iOS screens to come get the common
+  back handler and the newer iOS text input. Android draws the same screens as before; the checked
+  shots are listed in the pull request.
+- iOS has a live connection behind the Connect screen: after connecting, the iPhone app reads the
+  harness's session list and shows how many sessions it has. The connection it reads through is one
+  port shared with Android (`HarnessConnection`), which the session list and chat build on next, and
+  `mock-harness --ci-fixtures` serves a demo harness with sessions, a transcript and a streamed reply
+  on port 3190 for those checks. (#141)
+
 ## [0.24.0] - 2026-11-19
 
 ![Three phones: the Plugins page as a short list, a chat with a task list and a background command, and a Harness settings page](docs/images/releases/0.24.0/devices/hero-whats-new.png)

@@ -12,7 +12,6 @@ import com.labteto.dshmobile.core.wire.GenerationFailure
 import com.labteto.dshmobile.core.wire.HandshakeStep
 import com.labteto.dshmobile.core.wire.LoopSinks
 import com.labteto.dshmobile.ui.screens.connect.ConnectFailure
-import com.labteto.dshmobile.ui.screens.connect.ConnectionLink
 import com.labteto.dshmobile.core.wire.HostGeneration
 import com.labteto.dshmobile.core.wire.RemoteStreamMux
 import com.labteto.dshmobile.core.wire.dto.RemoteEventFrame
@@ -39,7 +38,7 @@ class ConnectionManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val clientFactory: HarnessClientFactory,
     private val hostsStore: HostsStore,
-) : ConnectionLink {
+) : HarnessConnection {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val _state = MutableStateFlow(ConnectionUiState())
@@ -57,7 +56,7 @@ class ConnectionManager @Inject constructor(
      * carry. It is replaced wholesale on each reconnect, so nothing may cache the mux out of it.
      */
     @Volatile
-    var generation: HostGeneration? = null
+    override var generation: HostGeneration? = null
         private set
 
     /**
@@ -69,7 +68,7 @@ class ConnectionManager @Inject constructor(
      * Nothing here is replayed after a reconnect. State that must survive one has to come from
      * a query or a stream baseline instead — an `emit` that arrives while disconnected is gone.
      */
-    val eventFrames = kotlinx.coroutines.flow.MutableSharedFlow<RemoteEventFrame>(extraBufferCapacity = 256)
+    override val eventFrames = kotlinx.coroutines.flow.MutableSharedFlow<RemoteEventFrame>(extraBufferCapacity = 256)
 
     private val sinks = object : LoopSinks {
         override fun onEventFrame(frame: RemoteEventFrame) {
@@ -125,7 +124,7 @@ class ConnectionManager @Inject constructor(
         }
     }
 
-    val connectedApi: DshApiClient? get() = api
+    override val connectedApi: DshApiClient? get() = api
 
     /**
      * Start driving [config]. Progress and failure arrive through [state], not a callback.
@@ -161,7 +160,7 @@ class ConnectionManager @Inject constructor(
         _state.value = ConnectionUiState()
     }
 
-    fun reconnectIfNeeded() {
+    override fun reconnectIfNeeded() {
         val host = activeHost ?: return
         loop?.stop()
         scope.launch {

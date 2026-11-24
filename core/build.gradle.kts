@@ -58,6 +58,7 @@ kotlin {
             // deliberately kept out of common code: the shared logic sees them only through the
             // `RpcTransport` interface. The iOS transport implements that interface with Ktor.
             implementation(libs.okhttp)
+            implementation(libs.gson)
             implementation(libs.commonmark)
             implementation(libs.commonmark.ext.gfm.tables)
             implementation(libs.commonmark.ext.gfm.strikethrough)

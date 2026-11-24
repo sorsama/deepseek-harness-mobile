@@ -84,6 +84,7 @@
     <string name="connect_scanning">กำลังสแกนเครือข่ายของคุณ…</string>
     <string name="connect_section_discovered">ที่พบ</string>
     <string name="connect_section_discovered_relay">รีเลย์ที่พบ</string>
+    <string name="connect_session_count">เซสชัน %1$s</string>
     <string name="connect_sign_in">ลงชื่อเข้าใช้</string>
     <string name="connect_sign_in_label">ลิงก์ตอนเริ่มทำงานหรือโทเคน</string>
     <string name="connect_sign_in_link_body">harness จะพิมพ์ลิงก์ตอนเริ่มทำงาน วางลิงก์นั้น หรือเฉพาะโทเคนหลัง ?token=</string>

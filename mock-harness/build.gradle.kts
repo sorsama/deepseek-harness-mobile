@@ -31,3 +31,9 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }
+
+tasks.withType<Test>().configureEach {
+    // MockHarnessTest sends a mismatched Host header, which java.net.http refuses unless this is set before the first
+    // HttpClient of the JVM is built. Set here, it does not depend on which test class happens to run first.
+    systemProperty("jdk.httpclient.allowRestrictedHeaders", "host")
+}

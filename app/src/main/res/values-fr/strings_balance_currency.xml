@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="balance_currency_title">Afficher aussi le solde en</string>
+    <string name="balance_currency_hint">Ajoute une estimation à côté de votre solde DeepSeek. Les taux de change sont récupérés une fois par jour auprès d\'un service public, et rien sur vous n\'est envoyé.</string>
+    <string name="balance_currency_off">Désactivé</string>
+    <string name="balance_currency_region">Selon ma région</string>
+    <string name="balance_currency_region_hint">La région de votre téléphone utilise %1$s</string>
+    <string name="balance_currency_region_none">Aucune devise trouvée pour votre région</string>
+    <string name="balance_estimate">≈ %1$s</string>
+    <string name="balance_rates_source">Taux d\'ExchangeRate-API, mis à jour le %1$s</string>
+    <string name="balance_rates_source_fallback">Taux de Currency API, mis à jour le %1$s</string>
+    <string name="balance_rates_credit">Taux de change d\'ExchangeRate-API</string>
+</resources>

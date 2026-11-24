@@ -23,6 +23,7 @@ import dagger.hilt.components.SingletonComponent
 interface SessionStoreEntryPoint {
     fun sessionStore(): SessionStore
     fun hostsStore(): HostsStore
+    fun exchangeRates(): com.labteto.dshmobile.rates.ExchangeRateRepository
     fun reasoningTranslations(): com.labteto.dshmobile.translation.ReasoningTranslations
 }
 
