@@ -39,6 +39,9 @@ internal fun pluginReason(code: String?): Int = when (code) {
     "pnpm-missing" -> R.string.market_no_pnpm
     else -> R.string.ux_a_action_error
 }
+/** [pluginReason], except that a missing `pnpm` told only in [detail] (the harness's own words) is named as such. */
+internal fun pluginReason(code: String?, detail: String?): Int =
+    if (com.labteto.dshmobile.core.market.looksLikeMissingPnpm(code, detail)) R.string.market_no_pnpm else pluginReason(code)
 internal fun pluginPhase(phase: String?): Int = when (phase) {
     "starting", "queued", "resolving" -> R.string.ux_a_phase_starting
     "running", "installing" -> R.string.ux_a_phase_installing
