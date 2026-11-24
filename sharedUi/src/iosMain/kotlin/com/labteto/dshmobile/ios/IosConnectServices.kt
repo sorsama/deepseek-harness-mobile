@@ -4,6 +4,7 @@ import com.labteto.dshmobile.connection.ConnectStage
 import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.connection.ConnectionUiState
 import com.labteto.dshmobile.connection.DiscoveredHost
+import com.labteto.dshmobile.connection.HarnessConnection
 import com.labteto.dshmobile.connection.HostConfig
 import com.labteto.dshmobile.connection.ProbeOutcome
 import com.labteto.dshmobile.connection.ProbeTimeouts
@@ -34,18 +35,23 @@ import com.labteto.dshmobile.ui.screens.connect.ConnectController
 import com.labteto.dshmobile.ui.screens.connect.ConnectFailure
 import com.labteto.dshmobile.ui.screens.connect.ConnectFeatures
 import com.labteto.dshmobile.ui.screens.connect.ConnectNetwork
-import com.labteto.dshmobile.ui.screens.connect.ConnectionLink
 import com.labteto.dshmobile.ui.screens.connect.HarnessSignIn
 import com.labteto.dshmobile.ui.screens.connect.NoLoopbackHarness
 import com.labteto.dshmobile.ui.screens.pair.PairController
 import io.ktor.client.HttpClient
+import kotlin.concurrent.Volatile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /*
  * The iOS halves of the ports `ConnectController` asks for (ConnectPorts.kt in commonMain): the
@@ -71,13 +77,37 @@ internal val IosConnectFeatures = ConnectFeatures(
 )
 
 /**
+ * The Darwin HTTP clients of the app: one shared client for everything that is not pinned, and one per relay key.
+ *
+ * Each client is its own `NSURLSession` with its own connection pool, so building one per call (which the probes of a
+ * pinned relay used to do) threw away every kept-alive connection; the Android app keeps one `OkHttpClient` per pin
+ * for the same reason (`HarnessClientFactory`). There is one relay in use at a time and the key is a short hash, so
+ * the map stays small, and the clients live as long as the app.
+ *
+ * The pairing calls are not served from here: before a relay is paired there is no key to pin, and the client that
+ * learns the key is a different one (see `IosPairPorts`).
+ */
+internal class DarwinClients(val shared: HttpClient = darwinHttpClient()) {
+    private val mutex = Mutex()
+    private val pinned = mutableMapOf<String, HttpClient>()
+
+    /** The client for a relay with key [pin], or the shared one when nothing is pinned. */
+    suspend fun forPin(pin: String?): HttpClient =
+        if (pin == null) shared else mutex.withLock { pinned.getOrPut(pin) { darwinHttpClient(pinnedSpkiSha256 = pin) } }
+
+    /** The client [config] is reached with: its relay key when it is a relay paired over TLS, the shared one otherwise. */
+    suspend fun forHost(config: HostConfig?): HttpClient =
+        forPin(config?.takeIf { it.isRelay && it.useTls }?.relayFingerprint)
+}
+
+/**
  * Probing an address over the Darwin engine. No sweep, no relay browsing, no raw-socket pre-flight.
  *
  * [onProbe] hears one `DSH_PROBE authority=… outcome=…` line per probe; null outside a debug launch that asks for
  * reports. It says which call failed when a row reads Unreachable.
  */
 internal class IosConnectNetwork(
-    private val client: HttpClient,
+    private val clients: DarwinClients,
     private val sessions: KeychainSessionStore,
     private val relayTokens: KeychainRelayTokens,
     private val onProbe: ((String) -> Unit)? = null,
@@ -120,32 +150,27 @@ internal class IosConnectNetwork(
         // credential together: a client that enforces the relay's key, and its bearer token. Without them a
         // relay can only answer 403, which would grey out every relay card the moment it was drawn. A relay
         // paired over TLS with no key on record gets the ordinary client, which refuses a self-signed
-        // certificate honestly instead of trusting it.
-        val pin = config?.takeIf { it.isRelay && it.useTls }?.relayFingerprint
-        val http = if (pin != null) darwinHttpClient(pinnedSpkiSha256 = pin) else client
-        try {
-            val api = try {
-                DshApiClient(
-                    KtorRpcTransport(
-                        baseUrl = base,
-                        client = http,
-                        connectTimeoutMs = timeouts.connectMs,
-                        readTimeoutMs = timeouts.readMs,
-                        authorization = if (relay) relayTokens.authorization(config!!.id) else null,
-                        // Behind a relay the relay holds the harness session and injects it upstream, so the
-                        // phone sends none (the relay strips the header anyway).
-                        cookie = if (relay) null else config?.let { sessions.cookie(it.id) },
-                    ),
-                )
-            } catch (e: IllegalArgumentException) {
-                return ProbeOutcome.Other(e.message ?: "not an address")
-            }
-            return when (val result = api.sessionCanOpenWorkspacePath()) {
-                is RpcResult.Ok -> ProbeOutcome.Reachable(if (config == null) null else describeHome(api))
-                is RpcResult.Err -> probeOutcomeOf(TransportFailures.of(result.error), relay = relay, detail = result.error.message)
-            }
-        } finally {
-            if (http !== client) http.close()
+        // certificate honestly instead of trusting it. The pinned client is the one the live connection uses too.
+        val http = clients.forHost(config)
+        val api = try {
+            DshApiClient(
+                KtorRpcTransport(
+                    baseUrl = base,
+                    client = http,
+                    connectTimeoutMs = timeouts.connectMs,
+                    readTimeoutMs = timeouts.readMs,
+                    authorization = if (relay) relayTokens.authorization(config!!.id) else null,
+                    // Behind a relay the relay holds the harness session and injects it upstream, so the
+                    // phone sends none (the relay strips the header anyway).
+                    cookie = if (relay) null else config?.let { sessions.cookie(it.id) },
+                ),
+            )
+        } catch (e: IllegalArgumentException) {
+            return ProbeOutcome.Other(e.message ?: "not an address")
+        }
+        return when (val result = api.sessionCanOpenWorkspacePath()) {
+            is RpcResult.Ok -> ProbeOutcome.Reachable(if (config == null) null else describeHome(api))
+            is RpcResult.Err -> probeOutcomeOf(TransportFailures.of(result.error), relay = relay, detail = result.error.message)
         }
     }
 
@@ -186,15 +211,17 @@ internal class IosHarnessSignIn(
 }
 
 /**
- * The live connection to one harness: the connection loop over the Darwin mux socket, and what it
- * reports. The Android `ConnectionManager` minus what iOS has no use for yet (the foreground service,
- * relay credentials, the event stream the chat will read).
+ * The live connection to one harness: the connection loop over the Darwin mux socket, what it reports, the
+ * host's event frames, and a unary client for the screens behind it. The Android `ConnectionManager` minus the
+ * foreground service, which iOS does not allow: the socket does not outlive the app's time in the background, so
+ * [reconnectIfNeeded] starts a fresh generation when the app comes back.
  */
 internal class IosConnectionLink(
     private val store: UserDefaultsConnectStore,
     private val sessions: KeychainSessionStore,
     private val relayTokens: KeychainRelayTokens,
-) : ConnectionLink {
+    private val clients: DarwinClients,
+) : HarnessConnection {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val _state = MutableStateFlow(ConnectionUiState())
     override val state: StateFlow<ConnectionUiState> = _state.asStateFlow()
@@ -202,10 +229,24 @@ internal class IosConnectionLink(
     private var loop: ConnectionLoop? = null
     private var activeHost: HostConfig? = null
 
+    @Volatile
+    override var generation: HostGeneration? = null
+        private set
+
+    @Volatile
+    override var connectedApi: DshApiClient? = null
+        private set
+
+    private val _eventFrames = MutableSharedFlow<RemoteEventFrame>(extraBufferCapacity = EVENT_BUFFER)
+    override val eventFrames: SharedFlow<RemoteEventFrame> = _eventFrames.asSharedFlow()
+
     private val sinks = object : LoopSinks {
-        override fun onEventFrame(frame: RemoteEventFrame) = Unit
+        override fun onEventFrame(frame: RemoteEventFrame) {
+            _eventFrames.tryEmit(frame)
+        }
 
         override fun onConnected(generation: HostGeneration) {
+            this@IosConnectionLink.generation = generation
             val host = activeHost
             if (host != null) {
                 scope.launch {
@@ -292,14 +333,33 @@ internal class IosConnectionLink(
             host = config,
             stage = ConnectStage.OpeningStreams,
         )
-        // The credential this device holds for the host, read for each attempt (a sign-in is a new attempt).
-        // A harness reached directly takes the browser session it issued; a relay takes the bearer token it
-        // minted at pairing, and holds the harness session itself, so none is sent (and the relay would strip
-        // it anyway). A relay on TLS is reached only with the key it was paired with: the socket verifies the
-        // leaf certificate against it, with no fallback to system validation.
+        startLoop(config)
+        store.upsertHost(config)
+    }
+
+    /**
+     * Build the unary client and the mux for [config] and start a loop over them.
+     *
+     * The credential this device holds for the host is read for each start (a sign-in is a new attempt, and a relay
+     * token can change while the app is in the background). A harness reached directly takes the browser session it
+     * issued; a relay takes the bearer token it minted at pairing, and holds the harness session itself, so none is
+     * sent (and the relay would strip it anyway). A relay on TLS is reached only with the key it was paired with: the
+     * socket and the unary client both verify the leaf certificate against it, with no fallback to system validation.
+     */
+    private suspend fun startLoop(config: HostConfig) {
         val relay = config.isRelay
         val cookie = if (relay) null else sessions.cookie(config.id)
         val authorization = if (relay) relayTokens.authorization(config.id) else null
+        // The transport's own 30 s defaults, as Android's live client has: a long `session/page` on a big session
+        // is not a stalled request. Probes keep their short clocks.
+        connectedApi = DshApiClient(
+            KtorRpcTransport(
+                baseUrl = config.baseUrl,
+                client = clients.forHost(config),
+                authorization = authorization,
+                cookie = cookie,
+            ),
+        )
         val socketFactory = platformMuxSocketFactory(
             url = config.baseUrl + REMOTE_STREAM_MUX_PATH,
             authorization = authorization,
@@ -307,22 +367,47 @@ internal class IosConnectionLink(
             connectTimeoutMs = MUX_CONNECT_TIMEOUT_MS,
             pinnedSpkiSha256 = config.relayFingerprint.takeIf { relay && config.useTls },
         )
+        // A disconnect or another connect may have happened while the credential was read.
+        if (activeHost !== config) return
         val next = ConnectionLoop(muxFactory = { RemoteStreamMux(socketFactory) }, sinks = sinks, config = LoopConfig())
         loop = next
         next.start()
-        store.upsertHost(config)
+    }
+
+    /**
+     * Start a fresh generation for the active host. The DshApp calls it when the app comes back from the background,
+     * where iOS suspends the process and the socket goes with it; waiting for the old loop to notice can take a
+     * while, and a new handshake is one round trip.
+     *
+     * Does nothing while disconnected, and nothing after [stopRetrying]: a relay that refused this device's
+     * credential will refuse it again, and the Connect screen is already saying to pair again.
+     */
+    override fun reconnectIfNeeded() {
+        val host = activeHost ?: return
+        if (loop == null) return
+        scope.launch(Dispatchers.Main) {
+            if (activeHost !== host) return@launch
+            loop?.stop()
+            loop = null
+            startLoop(host)
+        }
     }
 
     override fun disconnect() {
         loop?.stop()
         loop = null
         activeHost = null
+        generation = null
+        connectedApi = null
         _state.value = ConnectionUiState()
     }
 
     private companion object {
         /** The socket's own handshake clock; the loop abandons a generation at its own 3 s. */
         const val MUX_CONNECT_TIMEOUT_MS = 3_000L
+
+        /** Room for a burst of host frames while a collector is busy, as Android's `ConnectionManager` has. */
+        const val EVENT_BUFFER = 256
     }
 }
 
@@ -340,14 +425,14 @@ internal class IosApp(
     private val sessions = KeychainSessionStore()
     private val relayTokens = KeychainRelayTokens()
     private val store = UserDefaultsConnectStore(sessions, relayTokens)
-    private val client: HttpClient = darwinHttpClient()
-    val link = IosConnectionLink(store, sessions, relayTokens)
+    private val clients = DarwinClients()
+    val link = IosConnectionLink(store, sessions, relayTokens, clients)
     val controller = ConnectController(
         scope = scope,
         store = store,
-        network = IosConnectNetwork(client, sessions, relayTokens, reportProbe),
+        network = IosConnectNetwork(clients, sessions, relayTokens, reportProbe),
         link = link,
-        sessions = IosHarnessSignIn(client, sessions),
+        sessions = IosHarnessSignIn(clients.shared, sessions),
         loopbackHarness = NoLoopbackHarness,
         // No "This phone" mode here: 127.0.0.1 is just an address (the simulator, a port forward).
         loopbackIsThisPhone = false,

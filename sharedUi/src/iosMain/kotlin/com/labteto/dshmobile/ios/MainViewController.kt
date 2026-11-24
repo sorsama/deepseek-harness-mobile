@@ -61,6 +61,7 @@ fun MainViewController(
                 onOutcome = if (autoConnect || report || pairing) ::reportOutcome else null,
                 onPairOutcome = if (pairing) ::reportPairOutcome else null,
                 onProbe = if (autoConnect || report || pairing) ::reportProbe else null,
+                onSessions = if (autoConnect || report || pairing) ::reportSessions else null,
             )
         }
         // One controller for the life of the process, on the main thread where Compose runs. The reset,
@@ -93,6 +94,9 @@ private const val PROBE_OUTCOME_FILE = "dsh-probe-result.txt"
 /** Where [reportPairOutcome] writes: its own file, so a pairing result is not overwritten by the connection it starts. */
 private const val PAIR_OUTCOME_FILE = "dsh-pair-result.txt"
 
+/** Where [reportSessions] writes: the session list call made after connecting, in a file of its own. */
+private const val SESSIONS_OUTCOME_FILE = "dsh-sessions-result.txt"
+
 /**
  * Say what the last connect attempt did, to the two places a script can look: the process's output
  * (`xcrun simctl launch --console`) and a file in the app container
@@ -109,6 +113,9 @@ private fun reportPairOutcome(line: String) = writeReport(PAIR_OUTCOME_FILE, lin
  * host is probed and the last line alone would hide the others.
  */
 private fun reportProbe(line: String) = writeReport(PROBE_OUTCOME_FILE, line, append = true)
+
+/** [reportOutcome] for the session list call made after connecting (`Documents/dsh-sessions-result.txt`). */
+private fun reportSessions(line: String) = writeReport(SESSIONS_OUTCOME_FILE, line)
 
 @OptIn(ExperimentalForeignApi::class)
 private fun writeReport(fileName: String, line: String, append: Boolean = false) {

@@ -84,6 +84,7 @@
     <string name="connect_scanning">جارٍ فحص شبكتك…</string>
     <string name="connect_section_discovered">المكتشَف</string>
     <string name="connect_section_discovered_relay">مُرحِّلات مكتشَفة</string>
+    <string name="connect_session_count">الجلسات %1$s</string>
     <string name="connect_sign_in">تسجيل الدخول</string>
     <string name="connect_sign_in_label">رابط البدء أو الرمز</string>
     <string name="connect_sign_in_link_body">يطبع الـ harness رابطًا عند بدء التشغيل. الصق الرابط، أو الرمز فقط بعد ?token=.</string>

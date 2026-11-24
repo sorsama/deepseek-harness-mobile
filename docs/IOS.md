@@ -484,7 +484,7 @@ engine and planner, and every other screen.
 |---|---|---|
 | `ConnectStore`: remembered harnesses and the Connect settings | `HostsStore` through `AndroidConnectStore` (Preferences DataStore, unchanged) | `UserDefaultsConnectStore`: `NSUserDefaults`, the same `HostConfig` JSON |
 | `ConnectNetwork`: probe, sweep, relay browse, subnet | `DiscoveryEngine` and `MdnsDiscovery` | the Darwin client: one `session/canOpenWorkspacePath` call, classified; no sweep, no browse |
-| `ConnectionLink`: the live connection | `ConnectionManager` | `IosConnectionLink`: `ConnectionLoop` over `DarwinMuxSocket` |
+| `ConnectionLink`: the live connection | `ConnectionManager` | `IosConnectionLink`: `ConnectionLoop` over `DarwinMuxSocket` (both are a `HarnessConnection`, below) |
 | `HarnessSignIn`: launch token to browser session | `HarnessSessionStore` | `IosHarnessSignIn`: the exchange over `NSURLSession`; the session goes to the **Keychain** |
 | `LoopbackHarness`: the harness on this device | `TermuxLoopbackHarness` | none (`NoLoopbackHarness`) |
 
@@ -497,6 +497,15 @@ engine and planner, and every other screen.
 | `storeToken`: the bearer token the relay shows once | `RelayCredentialStore` (AES-GCM under an `AndroidKeyStore` key) | `KeychainRelayTokens` (the Keychain, `AfterFirstUnlock`, one item holding a map from the relay's id to its token) |
 | `connect` | `ConnectionManager` | `IosConnectionLink`, which now sends the bearer, takes no browser cookie for a relay, and pins the mux socket to the relay's key |
 | `deviceName` | `Build.MANUFACTURER` and `Build.MODEL` | `UIDevice.name` (the system answers "iPhone" to an app without the user-assigned-name entitlement; the field is editable) |
+
+What the screens past Connect read from a connection is one more port, `HarnessConnection`
+(`sharedUi/commonMain/.../connection/HarnessConnection.kt`): a `ConnectionLink` plus the current `generation` (the mux
+and the client id), `connectedApi` (the unary client with the host's credential and pin, on the transport's 30 s
+defaults), `eventFrames` (the host's `$events` frames) and `reconnectIfNeeded()`. `ConnectionManager` only declares it.
+`IosConnectionLink` builds its client over `KtorRpcTransport` and the app's `DarwinClients`, which keeps one shared Darwin
+client and one per relay key for the probes and the live connection alike, and starts a fresh generation when the app
+comes back from the background (iOS suspends the process, and the socket with it). The session store moves to shared
+code over this port.
 
 A `ConnectFeatures` value tells the screen what its platform offers, and a section that could never work is
 hidden, never shown broken. On iOS today: **no "This phone"** (iOS does not allow the background processes
@@ -716,8 +725,9 @@ what the screen does. CI drives the app with them, and so can a person:
 With auto-connect, report or a pairing argument on, the app writes one result line (`DSH_CONNECT_RESULT connected …` or
 `… failed kind=…`) to `Documents/dsh-connect-result.txt` in its container, and a pairing run also writes
 `DSH_PAIR_RESULT paired authority=… tls=… pinned=…` or `DSH_PAIR_RESULT failed kind=…` to
-`Documents/dsh-pair-result.txt` (its own file, so the connection a pairing starts does not overwrite it). A Release
-build ignores all of it.
+`Documents/dsh-pair-result.txt` (its own file, so the connection a pairing starts does not overwrite it). Once connected
+the app makes one `session/list` call and writes `DSH_SESSIONS_RESULT listed count=…` (or `… failed code=…`) to
+`Documents/dsh-sessions-result.txt`. A Release build ignores all of it.
 
 ## ATS and the local network
 
@@ -946,10 +956,9 @@ Open items the port knows about and has deliberately not done, so they are not r
 - **The device name is "iPhone".** Since iOS 16 `UIDevice.name` is that for any app without the user-assigned-device-name
   entitlement, so the relay's device list says "iPhone" unless the person edits the field. Enough to tell kinds of device
   apart, not two iPhones.
-- **The iOS app builds a Darwin client per call, not one per relay.** The shared anonymous client serves the probes of
-  harnesses; each pairing call and each probe of a pinned relay builds its own (pinned or learning) client and closes it,
-  where the Android app keeps one `OkHttpClient` per pin. That is correct and a little wasteful (a new `NSURLSession` per probe
-  of a pinned relay); caching one per pin is the change if it ever shows.
+- **A pairing call builds its own Darwin client.** The probes and the live connection share `DarwinClients` (one client, plus
+  one per relay key, as Android keeps one `OkHttpClient` per pin); a pairing claim is made before there is a key to cache a
+  client under, so it builds its pinned or learning client for the one call and closes it.
 - **The permission text and display name are translated, but the app has no language setting of its own**:
   it follows the device (and iOS's per-app language setting, which `CFBundleLocalizations` enables).
 - **Compose Multiplatform 1.11.1 needs Kotlin 2.3** and moves with it, together with the Compose BOM (which must list
@@ -972,7 +981,8 @@ Open items the port knows about and has deliberately not done, so they are not r
   probe, so a deployment whose picker answers an error is shown "Unreachable" and is not reconnected to by itself. That is
   how the Android app has always behaved and iOS inherited it; the mock harness answers the call now so the simulator job
   can show a reachable host.
-- **The Connected page on iOS is a placeholder.** It reports what the screen has to give and has nothing behind it.
+- **The Connected page on iOS is a placeholder.** It reports what the screen has to give (with the harness's session count
+  since M1 of the session list port) and has nothing behind it.
 - **`ios-ipa` and `ios-app` build Compose Multiplatform for iOS twice.** The shared module is bigger than the
   M3a one; if the cost of the pair matters, the Release link is the part to look at first.
 

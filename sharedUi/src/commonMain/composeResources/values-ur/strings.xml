@@ -84,6 +84,7 @@
     <string name="connect_scanning">آپ کا نیٹ ورک اسکین ہو رہا ہے…</string>
     <string name="connect_section_discovered">دریافت شدہ</string>
     <string name="connect_section_discovered_relay">دریافت شدہ ریلے</string>
+    <string name="connect_session_count">سیشنز %1$s</string>
     <string name="connect_sign_in">سائن ان</string>
     <string name="connect_sign_in_label">اسٹارٹ اپ لنک یا ٹوکن</string>
     <string name="connect_sign_in_link_body">Harness شروع ہونے پر ایک لنک دکھاتا ہے۔ وہ لنک پیسٹ کریں، یا صرف ?token= کے بعد والا ٹوکن۔</string>

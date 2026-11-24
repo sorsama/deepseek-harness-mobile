@@ -84,6 +84,7 @@
     <string name="connect_scanning">正在扫描你的网络…</string>
     <string name="connect_section_discovered">已发现</string>
     <string name="connect_section_discovered_relay">已发现的中继</string>
+    <string name="connect_session_count">会话 %1$s</string>
     <string name="connect_sign_in">登录</string>
     <string name="connect_sign_in_label">启动链接或令牌</string>
     <string name="connect_sign_in_link_body">harness 启动时会打印链接。粘贴该链接，或只粘贴 ?token= 后面的令牌。</string>

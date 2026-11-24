@@ -48,6 +48,8 @@ import kotlinx.serialization.json.put
  * - **keep-alive**: a bare WebSocket server that pings every 100 ms and drops a client that does not
  *   answer, which is how a test sees that a platform answers pings. The harnesses never ping.
  * - **dropping**: completes a WebSocket handshake and drops the connection with no Close frame.
+ * - **demo**: a harness with workspaces, sessions, a transcript and a scripted reply ([DemoHarness]), for the
+ *   scenarios that look past the Connect screen.
  *
  * The ports are fixed for the standalone run, because a Kotlin/Native test process has no way to be
  * told where to look except by being compiled to expect it.
@@ -88,6 +90,12 @@ object CiFixtures {
 
     /** A port nothing listens on, for the connection-refused case. */
     const val DEAD_PORT: Int = 3189
+
+    /**
+     * The demo harness ([DemoHarness]): plain HTTP, no authentication, two workspaces and
+     * [DemoHarness.SESSION_COUNT] sessions. Only started on request, like the refusing relay.
+     */
+    const val DEMO_PORT: Int = 3190
 
     /** The code the pairing relays always answer with a lockout. */
     const val RATE_LIMITED_CODE: String = "42900000"
@@ -130,6 +138,9 @@ object CiFixtures {
         withPairTls: Boolean = false,
         refusingPort: Int = 0,
         withRefusingRelay: Boolean = false,
+        demoPort: Int = 0,
+        withDemo: Boolean = false,
+        demoClock: () -> Long = System::currentTimeMillis,
     ): CiFixtureServers {
         val plain = harness(plainPort)
         val session = harness(sessionPort, session = sessionMode)
@@ -140,6 +151,8 @@ object CiFixtures {
             harness(0, relay = pairRelayMode.copy(fingerprint = it.spkiPin), tls = it, tlsPort = pairTlsPort)
         }
         val refusing = if (withRefusingRelay) harness(refusingPort, relay = refusingRelayMode) else null
+        val demoHarness = if (withDemo) harness(demoPort) else null
+        val demo = demoHarness?.let { DemoHarness.install(it, demoClock) }
         val keepAlive = keepAliveServer(keepAlivePort)
         val plainBound = plain.start()
         val sessionBound = session.start()
@@ -147,6 +160,7 @@ object CiFixtures {
         val pairBound = pair.start()
         pairTls?.start()
         val refusingBound = refusing?.start()
+        val demoBound = demoHarness?.start()
         keepAlive.start(wait = false)
         val dropping = DroppingServer(dropPort)
         return CiFixtureServers(
@@ -156,6 +170,8 @@ object CiFixtures {
             pair = pair,
             pairTls = pairTls,
             refusing = refusing,
+            demoHarness = demoHarness,
+            demo = demo,
             keepAlive = keepAlive,
             dropping = dropping,
             plainPort = plainBound,
@@ -165,6 +181,7 @@ object CiFixtures {
             pairTlsPort = pairTls?.boundTlsPort,
             pairTlsFingerprint = identity?.spkiPin,
             refusingPort = refusingBound,
+            demoPort = demoBound,
             keepAlivePort = keepAlive.engine.resolvedConnectors().first().port,
             dropPort = dropping.port,
         )
@@ -352,6 +369,9 @@ class CiFixtureServers internal constructor(
     private val pair: MockHarness,
     private val pairTls: MockHarness?,
     private val refusing: MockHarness?,
+    private val demoHarness: MockHarness?,
+    /** The demo's script, or null when it was not asked for. */
+    val demo: DemoHarness?,
     private val keepAlive: KeepAliveServer,
     private val dropping: DroppingServer,
     val plainPort: Int,
@@ -364,6 +384,8 @@ class CiFixtureServers internal constructor(
     val pairTlsFingerprint: String?,
     /** The relay that refuses the directory listing, or null when it was not asked for. */
     val refusingPort: Int?,
+    /** The demo harness, or null when it was not asked for. */
+    val demoPort: Int?,
     val keepAlivePort: Int,
     val dropPort: Int,
 ) {
@@ -373,6 +395,7 @@ class CiFixtureServers internal constructor(
     val pairUrl: String get() = "http://127.0.0.1:$pairPort"
     val pairTlsUrl: String? get() = pairTlsPort?.let { "https://127.0.0.1:$it" }
     val refusingUrl: String? get() = refusingPort?.let { "http://127.0.0.1:$it" }
+    val demoUrl: String? get() = demoPort?.let { "http://127.0.0.1:$it" }
     val keepAliveUrl: String get() = "http://127.0.0.1:$keepAlivePort"
     val dropUrl: String get() = "http://127.0.0.1:$dropPort"
 
@@ -383,6 +406,8 @@ class CiFixtureServers internal constructor(
         pair.stop()
         pairTls?.stop()
         refusing?.stop()
+        demo?.stop()
+        demoHarness?.stop()
         keepAlive.stop(gracePeriodMillis = 0, timeoutMillis = 0)
         dropping.stop()
     }
