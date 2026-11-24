@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_tab">براؤزر</string>
+    <string name="browser_address">پتہ</string>
+    <string name="browser_forward">آگے</string>
+    <string name="browser_reload">دوبارہ لوڈ کریں</string>
+    <string name="browser_stop">لوڈ ہونا روکیں</string>
+    <string name="browser_secure">محفوظ کنکشن</string>
+    <string name="browser_not_secure">محفوظ نہیں</string>
+    <string name="browser_open_external">براؤزر میں کھولیں</string>
+    <string name="browser_copy_link">لنک کاپی کریں</string>
+    <string name="browser_clear_data">اس ٹیب کا سائٹ ڈیٹا صاف کریں</string>
+    <string name="browser_data_cleared">سائٹ ڈیٹا صاف ہو گیا</string>
+    <string name="browser_no_app">کوئی ایپ یہ لنک نہیں کھول سکتی</string>
+
+    <string name="browser_start_title">کوئی صفحہ کھولیں</string>
+    <string name="browser_start_body">اوپر پتہ لکھیں، یا چیٹ میں کسی مقامی لنک پر ٹیپ کریں۔</string>
+    <string name="browser_note_this_device">harness اسی فون پر چل رہا ہے، اس لیے localhost والے پتے یہیں کھلتے ہیں۔</string>
+    <string name="browser_note_lan">عوامی سائٹس اور آپ کے نیٹ ورک کے پتے یہاں کھلتے ہیں۔ harness والے کمپیوٹر کا localhost اس فون سے نہیں کھل سکتا۔</string>
+    <string name="browser_note_relay">عوامی سائٹس یہاں کھلتی ہیں۔ ریلے صرف harness کو لاتا ہے، اس لیے اس کمپیوٹر کے localhost والے صفحات نہیں کھل سکتے۔</string>
+    <string name="browser_from_chat">اس چیٹ سے</string>
+    <string name="browser_last_page">آخری صفحہ</string>
+    <string name="browser_open_again">دوبارہ کھولیں</string>
+
+    <string name="browser_loopback_title">یہ صفحہ harness والے کمپیوٹر پر ہے</string>
+    <string name="browser_loopback_lan">‏یہاں localhost کا مطلب harness والا کمپیوٹر ہے، اور یہ فون نیٹ ورک پر اس کے loopback تک نہیں پہنچ سکتا۔ اگر سرور نیٹ ورک پر بھی سن رہا ہے تو کمپیوٹر کا پتہ آزمائیں۔</string>
+    <string name="browser_loopback_relay">‏یہاں localhost کا مطلب harness والا کمپیوٹر ہے۔ ریلے صرف harness کو لاتا ہے، اس کمپیوٹر کے دوسرے صفحات کو نہیں۔</string>
+    <string name="browser_try_on">%1$s پر آزمائیں</string>
+    <string name="browser_open_on_phone">اس کے بجائے اسی فون پر کھولیں</string>
+    <string name="browser_harness_title">یہ خود harness ہے</string>
+    <string name="browser_harness_body">ایپ پہلے ہی یہ harness دکھا رہی ہے، اس لیے اس کے اپنے صفحات اس ٹیب میں نہیں کھلتے۔</string>
+    <string name="browser_scheme_title">یہ ٹیب صرف ویب صفحات کھولتا ہے</string>
+    <string name="browser_scheme_body">‏%1$s: سے شروع ہونے والے پتے یہاں نہیں کھلتے۔</string>
+    <string name="browser_refused_title">یہ پتہ یہاں نہیں کھل سکتا</string>
+    <string name="browser_credentials_body">جن پتوں میں صارف نام یا پاس ورڈ ہو وہ یہاں نہیں کھلتے۔</string>
+    <string name="browser_invalid_body">یہ ویب پتہ نہیں لگتا۔</string>
+    <string name="browser_load_title">صفحہ لوڈ نہیں ہوا</string>
+    <string name="browser_load_body">دیکھ لیں کہ سرور چل رہا ہے اور یہ فون اس تک پہنچ سکتا ہے۔</string>
+    <string name="browser_tls_title">کنکشن نجی نہیں ہے</string>
+    <string name="browser_tls_body">سائٹ کے سرٹیفکیٹ کی جانچ نہیں ہو سکی، اس لیے صفحہ لوڈ نہیں کیا گیا۔</string>
+    <string name="browser_crashed">صفحے نے کام کرنا بند کر دیا۔ دوبارہ کوشش کے لیے ری لوڈ کریں۔</string>
+
+    <string name="browser_other_app_title">کوئی اور ایپ کھولیں؟</string>
+    <string name="browser_other_app_body">یہ صفحہ اس ٹیب سے باہر ایک لنک کھولنا چاہتا ہے:</string>
+    <string name="browser_other_app_open">کھولیں</string>
+    <string name="browser_download_notice">اس ٹیب میں ڈاؤن لوڈ کام نہیں کرتے۔ فائل لینے کے لیے صفحہ اپنے براؤزر میں کھولیں۔</string>
+    <string name="browser_file_notice">یہ ٹیب فائلیں نہیں چن سکتا۔ اپ لوڈ کرنے کے لیے صفحہ اپنے براؤزر میں کھولیں۔</string>
+    <string name="browser_dismiss_notice">ہٹائیں</string>
+</resources>

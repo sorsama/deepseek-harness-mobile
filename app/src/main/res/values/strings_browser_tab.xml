@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The workspace Browser tab. -->
+<resources>
+    <string name="browser_tab">Browser</string>
+    <string name="browser_address">Address</string>
+    <string name="browser_forward">Forward</string>
+    <string name="browser_reload">Reload</string>
+    <string name="browser_stop">Stop loading</string>
+    <string name="browser_secure">Secure connection</string>
+    <string name="browser_not_secure">Not secure</string>
+    <string name="browser_open_external">Open in browser</string>
+    <string name="browser_copy_link">Copy link</string>
+    <string name="browser_clear_data">Clear site data for this tab</string>
+    <string name="browser_data_cleared">Site data cleared</string>
+    <string name="browser_no_app">No app can open this link</string>
+
+    <string name="browser_start_title">Open a page</string>
+    <string name="browser_start_body">Type an address above, or tap a local link in the chat.</string>
+    <string name="browser_note_this_device">The harness runs on this phone, so localhost addresses open here.</string>
+    <string name="browser_note_lan">Public sites and addresses on your network open here. The harness computer\'s localhost can\'t be reached from this phone.</string>
+    <string name="browser_note_relay">Public sites open here. The relay only carries the harness, so pages on the harness computer\'s localhost can\'t be reached.</string>
+    <string name="browser_from_chat">From this chat</string>
+    <string name="browser_last_page">Last page</string>
+    <string name="browser_open_again">Open again</string>
+
+    <string name="browser_loopback_title">This page is on the harness computer</string>
+    <string name="browser_loopback_lan">localhost here means the harness computer, and this phone can\'t reach its loopback over the network. If the server also listens on the network, try the computer\'s address.</string>
+    <string name="browser_loopback_relay">localhost here means the harness computer. The relay only carries the harness itself, not other pages on that computer.</string>
+    <string name="browser_try_on">Try on %1$s</string>
+    <string name="browser_open_on_phone">Open on this phone instead</string>
+    <string name="browser_harness_title">This is the harness itself</string>
+    <string name="browser_harness_body">The app already shows this harness, so its own pages don\'t open in this tab.</string>
+    <string name="browser_scheme_title">This tab only opens web pages</string>
+    <string name="browser_scheme_body">Addresses that start with %1$s: don\'t open here.</string>
+    <string name="browser_refused_title">This address can\'t open here</string>
+    <string name="browser_credentials_body">Addresses with a user name or password don\'t open here.</string>
+    <string name="browser_invalid_body">That doesn\'t look like a web address.</string>
+    <string name="browser_load_title">The page didn\'t load</string>
+    <string name="browser_load_body">Check that the server is running and that this phone can reach it.</string>
+    <string name="browser_tls_title">The connection isn\'t private</string>
+    <string name="browser_tls_body">The site\'s certificate couldn\'t be checked, so the page wasn\'t loaded.</string>
+    <string name="browser_crashed">The page stopped working. Reload to try again.</string>
+
+    <string name="browser_other_app_title">Open another app?</string>
+    <string name="browser_other_app_body">This page wants to open a link outside this tab:</string>
+    <string name="browser_other_app_open">Open</string>
+    <string name="browser_download_notice">Downloads don\'t work in this tab. Open the page in your browser to get the file.</string>
+    <string name="browser_file_notice">This tab can\'t pick files. Open the page in your browser to upload.</string>
+    <string name="browser_dismiss_notice">Dismiss</string>
+</resources>

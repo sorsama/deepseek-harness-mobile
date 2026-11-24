@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_tab">Браузер</string>
+    <string name="browser_address">Адрес</string>
+    <string name="browser_forward">Вперёд</string>
+    <string name="browser_reload">Обновить</string>
+    <string name="browser_stop">Остановить загрузку</string>
+    <string name="browser_secure">Защищённое подключение</string>
+    <string name="browser_not_secure">Не защищено</string>
+    <string name="browser_open_external">Открыть в браузере</string>
+    <string name="browser_copy_link">Копировать ссылку</string>
+    <string name="browser_clear_data">Очистить данные сайтов этой вкладки</string>
+    <string name="browser_data_cleared">Данные сайтов очищены</string>
+    <string name="browser_no_app">Нет приложения, которое откроет эту ссылку</string>
+
+    <string name="browser_start_title">Откройте страницу</string>
+    <string name="browser_start_body">Введите адрес выше или нажмите локальную ссылку в чате.</string>
+    <string name="browser_note_this_device">Harness работает на этом телефоне, поэтому адреса localhost открываются здесь.</string>
+    <string name="browser_note_lan">Здесь открываются публичные сайты и адреса в вашей сети. localhost компьютера с harness недоступен с этого телефона.</string>
+    <string name="browser_note_relay">Здесь открываются публичные сайты. Реле передаёт только сам harness, поэтому страницы на localhost его компьютера недоступны.</string>
+    <string name="browser_from_chat">Из этого чата</string>
+    <string name="browser_last_page">Последняя страница</string>
+    <string name="browser_open_again">Открыть снова</string>
+
+    <string name="browser_loopback_title">Эта страница на компьютере с harness</string>
+    <string name="browser_loopback_lan">Здесь localhost означает компьютер с harness, а его loopback недоступен этому телефону по сети. Если сервер слушает и сеть, попробуйте адрес компьютера.</string>
+    <string name="browser_loopback_relay">Здесь localhost означает компьютер с harness. Реле передаёт только сам harness, а не другие страницы на этом компьютере.</string>
+    <string name="browser_try_on">Попробовать на %1$s</string>
+    <string name="browser_open_on_phone">Открыть на этом телефоне</string>
+    <string name="browser_harness_title">Это сам harness</string>
+    <string name="browser_harness_body">Приложение уже показывает этот harness, поэтому его страницы не открываются в этой вкладке.</string>
+    <string name="browser_scheme_title">Эта вкладка открывает только веб-страницы</string>
+    <string name="browser_scheme_body">Адреса, начинающиеся с %1$s:, здесь не открываются.</string>
+    <string name="browser_refused_title">Этот адрес здесь не откроется</string>
+    <string name="browser_credentials_body">Адреса с именем пользователя или паролем здесь не открываются.</string>
+    <string name="browser_invalid_body">Это не похоже на веб-адрес.</string>
+    <string name="browser_load_title">Страница не загрузилась</string>
+    <string name="browser_load_body">Проверьте, что сервер запущен и этот телефон может до него достучаться.</string>
+    <string name="browser_tls_title">Подключение не защищено</string>
+    <string name="browser_tls_body">Не удалось проверить сертификат сайта, поэтому страница не загружена.</string>
+    <string name="browser_crashed">Страница перестала работать. Обновите, чтобы попробовать снова.</string>
+
+    <string name="browser_other_app_title">Открыть другое приложение?</string>
+    <string name="browser_other_app_body">Эта страница хочет открыть ссылку вне этой вкладки:</string>
+    <string name="browser_other_app_open">Открыть</string>
+    <string name="browser_download_notice">Скачивание в этой вкладке не работает. Откройте страницу в браузере, чтобы получить файл.</string>
+    <string name="browser_file_notice">Эта вкладка не умеет выбирать файлы. Откройте страницу в браузере, чтобы загрузить их.</string>
+    <string name="browser_dismiss_notice">Скрыть</string>
+</resources>

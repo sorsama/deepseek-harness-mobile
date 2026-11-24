@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_tab">ब्राउज़र</string>
+    <string name="browser_address">पता</string>
+    <string name="browser_forward">आगे</string>
+    <string name="browser_reload">फिर से लोड करें</string>
+    <string name="browser_stop">लोड होना रोकें</string>
+    <string name="browser_secure">सुरक्षित कनेक्शन</string>
+    <string name="browser_not_secure">सुरक्षित नहीं</string>
+    <string name="browser_open_external">ब्राउज़र में खोलें</string>
+    <string name="browser_copy_link">लिंक कॉपी करें</string>
+    <string name="browser_clear_data">इस टैब का साइट डेटा मिटाएँ</string>
+    <string name="browser_data_cleared">साइट डेटा मिटा दिया गया</string>
+    <string name="browser_no_app">कोई भी ऐप यह लिंक नहीं खोल सकता</string>
+
+    <string name="browser_start_title">कोई पेज खोलें</string>
+    <string name="browser_start_body">ऊपर पता लिखें, या चैट में किसी लोकल लिंक पर टैप करें।</string>
+    <string name="browser_note_this_device">harness इसी फ़ोन पर चल रहा है, इसलिए localhost वाले पते यहीं खुलते हैं।</string>
+    <string name="browser_note_lan">सार्वजनिक साइटें और आपके नेटवर्क के पते यहाँ खुलते हैं। harness वाले कंप्यूटर का localhost इस फ़ोन से नहीं खुल सकता।</string>
+    <string name="browser_note_relay">सार्वजनिक साइटें यहाँ खुलती हैं। रिले सिर्फ़ harness को लाता है, इसलिए उस कंप्यूटर के localhost वाले पेज नहीं खुल सकते।</string>
+    <string name="browser_from_chat">इस चैट से</string>
+    <string name="browser_last_page">पिछला पेज</string>
+    <string name="browser_open_again">फिर से खोलें</string>
+
+    <string name="browser_loopback_title">यह पेज harness वाले कंप्यूटर पर है</string>
+    <string name="browser_loopback_lan">यहाँ localhost का मतलब harness वाला कंप्यूटर है, और यह फ़ोन नेटवर्क पर उसके loopback तक नहीं पहुँच सकता। अगर सर्वर नेटवर्क पर भी सुन रहा है, तो कंप्यूटर का पता आज़माएँ।</string>
+    <string name="browser_loopback_relay">यहाँ localhost का मतलब harness वाला कंप्यूटर है। रिले सिर्फ़ harness को लाता है, उस कंप्यूटर के दूसरे पेज नहीं।</string>
+    <string name="browser_try_on">%1$s पर आज़माएँ</string>
+    <string name="browser_open_on_phone">इसके बजाय इसी फ़ोन पर खोलें</string>
+    <string name="browser_harness_title">यह खुद harness है</string>
+    <string name="browser_harness_body">ऐप पहले से यह harness दिखा रहा है, इसलिए इसके अपने पेज इस टैब में नहीं खुलते।</string>
+    <string name="browser_scheme_title">यह टैब सिर्फ़ वेब पेज खोलता है</string>
+    <string name="browser_scheme_body">%1$s: से शुरू होने वाले पते यहाँ नहीं खुलते।</string>
+    <string name="browser_refused_title">यह पता यहाँ नहीं खुल सकता</string>
+    <string name="browser_credentials_body">जिन पतों में यूज़रनेम या पासवर्ड हो, वे यहाँ नहीं खुलते।</string>
+    <string name="browser_invalid_body">यह वेब पता नहीं लगता।</string>
+    <string name="browser_load_title">पेज लोड नहीं हुआ</string>
+    <string name="browser_load_body">देख लें कि सर्वर चल रहा है और यह फ़ोन उस तक पहुँच सकता है।</string>
+    <string name="browser_tls_title">कनेक्शन निजी नहीं है</string>
+    <string name="browser_tls_body">साइट के सर्टिफ़िकेट की जाँच नहीं हो सकी, इसलिए पेज लोड नहीं किया गया।</string>
+    <string name="browser_crashed">पेज ने काम करना बंद कर दिया। फिर से कोशिश करने के लिए रीलोड करें।</string>
+
+    <string name="browser_other_app_title">कोई दूसरा ऐप खोलें?</string>
+    <string name="browser_other_app_body">यह पेज इस टैब के बाहर एक लिंक खोलना चाहता है:</string>
+    <string name="browser_other_app_open">खोलें</string>
+    <string name="browser_download_notice">इस टैब में डाउनलोड काम नहीं करते। फ़ाइल पाने के लिए पेज अपने ब्राउज़र में खोलें।</string>
+    <string name="browser_file_notice">यह टैब फ़ाइलें नहीं चुन सकता। अपलोड करने के लिए पेज अपने ब्राउज़र में खोलें।</string>
+    <string name="browser_dismiss_notice">हटाएँ</string>
+</resources>

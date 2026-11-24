@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_tab">浏览器</string>
+    <string name="browser_address">地址</string>
+    <string name="browser_forward">前进</string>
+    <string name="browser_reload">重新加载</string>
+    <string name="browser_stop">停止加载</string>
+    <string name="browser_secure">安全连接</string>
+    <string name="browser_not_secure">不安全</string>
+    <string name="browser_open_external">在浏览器中打开</string>
+    <string name="browser_copy_link">复制链接</string>
+    <string name="browser_clear_data">清除此标签页的网站数据</string>
+    <string name="browser_data_cleared">网站数据已清除</string>
+    <string name="browser_no_app">没有应用可以打开此链接</string>
+
+    <string name="browser_start_title">打开网页</string>
+    <string name="browser_start_body">在上方输入地址，或点按聊天中的本地链接。</string>
+    <string name="browser_note_this_device">harness 运行在这部手机上，所以 localhost 地址会在这里打开。</string>
+    <string name="browser_note_lan">公开网站和你所在网络中的地址可以在这里打开。这部手机无法访问 harness 电脑上的 localhost。</string>
+    <string name="browser_note_relay">公开网站可以在这里打开。中继只传输 harness 本身，因此无法访问那台电脑 localhost 上的页面。</string>
+    <string name="browser_from_chat">来自此聊天</string>
+    <string name="browser_last_page">上次的页面</string>
+    <string name="browser_open_again">再次打开</string>
+
+    <string name="browser_loopback_title">此页面在 harness 电脑上</string>
+    <string name="browser_loopback_lan">这里的 localhost 指的是 harness 所在的电脑，这部手机无法通过网络访问它的回环地址。如果服务器也在网络上监听，可以试试那台电脑的地址。</string>
+    <string name="browser_loopback_relay">这里的 localhost 指的是 harness 所在的电脑。中继只传输 harness 本身，不会传输那台电脑上的其他页面。</string>
+    <string name="browser_try_on">在 %1$s 上试试</string>
+    <string name="browser_open_on_phone">改为在这部手机上打开</string>
+    <string name="browser_harness_title">这就是 harness 本身</string>
+    <string name="browser_harness_body">应用已经在显示这个 harness，所以它自己的页面不会在此标签页中打开。</string>
+    <string name="browser_scheme_title">此标签页只能打开网页</string>
+    <string name="browser_scheme_body">以 %1$s: 开头的地址不会在这里打开。</string>
+    <string name="browser_refused_title">无法在这里打开此地址</string>
+    <string name="browser_credentials_body">带有用户名或密码的地址不会在这里打开。</string>
+    <string name="browser_invalid_body">这看起来不像网址。</string>
+    <string name="browser_load_title">页面没有加载出来</string>
+    <string name="browser_load_body">请确认服务器正在运行，并且这部手机可以访问它。</string>
+    <string name="browser_tls_title">此连接不是私密连接</string>
+    <string name="browser_tls_body">无法验证网站的证书，因此没有加载页面。</string>
+    <string name="browser_crashed">页面已停止运行。重新加载即可重试。</string>
+
+    <string name="browser_other_app_title">要打开其他应用吗？</string>
+    <string name="browser_other_app_body">此页面想在这个标签页之外打开一个链接：</string>
+    <string name="browser_other_app_open">打开</string>
+    <string name="browser_download_notice">此标签页不支持下载。请在浏览器中打开页面来获取文件。</string>
+    <string name="browser_file_notice">此标签页无法选择文件。请在浏览器中打开页面来上传。</string>
+    <string name="browser_dismiss_notice">知道了</string>
+</resources>

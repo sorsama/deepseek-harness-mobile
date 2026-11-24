@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_tab">المتصفح</string>
+    <string name="browser_address">العنوان</string>
+    <string name="browser_forward">التالي</string>
+    <string name="browser_reload">إعادة التحميل</string>
+    <string name="browser_stop">إيقاف التحميل</string>
+    <string name="browser_secure">اتصال آمن</string>
+    <string name="browser_not_secure">غير آمن</string>
+    <string name="browser_open_external">فتح في المتصفح</string>
+    <string name="browser_copy_link">نسخ الرابط</string>
+    <string name="browser_clear_data">محو بيانات المواقع لهذا التبويب</string>
+    <string name="browser_data_cleared">تم محو بيانات المواقع</string>
+    <string name="browser_no_app">لا يوجد تطبيق يمكنه فتح هذا الرابط</string>
+
+    <string name="browser_start_title">افتح صفحة</string>
+    <string name="browser_start_body">اكتب عنوانًا في الأعلى، أو انقر على رابط محلي في المحادثة.</string>
+    <string name="browser_note_this_device">يعمل الـ harness على هذا الهاتف، لذا تُفتح عناوين localhost هنا.</string>
+    <string name="browser_note_lan">تُفتح هنا المواقع العامة والعناوين على شبكتك. لا يمكن لهذا الهاتف الوصول إلى localhost على كمبيوتر الـ harness.</string>
+    <string name="browser_note_relay">تُفتح هنا المواقع العامة. المُرحِّل ينقل الـ harness فقط، لذا لا يمكن الوصول إلى الصفحات على localhost في ذلك الكمبيوتر.</string>
+    <string name="browser_from_chat">من هذه المحادثة</string>
+    <string name="browser_last_page">آخر صفحة</string>
+    <string name="browser_open_again">افتحها مجددًا</string>
+
+    <string name="browser_loopback_title">هذه الصفحة على كمبيوتر الـ harness</string>
+    <string name="browser_loopback_lan">‏localhost هنا تعني كمبيوتر الـ harness، ولا يستطيع هذا الهاتف الوصول إلى عنوان loopback الخاص به عبر الشبكة. إذا كان الخادم يستمع على الشبكة أيضًا، فجرّب عنوان الكمبيوتر.</string>
+    <string name="browser_loopback_relay">‏localhost هنا تعني كمبيوتر الـ harness. المُرحِّل ينقل الـ harness نفسه فقط، وليس الصفحات الأخرى على ذلك الكمبيوتر.</string>
+    <string name="browser_try_on">جرّب على %1$s</string>
+    <string name="browser_open_on_phone">افتحها على هذا الهاتف بدلًا من ذلك</string>
+    <string name="browser_harness_title">هذا هو الـ harness نفسه</string>
+    <string name="browser_harness_body">التطبيق يعرض هذا الـ harness بالفعل، لذا لا تُفتح صفحاته في هذا التبويب.</string>
+    <string name="browser_scheme_title">هذا التبويب يفتح صفحات الويب فقط</string>
+    <string name="browser_scheme_body">العناوين التي تبدأ بـ %1$s: لا تُفتح هنا.</string>
+    <string name="browser_refused_title">لا يمكن فتح هذا العنوان هنا</string>
+    <string name="browser_credentials_body">العناوين التي تحتوي على اسم مستخدم أو كلمة مرور لا تُفتح هنا.</string>
+    <string name="browser_invalid_body">لا يبدو هذا عنوان ويب.</string>
+    <string name="browser_load_title">لم يتم تحميل الصفحة</string>
+    <string name="browser_load_body">تأكد من أن الخادم يعمل وأن هذا الهاتف يستطيع الوصول إليه.</string>
+    <string name="browser_tls_title">الاتصال ليس خاصًا</string>
+    <string name="browser_tls_body">تعذّر التحقق من شهادة الموقع، لذا لم يتم تحميل الصفحة.</string>
+    <string name="browser_crashed">توقفت الصفحة عن العمل. أعد التحميل للمحاولة مرة أخرى.</string>
+
+    <string name="browser_other_app_title">فتح تطبيق آخر؟</string>
+    <string name="browser_other_app_body">تريد هذه الصفحة فتح رابط خارج هذا التبويب:</string>
+    <string name="browser_other_app_open">فتح</string>
+    <string name="browser_download_notice">التنزيلات لا تعمل في هذا التبويب. افتح الصفحة في متصفحك للحصول على الملف.</string>
+    <string name="browser_file_notice">لا يمكن لهذا التبويب اختيار الملفات. افتح الصفحة في متصفحك لرفعها.</string>
+    <string name="browser_dismiss_notice">إخفاء</string>
+</resources>
