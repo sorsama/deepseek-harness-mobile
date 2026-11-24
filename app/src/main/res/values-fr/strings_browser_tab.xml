@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_tab">Navigateur</string>
+    <string name="browser_address">Adresse</string>
+    <string name="browser_forward">Suivant</string>
+    <string name="browser_reload">Actualiser</string>
+    <string name="browser_stop">Arrêter le chargement</string>
+    <string name="browser_secure">Connexion sécurisée</string>
+    <string name="browser_not_secure">Non sécurisé</string>
+    <string name="browser_open_external">Ouvrir dans le navigateur</string>
+    <string name="browser_copy_link">Copier le lien</string>
+    <string name="browser_clear_data">Effacer les données des sites de cet onglet</string>
+    <string name="browser_data_cleared">Données des sites effacées</string>
+    <string name="browser_no_app">Aucune app ne peut ouvrir ce lien</string>
+
+    <string name="browser_start_title">Ouvrir une page</string>
+    <string name="browser_start_body">Saisissez une adresse ci-dessus, ou touchez un lien local dans le chat.</string>
+    <string name="browser_note_this_device">Le harness tourne sur ce téléphone, donc les adresses localhost s\'ouvrent ici.</string>
+    <string name="browser_note_lan">Les sites publics et les adresses de votre réseau s\'ouvrent ici. Le localhost de l\'ordinateur du harness n\'est pas accessible depuis ce téléphone.</string>
+    <string name="browser_note_relay">Les sites publics s\'ouvrent ici. Le relais ne transporte que le harness, donc les pages sur le localhost de son ordinateur ne sont pas accessibles.</string>
+    <string name="browser_from_chat">Dans ce chat</string>
+    <string name="browser_last_page">Dernière page</string>
+    <string name="browser_open_again">Rouvrir</string>
+
+    <string name="browser_loopback_title">Cette page est sur l\'ordinateur du harness</string>
+    <string name="browser_loopback_lan">Ici, localhost désigne l\'ordinateur du harness, et ce téléphone ne peut pas joindre son loopback par le réseau. Si le serveur écoute aussi sur le réseau, essayez l\'adresse de l\'ordinateur.</string>
+    <string name="browser_loopback_relay">Ici, localhost désigne l\'ordinateur du harness. Le relais ne transporte que le harness lui-même, pas les autres pages de cet ordinateur.</string>
+    <string name="browser_try_on">Essayer sur %1$s</string>
+    <string name="browser_open_on_phone">Ouvrir sur ce téléphone</string>
+    <string name="browser_harness_title">C\'est le harness lui-même</string>
+    <string name="browser_harness_body">L\'app affiche déjà ce harness, donc ses propres pages ne s\'ouvrent pas dans cet onglet.</string>
+    <string name="browser_scheme_title">Cet onglet n\'ouvre que des pages web</string>
+    <string name="browser_scheme_body">Les adresses qui commencent par %1$s: ne s\'ouvrent pas ici.</string>
+    <string name="browser_refused_title">Impossible d\'ouvrir cette adresse ici</string>
+    <string name="browser_credentials_body">Les adresses avec un nom d\'utilisateur ou un mot de passe ne s\'ouvrent pas ici.</string>
+    <string name="browser_invalid_body">Ça ne ressemble pas à une adresse web.</string>
+    <string name="browser_load_title">La page ne s\'est pas chargée</string>
+    <string name="browser_load_body">Vérifiez que le serveur tourne et que ce téléphone peut le joindre.</string>
+    <string name="browser_tls_title">La connexion n\'est pas privée</string>
+    <string name="browser_tls_body">Le certificat du site n\'a pas pu être vérifié, donc la page n\'a pas été chargée.</string>
+    <string name="browser_crashed">La page a cessé de fonctionner. Actualisez pour réessayer.</string>
+
+    <string name="browser_other_app_title">Ouvrir une autre app ?</string>
+    <string name="browser_other_app_body">Cette page veut ouvrir un lien en dehors de cet onglet :</string>
+    <string name="browser_other_app_open">Ouvrir</string>
+    <string name="browser_download_notice">Les téléchargements ne fonctionnent pas dans cet onglet. Ouvrez la page dans votre navigateur pour récupérer le fichier.</string>
+    <string name="browser_file_notice">Cet onglet ne peut pas choisir de fichiers. Ouvrez la page dans votre navigateur pour les envoyer.</string>
+    <string name="browser_dismiss_notice">Fermer</string>
+</resources>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="browser_tab">Navegador</string>
+    <string name="browser_address">Endereço</string>
+    <string name="browser_forward">Avançar</string>
+    <string name="browser_reload">Recarregar</string>
+    <string name="browser_stop">Parar de carregar</string>
+    <string name="browser_secure">Conexão segura</string>
+    <string name="browser_not_secure">Não segura</string>
+    <string name="browser_open_external">Abrir no navegador</string>
+    <string name="browser_copy_link">Copiar link</string>
+    <string name="browser_clear_data">Limpar dados de sites desta aba</string>
+    <string name="browser_data_cleared">Dados de sites limpos</string>
+    <string name="browser_no_app">Nenhum app consegue abrir este link</string>
+
+    <string name="browser_start_title">Abra uma página</string>
+    <string name="browser_start_body">Digite um endereço acima ou toque em um link local no chat.</string>
+    <string name="browser_note_this_device">O harness roda neste celular, então endereços localhost abrem aqui.</string>
+    <string name="browser_note_lan">Sites públicos e endereços da sua rede abrem aqui. O localhost do computador do harness não pode ser acessado deste celular.</string>
+    <string name="browser_note_relay">Sites públicos abrem aqui. O relay só leva o harness, então páginas no localhost do computador dele não podem ser acessadas.</string>
+    <string name="browser_from_chat">Deste chat</string>
+    <string name="browser_last_page">Última página</string>
+    <string name="browser_open_again">Abrir de novo</string>
+
+    <string name="browser_loopback_title">Esta página está no computador do harness</string>
+    <string name="browser_loopback_lan">Aqui, localhost é o computador do harness, e este celular não alcança o loopback dele pela rede. Se o servidor também escuta na rede, tente o endereço do computador.</string>
+    <string name="browser_loopback_relay">Aqui, localhost é o computador do harness. O relay só leva o próprio harness, não outras páginas desse computador.</string>
+    <string name="browser_try_on">Tentar em %1$s</string>
+    <string name="browser_open_on_phone">Abrir neste celular</string>
+    <string name="browser_harness_title">Este é o próprio harness</string>
+    <string name="browser_harness_body">O app já mostra este harness, então as páginas dele não abrem nesta aba.</string>
+    <string name="browser_scheme_title">Esta aba só abre páginas da web</string>
+    <string name="browser_scheme_body">Endereços que começam com %1$s: não abrem aqui.</string>
+    <string name="browser_refused_title">Este endereço não abre aqui</string>
+    <string name="browser_credentials_body">Endereços com nome de usuário ou senha não abrem aqui.</string>
+    <string name="browser_invalid_body">Isso não parece um endereço da web.</string>
+    <string name="browser_load_title">A página não carregou</string>
+    <string name="browser_load_body">Confira se o servidor está rodando e se este celular consegue alcançá-lo.</string>
+    <string name="browser_tls_title">A conexão não é particular</string>
+    <string name="browser_tls_body">Não foi possível verificar o certificado do site, então a página não foi carregada.</string>
+    <string name="browser_crashed">A página parou de funcionar. Recarregue para tentar de novo.</string>
+
+    <string name="browser_other_app_title">Abrir outro app?</string>
+    <string name="browser_other_app_body">Esta página quer abrir um link fora desta aba:</string>
+    <string name="browser_other_app_open">Abrir</string>
+    <string name="browser_download_notice">Downloads não funcionam nesta aba. Abra a página no seu navegador para baixar o arquivo.</string>
+    <string name="browser_file_notice">Esta aba não consegue escolher arquivos. Abra a página no seu navegador para enviar.</string>
+    <string name="browser_dismiss_notice">Dispensar</string>
+</resources>
