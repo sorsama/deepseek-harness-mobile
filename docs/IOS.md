@@ -467,6 +467,15 @@ connection-lost surface, sign-in sheet); `ConnectController` and the types it ex
 `ConnectFailure`, `LoopbackStatus`); `HostConfig`, `DiscoveredHost`, `ConnectMode`, `ProbeOutcome`,
 `ConnectionUiState` and the host-input parser; and their tests. M4b added the Pair screen (`PairContent`, `PairController`,
 `PairUiState`, `PairFailure`, `KeyProvenance`), `RelayIdentity`, the back arrow icon, and the tests of the controller.
+The session list followed for issue #141 (its own M4b): the drawer that M4a split out of `ChatListDrawer.kt`
+(`SessionDrawer` and the five files around it), its models (`SessionListModel`, `SessionReorder`, `SessionSearch`,
+`CompactWorkspace`, `PullRefreshCycle`, `WorkspaceSessionSection`, `TechnicalText`), the components it draws
+(`DsSearchField`, `PullToRefresh`, `Overlays`, `DsIconMenu`, `DsFilterChip`, `DsPill`, `SheetRow`, the rename and
+confirm dialogs, `relativeTime`, the keyboard shortcut router), the adaptive shell (`AdaptiveShell`, `ShellPlan`; the
+fold reader `WindowFold` stays in `:app`) and `rootRouteOf`, the one routing decision both roots make. `ChatListDrawer`
+in `:app` is now only the Android host: `HostsStore`, `java.time` headings, TalkBack, and the built-in harness's
+projects. On iOS, `IosMainPage` hosts the same drawer over `NSUserDefaults`, `NSDateFormatter` and VoiceOver, with
+`MainFeatures(settings = false, disconnect = true)`: no Settings yet, so Disconnect is in the drawer's menu.
 
 Not moved, on purpose: the "This phone" card and the Termux controller (Termux is Android), the Hilt view models
 (`ConnectViewModel` and `PairViewModel` are thin: each owns a controller over `viewModelScope`), the stores and the
@@ -530,7 +539,8 @@ Each wall is a small interface or an `expect`/`actual` with its reasoning in KDo
 | System back (`PlatformBackHandler`) | the activity's back dispatcher | none: iOS has no system back |
 | Counts in text (`localizedCount`) | `String.format` in the configuration's locale, which is what `getString(id, int)` does, so Arabic, Bengali, Hindi and Urdu readers keep their digits | Western digits |
 | Clipboard, links | Compose's `LocalClipboardManager` and `LocalUriHandler`, which Compose Multiplatform implements on both; no wall needed | |
-| Icons (`DsIcons`) | ten Material icons written out as vectors from the androidx 1.7.6 sources, because Compose Multiplatform's icon artifact has the same classes as the `material-icons-extended` the app carries (a duplicate-class build failure) and would put thousands of icons in the iOS framework for ten | |
+| Icons (`DsIcons`) | the Material icons the shared screens draw, as vectors written by `tools/icons/generate.mjs` from the androidx 1.7.6 sources jars, because Compose Multiplatform's icon artifact has the same classes as the `material-icons-extended` the app carries (a duplicate-class build failure) and would put thousands of icons in the iOS framework for a few. `DsIconsMatchMaterialTest` in `:app` holds each one equal to the real icon, path node for path node | |
+| Dialog window (`DsWindow`) | `DsFullScreen.kt` in `sharedUi/androidMain`: the window covers the display and pads for the bars itself (see `WindowRulesTest`) | Compose's dialog at screen size, padded by the safe area and the keyboard |
 | Mascot and fonts as files | Android resources where something outside the shared UI needs them (the splash theme names the mascot) | Compose resources; `SharedResourcesTest` holds the two copies byte-identical |
 
 ### Strings
@@ -835,6 +845,11 @@ the steps after the tests run even if the tests fail, so one push says everythin
   stored key), a scanned pairing with a key that is not the relay's (refused, nothing stored), and a typed pairing that
   learns the key. Each asserts a `DSH_PAIR_RESULT` line, and a pairing that works also asserts the `connected` line of the
   connection it starts. The fixtures are started with the TLS relay, whose certificate and pin are made fresh each run.
+- then the session list (issue #141, M4b), against the demo harness: `-DshOpenDrawer YES` opens it, the app writes
+  `DSH_DRAWER_RESULT shown docked=… sessions=…` once it is on screen with the demo's sessions, and a screenshot is taken
+  in light, dark, French and Arabic, on an iPhone (a drawer, `docked=false`) and on an iPad (a pane beside the chat,
+  `docked=true`). The eight screenshots are also their own artifact, `ios-session-list-screenshots`, and a step fails
+  when one is missing.
 - `ios-compile` also compiles `:sharedUi` for the two iOS targets and checks that the klibs exist.
 
 **`ios-ipa`** (10 to 25 minutes depending on whether Gradle's cache has the Release link of Compose Multiplatform, which dominates it, so a separate job in parallel):

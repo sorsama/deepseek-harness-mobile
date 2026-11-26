@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ux_b_clear_search">Limpar pesquisa</string>
     <string name="ux_b_no_models">Nenhum modelo correspondente</string>
     <string name="ux_b_no_references">Nenhuma referência disponível</string>
     <string name="ux_b_no_matches">Nenhuma referência correspondente</string>

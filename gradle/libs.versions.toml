@@ -64,6 +64,14 @@ zstdJni = "1.5.7-12"
 # 1.11.1 Gradle plugin itself defaults to, built on androidx Material3 1.4.0, the one the BOM lists.
 composeMultiplatform = "1.11.1"
 composeMultiplatformMaterial3 = "1.9.0"
+# What `:sharedUi`'s common code needs beyond Compose, at the versions both apps already resolve, so naming them
+# changes no resolved artifact (checked with `:app:dependencies`, see the iOS M4b pull request):
+#  - JetBrains' lifecycle-runtime-compose (`collectAsStateWithLifecycle`) is what Compose Multiplatform 1.11.1's ui
+#    already depends on; on Android it redirects to androidx lifecycle-runtime-compose 2.9.4.
+#  - window-core 1.5.0 (the window size classes the adaptive shell plans by) has iOS targets (from 1.4), and is
+#    the version androidx Compose UI 1.11 already makes the app resolve over `androidxWindow` above.
+jetbrainsLifecycle = "2.9.6"
+androidxWindowCore = "1.5.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -136,6 +144,8 @@ cmp-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "compo
 cmp-ui-tooling-preview = { group = "org.jetbrains.compose.ui", name = "ui-tooling-preview", version.ref = "composeMultiplatform" }
 cmp-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "composeMultiplatform" }
 cmp-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMultiplatformMaterial3" }
+jetbrains-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "jetbrainsLifecycle" }
+androidx-window-core-multiplatform = { group = "androidx.window", name = "window-core", version.ref = "androidxWindowCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

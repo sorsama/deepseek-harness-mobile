@@ -91,6 +91,11 @@ kotlin {
             implementation(libs.cmp.ui)
             implementation(libs.cmp.components.resources)
             implementation(libs.cmp.ui.tooling.preview)
+            // `collectAsStateWithLifecycle` for the session list: stops collecting while the app is in the background, as
+            // it did in `:app`. Already on both classpaths through Compose UI; named so the code may use it.
+            implementation(libs.jetbrains.lifecycle.runtime.compose)
+            // The window size classes `planShell` decides the adaptive shell by (phone, docked list, three panes).
+            implementation(libs.androidx.window.core.multiplatform)
         }
         iosMain.dependencies {
             // `HttpClient` appears in the iOS wiring's own signatures, and `:core` keeps Ktor on its

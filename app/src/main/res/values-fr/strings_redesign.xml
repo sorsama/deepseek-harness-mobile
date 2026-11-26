@@ -9,7 +9,6 @@
     <string name="chat_queue_placement_context">Contexte</string>
     <string name="chat_status_running">En cours</string>
     <string name="chat_status_idle">Inactif</string>
-    <string name="chatlist_session_copy_id">Copier l’ID de session</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="one">%d nouveau</item>
         <item quantity="many">%d nouveaux</item>

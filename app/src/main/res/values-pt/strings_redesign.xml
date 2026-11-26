@@ -9,7 +9,6 @@
     <string name="chat_queue_placement_context">Contexto</string>
     <string name="chat_status_running">Trabalhando</string>
     <string name="chat_status_idle">Inativo</string>
-    <string name="chatlist_session_copy_id">Copiar ID da sessão</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="one">%d novo</item>
         <item quantity="many">%d novos</item>

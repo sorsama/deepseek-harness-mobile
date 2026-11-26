@@ -9,7 +9,6 @@
     <string name="chat_queue_placement_context">Контекст</string>
     <string name="chat_status_running">Работает</string>
     <string name="chat_status_idle">Ожидает</string>
-    <string name="chatlist_session_copy_id">Скопировать ID сеанса</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="one">%d новое</item>
         <item quantity="few">%d новых</item>

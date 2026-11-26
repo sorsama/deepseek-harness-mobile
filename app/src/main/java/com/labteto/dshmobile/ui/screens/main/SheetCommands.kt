@@ -335,67 +335,7 @@ internal fun GlyphTile(icon: androidx.compose.ui.graphics.vector.ImageVector) {
     }
 }
 
-/** One tappable row of a sheet: title, optional subtitle, optional trailing hint. */
-@Composable
-internal fun SheetRow(
-    title: String,
-    subtitle: String? = null,
-    trailing: String? = null,
-    enabled: Boolean = true,
-    leading: (@Composable () -> Unit)? = null,
-    onClick: () -> Unit,
-) {
-    val colors = DsTheme.colors
-    val haptics = rememberDsHaptics()
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(DsShapes.row)
-            .clickable(enabled = enabled) {
-                haptics.tap()
-                onClick()
-            }
-            .heightIn(min = 52.dp)
-            .padding(horizontal = DsSpacing.tiny, vertical = DsSpacing.small),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(DsSpacing.medium),
-    ) {
-        if (leading != null) {
-            leading()
-        }
-        Column(Modifier.weight(1f)) {
-            Text(
-                title,
-                style = DsType.std14Strong,
-                color = if (enabled) colors.labelPrimary else colors.labelTertiary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (subtitle != null) {
-                Text(
-                    subtitle,
-                    style = DsType.caption11,
-                    color = colors.labelTertiary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-        if (trailing != null) {
-            Spacer(Modifier.width(DsSpacing.xsmall))
-            Text(
-                trailing,
-                style = DsType.mono12,
-                color = colors.labelCaption,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                // Some hints are long enough to crowd out the description they sit beside
-                // (`/goal` advertises five alternatives), so the hint yields, not the name.
-                modifier = Modifier.widthIn(max = 120.dp),
-            )
-        }
-    }
-}
+// SheetRow moved to :sharedUi (SheetRow.kt) with the session list, whose dialogs use it.
 
 /** Case-insensitive contains over a row's name and description. */
 private inline fun <T> List<T>.filterByQuery(query: String, selector: (T) -> Pair<String, String>): List<T> {

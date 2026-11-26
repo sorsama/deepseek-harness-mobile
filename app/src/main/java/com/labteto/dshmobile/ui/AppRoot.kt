@@ -204,14 +204,7 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
         // back to an empty address field would lose the one thing the user had already supplied.
         var showPair by rememberSaveable { mutableStateOf(false) }
         var pairUrl by rememberSaveable { mutableStateOf<String?>(null) }
-        val showMain = connection.phase == ConnectionPhase.CONNECTED ||
-            (connection.phase == ConnectionPhase.RECONNECTING && connection.hasConnected)
-        val route = when {
-            showSettings -> RootRoute.Settings
-            showPair -> RootRoute.Pair
-            showMain -> RootRoute.Main
-            else -> RootRoute.Connect
-        }
+        val route = rootRouteOf(connection.phase, connection.hasConnected, showSettings = showSettings, showPair = showPair)
 
         // The Ink launch moment: the system splash hands off to this frame, which then fades into
         // whatever route the saved session resolves to. Held just long enough to read the name —
@@ -419,6 +412,3 @@ private fun SplashProgress(progress: Float) {
         )
     }
 }
-
-/** The top-level screens [AppRoot] switches between. */
-private enum class RootRoute { Connect, Main, Settings, Pair }
