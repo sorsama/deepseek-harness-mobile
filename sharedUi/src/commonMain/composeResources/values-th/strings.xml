@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="alpha2_migration">เปิดเซสชันต้นฉบับเพื่อย้ายข้อมูลให้เสร็จ แล้วลองอีกครั้ง</string>
     <string name="common_back">กลับ</string>
     <string name="common_cancel">ยกเลิก</string>
     <string name="common_close">ปิด</string>
@@ -102,6 +103,7 @@
     <string name="connect_title">เชื่อมต่อกับ harness</string>
     <string name="connect_try_again">ลองอีกครั้ง</string>
     <string name="connect_unreachable">เข้าถึงไม่ได้</string>
+    <string name="goal_none">ไม่มีเป้าหมายที่ใช้งานอยู่</string>
     <string name="pair_code_hint">8 หลัก</string>
     <string name="pair_code_label">รหัสจับคู่</string>
     <string name="pair_fail_certificate">กุญแจที่ %1$s ไม่ตรงกับที่รหัสนี้ระบุไว้ อย่าเพิ่งจับคู่ เพราะอาจมีเครื่องอื่นตอบแทนอยู่ที่ที่อยู่นั้น</string>
@@ -185,4 +187,5 @@
     <string name="scan_type_instead">พิมพ์รหัสแทน</string>
     <string name="settings_connection_disconnect">ตัดการเชื่อมต่อ</string>
     <string name="settings_title">การตั้งค่า</string>
+    <string name="subagents_readonly">ซับเอเจนต์นี้ไม่รับข้อความ</string>
 </resources>

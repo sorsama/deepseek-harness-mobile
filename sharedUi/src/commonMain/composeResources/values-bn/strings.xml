@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="alpha2_migration">মাইগ্রেশন শেষ করতে আগের সেশনটি খুলুন, তারপর আবার চেষ্টা করুন।</string>
     <string name="common_back">পিছনে</string>
     <string name="common_cancel">বাতিল</string>
     <string name="common_close">বন্ধ করুন</string>
@@ -102,6 +103,7 @@
     <string name="connect_title">Harness-এ সংযুক্ত হোন</string>
     <string name="connect_try_again">আবার চেষ্টা করুন</string>
     <string name="connect_unreachable">পৌঁছানো যাচ্ছে না</string>
+    <string name="goal_none">কোনো চালু লক্ষ্য নেই</string>
     <string name="pair_code_hint">8 সংখ্যা</string>
     <string name="pair_code_label">পেয়ারিং কোড</string>
     <string name="pair_fail_certificate">%1$s-এর কী এই কোডে লেখা কী নয়। পেয়ার করবেন না। ওই ঠিকানায় অন্য কেউ সাড়া দিতে পারে।</string>
@@ -185,4 +187,5 @@
     <string name="scan_type_instead">এর বদলে কোডটি টাইপ করুন</string>
     <string name="settings_connection_disconnect">সংযোগ বিচ্ছিন্ন করুন</string>
     <string name="settings_title">সেটিংস</string>
+    <string name="subagents_readonly">এই সাবএজেন্ট বার্তা নেয় না।</string>
 </resources>

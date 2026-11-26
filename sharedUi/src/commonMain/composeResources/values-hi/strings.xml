@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="alpha2_migration">माइग्रेशन पूरा करने के लिए पहले वाला सेशन खोलें, फिर दोबारा कोशिश करें।</string>
     <string name="common_back">वापस</string>
     <string name="common_cancel">रद्द करें</string>
     <string name="common_close">बंद करें</string>
@@ -102,6 +103,7 @@
     <string name="connect_title">Harness से कनेक्ट करें</string>
     <string name="connect_try_again">फिर से कोशिश करें</string>
     <string name="connect_unreachable">पहुँच से बाहर</string>
+    <string name="goal_none">कोई चालू लक्ष्य नहीं</string>
     <string name="pair_code_hint">8 अंक</string>
     <string name="pair_code_label">पेयरिंग कोड</string>
     <string name="pair_fail_certificate">%1$s की कुंजी वह नहीं है जो इस कोड में बताई गई है। पेयर न करें। उस पते पर कोई और जवाब दे रहा हो सकता है।</string>
@@ -185,4 +187,5 @@
     <string name="scan_type_instead">इसके बजाय कोड टाइप करें</string>
     <string name="settings_connection_disconnect">डिस्कनेक्ट करें</string>
     <string name="settings_title">सेटिंग्स</string>
+    <string name="subagents_readonly">यह सबएजेंट संदेश नहीं लेता।</string>
 </resources>

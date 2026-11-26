@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="alpha2_migration">Откройте исходный сеанс, чтобы завершить перенос, и повторите попытку.</string>
     <string name="common_back">Назад</string>
     <string name="common_cancel">Отмена</string>
     <string name="common_close">Закрыть</string>
@@ -102,6 +103,7 @@
     <string name="connect_title">Подключиться к harness</string>
     <string name="connect_try_again">Повторить попытку</string>
     <string name="connect_unreachable">Недоступен</string>
+    <string name="goal_none">Нет активной цели</string>
     <string name="pair_code_hint">8 цифр</string>
     <string name="pair_code_label">Код сопряжения</string>
     <string name="pair_fail_certificate">Ключ по адресу %1$s не совпадает с указанным в коде. Не сопрягайтесь: по этому адресу может отвечать что-то другое.</string>
@@ -185,4 +187,5 @@
     <string name="scan_type_instead">Ввести код вручную</string>
     <string name="settings_connection_disconnect">Отключиться</string>
     <string name="settings_title">Настройки</string>
+    <string name="subagents_readonly">Этот субагент не принимает сообщения.</string>
 </resources>

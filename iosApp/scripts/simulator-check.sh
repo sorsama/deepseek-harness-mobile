@@ -106,7 +106,7 @@ expect_probe() {
 }
 
 # Like `expect`, for the session list call the app makes once it is connected (Documents/dsh-sessions-result.txt):
-# `DSH_SESSIONS_RESULT listed count=…`, or `DSH_SESSIONS_RESULT failed code=…` when the harness refused it.
+# `DSH_SESSIONS_RESULT listed count=…` (the session store's list), or `DSH_SESSIONS_RESULT failed reason=…`.
 expect_sessions() {
   local label="$1" pattern="$2" line
   for _ in $(seq 1 45); do
@@ -396,6 +396,24 @@ else
   expect connected-demo "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
   expect_sessions sessions-demo "DSH_SESSIONS_RESULT listed count=$demo_count$"
   shot "35-connected-shows-the-session-count"
+
+  # 36. The same process sent to the background and brought back: coming back starts a fresh generation, and the
+  #     session store reads its list again, so the sessions line is written again. Another app in front is what
+  #     sends ours to the background; `simctl launch` of a running app (no --terminate-running-process) brings it
+  #     back without restarting it, which the unchanged process id shows.
+  first_pid="$(sed -n "s/^$bundle: \([0-9][0-9]*\)$/\1/p" "$out/console.log" | tail -n 1)"
+  rm -f "$sessions_result"
+  xcrun simctl launch "$udid" com.apple.Preferences > /dev/null 2>&1 || true
+  sleep 4
+  again="$(xcrun simctl launch "$udid" "$bundle" 2>&1)"
+  again_pid="$(sed -n "s/^$bundle: \([0-9][0-9]*\)$/\1/p" <<<"$again" | tail -n 1)"
+  echo "[foreground-again] first pid ${first_pid:-?}, now ${again_pid:-?} ($again)" | cut -c1-400
+  if [ -z "$first_pid" ] || [ "$first_pid" != "$again_pid" ]; then
+    echo "::error::[foreground-again] the app was restarted, not brought back (pid ${first_pid:-?} then ${again_pid:-?})"
+    failures=$((failures + 1))
+  fi
+  expect_sessions sessions-after-reconnect "DSH_SESSIONS_RESULT listed count=$demo_count$"
+  shot "36-session-count-after-coming-back"
 fi
 
 xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
