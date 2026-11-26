@@ -1,9 +1,9 @@
 package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.data.SessionRow
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * How the drawer decides what nests under what.
@@ -52,7 +52,7 @@ class SubagentTreeTest {
     }
 
     @Test
-    fun `subagents of a subagent nest under it, not under the root`() {
+    fun `subagents of a subagent nest under it and not under the root`() {
         val rows = listOf(
             session("root"),
             session("kid", parent = "root", origin = "subagent"),

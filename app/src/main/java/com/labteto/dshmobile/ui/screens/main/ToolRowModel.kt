@@ -163,9 +163,7 @@ internal fun relativizeToCwd(text: String, cwd: String?): String {
     return text.substring(normalizedRoot.length).trimStart('\\', '/').ifBlank { text }
 }
 
-/** The last path segment, whichever separator the host uses. */
-internal fun basename(path: String): String =
-    path.trimEnd('\\', '/').substringAfterLast('/').substringAfterLast('\\').ifBlank { path }
+// basename moved to :sharedUi (WorkspacePaths.kt) with the session list.
 
 private fun filePathOf(variant: ToolRowVariant, arguments: JsonObject?): String? = when (variant) {
     ToolRowVariant.Read, ToolRowVariant.Write, ToolRowVariant.Edit ->

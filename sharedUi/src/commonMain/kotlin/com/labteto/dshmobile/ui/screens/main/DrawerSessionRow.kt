@@ -16,14 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.outlined.CallSplit
-import androidx.compose.material.icons.outlined.Archive
-import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.PushPin
-import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +31,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -47,10 +38,27 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.data.SessionRow
 import com.labteto.dshmobile.data.SessionStore
 import com.labteto.dshmobile.data.archiveStopDialogFor
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.archived_restore
+import com.labteto.dshmobile.shared.resources.chat_status_idle
+import com.labteto.dshmobile.shared.resources.chatlist_move_down
+import com.labteto.dshmobile.shared.resources.chatlist_move_up
+import com.labteto.dshmobile.shared.resources.chatlist_needs_action
+import com.labteto.dshmobile.shared.resources.chatlist_restore_failed
+import com.labteto.dshmobile.shared.resources.chatlist_session_archive
+import com.labteto.dshmobile.shared.resources.chatlist_session_copy_id
+import com.labteto.dshmobile.shared.resources.chatlist_session_fork
+import com.labteto.dshmobile.shared.resources.chatlist_session_pin
+import com.labteto.dshmobile.shared.resources.chatlist_session_rename
+import com.labteto.dshmobile.shared.resources.chatlist_session_unpin
+import com.labteto.dshmobile.shared.resources.chatlist_subagents
+import com.labteto.dshmobile.shared.resources.common_archive
+import com.labteto.dshmobile.shared.resources.hold_session_actions
+import com.labteto.dshmobile.shared.resources.ink_chat_streaming
+import com.labteto.dshmobile.ui.components.DsIcons
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.HoldAction
 import com.labteto.dshmobile.ui.components.HoldMenu
@@ -67,6 +75,7 @@ import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 /** What a row needs to be moved: how to pick it up, and the two TalkBack steps. Null on a row that cannot move. */
 internal class RowDrag(
@@ -144,9 +153,9 @@ internal fun SessionRowItem(
     var renameOpen by remember { mutableStateOf(false) }
     var archiveConfirmOpen by remember { mutableStateOf(false) }
     val copy = rememberCopier()
-    val restoreFailed = stringResource(R.string.chatlist_restore_failed)
-    val moveUpLabel = stringResource(R.string.chatlist_move_up)
-    val moveDownLabel = stringResource(R.string.chatlist_move_down)
+    val restoreFailed = stringResource(Res.string.chatlist_restore_failed)
+    val moveUpLabel = stringResource(Res.string.chatlist_move_up)
+    val moveDownLabel = stringResource(Res.string.chatlist_move_down)
     val held = reorder != null && drag != null && reorder.draggedId == session.sessionId
     var archiveBusy by remember { mutableStateOf<com.labteto.dshmobile.data.ArchiveOutcome.Busy?>(null) }
     val chevronRotation by animateFloatAsState(
@@ -192,7 +201,7 @@ internal fun SessionRowItem(
                 modifier = Modifier
                     .weight(1f)
                     .clickableWithHold(
-                        holdLabel = stringResource(R.string.hold_session_actions),
+                        holdLabel = stringResource(Res.string.hold_session_actions),
                         // The hold gesture's own haptic fires inside clickableWithHold; adding another
                         // here would buzz twice for one press.
                         onHold = { menuOpen = true },
@@ -237,8 +246,8 @@ internal fun SessionRowItem(
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = stringResource(R.string.chatlist_subagents),
+                            DsIcons.ChevronRight,
+                            contentDescription = stringResource(Res.string.chatlist_subagents),
                             tint = colors.labelTertiary,
                             modifier = Modifier
                                 .size(18.dp)
@@ -265,26 +274,26 @@ internal fun SessionRowItem(
                     // is owned by subagent routing: the host refuses it. A child's title belongs to
                     // its creator.
                     if (session.origin != "subagent") {
-                        add(HoldAction(stringResource(R.string.chatlist_session_rename), Icons.Outlined.Edit) { renameOpen = true })
+                        add(HoldAction(stringResource(Res.string.chatlist_session_rename), DsIcons.Edit) { renameOpen = true })
                     }
                     add(
-                        HoldAction(stringResource(R.string.chatlist_session_fork), Icons.AutoMirrored.Outlined.CallSplit) {
+                        HoldAction(stringResource(Res.string.chatlist_session_fork), DsIcons.CallSplit) {
                             scope.launch { store.forkSession(session.sessionId) }
                         },
                     )
                     if (pinned != null) {
                         add(
                             HoldAction(
-                                stringResource(if (pinned) R.string.chatlist_session_unpin else R.string.chatlist_session_pin),
-                                Icons.Outlined.PushPin,
+                                stringResource(if (pinned) Res.string.chatlist_session_unpin else Res.string.chatlist_session_pin),
+                                DsIcons.PushPin,
                             ) { scope.launch { store.setPinned(session.sessionId, !pinned) } },
                         )
                     }
-                    add(HoldAction(stringResource(R.string.chatlist_session_copy_id), Icons.Outlined.ContentCopy) { copy(session.sessionId) })
+                    add(HoldAction(stringResource(Res.string.chatlist_session_copy_id), DsIcons.ContentCopy) { copy(session.sessionId) })
                     if (archived) {
                         // Already archived: the verb that makes sense here is the one that undoes it.
                         add(
-                            HoldAction(stringResource(R.string.archived_restore), Icons.Outlined.Restore) {
+                            HoldAction(stringResource(Res.string.archived_restore), DsIcons.Restore) {
                                 scope.launch {
                                     if (!store.unarchiveSession(session.sessionId)) onNotice(restoreFailed)
                                 }
@@ -292,7 +301,7 @@ internal fun SessionRowItem(
                         )
                     } else {
                         add(
-                            HoldAction(stringResource(R.string.chatlist_session_archive), Icons.Outlined.Archive) {
+                            HoldAction(stringResource(Res.string.chatlist_session_archive), DsIcons.Archive) {
                                 // Work this row is known to be running goes straight to "Stop and archive";
                                 // otherwise the plain confirm, and the host's refusal still has its say.
                                 val stop = archiveStopDialogFor(session.sessionId, store.knownActivityOf(session))
@@ -310,7 +319,7 @@ internal fun SessionRowItem(
     if (renameOpen && session.origin != "subagent") {
         RenameDialog(
             initial = session.title.orEmpty(),
-            title = stringResource(R.string.chatlist_session_rename),
+            title = stringResource(Res.string.chatlist_session_rename),
             onDismiss = { renameOpen = false },
             onConfirm = {
                 scope.launch { store.renameSession(session.sessionId, it) }
@@ -321,9 +330,9 @@ internal fun SessionRowItem(
 
     if (archiveConfirmOpen) {
         ConfirmDialog(
-            title = stringResource(R.string.chatlist_session_archive),
+            title = stringResource(Res.string.chatlist_session_archive),
             body = displaySessionTitle(session),
-            confirmLabel = stringResource(R.string.common_archive),
+            confirmLabel = stringResource(Res.string.common_archive),
             onDismiss = { archiveConfirmOpen = false },
             onConfirm = {
                 archiveConfirmOpen = false
@@ -362,10 +371,10 @@ internal fun SessionAvatar(tint: Color, size: androidx.compose.ui.unit.Dp) {
 @Composable
 private fun statusLine(session: SessionRow): String {
     val state = when {
-        session.running -> stringResource(R.string.ink_chat_streaming)
-        session.pendingInteraction != null -> stringResource(R.string.chatlist_needs_action)
-        session.origin == "subagent" -> stringResource(R.string.chatlist_subagents)
-        else -> stringResource(R.string.chat_status_idle)
+        session.running -> stringResource(Res.string.ink_chat_streaming)
+        session.pendingInteraction != null -> stringResource(Res.string.chatlist_needs_action)
+        session.origin == "subagent" -> stringResource(Res.string.chatlist_subagents)
+        else -> stringResource(Res.string.chat_status_idle)
     }
     val place = session.cwd?.takeIf { it.isNotBlank() }?.let { basename(it) }
     return listOfNotNull(state, place).joinToString(" · ")

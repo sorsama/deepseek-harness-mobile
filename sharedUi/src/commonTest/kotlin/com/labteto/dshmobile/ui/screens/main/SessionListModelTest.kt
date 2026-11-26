@@ -2,11 +2,11 @@ package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.data.SessionRow
 import com.labteto.dshmobile.data.WorkspaceRow
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertSame
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertSame
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /** How the drawer groups, orders and moves sessions: the rules behind Manual and By project. */
 class SessionListModelTest {
@@ -94,7 +94,7 @@ class SessionListModelTest {
     }
 
     @Test
-    fun `a session listed by two workspaces is shown once, in the first`() {
+    fun `a session listed by two workspaces is shown once in the first`() {
         val listable = listOf("s", "t").map(::session)
         val blocks = buildSessionBlocks(listable, listOf(workspace("A", "s"), workspace("B", "s", "t")), emptySet(), emptyList())
         assertEquals(listOf("s"), ids(blocks[0].roots))

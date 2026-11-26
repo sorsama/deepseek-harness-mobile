@@ -22,13 +22,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -48,17 +41,41 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.data.SessionRow
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chatlist_approve_long
+import com.labteto.dshmobile.shared.resources.chatlist_archived
+import com.labteto.dshmobile.shared.resources.chatlist_needs_action
+import com.labteto.dshmobile.shared.resources.chatlist_new_session
+import com.labteto.dshmobile.shared.resources.chatlist_new_workspace
+import com.labteto.dshmobile.shared.resources.chatlist_refresh
+import com.labteto.dshmobile.shared.resources.chatlist_search_content_off
+import com.labteto.dshmobile.shared.resources.chatlist_search_hint
+import com.labteto.dshmobile.shared.resources.chatlist_sort_manual
+import com.labteto.dshmobile.shared.resources.chatlist_sort_project
+import com.labteto.dshmobile.shared.resources.chatlist_sort_title
+import com.labteto.dshmobile.shared.resources.chatlist_sort_updated
+import com.labteto.dshmobile.shared.resources.chatlist_subagents
+import com.labteto.dshmobile.shared.resources.common_offline
+import com.labteto.dshmobile.shared.resources.harness_automations
+import com.labteto.dshmobile.shared.resources.ink_chat_approve
+import com.labteto.dshmobile.shared.resources.ink_chat_filter_all
+import com.labteto.dshmobile.shared.resources.ink_chat_filter_needs_you
+import com.labteto.dshmobile.shared.resources.ink_chat_filter_running
+import com.labteto.dshmobile.shared.resources.ink_chat_more
+import com.labteto.dshmobile.shared.resources.ink_chat_review
+import com.labteto.dshmobile.shared.resources.ink_chat_workspaces
+import com.labteto.dshmobile.shared.resources.projects_title
+import com.labteto.dshmobile.shared.resources.settings_connection_disconnect
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsFilterChip
 import com.labteto.dshmobile.ui.components.DsIconMenu
+import com.labteto.dshmobile.ui.components.DsIcons
 import com.labteto.dshmobile.ui.components.DsPill
 import com.labteto.dshmobile.ui.components.DsSearchField
 import com.labteto.dshmobile.ui.components.FeatherIcons
@@ -68,12 +85,14 @@ import com.labteto.dshmobile.ui.components.MenuItem
 import com.labteto.dshmobile.ui.components.StateDot
 import com.labteto.dshmobile.ui.components.StateDotState
 import com.labteto.dshmobile.ui.components.clickable
+import com.labteto.dshmobile.ui.components.localizedCount
 import com.labteto.dshmobile.ui.components.relativeTime
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSizes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import org.jetbrains.compose.resources.stringResource
 
 // ---------------------------------------------------------------------------
 // Header controls
@@ -84,17 +103,18 @@ import com.labteto.dshmobile.ui.theme.DsType
  *
  * It opens Settings rather than a connection picker because the drawer is hosted inside the chat
  * route and has no route of its own to hand — tapping the harness should at least land where its
- * address and reconnect controls live. The caret says it goes somewhere.
+ * address and reconnect controls live. The caret says it goes somewhere; with no Settings to open
+ * ([onClick] null) the pill only reports, and has no caret.
  */
 @Composable
-internal fun HarnessPill(name: String, phase: ConnectionPhase, onClick: () -> Unit) {
+internal fun HarnessPill(name: String, phase: ConnectionPhase, onClick: (() -> Unit)?) {
     val colors = DsTheme.colors
     val dot = when (phase) {
         ConnectionPhase.CONNECTED -> StateDotState.Done
         ConnectionPhase.CONNECTING, ConnectionPhase.RECONNECTING -> StateDotState.Warning
         ConnectionPhase.DISCONNECTED -> StateDotState.Idle
     }
-    val label = if (phase == ConnectionPhase.DISCONNECTED) stringResource(R.string.common_offline) else name
+    val label = if (phase == ConnectionPhase.DISCONNECTED) stringResource(Res.string.common_offline) else name
     // Drawn 36dp (the same as a filter chip, so the two read as one family), inside a 48dp target.
     Row(
         modifier = Modifier
@@ -104,7 +124,7 @@ internal fun HarnessPill(name: String, phase: ConnectionPhase, onClick: () -> Un
             .clip(DsShapes.pillFull)
             .background(colors.bgLayer2)
             .border(1.dp, colors.borderL2, DsShapes.pillFull)
-            .clickable(role = Role.Button, onClick = onClick)
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -118,12 +138,14 @@ internal fun HarnessPill(name: String, phase: ConnectionPhase, onClick: () -> Un
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f, fill = false),
         )
-        Icon(
-            Icons.Filled.KeyboardArrowDown,
-            contentDescription = null,
-            tint = colors.labelTertiary,
-            modifier = Modifier.size(14.dp),
-        )
+        if (onClick != null) {
+            Icon(
+                DsIcons.KeyboardArrowDown,
+                contentDescription = null,
+                tint = colors.labelTertiary,
+                modifier = Modifier.size(14.dp),
+            )
+        }
     }
 }
 
@@ -140,7 +162,7 @@ internal fun HarnessPill(name: String, phase: ConnectionPhase, onClick: () -> Un
  * of its own to add.
  */
 @Composable
-internal fun FadingChipRow(
+fun FadingChipRow(
     fadeColor: Color,
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
@@ -179,17 +201,17 @@ internal fun FadingChipRow(
 @Composable
 internal fun SortButton(sort: String, onPick: (sort: String) -> Unit) {
     DsIconMenu(
-        icon = Icons.Outlined.SwapVert,
-        contentDescription = stringResource(R.string.chatlist_sort_title),
+        icon = DsIcons.SwapVert,
+        contentDescription = stringResource(Res.string.chatlist_sort_title),
         items = listOf(
-            MenuItem(text = stringResource(R.string.chatlist_sort_manual), selected = sort == SORT_MANUAL) { onPick(SORT_MANUAL) },
-            MenuItem(text = stringResource(R.string.chatlist_sort_updated), selected = sort == SORT_UPDATED) { onPick(SORT_UPDATED) },
-            MenuItem(text = stringResource(R.string.chatlist_sort_project), selected = sort == SORT_PROJECT) { onPick(SORT_PROJECT) },
+            MenuItem(text = stringResource(Res.string.chatlist_sort_manual), selected = sort == SORT_MANUAL) { onPick(SORT_MANUAL) },
+            MenuItem(text = stringResource(Res.string.chatlist_sort_updated), selected = sort == SORT_UPDATED) { onPick(SORT_UPDATED) },
+            MenuItem(text = stringResource(Res.string.chatlist_sort_project), selected = sort == SORT_PROJECT) { onPick(SORT_PROJECT) },
         ),
     )
 }
 
-/** New session, new workspace, workspace management, automations and a manual refresh. */
+/** New session, new workspace, workspace management, automations, a manual refresh and, where asked for, Disconnect. */
 @Composable
 internal fun MoreMenu(
     automationAvailable: Boolean,
@@ -199,21 +221,25 @@ internal fun MoreMenu(
     onProjects: (() -> Unit)?,
     onAutomations: () -> Unit,
     onRefresh: () -> Unit,
+    onDisconnect: (() -> Unit)? = null,
 ) {
     DsIconMenu(
-        icon = Icons.Outlined.MoreVert,
-        contentDescription = stringResource(R.string.ink_chat_more),
+        icon = DsIcons.MoreVert,
+        contentDescription = stringResource(Res.string.ink_chat_more),
         items = buildList {
-            add(MenuItem(stringResource(R.string.chatlist_new_session), icon = Icons.Filled.Add, onClick = onNewSession))
-            add(MenuItem(stringResource(R.string.chatlist_new_workspace), icon = Icons.Outlined.Add, onClick = onNewWorkspace))
-            add(MenuItem(stringResource(R.string.ink_chat_workspaces), icon = FeatherIcons.Folder, onClick = onWorkspaces))
-            if (onProjects != null) add(MenuItem(stringResource(R.string.projects_title), icon = FeatherIcons.Folder, onClick = onProjects))
+            add(MenuItem(stringResource(Res.string.chatlist_new_session), icon = DsIcons.Add, onClick = onNewSession))
+            add(MenuItem(stringResource(Res.string.chatlist_new_workspace), icon = DsIcons.AddOutlined, onClick = onNewWorkspace))
+            add(MenuItem(stringResource(Res.string.ink_chat_workspaces), icon = FeatherIcons.Folder, onClick = onWorkspaces))
+            if (onProjects != null) add(MenuItem(stringResource(Res.string.projects_title), icon = FeatherIcons.Folder, onClick = onProjects))
             if (automationAvailable) {
-                add(MenuItem(stringResource(R.string.harness_automations), icon = FeatherIcons.Zap, onClick = onAutomations))
+                add(MenuItem(stringResource(Res.string.harness_automations), icon = FeatherIcons.Zap, onClick = onAutomations))
             }
             // The pull is the fast path; this is the same read for TalkBack and for anyone who
             // would rather not drag. It runs the same cycle, so it animates the same pill.
-            add(MenuItem(stringResource(R.string.chatlist_refresh), icon = Icons.Outlined.Refresh, onClick = onRefresh))
+            add(MenuItem(stringResource(Res.string.chatlist_refresh), icon = DsIcons.Refresh, onClick = onRefresh))
+            if (onDisconnect != null) {
+                add(MenuItem(stringResource(Res.string.settings_connection_disconnect), icon = FeatherIcons.Server, onClick = onDisconnect))
+            }
         },
     )
 }
@@ -245,23 +271,23 @@ internal fun DrawerFilterRow(
     Box(contentAlignment = Alignment.Center) {
         FadingChipRow(fadeColor = colors.sidebar, modifier = Modifier.alpha(chipsAlpha)) {
             DsFilterChip(
-                label = stringResource(R.string.ink_chat_filter_all, allCount),
+                label = stringResource(Res.string.ink_chat_filter_all, localizedCount(allCount)),
                 selected = filter == DrawerFilter.All,
                 onClick = { onFilter(DrawerFilter.All) },
             )
             DsFilterChip(
-                label = stringResource(R.string.ink_chat_filter_running, runningCount),
+                label = stringResource(Res.string.ink_chat_filter_running, localizedCount(runningCount)),
                 selected = filter == DrawerFilter.Running,
                 onClick = { onFilter(DrawerFilter.Running) },
             )
             DsFilterChip(
-                label = stringResource(R.string.ink_chat_filter_needs_you, needsYouCount),
+                label = stringResource(Res.string.ink_chat_filter_needs_you, localizedCount(needsYouCount)),
                 selected = filter == DrawerFilter.NeedsYou,
                 warn = needsYouCount > 0,
                 onClick = { onFilter(DrawerFilter.NeedsYou) },
             )
             DsFilterChip(
-                label = stringResource(R.string.chatlist_archived),
+                label = stringResource(Res.string.chatlist_archived),
                 selected = filter == DrawerFilter.Archived,
                 onClick = { onFilter(DrawerFilter.Archived) },
             )
@@ -290,14 +316,14 @@ internal fun ColumnScope.DrawerSearch(
             DsSearchField(
                 value = query,
                 onValueChange = onQueryChange,
-                placeholder = stringResource(R.string.chatlist_search_hint),
+                placeholder = stringResource(Res.string.chatlist_search_hint),
                 autoFocus = true,
                 focusTick = focusTick,
             )
             // A capability note, not a failure: most harnesses ship with content search off.
             if (!contentSearchAvailable && query.isNotBlank()) {
                 Text(
-                    stringResource(R.string.chatlist_search_content_off),
+                    stringResource(Res.string.chatlist_search_content_off),
                     style = DsType.caption11,
                     color = colors.labelCaption,
                     modifier = Modifier.padding(top = DsSpacing.tiny),
@@ -374,7 +400,7 @@ internal fun NeedsYouCard(
                 MascotMark(state = MascotState.NeedsYou, size = 26.dp)
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    stringResource(R.string.chatlist_needs_action).uppercase(),
+                    stringResource(Res.string.chatlist_needs_action).uppercase(),
                     style = DsType.label12,
                     color = colors.warnLabel,
                     maxLines = 1,
@@ -423,7 +449,7 @@ internal fun NeedsYouCard(
                 }
                 if (cutOff && onApprove != null) {
                     Text(
-                        stringResource(R.string.chatlist_approve_long),
+                        stringResource(Res.string.chatlist_approve_long),
                         style = DsType.caption11,
                         color = colors.warnLabel,
                     )
@@ -431,14 +457,14 @@ internal fun NeedsYouCard(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DsButton(
-                    text = stringResource(R.string.ink_chat_review),
+                    text = stringResource(Res.string.ink_chat_review),
                     onClick = onReview,
                     variant = if (cutOff) DsButtonVariant.Primary else DsButtonVariant.Outline,
                     modifier = Modifier.weight(1f),
                 )
                 if (onApprove != null && !cutOff) {
                     DsButton(
-                        text = stringResource(R.string.ink_chat_approve),
+                        text = stringResource(Res.string.ink_chat_approve),
                         onClick = onApprove,
                         variant = DsButtonVariant.Primary,
                         modifier = Modifier.weight(1f),
@@ -484,7 +510,7 @@ internal fun SearchResultRow(hit: SearchHit, index: Int, onOpen: () -> Unit) {
                 )
                 if (hit.session.origin == "subagent") {
                     Spacer(Modifier.width(DsSpacing.xsmall))
-                    DsPill(text = stringResource(R.string.chatlist_subagents))
+                    DsPill(text = stringResource(Res.string.chatlist_subagents))
                 }
             }
             hit.workspaceLabel.takeIf { it.isNotBlank() }?.let {

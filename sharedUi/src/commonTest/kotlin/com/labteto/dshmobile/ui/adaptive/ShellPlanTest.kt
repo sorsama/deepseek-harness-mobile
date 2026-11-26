@@ -4,12 +4,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertNotNull
+import com.labteto.dshmobile.testing.assertNull
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * The adaptive shell's rules, checked against the devices they were written for.

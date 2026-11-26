@@ -10,17 +10,21 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.data.SessionRow
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chatlist_sessions_collapse
+import com.labteto.dshmobile.shared.resources.chatlist_sessions_more
+import com.labteto.dshmobile.shared.resources.chatlist_sessions_reorder_hint
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonVariant
+import com.labteto.dshmobile.ui.components.localizedCount
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import org.jetbrains.compose.resources.stringResource
 
 /** Expansion is presentation only, independent of the harness's whole-project collapse preference. */
-internal class WorkspaceExpansion(initial: Map<String, Int> = emptyMap()) {
+class WorkspaceExpansion(initial: Map<String, Int> = emptyMap()) {
     private val counts = mutableStateMapOf<String, Int>().apply { putAll(initial) }
     private fun key(host: String?, workspace: String) = "${host.orEmpty().length}:${host.orEmpty()}$workspace"
     fun requested(host: String?, workspace: String): Int = counts[key(host, workspace)] ?: 0
@@ -50,12 +54,12 @@ internal class WorkspaceExpansion(initial: Map<String, Int> = emptyMap()) {
 }
 
 @Composable
-internal fun rememberWorkspaceExpansion(): WorkspaceExpansion = rememberSaveable(saver = WorkspaceExpansion.saver) {
+fun rememberWorkspaceExpansion(): WorkspaceExpansion = rememberSaveable(saver = WorkspaceExpansion.saver) {
     WorkspaceExpansion()
 }
 
 /** Production lazy section: keeps row/subagent rendering owned by the drawer, never copies it. */
-internal fun LazyListScope.workspaceSessionItems(
+fun LazyListScope.workspaceSessionItems(
     key: String,
     window: WorkspaceWindow,
     onMore: () -> Unit,
@@ -69,14 +73,14 @@ internal fun LazyListScope.workspaceSessionItems(
             Column {
                 if (window.remaining > 0) {
                     DsButton(
-                        text = stringResource(R.string.chatlist_sessions_more, window.remaining),
+                        text = stringResource(Res.string.chatlist_sessions_more, localizedCount(window.remaining)),
                         onClick = onMore,
                         variant = DsButtonVariant.Ghost,
                         enabled = controlsEnabled,
                         modifier = Modifier.testTag("workspace-more-$key"),
                     )
                     Text(
-                        stringResource(R.string.chatlist_sessions_reorder_hint),
+                        stringResource(Res.string.chatlist_sessions_reorder_hint),
                         style = DsType.caption11,
                         color = DsTheme.colors.labelCaption,
                         modifier = Modifier.padding(horizontal = DsSpacing.small),
@@ -84,7 +88,7 @@ internal fun LazyListScope.workspaceSessionItems(
                 }
                 if (window.canCollapse) {
                     DsButton(
-                        text = stringResource(R.string.chatlist_sessions_collapse),
+                        text = stringResource(Res.string.chatlist_sessions_collapse),
                         onClick = onCollapse,
                         variant = DsButtonVariant.Ghost,
                         enabled = controlsEnabled,

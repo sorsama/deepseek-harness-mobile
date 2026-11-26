@@ -18,8 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,14 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.data.MoveOutcome
 import com.labteto.dshmobile.data.QuestionOutcome
@@ -50,8 +46,29 @@ import com.labteto.dshmobile.data.SessionRow
 import com.labteto.dshmobile.data.anchorAfterMove
 import com.labteto.dshmobile.data.failureNotice
 import com.labteto.dshmobile.data.moveByStep
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chatlist_archived
+import com.labteto.dshmobile.shared.resources.chatlist_archived_none
+import com.labteto.dshmobile.shared.resources.chatlist_empty
+import com.labteto.dshmobile.shared.resources.chatlist_group_other
+import com.labteto.dshmobile.shared.resources.chatlist_pinned
+import com.labteto.dshmobile.shared.resources.chatlist_refresh
+import com.labteto.dshmobile.shared.resources.chatlist_refresh_failed
+import com.labteto.dshmobile.shared.resources.chatlist_reorder_blocked
+import com.labteto.dshmobile.shared.resources.chatlist_reorder_failed
+import com.labteto.dshmobile.shared.resources.chatlist_reorder_project_failed
+import com.labteto.dshmobile.shared.resources.chatlist_reorder_projects
+import com.labteto.dshmobile.shared.resources.chatlist_reorder_scope
+import com.labteto.dshmobile.shared.resources.chatlist_search_empty
+import com.labteto.dshmobile.shared.resources.chatlist_search_refine
+import com.labteto.dshmobile.shared.resources.common_search
+import com.labteto.dshmobile.shared.resources.ink_chat_sessions
+import com.labteto.dshmobile.shared.resources.questions_answer_refused
+import com.labteto.dshmobile.shared.resources.questions_answer_unsent
+import com.labteto.dshmobile.shared.resources.settings_title
 import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.components.DsIconButton
+import com.labteto.dshmobile.ui.components.DsIcons
 import com.labteto.dshmobile.ui.components.DsToastHost
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.MascotMark
@@ -68,6 +85,7 @@ import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Base nonblank prefix and Show more step for a compact workspace in the project view.
@@ -87,7 +105,7 @@ internal enum class DrawerFilter { All, Running, NeedsYou, Archived }
  *
  * Android keeps them in `HostsStore` (DataStore). Each flow gives what is saved, then every change.
  */
-internal interface SessionDrawerPrefs {
+interface SessionDrawerPrefs {
     /** The saved order as written, normalized by the reader with [normalizeSessionSort]. */
     val sessionSort: Flow<String>
     suspend fun setSessionSort(value: String)
@@ -107,7 +125,7 @@ internal interface SessionDrawerPrefs {
  * A day is an opaque number: two instants on the same local day give the same one, and [label] turns it
  * back into words. Android answers with `java.time` in the device's zone and the app's locale.
  */
-internal interface DrawerCalendar {
+interface DrawerCalendar {
     /** The local day [epochMs] falls on. */
     fun dayOf(epochMs: Long): Long
 
@@ -121,7 +139,7 @@ internal interface DrawerCalendar {
  * started from the new-session dialog) close a dialog too.
  */
 @Stable
-internal class SessionDrawerDialogs {
+class SessionDrawerDialogs {
     var newSession by mutableStateOf(false)
     var newWorkspace by mutableStateOf(false)
     var workspaces by mutableStateOf(false)
@@ -131,7 +149,7 @@ internal class SessionDrawerDialogs {
  * The built-in harness's project verbs: Android only, and only while that harness is the one connected.
  * The drawer shows none of them when the host passes null.
  */
-internal class DrawerProjects(
+class DrawerProjects(
     /** The overflow menu's Projects entry. */
     val onOpen: () -> Unit,
     /** Rows at the foot of the new-session dialog: the ways to start a project there. */
@@ -167,10 +185,12 @@ internal class DrawerProjects(
  * [prefs] for the phone-side preferences, [calendar] for the date headings, [announceMove] to tell a
  * screen reader where a moved row landed (its 1-based position and the size of its group),
  * [onOpenAutomations] (null hides the entry) and [projects] (null hides the built-in harness's
- * project verbs). The Android host is [ChatListDrawer].
+ * project verbs). [features] says what else the platform has: Settings (the gear and the harness
+ * pill open it), or, where there is none yet, a Disconnect entry that calls [onDisconnect]. The
+ * Android host is `ChatListDrawer` in `:app`; the iOS one is `IosSessionDrawer`.
  */
 @Composable
-internal fun SessionDrawer(
+fun SessionDrawer(
     prefs: SessionDrawerPrefs,
     calendar: DrawerCalendar,
     dialogs: SessionDrawerDialogs,
@@ -179,6 +199,8 @@ internal fun SessionDrawer(
     onOpenAutomations: (() -> Unit)?,
     announceMove: (position: Int, size: Int) -> Unit,
     projects: DrawerProjects?,
+    features: MainFeatures = MainFeatures.Android,
+    onDisconnect: () -> Unit = {},
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
@@ -260,8 +282,8 @@ internal fun SessionDrawer(
     // re-reads on open, on resume and every so often. This is the manual version — a person who
     // wants to be sure, and the only refresh that says so where the gesture happened. The read is
     // quiet: a failure lands as a toast in the drawer, not as a banner on the chat underneath it.
-    val refreshLabel = stringResource(R.string.chatlist_refresh)
-    val refreshFailedLabel = stringResource(R.string.chatlist_refresh_failed)
+    val refreshLabel = stringResource(Res.string.chatlist_refresh)
+    val refreshFailedLabel = stringResource(Res.string.chatlist_refresh_failed)
     var refreshFailure by remember { mutableStateOf<String?>(null) }
     val refresh = rememberPullRefreshCycle(
         scope = scope,
@@ -396,17 +418,18 @@ internal fun SessionDrawer(
     }
 
     // ---- Reordering: what a drop, or a "Move up" from TalkBack, actually does ---------------------
-    val moveFailedText = stringResource(R.string.chatlist_reorder_failed)
-    val projectMoveFailedText = stringResource(R.string.chatlist_reorder_project_failed)
-    val staysInProjectText = stringResource(R.string.chatlist_reorder_blocked)
-    val otherName = stringResource(R.string.chatlist_group_other)
-    val answerRefused = stringResource(R.string.questions_answer_refused)
-    val answerUnsent = stringResource(R.string.questions_answer_unsent)
+    val moveFailedText = stringResource(Res.string.chatlist_reorder_failed)
+    val projectMoveFailedText = stringResource(Res.string.chatlist_reorder_project_failed)
+    val staysInProjectText = stringResource(Res.string.chatlist_reorder_blocked)
+    val otherName = stringResource(Res.string.chatlist_group_other)
+    val answerRefused = stringResource(Res.string.questions_answer_refused)
+    val answerUnsent = stringResource(Res.string.questions_answer_unsent)
 
     /** What to tell the person about an approval answer, or null when the harness took it. */
     fun refusalOf(outcome: QuestionOutcome): String? = when (outcome) {
         is QuestionOutcome.Accepted -> null
-        is QuestionOutcome.Refused -> answerRefused.format(outcome.reason)
+        // The template's one `%1$s`, filled as `String.format` filled it (the reason is known only later).
+        is QuestionOutcome.Refused -> answerRefused.replace("%1\$s", outcome.reason)
         is QuestionOutcome.Unsent -> answerUnsent
     }
     // The list's own keys, so the held unit can be found and measured: a session row, or a project
@@ -517,22 +540,24 @@ internal fun SessionDrawer(
             HarnessPill(
                 name = hostName,
                 phase = connection.phase,
-                onClick = { hapticsTap(); onOpenSettings() },
+                onClick = if (features.settings) ({ hapticsTap(); onOpenSettings() }) else null,
             )
-            DsIconButton(
-                icon = Icons.Outlined.Settings,
-                contentDescription = stringResource(R.string.settings_title),
-                onClick = onOpenSettings,
-                tint = colors.labelTertiary,
-                iconSize = 20.dp,
-            )
+            if (features.settings) {
+                DsIconButton(
+                    icon = DsIcons.SettingsOutlined,
+                    contentDescription = stringResource(Res.string.settings_title),
+                    onClick = onOpenSettings,
+                    tint = colors.labelTertiary,
+                    iconSize = 20.dp,
+                )
+            }
         }
 
         // ---- Hero title, workspace · model, quick actions --------------------------------------
         Row(verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    stringResource(R.string.ink_chat_sessions),
+                    stringResource(Res.string.ink_chat_sessions),
                     style = DsType.display24,
                     color = colors.labelPrimary,
                     maxLines = 1,
@@ -555,7 +580,7 @@ internal fun SessionDrawer(
             // rectangle next to search's circle.)
             DsIconButton(
                 icon = FeatherIcons.Search,
-                contentDescription = stringResource(R.string.common_search),
+                contentDescription = stringResource(Res.string.common_search),
                 onClick = {
                     searchOpen = !searchOpen
                     if (!searchOpen) query = ""
@@ -575,6 +600,7 @@ internal fun SessionDrawer(
                 onProjects = projects?.onOpen,
                 onAutomations = onOpenAutomations ?: {},
                 onRefresh = refresh::start,
+                onDisconnect = if (features.disconnect) onDisconnect else null,
             )
         }
 
@@ -587,12 +613,12 @@ internal fun SessionDrawer(
         // that says what the held unit can and cannot do: the limit is the harness's (a session
         // cannot change workspace), so it is named rather than left to be discovered by a row that
         // will not go. It sits in the chips' own row, so it can never cover a session row.
-        val projectsHint = stringResource(R.string.chatlist_reorder_projects)
+        val projectsHint = stringResource(Res.string.chatlist_reorder_projects)
         val hintNow = when (val group = reorder.groupKey) {
             null -> ""
             PROJECTS_GROUP -> projectsHint
             else -> stringResource(
-                R.string.chatlist_reorder_scope,
+                Res.string.chatlist_reorder_scope,
                 blocks.firstOrNull { it.key == group }?.workspace?.let { it.title.ifBlank { basename(it.path) } }
                     ?: otherName,
             )
@@ -674,7 +700,7 @@ internal fun SessionDrawer(
                 if (query.isNotBlank()) {
                     item(key = "search-header") {
                         Text(
-                            stringResource(R.string.common_search).uppercase(),
+                            stringResource(Res.string.common_search).uppercase(),
                             style = DsType.label12,
                             color = colors.labelTertiary,
                             modifier = Modifier.padding(vertical = DsSpacing.xsmall),
@@ -683,7 +709,7 @@ internal fun SessionDrawer(
                     if (searchHits.items.isEmpty()) {
                         item(key = "search-empty") {
                             Text(
-                                stringResource(R.string.chatlist_search_empty),
+                                stringResource(Res.string.chatlist_search_empty),
                                 style = DsType.std14,
                                 color = colors.labelTertiary,
                                 modifier = Modifier.padding(vertical = DsSpacing.small),
@@ -696,7 +722,7 @@ internal fun SessionDrawer(
                     if (searchHits.hasMore) {
                         item(key = "search-more") {
                             Text(
-                                stringResource(R.string.chatlist_search_refine),
+                                stringResource(Res.string.chatlist_search_refine),
                                 style = DsType.caption11,
                                 color = colors.labelCaption,
                                 modifier = Modifier.padding(vertical = DsSpacing.xsmall),
@@ -708,14 +734,14 @@ internal fun SessionDrawer(
 
                 if (filter == DrawerFilter.Archived) {
                     item(key = "archived-header") {
-                        DateHeading(stringResource(R.string.chatlist_archived), Modifier.padding(top = DsSpacing.xsmall))
+                        DateHeading(stringResource(Res.string.chatlist_archived), Modifier.padding(top = DsSpacing.xsmall))
                     }
                     if (archivedSessions.isEmpty()) {
                         item(key = "archived-empty") {
                             // Nothing archived is its own state, not "nothing matches": there is no
                             // query on this list for anything to have failed to match.
                             Text(
-                                stringResource(R.string.chatlist_archived_none),
+                                stringResource(Res.string.chatlist_archived_none),
                                 style = DsType.std14,
                                 color = colors.labelTertiary,
                                 modifier = Modifier.padding(vertical = DsSpacing.small),
@@ -823,7 +849,7 @@ internal fun SessionDrawer(
                 if (filter == DrawerFilter.All && pinnedRows.isNotEmpty()) {
                     item(key = "pinned-header") {
                         DateHeading(
-                            stringResource(R.string.chatlist_pinned),
+                            stringResource(Res.string.chatlist_pinned),
                             Modifier.padding(top = DsSpacing.xsmall).reorderPresentation(reorder, null, null),
                         )
                     }
@@ -906,7 +932,7 @@ internal fun SessionDrawer(
                 if (visibleRoots.isEmpty() && (filter != DrawerFilter.All || pinnedRows.isEmpty())) {
                     item(key = "empty") {
                         Text(
-                            stringResource(if (filter == DrawerFilter.All) R.string.chatlist_empty else R.string.chatlist_search_empty),
+                            stringResource(if (filter == DrawerFilter.All) Res.string.chatlist_empty else Res.string.chatlist_search_empty),
                             style = DsType.std14,
                             color = colors.labelTertiary,
                             modifier = Modifier.padding(vertical = DsSpacing.large),
@@ -1019,7 +1045,7 @@ internal fun indexSubagents(
 }
 
 /** Display title: an explicit title, else the working directory's folder, else the id. */
-internal fun displaySessionTitle(session: SessionRow): String =
+fun displaySessionTitle(session: SessionRow): String =
     sessionTitle(session).let { if (session.title.isNullOrBlank()) technicalDisplay(it) else it }
 
 /**
@@ -1039,7 +1065,7 @@ internal fun visibleWorkspaceRoots(
     return roots.filterIndexed { index, _ -> index in keep }
 }
 
-internal fun sessionTitle(session: SessionRow): String {
+fun sessionTitle(session: SessionRow): String {
     val title = session.title?.takeIf { it.isNotBlank() }
     val folder = session.cwd?.takeIf { it.isNotBlank() }?.let { basename(it) }?.takeIf { it.isNotBlank() }
     return title ?: folder ?: session.sessionId

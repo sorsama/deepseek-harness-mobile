@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import com.labteto.dshmobile.data.SessionListRefresh
+import com.labteto.dshmobile.data.wallClockMillis
 import com.labteto.dshmobile.ui.components.PullRefreshPhase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -32,7 +33,7 @@ internal class PullRefreshCycle(
     private val read: suspend () -> SessionListRefresh,
     private val onDone: () -> Unit = {},
     private val onFailed: (String?) -> Unit = {},
-    private val now: () -> Long = System::currentTimeMillis,
+    private val now: () -> Long = ::wallClockMillis,
     private val minimumSpinnerMs: Long = MIN_SPINNER_MS,
     private val resultHoldMs: Long = RESULT_HOLD_MS,
 ) {

@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,15 +19,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.data.SessionRow
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chatlist_move_down
+import com.labteto.dshmobile.shared.resources.chatlist_move_up
+import com.labteto.dshmobile.shared.resources.chatlist_project_collapse
+import com.labteto.dshmobile.shared.resources.chatlist_project_expand
+import com.labteto.dshmobile.ui.components.DsIcons
 import com.labteto.dshmobile.ui.components.DsPill
 import com.labteto.dshmobile.ui.components.clickable
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
@@ -39,6 +41,7 @@ import com.labteto.dshmobile.ui.theme.DsSizes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The "By project" list: projects in the harness's workspace order, each under a header that folds,
@@ -133,9 +136,9 @@ internal fun ProjectHeader(
         animationSpec = DsAnimations.chevron,
         label = "projectChevron",
     )
-    val moveUp = stringResource(R.string.chatlist_move_up)
-    val moveDown = stringResource(R.string.chatlist_move_down)
-    val toggleLabel = stringResource(if (collapsed) R.string.chatlist_project_expand else R.string.chatlist_project_collapse, title)
+    val moveUp = stringResource(Res.string.chatlist_move_up)
+    val moveDown = stringResource(Res.string.chatlist_move_down)
+    val toggleLabel = stringResource(if (collapsed) Res.string.chatlist_project_expand else Res.string.chatlist_project_collapse, title)
     val held = drag != null && reorder.draggedId == blockKey && reorder.groupKey == PROJECTS_GROUP
     Row(
         modifier = modifier
@@ -168,7 +171,7 @@ internal fun ProjectHeader(
             horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
         ) {
             Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                DsIcons.ChevronRight,
                 contentDescription = null,
                 tint = colors.labelTertiary,
                 modifier = Modifier.size(18.dp).graphicsLayer { rotationZ = chevron },

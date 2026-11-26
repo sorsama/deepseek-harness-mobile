@@ -8,11 +8,11 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertNull
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PullRefreshCycleTest {
@@ -118,7 +118,7 @@ class PullRefreshCycleTest {
     }
 
     @Test
-    fun `a read that throws is a failure, not a crash`() = runTest {
+    fun `a read that throws is a failure and not a crash`() = runTest {
         var reason: String? = null
         val cycle = cycle(
             read = { error("socket closed") },

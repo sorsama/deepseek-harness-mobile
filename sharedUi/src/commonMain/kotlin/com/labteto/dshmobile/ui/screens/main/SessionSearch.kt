@@ -2,7 +2,6 @@ package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.data.SessionRow
 import com.labteto.dshmobile.data.WorkspaceRow
-import java.util.Locale
 
 /** One row of the drawer's search result list. */
 internal data class SearchHit(
@@ -54,7 +53,7 @@ internal fun deriveSearchResults(
     contentHits: List<Pair<String, String>>,
     limit: Int = SEARCH_RESULT_LIMIT,
 ): SearchResultSet {
-    val q = query.trim().lowercase(Locale.ROOT)
+    val q = query.trim().lowercase()
     if (q.isEmpty()) return SearchResultSet(emptyList(), hasMore = false)
 
     val workspaceTitleOf = workspaces
@@ -70,16 +69,16 @@ internal fun deriveSearchResults(
     val local = sessions
         .filter { eligible(it) }
         .filter {
-            sessionTitle(it).lowercase(Locale.ROOT).contains(q) ||
-                labelOf(it).lowercase(Locale.ROOT).contains(q)
+            sessionTitle(it).lowercase().contains(q) ||
+                labelOf(it).lowercase().contains(q)
         }
         .sortedByDescending(SessionRow::updatedAt)
 
     val snippetOf = contentHits.toMap()
     val ordered = LinkedHashMap<String, SessionRow>()
-    local.forEach { ordered.putIfAbsent(it.sessionId, it) }
+    local.forEach { ordered.getOrPut(it.sessionId) { it } }
     contentHits.forEach { (sessionId, _) ->
-        sessionsById[sessionId]?.takeIf { eligible(it) }?.let { ordered.putIfAbsent(sessionId, it) }
+        sessionsById[sessionId]?.takeIf { eligible(it) }?.let { ordered.getOrPut(sessionId) { it } }
     }
 
     val rows = ordered.values.map { session ->

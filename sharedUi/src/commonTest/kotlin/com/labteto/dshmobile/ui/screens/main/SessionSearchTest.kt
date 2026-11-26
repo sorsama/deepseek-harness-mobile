@@ -2,11 +2,11 @@ package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.data.SessionRow
 import com.labteto.dshmobile.data.WorkspaceRow
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertNull
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * Drawer search.

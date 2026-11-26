@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.data.SessionRow
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import kotlin.test.Test
 
 class CompactWorkspaceTest {
     private fun rows(count: Int) = (1..count).map { n ->

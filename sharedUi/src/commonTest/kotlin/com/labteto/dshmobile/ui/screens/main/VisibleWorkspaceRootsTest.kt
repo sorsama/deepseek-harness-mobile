@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.data.SessionRow
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import kotlin.test.Test
 
 /**
  * How much of a workspace the drawer previews before folding the rest away.
@@ -30,7 +30,7 @@ class VisibleWorkspaceRootsTest {
     private fun roots(vararg ids: String) = ids.map(::session)
 
     @Test
-    fun `a short group is returned whole, in order`() {
+    fun `a short group is returned whole and in order`() {
         val rows = roots("a", "b", "c")
         assertEquals(rows, visibleWorkspaceRoots(rows, limit = 5, openPath = emptySet()))
     }

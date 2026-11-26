@@ -13,7 +13,7 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 
 /** Display only. Never use this value as an identifier, editable value or persisted draft. */
-internal fun technicalDisplay(value: String): String = "\u2066$value\u2069"
+fun technicalDisplay(value: String): String = "\u2066$value\u2069"
 
 /**
  * A line of the app's own words followed by text that came from outside it: a tool's failure
@@ -30,7 +30,7 @@ internal fun technicalDisplay(value: String): String = "\u2066$value\u2069"
  * The row is read as one text by a screen reader.
  */
 @Composable
-internal fun LabeledTechnicalText(
+fun LabeledTechnicalText(
     label: String,
     value: String,
     style: TextStyle,

@@ -3,14 +3,14 @@ package com.labteto.dshmobile.ui.screens.main
 import com.labteto.dshmobile.data.SessionRow
 
 /** Ordered workspace prefix; the baseline has no user-requested expansion. */
-internal data class WorkspaceWindow(val rows: List<SessionRow>, val remaining: Int, val canCollapse: Boolean)
+data class WorkspaceWindow(val rows: List<SessionRow>, val remaining: Int, val canCollapse: Boolean)
 
 /**
  * Desktop's nonblank prefix, without overriding the caller's selected order. Automatic attention
  * scans only the first 50 roots. An explicit current/search target is never subject to that cap.
  * SessionRow has no unread-completion projection: do not guess one from status or timestamps.
  */
-internal fun compactWorkspaceWindow(
+fun compactWorkspaceWindow(
     roots: List<SessionRow>,
     requested: Int,
     openPath: Set<String>,

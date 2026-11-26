@@ -51,10 +51,10 @@ import kotlinx.coroutines.launch
  */
 
 /** The reorder group key for dragging whole projects, as opposed to the sessions inside one project. */
-internal const val PROJECTS_GROUP = "~projects"
+const val PROJECTS_GROUP = "~projects"
 
 /** What dropping a lifted unit produced. */
-internal data class DropResult(
+data class DropResult(
     val id: String,
     /** The block the unit was held in (see [ReorderState.groupKey]). */
     val group: String,
@@ -77,7 +77,7 @@ internal data class DropResult(
  * @param maxStepPx the fastest the list scrolls per frame.
  */
 @Stable
-internal class ReorderState(
+class ReorderState(
     private val listState: LazyListState,
     private val scope: CoroutineScope,
     private val haptics: DsHaptics,

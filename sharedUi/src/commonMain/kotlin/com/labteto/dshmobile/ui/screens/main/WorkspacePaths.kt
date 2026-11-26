@@ -75,3 +75,7 @@ fun workspaceParentPath(directory: String?): String {
         else -> "."
     }
 }
+
+/** The last path segment, whichever separator the host uses. */
+fun basename(path: String): String =
+    path.trimEnd('\\', '/').substringAfterLast('/').substringAfterLast('\\').ifBlank { path }

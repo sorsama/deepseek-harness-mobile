@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -19,16 +16,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.data.SessionStore
 import com.labteto.dshmobile.data.WorkspaceRow
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chatlist_home_directory
+import com.labteto.dshmobile.shared.resources.chatlist_new_session_in
+import com.labteto.dshmobile.shared.resources.chatlist_new_workspace
+import com.labteto.dshmobile.shared.resources.chatlist_no_workspaces
+import com.labteto.dshmobile.shared.resources.chatlist_workspace_delete
+import com.labteto.dshmobile.shared.resources.chatlist_workspace_delete_confirm
+import com.labteto.dshmobile.shared.resources.chatlist_workspace_path
+import com.labteto.dshmobile.shared.resources.chatlist_workspace_rename
+import com.labteto.dshmobile.shared.resources.common_cancel
+import com.labteto.dshmobile.shared.resources.common_remove
+import com.labteto.dshmobile.shared.resources.common_save
+import com.labteto.dshmobile.shared.resources.ink_chat_workspaces
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsDialog
 import com.labteto.dshmobile.ui.components.DsIconButton
+import com.labteto.dshmobile.ui.components.DsIcons
 import com.labteto.dshmobile.ui.components.inkFieldFrame
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
@@ -36,12 +45,13 @@ import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What a platform adds to the workspace list while it is open: actions at the end of each row, and the
  * dialogs those actions open. Android's built-in harness adds Files, zip and copy for a project.
  */
-internal class WorkspaceListExtras(
+class WorkspaceListExtras(
     val rowActions: @Composable (WorkspaceRow) -> Unit,
     val dialogs: @Composable () -> Unit,
 )
@@ -57,10 +67,10 @@ internal fun NewSessionDialog(
     extraRows: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val colors = DsTheme.colors
-    DsDialog(title = stringResource(R.string.chatlist_new_session_in), onDismiss = onDismiss) {
+    DsDialog(title = stringResource(Res.string.chatlist_new_session_in), onDismiss = onDismiss) {
         if (workspaces.isEmpty()) {
             Text(
-                stringResource(R.string.chatlist_no_workspaces),
+                stringResource(Res.string.chatlist_no_workspaces),
                 style = DsType.std14,
                 color = colors.labelSecondary,
             )
@@ -73,7 +83,7 @@ internal fun NewSessionDialog(
             )
         }
         SheetRow(
-            title = stringResource(R.string.chatlist_home_directory),
+            title = stringResource(Res.string.chatlist_home_directory),
             subtitle = homeCwd,
             onClick = { onPick(null) },
         )
@@ -84,25 +94,25 @@ internal fun NewSessionDialog(
 @Composable
 internal fun NewWorkspaceDialog(onDismiss: () -> Unit, onCreate: (String) -> Unit) {
     var pathText by remember { mutableStateOf("") }
-    DsDialog(title = stringResource(R.string.chatlist_new_workspace), onDismiss = onDismiss) {
+    DsDialog(title = stringResource(Res.string.chatlist_new_workspace), onDismiss = onDismiss) {
         TextField(
             value = pathText,
             onValueChange = { pathText = it },
             modifier = Modifier.fillMaxWidth().inkFieldFrame(),
-            placeholder = { Text(stringResource(R.string.chatlist_workspace_path), style = DsType.std14) },
+            placeholder = { Text(stringResource(Res.string.chatlist_workspace_path), style = DsType.std14) },
             singleLine = true,
             colors = dialogTextFieldColors(),
             shape = DsShapes.control,
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             DsButton(
-                text = stringResource(R.string.common_cancel),
+                text = stringResource(Res.string.common_cancel),
                 onClick = onDismiss,
                 variant = DsButtonVariant.Ghost,
             )
             Spacer(Modifier.width(DsSpacing.small))
             DsButton(
-                text = stringResource(R.string.common_save),
+                text = stringResource(Res.string.common_save),
                 onClick = { onCreate(pathText.trim()) },
                 variant = DsButtonVariant.Info,
                 enabled = pathText.isNotBlank(),
@@ -130,10 +140,10 @@ internal fun WorkspacesDialog(
     var renaming by remember { mutableStateOf<WorkspaceRow?>(null) }
     val added = extras?.invoke(onDismiss)
     var deleting by remember { mutableStateOf<WorkspaceRow?>(null) }
-    DsDialog(title = stringResource(R.string.ink_chat_workspaces), onDismiss = onDismiss) {
+    DsDialog(title = stringResource(Res.string.ink_chat_workspaces), onDismiss = onDismiss) {
         if (workspaces.isEmpty()) {
             Text(
-                stringResource(R.string.chatlist_no_workspaces),
+                stringResource(Res.string.chatlist_no_workspaces),
                 style = DsType.std14,
                 color = colors.labelSecondary,
             )
@@ -158,15 +168,15 @@ internal fun WorkspacesDialog(
                 }
                 added?.rowActions?.invoke(workspace)
                 DsIconButton(
-                    icon = Icons.Outlined.Edit,
-                    contentDescription = stringResource(R.string.chatlist_workspace_rename),
+                    icon = DsIcons.Edit,
+                    contentDescription = stringResource(Res.string.chatlist_workspace_rename),
                     onClick = { renaming = workspace },
                     tint = colors.labelSecondary,
                     iconSize = 18.dp,
                 )
                 DsIconButton(
-                    icon = Icons.Outlined.Delete,
-                    contentDescription = stringResource(R.string.chatlist_workspace_delete),
+                    icon = DsIcons.Delete,
+                    contentDescription = stringResource(Res.string.chatlist_workspace_delete),
                     onClick = { deleting = workspace },
                     tint = colors.error,
                     iconSize = 18.dp,
@@ -178,7 +188,7 @@ internal fun WorkspacesDialog(
     renaming?.let { workspace ->
         RenameDialog(
             initial = workspace.title,
-            title = stringResource(R.string.chatlist_workspace_rename),
+            title = stringResource(Res.string.chatlist_workspace_rename),
             onDismiss = { renaming = null },
             onConfirm = {
                 scope.launch { store.renameWorkspace(workspace.workspaceId, it) }
@@ -188,9 +198,9 @@ internal fun WorkspacesDialog(
     }
     deleting?.let { workspace ->
         ConfirmDialog(
-            title = stringResource(R.string.chatlist_workspace_delete),
-            body = stringResource(R.string.chatlist_workspace_delete_confirm),
-            confirmLabel = stringResource(R.string.common_remove),
+            title = stringResource(Res.string.chatlist_workspace_delete),
+            body = stringResource(Res.string.chatlist_workspace_delete_confirm),
+            confirmLabel = stringResource(Res.string.common_remove),
             onDismiss = { deleting = null },
             onConfirm = {
                 scope.launch { store.deleteWorkspace(workspace.workspaceId) }
