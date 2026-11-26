@@ -121,7 +121,7 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     // A subagent the Details panel asked to show. The transcript is the chat screen's sheet, so the
     // request travels from the panel to the chat through here and is cleared once the chat has it.
     var subagentRequest by remember { mutableStateOf<String?>(null) }
-    val store = com.labteto.dshmobile.ui.rememberSessionStore()
+    val store = com.labteto.dshmobile.ui.LocalSessionStore.current
     val automationAvailable by store.automationAvailable.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { scope.launch { store.refreshSessionsIfStale() } }

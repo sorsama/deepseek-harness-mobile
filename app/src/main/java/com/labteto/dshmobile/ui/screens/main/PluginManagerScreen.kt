@@ -44,7 +44,7 @@ import com.labteto.dshmobile.core.wire.dto.*
 import com.labteto.dshmobile.data.HarnessFeature
 import com.labteto.dshmobile.data.PluginOperationState
 import com.labteto.dshmobile.ui.components.*
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.theme.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -52,7 +52,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit = onClose) {
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val available by store.pluginManagementAvailable.collectAsStateWithLifecycle()
     val inventory by store.plugins.collectAsStateWithLifecycle()
     if (available == false) {

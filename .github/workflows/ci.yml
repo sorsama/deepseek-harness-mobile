@@ -309,6 +309,21 @@ jobs:
           key: konan-${{ runner.os }}-kotlin-2.0.21
       - name: Install XcodeGen
         run: brew install xcodegen
+      # The Release link of the Kotlin framework runs in the Gradle daemon, and its whole-program
+      # optimisation ran out of the 4 GB heap gradle.properties gives it (PR #149, first attempt:
+      # OutOfMemoryError in DevirtualizationAnalysis). This job alone gets three quarters of the
+      # runner's memory, never less than 4 GB; the rest stays for xcodebuild, the native linker and
+      # the system. The user-home gradle.properties wins over the project's, so local builds and the
+      # other jobs keep their 4 GB.
+      - name: Give the Gradle daemon a larger heap for the Release link
+        run: |
+          mem_mb=$(( $(sysctl -n hw.memsize) / 1024 / 1024 ))
+          heap_mb=$(( mem_mb * 3 / 4 ))
+          if [ "$heap_mb" -lt 4096 ]; then heap_mb=4096; fi
+          props="${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties"
+          mkdir -p "$(dirname "$props")"
+          echo "org.gradle.jvmargs=-Xmx${heap_mb}m -Dfile.encoding=UTF-8 -XX:+UseParallelGC" >> "$props"
+          echo "runner memory ${mem_mb} MB, Gradle daemon heap ${heap_mb} MB"
       - name: Build the unsigned device .ipa
         run: iosApp/scripts/build-unsigned-ipa.sh
       - name: Upload the unsigned .ipa

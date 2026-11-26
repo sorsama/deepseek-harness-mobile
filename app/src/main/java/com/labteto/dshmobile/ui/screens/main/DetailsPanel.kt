@@ -122,7 +122,7 @@ import com.labteto.dshmobile.ui.components.StateDotState
 import com.labteto.dshmobile.ui.components.formatDurationMs
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.theme.Ds
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
@@ -168,7 +168,7 @@ fun DetailsPanel(
     docked: Boolean = false,
 ) {
     // Back is handled by MainScreen, which drags the panel closed with the predictive back gesture.
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val automationAvailable by store.automationAvailable.collectAsStateWithLifecycle()
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()

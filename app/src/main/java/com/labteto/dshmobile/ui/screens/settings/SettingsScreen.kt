@@ -108,7 +108,7 @@ import com.labteto.dshmobile.ui.components.StateDotState
 import com.labteto.dshmobile.ui.components.ToggleRow
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.theme.AccentPalette
 import com.labteto.dshmobile.ui.theme.CUSTOM_ACCENT_KEY
 import com.labteto.dshmobile.ui.theme.DsShapes
@@ -139,7 +139,7 @@ import java.util.Locale
 fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
     val settings by viewModel.state.collectAsStateWithLifecycle()
     val connectionState by viewModel.connectionState.collectAsStateWithLifecycle()
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val plugins by store.plugins.collectAsStateWithLifecycle()
     val pluginManagementAvailable by store.pluginManagementAvailable.collectAsStateWithLifecycle()
     val harnessSettingsAvailable by store.harnessSettingsAvailable.collectAsStateWithLifecycle()

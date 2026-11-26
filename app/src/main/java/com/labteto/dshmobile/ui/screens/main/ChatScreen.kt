@@ -82,7 +82,7 @@ import com.labteto.dshmobile.ui.input.AppShortcut
 import com.labteto.dshmobile.ui.input.DropHighlight
 import com.labteto.dshmobile.ui.input.LocalShortcutRouter
 import com.labteto.dshmobile.ui.input.attachmentDropTarget
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.screens.main.commands.CommandContext
 import com.labteto.dshmobile.ui.screens.main.commands.CommandDecorations
 import com.labteto.dshmobile.ui.screens.main.commands.CommandUiSpec
@@ -138,7 +138,7 @@ fun ChatScreen(
      */
     tabletop: TabletopSplit? = null,
 ) {
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val hostsStore = rememberHostsStore()
     val appSettings by hostsStore.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
     val scope = rememberCoroutineScope()

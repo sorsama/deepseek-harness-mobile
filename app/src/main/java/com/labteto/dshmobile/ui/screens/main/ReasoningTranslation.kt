@@ -26,7 +26,7 @@ import com.labteto.dshmobile.translation.resolveTargetLanguage
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.media.LocalAttachmentScope
 import com.labteto.dshmobile.ui.rememberReasoningTranslationEngine
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -64,7 +64,7 @@ internal fun ReasoningContent(text: String, complete: Boolean, blockId: String) 
 
 @Composable
 private fun ReasoningContentState(text: String, complete: Boolean, blockId: String) {
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val engine = rememberReasoningTranslationEngine()
     val owner = LocalAttachmentScope.current
     val auto = LocalAutoTranslateReasoning.current

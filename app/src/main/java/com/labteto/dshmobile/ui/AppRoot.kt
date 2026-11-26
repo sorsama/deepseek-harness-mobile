@@ -120,7 +120,12 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
     // whether enough time has passed to ask GitHub again.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.checkForUpdate(BuildConfig.VERSION_NAME) }
 
+    // The process's one SessionStore, for every screen below: they read LocalSessionStore.current,
+    // the shared ones included, instead of each asking Hilt for it.
+    val sessionStore = rememberProcessSessionStore()
+
     // `AndroidHapticPlatform` is the Android half of the shared haptic vocabulary (AndroidHaptics.kt).
+    CompositionLocalProvider(LocalSessionStore provides sessionStore) {
     DshTheme(
         customization = customization,
         hapticPlatform = AndroidHapticPlatform,
@@ -311,6 +316,7 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
             UpdatedDialog(updated, onOpenUrl = updateUi.openUrl, onDismiss = viewModel::dismissJustUpdated)
         }
         }
+    }
     }
 }
 
