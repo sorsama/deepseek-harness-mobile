@@ -237,8 +237,9 @@ private fun TerminalBody(card: ToolCardView.TerminalCard, actions: ToolCardActio
             }
             // The command itself, since the header shows its description: a background launch and a
             // failed call have no output under them to say what ran.
-            if ((card.background || card.cutShort) && card.description != null && !card.title.isNullOrEmpty()) {
-                CodeText(card.title, blockId = "cmd", fadeColor = colors.codeBlockBg, modifier = Modifier.fillMaxWidth())
+            val command = card.title
+            if ((card.background || card.cutShort) && card.description != null && !command.isNullOrEmpty()) {
+                CodeText(command, blockId = "cmd", fadeColor = colors.codeBlockBg, modifier = Modifier.fillMaxWidth())
             }
             if (card.background && !card.cutShort) BackgroundJobLine(card, actions)
             // Output does not wrap: build lines and tables keep their columns, and the block scrolls

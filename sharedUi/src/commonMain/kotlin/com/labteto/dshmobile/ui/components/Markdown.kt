@@ -22,8 +22,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -48,7 +46,6 @@ import com.labteto.dshmobile.ui.theme.DsColors
 import com.labteto.dshmobile.ui.theme.DsShapes
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.Placeholder
@@ -68,8 +65,9 @@ import com.labteto.dshmobile.core.markdown.SyntaxToken
 import com.labteto.dshmobile.core.markdown.highlightCode
 import com.labteto.dshmobile.core.markdown.isHighlighted
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.res.stringResource
-import com.labteto.dshmobile.R
+import org.jetbrains.compose.resources.stringResource
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.tool_copy_code
 import com.labteto.dshmobile.ui.theme.Ds
 import com.labteto.dshmobile.core.markdown.safeHttpUrl
 import com.labteto.dshmobile.core.browser.findLocalWebLinks
@@ -330,7 +328,7 @@ private fun InlineMarkdown(text: String, style: TextStyle, modifier: Modifier = 
     // than most of the screen is capped and ellipsized rather than run past the edge.
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
-    val maxPillWidth = LocalConfiguration.current.screenWidthDp.dp * 0.7f
+    val maxPillWidth = screenWidth() * 0.7f
     val pillStyle = remember(style) { style.copy(fontFamily = DsType.codeFont, fontSize = style.fontSize * 0.9f) }
     val inlineContent = remember(result, pillStyle, density, maxPillWidth) {
         val lineHeight = style.lineHeight.takeIf { it.isSp }?.let { it.value } ?: (style.fontSize.value * 1.5f)
@@ -711,7 +709,7 @@ private fun CodeBlock(lang: String?, code: String, modifier: Modifier = Modifier
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                lang ?: stringResource(R.string.tool_copy_code),
+                lang ?: stringResource(Res.string.tool_copy_code),
                 style = DsType.mono12,
                 color = colors.labelTertiary,
                 maxLines = 1,
@@ -720,8 +718,8 @@ private fun CodeBlock(lang: String?, code: String, modifier: Modifier = Modifier
             )
             if (long) WrapToggle(wrap)
             DsIconButton(
-                icon = Icons.Filled.ContentCopy,
-                contentDescription = stringResource(R.string.tool_copy_code),
+                icon = DsIcons.ContentCopyFilled,
+                contentDescription = stringResource(Res.string.tool_copy_code),
                 onClick = { clipboard.setText(AnnotatedString(code)) },
                 iconSize = 15.dp,
                 tint = colors.labelTertiary,

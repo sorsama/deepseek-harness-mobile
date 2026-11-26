@@ -2,10 +2,10 @@ package com.labteto.dshmobile.ui.components
 
 import com.labteto.dshmobile.core.markdown.isHighlighted
 import com.labteto.dshmobile.ui.theme.DsThemeTokens
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * The line model of a file read, as the gutter block draws it: one entry per line the read recorded,
@@ -74,7 +74,7 @@ class GutterLinesTest {
     }
 
     @Test
-    fun `a very long line stays one row, whole`() {
+    fun `a very long line stays one row and whole`() {
         val long = "x".repeat(50_000)
         val rows = model(read("short", long, "short again"))
         assertEquals(3, rows.size)
@@ -83,7 +83,7 @@ class GutterLinesTest {
     }
 
     @Test
-    fun `numbers are the ones the read recorded, not the row's position`() {
+    fun `numbers are the ones the read recorded and not the row's position`() {
         // A read of lines 40 to 43 of a longer file.
         val rows = model(read("a", "", "b", "c", from = 40))
         assertEquals(listOf("40", "41", "42", "43"), rows.numbers())

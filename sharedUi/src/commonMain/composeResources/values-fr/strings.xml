@@ -13,6 +13,8 @@
     <string name="archived_restore">Restaurer</string>
     <string name="chat_composer_send">Envoyer le message</string>
     <string name="chat_status_idle">Inactif</string>
+    <string name="chat_thinking">Réflexion</string>
+    <string name="chat_thought_process">Raisonnement</string>
     <string name="chatlist_approve_long">Commande longue. Lisez-la en entier avant d’approuver.</string>
     <string name="chatlist_archived">Archivées</string>
     <string name="chatlist_archived_none">Rien d’archivé pour le moment</string>
@@ -60,6 +62,7 @@
     <string name="chatlist_workspace_delete_confirm">Retirer ce projet du harness ? Son dossier et ses journaux de session restent tels quels.</string>
     <string name="chatlist_workspace_path">Chemin du dossier</string>
     <string name="chatlist_workspace_rename">Renommer le projet</string>
+    <string name="code_wrap">Renvoyer à la ligne</string>
     <string name="common_archive">Archiver</string>
     <string name="common_back">Retour</string>
     <string name="common_cancel">Annuler</string>
@@ -68,6 +71,7 @@
     <string name="common_copied">Copié</string>
     <string name="common_error">Une erreur est survenue</string>
     <string name="common_offline">Hors ligne</string>
+    <string name="common_reconnecting">Reconnexion…</string>
     <string name="common_remove">Retirer</string>
     <string name="common_retry">Réessayer</string>
     <string name="common_save">Enregistrer</string>
@@ -279,5 +283,6 @@
     <string name="time_months">%1$d mois</string>
     <string name="time_now">à l’instant</string>
     <string name="time_years">%1$d an</string>
+    <string name="tool_copy_code">Copier le code</string>
     <string name="ux_b_clear_search">Effacer la recherche</string>
 </resources>
