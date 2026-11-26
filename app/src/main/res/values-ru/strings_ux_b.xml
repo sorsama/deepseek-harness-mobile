@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ux_b_clear_search">Очистить поиск</string>
     <string name="ux_b_no_models">Подходящих моделей нет</string>
     <string name="ux_b_no_references">Нет доступных ссылок</string>
     <string name="ux_b_no_matches">Подходящих ссылок нет</string>

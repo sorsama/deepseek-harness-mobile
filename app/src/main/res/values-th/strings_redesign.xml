@@ -9,7 +9,6 @@
     <string name="chat_queue_placement_context">บริบท</string>
     <string name="chat_status_running">กำลังทำงาน</string>
     <string name="chat_status_idle">ว่าง</string>
-    <string name="chatlist_session_copy_id">คัดลอก ID เซสชัน</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="other">ใหม่ %d</item>
     </plurals>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ux_b_clear_search">खोज साफ़ करें</string>
     <string name="ux_b_no_models">कोई मेल खाता मॉडल नहीं</string>
     <string name="ux_b_no_references">कोई संदर्भ नहीं</string>
     <string name="ux_b_no_matches">कोई मेल खाता संदर्भ नहीं</string>

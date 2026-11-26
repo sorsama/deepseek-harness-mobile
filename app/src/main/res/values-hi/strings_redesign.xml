@@ -9,7 +9,6 @@
     <string name="chat_queue_placement_context">कॉन्टेक्स्ट</string>
     <string name="chat_status_running">काम चल रहा है</string>
     <string name="chat_status_idle">निष्क्रिय</string>
-    <string name="chatlist_session_copy_id">सेशन ID कॉपी करें</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="one">%d नया</item>
         <item quantity="other">%d नए</item>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ux_b_clear_search">ล้างการค้นหา</string>
     <string name="ux_b_no_models">ไม่พบโมเดลที่ตรงกัน</string>
     <string name="ux_b_no_references">ไม่มีรายการอ้างอิง</string>
     <string name="ux_b_no_matches">ไม่พบรายการอ้างอิงที่ตรงกัน</string>

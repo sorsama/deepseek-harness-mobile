@@ -4,7 +4,6 @@
     <string name="chat_suggest_overview">Give me an overview of this project</string>
     <string name="chat_suggest_tests">Run the tests and fix what fails</string>
     <string name="chat_suggest_changes">Review my uncommitted changes</string>
-    <string name="chatlist_session_copy_id">Copy session ID</string>
     <string name="chat_queue_placement_queued">Next turn</string>
     <string name="chat_queue_placement_steering">Steering</string>
     <string name="chat_queue_placement_context">Context</string>

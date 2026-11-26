@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ux_b_clear_search">مسح البحث</string>
     <string name="ux_b_no_models">لا توجد نماذج مطابقة</string>
     <string name="ux_b_no_references">لا توجد مراجع متاحة</string>
     <string name="ux_b_no_matches">لا توجد مراجع مطابقة</string>

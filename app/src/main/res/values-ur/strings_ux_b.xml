@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ux_b_clear_search">تلاش صاف کریں</string>
     <string name="ux_b_no_models">کوئی مماثل ماڈل نہیں</string>
     <string name="ux_b_no_references">کوئی حوالہ دستیاب نہیں</string>
     <string name="ux_b_no_matches">کوئی مماثل حوالہ نہیں</string>

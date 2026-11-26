@@ -9,7 +9,6 @@
     <string name="chat_queue_placement_context">سیاق</string>
     <string name="chat_status_running">کام جاری ہے</string>
     <string name="chat_status_idle">غیر فعال</string>
-    <string name="chatlist_session_copy_id">سیشن ID کاپی کریں</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="one">%d نیا</item>
         <item quantity="other">%d نئے</item>

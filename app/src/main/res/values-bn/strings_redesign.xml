@@ -9,7 +9,6 @@
     <string name="chat_queue_placement_context">কনটেক্সট</string>
     <string name="chat_status_running">কাজ চলছে</string>
     <string name="chat_status_idle">নিষ্ক্রিয়</string>
-    <string name="chatlist_session_copy_id">সেশন আইডি কপি করুন</string>
     <plurals name="chat_jump_latest_new">
         <item quantity="one">%d নতুন</item>
         <item quantity="other">%d নতুন</item>

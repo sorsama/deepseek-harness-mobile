@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ux_b_clear_search">খোঁজা মুছুন</string>
     <string name="ux_b_no_models">মেলে এমন মডেল নেই</string>
     <string name="ux_b_no_references">কোনো রেফারেন্স নেই</string>
     <string name="ux_b_no_matches">মেলে এমন রেফারেন্স নেই</string>
