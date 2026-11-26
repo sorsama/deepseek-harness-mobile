@@ -13,6 +13,8 @@
     <string name="archived_restore">Restaurar</string>
     <string name="chat_composer_send">Enviar mensagem</string>
     <string name="chat_status_idle">Inativo</string>
+    <string name="chat_thinking">Pensando</string>
+    <string name="chat_thought_process">Raciocínio</string>
     <string name="chatlist_approve_long">Comando longo. Leia tudo antes de aprovar.</string>
     <string name="chatlist_archived">Arquivadas</string>
     <string name="chatlist_archived_none">Nada arquivado ainda</string>
@@ -60,6 +62,7 @@
     <string name="chatlist_workspace_delete_confirm">Remover este projeto do harness? A pasta e os registros de sessão dele continuam como estão.</string>
     <string name="chatlist_workspace_path">Caminho da pasta</string>
     <string name="chatlist_workspace_rename">Renomear projeto</string>
+    <string name="code_wrap">Quebrar linhas</string>
     <string name="common_archive">Arquivar</string>
     <string name="common_back">Voltar</string>
     <string name="common_cancel">Cancelar</string>
@@ -68,6 +71,7 @@
     <string name="common_copied">Copiado</string>
     <string name="common_error">Algo deu errado</string>
     <string name="common_offline">Offline</string>
+    <string name="common_reconnecting">Reconectando…</string>
     <string name="common_remove">Remover</string>
     <string name="common_retry">Tentar novamente</string>
     <string name="common_save">Salvar</string>
@@ -279,5 +283,6 @@
     <string name="time_months">%1$d m</string>
     <string name="time_now">agora</string>
     <string name="time_years">%1$d a</string>
+    <string name="tool_copy_code">Copiar código</string>
     <string name="ux_b_clear_search">Limpar pesquisa</string>
 </resources>

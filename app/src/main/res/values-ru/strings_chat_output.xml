@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="code_wrap">Переносить строки</string>
     <string name="output_viewer_search">Поиск по выводу</string>
     <string name="output_viewer_prev">Предыдущее совпадение</string>
     <string name="output_viewer_next">Следующее совпадение</string>

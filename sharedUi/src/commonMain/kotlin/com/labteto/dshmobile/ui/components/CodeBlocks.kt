@@ -17,8 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -53,7 +50,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.code_wrap
 import com.labteto.dshmobile.core.markdown.SyntaxToken
 import com.labteto.dshmobile.core.markdown.highlightCode
 import com.labteto.dshmobile.core.markdown.isHighlighted
@@ -62,6 +60,7 @@ import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import org.jetbrains.compose.resources.stringResource
 
 // ============================================================================================
 // Code in tool cards
@@ -103,7 +102,7 @@ val LocalCodeWrapMemory = staticCompositionLocalOf { CodeWrapMemory.Shared }
 val LocalCodeOwner = compositionLocalOf { "" }
 
 /** The memory key of one block of one call. */
-internal fun codeWrapKey(owner: String, block: String): String = "$owner/$block"
+fun codeWrapKey(owner: String, block: String): String = "$owner/$block"
 
 /** A block's wrap choice and the way to flip it. */
 @Stable
@@ -121,7 +120,7 @@ fun rememberCodeWrap(blockId: String): CodeWrapState {
 internal const val WRAP_THRESHOLD_CHARS = 36
 
 /** Whether any line of [text] is longer than [threshold]; a scan that stops at the first one. */
-internal fun hasLongLine(text: String, threshold: Int = WRAP_THRESHOLD_CHARS): Boolean {
+fun hasLongLine(text: String, threshold: Int = WRAP_THRESHOLD_CHARS): Boolean {
     var run = 0
     for (ch in text) {
         if (ch == '\n') run = 0 else if (++run > threshold) return true
@@ -138,7 +137,7 @@ private val SideFadeWidth = 28.dp
  * outside it (the screen edge, for the drawer) never reaches it.
  */
 @Composable
-internal fun SideScroll(
+fun SideScroll(
     fadeColor: Color,
     modifier: Modifier = Modifier,
     /** The scroll position, for a caller that holds something still while the content scrolls. */
@@ -182,7 +181,7 @@ internal fun SideScroll(
 
 /** The "Wrap lines" switch of a block's action row: a 48dp target, and a check when it is on. */
 @Composable
-internal fun WrapToggle(state: CodeWrapState, modifier: Modifier = Modifier) {
+fun WrapToggle(state: CodeWrapState, modifier: Modifier = Modifier) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     Row(
@@ -198,20 +197,20 @@ internal fun WrapToggle(state: CodeWrapState, modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.xsmall),
     ) {
         Text(
-            stringResource(R.string.code_wrap),
+            stringResource(Res.string.code_wrap),
             style = DsType.small13Strong,
             color = colors.accent,
         )
         // The state is a shape, not only a colour: the check is there or it is not.
         Box(Modifier.size(14.dp)) {
-            if (state.wrapped) Icon(Icons.Filled.Check, contentDescription = null, tint = colors.accent, modifier = Modifier.size(14.dp))
+            if (state.wrapped) Icon(DsIcons.Check, contentDescription = null, tint = colors.accent, modifier = Modifier.size(14.dp))
         }
     }
 }
 
 /** Forces left to right below it: code, paths and diff columns keep their order in right-to-left languages. */
 @Composable
-internal fun LeftToRight(content: @Composable () -> Unit) {
+fun LeftToRight(content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr, content = content)
 }
 
@@ -220,7 +219,7 @@ internal fun LeftToRight(content: @Composable () -> Unit) {
  * chose it. [fadeColor] is the surface the block sits on, which the fading edge melts into.
  */
 @Composable
-internal fun CodeText(
+fun CodeText(
     text: AnnotatedString,
     blockId: String,
     fadeColor: Color,
@@ -252,7 +251,7 @@ internal fun CodeText(
 
 /** [CodeText] for plain text. */
 @Composable
-internal fun CodeText(
+fun CodeText(
     text: String,
     blockId: String,
     fadeColor: Color,
@@ -267,10 +266,10 @@ internal fun CodeText(
 }
 
 /** One cell of a line's gutter: a line number, or the `+` and `-` of a diff. */
-internal class GutterCell(val text: String, val color: Color)
+class GutterCell(val text: String, val color: Color)
 
 /** One line of a block with a gutter: its cells, its code, and the colour the code is drawn in. */
-internal class GutterLine(val cells: List<GutterCell>, val text: AnnotatedString, val color: Color)
+class GutterLine(val cells: List<GutterCell>, val text: AnnotatedString, val color: Color)
 
 /**
  * Code with a gutter that stays put while the code scrolls: a file read (line numbers) or a diff (two
@@ -288,7 +287,7 @@ internal class GutterLine(val cells: List<GutterCell>, val text: AnnotatedString
  * the scroll offset, with the block's own colour behind it, which keeps it where it is.
  */
 @Composable
-internal fun CodeGutterBlock(
+fun CodeGutterBlock(
     lines: List<GutterLine>,
     blockId: String,
     fadeColor: Color,
@@ -426,7 +425,7 @@ internal fun syntaxColor(token: SyntaxToken, tint: DsColors): Color? = when (tok
  * them, blank lines and a blank last line included. This is the whole line model of a read card:
  * nothing is dropped, merged or added, so line N's number is beside line N's code.
  */
-internal fun readGutterLines(lines: List<ReadLine>, lang: String?, colors: DsColors): List<GutterLine> {
+fun readGutterLines(lines: List<ReadLine>, lang: String?, colors: DsColors): List<GutterLine> {
     val styled = highlightedLines(lines.map { it.text }, lang, colors)
     return lines.mapIndexed { index, line ->
         GutterLine(

@@ -21,7 +21,8 @@ import kotlinx.serialization.json.putJsonObject
 
 /**
  * A harness with something in it: two workspaces, [SESSION_COUNT] sessions, one transcript with markdown, thinking and
- * a tool call, and a scripted reply to every prompt, streamed the way harness 0.2.x streams one.
+ * a tool call (and a second turn that draws every Markdown block the chat renders, [GALLERY]), and a scripted reply to
+ * every prompt, streamed the way harness 0.2.x streams one.
  *
  * The iOS simulator scenarios of the session list and the chat run against it (`mock-harness --ci-fixtures` serves it
  * on [CiFixtures.DEMO_PORT]). Everything is fixed except time: the sessions' `updatedAt` and the events' `time` are
@@ -253,7 +254,7 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
     private fun initialLog(session: DemoSession): List<JsonObject> {
         val index = SESSIONS.indexOf(session)
         val start = updatedAt(index) - 5 * MINUTE_MS
-        val events = if (index == 0) richTranscript() else shortTranscript(session)
+        val events = if (index == 0) richTranscript() + galleryTurn() else shortTranscript(session)
         return events.mapIndexed { seq, (type, data) -> wireEvent(type, seq, start + seq * 7_000L, data) }
     }
 
@@ -303,6 +304,26 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         )
     }
 
+    /**
+     * The first session's second turn: one answer with every Markdown block kind, for the chat's pixel comparison and
+     * the iOS transcript screenshots. Its thinking is a second panel, so one can be shown open and one closed.
+     */
+    private fun galleryTurn(): List<Pair<String, JsonObject>> {
+        val id = SESSIONS.first().id
+        return listOf(
+            "turn/start" to buildJsonObject { put("turn", 2) },
+            "user/message" to userMessage("$id-u2", GALLERY_PROMPT),
+            "assistant/message" to assistantMessage(
+                2,
+                1,
+                "$id-a3",
+                buildJsonObject { put("type", "reasoning"); put("text", GALLERY_THINKING) },
+                text(GALLERY),
+            ),
+            "turn/end" to buildJsonObject { put("turn", 2); putJsonObject("reason") { put("kind", "completed") } },
+        )
+    }
+
     internal data class DemoWorkspace(val id: String, val title: String, val path: String)
 
     internal data class DemoSession(val id: String, val title: String, val summary: String, val workspace: DemoWorkspace)
@@ -337,6 +358,44 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
                 "- Nothing validates it before the hash.\n\n" +
                 "```kotlin\nval hash = password!!.sha256()\n```\n\n" +
                 "> A guard before the hash fixes the crash and lets the screen show a proper error."
+
+        private const val GALLERY_PROMPT = "Before you change it, write the whole flow up as notes I can keep."
+
+        private const val GALLERY_THINKING =
+            "Notes with a list of steps, a table of the files and the code, so the fix reads in one place."
+
+        /**
+         * Every block kind the chat's Markdown draws: three heading levels, bold and italic, an ordered list with a
+         * nested bullet list two levels deep, a table with a right-aligned column, a two-paragraph quote, inline code,
+         * fenced code with and without a language (the second with lines too long for a phone, so the wrap switch
+         * shows), a rule, a web link, a workspace path (drawn as a file pill) and a local address.
+         */
+        const val GALLERY: String =
+            "# Login flow notes\n\n" +
+                "The crash is fixed in two places. **Both** matter, and the *order* matters too.\n\n" +
+                "## Steps\n\n" +
+                "1. The field starts empty, not `null`.\n" +
+                "2. `submit()` checks it first:\n" +
+                "   - an empty password shows the field's error\n" +
+                "   - a short one asks for more:\n" +
+                "     - at least 8 characters\n" +
+                "     - one of them a digit\n" +
+                "3. Only then is the password hashed.\n\n" +
+                "### What changes where\n\n" +
+                "| File | Change | Lines |\n" +
+                "| --- | --- | ---: |\n" +
+                "| `LoginViewModel.kt` | guard before the hash | 12 |\n" +
+                "| `LoginScreen.kt` | show the error | 4 |\n\n" +
+                "> The guard belongs in the view model, so the screen stays a plain view.\n>\n> Tests cover both paths.\n\n" +
+                "```kotlin\nfun submit() {\n    val value = password.orEmpty()\n    if (value.isEmpty()) return showError(R.string.login_password_required)\n" +
+                "    repository.logIn(email, value.sha256())\n}\n```\n\n" +
+                "The build log, as it came:\n\n" +
+                "```\n> Task :app:compileDebugKotlin\n" +
+                "w: file:///C:/Users/demo/mobile-app/app/src/main/java/com/example/login/LoginViewModel.kt:14:9 'sha256' is deprecated.\n" +
+                "BUILD SUCCESSFUL in 41s\n```\n\n" +
+                "---\n\n" +
+                "See [the view model](app/src/main/java/com/example/login/LoginViewModel.kt), " +
+                "the [null safety guide](https://kotlinlang.org/docs/null-safety.html) and the dev server at http://localhost:8080/login."
 
         internal val WORKSPACES: List<DemoWorkspace> = listOf(
             DemoWorkspace("ws-mobile", "mobile-app", "C:\\Users\\demo\\mobile-app"),

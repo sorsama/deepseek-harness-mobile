@@ -1,10 +1,10 @@
 package com.labteto.dshmobile.ui.components
 
 import com.labteto.dshmobile.ui.screens.main.technicalDisplay
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /** When an inline code span in a message is isolated: only inside prose written right to left. */
 class BidiTextTest {

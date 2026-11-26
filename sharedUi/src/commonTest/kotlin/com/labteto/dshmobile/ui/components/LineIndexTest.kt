@@ -1,9 +1,9 @@
 package com.labteto.dshmobile.ui.components
 
-import org.junit.Assert.assertArrayEquals
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertArrayEquals
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /** The viewer's line index: correct on small texts, and cheap on the huge ones it exists for. */
 class LineIndexTest {

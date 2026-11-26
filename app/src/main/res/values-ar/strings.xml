@@ -48,7 +48,6 @@
     <string name="chat_load_older">تحميل الرسائل الأقدم</string>
     <string name="chat_loading_older">جارٍ تحميل الرسائل الأقدم…</string>
     <string name="chat_load_older_retry">تعذّر تحميل الرسائل الأقدم. اضغط للمحاولة مرة أخرى</string>
-    <string name="chat_thinking">جارٍ التفكير</string>
     <string name="chat_stopped">متوقف</string>
     <string name="chat_error_turn">فشلت الجولة</string>
     <string name="chat_max_tokens">تم الوصول إلى الحد الأقصى للرموز</string>
@@ -352,7 +351,6 @@
     <string name="feedback_send">إرسال التقييم</string>
     <string name="system_prompt">تعليمات النظام</string>
     <string name="image_offload">حُذفت الصور السابقة من الطلب</string>
-    <string name="tool_copy_code">نسخ الكود</string>
     <string name="jobs_stop">إيقاف المهمة</string>
     <string name="jobs_stopping">جارٍ الإيقاف</string>
     <string name="jobs_output_empty">لا يوجد إخراج بعد</string>

@@ -20,13 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_thinking
+import com.labteto.dshmobile.shared.resources.chat_thought_process
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import org.jetbrains.compose.resources.stringResource
 
 /** Reasoning stays quiet and compact, independently of how many lines it contains. */
 @Composable
@@ -63,7 +65,7 @@ fun ThinkingPanel(
         ) {
             Icon(FeatherIcons.Layers, null, Modifier.size(15.dp), tint = colors.labelTertiary)
             Text(
-                stringResource(if (streaming) R.string.chat_thinking else R.string.chat_thought_process),
+                stringResource(if (streaming) Res.string.chat_thinking else Res.string.chat_thought_process),
                 style = DsType.body15,
                 color = colors.labelSecondary,
                 maxLines = if (preview == null) Int.MAX_VALUE else 1,

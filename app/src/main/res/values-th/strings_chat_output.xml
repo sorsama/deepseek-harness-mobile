@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="code_wrap">ตัดบรรทัดอัตโนมัติ</string>
     <string name="output_viewer_search">ค้นหาในผลลัพธ์</string>
     <string name="output_viewer_prev">รายการที่พบก่อนหน้า</string>
     <string name="output_viewer_next">รายการที่พบถัดไป</string>

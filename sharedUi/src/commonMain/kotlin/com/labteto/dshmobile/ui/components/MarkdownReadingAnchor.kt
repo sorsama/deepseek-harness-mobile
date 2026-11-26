@@ -4,4 +4,4 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.layout.LayoutCoordinates
 
 /** Optional geometry observer supplied by a resizable transcript, not by other Markdown hosts. */
-internal val LocalMarkdownReadingObserver = staticCompositionLocalOf<((Any, LayoutCoordinates) -> Unit)?> { null }
+val LocalMarkdownReadingObserver = staticCompositionLocalOf<((Any, LayoutCoordinates) -> Unit)?> { null }

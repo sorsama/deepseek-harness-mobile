@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="code_wrap">Ajustar líneas</string>
     <string name="output_viewer_search">Buscar en la salida</string>
     <string name="output_viewer_prev">Coincidencia anterior</string>
     <string name="output_viewer_next">Coincidencia siguiente</string>

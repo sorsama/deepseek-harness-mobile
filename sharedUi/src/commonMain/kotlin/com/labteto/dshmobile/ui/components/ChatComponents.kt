@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.animation.core.animateFloatAsState
@@ -32,18 +29,20 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.core.settings.formatNumber
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_thinking
+import com.labteto.dshmobile.shared.resources.common_reconnecting
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import com.labteto.dshmobile.ui.theme.DshTheme
-import java.util.Locale
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Right-aligned user message bubble: r22, `userBubble` fill, hairline edge, 16/24 text.
@@ -123,8 +122,8 @@ fun ThinkingRow(
             label = "thinkingChevron",
         )
         Icon(
-            Icons.Filled.KeyboardArrowDown,
-            contentDescription = stringResource(R.string.chat_thinking),
+            DsIcons.KeyboardArrowDown,
+            contentDescription = stringResource(Res.string.chat_thinking),
             tint = colors.labelTertiary,
             modifier = Modifier
                 .size(18.dp)
@@ -165,7 +164,7 @@ fun ConnectionBanner(
             CircularProgressIndicator(Modifier.size(14.dp), color = content, strokeWidth = 2.dp)
         } else {
             Icon(
-                Icons.Filled.Warning,
+                DsIcons.Warning,
                 contentDescription = null,
                 tint = content,
                 modifier = Modifier.size(16.dp),
@@ -213,11 +212,50 @@ fun StatsLine(
 }
 
 private fun formatDuration(ms: Long): String = when {
-    ms >= 1000 -> "%.1fs".format(Locale.US, ms / 1000.0)
+    ms >= 1000 -> oneDecimal(ms / 1000.0) + "s"
     else -> "${ms}ms"
 }
 
-private fun formatRate(perSec: Double): String = "%.1f".format(Locale.US, perSec)
+private fun formatRate(perSec: Double): String = oneDecimal(perSec)
+
+/**
+ * [value] with one decimal and a `.` whatever the language, as JVM `"%.1f".format(Locale.US, value)` writes it: the
+ * shortest decimal that reads back as [value], rounded half up. Common code has no `String.format`;
+ * `OneDecimalTest` holds the two equal on Android.
+ */
+internal fun oneDecimal(value: Double): String {
+    if (value.isNaN() || value.isInfinite()) return value.toString()
+    val negative = value < 0.0 || (value == 0.0 && 1.0 / value < 0.0)
+    val digits = formatNumber(kotlin.math.abs(value))
+    val whole = digits.substringBefore('.')
+    val fraction = digits.substringAfter('.', "")
+    var tenths = (fraction.getOrNull(0) ?: '0') - '0'
+    var integer = whole
+    if ((fraction.getOrNull(1) ?: '0') >= '5') {
+        tenths++
+        if (tenths == 10) {
+            tenths = 0
+            integer = incrementDecimal(whole)
+        }
+    }
+    return (if (negative) "-" else "") + integer + "." + tenths
+}
+
+/** A non-negative whole number written in digits, plus one. */
+private fun incrementDecimal(digits: String): String {
+    val chars = digits.toCharArray()
+    var at = chars.size - 1
+    while (at >= 0) {
+        if (chars[at] == '9') {
+            chars[at] = '0'
+            at--
+        } else {
+            chars[at] = chars[at] + 1
+            return chars.concatToString()
+        }
+    }
+    return "1" + chars.concatToString()
+}
 
 @Preview(showBackground = true, widthDp = 360)
 @Composable
@@ -229,7 +267,7 @@ private fun ChatComponentsPreview() {
         ) {
             UserBubble("Build the shared component library.")
             ThinkingRow("Working through the diff…", expanded = false, onToggle = {}, streaming = true)
-            ConnectionBanner(stringResource(R.string.common_reconnecting))
+            ConnectionBanner(stringResource(Res.string.common_reconnecting))
             StatsLine(turns = 3, steps = 12, llmMs = 2100, ttftMs = 420, tokPerSec = 18.4)
         }
     }
