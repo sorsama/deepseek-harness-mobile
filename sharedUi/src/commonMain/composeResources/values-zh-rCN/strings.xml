@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="alpha2_migration">请先打开原会话完成迁移，然后重试。</string>
     <string name="common_back">返回</string>
     <string name="common_cancel">取消</string>
     <string name="common_close">关闭</string>
@@ -102,6 +103,7 @@
     <string name="connect_title">连接到 harness</string>
     <string name="connect_try_again">重试连接</string>
     <string name="connect_unreachable">无法连接</string>
+    <string name="goal_none">没有进行中的目标</string>
     <string name="pair_code_hint">8 位数字</string>
     <string name="pair_code_label">配对码</string>
     <string name="pair_fail_certificate">%1$s 的密钥与该配对码指明的不一致。请不要配对，该地址上可能是别的设备在应答。</string>
@@ -185,4 +187,5 @@
     <string name="scan_type_instead">改为输入配对码</string>
     <string name="settings_connection_disconnect">断开连接</string>
     <string name="settings_title">设置</string>
+    <string name="subagents_readonly">该子智能体不接受消息。</string>
 </resources>

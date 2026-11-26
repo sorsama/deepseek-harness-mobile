@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="alpha2_migration">Ouvrez la session d’origine pour terminer la migration, puis réessayez.</string>
     <string name="common_back">Retour</string>
     <string name="common_cancel">Annuler</string>
     <string name="common_close">Fermer</string>
@@ -102,6 +103,7 @@
     <string name="connect_title">Se connecter à harness</string>
     <string name="connect_try_again">Réessayer</string>
     <string name="connect_unreachable">Injoignable</string>
+    <string name="goal_none">Aucun objectif actif</string>
     <string name="pair_code_hint">8 chiffres</string>
     <string name="pair_code_label">Code d'appairage</string>
     <string name="pair_fail_certificate">La clé de %1$s n'est pas celle indiquée par ce code. N'appairez pas : autre chose répond peut-être à cette adresse.</string>
@@ -185,4 +187,5 @@
     <string name="scan_type_instead">Saisir le code à la place</string>
     <string name="settings_connection_disconnect">Se déconnecter</string>
     <string name="settings_title">Paramètres</string>
+    <string name="subagents_readonly">Ce sous-agent n’accepte pas les messages.</string>
 </resources>

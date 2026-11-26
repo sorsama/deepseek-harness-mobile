@@ -106,7 +106,7 @@ expect_probe() {
 }
 
 # Like `expect`, for the session list call the app makes once it is connected (Documents/dsh-sessions-result.txt):
-# `DSH_SESSIONS_RESULT listed count=…`, or `DSH_SESSIONS_RESULT failed code=…` when the harness refused it.
+# `DSH_SESSIONS_RESULT listed count=…` (the session store's list), or `DSH_SESSIONS_RESULT failed reason=…`.
 expect_sessions() {
   local label="$1" pattern="$2" line
   for _ in $(seq 1 45); do
@@ -396,6 +396,26 @@ else
   expect connected-demo "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
   expect_sessions sessions-demo "DSH_SESSIONS_RESULT listed count=$demo_count$"
   shot "35-connected-shows-the-session-count"
+
+  # 36. A reconnect: once the list has been read, `-DshReconnectOnce YES` makes the app start a fresh connection,
+  #     the call it makes when it comes back from the background (a script cannot bring a running app back to the
+  #     front: `simctl launch` restarts it). The session store reads its list again on the new connection, so a
+  #     second sessions line follows the first; with this argument the app keeps both.
+  launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshReconnectOnce YES
+  expect connected-demo-again "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
+  lines=""
+  for _ in $(seq 1 45); do
+    lines="$(cat "$sessions_result" 2>/dev/null || true)"
+    [ "$(grep -c "^DSH_SESSIONS_RESULT listed count=$demo_count$" <<<"$lines")" -ge 2 ] && break
+    sleep 1
+  done
+  echo "[sessions-after-reconnect] ${lines:-<no sessions lines within 45 s>}" | tr '\n' ' ' | cut -c1-400
+  echo
+  if [ "$(grep -c "^DSH_SESSIONS_RESULT listed count=$demo_count$" <<<"$lines")" -lt 2 ]; then
+    echo "::error::[sessions-after-reconnect] expected two lines 'DSH_SESSIONS_RESULT listed count=$demo_count', one per connection"
+    failures=$((failures + 1))
+  fi
+  shot "36-session-count-after-a-reconnect"
 fi
 
 xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true

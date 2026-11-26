@@ -34,7 +34,8 @@ struct ComposeView: UIViewControllerRepresentable {
             pairCode: launch.pairCode,
             pairSubmit: launch.pairSubmit,
             pairPayload: launch.pairPayload,
-            pairScanner: launch.pairScanner
+            pairScanner: launch.pairScanner,
+            reconnectOnce: launch.reconnectOnce
         )
     }
 
@@ -57,6 +58,8 @@ struct ComposeView: UIViewControllerRepresentable {
 ///   `-DshPairUrl <address>` and `-DshPairCode <digits>` fill the form, `-DshPairSubmit YES` taps Pair,
 ///   `-DshPairPayload <hex of the json>` hands it the text a QR scan would have decoded (a simulator has no camera),
 ///   `-DshPairScanner YES` opens the camera sheet. The result is written to `Documents/dsh-pair-result.txt`.
+/// - `-DshReconnectOnce YES` starts a fresh connection once the session list has been read, as coming back from the
+///   background does, and keeps every sessions line in `Documents/dsh-sessions-result.txt` instead of the last.
 ///
 /// Debug builds only. A release build ignores them, so the shipped app has no way to be told which
 /// address to connect to, or what to forget, from outside.
@@ -75,6 +78,7 @@ struct LaunchOptions {
     let pairSubmit: Bool
     let pairPayload: String?
     let pairScanner: Bool
+    let reconnectOnce: Bool
 
     /// A launch argument's value is parsed as a property list before the app sees it, which mangles JSON, so a
     /// pairing payload is passed hex-encoded (`xxd -p`). A value that is not hex is returned as it was given.
@@ -110,13 +114,14 @@ struct LaunchOptions {
             pairCode: defaults.string(forKey: "DshPairCode"),
             pairSubmit: defaults.bool(forKey: "DshPairSubmit"),
             pairPayload: decodeHex(defaults.string(forKey: "DshPairPayload")),
-            pairScanner: defaults.bool(forKey: "DshPairScanner")
+            pairScanner: defaults.bool(forKey: "DshPairScanner"),
+            reconnectOnce: defaults.bool(forKey: "DshReconnectOnce")
         )
         #else
         return LaunchOptions(
             address: nil, autoConnect: false, openSignIn: false, signInToken: nil, reset: false, report: false,
             autoReconnect: nil, connectMode: nil, openPair: false, pairUrl: nil, pairCode: nil, pairSubmit: false,
-            pairPayload: nil, pairScanner: false
+            pairPayload: nil, pairScanner: false, reconnectOnce: false
         )
         #endif
     }

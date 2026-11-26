@@ -27,7 +27,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.core.DshCore
-import com.labteto.dshmobile.core.wire.RpcResult
+import com.labteto.dshmobile.core.wire.HostGeneration
+import com.labteto.dshmobile.data.SessionListRefresh
 import com.labteto.dshmobile.shared.resources.Res
 import com.labteto.dshmobile.shared.resources.common_connected
 import com.labteto.dshmobile.shared.resources.connect_harness_home
@@ -47,7 +48,9 @@ import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import com.labteto.dshmobile.ui.theme.DshTheme
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
@@ -73,8 +76,10 @@ import platform.UIKit.UIApplicationDidEnterBackgroundNotification
  *   controller the text a QR scan would have decoded (a simulator has no camera); [pairScanner] opens the camera
  *   sheet. [onPairOutcome] hears the pairing result line (`DSH_PAIR_RESULT …`).
  * - [onProbe] hears one `DSH_PROBE authority=… outcome=…` line per probe of a remembered host.
- * - [onSessions] hears the result of the one session list call made after connecting
- *   (`DSH_SESSIONS_RESULT listed count=…`, or `DSH_SESSIONS_RESULT failed code=…`).
+ * - [onSessions] hears how many sessions the session store holds once it has read the list after connecting, and
+ *   again after every reconnect (`DSH_SESSIONS_RESULT listed count=…`, or `DSH_SESSIONS_RESULT failed reason=…`).
+ * - [reconnectOnce] starts a fresh connection once, after the first list has been read: the call the app makes when
+ *   it comes back from the background, which a simulator script cannot otherwise cause without restarting the app.
  */
 internal class LaunchRequest(
     val address: String? = null,
@@ -93,6 +98,7 @@ internal class LaunchRequest(
     val onPairOutcome: ((String) -> Unit)? = null,
     val onProbe: ((String) -> Unit)? = null,
     val onSessions: ((String) -> Unit)? = null,
+    val reconnectOnce: Boolean = false,
 ) {
     /** Whether the app starts on the Pair screen. */
     val startsPairing: Boolean
@@ -106,9 +112,9 @@ private const val DEFAULT_PORT = "3080"
  * The iOS app: the shared Connect screen until a harness answers, then a plain "Connected" page.
  * Pairing with a relay is the shared Pair screen, opened from the Connect screen's Relay mode.
  *
- * Nothing sits behind a connection yet (the session list and the chat are later steps of the
- * port), so what a person sees on success is the result the screen has to give: which harness, its
- * home directory, how many sessions it has, and this client's protocol baseline, with a way to disconnect.
+ * The session store follows the connection, but no screen shows its sessions yet (the session list and the chat
+ * are later steps of the port), so what a person sees on success is the result the screen has to give: which
+ * harness, its home directory, how many sessions it has, and this client's protocol baseline, with a way to disconnect.
  */
 @Composable
 internal fun DshApp(app: IosApp, request: LaunchRequest) {
@@ -164,21 +170,43 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
             }
         }
 
-        // One session list call per connection, for the count on the Connected page (and the line a script reads).
-        // A reconnect keeps the page, so it keeps the count too.
-        var sessionCount by remember { mutableStateOf<Int?>(null) }
-        LaunchedEffect(connected, link.host) {
-            sessionCount = null
-            if (!connected) return@LaunchedEffect
-            val api = app.link.connectedApi ?: return@LaunchedEffect
-            when (val result = api.sessionList()) {
-                is RpcResult.Ok -> {
-                    sessionCount = result.value.items.size
-                    request.onSessions?.invoke("DSH_SESSIONS_RESULT listed count=${result.value.items.size}")
+        // The count on the Connected page (and the line a script reads) is the session store's list: the store reads
+        // it itself whenever the link connects, and keeps it current from the host's pushes after that. Each time the
+        // link reaches CONNECTED (the first time, and again after every reconnect) the list is read once more here,
+        // because the store's own read is not observable: a list equal to the one before is no new value of
+        // `sessions`. A reconnect keeps the page, so it keeps the count too; another harness starts without one.
+        // Watched in a coroutine and keyed on the generation, not on Compose state: a reconnect on a fast network can
+        // pass through RECONNECTING and back within one frame, which a recomposition would never see.
+        val sessions by app.sessionStore.sessions.collectAsState()
+        var listedHost by remember { mutableStateOf<String?>(null) }
+        LaunchedEffect(app) {
+            var handled: HostGeneration? = null
+            var reading: Job? = null
+            var reconnectPending = request.reconnectOnce
+            app.link.state.collect { state ->
+                if (state.host?.id != listedHost) listedHost = null
+                val generation = app.link.generation
+                if (state.phase != ConnectionPhase.CONNECTED || generation == null || generation === handled) return@collect
+                handled = generation
+                val host = state.host?.id
+                reading?.cancel()
+                reading = launch {
+                    when (val result = app.sessionStore.refreshSessions(quiet = true)) {
+                        SessionListRefresh.Done -> {
+                            listedHost = host
+                            request.onSessions?.invoke("DSH_SESSIONS_RESULT listed count=${app.sessionStore.sessions.value.size}")
+                            if (reconnectPending) {
+                                reconnectPending = false
+                                app.link.reconnectIfNeeded()
+                            }
+                        }
+                        is SessionListRefresh.Failed ->
+                            request.onSessions?.invoke("DSH_SESSIONS_RESULT failed reason=${result.reason.orEmpty()}")
+                    }
                 }
-                is RpcResult.Err -> request.onSessions?.invoke("DSH_SESSIONS_RESULT failed code=${result.error.code}")
             }
         }
+        val sessionCount = sessions.size.takeIf { listedHost != null && listedHost == link.host?.id }
 
         // Debug-launch behaviours, once. A tap on Connect is `connectManual`, so this is one.
         LaunchedEffect(Unit) {

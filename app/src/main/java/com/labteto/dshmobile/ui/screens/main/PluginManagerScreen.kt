@@ -255,12 +255,12 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
             if (state.busy) {
                 FeatureProgress()
                 Text(stringResource(pluginPhase(state.phase)), style = DsType.small13, color = colors.labelSecondary)
-                FeatureAction(stringResource(R.string.common_cancel)) { if (host != null && state.requestId != null) store.pluginOperations.cancel(host, state.requestId) }
+                FeatureAction(stringResource(R.string.common_cancel)) { val id = state.requestId; if (host != null && id != null) store.pluginOperations.cancel(host, id) }
             }
             if (state.unknown) {
                 Text(stringResource(R.string.ux_a_unknown), style = DsType.small13, color = colors.warnText)
                 FeatureAction(stringResource(R.string.ux_a_check_status)) { if (host != null) store.pluginOperations.resume(host, state.requestId) }
-                FeatureAction(stringResource(R.string.harness_dismiss_unknown)) { if (host != null && state.requestId != null) store.pluginOperations.dismissUnknown(host, state.requestId) }
+                FeatureAction(stringResource(R.string.harness_dismiss_unknown)) { val id = state.requestId; if (host != null && id != null) store.pluginOperations.dismissUnknown(host, id) }
             }
             FeatureDiagnostics(listOfNotNull(state.requestId, state.phase, state.error, state.log.takeIf { it.isNotBlank() }).joinToString("\n"))
         } }

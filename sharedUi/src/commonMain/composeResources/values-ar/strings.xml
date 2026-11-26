@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="alpha2_migration">افتح الجلسة الأصلية لإكمال الترحيل، ثم حاول مجددًا.</string>
     <string name="common_back">رجوع</string>
     <string name="common_cancel">إلغاء</string>
     <string name="common_close">إغلاق</string>
@@ -102,6 +103,7 @@
     <string name="connect_title">الاتصال بـ harness</string>
     <string name="connect_try_again">حاول مرة أخرى</string>
     <string name="connect_unreachable">غير قابل للوصول</string>
+    <string name="goal_none">لا يوجد هدف نشط</string>
     <string name="pair_code_hint">8 أرقام</string>
     <string name="pair_code_label">رمز الاقتران</string>
     <string name="pair_fail_certificate">المفتاح على %1$s ليس المفتاح الذي يذكره هذا الرمز. لا تُجرِ الاقتران، فقد يكون جهاز آخر يردّ على ذلك العنوان.</string>
@@ -185,4 +187,5 @@
     <string name="scan_type_instead">اكتب الرمز بدلًا من ذلك</string>
     <string name="settings_connection_disconnect">قطع الاتصال</string>
     <string name="settings_title">الإعدادات</string>
+    <string name="subagents_readonly">لا يقبل هذا الوكيل الفرعي الرسائل.</string>
 </resources>

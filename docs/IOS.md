@@ -721,13 +721,15 @@ what the screen does. CI drives the app with them, and so can a person:
 | `-DshPairSubmit YES` | taps Pair |
 | `-DshPairPayload <hex of the QR text>` | hands the Pair controller the text a scan would have decoded, so it pairs at once; hex because launch arguments are parsed as property lists, which mangles JSON |
 | `-DshPairScanner YES` | opens the camera sheet |
+| `-DshReconnectOnce YES` | once the session list has been read, starts a fresh connection (what coming back from the background does) and keeps every `DSH_SESSIONS_RESULT` line instead of the last |
 
 With auto-connect, report or a pairing argument on, the app writes one result line (`DSH_CONNECT_RESULT connected …` or
 `… failed kind=…`) to `Documents/dsh-connect-result.txt` in its container, and a pairing run also writes
 `DSH_PAIR_RESULT paired authority=… tls=… pinned=…` or `DSH_PAIR_RESULT failed kind=…` to
 `Documents/dsh-pair-result.txt` (its own file, so the connection a pairing starts does not overwrite it). Once connected
-the app makes one `session/list` call and writes `DSH_SESSIONS_RESULT listed count=…` (or `… failed code=…`) to
-`Documents/dsh-sessions-result.txt`. A Release build ignores all of it.
+the session store (the Android app's `SessionStore`, shared since M3 of issue #141) reads the session list, and the app
+writes how many sessions the store holds, `DSH_SESSIONS_RESULT listed count=…` (or `… failed reason=…`), to
+`Documents/dsh-sessions-result.txt`, again after every reconnect. A Release build ignores all of it.
 
 ## ATS and the local network
 

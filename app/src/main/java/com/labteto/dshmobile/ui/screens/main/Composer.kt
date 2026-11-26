@@ -92,7 +92,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
@@ -107,8 +106,6 @@ import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.dto.ContextBreakdownView
 import com.labteto.dshmobile.core.wire.dto.ContextPressureView
 import com.labteto.dshmobile.core.wire.dto.FULL_ACCESS_PRESET
-import com.labteto.dshmobile.core.wire.dto.EncodedImageAttachment
-import com.labteto.dshmobile.core.wire.dto.FileAttachmentRef
 import com.labteto.dshmobile.core.wire.dto.PermissionSelect
 import com.labteto.dshmobile.ui.components.ContextMeter
 import com.labteto.dshmobile.ui.components.ContextMeterBarHeight
@@ -124,64 +121,6 @@ import com.labteto.dshmobile.ui.theme.DsSizes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
-
-/**
- * Something picked and waiting to be sent with the next message.
- *
- * Two kinds, because the harness carries them two ways. An [Image] rides the prompt as bytes,
- * so it is held here fully encoded. A [File] is uploaded the moment it is picked — harness
- * 0.1.3 streams it to the host verbatim — and what the prompt carries is the receipt that upload
- * answered with, so the chip tracks the upload rather than the bytes.
- */
-internal sealed interface PendingAttachment {
-    /** Display name, when the picker had one. */
-    val name: String?
-
-    /**
-     * A picked image, held with its decoded preview.
-     *
-     * [bytes], [width] and [height] are the encoded size and intrinsic dimensions the picker already
-     * had to learn to admit the image; keeping them means the *next* pick can be measured against
-     * the message's running totals without decoding everything already attached a second time.
-     */
-    data class Image(
-        val mediaType: String,
-        val base64: String,
-        val preview: ImageBitmap?,
-        val bytes: Int,
-        val width: Int,
-        val height: Int,
-        override val name: String? = null,
-    ) : PendingAttachment {
-        /** The wire form `session/prompt` carries. */
-        fun encoded(): EncodedImageAttachment = EncodedImageAttachment(mediaType, base64, name)
-    }
-
-    /** A picked file and the state of its upload. [id] is what a progress callback keys on. */
-    data class File(
-        val id: String,
-        val uri: Uri,
-        override val name: String,
-        /** Size as the provider reported it; `-1` when it would not say. */
-        val size: Long,
-        val state: FileUploadState,
-    ) : PendingAttachment {
-        /** The receipt to cite, once the upload has one. */
-        val receiptId: String? get() = (state as? FileUploadState.Ready)?.receiptId
-    }
-}
-
-/** Where one file's upload stands. */
-internal sealed interface FileUploadState {
-    /** Bytes are still going up; [sent] is the running count. */
-    data class Uploading(val sent: Long) : FileUploadState
-
-    /** The host holds the file and minted a receipt for it. */
-    data class Ready(val receiptId: String, val file: FileAttachmentRef) : FileUploadState
-
-    /** The upload did not complete; the chip offers a retry. */
-    data class Failed(val message: String) : FileUploadState
-}
 
 /**
  * The message composer, laid out like the harness's own: the `+` and the permission chip on the

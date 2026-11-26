@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="alpha2_migration">منتقلی مکمل کرنے کے لیے اصل سیشن کھولیں، پھر دوبارہ کوشش کریں۔</string>
     <string name="common_back">واپس</string>
     <string name="common_cancel">منسوخ کریں</string>
     <string name="common_close">بند کریں</string>
@@ -102,6 +103,7 @@
     <string name="connect_title">Harness سے منسلک ہوں</string>
     <string name="connect_try_again">دوبارہ کوشش کریں</string>
     <string name="connect_unreachable">ناقابل رسائی</string>
+    <string name="goal_none">کوئی فعال ہدف نہیں</string>
     <string name="pair_code_hint">8 ہندسے</string>
     <string name="pair_code_label">پیئرنگ کوڈ</string>
     <string name="pair_fail_certificate">‎%1$s‎ کی کلید وہ نہیں جو اس کوڈ میں بتائی گئی ہے۔ پیئر نہ کریں۔ ہو سکتا ہے اُس پتے پر کوئی اور جواب دے رہا ہو۔</string>
@@ -185,4 +187,5 @@
     <string name="scan_type_instead">اس کے بجائے کوڈ ٹائپ کریں</string>
     <string name="settings_connection_disconnect">کنکشن ختم کریں</string>
     <string name="settings_title">سیٹنگز</string>
+    <string name="subagents_readonly">یہ ذیلی ایجنٹ پیغامات قبول نہیں کرتا۔</string>
 </resources>

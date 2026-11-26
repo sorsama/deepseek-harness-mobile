@@ -31,6 +31,7 @@ import com.labteto.dshmobile.core.wire.dto.HostDescription
 import com.labteto.dshmobile.core.wire.dto.REMOTE_STREAM_MUX_PATH
 import com.labteto.dshmobile.core.wire.dto.RemoteEventFrame
 import com.labteto.dshmobile.core.wire.platformMuxSocketFactory
+import com.labteto.dshmobile.data.SessionStore
 import com.labteto.dshmobile.ui.screens.connect.ConnectController
 import com.labteto.dshmobile.ui.screens.connect.ConnectFailure
 import com.labteto.dshmobile.ui.screens.connect.ConnectFeatures
@@ -412,7 +413,11 @@ internal class IosConnectionLink(
 }
 
 /**
- * The iOS app's Connect and Pair controllers and what they were built from.
+ * The iOS app's Connect and Pair controllers, the session store behind the connection, and what they were built from.
+ *
+ * [sessionStore] is the Android app's `SessionStore`, the same class, over [link] and the iOS halves of its ports
+ * (IosSessionStore.kt). It follows the connection by itself: each time the link connects it reads the session list
+ * and opens the session to land in, as it does on Android.
  *
  * [reportPair] hears the lines a script reads for the pairing flow (`DSH_PAIR_RESULT …`) and [reportProbe] the
  * probe verdicts (`DSH_PROBE …`); both are null outside a debug launch that asks for them.
@@ -438,4 +443,10 @@ internal class IosApp(
         loopbackIsThisPhone = false,
     )
     val pair = PairController(scope = scope, ports = IosPairPorts(store, relayTokens, link, reportPair))
+    private val storePlatform = IosStorePlatform()
+    val sessionStore = SessionStore(storePlatform, link, UserDefaultsLastSessions())
+
+    init {
+        scope.launch { storePlatform.loadMessages() }
+    }
 }
