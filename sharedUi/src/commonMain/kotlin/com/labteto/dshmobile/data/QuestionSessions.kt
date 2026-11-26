@@ -163,9 +163,11 @@ class QuestionSessions(
     }
 
     fun cancelled(eventId: String) = lock.withLock {
-        val entry = requests.entries.firstOrNull { it.value.eventId == eventId } ?: return@withLock
-        requests.remove(entry.key)?.job?.cancel()
-        change(entry.key) { it.copy(ready = false, remainingMs = null, needsAction = false) }
+        // The key, not the entry: on Kotlin/Native a map entry is invalid once the map has changed, and reading it
+        // after the remove below threw ConcurrentModificationException (the JVM's HashMap node outlives the remove).
+        val key = requests.entries.firstOrNull { it.value.eventId == eventId }?.key ?: return@withLock
+        requests.remove(key)?.job?.cancel()
+        change(key) { it.copy(ready = false, remainingMs = null, needsAction = false) }
     }
 
     fun projection(sessionId: String, seq: Int, value: JsonElement) {
