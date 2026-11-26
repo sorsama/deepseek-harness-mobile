@@ -267,9 +267,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           iosApp/scripts/simulator-check.sh "$SIM_UDID" "build/ios-derived/Build/Products/Debug-iphonesimulator/DSH Mobile.app" build/ios-screenshots
-      # The session list's screenshots, iPhone and iPad, light, dark, French and Arabic, and the Markdown sample's. The
-      # scenarios above already fail when the app does not report them on screen; this fails when a screenshot is missing.
-      - name: Check the session list and Markdown screenshots
+      # The session list's screenshots, iPhone and iPad, light, dark, French and Arabic, and the Markdown and tool-card
+      # samples'. The scenarios above already fail when the app does not report them on screen; this fails when a
+      # screenshot is missing.
+      - name: Check the session list, Markdown and tool card screenshots
         if: ${{ !cancelled() }}
         run: |
           missing=0
@@ -283,6 +284,13 @@ jobs:
           for look in light dark; do
             for at in top end; do
               f="build/ios-screenshots/markdown/iphone-$look-$at.png"
+              if [ -s "$f" ]; then echo "$f: $(wc -c < "$f") bytes"; else echo "::error::missing $f"; missing=$((missing + 1)); fi
+            done
+          done
+          # The chat's shared tool cards on their debug page (iOS M5b), top and foot, light and dark.
+          for look in light dark; do
+            for at in top end; do
+              f="build/ios-screenshots/toolcards/iphone-$look-$at.png"
               if [ -s "$f" ]; then echo "$f: $(wc -c < "$f") bytes"; else echo "::error::missing $f"; missing=$((missing + 1)); fi
             done
           done

@@ -26,7 +26,8 @@ import platform.posix.fputs
  * pairing arguments do the same for pairing (see [reportPairOutcome]).
  *
  * [markdownSample] (`-DshMarkdownSample top|end`) shows [MarkdownSamplePage] instead of the app: the shared chat
- * Markdown on one fixed answer, for a CI screenshot before any iOS screen shows a transcript.
+ * Markdown on one fixed answer, for a CI screenshot before any iOS screen shows a transcript. [toolCardsSample]
+ * (`-DshToolCardsSample top|end`) shows [ToolCardsSamplePage] the same way: every shared tool card, open.
  */
 fun MainViewController(
     prefillAddress: String?,
@@ -46,10 +47,15 @@ fun MainViewController(
     reconnectOnce: Boolean,
     openDrawer: Boolean,
     markdownSample: String?,
+    toolCardsSample: String?,
 ): UIViewController =
     ComposeUIViewController {
         if (markdownSample != null) {
             MarkdownSamplePage(markdownSample.lowercase()) { writeReport(MARKDOWN_OUTCOME_FILE, it) }
+            return@ComposeUIViewController
+        }
+        if (toolCardsSample != null) {
+            ToolCardsSamplePage(toolCardsSample.lowercase()) { writeReport(TOOL_CARDS_OUTCOME_FILE, it) }
             return@ComposeUIViewController
         }
         val request = remember {
@@ -120,6 +126,9 @@ private const val DRAWER_OUTCOME_FILE = "dsh-drawer-result.txt"
 
 /** Where the Markdown sample page (`-DshMarkdownSample`) says it has been laid out. */
 private const val MARKDOWN_OUTCOME_FILE = "dsh-markdown-result.txt"
+
+/** Where the tool-card sample page (`-DshToolCardsSample`) says it has been laid out. */
+private const val TOOL_CARDS_OUTCOME_FILE = "dsh-toolcards-result.txt"
 
 /**
  * Say what the last connect attempt did, to the two places a script can look: the process's output
