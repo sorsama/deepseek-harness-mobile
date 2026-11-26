@@ -36,7 +36,8 @@ struct ComposeView: UIViewControllerRepresentable {
             pairPayload: launch.pairPayload,
             pairScanner: launch.pairScanner,
             reconnectOnce: launch.reconnectOnce,
-            openDrawer: launch.openDrawer
+            openDrawer: launch.openDrawer,
+            markdownSample: launch.markdownSample
         )
     }
 
@@ -63,6 +64,8 @@ struct ComposeView: UIViewControllerRepresentable {
 ///   background does, and keeps every sessions line in `Documents/dsh-sessions-result.txt` instead of the last.
 /// - `-DshOpenDrawer YES` opens the session list once the app is connected (a phone has it in a drawer; an iPad docks
 ///   it anyway) and writes `DSH_DRAWER_RESULT shown …` to `Documents/dsh-drawer-result.txt` once it shows sessions.
+/// - `-DshMarkdownSample top` (or `end`, scrolled to the foot) shows a page of the chat's shared Markdown on one fixed
+///   answer instead of the app, and writes `DSH_MARKDOWN_RESULT shown …` to `Documents/dsh-markdown-result.txt`.
 ///
 /// Debug builds only. A release build ignores them, so the shipped app has no way to be told which
 /// address to connect to, or what to forget, from outside.
@@ -83,6 +86,7 @@ struct LaunchOptions {
     let pairScanner: Bool
     let reconnectOnce: Bool
     let openDrawer: Bool
+    let markdownSample: String?
 
     /// A launch argument's value is parsed as a property list before the app sees it, which mangles JSON, so a
     /// pairing payload is passed hex-encoded (`xxd -p`). A value that is not hex is returned as it was given.
@@ -120,13 +124,14 @@ struct LaunchOptions {
             pairPayload: decodeHex(defaults.string(forKey: "DshPairPayload")),
             pairScanner: defaults.bool(forKey: "DshPairScanner"),
             reconnectOnce: defaults.bool(forKey: "DshReconnectOnce"),
-            openDrawer: defaults.bool(forKey: "DshOpenDrawer")
+            openDrawer: defaults.bool(forKey: "DshOpenDrawer"),
+            markdownSample: defaults.string(forKey: "DshMarkdownSample")
         )
         #else
         return LaunchOptions(
             address: nil, autoConnect: false, openSignIn: false, signInToken: nil, reset: false, report: false,
             autoReconnect: nil, connectMode: nil, openPair: false, pairUrl: nil, pairCode: nil, pairSubmit: false,
-            pairPayload: nil, pairScanner: false, reconnectOnce: false, openDrawer: false
+            pairPayload: nil, pairScanner: false, reconnectOnce: false, openDrawer: false, markdownSample: nil
         )
         #endif
     }

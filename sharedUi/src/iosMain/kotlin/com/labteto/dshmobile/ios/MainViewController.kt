@@ -24,6 +24,9 @@ import platform.posix.fputs
  * launch passes `null` and `false` for all of them. When [autoConnect] or [report] is on, the one result
  * line the attempt produces is also written to a file (see [reportOutcome]) so CI can read it back; the
  * pairing arguments do the same for pairing (see [reportPairOutcome]).
+ *
+ * [markdownSample] (`-DshMarkdownSample top|end`) shows [MarkdownSamplePage] instead of the app: the shared chat
+ * Markdown on one fixed answer, for a CI screenshot before any iOS screen shows a transcript.
  */
 fun MainViewController(
     prefillAddress: String?,
@@ -42,8 +45,13 @@ fun MainViewController(
     pairScanner: Boolean,
     reconnectOnce: Boolean,
     openDrawer: Boolean,
+    markdownSample: String?,
 ): UIViewController =
     ComposeUIViewController {
+        if (markdownSample != null) {
+            MarkdownSamplePage(markdownSample.lowercase()) { writeReport(MARKDOWN_OUTCOME_FILE, it) }
+            return@ComposeUIViewController
+        }
         val request = remember {
             val pairing = openPair || pairUrl != null || pairCode != null || pairSubmit || pairPayload != null || pairScanner
             LaunchRequest(
@@ -109,6 +117,9 @@ private const val SESSIONS_OUTCOME_FILE = "dsh-sessions-result.txt"
 
 /** Where [reportDrawer] writes: whether the session list is on screen, for `-DshOpenDrawer`. */
 private const val DRAWER_OUTCOME_FILE = "dsh-drawer-result.txt"
+
+/** Where the Markdown sample page (`-DshMarkdownSample`) says it has been laid out. */
+private const val MARKDOWN_OUTCOME_FILE = "dsh-markdown-result.txt"
 
 /**
  * Say what the last connect attempt did, to the two places a script can look: the process's output

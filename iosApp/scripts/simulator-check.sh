@@ -41,6 +41,7 @@ pair_result="$data/Documents/dsh-pair-result.txt"
 probe_result="$data/Documents/dsh-probe-result.txt"
 sessions_result="$data/Documents/dsh-sessions-result.txt"
 drawer_result="$data/Documents/dsh-drawer-result.txt"
+markdown_result="$data/Documents/dsh-markdown-result.txt"
 fixtures="${4:-${SIM_REPORTS:-build/ios-reports}/fixtures.log}"
 
 shot() {
@@ -49,7 +50,7 @@ shot() {
 
 # Starts the app with the given arguments; its console output goes to console.log, tagged.
 launch() {
-  rm -f "$result" "$pair_result" "$probe_result" "$sessions_result" "$drawer_result"
+  rm -f "$result" "$pair_result" "$probe_result" "$sessions_result" "$drawer_result" "$markdown_result"
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
   echo "=== launch: $*" >> "$out/console.log"
   xcrun simctl launch --console "$udid" "$bundle" "$@" >> "$out/console.log" 2>&1 &
@@ -504,7 +505,31 @@ else
   drawer_scenarios iphone false
 fi
 
-# 41 to 44. The same list on an iPad, where it is a pane beside the chat (the Android tablet layout: planShell docks
+# 41 to 44. The chat's Markdown (shared with Android since iOS M5a) on a debug page, `-DshMarkdownSample`: one fixed
+#     answer with every block kind, at its top and scrolled to its foot, light and dark. No harness: no iOS screen shows
+#     a transcript yet. No result line means the page never laid out, and the scenario fails whatever the screenshot shows.
+mkdir -p "$out/markdown"
+for look in light dark; do
+  xcrun simctl ui "$udid" appearance "$look"
+  for at in top end; do
+    launch -DshMarkdownSample "$at"
+    for _ in $(seq 1 30); do
+      [ -s "$markdown_result" ] && break
+      sleep 1
+    done
+    line="$(cat "$markdown_result" 2>/dev/null || echo '<no markdown result within 30 s>')"
+    echo "[markdown-$look-$at] $line" | cut -c1-300
+    if ! grep -q -- "^DSH_MARKDOWN_RESULT shown at=$at height=" <<<"$line"; then
+      echo "::error::[markdown-$look-$at] expected the Markdown sample on screen"
+      failures=$((failures + 1))
+    fi
+    sleep 2
+    shot "markdown/iphone-$look-$at"
+  done
+done
+xcrun simctl ui "$udid" appearance light
+
+# 45 to 48. The same list on an iPad, where it is a pane beside the chat (the Android tablet layout: planShell docks
 # the list from 600dp wide). Same app, installed on the second simulator.
 if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" ] && [ -n "$demo_count" ]; then
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
@@ -525,6 +550,7 @@ if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" 
   probe_result="$data/Documents/dsh-probe-result.txt"
   sessions_result="$data/Documents/dsh-sessions-result.txt"
   drawer_result="$data/Documents/dsh-drawer-result.txt"
+  markdown_result="$data/Documents/dsh-markdown-result.txt"
   fixtures_listening ipad 3181 3190
   warm_up warm-up-ipad
   drawer_scenarios ipad true
