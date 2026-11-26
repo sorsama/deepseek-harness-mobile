@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">ส่วนเสริม</string>
+    <string name="ua_entry">เลือกว่าแต่ละส่วนเสริมจะแสดงที่ไหน</string>
+    <string name="ua_switch">แสดงส่วนเสริมจากปลั๊กอิน</string>
+    <string name="ua_switch_hint">แสดงสิ่งต่างๆ จากปลั๊กอินของ harness บนหน้าแชท เช่น สัตว์เลี้ยงหรือปุ่มเพิ่มเติม ใช้หน่วยความจำประมาณ 250 MB ระหว่างที่เปิดแชทอยู่</string>
+    <string name="ua_switch_low_memory">ปิดไว้เป็นค่าเริ่มต้นบนโทรศัพท์เครื่องนี้ เพราะมีหน่วยความจำน้อยกว่า 6 GB</string>
+    <string name="ua_intro">เลือกว่าแต่ละรายการจะแสดงที่ไหน harness จะจำตัวเลือกของคุณไว้ คอมพิวเตอร์จึงทำตามด้วย</string>
+    <string name="ua_target_both">ทั้งสอง</string>
+    <string name="ua_target_phone">โทรศัพท์</string>
+    <string name="ua_target_desktop">คอมพิวเตอร์</string>
+    <string name="ua_target_off">ปิด</string>
+    <string name="ua_target_both_long">โทรศัพท์และคอมพิวเตอร์</string>
+    <string name="ua_target_phone_long">โทรศัพท์เท่านั้น</string>
+    <string name="ua_target_desktop_long">คอมพิวเตอร์เท่านั้น</string>
+    <string name="ua_target_show_desktop">แสดงบนคอมพิวเตอร์</string>
+    <string name="ua_target_group">ตำแหน่งที่ %1$s แสดง</string>
+    <string name="ua_slot_overlay">บนหน้าแชท</string>
+    <string name="ua_slot_message_box">ปุ่มข้างช่องพิมพ์ข้อความ</string>
+    <string name="ua_slot_session_header">ปุ่มที่ส่วนหัวของเซสชัน</string>
+    <string name="ua_slot_plugin_row">แถวในรายการปลั๊กอิน</string>
+    <string name="ua_slot_sidebar_footer">ปุ่มด้านล่างของแถบด้านข้าง</string>
+    <string name="ua_slot_other">ที่อื่นใน harness</string>
+    <string name="ua_place_none">มีที่สำหรับรายการนี้บนคอมพิวเตอร์เท่านั้น</string>
+    <string name="ua_empty">สัตว์เลี้ยง ปุ่มเพิ่มเติม และสิ่งอื่นๆ จากปลั๊กอินของ harness จะขึ้นที่นี่เมื่อหน้าของ harness แสดงรายการแล้ว</string>
+    <string name="ua_off_notice">ส่วนเสริมถูกซ่อนบนโทรศัพท์เครื่องนี้ ตัวเลือกของคุณที่นี่ยังมีผลกับคอมพิวเตอร์</string>
+    <string name="ua_read_only">harness เก็บการตั้งค่านี้เป็นแบบอ่านอย่างเดียว จึงเปลี่ยนจากที่นี่ไม่ได้</string>
+    <string name="ua_missing">harness ไม่มีปลั๊กอิน dsh-ui-sync แล้ว</string>
+    <string name="ua_refresh_failed">รีเฟรชไม่สำเร็จ กำลังแสดงข้อมูลที่โหลดไว้ก่อนหน้า</string>
+    <string name="ua_err_conflict">มีคนอื่นเปลี่ยนการตั้งค่านี้ในเวลาเดียวกัน ลองอีกครั้ง</string>
+    <string name="ua_err_rejected">harness ไม่ยอมรับการเปลี่ยนแปลงนี้</string>
+    <string name="ua_err_unreachable">ติดต่อ harness ไม่ได้ จึงไม่ได้บันทึกอะไรเลย</string>
+    <string name="ua_err_unavailable">การเชื่อมต่อนี้เปลี่ยนส่วนเสริมไม่ได้</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">ยังไม่มีส่วนเสริม</string>
+    <string name="ua_stale">มีการเพิ่มหรือเปลี่ยนปลั๊กอินหลังจากทำรายการนี้ จึงอาจมีบางอย่างขาดไป</string>
+    <string name="ua_find">ค้นหาส่วนเสริม</string>
+    <string name="ua_find_more">ค้นหาส่วนเสริมใหม่</string>
+    <string name="ua_find_again">ค้นหาอีกครั้ง</string>
+    <string name="ua_find_hint">การค้นหาจะเปิดหน้าของ harness แบบไม่ให้เห็นสักครู่ เพื่อให้ปลั๊กอินบอกว่าเพิ่มอะไรบ้าง แล้วจะปิดเองเมื่อเสร็จ</string>
+    <string name="ua_finding">กำลังค้นหาส่วนเสริม</string>
+    <string name="ua_found">พบส่วนเสริมแล้ว เลือกว่าแต่ละรายการจะแสดงที่ไหน</string>
+    <string name="ua_nothing_title">ไม่พบอะไรเลย</string>
+    <string name="ua_nothing">ไม่มีปลั๊กอินใดใน harness นี้ที่เพิ่มสัตว์เลี้ยง ปุ่ม หรือสิ่งอื่นที่โทรศัพท์หรือคอมพิวเตอร์แสดงได้</string>
+    <string name="ua_find_failed">เปิดหน้าของ harness เพื่อค้นหาไม่ได้ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง</string>
+</resources>

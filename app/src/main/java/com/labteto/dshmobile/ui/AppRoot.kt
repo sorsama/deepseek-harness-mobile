@@ -61,6 +61,8 @@ import com.labteto.dshmobile.ui.components.MascotState
 import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.screens.connect.ConnectScreen
 import com.labteto.dshmobile.ui.adaptive.FormPane
+import com.labteto.dshmobile.ui.addons.LocalUiAddonsHost
+import com.labteto.dshmobile.ui.addons.rememberUiAddonsHost
 import com.labteto.dshmobile.ui.screens.main.MainScreen
 import com.labteto.dshmobile.ui.screens.pair.PairScreen
 import com.labteto.dshmobile.ui.screens.settings.SettingsScreen
@@ -215,7 +217,9 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
             splashVisible = false
         }
 
-        CompositionLocalProvider(LocalUpdateUi provides updateUi) {
+        // Desktop web plugin items over the chat, when the harness has the dsh-ui-sync companion.
+        val uiAddons = rememberUiAddonsHost()
+        CompositionLocalProvider(LocalUpdateUi provides updateUi, LocalUiAddonsHost provides uiAddons) {
         Box(Modifier.fillMaxSize().background(DsTheme.colors.bgBase)) {
             // One motion for every top-level change: the new screen settles in from slightly
             // smaller while the old one gets out of the way. Connecting used to cut straight from

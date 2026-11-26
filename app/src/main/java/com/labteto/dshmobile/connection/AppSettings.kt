@@ -102,6 +102,13 @@ data class AppSettings(
      */
     val autoTranslateReasoning: Boolean = false,
     /**
+     * "Show plugin add-ons": whether the chat may load the harness web page that draws desktop web
+     * plugin items (a pet, extra buttons) over it. Per device. Null until someone sets it, which
+     * reads as on for a phone with 6 GB of memory or more and off below (`uiAddonsDefaultOn`): the
+     * page is a whole web client, about 250 MB.
+     */
+    val showUiAddons: Boolean? = null,
+    /**
      * Whether the composer offers the microphone, on a phone whose speech service makes it possible.
      * On by default; the control is absent altogether on a phone with no recognition service,
      * whatever this says. Per device.

@@ -9,10 +9,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-/** [PLUGIN_MARKET] is the optional "custom plugin markets" bundle: its `pluginMarket` namespace exists only while that bundle is on. */
-enum class HarnessFeature {
+/**
+ * [PLUGIN_MARKET] is the optional "custom plugin markets" bundle: its `pluginMarket` namespace exists only while that bundle is on.
+ *
+ * [UI_ADDONS] is the `dsh-ui-sync` companion plugin, present when `settings/describe` lists its `ui-sync`
+ * namespace; with it, desktop web plugin items (a pet, composer buttons) are drawn over the chat. It is
+ * [ambient]: the app asks on its own on every direct connection, not because someone opened a page, so a
+ * failure to ask is not reported as a connection error. Nothing about the app changes while it is unknown.
+ */
+enum class HarnessFeature(val ambient: Boolean = false) {
     AUTOMATION, PLUGIN_MANAGEMENT, TIMED_QUESTIONS, SESSION_REFERENCES, PRESET_COMPOSITION, PLUGIN_MARKET,
-    HARNESS_SETTINGS, ACCOUNT,
+    HARNESS_SETTINGS, ACCOUNT, UI_ADDONS(ambient = true),
 }
 
 /** Connection-scoped evidence: authorization failures do not imply a missing capability. */
@@ -55,7 +62,7 @@ internal class FeatureAvailability(private val report: (RpcError) -> Unit) : Syn
             is RpcResult.Ok -> if (authoritative || state.value != false) state.value = true
             is RpcResult.Err -> if (result.error.classifyCapability().code == "capability-unavailable") {
                 state.value = false
-            } else {
+            } else if (!feature.ambient) {
                 // Unknown stays visible; authentication and carrier failures are not capability evidence.
                 report(result.error)
             }

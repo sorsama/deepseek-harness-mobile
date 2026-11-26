@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">ایڈ آنز</string>
+    <string name="ua_entry">چنیں کہ ہر ایڈ آن کہاں دکھے</string>
+    <string name="ua_switch">پلگ ان کے ایڈ آنز دکھائیں</string>
+    <string name="ua_switch_hint">چیٹ کے اوپر harness پلگ انز کی چیزیں دکھاتا ہے، جیسے کوئی پالتو جانور یا اضافی بٹن۔ چیٹ کھلی رہنے تک تقریباً 250 MB میموری لیتا ہے۔</string>
+    <string name="ua_switch_low_memory">اس فون میں 6 GB سے کم میموری ہے، اس لیے یہ پہلے سے بند ہے۔</string>
+    <string name="ua_intro">چنیں کہ ہر چیز کہاں دکھے۔ harness آپ کی پسند محفوظ رکھتا ہے، اس لیے کمپیوٹر پر بھی وہی لاگو ہوتی ہے۔</string>
+    <string name="ua_target_both">دونوں</string>
+    <string name="ua_target_phone">فون</string>
+    <string name="ua_target_desktop">کمپیوٹر</string>
+    <string name="ua_target_off">بند</string>
+    <string name="ua_target_both_long">فون اور کمپیوٹر دونوں</string>
+    <string name="ua_target_phone_long">صرف فون</string>
+    <string name="ua_target_desktop_long">صرف کمپیوٹر</string>
+    <string name="ua_target_show_desktop">کمپیوٹر پر دکھائیں</string>
+    <string name="ua_target_group">%1$s کہاں دکھے</string>
+    <string name="ua_slot_overlay">چیٹ کے اوپر</string>
+    <string name="ua_slot_message_box">میسج باکس کے ساتھ والا بٹن</string>
+    <string name="ua_slot_session_header">سیشن کے اوپر والا بٹن</string>
+    <string name="ua_slot_plugin_row">پلگ ان فہرست کی قطار</string>
+    <string name="ua_slot_sidebar_footer">سائیڈ بار کے نیچے والا بٹن</string>
+    <string name="ua_slot_other">harness میں کسی اور جگہ</string>
+    <string name="ua_place_none">اس کی جگہ صرف کمپیوٹر پر ہے۔</string>
+    <string name="ua_empty">harness پلگ انز کے پالتو جانور، اضافی بٹن اور دوسری چیزیں یہاں تب دکھتی ہیں جب harness پیج ان کی فہرست دے دے۔</string>
+    <string name="ua_off_notice">اس فون پر ایڈ آنز چھپے ہوئے ہیں۔ یہاں آپ کی پسند پھر بھی کمپیوٹر پر لاگو ہوتی ہے۔</string>
+    <string name="ua_read_only">harness یہ ترتیبات صرف پڑھنے کے لیے رکھتا ہے، اس لیے انہیں یہاں سے بدلا نہیں جا سکتا۔</string>
+    <string name="ua_missing">harness میں اب dsh-ui-sync پلگ ان نہیں ہے۔</string>
+    <string name="ua_refresh_failed">ریفریش نہیں ہو سکا۔ پہلے لوڈ ہوا ڈیٹا دکھایا جا رہا ہے۔</string>
+    <string name="ua_err_conflict">کسی اور نے اسی وقت یہ ترتیبات بدل دیں۔ دوبارہ کوشش کریں۔</string>
+    <string name="ua_err_rejected">harness نے یہ تبدیلی قبول نہیں کی۔</string>
+    <string name="ua_err_unreachable">harness تک رسائی نہیں ہو سکی۔ کچھ بھی محفوظ نہیں ہوا۔</string>
+    <string name="ua_err_unavailable">اس کنکشن سے ایڈ آنز نہیں بدلے جا سکتے۔</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">ابھی کوئی ایڈ آن نہیں</string>
+    <string name="ua_stale">یہ فہرست بننے کے بعد کوئی پلگ ان شامل ہوا یا بدلا ہے، اس لیے اس میں کچھ رہ سکتا ہے۔</string>
+    <string name="ua_find">ایڈ آنز تلاش کریں</string>
+    <string name="ua_find_more">نئے ایڈ آنز تلاش کریں</string>
+    <string name="ua_find_again">دوبارہ تلاش کریں</string>
+    <string name="ua_find_hint">اس سے harness پیج چند سیکنڈ کے لیے نظر آئے بغیر کھلتا ہے تاکہ اس کے پلگ انز بتا سکیں کہ وہ کیا شامل کرتے ہیں۔ کام ختم ہونے پر یہ خود بند ہو جاتا ہے۔</string>
+    <string name="ua_finding">ایڈ آنز تلاش ہو رہے ہیں</string>
+    <string name="ua_found">ایڈ آنز مل گئے۔ چنیں کہ ہر ایک کہاں دکھے۔</string>
+    <string name="ua_nothing_title">کچھ نہیں ملا</string>
+    <string name="ua_nothing">اس harness کا کوئی پلگ ان پالتو جانور، بٹن یا ایسی کوئی چیز شامل نہیں کرتا جو فون یا کمپیوٹر دکھا سکے۔</string>
+    <string name="ua_find_failed">تلاش کے لیے harness پیج نہیں کھل سکا۔ کنکشن دیکھیں اور دوبارہ کوشش کریں۔</string>
+</resources>

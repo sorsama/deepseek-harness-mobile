@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">Extras</string>
+    <string name="ua_entry">Escolha onde cada extra aparece</string>
+    <string name="ua_switch">Mostrar extras dos plugins</string>
+    <string name="ua_switch_hint">Mostra sobre o chat itens dos plugins do harness, como um bichinho ou botões a mais. Usa cerca de 250 MB de memória enquanto um chat está aberto.</string>
+    <string name="ua_switch_low_memory">Desligado por padrão neste telefone porque ele tem menos de 6 GB de memória.</string>
+    <string name="ua_intro">Escolha onde cada item aparece. O harness guarda sua escolha, então o computador também segue.</string>
+    <string name="ua_target_both">Ambos</string>
+    <string name="ua_target_phone">Telefone</string>
+    <string name="ua_target_desktop">Computador</string>
+    <string name="ua_target_off">Desligado</string>
+    <string name="ua_target_both_long">Telefone e computador</string>
+    <string name="ua_target_phone_long">Só no telefone</string>
+    <string name="ua_target_desktop_long">Só no computador</string>
+    <string name="ua_target_show_desktop">Mostrar no computador</string>
+    <string name="ua_target_group">Onde %1$s aparece</string>
+    <string name="ua_slot_overlay">Sobre o chat</string>
+    <string name="ua_slot_message_box">Botão ao lado da caixa de mensagem</string>
+    <string name="ua_slot_session_header">Botão no cabeçalho da sessão</string>
+    <string name="ua_slot_plugin_row">Linha da lista de plugins</string>
+    <string name="ua_slot_sidebar_footer">Botão no rodapé da barra lateral</string>
+    <string name="ua_slot_other">Em outro lugar do harness</string>
+    <string name="ua_place_none">Só o computador tem um lugar para este.</string>
+    <string name="ua_empty">Bichinhos, botões a mais e outros itens dos plugins do harness aparecem aqui quando a página do harness os listar.</string>
+    <string name="ua_off_notice">Os extras estão ocultos neste telefone. O que você escolher aqui continua valendo para o computador.</string>
+    <string name="ua_read_only">O harness guarda estas configurações como somente leitura, então não dá para alterá-las daqui.</string>
+    <string name="ua_missing">O harness não tem mais o plugin dsh-ui-sync.</string>
+    <string name="ua_refresh_failed">Não foi possível atualizar. Mostrando o que foi carregado antes.</string>
+    <string name="ua_err_conflict">Outra pessoa mudou estas configurações ao mesmo tempo. Tente de novo.</string>
+    <string name="ua_err_rejected">O harness não aceitou esta mudança.</string>
+    <string name="ua_err_unreachable">Não foi possível alcançar o harness. Nada foi salvo.</string>
+    <string name="ua_err_unavailable">Esta conexão não pode mudar os extras.</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">Ainda não há extras</string>
+    <string name="ua_stale">Um plugin foi adicionado ou mudou depois que esta lista foi feita, então pode faltar algo.</string>
+    <string name="ua_find">Procurar extras</string>
+    <string name="ua_find_more">Procurar extras novos</string>
+    <string name="ua_find_again">Procurar de novo</string>
+    <string name="ua_find_hint">Isso abre a página do harness escondida por alguns segundos para que os plugins digam o que adicionam. Ela fecha sozinha ao terminar.</string>
+    <string name="ua_finding">Procurando extras</string>
+    <string name="ua_found">Extras encontrados. Escolha onde cada um aparece.</string>
+    <string name="ua_nothing_title">Nada encontrado</string>
+    <string name="ua_nothing">Nenhum plugin deste harness adiciona um bichinho, um botão ou qualquer outra coisa que o telefone ou o computador possam mostrar.</string>
+    <string name="ua_find_failed">Não foi possível abrir a página do harness para procurar. Verifique a conexão e tente de novo.</string>
+</resources>

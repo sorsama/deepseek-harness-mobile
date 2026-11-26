@@ -167,7 +167,8 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.appcompat)
-    // A separate WebView profile (cookies, storage) for the workspace Browser tab.
+    // WebView profiles of their own: the plugin add-on layer (phone-mode script, page bridge, cookies)
+    // and the workspace Browser tab (cookies, storage).
     implementation(libs.androidx.webkit)
     // Folds, hinges and postures for the adaptive shell (see ui/adaptive).
     implementation(libs.androidx.window)

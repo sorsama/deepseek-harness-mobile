@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">অ্যাড-অন</string>
+    <string name="ua_entry">প্রতিটি অ্যাড-অন কোথায় দেখাবে বেছে নিন</string>
+    <string name="ua_switch">প্লাগইনের অ্যাড-অন দেখান</string>
+    <string name="ua_switch_hint">চ্যাটের ওপরে harness প্লাগইনের জিনিস দেখায়, যেমন একটি পোষা প্রাণী বা বাড়তি বোতাম। চ্যাট খোলা থাকলে প্রায় 250 MB মেমরি নেয়।</string>
+    <string name="ua_switch_low_memory">এই ফোনে 6 GB-এর কম মেমরি আছে, তাই শুরুতে এটি বন্ধ থাকে।</string>
+    <string name="ua_intro">প্রতিটি জিনিস কোথায় দেখাবে বেছে নিন। harness আপনার পছন্দ রেখে দেয়, তাই কম্পিউটারেও সেটাই মানা হয়।</string>
+    <string name="ua_target_both">দুটোতেই</string>
+    <string name="ua_target_phone">ফোন</string>
+    <string name="ua_target_desktop">কম্পিউটার</string>
+    <string name="ua_target_off">বন্ধ</string>
+    <string name="ua_target_both_long">ফোন আর কম্পিউটার দুটোতেই</string>
+    <string name="ua_target_phone_long">শুধু ফোনে</string>
+    <string name="ua_target_desktop_long">শুধু কম্পিউটারে</string>
+    <string name="ua_target_show_desktop">কম্পিউটারে দেখান</string>
+    <string name="ua_target_group">%1$s কোথায় দেখাবে</string>
+    <string name="ua_slot_overlay">চ্যাটের ওপরে</string>
+    <string name="ua_slot_message_box">মেসেজ বক্সের পাশের বোতাম</string>
+    <string name="ua_slot_session_header">সেশনের ওপরের বোতাম</string>
+    <string name="ua_slot_plugin_row">প্লাগইন তালিকার সারি</string>
+    <string name="ua_slot_sidebar_footer">সাইডবারের নিচের বোতাম</string>
+    <string name="ua_slot_other">harness-এর অন্য কোথাও</string>
+    <string name="ua_place_none">এটির জায়গা শুধু কম্পিউটারে আছে।</string>
+    <string name="ua_empty">harness প্লাগইনের পোষা প্রাণী, বাড়তি বোতাম আর অন্য জিনিস এখানে দেখা যায়, যখন harness পেজ সেগুলোর তালিকা দেয়।</string>
+    <string name="ua_off_notice">এই ফোনে অ্যাড-অন লুকানো আছে। এখানে যা বেছে নেবেন, কম্পিউটারে তা তবুও খাটে।</string>
+    <string name="ua_read_only">harness এই সেটিংস শুধু পড়ার জন্য রাখে, তাই এখান থেকে বদলানো যাবে না।</string>
+    <string name="ua_missing">harness-এ আর dsh-ui-sync প্লাগইন নেই।</string>
+    <string name="ua_refresh_failed">রিফ্রেশ করা যায়নি। আগে যা লোড হয়েছিল তা-ই দেখানো হচ্ছে।</string>
+    <string name="ua_err_conflict">একই সময়ে অন্য কেউ এই সেটিংস বদলেছে। আবার চেষ্টা করুন।</string>
+    <string name="ua_err_rejected">harness এই পরিবর্তন নেয়নি।</string>
+    <string name="ua_err_unreachable">harness-এর সঙ্গে যোগাযোগ করা যায়নি। কিছুই সেভ হয়নি।</string>
+    <string name="ua_err_unavailable">এই সংযোগ থেকে অ্যাড-অন বদলানো যায় না।</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">এখনো কোনো অ্যাড-অন নেই</string>
+    <string name="ua_stale">এই তালিকা তৈরির পরে একটি প্লাগইন যোগ বা বদল হয়েছে, তাই কিছু বাদ পড়তে পারে।</string>
+    <string name="ua_find">অ্যাড-অন খুঁজুন</string>
+    <string name="ua_find_more">নতুন অ্যাড-অন খুঁজুন</string>
+    <string name="ua_find_again">আবার খুঁজুন</string>
+    <string name="ua_find_hint">এতে harness পেজ কয়েক সেকেন্ডের জন্য না দেখিয়ে খোলে, যাতে এর প্লাগইনগুলো জানাতে পারে তারা কী যোগ করে। কাজ শেষ হলে এটি নিজেই বন্ধ হয়ে যায়।</string>
+    <string name="ua_finding">অ্যাড-অন খোঁজা হচ্ছে</string>
+    <string name="ua_found">অ্যাড-অন পাওয়া গেছে। প্রতিটি কোথায় দেখাবে বেছে নিন।</string>
+    <string name="ua_nothing_title">কিছু পাওয়া যায়নি</string>
+    <string name="ua_nothing">এই harness-এর কোনো প্লাগইন পোষা প্রাণী, বোতাম বা এমন কিছু যোগ করে না যা ফোন বা কম্পিউটার দেখাতে পারে।</string>
+    <string name="ua_find_failed">খোঁজার জন্য harness পেজ খোলা যায়নি। সংযোগ দেখে আবার চেষ্টা করুন।</string>
+</resources>

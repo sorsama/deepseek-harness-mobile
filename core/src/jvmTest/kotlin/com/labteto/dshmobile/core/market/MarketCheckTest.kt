@@ -83,6 +83,17 @@ class MarketCheckTest {
         assertEquals(MarketCheck.NoPackageManager, marketCheck(review, review.presented!!, inspected("inspect-no-pnpm")))
     }
 
+    @Test fun theBuiltInHarnessWithoutPnpmIsNamedOnInspectAndInstall() {
+        // Words captured from harness 0.2.2-rc.1 in the app's built-in runtime (no pnpm on its PATH).
+        assertTrue(looksLikeMissingPnpm("unknown", "Command failed with ENOENT: pnpm view 'dsh-ui-sync@0.2.1' name version\nspawn pnpm ENOENT"))
+        assertTrue(looksLikeMissingPnpm("operation-error", "Command failed with ENOENT: pnpm add 'dsh-ui-sync@0.2.1'\nspawn pnpm ENOENT"))
+        assertTrue(looksLikeMissingPnpm("pnpm-missing", null))
+        assertFalse(looksLikeMissingPnpm("network", "spawn pnpm ENOENT"))
+        assertFalse(looksLikeMissingPnpm("operation-error", "ERR_PNPM_FETCH_404 not found: dsh-ui-sync"))
+        assertFalse(looksLikeMissingPnpm("operation-error", null))
+        assertFalse(looksLikeMissingPnpm(null, "spawn git ENOENT"))
+    }
+
     @Test fun aHostileNameInTheHostsAnswerIsCleaned() {
         val answer = PluginInspection(status = "accepted", kind = "registry", name = "gpj‮.exe", version = "1.0.0", bundle = true)
         assertEquals(MarketCheck.Mismatch("gpj.exe", "1.0.0"), marketCheck(review, review.presented!!, answer))

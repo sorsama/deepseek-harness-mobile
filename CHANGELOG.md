@@ -7,6 +7,41 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ### Added
 
+- **Desktop web plugin items on the phone, and where each one shows.** With the `dsh-ui-sync`
+  plugin on the harness (0.2.0), items that web UI plugins draw on the desktop, such as a pet over
+  the chat or a button next to the message box, now show over the app's chat too, with the dialogs
+  they open. Settings has a new **Add-ons** card: **Show plugin add-ons** turns the whole thing on
+  or off for this phone, and **Choose where each add-on shows** lists every item by plugin with
+  **Both**, **Phone**, **Desktop** or **Off**. Each plugin is headed by its own title, and each
+  item says where it sits in the harness (**Sidebar footer button**, **Over the chat**, and so on)
+  instead of a raw slot id. An item whose spot exists only on the desktop gets just **Show on
+  desktop** and **Off**, so nothing is offered that cannot happen. On a narrow phone, a large font
+  or a long translation the choices stack as a list instead of wrapping or being cut off. The
+  choice is kept on the harness, so the
+  desktop follows a change made on the phone at once, and the other way round. The items come from
+  the real web plugins, drawn by the harness's own web page in a see-through layer, so a plugin
+  that works on the desktop needs nothing extra. That page costs about 250 MB of memory, so the
+  switch starts on only on phones with 6 GB or more, and the page loads only while some item is set
+  to show on the phone. A text field in a plugin dialog takes the keyboard, Back closes a plugin
+  dialog before it does anything else, the system's Remove animations setting reaches the plugins,
+  and TalkBack can read the items. In a right-to-left language such as Arabic or Urdu the app tells
+  the page which way the chat runs (and again when you switch the language in the app), so the
+  pet's corner and the buttons next to the message box mirror with the chat and a tray no longer
+  sits over a reply or the composer's buttons; this needs `dsh-ui-sync` 0.2.1. When the connection
+  drops and comes back (Wi-Fi off and on, a lost signal), the add-on page is loaded again once the
+  link has held for a second, on the chat you had open, instead of being left as it was. Works on
+  this phone,
+  on the local network and through a relay (relay 0.5.0 or later).
+
+- **Add-ons show up without opening the harness on the desktop first.** A harness lists its plugin
+  items only once its web page has been opened, so on a harness nobody opened in a browser since the
+  plugin went in, the phone had nothing to show and Settings > Add-ons stayed empty. Now the app
+  notices that the list is missing something next to the harness's plugin list and opens the page
+  itself for a few seconds, out of sight, once per set of plugins; the pet then simply appears. The
+  Add-ons page has a **Find add-ons** button for the same look by hand (it works with the switch off
+  too), shows its progress, and says **Nothing found** when no plugin adds anything. Works on this
+  phone, on the local network and through a relay.
+
 - **Dictate a message.** On a phone that has a speech recognition service, the message box has a
   microphone button. Tap it to start listening and tap again to stop: what you said goes into the
   draft at the caret as ordinary text, with a space only where one belongs (Thai, Chinese and

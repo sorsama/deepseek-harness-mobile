@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">Дополнения</string>
+    <string name="ua_entry">Выберите, где показывать каждое дополнение</string>
+    <string name="ua_switch">Показывать дополнения плагинов</string>
+    <string name="ua_switch_hint">Показывает поверх чата элементы из плагинов harness, например питомца или дополнительные кнопки. Пока открыт чат, занимает около 250 МБ памяти.</string>
+    <string name="ua_switch_low_memory">По умолчанию выключено на этом телефоне: у него меньше 6 ГБ памяти.</string>
+    <string name="ua_intro">Выберите, где показывать каждый элемент. Harness сохраняет ваш выбор, поэтому компьютер тоже его учитывает.</string>
+    <string name="ua_target_both">Везде</string>
+    <string name="ua_target_phone">Телефон</string>
+    <string name="ua_target_desktop">Компьютер</string>
+    <string name="ua_target_off">Выкл.</string>
+    <string name="ua_target_both_long">Телефон и компьютер</string>
+    <string name="ua_target_phone_long">Только телефон</string>
+    <string name="ua_target_desktop_long">Только компьютер</string>
+    <string name="ua_target_show_desktop">Показывать на компьютере</string>
+    <string name="ua_target_group">Где показывать %1$s</string>
+    <string name="ua_slot_overlay">Поверх чата</string>
+    <string name="ua_slot_message_box">Кнопка у поля сообщения</string>
+    <string name="ua_slot_session_header">Кнопка в шапке сессии</string>
+    <string name="ua_slot_plugin_row">Строка в списке плагинов</string>
+    <string name="ua_slot_sidebar_footer">Кнопка внизу боковой панели</string>
+    <string name="ua_slot_other">В другом месте harness</string>
+    <string name="ua_place_none">Для этого элемента место есть только на компьютере.</string>
+    <string name="ua_empty">Питомцы, дополнительные кнопки и другие элементы из плагинов harness появятся здесь, когда страница harness их перечислит.</string>
+    <string name="ua_off_notice">Дополнения скрыты на этом телефоне. Ваш выбор здесь по-прежнему действует на компьютере.</string>
+    <string name="ua_read_only">Harness хранит эти настройки только для чтения, поэтому отсюда их изменить нельзя.</string>
+    <string name="ua_missing">В harness больше нет плагина dsh-ui-sync.</string>
+    <string name="ua_refresh_failed">Не удалось обновить. Показано то, что загрузилось раньше.</string>
+    <string name="ua_err_conflict">Кто-то другой изменил эти настройки в тот же момент. Попробуйте ещё раз.</string>
+    <string name="ua_err_rejected">Harness не принял это изменение.</string>
+    <string name="ua_err_unreachable">Не удалось связаться с harness. Ничего не сохранено.</string>
+    <string name="ua_err_unavailable">Через это подключение нельзя менять дополнения.</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">Пока дополнений нет</string>
+    <string name="ua_stale">Плагин добавили или изменили после того, как был составлен этот список, поэтому он может быть неполным.</string>
+    <string name="ua_find">Найти дополнения</string>
+    <string name="ua_find_more">Поискать новые дополнения</string>
+    <string name="ua_find_again">Поискать ещё раз</string>
+    <string name="ua_find_hint">Страница harness незаметно откроется на несколько секунд, чтобы плагины сообщили, что они добавляют. Потом она закроется сама.</string>
+    <string name="ua_finding">Ищем дополнения</string>
+    <string name="ua_found">Дополнения найдены. Выберите, где показывать каждое.</string>
+    <string name="ua_nothing_title">Ничего не найдено</string>
+    <string name="ua_nothing">Плагины этого harness не добавляют ни питомца, ни кнопок, ничего, что могут показать телефон или компьютер.</string>
+    <string name="ua_find_failed">Не удалось открыть страницу harness для поиска. Проверьте подключение и попробуйте ещё раз.</string>
+</resources>

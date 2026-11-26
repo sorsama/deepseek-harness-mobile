@@ -31,8 +31,9 @@ datastore = "1.1.1"
 workManager = "2.10.0"
 splashscreen = "1.0.1"
 appcompat = "1.7.0"
-# The workspace Browser tab keeps its cookies and site storage in a WebView profile of its own
-# (`ProfileStore`, `WebViewCompat.setProfile`), apart from every other web view in the app.
+# Two WebView profiles of their own, each apart from every other web view in the app: the plugin
+# add-on layer over the chat (`addDocumentStartJavaScript`, `addWebMessageListener`, `setProfile`)
+# and the workspace Browser tab's cookies and site storage (`ProfileStore`).
 # 1.12.1 builds against compileSdk 35.
 webkit = "1.12.1"
 ktor = "3.0.3"
