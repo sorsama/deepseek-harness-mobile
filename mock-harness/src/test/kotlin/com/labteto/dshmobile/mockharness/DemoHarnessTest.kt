@@ -85,7 +85,10 @@ class DemoHarnessTest {
         )
         val events = page["records"]!!.jsonArray.map { it.jsonObject["event"]!!.jsonObject }
         assertEquals(
-            listOf("turn/start", "user/message", "assistant/message", "tool/call", "tool/result", "assistant/message", "turn/end"),
+            listOf(
+                "turn/start", "user/message", "assistant/message", "tool/call", "tool/result", "assistant/message", "turn/end",
+                "turn/start", "user/message", "assistant/message", "turn/end",
+            ),
             events.map { it["type"]!!.jsonPrimitive.content },
         )
         assertEquals((0 until events.size).toList(), events.map { it["seq"]!!.jsonPrimitive.int })
@@ -97,6 +100,9 @@ class DemoHarnessTest {
             .jsonObject["text"]!!.jsonPrimitive.content
         assertTrue(answer.startsWith("## "))
         assertTrue("```kotlin" in answer)
+        val gallery = events[9]["data"]!!.jsonObject["message"]!!.jsonObject["content"]!!.jsonArray.map { it.jsonObject }
+        assertEquals(listOf("reasoning", "text"), gallery.map { it["type"]!!.jsonPrimitive.content })
+        assertEquals(DemoHarness.GALLERY, gallery[1]["text"]!!.jsonPrimitive.content)
     }
 
     @Test
