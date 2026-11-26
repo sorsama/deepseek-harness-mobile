@@ -10,10 +10,10 @@ import com.labteto.dshmobile.core.wire.dto.SubagentListEntry
 import com.labteto.dshmobile.core.wire.dto.WorkspaceArchiveValue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNull
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * Tapping Archive on a session known to be busy opens "Stop and archive" at once, and a session
@@ -144,7 +144,7 @@ class ArchiveActivityTest {
     }
 
     @Test
-    fun `a refusal to a stopping request is a failure, not a second dialog`() {
+    fun `a refusal to a stopping request is a failure - not a second dialog`() {
         val outcome = archiveOutcomeOf("s", stopActivity = true, result = sessionActive("""{"sessionId":"s","activity":[]}"""))
         assertEquals(ArchiveOutcome.Failed, outcome)
     }

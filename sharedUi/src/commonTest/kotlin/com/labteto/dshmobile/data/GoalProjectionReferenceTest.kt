@@ -4,8 +4,8 @@ import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.core.wire.dto.GoalEditRequest
 import com.labteto.dshmobile.core.wire.dto.GoalRef
 import kotlinx.serialization.json.*
-import org.junit.Assert.*
-import org.junit.Test
+import com.labteto.dshmobile.testing.*
+import kotlin.test.Test
 
 class GoalProjectionReferenceTest {
     private val snapshot = WireJson.parseToJsonElement("""

@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.data
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNull
+import kotlin.test.Test
 
 class ApprovalQueueTest {
 

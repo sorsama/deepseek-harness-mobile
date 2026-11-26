@@ -8,17 +8,17 @@ import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.data.KeyValueStore
 import kotlinx.serialization.Serializable
 
-internal data class ComposerKey(val host: String, val sessionId: String)
+data class ComposerKey(val host: String, val sessionId: String)
 
 /** Owned by SessionStore, so a gallery callback and an upload never follow UI navigation. */
 @Serializable
-internal data class DraftReference(val start: Int, val end: Int, val mention: String, val label: String, val kind: String, val target: String)
+data class DraftReference(val start: Int, val end: Int, val mention: String, val label: String, val kind: String, val target: String)
 
 @Serializable
-internal data class SavedComposer(val text: String = "", val references: List<DraftReference> = emptyList())
+data class SavedComposer(val text: String = "", val references: List<DraftReference> = emptyList())
 
 /** Offsets use Kotlin/Compose UTF-16 indices, just like the harness editor. */
-internal fun adjustReferences(old: String, next: String, references: List<DraftReference>): List<DraftReference> {
+fun adjustReferences(old: String, next: String, references: List<DraftReference>): List<DraftReference> {
     val prefix = old.commonPrefixWith(next).length
     val suffix = old.drop(prefix).commonSuffixWith(next.drop(prefix)).length
     val oldEnd = old.length - suffix
@@ -30,7 +30,7 @@ internal fun adjustReferences(old: String, next: String, references: List<DraftR
     } }.filter { it.start >= 0 && it.end <= next.length && next.substring(it.start, it.end) == it.mention && (it.start == 0 || next[it.start - 1].isWhitespace()) && (it.end == next.length || next[it.end].isWhitespace()) }
 }
 
-internal class ComposerDraft(val key: ComposerKey, saved: SavedComposer = SavedComposer(), private val save: (SavedComposer) -> Unit = {}) {
+class ComposerDraft(val key: ComposerKey, saved: SavedComposer = SavedComposer(), private val save: (SavedComposer) -> Unit = {}) {
     private var value by mutableStateOf(saved.text)
     var references by mutableStateOf(saved.references.filter { it.start >= 0 && it.end <= saved.text.length && it.end >= it.start && saved.text.substring(it.start, it.end) == it.mention })
         private set
@@ -76,7 +76,7 @@ internal class ComposerDraft(val key: ComposerKey, saved: SavedComposer = SavedC
     }
 }
 
-internal class ComposerRepository(private val preferences: KeyValueStore? = null) {
+class ComposerRepository(private val preferences: KeyValueStore? = null) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val drafts = mutableMapOf<ComposerKey, ComposerDraft>()
     fun get(key: ComposerKey): ComposerDraft = drafts.getOrPut(key) {

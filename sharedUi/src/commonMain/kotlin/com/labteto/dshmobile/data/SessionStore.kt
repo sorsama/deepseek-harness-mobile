@@ -351,7 +351,7 @@ sealed interface ArchiveOutcome {
  *
  * Platform-neutral: what it needs from the device comes through [platform], the live connection through the
  * [HarnessConnection] port, and the remembered landing session through [lastSessions]. Android builds the one
- * instance in `di/AppModule`.
+ * instance in `di/AppModule`, iOS in `IosApp`.
  */
 class SessionStore(
     private val platform: StorePlatform,
@@ -479,8 +479,8 @@ class SessionStore(
         available = { pluginManagementAvailable.value != false })
     val connectionState = connection.state
     val activeHostKey: String? get() = connection.state.value.host?.let { "${it.baseUrl}|${it.id}" }
-    internal val panels = com.labteto.dshmobile.ui.screens.main.PanelRepository()
-    internal val composers = com.labteto.dshmobile.ui.screens.main.ComposerRepository(platform.composerDraftStore)
+    val panels = com.labteto.dshmobile.ui.screens.main.PanelRepository()
+    val composers = com.labteto.dshmobile.ui.screens.main.ComposerRepository(platform.composerDraftStore)
     fun apiForHost(key: String?): DshApiClient? = if (key != null && key == activeHostKey) connection.connectedApi else null
     fun muxForHost(key: String?) = if (key != null && key == activeHostKey) connection.generation?.mux else null
     fun retryConnection() = connection.reconnectIfNeeded()

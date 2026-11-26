@@ -19,7 +19,7 @@ import com.labteto.dshmobile.core.wire.dto.WorkspaceSessionActiveDetails
  *
  * An empty result means "nothing known", not "idle": the host still has the last word.
  */
-internal fun knownArchiveActivity(
+fun knownArchiveActivity(
     turnRunning: Boolean,
     jobs: List<JobView> = emptyList(),
     subagents: List<SubagentListEntry> = emptyList(),
@@ -52,7 +52,7 @@ private fun subagentIsRunning(entry: SubagentListEntry): Boolean = when (entry) 
  *
  * Either way the person confirms once, and nothing is archived before they do.
  */
-internal fun archiveStopDialogFor(sessionId: String, known: List<SessionActivity>): ArchiveOutcome.Busy? =
+fun archiveStopDialogFor(sessionId: String, known: List<SessionActivity>): ArchiveOutcome.Busy? =
     known.takeIf { it.isNotEmpty() }?.let { ArchiveOutcome.Busy(sessionId, it) }
 
 /**

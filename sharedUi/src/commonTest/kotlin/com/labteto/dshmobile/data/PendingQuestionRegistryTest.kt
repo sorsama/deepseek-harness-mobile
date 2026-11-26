@@ -1,10 +1,10 @@
 package com.labteto.dshmobile.data
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertNull
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * Which request an answer is allowed to take away.
@@ -22,7 +22,7 @@ class PendingQuestionRegistryTest {
     private val registry = PendingQuestionRegistry()
 
     @Test
-    fun `a session holds one request, looked up from either side`() {
+    fun `a session holds one request - looked up from either side`() {
         registry.install("s1", "evt-1")
         assertEquals("evt-1", registry.eventFor("s1"))
         // The reverse direction is what a `cancel` frame needs: it names an event and nothing else.
@@ -50,7 +50,7 @@ class PendingQuestionRegistryTest {
     }
 
     @Test
-    fun `forgetting twice is a no-op, so a cancel frame after an answer is harmless`() {
+    fun `forgetting twice is a no-op - so a cancel frame after an answer is harmless`() {
         // Both paths can fire for one request: this client answers and forgets, and the harness
         // may still push `cancel` for the same event if it had a second delivery open.
         registry.install("s1", "evt-1")

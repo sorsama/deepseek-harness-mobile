@@ -8,12 +8,12 @@ package com.labteto.dshmobile.ui.screens.main.preview
  * because it is free and almost always right; the bytes are only read when the name says nothing.
  * Nothing here touches Android, so every rule can be unit tested.
  */
-internal enum class PreviewKind {
+enum class PreviewKind {
     Image, Svg, Pdf, Video, Audio, Markdown, Html, Table, Json, Notebook, Diff, Code, Text, Archive, Font, Binary
 }
 
 /** Which transfer a kind needs. */
-internal enum class PreviewSource {
+enum class PreviewSource {
     /** Read as text, a page of lines at a time. */
     Text,
 
@@ -33,7 +33,7 @@ internal enum class PreviewSource {
  * @property mime the content type, when known.
  * @property sniffed true when the bytes decided it, not the name.
  */
-internal data class FileType(
+data class FileType(
     val kind: PreviewKind,
     val extension: String,
     val label: String? = null,
@@ -172,7 +172,7 @@ internal fun fileNameOf(path: String): String = path.replace('\\', '/').substrin
  * The type the file's name gives, or null when the name says nothing (no extension, or one the app
  * does not know), which is the cue to look at the bytes.
  */
-internal fun typeFromName(path: String): FileType? {
+fun typeFromName(path: String): FileType? {
     val name = fileNameOf(path)
     val lower = name.lowercase()
     WELL_KNOWN_NAMES[lower]?.let { key ->
@@ -227,6 +227,13 @@ internal fun typeFromMime(mime: String?): FileType? {
     }
 }
 
+/** [length] bytes from [offset] as ISO-8859-1, where each byte is the code point of the same value. */
+private fun ByteArray.latin1(offset: Int, length: Int): String =
+    CharArray(length) { (this[offset + it].toInt() and 0xFF).toChar() }.concatToString()
+
+/** U+FEFF, which a text file may start with; the preview's own copy lives with its formatters in the app. */
+private const val BYTE_ORDER_MARK = "\uFEFF"
+
 private fun ByteArray.u(i: Int): Int = if (i in indices) this[i].toInt() and 0xFF else -1
 
 private fun ByteArray.startsWithBytes(vararg prefix: Int, at: Int = 0): Boolean =
@@ -259,7 +266,7 @@ private fun looksLikeMp3Frame(head: ByteArray): Boolean {
  * Plain text that matches no format is [PreviewKind.Text]; data with NULs or a pile of control
  * bytes is [PreviewKind.Binary].
  */
-internal fun sniffFileType(head: ByteArray): FileType? {
+fun sniffFileType(head: ByteArray): FileType? {
     if (head.isEmpty()) return null
     fun known(ext: String) = EXTENSION_TYPES.getValue(ext).copy(sniffed = true)
     when {
@@ -276,7 +283,7 @@ internal fun sniffFileType(head: ByteArray): FileType? {
         head.startsWithAscii("PK") && (head.startsWithBytes(0x50, 0x4B, 0x03, 0x04) || head.startsWithBytes(0x50, 0x4B, 0x05, 0x06)) ->
             return known("zip")
         head.startsWithAscii("ftyp", 4) -> {
-            val brand = String(head, 8, minOf(4, head.size - 8).coerceAtLeast(0), Charsets.ISO_8859_1)
+            val brand = head.latin1(8, minOf(4, head.size - 8).coerceAtLeast(0))
             return when {
                 brand in setOf("heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1") -> known("heic")
                 brand == "avif" || brand == "avis" -> known("avif")
@@ -330,7 +337,7 @@ internal fun sniffFileType(head: ByteArray): FileType? {
  * Whether [bytes] read as text: no NULs, few stray control bytes, and valid UTF-8 (a cut-off
  * character at the very end is tolerated, since the window ends wherever it ends).
  */
-internal fun looksLikeText(bytes: ByteArray): Boolean {
+fun looksLikeText(bytes: ByteArray): Boolean {
     if (bytes.isEmpty()) return true
     var control = 0
     var invalid = 0
@@ -365,7 +372,7 @@ internal fun looksLikeText(bytes: ByteArray): Boolean {
  * The type of [path]: the name first, then [mime], then [head]. Null only when the name and mime
  * say nothing and no [head] has been read yet, which is the caller's cue to read it.
  */
-internal fun detectFileType(path: String, mime: String? = null, head: ByteArray? = null): FileType? {
+fun detectFileType(path: String, mime: String? = null, head: ByteArray? = null): FileType? {
     typeFromName(path)?.let { return it }
     typeFromMime(mime)?.let { return it }
     return head?.let { sniffFileType(it) } ?: head?.let { type(PreviewKind.Text, "txt").copy(sniffed = true) }

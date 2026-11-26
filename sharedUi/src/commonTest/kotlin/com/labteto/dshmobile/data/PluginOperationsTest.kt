@@ -6,8 +6,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.*
 import kotlinx.io.Source
 import kotlinx.serialization.json.*
-import org.junit.Assert.*
-import org.junit.Test
+import com.labteto.dshmobile.testing.*
+import kotlin.test.Test
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class PluginOperationsTest {

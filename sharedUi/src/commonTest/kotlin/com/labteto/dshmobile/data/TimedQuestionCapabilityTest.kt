@@ -5,9 +5,9 @@ import com.labteto.dshmobile.core.wire.dto.*
 import kotlinx.coroutines.test.*
 import kotlinx.io.Source
 import kotlinx.serialization.json.*
-import okhttp3.OkHttpClient
-import org.junit.Assert.*
-import org.junit.Test
+import com.labteto.dshmobile.testing.*
+import kotlin.test.fail
+import kotlin.test.Test
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class TimedQuestionCapabilityTest {
@@ -23,7 +23,7 @@ class TimedQuestionCapabilityTest {
     }
 
     private fun failingMux(code: String) = RemoteStreamMux { sink ->
-        object : WsChannel("http://stub/api/remote.mux", OkHttpClient(), sink) {
+        object : MuxSocket {
             override fun start() { sink.onOpen() }
             override fun close() = Unit
             override fun send(text: String): Boolean {

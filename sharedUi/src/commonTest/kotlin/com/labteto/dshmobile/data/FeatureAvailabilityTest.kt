@@ -6,8 +6,9 @@ import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswer
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.Source
 import kotlinx.serialization.json.jsonObject
-import org.junit.Assert.*
-import org.junit.Test
+import com.labteto.dshmobile.testing.*
+import kotlin.test.fail
+import kotlin.test.Test
 
 class FeatureAvailabilityTest {
     private class FailingTransport(val status: Int) : RpcTransport {

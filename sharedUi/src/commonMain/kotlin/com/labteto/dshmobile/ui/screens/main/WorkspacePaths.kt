@@ -23,7 +23,7 @@ private fun pathSegments(value: String): List<String> =
  * root (`/x`, `G:/x`, and the `//server/share` a Windows workspace on a network share uses); a
  * workspace-relative path never gets one.
  */
-internal fun workspacePath(value: String?): String {
+fun workspacePath(value: String?): String {
     val raw = value.orEmpty().trim().replace('\\', '/')
     val joined = pathSegments(raw).joinToString("/")
     return when {
@@ -46,7 +46,7 @@ internal fun workspacePath(value: String?): String {
  * directory joins workspace-relative, so the result never starts with `/` and never contains `//`
  * or a `./` artifact. An absolute directory keeps its shape (`G:/work` + `README.md`).
  */
-internal fun workspaceChildPath(directory: String?, name: String): String {
+fun workspaceChildPath(directory: String?, name: String): String {
     val base = workspacePath(directory)
     val entry = pathSegments(name).joinToString("/")
     return when {
@@ -64,7 +64,7 @@ internal fun workspaceChildPath(directory: String?, name: String): String {
  * The root has no parent, so it stays `.`: an empty result would make the panel request an empty
  * `path`, which `workspaceFiles/list` refuses with `gateway/bad-request`.
  */
-internal fun workspaceParentPath(directory: String?): String {
+fun workspaceParentPath(directory: String?): String {
     val path = workspacePath(directory)
     if (path == "." || path == "/" || path == "//") return "."
     val cut = path.substringBeforeLast('/', "")

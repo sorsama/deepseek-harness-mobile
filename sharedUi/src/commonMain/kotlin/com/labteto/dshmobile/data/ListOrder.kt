@@ -41,7 +41,7 @@ internal fun moveBefore(order: List<String>, id: String, beforeId: String?): Lis
  * The anchor to send for [id] once it sits where [order] puts it: the id it now precedes, or null
  * when it is last (which the host reads as "append").
  */
-internal fun anchorAfterMove(order: List<String>, id: String): String? {
+fun anchorAfterMove(order: List<String>, id: String): String? {
     val at = order.indexOf(id)
     return if (at < 0) null else order.getOrNull(at + 1)
 }
@@ -50,7 +50,7 @@ internal fun anchorAfterMove(order: List<String>, id: String): String? {
  * [order] with [id] moved [step] places (negative is up). Null when [id] is absent or the move
  * would leave the list, so a "Move up" on the first row is a no-op rather than a wrap-around.
  */
-internal fun moveByStep(order: List<String>, id: String, step: Int): List<String>? {
+fun moveByStep(order: List<String>, id: String, step: Int): List<String>? {
     val from = order.indexOf(id)
     if (from < 0 || step == 0) return null
     val to = from + step
@@ -68,7 +68,7 @@ internal fun moveByStep(order: List<String>, id: String, step: Int): List<String
  * the order they were given, because a session that just appeared is what they are looking for.
  * Saved ids that no longer exist drop out.
  */
-internal fun applySavedOrder(defaultOrder: List<String>, saved: List<String>): List<String> {
+fun applySavedOrder(defaultOrder: List<String>, saved: List<String>): List<String> {
     if (saved.isEmpty()) return defaultOrder
     val present = defaultOrder.toHashSet()
     val savedPresent = saved.filter { it in present }.distinct()

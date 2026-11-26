@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.data
 
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * The termination guard for scroll-driven history paging.

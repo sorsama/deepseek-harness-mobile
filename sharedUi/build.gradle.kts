@@ -60,6 +60,12 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
+    compilerOptions {
+        // `AttachmentUri` is an expect class with typealias actuals (`android.net.Uri`, `NSURL`); this silences the
+        // warning that expect/actual classes are Beta.
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     targets.withType<KotlinNativeTarget>().configureEach {
         binaries.framework {
             // `import DshShared` in the Swift host. Static, so there is nothing to embed or sign
@@ -76,6 +82,9 @@ kotlin {
             api(project(":core"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
+            // The session store's locks (`kotlinx.atomicfu.locks`). On the JVM `SynchronizedObject` is `Any` and
+            // `synchronized` is the monitor; on iOS they are real locks. `:core` already puts it on both classpaths.
+            implementation(libs.kotlinx.atomicfu)
             implementation(libs.cmp.runtime)
             implementation(libs.cmp.foundation)
             implementation(libs.cmp.material3)

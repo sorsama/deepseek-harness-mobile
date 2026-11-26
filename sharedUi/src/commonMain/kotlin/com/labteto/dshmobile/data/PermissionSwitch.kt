@@ -68,7 +68,7 @@ sealed interface PermissionSwitchResult {
  * The command runs on [scope], not on the caller's: a screen that leaves composition mid-switch
  * only stops waiting, it does not strand the pending state.
  */
-internal class PermissionSwitch(
+class PermissionSwitch(
     private val scope: CoroutineScope,
     private val settleMs: Long = PERMISSION_SETTLE_MS,
     private val inFlightMs: Long = PERMISSION_IN_FLIGHT_MS,

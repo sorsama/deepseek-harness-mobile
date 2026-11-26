@@ -6,7 +6,7 @@ import androidx.compose.runtime.*
 import com.labteto.dshmobile.core.wire.dto.*
 import com.labteto.dshmobile.ui.screens.main.preview.FileType
 
-internal class PreviewTab(val path: String) {
+class PreviewTab(val path: String) {
     val scroll = androidx.compose.foundation.ScrollState(0)
     var stat by mutableStateOf<WorkspaceFileStat?>(null)
     var text by mutableStateOf<String?>(null)
@@ -59,7 +59,7 @@ internal class PreviewTab(val path: String) {
     fun scrollState(key: String): ScrollState = scrolls.getOrPut(key) { ScrollState(0) }
 }
 
-internal class PanelState(val key: ComposerKey) {
+class PanelState(val key: ComposerKey) {
     val directoryScroll = mutableMapOf<String, androidx.compose.foundation.lazy.LazyListState>()
     var section by mutableIntStateOf(0)
     var directory by mutableStateOf(".")
@@ -108,9 +108,9 @@ internal class PanelState(val key: ComposerKey) {
 }
 
 /** [PanelState.section] of the Browser tab (Files 0, Preview 1, Terminal 2). */
-internal const val BROWSER_SECTION = 3
+const val BROWSER_SECTION = 3
 
-internal class PanelRepository {
+class PanelRepository {
     private val panels = mutableMapOf<ComposerKey, PanelState>()
     fun get(key: ComposerKey): PanelState = panels.getOrPut(key) { PanelState(key) }
 }

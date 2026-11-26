@@ -5,11 +5,11 @@ import com.labteto.dshmobile.connection.HostConfig
 /**
  * What [SessionStore] needs from the platform it runs on, and nothing else.
  *
- * The store is platform-neutral Kotlin over `core` and the `HarnessConnection` port, so it can move to shared code
- * (issue #141, M3). Everything it used to read from Android directly comes through here: three strings in the
+ * The store is platform-neutral Kotlin over `core` and the `HarnessConnection` port, shared by both apps since
+ * issue #141's M3. Everything it used to read from Android directly comes through here: three strings in the
  * reader's language, the device's time zone and language, the app's version, two small preference files and a log.
- * Android implements it over its resources, `java.util` and `SharedPreferences`; iOS will over `NSBundle`,
- * `NSTimeZone`, `NSLocale` and `NSUserDefaults`.
+ * Android implements it over its resources, `java.util` and `SharedPreferences` (`AndroidStorePlatform`); iOS over
+ * the shared strings, `NSBundle`, `NSTimeZone`, `NSLocale` and `NSUserDefaults` (`IosStorePlatform`).
  *
  * Each value is read when the store needs it, not once: the person can change the language or travel while the
  * app is running.

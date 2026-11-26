@@ -1,9 +1,9 @@
 package com.labteto.dshmobile.data
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertSame
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNull
+import kotlin.test.assertSame
+import kotlin.test.Test
 
 /** The move arithmetic behind drag-to-reorder: what "insert X before Y" does to a list. */
 class ListOrderTest {
@@ -46,7 +46,7 @@ class ListOrderTest {
     }
 
     @Test
-    fun `the anchor after a move is the next item, or null at the end`() {
+    fun `the anchor after a move is the next item - or null at the end`() {
         val moved = moveBefore(abcd, "a", "d")
         assertEquals("d", anchorAfterMove(moved, "a"))
         assertNull(anchorAfterMove(moveBefore(abcd, "a", null), "a"))
@@ -79,7 +79,7 @@ class ListOrderTest {
     }
 
     @Test
-    fun `sessions never placed come first, in their given order`() {
+    fun `sessions never placed come first - in their given order`() {
         assertEquals(
             listOf("n1", "n2", "c", "a"),
             applySavedOrder(listOf("a", "n1", "c", "n2"), listOf("c", "a")),

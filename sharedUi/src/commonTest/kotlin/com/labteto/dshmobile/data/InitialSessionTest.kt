@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.data
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNull
+import kotlin.test.Test
 
 /**
  * The app used to open onto an empty screen because nothing ever chose a session. These pin the
@@ -64,7 +64,7 @@ class InitialSessionTest {
     }
 
     @Test
-    fun `recency comes from session activity, not workspace registration order`() {
+    fun `recency comes from session activity - not workspace registration order`() {
         // The first workspace in display order holds only stale work; the second holds the session
         // the user was actually in. Manual display order must not decide this.
         val sessions = listOf(session("stale", 100), session("fresh", 900))

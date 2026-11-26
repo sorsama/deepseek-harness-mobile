@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.data
 
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * When a client may take its own question or approval card away.
