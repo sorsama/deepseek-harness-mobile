@@ -165,19 +165,7 @@ internal fun AgentPresetEntry.displayDescription(): String? =
 // Shared field styling
 // ---------------------------------------------------------------------------
 
-@Composable
-internal fun dialogTextFieldColors() = TextFieldDefaults.colors(
-    focusedContainerColor = DsTheme.colors.bgLayer2,
-    unfocusedContainerColor = DsTheme.colors.bgLayer2,
-    disabledContainerColor = DsTheme.colors.bgLayer1,
-    // No underline: the field's outline comes from `inkFieldFrame`, so it reads as the same plate as
-    // every other input in the app. The default underline on a rounded plate is clipped to a stub.
-    focusedIndicatorColor = Color.Transparent,
-    unfocusedIndicatorColor = Color.Transparent,
-    disabledIndicatorColor = Color.Transparent,
-    errorIndicatorColor = Color.Transparent,
-    cursorColor = DsTheme.colors.accent,
-)
+// `dialogTextFieldColors` moved to :sharedUi (DialogFields.kt) with the session list's dialogs.
 
 /** A field that sits *inside* a composer card: no plate and no outline of its own, the card is the frame. */
 @Composable

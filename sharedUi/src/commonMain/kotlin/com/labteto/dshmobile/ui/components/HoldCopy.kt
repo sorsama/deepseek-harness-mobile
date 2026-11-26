@@ -14,16 +14,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.common_close
+import com.labteto.dshmobile.shared.resources.common_copied
+import com.labteto.dshmobile.shared.resources.common_error
+import com.labteto.dshmobile.shared.resources.hold_copy_all
+import com.labteto.dshmobile.shared.resources.hold_select_text
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import org.jetbrains.compose.resources.stringResource
 
-// The hold gesture itself (holdable, clickableWithHold, HoldMenu) is in :sharedUi. What stays here is
-// the part that talks to Android's clipboard and toast, and the dialog built on it.
+// The hold gesture itself (holdable, clickableWithHold, HoldMenu) is in Hold.kt. This is the copy to the
+// clipboard and the dialog built on it; the platform's own confirmation is behind rememberCopyNotice.
 
 /**
  * Copies text to the clipboard and confirms it.
@@ -40,19 +45,25 @@ import com.labteto.dshmobile.ui.theme.DsType
 fun rememberCopier(): (String) -> Unit {
     val clipboard = LocalClipboardManager.current
     val haptics = rememberDsHaptics()
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val copied = stringResource(R.string.common_copied)
-    val failed = stringResource(R.string.common_error)
-    return remember(clipboard, haptics, context, copied, failed) {
+    val notice = rememberCopyNotice()
+    val copied = stringResource(Res.string.common_copied)
+    val failed = stringResource(Res.string.common_error)
+    return remember(clipboard, haptics, notice, copied, failed) {
         { text: String ->
             val ok = runCatching { clipboard.setText(AnnotatedString(text)) }.isSuccess
             if (ok) haptics.confirm() else haptics.reject()
-            if (!ok || android.os.Build.VERSION.SDK_INT < 33) {
-                android.widget.Toast.makeText(context, if (ok) copied else failed, android.widget.Toast.LENGTH_SHORT).show()
-            }
+            notice(ok, if (ok) copied else failed)
         }
     }
 }
+
+/**
+ * Says how a copy went, where the platform does not say it itself. Android shows a platform toast for a
+ * failure, and for a success before Android 13 (from 13 the system confirms a copy). iOS says nothing: the
+ * haptic is the confirmation there, as it is in the system's own apps.
+ */
+@Composable
+internal expect fun rememberCopyNotice(): (ok: Boolean, message: String) -> Unit
 
 /**
  * The whole of a text, laid out for picking part of it.
@@ -64,7 +75,7 @@ fun rememberCopier(): (String) -> Unit {
 fun SelectTextDialog(text: String, onDismiss: () -> Unit) {
     val colors = DsTheme.colors
     val copy = rememberCopier()
-    DsDialog(title = stringResource(R.string.hold_select_text), onDismiss = onDismiss) {
+    DsDialog(title = stringResource(Res.string.hold_select_text), onDismiss = onDismiss) {
         SelectionContainer(
             Modifier
                 .fillMaxWidth()
@@ -75,13 +86,13 @@ fun SelectTextDialog(text: String, onDismiss: () -> Unit) {
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             DsButton(
-                text = stringResource(R.string.common_close),
+                text = stringResource(Res.string.common_close),
                 onClick = onDismiss,
                 variant = DsButtonVariant.Ghost,
             )
             Spacer(Modifier.width(DsSpacing.small))
             DsButton(
-                text = stringResource(R.string.hold_copy_all),
+                text = stringResource(Res.string.hold_copy_all),
                 onClick = {
                     copy(text)
                     onDismiss()

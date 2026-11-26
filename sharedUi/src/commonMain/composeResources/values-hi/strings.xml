@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">माइग्रेशन पूरा करने के लिए पहले वाला सेशन खोलें, फिर दोबारा कोशिश करें।</string>
+    <string name="archive_activity_job">बैकग्राउंड काम</string>
+    <string name="archive_activity_more">और %1$d</string>
+    <string name="archive_activity_schedule">शेड्यूल</string>
+    <string name="archive_activity_subagent">सबएजेंट</string>
+    <string name="archive_activity_turn">मौजूदा टर्न</string>
+    <string name="archive_busy_after">रोका गया काम अपने आप दोबारा शुरू नहीं होगा। आप इस सेशन को बाद में “आर्काइव किए गए सेशन” में ढूंढकर आगे चला सकते हैं।</string>
+    <string name="archive_busy_body">इस सेशन में अभी काम चल रहा है। आर्काइव करने से पहले वह काम रोका जाएगा।</string>
+    <string name="archive_busy_confirm">रोकें और आर्काइव करें</string>
+    <string name="archive_busy_title">इस सेशन को रोककर आर्काइव करें?</string>
     <string name="common_back">वापस</string>
     <string name="common_cancel">रद्द करें</string>
     <string name="common_close">बंद करें</string>
     <string name="common_connected">कनेक्टेड</string>
+    <string name="common_copied">कॉपी हो गया</string>
+    <string name="common_error">कुछ गलत हो गया</string>
     <string name="common_retry">फिर से कोशिश करें</string>
+    <string name="common_save">सहेजें</string>
     <string name="connect_auto_lan">Wi-Fi पर मिले harness से अपने आप कनेक्ट करें</string>
     <string name="connect_auto_last">पिछली बार वाले harness से फिर कनेक्ट करें</string>
     <string name="connect_auto_loopback">इस डिवाइस के harness से अपने आप कनेक्ट करें</string>
@@ -104,6 +116,8 @@
     <string name="connect_try_again">फिर से कोशिश करें</string>
     <string name="connect_unreachable">पहुँच से बाहर</string>
     <string name="goal_none">कोई चालू लक्ष्य नहीं</string>
+    <string name="hold_copy_all">सब कॉपी करें</string>
+    <string name="hold_select_text">टेक्स्ट चुनें</string>
     <string name="pair_code_hint">8 अंक</string>
     <string name="pair_code_label">पेयरिंग कोड</string>
     <string name="pair_fail_certificate">%1$s की कुंजी वह नहीं है जो इस कोड में बताई गई है। पेयर न करें। उस पते पर कोई और जवाब दे रहा हो सकता है।</string>
@@ -188,4 +202,11 @@
     <string name="settings_connection_disconnect">डिस्कनेक्ट करें</string>
     <string name="settings_title">सेटिंग्स</string>
     <string name="subagents_readonly">यह सबएजेंट संदेश नहीं लेता।</string>
+    <string name="time_days">%1$d दिन</string>
+    <string name="time_hours">%1$d घं</string>
+    <string name="time_minutes">%1$d मिन</string>
+    <string name="time_months">%1$d माह</string>
+    <string name="time_now">अभी</string>
+    <string name="time_years">%1$d साल</string>
+    <string name="ux_b_clear_search">खोज साफ़ करें</string>
 </resources>

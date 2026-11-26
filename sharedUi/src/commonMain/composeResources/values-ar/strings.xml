@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">افتح الجلسة الأصلية لإكمال الترحيل، ثم حاول مجددًا.</string>
+    <string name="archive_activity_job">المهام الخلفية</string>
+    <string name="archive_activity_more">و%1$d أخرى</string>
+    <string name="archive_activity_schedule">الجداول الزمنية</string>
+    <string name="archive_activity_subagent">الوكلاء الفرعيون</string>
+    <string name="archive_activity_turn">الجولة الحالية</string>
+    <string name="archive_busy_after">لن يُستأنف العمل الذي أُوقف من تلقاء نفسه. يمكنك العثور على الجلسة ضمن «الجلسات المؤرشفة» واستئنافها من هناك.</string>
+    <string name="archive_busy_body">لا يزال في هذه الجلسة عمل قيد التشغيل. ستؤدي الأرشفة إلى إيقافه أولًا.</string>
+    <string name="archive_busy_confirm">إيقاف وأرشفة</string>
+    <string name="archive_busy_title">إيقاف هذه الجلسة وأرشفتها؟</string>
     <string name="common_back">رجوع</string>
     <string name="common_cancel">إلغاء</string>
     <string name="common_close">إغلاق</string>
     <string name="common_connected">متصل</string>
+    <string name="common_copied">تم النسخ</string>
+    <string name="common_error">حدث خطأ ما</string>
     <string name="common_retry">إعادة المحاولة</string>
+    <string name="common_save">حفظ</string>
     <string name="connect_auto_lan">الاتصال تلقائيًا بـ harness المكتشف عبر Wi-Fi</string>
     <string name="connect_auto_last">إعادة الاتصال بآخر harness مستخدم</string>
     <string name="connect_auto_loopback">الاتصال تلقائيًا بـ harness على هذا الجهاز</string>
@@ -104,6 +116,8 @@
     <string name="connect_try_again">حاول مرة أخرى</string>
     <string name="connect_unreachable">غير قابل للوصول</string>
     <string name="goal_none">لا يوجد هدف نشط</string>
+    <string name="hold_copy_all">نسخ الكل</string>
+    <string name="hold_select_text">تحديد النص</string>
     <string name="pair_code_hint">8 أرقام</string>
     <string name="pair_code_label">رمز الاقتران</string>
     <string name="pair_fail_certificate">المفتاح على %1$s ليس المفتاح الذي يذكره هذا الرمز. لا تُجرِ الاقتران، فقد يكون جهاز آخر يردّ على ذلك العنوان.</string>
@@ -188,4 +202,11 @@
     <string name="settings_connection_disconnect">قطع الاتصال</string>
     <string name="settings_title">الإعدادات</string>
     <string name="subagents_readonly">لا يقبل هذا الوكيل الفرعي الرسائل.</string>
+    <string name="time_days">%1$d ي</string>
+    <string name="time_hours">%1$d س</string>
+    <string name="time_minutes">%1$d د</string>
+    <string name="time_months">%1$d ش</string>
+    <string name="time_now">الآن</string>
+    <string name="time_years">%1$d سنة</string>
+    <string name="ux_b_clear_search">مسح البحث</string>
 </resources>

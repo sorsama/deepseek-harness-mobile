@@ -34,17 +34,20 @@ class WindowRulesTest {
     private val windowFile = "com/labteto/dshmobile/ui/components/DsFullScreen.kt"
     private val sheetFile = "com/labteto/dshmobile/ui/components/DsBottomSheet.kt"
 
+    /** DsWindow's iOS half: Compose's own dialog, since the Android window fix has nothing to fix there. */
+    private val iosWindowFile = "com/labteto/dshmobile/ui/components/DsWindow.ios.kt"
+
     private val rules = listOf(
         Rule(
             what = "a Compose `Dialog(`",
             pattern = Regex("""(?<![A-Za-z0-9_])Dialog\s*\("""),
-            allowedIn = setOf(windowFile),
+            allowedIn = setOf(windowFile, iosWindowFile),
             useInstead = "DsFullScreenDialog (a full page) or DsDialog (a centred plate)",
         ),
         Rule(
             what = "`DialogProperties(`",
             pattern = Regex("""(?<![A-Za-z0-9_])DialogProperties\s*\("""),
-            allowedIn = setOf(windowFile),
+            allowedIn = setOf(windowFile, iosWindowFile),
             useInstead = "DsFullScreenDialog or DsDialog, which own the window properties",
         ),
         Rule(
@@ -56,7 +59,7 @@ class WindowRulesTest {
         Rule(
             what = "an import of Compose's window classes",
             pattern = Regex("""import\s+androidx\.compose\.ui\.window\.(Dialog|DialogProperties|DialogWindowProvider|Popup|PopupProperties|\*)\b"""),
-            allowedIn = setOf(windowFile),
+            allowedIn = setOf(windowFile, iosWindowFile),
             useInstead = "DsFullScreenDialog, DsDialog or DsBottomSheet",
         ),
         Rule(

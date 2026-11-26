@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">เปิดเซสชันต้นฉบับเพื่อย้ายข้อมูลให้เสร็จ แล้วลองอีกครั้ง</string>
+    <string name="archive_activity_job">งานเบื้องหลัง</string>
+    <string name="archive_activity_more">และอีก %1$d</string>
+    <string name="archive_activity_schedule">งานตามกำหนดเวลา</string>
+    <string name="archive_activity_subagent">ซับเอเจนต์</string>
+    <string name="archive_activity_turn">เทิร์นปัจจุบัน</string>
+    <string name="archive_busy_after">งานที่หยุดจะไม่ทำต่อเอง คุณหาเซสชันนี้ได้ใน “เซสชันที่เก็บถาวร” แล้วเปิดกลับมาทำต่อได้</string>
+    <string name="archive_busy_body">เซสชันนี้ยังมีงานทำงานอยู่ การเก็บถาวรจะหยุดงานเหล่านั้นก่อน</string>
+    <string name="archive_busy_confirm">หยุดและเก็บถาวร</string>
+    <string name="archive_busy_title">หยุดและเก็บถาวรเซสชันนี้ไหม</string>
     <string name="common_back">กลับ</string>
     <string name="common_cancel">ยกเลิก</string>
     <string name="common_close">ปิด</string>
     <string name="common_connected">เชื่อมต่อแล้ว</string>
+    <string name="common_copied">คัดลอกแล้ว</string>
+    <string name="common_error">มีบางอย่างผิดพลาด</string>
     <string name="common_retry">ลองอีกครั้ง</string>
+    <string name="common_save">บันทึก</string>
     <string name="connect_auto_lan">เชื่อมต่ออัตโนมัติกับ harness ที่พบผ่าน Wi-Fi</string>
     <string name="connect_auto_last">เชื่อมต่อใหม่กับ harness ที่ใช้ล่าสุด</string>
     <string name="connect_auto_loopback">เชื่อมต่ออัตโนมัติกับ harness บนอุปกรณ์นี้</string>
@@ -104,6 +116,8 @@
     <string name="connect_try_again">ลองอีกครั้ง</string>
     <string name="connect_unreachable">เข้าถึงไม่ได้</string>
     <string name="goal_none">ไม่มีเป้าหมายที่ใช้งานอยู่</string>
+    <string name="hold_copy_all">คัดลอกทั้งหมด</string>
+    <string name="hold_select_text">เลือกข้อความ</string>
     <string name="pair_code_hint">8 หลัก</string>
     <string name="pair_code_label">รหัสจับคู่</string>
     <string name="pair_fail_certificate">กุญแจที่ %1$s ไม่ตรงกับที่รหัสนี้ระบุไว้ อย่าเพิ่งจับคู่ เพราะอาจมีเครื่องอื่นตอบแทนอยู่ที่ที่อยู่นั้น</string>
@@ -188,4 +202,11 @@
     <string name="settings_connection_disconnect">ตัดการเชื่อมต่อ</string>
     <string name="settings_title">การตั้งค่า</string>
     <string name="subagents_readonly">ซับเอเจนต์นี้ไม่รับข้อความ</string>
+    <string name="time_days">%1$d วัน</string>
+    <string name="time_hours">%1$d ชม.</string>
+    <string name="time_minutes">%1$d นาที</string>
+    <string name="time_months">%1$d เดือน</string>
+    <string name="time_now">เมื่อครู่</string>
+    <string name="time_years">%1$d ปี</string>
+    <string name="ux_b_clear_search">ล้างการค้นหา</string>
 </resources>

@@ -17,23 +17,35 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.archive_activity_job
+import com.labteto.dshmobile.shared.resources.archive_activity_more
+import com.labteto.dshmobile.shared.resources.archive_activity_schedule
+import com.labteto.dshmobile.shared.resources.archive_activity_subagent
+import com.labteto.dshmobile.shared.resources.archive_activity_turn
+import com.labteto.dshmobile.shared.resources.archive_busy_after
+import com.labteto.dshmobile.shared.resources.archive_busy_body
+import com.labteto.dshmobile.shared.resources.archive_busy_confirm
+import com.labteto.dshmobile.shared.resources.archive_busy_title
+import com.labteto.dshmobile.shared.resources.common_cancel
+import com.labteto.dshmobile.shared.resources.common_save
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsDialog
 import com.labteto.dshmobile.ui.components.inkFieldFrame
+import com.labteto.dshmobile.ui.components.localizedCount
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import org.jetbrains.compose.resources.stringResource
 
 /** A single-field rename dialog, shared by the session and workspace rename paths. */
 @Composable
-internal fun RenameDialog(
+fun RenameDialog(
     initial: String,
     title: String,
     onDismiss: () -> Unit,
@@ -54,13 +66,13 @@ internal fun RenameDialog(
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             DsButton(
-                text = stringResource(R.string.common_cancel),
+                text = stringResource(Res.string.common_cancel),
                 onClick = onDismiss,
                 variant = DsButtonVariant.Ghost,
             )
             Spacer(Modifier.width(DsSpacing.small))
             DsButton(
-                text = stringResource(R.string.common_save),
+                text = stringResource(Res.string.common_save),
                 onClick = { onConfirm(text.trim()) },
                 variant = DsButtonVariant.Info,
                 enabled = text.isNotBlank(),
@@ -71,7 +83,7 @@ internal fun RenameDialog(
 
 /** A destructive confirmation with an explanatory body. */
 @Composable
-internal fun ConfirmDialog(
+fun ConfirmDialog(
     title: String,
     body: String,
     confirmLabel: String,
@@ -84,7 +96,7 @@ internal fun ConfirmDialog(
         body = { Text(body, style = DsType.std14, color = DsTheme.colors.labelSecondary) },
         actions = {
             DsButton(
-                text = stringResource(R.string.common_cancel),
+                text = stringResource(Res.string.common_cancel),
                 onClick = onDismiss,
                 variant = DsButtonVariant.Ghost,
             )
@@ -101,28 +113,28 @@ internal fun ConfirmDialog(
  * the stopped work will not resume by itself, and confirming archives with `stopActivity`.
  */
 @Composable
-internal fun ArchiveBusyDialog(
+fun ArchiveBusyDialog(
     busy: com.labteto.dshmobile.data.ArchiveOutcome.Busy,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
     val colors = DsTheme.colors
     DsDialog(
-        title = stringResource(R.string.archive_busy_title),
+        title = stringResource(Res.string.archive_busy_title),
         onDismiss = onDismiss,
         body = {
-            Text(stringResource(R.string.archive_busy_body), style = DsType.std14, color = colors.labelSecondary)
+            Text(stringResource(Res.string.archive_busy_body), style = DsType.std14, color = colors.labelSecondary)
             if (busy.activity.isNotEmpty()) ArchiveActivityList(busy.activity)
-            Text(stringResource(R.string.archive_busy_after), style = DsType.std14, color = colors.labelSecondary)
+            Text(stringResource(Res.string.archive_busy_after), style = DsType.std14, color = colors.labelSecondary)
         },
         actions = {
             DsButton(
-                text = stringResource(R.string.common_cancel),
+                text = stringResource(Res.string.common_cancel),
                 onClick = onDismiss,
                 variant = DsButtonVariant.Ghost,
             )
             DsButton(
-                text = stringResource(R.string.archive_busy_confirm),
+                text = stringResource(Res.string.archive_busy_confirm),
                 onClick = onConfirm,
                 variant = DsButtonVariant.Danger,
             )
@@ -157,10 +169,10 @@ private fun ArchiveActivityList(activity: List<com.labteto.dshmobile.core.wire.d
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     when (entry.kind) {
-                        "turn" -> stringResource(R.string.archive_activity_turn)
-                        "subagent" -> stringResource(R.string.archive_activity_subagent)
-                        "job" -> stringResource(R.string.archive_activity_job)
-                        "schedule" -> stringResource(R.string.archive_activity_schedule)
+                        "turn" -> stringResource(Res.string.archive_activity_turn)
+                        "subagent" -> stringResource(Res.string.archive_activity_subagent)
+                        "job" -> stringResource(Res.string.archive_activity_job)
+                        "schedule" -> stringResource(Res.string.archive_activity_schedule)
                         // A family this build does not know: the host's own word beats saying nothing.
                         else -> entry.kind
                     },
@@ -180,7 +192,7 @@ private fun ArchiveActivityList(activity: List<com.labteto.dshmobile.core.wire.d
                 val hidden = labelled.size - ARCHIVE_ITEMS_SHOWN
                 if (hidden > 0) {
                     Text(
-                        stringResource(R.string.archive_activity_more, hidden),
+                        stringResource(Res.string.archive_activity_more, localizedCount(hidden)),
                         style = DsType.caption11,
                         color = colors.labelCaption,
                     )

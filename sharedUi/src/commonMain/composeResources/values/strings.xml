@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">Open the original session to finish the migration, then try again.</string>
+    <string name="archive_activity_job">Background jobs</string>
+    <string name="archive_activity_more">and %1$d more</string>
+    <string name="archive_activity_schedule">Schedules</string>
+    <string name="archive_activity_subagent">Subagents</string>
+    <string name="archive_activity_turn">Current turn</string>
+    <string name="archive_busy_after">Stopped work will not carry on by itself. You can find the session under Archived sessions and resume it there.</string>
+    <string name="archive_busy_body">This session still has work running. Archiving stops it first.</string>
+    <string name="archive_busy_confirm">Stop and archive</string>
+    <string name="archive_busy_title">Stop and archive this session?</string>
     <string name="common_back">Back</string>
     <string name="common_cancel">Cancel</string>
     <string name="common_close">Close</string>
     <string name="common_connected">Connected</string>
+    <string name="common_copied">Copied</string>
+    <string name="common_error">Something went wrong</string>
     <string name="common_retry">Retry</string>
+    <string name="common_save">Save</string>
     <string name="connect_auto_lan">Auto-connect to a harness found on Wi-Fi</string>
     <string name="connect_auto_last">Reconnect to the last harness you used</string>
     <string name="connect_auto_loopback">Auto-connect to the harness on this device</string>
@@ -104,6 +116,8 @@
     <string name="connect_try_again">Try again</string>
     <string name="connect_unreachable">Unreachable</string>
     <string name="goal_none">No active goal</string>
+    <string name="hold_copy_all">Copy all</string>
+    <string name="hold_select_text">Select text</string>
     <string name="pair_code_hint">8 digits</string>
     <string name="pair_code_label">Pairing code</string>
     <string name="pair_fail_certificate">The key at %1$s isn't the one this code names. Don't pair. Something else may be answering at that address.</string>
@@ -188,4 +202,11 @@
     <string name="settings_connection_disconnect">Disconnect</string>
     <string name="settings_title">Settings</string>
     <string name="subagents_readonly">This subagent doesn't take messages.</string>
+    <string name="time_days">%1$dd</string>
+    <string name="time_hours">%1$dh</string>
+    <string name="time_minutes">%1$dmin</string>
+    <string name="time_months">%1$dmo</string>
+    <string name="time_now">now</string>
+    <string name="time_years">%1$dy</string>
+    <string name="ux_b_clear_search">Clear search</string>
 </resources>

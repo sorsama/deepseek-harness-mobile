@@ -124,7 +124,7 @@ fun DsFullScreenDialog(
  * [content] receives the insets to pad with (system bars, cutout and the keyboard).
  */
 @Composable
-internal fun DsWindow(
+internal actual fun DsWindow(
     onDismissRequest: () -> Unit,
     dimBehind: Boolean,
     content: @Composable (insets: WindowInsets) -> Unit,
@@ -319,7 +319,7 @@ private fun Window.coverDisplay(dimBehind: Boolean, dark: Boolean) {
  * The window a composable is drawn in when that is one of the app's dialog windows, or null.
  * Here because this file is the one place that may touch Compose's window classes.
  */
-internal fun View.dsDialogWindow(): android.view.Window? {
+fun View.dsDialogWindow(): android.view.Window? {
     var current: Any? = this
     while (current is View) {
         if (current is DialogWindowProvider) return current.window
