@@ -57,6 +57,9 @@ const ICONS = [
   ['SwapVert', 'Outlined.SwapVert'],
   // The chat's Markdown and code blocks (iOS M5a).
   ['ContentCopyFilled', 'Filled.ContentCopy'],
+  // The chat's tool cards and their full-screen output viewer (iOS M5b).
+  ['KeyboardArrowUp', 'Filled.KeyboardArrowUp'],
+  ['Search', 'Filled.Search'],
 ];
 
 const args = process.argv.slice(2);
