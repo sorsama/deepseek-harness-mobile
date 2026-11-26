@@ -50,7 +50,7 @@ sealed interface SessionListRefresh {
  */
 internal class RefreshThrottle(
     private val minIntervalMs: Long,
-    private val now: () -> Long = System::currentTimeMillis,
+    private val now: () -> Long = ::wallClockMillis,
 ) : SynchronizedObject() {
     private var lastBeganAt: Long? = null
     private var inFlight = false

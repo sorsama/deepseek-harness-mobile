@@ -39,7 +39,7 @@ class QuestionSessions(
     private val api: () -> DshApiClient?,
     private val mux: () -> RemoteStreamMux?,
     private val generation: () -> String?,
-    private val clockMs: () -> Long = { System.nanoTime() / 1_000_000 },
+    private val clockMs: () -> Long = ::monotonicMillis,
     private val onCapability: (String?, RpcResult<*>) -> Unit = { _, _ -> },
     private val onUnavailable: (String, String, List<AskUserQuestionItem>) -> Unit = { _, _, _ -> },
 ) {

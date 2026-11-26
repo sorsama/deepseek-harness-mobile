@@ -8,7 +8,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.*
-import java.util.UUID
 
 data class PluginOperationState(
     val host: String? = null, val requestId: String? = null, val busy: Boolean = false,
@@ -22,7 +21,7 @@ data class PluginOperationState(
 class PluginOperations(
     private val scope: CoroutineScope,
     private val api: (String?) -> DshApiClient?,
-    private val preferences: android.content.SharedPreferences? = null,
+    private val preferences: KeyValueStore? = null,
     private val observe: () -> ((DshApiClient, RpcResult<*>) -> Unit) = { { _, _ -> } },
     private val available: () -> Boolean = { true },
 ) {
@@ -47,7 +46,7 @@ class PluginOperations(
 
     private fun restorePending(): List<PluginOperationState> {
         val prefs = preferences ?: return emptyList()
-        val saved = prefs.getString("pending", null)
+        val saved = prefs.getString("pending")
         if (saved != null) return WireJson.parseToJsonElement(saved).jsonArray.map { item ->
             val row = item.jsonObject
             PluginOperationState(host = row.getValue("host").jsonPrimitive.content,
@@ -57,8 +56,8 @@ class PluginOperations(
                 enabled = row["enabled"]?.jsonPrimitive?.booleanOrNull ?: false,
                 saveExact = row["saveExact"]?.jsonPrimitive?.booleanOrNull)
         }
-        val host = prefs.getString("host", null) ?: return emptyList()
-        val id = prefs.getString("requestId", null) ?: return emptyList()
+        val host = prefs.getString("host") ?: return emptyList()
+        val id = prefs.getString("requestId") ?: return emptyList()
         return listOf(PluginOperationState(host, id, unknown = true))
     }
 
@@ -68,7 +67,7 @@ class PluginOperations(
             put("subject", state.subject); put("registry", state.registry)
             put("enabled", state.enabled); put("saveExact", state.saveExact)
         }) } }
-        preferences?.edit()?.putString("pending", saved.toString())?.remove("host")?.remove("requestId")?.apply()
+        preferences?.edit(mapOf("pending" to saved.toString(), "host" to null, "requestId" to null))
     }
 
     private fun busy(host: String): Boolean = _pending.value.any { it.host == host && it.busy }
@@ -87,7 +86,7 @@ class PluginOperations(
     fun install(host: String, spec: String, registry: String?, approvedBuilds: List<String>? = null,
                 enabled: Boolean = false, saveExact: Boolean? = null, replaces: String? = null): Unit = lock.withLock {
         if (busy(host) || !available()) return
-        val id = UUID.randomUUID().toString()
+        val id = newRpcId()
         _pending.value += PluginOperationState(host, id, busy = true, subject = spec, registry = registry,
             enabled = enabled, saveExact = saveExact)
         persistPending()

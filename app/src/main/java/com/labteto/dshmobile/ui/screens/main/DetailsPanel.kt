@@ -132,6 +132,8 @@ import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.io.asSink
+import kotlinx.io.buffered
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
@@ -240,7 +242,8 @@ fun DetailsPanel(
         scope.launch {
             try {
                 val outcome = try {
-                    context.contentResolver.openOutputStream(uri)?.use { sink ->
+                    // Closing the buffered sink flushes it, then closes the file.
+                    context.contentResolver.openOutputStream(uri)?.asSink()?.buffered()?.use { sink ->
                         store.exportSessionTo(sink, includeDescendants = true, report = false)
                     } ?: ActionOutcome.Failed()
                 } catch (cancelled: CancellationException) {

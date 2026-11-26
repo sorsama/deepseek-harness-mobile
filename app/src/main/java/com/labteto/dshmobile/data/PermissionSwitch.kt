@@ -119,7 +119,7 @@ internal class PermissionSwitch(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                CommandOutcome.Failed(e.message ?: e.javaClass.simpleName)
+                CommandOutcome.Failed(e.message ?: e::class.simpleName.orEmpty())
             }
             acknowledge(started, outcome)
         }
