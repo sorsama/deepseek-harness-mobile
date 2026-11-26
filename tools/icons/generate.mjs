@@ -55,6 +55,8 @@ const ICONS = [
   ['Restore', 'Outlined.Restore'],
   ['SettingsOutlined', 'Outlined.Settings'],
   ['SwapVert', 'Outlined.SwapVert'],
+  // The chat's Markdown and code blocks (iOS M5a).
+  ['ContentCopyFilled', 'Filled.ContentCopy'],
 ];
 
 const args = process.argv.slice(2);

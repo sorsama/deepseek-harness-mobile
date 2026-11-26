@@ -7,6 +7,7 @@ import androidx.compose.material.icons.automirrored.outlined.CallSplit
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -68,6 +69,7 @@ class DsIconsMatchMaterialTest {
         Triple("Restore", DsIcons.Restore, Icons.Outlined.Restore),
         Triple("SettingsOutlined", DsIcons.SettingsOutlined, Icons.Outlined.Settings),
         Triple("SwapVert", DsIcons.SwapVert, Icons.Outlined.SwapVert),
+        Triple("ContentCopyFilled", DsIcons.ContentCopyFilled, Icons.Filled.ContentCopy),
     )
 
     @Test
