@@ -145,6 +145,46 @@ expect_drawer() {
   sleep 4
 }
 
+# Readiness, not a scenario (see "0. A warm-up" below): unasserted launches until one connects to 3181, at most three,
+# each line with its time. $1 labels the lines. A device on which none connects gets a warning, and the scenarios that
+# follow then report whatever is wrong with it themselves.
+warm_up() {
+  local label="$1" attempt start line
+  for attempt in 1 2 3; do
+    launch -DshReset YES -DshConnectAddress "http://127.0.0.1:3181" -DshAutoConnect YES
+    start=$(date +%s)
+    for _ in $(seq 1 90); do
+      [ -s "$result" ] && break
+      sleep 1
+    done
+    line="$(cat "$result" 2>/dev/null || echo '<no result within 90 s>')"
+    echo "[$label] attempt $attempt: $line after $(( $(date +%s) - start )) s" | cut -c1-300
+    if grep -q "connected authority=127.0.0.1:3181" <<<"$line"; then
+      sleep 2
+      return 0
+    fi
+  done
+  echo "::warning::[$label] no warm-up launch connected; the scenarios that follow run on a device that has not connected yet"
+  sleep 2
+}
+
+# Whether the fixture harnesses still accept connections on the given ports, from the Mac (which the simulators share
+# 127.0.0.1 with). A port that does not is a fixture that went away, which would fail every scenario on it. $1 labels it.
+fixtures_listening() {
+  local label="$1" port report=""
+  shift
+  for port in "$@"; do
+    if nc -z -G 3 127.0.0.1 "$port" 2>/dev/null; then
+      report+=" $port=yes"
+    else
+      report+=" $port=no"
+      echo "::error::[$label] nothing accepts connections on 127.0.0.1:$port"
+      failures=$((failures + 1))
+    fi
+  done
+  echo "[$label] fixtures listening:$report"
+}
+
 # The session list (shared with Android since iOS M4b) against the demo harness, opened by `-DshOpenDrawer YES`: light,
 # dark, French and Arabic (right to left). $1 names the device in the screenshots, $2 is whether the list is docked as a
 # pane there (an iPad) rather than a drawer (an iPhone in portrait).
@@ -177,15 +217,11 @@ drawer_scenarios() {
 # 0. A warm-up, not asserted. The first network call a freshly installed app makes on a cold runner can take longer than
 #    the connect probe's few seconds (CI saw a TIMEOUT on the very first connect once, and the same command passed
 #    moments later), which is the runner's network stack starting up and not something a scenario is about. This launch
-#    takes that hit, and its line and time are in the log so a slow start is visible.
-launch -DshReset YES -DshConnectAddress "http://127.0.0.1:3181" -DshAutoConnect YES
-warm_start=$(date +%s)
-for _ in $(seq 1 45); do
-  [ -s "$result" ] && break
-  sleep 1
-done
-echo "[warm-up] $(cat "$result" 2>/dev/null || echo '<no result within 45 s>') after $(( $(date +%s) - warm_start )) s" | cut -c1-300
-sleep 2
+#    takes that hit, and its line and time are in the log so a slow start is visible. The iPad pass below needs the same:
+#    without it the first connect on the freshly booted iPad timed out in every run (the probe's 4 s on 127.0.0.1, a
+#    fixture that served the iPhone minutes before), and every later launch on the same iPad connected. Each launch is
+#    a new process started with `-DshReset`, so what fails only once per device is the device warming up, not the app.
+warm_up warm-up
 
 # 1. Address filled in, nothing sent yet: what a person sees on first launch before they tap Connect.
 launch -DshReset YES -DshConnectAddress "http://127.0.0.1:3181"
@@ -472,17 +508,25 @@ fi
 # the list from 600dp wide). Same app, installed on the second simulator.
 if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" ] && [ -n "$demo_count" ]; then
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
+  # The iPhone is done with. Shut it down, so the iPad does not boot beside a second running simulator: with both up
+  # the iPad took 10 to 12 minutes to boot, and a screenshot of it over a minute. The times are in the log.
+  xcrun simctl shutdown "$udid" 2>/dev/null || true
   udid="$SIM_IPAD_UDID"
+  ipad_start=$(date +%s)
   xcrun simctl boot "$udid" 2>/dev/null || true
   xcrun simctl bootstatus "$udid" -b > /dev/null
+  ipad_booted=$(date +%s)
   xcrun simctl uninstall "$udid" "$bundle" 2>/dev/null || true
   xcrun simctl install "$udid" "$app"
+  echo "[ipad] booted in $(( ipad_booted - ipad_start )) s, the app installed in $(( $(date +%s) - ipad_booted )) s"
   data="$(xcrun simctl get_app_container "$udid" "$bundle" data)"
   result="$data/Documents/dsh-connect-result.txt"
   pair_result="$data/Documents/dsh-pair-result.txt"
   probe_result="$data/Documents/dsh-probe-result.txt"
   sessions_result="$data/Documents/dsh-sessions-result.txt"
   drawer_result="$data/Documents/dsh-drawer-result.txt"
+  fixtures_listening ipad 3181 3190
+  warm_up warm-up-ipad
   drawer_scenarios ipad true
 elif [ -z "${SIM_IPAD_UDID:-}" ]; then
   echo "SIM_IPAD_UDID is not set: the iPad session list scenarios did not run"
