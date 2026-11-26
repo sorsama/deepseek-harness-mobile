@@ -78,6 +78,8 @@ import platform.UIKit.UIApplicationDidEnterBackgroundNotification
  * - [onProbe] hears one `DSH_PROBE authority=… outcome=…` line per probe of a remembered host.
  * - [onSessions] hears how many sessions the session store holds once it has read the list after connecting, and
  *   again after every reconnect (`DSH_SESSIONS_RESULT listed count=…`, or `DSH_SESSIONS_RESULT failed reason=…`).
+ * - [reconnectOnce] starts a fresh connection once, after the first list has been read: the call the app makes when
+ *   it comes back from the background, which a simulator script cannot otherwise cause without restarting the app.
  */
 internal class LaunchRequest(
     val address: String? = null,
@@ -96,6 +98,7 @@ internal class LaunchRequest(
     val onPairOutcome: ((String) -> Unit)? = null,
     val onProbe: ((String) -> Unit)? = null,
     val onSessions: ((String) -> Unit)? = null,
+    val reconnectOnce: Boolean = false,
 ) {
     /** Whether the app starts on the Pair screen. */
     val startsPairing: Boolean
@@ -179,6 +182,7 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
         LaunchedEffect(app) {
             var handled: HostGeneration? = null
             var reading: Job? = null
+            var reconnectPending = request.reconnectOnce
             app.link.state.collect { state ->
                 if (state.host?.id != listedHost) listedHost = null
                 val generation = app.link.generation
@@ -191,6 +195,10 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                         SessionListRefresh.Done -> {
                             listedHost = host
                             request.onSessions?.invoke("DSH_SESSIONS_RESULT listed count=${app.sessionStore.sessions.value.size}")
+                            if (reconnectPending) {
+                                reconnectPending = false
+                                app.link.reconnectIfNeeded()
+                            }
                         }
                         is SessionListRefresh.Failed ->
                             request.onSessions?.invoke("DSH_SESSIONS_RESULT failed reason=${result.reason.orEmpty()}")

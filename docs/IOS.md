@@ -721,6 +721,7 @@ what the screen does. CI drives the app with them, and so can a person:
 | `-DshPairSubmit YES` | taps Pair |
 | `-DshPairPayload <hex of the QR text>` | hands the Pair controller the text a scan would have decoded, so it pairs at once; hex because launch arguments are parsed as property lists, which mangles JSON |
 | `-DshPairScanner YES` | opens the camera sheet |
+| `-DshReconnectOnce YES` | once the session list has been read, starts a fresh connection (what coming back from the background does) and keeps every `DSH_SESSIONS_RESULT` line instead of the last |
 
 With auto-connect, report or a pairing argument on, the app writes one result line (`DSH_CONNECT_RESULT connected …` or
 `… failed kind=…`) to `Documents/dsh-connect-result.txt` in its container, and a pairing run also writes

@@ -40,6 +40,7 @@ fun MainViewController(
     pairSubmit: Boolean,
     pairPayload: String?,
     pairScanner: Boolean,
+    reconnectOnce: Boolean,
 ): UIViewController =
     ComposeUIViewController {
         val request = remember {
@@ -61,7 +62,13 @@ fun MainViewController(
                 onOutcome = if (autoConnect || report || pairing) ::reportOutcome else null,
                 onPairOutcome = if (pairing) ::reportPairOutcome else null,
                 onProbe = if (autoConnect || report || pairing) ::reportProbe else null,
-                onSessions = if (autoConnect || report || pairing) ::reportSessions else null,
+                // A reconnect run keeps every line, so a script can see the one written after the reconnect.
+                onSessions = when {
+                    reconnectOnce -> ::appendSessions
+                    autoConnect || report || pairing -> ::reportSessions
+                    else -> null
+                },
+                reconnectOnce = reconnectOnce,
             )
         }
         // One controller for the life of the process, on the main thread where Compose runs. The reset,
@@ -116,6 +123,9 @@ private fun reportProbe(line: String) = writeReport(PROBE_OUTCOME_FILE, line, ap
 
 /** [reportOutcome] for the session list call made after connecting (`Documents/dsh-sessions-result.txt`). */
 private fun reportSessions(line: String) = writeReport(SESSIONS_OUTCOME_FILE, line)
+
+/** [reportSessions] that keeps every line, one per line, for `-DshReconnectOnce`. */
+private fun appendSessions(line: String) = writeReport(SESSIONS_OUTCOME_FILE, line, append = true)
 
 @OptIn(ExperimentalForeignApi::class)
 private fun writeReport(fileName: String, line: String, append: Boolean = false) {

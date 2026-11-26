@@ -397,23 +397,25 @@ else
   expect_sessions sessions-demo "DSH_SESSIONS_RESULT listed count=$demo_count$"
   shot "35-connected-shows-the-session-count"
 
-  # 36. The same process sent to the background and brought back: coming back starts a fresh generation, and the
-  #     session store reads its list again, so the sessions line is written again. Another app in front is what
-  #     sends ours to the background; `simctl launch` of a running app (no --terminate-running-process) brings it
-  #     back without restarting it, which the unchanged process id shows.
-  first_pid="$(sed -n "s/^$bundle: \([0-9][0-9]*\)$/\1/p" "$out/console.log" | tail -n 1)"
-  rm -f "$sessions_result"
-  xcrun simctl launch "$udid" com.apple.Preferences > /dev/null 2>&1 || true
-  sleep 4
-  again="$(xcrun simctl launch "$udid" "$bundle" 2>&1)"
-  again_pid="$(sed -n "s/^$bundle: \([0-9][0-9]*\)$/\1/p" <<<"$again" | tail -n 1)"
-  echo "[foreground-again] first pid ${first_pid:-?}, now ${again_pid:-?} ($again)" | cut -c1-400
-  if [ -z "$first_pid" ] || [ "$first_pid" != "$again_pid" ]; then
-    echo "::error::[foreground-again] the app was restarted, not brought back (pid ${first_pid:-?} then ${again_pid:-?})"
+  # 36. A reconnect: once the list has been read, `-DshReconnectOnce YES` makes the app start a fresh connection,
+  #     the call it makes when it comes back from the background (a script cannot bring a running app back to the
+  #     front: `simctl launch` restarts it). The session store reads its list again on the new connection, so a
+  #     second sessions line follows the first; with this argument the app keeps both.
+  launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshReconnectOnce YES
+  expect connected-demo-again "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
+  lines=""
+  for _ in $(seq 1 45); do
+    lines="$(cat "$sessions_result" 2>/dev/null || true)"
+    [ "$(grep -c "^DSH_SESSIONS_RESULT listed count=$demo_count$" <<<"$lines")" -ge 2 ] && break
+    sleep 1
+  done
+  echo "[sessions-after-reconnect] ${lines:-<no sessions lines within 45 s>}" | tr '\n' ' ' | cut -c1-400
+  echo
+  if [ "$(grep -c "^DSH_SESSIONS_RESULT listed count=$demo_count$" <<<"$lines")" -lt 2 ]; then
+    echo "::error::[sessions-after-reconnect] expected two lines 'DSH_SESSIONS_RESULT listed count=$demo_count', one per connection"
     failures=$((failures + 1))
   fi
-  expect_sessions sessions-after-reconnect "DSH_SESSIONS_RESULT listed count=$demo_count$"
-  shot "36-session-count-after-coming-back"
+  shot "36-session-count-after-a-reconnect"
 fi
 
 xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
