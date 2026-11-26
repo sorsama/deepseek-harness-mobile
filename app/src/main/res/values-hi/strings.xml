@@ -49,7 +49,6 @@
     <string name="chat_loading_older">पुराने संदेश लोड हो रहे हैं…</string>
     <string name="chat_load_older_retry">पुराने संदेश लोड नहीं हो सके। फिर कोशिश के लिए टैप करें।</string>
     <string name="chat_stopped">रोका गया</string>
-    <string name="chat_error_turn">टर्न पूरा नहीं हो सका</string>
     <string name="chat_max_tokens">टोकन की सीमा पूरी हो गई</string>
     <string name="chat_retry_scheduled">%1$d सेकंड में फिर कोशिश होगी</string>
     <string name="chat_copy_message">संदेश कॉपी करें</string>
@@ -70,13 +69,8 @@
     <string name="chat_output_placeholder">आउटपुट</string>
     <string name="tool_output_show_raw">मूल JSON दिखाएं</string>
     <string name="tool_output_hide_raw">मूल JSON छिपाएं</string>
-    <string name="tool_output_copy_raw">मूल JSON कॉपी करें</string>
     <string name="goal_title">लक्ष्य</string>
     <string name="goal_none">कोई चालू लक्ष्य नहीं</string>
-    <string name="goal_phase_active">चालू</string>
-    <string name="goal_phase_paused">रुका हुआ</string>
-    <string name="goal_phase_blocked">अटका हुआ</string>
-    <string name="goal_phase_complete">पूरा हुआ</string>
     <string name="goal_rounds">राउंड %1$d/%2$s</string>
     <string name="goal_pause">रोकें</string>
     <string name="goal_resume">फिर से शुरू करें</string>
@@ -162,7 +156,6 @@
     <string name="work_steps_detailed_hint">मानक जैसा ही, पर चल रहे टर्न के टूल कॉल एक-एक करके दिखते हैं।</string>
     <string name="work_steps_verbose">पूरा खुला</string>
     <string name="work_steps_verbose_hint">कुछ भी सिमटता या समूह में नहीं जाता। टूल कॉल अपने आप खुलते हैं और लंबे आउटपुट की शुरुआत दिखाते हैं।</string>
-    <string name="work_steps_clipped">लंबे नतीजे की शुरुआत दिख रही है।</string>
     <string name="work_steps_show_all">सब दिखाएं</string>
     <string name="settings_plugins">प्लगइन</string>
     <string name="settings_plugins_inventory">प्लगइन सूची</string>
@@ -243,7 +236,6 @@
     <string name="chat_stats_tokens">%1$s इनपुट · %2$s आउटपुट</string>
     <string name="chat_stats_cache">कैश %1$d%%</string>
     <string name="chat_context_used">%1$d%% कॉन्टेक्स्ट इस्तेमाल हुआ</string>
-    <string name="permission_custom">कस्टम</string>
     <string name="permission_custom_hint">मौजूदा सैंडबॉक्स और मंज़ूरी की सेटिंग किसी प्रीसेट से मेल नहीं खाती।</string>
     <string name="permission_confirm_title">पूरी पहुँच दें?</string>
     <string name="permission_confirm_body">एजेंट harness वाले कंप्यूटर पर कहीं भी पढ़-लिख सकेगा और मंज़ूरी माँगना बंद कर देगा।</string>
@@ -274,14 +266,6 @@
     <string name="chat_retrying">फिर कोशिश हो रही है…</string>
     <string name="plan_mode_title">प्लान मोड</string>
     <string name="plan_mode_hint">कुछ भी बदलने से पहले जाँच-पड़ताल करके एक प्लान बताएँ।</string>
-    <string name="preset_standard_name">स्टैंडर्ड मोड</string>
-    <string name="preset_standard_desc">फ़ाइल एडिट, शेल, फ़ाइल और वेब सर्च, स्किल, प्लानिंग, लक्ष्य, सबएजेंट और वर्कफ़्लो वाला पूरा कोडिंग एजेंट।</string>
-    <string name="preset_code_name">PTC मोड</string>
-    <string name="preset_code_desc">स्टैंडर्ड मोड की सारी सुविधाएँ। फ़र्क़ बस इतना है कि टूल Code Mode SDK से मिलते हैं, जिससे मॉडल कई चरण एक ही TypeScript प्रोग्राम में जोड़ सकता है।</string>
-    <string name="preset_minimal_name">मिनिमल मोड</string>
-    <string name="preset_minimal_desc">दो टूल वाला कोडिंग एजेंट: स्थायी bash और str_replace_editor।</string>
-    <string name="preset_cordis_name">क्रिएटर मोड</string>
-    <string name="preset_cordis_desc">कस्टम एजेंट प्रीसेट बनाने के लिए। इसमें स्टैंडर्ड मोड की सारी सुविधाएँ हैं, साथ में रनटाइम की जाँच, प्लगइन के प्रयोग और प्रीसेट लिखने में मदद।</string>
     <string name="plugins_enabled">चालू</string>
     <string name="plugins_disabled">बंद</string>
     <string name="plugins_phase_unmounted">लोड नहीं हुआ</string>
@@ -409,14 +393,6 @@
     <string name="harness_automation_history_cursor_error">रिकॉर्ड बदल गए हैं। फिर से कोशिश करें।</string>
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
-    <string name="system_line_permission_changed">आपने अनुमति बदलकर %1$s कर दी</string>
-    <string name="system_line_permission_changed_plain">आपने अनुमति बदली</string>
-    <string name="system_line_permission_failed">अनुमति बदली नहीं जा सकी</string>
-    <string name="system_line_compact">आपने बातचीत को समेटा</string>
-    <string name="system_line_plan_on">आपने प्लान मोड चालू किया</string>
-    <string name="system_line_plan_off">आपने प्लान मोड बंद किया</string>
-    <string name="system_line_command">आपने %1$s चलाया</string>
-    <string name="system_line_command_failed">%1$s नहीं चल सका</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">यहाँ तक रिवाइंड किया गया</string>
     <string name="rewind_no_text">(कोई टेक्स्ट नहीं)</string>
@@ -490,7 +466,6 @@
     <string name="hold_tool_actions">टूल कॉल के विकल्प</string>
     <string name="hold_file_actions">फ़ाइल के विकल्प</string>
     <string name="hold_select_text">टेक्स्ट चुनें</string>
-    <string name="hold_copy_all">सब कॉपी करें</string>
     <string name="hold_edit_as_new">नए संदेश की तरह एडिट करें</string>
     <string name="hold_edit_as_new_detail">इसे कंपोज़र में डालता है। मूल संदेश बना रहता है।</string>
     <string name="hold_rewind_here">इस संदेश तक रिवाइंड करें</string>
@@ -542,10 +517,7 @@
     <string name="quota_rate_limited">बहुत ज़्यादा अनुरोध हो गए, थोड़ी देर बाद फिर कोशिश करें</string>
     <string name="quota_limit_short">सीमा पूरी हो गई</string>
     <string name="quota_rate_short">अनुरोध सीमित</string>
-    <string name="permission_preset_read_only">केवल पढ़ें</string>
     <string name="permission_preset_workspace_write">वर्कस्पेस में लिखें</string>
-    <string name="permission_preset_full_access">पूर्ण एक्सेस</string>
-    <string name="permission_preset_auto">स्वतः समीक्षा</string>
     <string name="permission_preset_auto_desc">हर नेटिव टूल कॉल और PTC आंतरिक कॉल से पहले उसी मॉडल की प्रयोगात्मक समीक्षा के बाद बिना सैंडबॉक्स के चलता है।</string>
     <string name="shortcuts_group_message">संदेश बॉक्स</string>
     <string name="shortcuts_group_sessions">सेशन</string>

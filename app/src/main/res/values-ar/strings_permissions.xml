@@ -22,9 +22,6 @@
     <string name="cmdperm_pending">ما زال harness يعمل على «%1$s». أعد تشغيله لتستخدم المحادثات الجديدة اختيارك.</string>
     <string name="cmdperm_unsupported">لا يستطيع هذا الإصدار من harness السؤال قبل الأوامر. حدّثه لتختار بين تشغيل الأوامر فورًا أو سؤالك أولًا.</string>
 
-    <string name="permission_preset_ask_commands">السؤال قبل الأوامر</string>
-    <string name="permission_preset_ask_commands_desc">يسألك قبل كل أمر وقبل أي تغيير خارج مساحة العمل.</string>
-    <string name="permission_preset_full_access_desc">يشغّل الأوامر ويغيّر الملفات دون سؤال.</string>
 
     <string name="approval_command_title">تشغيل هذا الأمر؟</string>
     <string name="approval_file_title">تغيير ملف خارج مساحة العمل؟</string>
@@ -44,10 +41,4 @@
     <string name="sandbox_notice_builtin">هذه المحادثة على إعداد يحتاج إلى بيئة معزولة، والهاتف لا يوفرها، لذلك لم يعمل ذلك الأمر. بدّل إعداد المحادثة ثم اطلب مرة أخرى.</string>
     <string name="sandbox_notice_switch">التبديل إلى «%1$s»</string>
     <string name="sandbox_notice_other">لم يعمل ذلك الأمر لأن إعداد هذه المحادثة يحتاج إلى بيئة معزولة وليست لدى harness واحدة حيث يعمل. يمكنك اختيار إعداد آخر من زر الإذن في المحادثة.</string>
-    <string name="subagent_command_denied">لا يستطيع الوكيل المساعد سؤالك، لذلك لم يعمل هذا الأمر.</string>
-    <string name="command_denied_rejected">رفضتَ ذلك، لذا لم يُنفَّذ.</string>
-    <string name="command_denied_cancelled">سُحب السؤال قبل أن تجيب، لذا لم يُنفَّذ.</string>
-    <string name="command_denied_nobody">لم يكن أحد موجودًا للإجابة عن السؤال، لذا لم يُنفَّذ. أبقِ التطبيق متصلًا أثناء عمل الوكيل.</string>
-    <string name="command_denied_too_large">كان هذا أطول من أن يُعرض عليك كاملًا (الحد 256 كيلوبايت)، لذا لم تُسأل ولم يُنفَّذ. طُلب من الوكيل تقسيمه إلى أجزاء أصغر.</string>
-    <string name="command_denied_other">أوقف فحص الأوامر على هذا الهاتف ذلك، لذا لم يُنفَّذ.</string>
 </resources>

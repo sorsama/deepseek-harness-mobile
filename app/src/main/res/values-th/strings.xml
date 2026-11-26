@@ -49,7 +49,6 @@
     <string name="chat_loading_older">กำลังโหลดข้อความเก่า…</string>
     <string name="chat_load_older_retry">โหลดข้อความเก่าไม่สำเร็จ แตะเพื่อลองใหม่</string>
     <string name="chat_stopped">หยุดแล้ว</string>
-    <string name="chat_error_turn">เทิร์นล้มเหลว</string>
     <string name="chat_max_tokens">ถึงขีดจำกัดโทเคนแล้ว</string>
     <string name="chat_retry_scheduled">จะลองอีกครั้งใน %1$d วินาที</string>
     <string name="chat_copy_message">คัดลอกข้อความ</string>
@@ -70,13 +69,8 @@
     <string name="chat_output_placeholder">เอาต์พุต</string>
     <string name="tool_output_show_raw">แสดง JSON ดิบ</string>
     <string name="tool_output_hide_raw">ซ่อน JSON ดิบ</string>
-    <string name="tool_output_copy_raw">คัดลอก JSON ดิบ</string>
     <string name="goal_title">เป้าหมาย</string>
     <string name="goal_none">ไม่มีเป้าหมายที่ใช้งานอยู่</string>
-    <string name="goal_phase_active">ใช้งานอยู่</string>
-    <string name="goal_phase_paused">หยุดชั่วคราว</string>
-    <string name="goal_phase_blocked">ติดขัด</string>
-    <string name="goal_phase_complete">เสร็จแล้ว</string>
     <string name="goal_rounds">รอบที่ %1$d จาก %2$s</string>
     <string name="goal_pause">หยุดชั่วคราว</string>
     <string name="goal_resume">ทำต่อ</string>
@@ -162,7 +156,6 @@
     <string name="work_steps_detailed_hint">เหมือนแบบมาตรฐาน แต่การเรียกเครื่องมือในเทิร์นที่กำลังทำงานจะแสดงทีละรายการ</string>
     <string name="work_steps_verbose">ขยายทั้งหมด</string>
     <string name="work_steps_verbose_hint">ไม่พับและไม่จัดกลุ่มอะไรเลย การเรียกเครื่องมือจะเปิดเอง และแสดงส่วนต้นของผลลัพธ์ที่ยาว</string>
-    <string name="work_steps_clipped">แสดงส่วนต้นของผลลัพธ์ที่ยาว</string>
     <string name="work_steps_show_all">แสดงทั้งหมด</string>
     <string name="settings_plugins">ปลั๊กอิน</string>
     <string name="settings_plugins_inventory">รายการปลั๊กอิน</string>
@@ -243,7 +236,6 @@
     <string name="chat_stats_tokens">เข้า %1$s · ออก %2$s</string>
     <string name="chat_stats_cache">แคช %1$d%%</string>
     <string name="chat_context_used">ใช้บริบทไปแล้ว %1$d%%</string>
-    <string name="permission_custom">กำหนดเอง</string>
     <string name="permission_custom_hint">การตั้งค่าแซนด์บ็อกซ์และการอนุมัติปัจจุบันไม่ตรงกับพรีเซ็ตใด</string>
     <string name="permission_confirm_title">ให้สิทธิ์เข้าถึงเต็มรูปแบบหรือไม่</string>
     <string name="permission_confirm_body">เอเจนต์จะอ่านและเขียนได้ทุกที่บนคอมพิวเตอร์ที่รัน harness และจะไม่ขออนุมัติอีก</string>
@@ -274,14 +266,6 @@
     <string name="chat_retrying">กำลังลองใหม่…</string>
     <string name="plan_mode_title">โหมดวางแผน</string>
     <string name="plan_mode_hint">ค้นคว้าและเสนอแผนก่อนแก้ไขสิ่งใด</string>
-    <string name="preset_standard_name">โหมดมาตรฐาน</string>
-    <string name="preset_standard_desc">เอเจนต์เขียนโค้ดเต็มรูปแบบ พร้อมการแก้ไขไฟล์ เชลล์ การค้นหาไฟล์และเว็บ สกิล การวางแผน เป้าหมาย ซับเอเจนต์ และเวิร์กโฟลว์</string>
-    <string name="preset_code_name">โหมด PTC</string>
-    <string name="preset_code_desc">ทุกอย่างของโหมดมาตรฐาน พร้อมเครื่องมือที่ใช้ได้ผ่าน Code Mode SDK เพื่อให้โมเดลรวมหลายขั้นตอนไว้ในโปรแกรม TypeScript เดียว</string>
-    <string name="preset_minimal_name">โหมดเรียบง่าย</string>
-    <string name="preset_minimal_desc">เอเจนต์เขียนโค้ดที่มีเพียงสองเครื่องมือ ได้แก่ bash แบบถาวรและ str_replace_editor</string>
-    <string name="preset_cordis_name">โหมดสร้างสรรค์</string>
-    <string name="preset_cordis_desc">สำหรับสร้างพรีเซ็ตเอเจนต์ของคุณเอง มีทุกอย่างของโหมดมาตรฐาน พร้อมเครื่องมือตรวจสอบขณะทำงาน ทดลองปลั๊กอิน และคำแนะนำในการเขียนพรีเซ็ต</string>
     <string name="plugins_enabled">เปิดใช้งาน</string>
     <string name="plugins_disabled">ปิดใช้งาน</string>
     <string name="plugins_phase_unmounted">ยังไม่ได้โหลด</string>
@@ -409,14 +393,6 @@
     <string name="harness_automation_history_cursor_error">ประวัติมีการเปลี่ยนแปลง ลองอีกครั้ง</string>
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
-    <string name="system_line_permission_changed">คุณเปลี่ยนสิทธิ์เป็น %1$s</string>
-    <string name="system_line_permission_changed_plain">คุณเปลี่ยนสิทธิ์</string>
-    <string name="system_line_permission_failed">เปลี่ยนสิทธิ์ไม่สำเร็จ</string>
-    <string name="system_line_compact">คุณบีบอัดการสนทนา</string>
-    <string name="system_line_plan_on">คุณเปิดโหมดวางแผน</string>
-    <string name="system_line_plan_off">คุณปิดโหมดวางแผน</string>
-    <string name="system_line_command">คุณรัน %1$s</string>
-    <string name="system_line_command_failed">รัน %1$s ไม่สำเร็จ</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">ย้อนกลับมาถึงตรงนี้</string>
     <string name="rewind_no_text">(ไม่มีข้อความ)</string>
@@ -490,7 +466,6 @@
     <string name="hold_tool_actions">ตัวเลือกของการเรียกเครื่องมือ</string>
     <string name="hold_file_actions">ตัวเลือกของไฟล์</string>
     <string name="hold_select_text">เลือกข้อความ</string>
-    <string name="hold_copy_all">คัดลอกทั้งหมด</string>
     <string name="hold_edit_as_new">แก้ไขเป็นข้อความใหม่</string>
     <string name="hold_edit_as_new_detail">ใส่ลงในช่องพิมพ์ ข้อความเดิมยังอยู่</string>
     <string name="hold_rewind_here">ย้อนกลับไปที่ข้อความนี้</string>
@@ -542,10 +517,7 @@
     <string name="quota_rate_limited">ส่งคำขอถี่เกินไป ลองใหม่อีกครั้งในอีกสักครู่</string>
     <string name="quota_limit_short">ถึงขีดจำกัดแล้ว</string>
     <string name="quota_rate_short">ถูกจำกัดคำขอ</string>
-    <string name="permission_preset_read_only">อ่านอย่างเดียว</string>
     <string name="permission_preset_workspace_write">เขียนในเวิร์กสเปซ</string>
-    <string name="permission_preset_full_access">เข้าถึงทั้งหมด</string>
-    <string name="permission_preset_auto">ตรวจสอบอัตโนมัติ</string>
     <string name="permission_preset_auto_desc">รันโดยไม่มีแซนด์บ็อกซ์ หลังจากการตรวจสอบเชิงทดลองโดยโมเดลเดียวกันสำหรับการเรียกใช้เครื่องมือเนทีฟและการเรียก PTC ภายในทุกครั้ง</string>
     <string name="shortcuts_group_message">ช่องข้อความ</string>
     <string name="shortcuts_group_sessions">เซสชัน</string>

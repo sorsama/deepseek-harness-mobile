@@ -21,38 +21,8 @@
     <string name="settings_clear_last_sessions_confirm_action">忘记</string>
     <string name="feedback_error_conflict">这条评价已在别处被修改。你的备注还在，可以再发送一次。</string>
     <string name="feedback_error_generic">无法保存你的反馈，请稍后再试。</string>
-    <string name="toolcard_title_tool">工具</string>
-    <string name="toolcard_title_terminal">终端</string>
-    <string name="toolcard_title_diff">差异</string>
-    <string name="toolcard_title_search">搜索</string>
-    <string name="toolcard_title_web">网页</string>
-    <string name="toolcard_running">运行中</string>
-    <string name="toolcard_killed_by">被 %1$s 终止</string>
-    <string name="toolcard_exit_code">退出码 %1$d</string>
-    <string name="toolcard_showing_of">显示 %1$d / %2$d</string>
-    <string name="toolcard_more">还有 %1$d 项</string>
     <string name="toolcard_section_in">输入</string>
-    <string name="toolcard_section_out">输出</string>
-    <string name="toolcard_section_locations">位置</string>
     <plurals name="settings_forget_hosts_confirm_body">
         <item quantity="other">将从这部手机移除 %d 个已保存的 harness 及其中继配对。要再次使用，需要重新连接或配对。</item>
-    </plurals>
-    <plurals name="toolcard_blocks">
-        <item quantity="other">%d 个块</item>
-    </plurals>
-    <plurals name="toolcard_locations">
-        <item quantity="other">%d 个位置</item>
-    </plurals>
-    <plurals name="toolcard_files">
-        <item quantity="other">%d 个文件</item>
-    </plurals>
-    <plurals name="toolcard_results">
-        <item quantity="other">%d 条结果</item>
-    </plurals>
-    <plurals name="toolcard_lines">
-        <item quantity="other">%d 行</item>
-    </plurals>
-    <plurals name="toolcard_sources">
-        <item quantity="other">%d 个来源</item>
     </plurals>
 </resources>

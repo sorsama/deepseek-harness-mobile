@@ -22,9 +22,6 @@
     <string name="cmdperm_pending">harness अभी भी “%1$s” के साथ चल रहा है। इसे फिर से शुरू करें ताकि नई चैट आपकी पसंद इस्तेमाल करें।</string>
     <string name="cmdperm_unsupported">harness का यह वर्शन कमांड से पहले पूछ नहीं सकता। इसे अपडेट करें, ताकि आप चुन सकें कि कमांड तुरंत चलें या पहले आपसे पूछें।</string>
 
-    <string name="permission_preset_ask_commands">कमांड से पहले पूछें</string>
-    <string name="permission_preset_ask_commands_desc">हर कमांड से पहले और वर्कस्पेस के बाहर किसी बदलाव से पहले आपसे पूछता है।</string>
-    <string name="permission_preset_full_access_desc">बिना पूछे कमांड चलाता है और फ़ाइलें बदलता है।</string>
 
     <string name="approval_command_title">यह कमांड चलाएँ?</string>
     <string name="approval_file_title">वर्कस्पेस के बाहर की फ़ाइल बदलें?</string>
@@ -40,10 +37,4 @@
     <string name="sandbox_notice_builtin">यह चैट ऐसी सेटिंग पर है जिसे sandbox चाहिए, और फ़ोन उसे यह नहीं दे सकता, इसलिए वह कमांड नहीं चली। चैट की सेटिंग बदलें, फिर दोबारा कहें।</string>
     <string name="sandbox_notice_switch">“%1$s” पर बदलें</string>
     <string name="sandbox_notice_other">वह कमांड नहीं चली क्योंकि इस चैट की सेटिंग को sandbox चाहिए और harness जहाँ चलता है वहाँ कोई नहीं है। आप चैट के अनुमति बटन से दूसरी सेटिंग चुन सकते हैं।</string>
-    <string name="subagent_command_denied">सहायक एजेंट आपसे पूछ नहीं सकता, इसलिए यह कमांड नहीं चली।</string>
-    <string name="command_denied_rejected">आपने मना किया, इसलिए यह नहीं चला।</string>
-    <string name="command_denied_cancelled">आपके जवाब से पहले सवाल वापस ले लिया गया, इसलिए यह नहीं चला।</string>
-    <string name="command_denied_nobody">सवाल का जवाब देने के लिए कोई नहीं था, इसलिए यह नहीं चला। एजेंट के काम करते समय ऐप को जुड़ा रखें।</string>
-    <string name="command_denied_too_large">यह आपको पूरा दिखाने के लिए बहुत लंबा था (सीमा 256 KB है), इसलिए आपसे पूछा नहीं गया और यह नहीं चला। एजेंट से इसे छोटे हिस्सों में बांटने को कहा गया।</string>
-    <string name="command_denied_other">इस फ़ोन की कमांड जांच ने इसे रोक दिया, इसलिए यह नहीं चला।</string>
 </resources>

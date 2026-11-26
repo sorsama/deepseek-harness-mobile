@@ -49,7 +49,6 @@
     <string name="chat_loading_older">Загрузка более ранних сообщений…</string>
     <string name="chat_load_older_retry">Не удалось загрузить более ранние сообщения. Нажмите, чтобы повторить</string>
     <string name="chat_stopped">Остановлено</string>
-    <string name="chat_error_turn">Ход завершился ошибкой</string>
     <string name="chat_max_tokens">Достигнут лимит токенов</string>
     <string name="chat_retry_scheduled">Повтор через %1$d с</string>
     <string name="chat_copy_message">Скопировать сообщение</string>
@@ -70,13 +69,8 @@
     <string name="chat_output_placeholder">Вывод</string>
     <string name="tool_output_show_raw">Показать исходный JSON</string>
     <string name="tool_output_hide_raw">Скрыть исходный JSON</string>
-    <string name="tool_output_copy_raw">Копировать исходный JSON</string>
     <string name="goal_title">Цель</string>
     <string name="goal_none">Нет активной цели</string>
-    <string name="goal_phase_active">Активна</string>
-    <string name="goal_phase_paused">На паузе</string>
-    <string name="goal_phase_blocked">Заблокирована</string>
-    <string name="goal_phase_complete">Завершена</string>
     <string name="goal_rounds">Раунд %1$d из %2$s</string>
     <string name="goal_pause">Пауза</string>
     <string name="goal_resume">Продолжить</string>
@@ -162,7 +156,6 @@
     <string name="work_steps_detailed_hint">Как «Стандартно», но вызовы инструментов текущего хода показываются по одному.</string>
     <string name="work_steps_verbose">Всё раскрыто</string>
     <string name="work_steps_verbose_hint">Ничего не сворачивается и не группируется. Вызовы инструментов открываются сами и показывают начало длинного вывода.</string>
-    <string name="work_steps_clipped">Показано начало длинного результата.</string>
     <string name="work_steps_show_all">Показать всё</string>
     <string name="settings_plugins">Плагины</string>
     <string name="settings_plugins_inventory">Каталог плагинов</string>
@@ -243,7 +236,6 @@
     <string name="chat_stats_tokens">Вход %1$s · выход %2$s</string>
     <string name="chat_stats_cache">Кэш %1$d%%</string>
     <string name="chat_context_used">Использовано %1$d%% контекста</string>
-    <string name="permission_custom">Свой</string>
     <string name="permission_custom_hint">Текущие настройки песочницы и подтверждений не совпадают ни с одним пресетом.</string>
     <string name="permission_confirm_title">Предоставить полный доступ?</string>
     <string name="permission_confirm_body">Агент сможет читать и записывать файлы в любом месте компьютера с harness и перестанет спрашивать подтверждение.</string>
@@ -274,14 +266,6 @@
     <string name="chat_retrying">Повторная попытка…</string>
     <string name="plan_mode_title">Режим плана</string>
     <string name="plan_mode_hint">Изучить задачу и предложить план до внесения правок.</string>
-    <string name="preset_standard_name">Стандартный режим</string>
-    <string name="preset_standard_desc">Полноценный агент разработки: правка файлов, оболочка, поиск по файлам и в вебе, навыки, планирование, цели, субагенты и рабочие процессы.</string>
-    <string name="preset_code_name">Режим PTC</string>
-    <string name="preset_code_desc">Всё, что умеет стандартный режим, но инструменты доступны через Code Mode SDK, поэтому модель может объединять несколько шагов в одну программу на TypeScript.</string>
-    <string name="preset_minimal_name">Минимальный режим</string>
-    <string name="preset_minimal_desc">Агент разработки с двумя инструментами: постоянный bash и str_replace_editor.</string>
-    <string name="preset_cordis_name">Режим создателя</string>
-    <string name="preset_cordis_desc">Для создания своих пресетов агента: всё, что есть в стандартном режиме, плюс проверка во время работы, эксперименты с плагинами и руководство по написанию пресетов.</string>
     <string name="plugins_enabled">Включён</string>
     <string name="plugins_disabled">Отключён</string>
     <string name="plugins_phase_unmounted">Не загружен</string>
@@ -409,14 +393,6 @@
     <string name="harness_automation_history_cursor_error">Записи изменились. Попробуйте ещё раз.</string>
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
-    <string name="system_line_permission_changed">Вы изменили разрешение на «%1$s»</string>
-    <string name="system_line_permission_changed_plain">Вы изменили разрешение</string>
-    <string name="system_line_permission_failed">Не удалось изменить разрешение</string>
-    <string name="system_line_compact">Вы сжали разговор</string>
-    <string name="system_line_plan_on">Вы включили режим плана</string>
-    <string name="system_line_plan_off">Вы выключили режим плана</string>
-    <string name="system_line_command">Вы запустили %1$s</string>
-    <string name="system_line_command_failed">Не удалось выполнить %1$s</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">Откат до этого места</string>
     <string name="rewind_no_text">(без текста)</string>
@@ -490,7 +466,6 @@
     <string name="hold_tool_actions">Действия с вызовом инструмента</string>
     <string name="hold_file_actions">Действия с файлом</string>
     <string name="hold_select_text">Выделить текст</string>
-    <string name="hold_copy_all">Копировать всё</string>
     <string name="hold_edit_as_new">Изменить как новое сообщение</string>
     <string name="hold_edit_as_new_detail">Помещает текст в поле ввода. Исходное сообщение остаётся.</string>
     <string name="hold_rewind_here">Откатить к этому сообщению</string>
@@ -542,10 +517,7 @@
     <string name="quota_rate_limited">Слишком много запросов, попробуйте чуть позже</string>
     <string name="quota_limit_short">Лимит исчерпан</string>
     <string name="quota_rate_short">Лимит запросов</string>
-    <string name="permission_preset_read_only">Только чтение</string>
     <string name="permission_preset_workspace_write">Запись в рабочей области</string>
-    <string name="permission_preset_full_access">Полный доступ</string>
-    <string name="permission_preset_auto">Автопроверка</string>
     <string name="permission_preset_auto_desc">Запуск без песочницы после экспериментальной проверки той же моделью каждого вызова встроенного инструмента и внутреннего вызова PTC.</string>
     <string name="shortcuts_group_message">Поле сообщения</string>
     <string name="shortcuts_group_sessions">Сеансы</string>

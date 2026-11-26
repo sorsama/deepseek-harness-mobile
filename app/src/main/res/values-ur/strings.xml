@@ -49,7 +49,6 @@
     <string name="chat_loading_older">پرانے پیغامات لوڈ ہو رہے ہیں…</string>
     <string name="chat_load_older_retry">پرانے پیغامات لوڈ نہیں ہو سکے۔ دوبارہ کوشش کے لیے ٹیپ کریں</string>
     <string name="chat_stopped">روک دیا گیا</string>
-    <string name="chat_error_turn">ٹرن ناکام ہو گیا</string>
     <string name="chat_max_tokens">ٹوکن کی حد پوری ہو گئی</string>
     <string name="chat_retry_scheduled">%1$d سیکنڈ میں دوبارہ کوشش</string>
     <string name="chat_copy_message">پیغام کاپی کریں</string>
@@ -70,13 +69,8 @@
     <string name="chat_output_placeholder">آؤٹ پٹ</string>
     <string name="tool_output_show_raw">خام JSON دکھائیں</string>
     <string name="tool_output_hide_raw">خام JSON چھپائیں</string>
-    <string name="tool_output_copy_raw">خام JSON کاپی کریں</string>
     <string name="goal_title">ہدف</string>
     <string name="goal_none">کوئی فعال ہدف نہیں</string>
-    <string name="goal_phase_active">فعال</string>
-    <string name="goal_phase_paused">موقوف</string>
-    <string name="goal_phase_blocked">مسدود</string>
-    <string name="goal_phase_complete">مکمل</string>
     <string name="goal_rounds">راؤنڈ %1$d از %2$s</string>
     <string name="goal_pause">موقوف کریں</string>
     <string name="goal_resume">جاری رکھیں</string>
@@ -162,7 +156,6 @@
     <string name="work_steps_detailed_hint">معیاری کی طرح، مگر جاری ٹرن کی ٹول کالز ایک ایک کر کے نظر آتی ہیں۔</string>
     <string name="work_steps_verbose">مکمل کھلا</string>
     <string name="work_steps_verbose_hint">کچھ بھی سمٹتا یا گروپ نہیں ہوتا۔ ٹول کالز خود کھل جاتی ہیں اور لمبے آؤٹ پٹ کا آغاز دکھاتی ہیں۔</string>
-    <string name="work_steps_clipped">لمبے نتیجے کا آغاز دکھایا جا رہا ہے۔</string>
     <string name="work_steps_show_all">سب دکھائیں</string>
     <string name="settings_plugins">پلگ انز</string>
     <string name="settings_plugins_inventory">پلگ ان کی فہرست</string>
@@ -243,7 +236,6 @@
     <string name="chat_stats_tokens">%1$s ان پٹ · %2$s آؤٹ پٹ</string>
     <string name="chat_stats_cache">کیش %1$d%%</string>
     <string name="chat_context_used">%1$d%% سیاق استعمال ہوا</string>
-    <string name="permission_custom">حسبِ ضرورت</string>
     <string name="permission_custom_hint">موجودہ سینڈ باکس اور منظوری کی ترتیبات کسی پری سیٹ سے میل نہیں کھاتیں۔</string>
     <string name="permission_confirm_title">مکمل رسائی دیں؟</string>
     <string name="permission_confirm_body">ایجنٹ harness کمپیوٹر پر کہیں بھی پڑھ اور لکھ سکے گا اور منظوری مانگنا بند کر دے گا۔</string>
@@ -274,14 +266,6 @@
     <string name="chat_retrying">دوبارہ کوشش…</string>
     <string name="plan_mode_title">پلان موڈ</string>
     <string name="plan_mode_hint">کچھ بھی ترمیم کرنے سے پہلے تحقیق کر کے منصوبہ پیش کریں۔</string>
-    <string name="preset_standard_name">اسٹینڈرڈ موڈ</string>
-    <string name="preset_standard_desc">مکمل کوڈنگ ایجنٹ: فائل ایڈیٹنگ، شیل، فائل و ویب تلاش، اسکلز، منصوبہ بندی، اہداف، ذیلی ایجنٹ اور ورک فلو۔</string>
-    <string name="preset_code_name">PTC موڈ</string>
-    <string name="preset_code_desc">اسٹینڈرڈ موڈ کی ہر چیز، اور ٹولز Code Mode SDK کے ذریعے ملتے ہیں تاکہ ماڈل کئی مراحل کو ایک ہی TypeScript پروگرام میں جوڑ سکے۔</string>
-    <string name="preset_minimal_name">کم سے کم موڈ</string>
-    <string name="preset_minimal_desc">دو ٹولز والا کوڈنگ ایجنٹ: مستقل bash اور str_replace_editor۔</string>
-    <string name="preset_cordis_name">کریئیٹر موڈ</string>
-    <string name="preset_cordis_desc">اپنی مرضی کے ایجنٹ پری سیٹ بنانے کے لیے۔ اس میں اسٹینڈرڈ موڈ کی ہر چیز شامل ہے، ساتھ رن ٹائم معائنہ، پلگ ان تجربات اور پری سیٹ لکھنے کی رہنمائی۔</string>
     <string name="plugins_enabled">فعال</string>
     <string name="plugins_disabled">غیر فعال</string>
     <string name="plugins_phase_unmounted">لوڈ نہیں ہے</string>
@@ -409,14 +393,6 @@
     <string name="harness_automation_history_cursor_error">ریکارڈ بدل گئے ہیں۔ دوبارہ کوشش کریں۔</string>
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
-    <string name="system_line_permission_changed">آپ نے اجازت بدل کر %1$s کر دی</string>
-    <string name="system_line_permission_changed_plain">آپ نے اجازت بدلی</string>
-    <string name="system_line_permission_failed">اجازت بدلی نہیں جا سکی</string>
-    <string name="system_line_compact">آپ نے گفتگو مختصر کی</string>
-    <string name="system_line_plan_on">آپ نے پلان موڈ آن کیا</string>
-    <string name="system_line_plan_off">آپ نے پلان موڈ آف کیا</string>
-    <string name="system_line_command">آپ نے %1$s چلایا</string>
-    <string name="system_line_command_failed">%1$s نہیں چل سکا</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">یہاں تک ریوائنڈ کیا گیا</string>
     <string name="rewind_no_text">(کوئی متن نہیں)</string>
@@ -490,7 +466,6 @@
     <string name="hold_tool_actions">ٹول کال کے اختیارات</string>
     <string name="hold_file_actions">فائل کے اختیارات</string>
     <string name="hold_select_text">متن منتخب کریں</string>
-    <string name="hold_copy_all">سب کاپی کریں</string>
     <string name="hold_edit_as_new">نئے پیغام کے طور پر ترمیم کریں</string>
     <string name="hold_edit_as_new_detail">اسے کمپوزر میں رکھ دیتا ہے۔ اصل پیغام باقی رہتا ہے۔</string>
     <string name="hold_rewind_here">اس پیغام تک ریوائنڈ کریں</string>
@@ -542,10 +517,7 @@
     <string name="quota_rate_limited">بہت زیادہ درخواستیں ہو گئیں، تھوڑی دیر بعد دوبارہ کوشش کریں</string>
     <string name="quota_limit_short">حد پوری ہو گئی</string>
     <string name="quota_rate_short">درخواستیں محدود</string>
-    <string name="permission_preset_read_only">صرف پڑھنا</string>
     <string name="permission_preset_workspace_write">ورک اسپیس میں لکھنا</string>
-    <string name="permission_preset_full_access">مکمل رسائی</string>
-    <string name="permission_preset_auto">خودکار جائزہ</string>
     <string name="permission_preset_auto_desc">ہر نیٹو ٹول کال اور PTC اندرونی کال سے پہلے ایک ہی ماڈل کا تجرباتی جائزہ لینے کے بعد بغیر سیٹ باکس کے چلتا ہے۔</string>
     <string name="shortcuts_group_message">پیغام کا خانہ</string>
     <string name="shortcuts_group_sessions">سیشنز</string>
