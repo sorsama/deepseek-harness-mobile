@@ -249,6 +249,7 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
 
                 SettingsCard(stringResource(R.string.settings_general)) {
                     LanguageRow(settings) { tag -> viewModel.set { it.copy(localeOverride = tag) } }
+                    BalanceCurrencyRow(settings) { choice -> viewModel.set { it.copy(balanceCurrency = choice) } }
                 }
 
                 // The customizable theme: scheme, accent, OLED canvas, text size and touch feedback.
@@ -292,6 +293,7 @@ fun SettingsScreen(onClose: () -> Unit, viewModel: SettingsViewModel = hiltViewM
                     AutoTranslateReasoningRow(settings.autoTranslateReasoning) {
                         viewModel.set { it.copy(autoTranslateReasoning = !it.autoTranslateReasoning) }
                     }
+                    DictationSettingsRows(settings) { transform -> viewModel.set(transform) }
                 }
 
                 SettingsCard(stringResource(R.string.settings_connection)) {

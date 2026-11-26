@@ -77,10 +77,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         compose = true
         buildConfig = true
@@ -111,6 +107,31 @@ android {
         error += listOf("MissingTranslation", "ImpliedQuantity")
         // `HardcodedText` is deliberately absent: it only inspects XML layouts, and this app has
         // none. Compose string literals have to be caught in review.
+        // Checks that arrived with androidx Compose UI 1.8 (the Compose Multiplatform 1.11 upgrade) and flag
+        // existing code: `context.getString` inside composables and a locale read outside composition. They
+        // are worth fixing screen by screen, but the upgrade must not change what the app does, so they
+        // warn for now instead of failing the build.
+        warning += listOf("LocalContextGetResourceValueCall", "NonObservableLocale")
+    }
+}
+
+// Kotlin 2.3 refuses `android { kotlinOptions { jvmTarget } }`; the same target in the compilerOptions DSL.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
+// Hilt reads the Kotlin metadata of the classes it processes with kotlin-metadata-jvm. Dagger 2.57.2 asks for
+// 2.2.0, which refuses classes compiled by Kotlin 2.3 ("maximum supported version is 2.2.0"), and Dagger
+// releases that ask for a newer one need AGP 9. It is an annotation-processor dependency only, never in the APK:
+// the reader of the same Kotlin version as the compiler reads what that compiler writes.
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
+            useVersion(libs.versions.kotlin.get())
+            because("Hilt must read Kotlin 2.3 metadata")
+        }
     }
 }
 
@@ -146,7 +167,8 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.appcompat)
-    // The plugin add-on layer's web view: phone-mode script, page bridge, its own cookie profile.
+    // WebView profiles of their own: the plugin add-on layer (phone-mode script, page bridge, cookies)
+    // and the workspace Browser tab (cookies, storage).
     implementation(libs.androidx.webkit)
     // Folds, hinges and postures for the adaptive shell (see ui/adaptive).
     implementation(libs.androidx.window)

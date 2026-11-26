@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import com.labteto.dshmobile.ui.components.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -71,6 +72,8 @@ import androidx.compose.ui.res.stringResource
 import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.theme.Ds
 import com.labteto.dshmobile.core.markdown.safeHttpUrl
+import com.labteto.dshmobile.core.browser.findLocalWebLinks
+import com.labteto.dshmobile.core.browser.isLocalWebAddress
 import com.labteto.dshmobile.core.markdown.MdBlock
 import com.labteto.dshmobile.core.markdown.inlineHtmlToMarkdown
 import com.labteto.dshmobile.core.markdown.parseMarkdown
@@ -78,6 +81,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import kotlin.math.pow
 
 val LocalFileOpener = staticCompositionLocalOf<(String) -> Unit> { {} }
+
+/**
+ * Where a local web link goes (`http://localhost:5173`, an address on a private network): the
+ * workspace Browser tab, when the screen has one. Null sends every link to the phone's browser, as
+ * before. Public links always go to the phone's browser.
+ */
+val LocalWebLinkOpener = staticCompositionLocalOf<((String) -> Unit)?> { null }
 
 /**
  * Where a workspace reference leads: a folder goes to the Files browser at that directory, a file
@@ -114,8 +124,10 @@ fun MarkdownText(text: String, modifier: Modifier = Modifier, streamingCaret: Bo
     // An agent's reply sometimes carries a little HTML (`<b>`, `<br>`, `<a href>`, comments): turned into
     // the Markdown below so its tags are not shown as text.
     val blocks = remember(text) { groupListBlocks(parseMarkdown(inlineHtmlToMarkdown(text))) }
+    val readingObserver = LocalMarkdownReadingObserver.current
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        blocks.forEach { render ->
+        blocks.forEachIndexed { index, render ->
+            val content: @Composable () -> Unit = {
             when (render) {
                 is RenderBlock.ListRun -> MdListBlock(render)
                 is RenderBlock.Of -> when (val block = render.block) {
@@ -143,6 +155,10 @@ fun MarkdownText(text: String, modifier: Modifier = Modifier, streamingCaret: Bo
                     // Grouped away above; the parser never hands a bare item to the renderer.
                     is MdBlock.ListItem -> Unit
                 }
+            }
+            }
+            if (readingObserver == null) content() else {
+                Box(Modifier.fillMaxWidth().onGloballyPositioned { readingObserver(index, it) }) { content() }
             }
         }
         // The design's live-write signal: a small accent block that blinks while a reply is being
@@ -307,7 +323,8 @@ private fun InlineMarkdown(text: String, style: TextStyle, modifier: Modifier = 
     val openFile = LocalFileOpener.current
     val openFolder = LocalFolderOpener.current
     val uriHandler = LocalUriHandler.current
-    val hasLinks = remember(result) { result.getStringAnnotations("url", 0, result.length).isNotEmpty() }
+    val openWebLink = LocalWebLinkOpener.current
+    val hasLinks =remember(result) { result.getStringAnnotations("url", 0, result.length).isNotEmpty() }
     // Each pill has a slot of its own, as wide as its label at the pill's (slightly smaller, mono)
     // size plus icon and padding, so the line is laid out around exactly that pill. A label wider
     // than most of the screen is capped and ellipsized rather than run past the edge.
@@ -356,7 +373,12 @@ private fun InlineMarkdown(text: String, style: TextStyle, modifier: Modifier = 
                     // session's own files. The scheme check lives in core so a reply cannot smuggle
                     // `intent:`/`file:` past this handler by dressing it up as a link.
                     val url = safeHttpUrl(raw)
-                    if (url != null) runCatching { uriHandler.openUri(url) }
+                    // A local address (a dev server the agent started) opens in the workspace
+                    // Browser tab, which knows whether this phone can reach it; the phone's own
+                    // browser would try the phone's localhost instead.
+                    val inTab = openWebLink?.takeIf { url != null && isLocalWebAddress(url) }
+                    if (url != null && inTab != null) inTab(url)
+                    else if (url != null) runCatching { uriHandler.openUri(url) }
                     else com.labteto.dshmobile.ui.screens.main.previewPath(raw)?.let { openWorkspaceReference(it, openFile, openFolder) }
                 }
             }
@@ -376,14 +398,22 @@ private fun buildInlineContent(
     var pills = 0
     parseInlineSegments(text).forEach { segment ->
         when (segment) {
-            is InlineSegment.Plain -> builder.append(segment.text)
+            is InlineSegment.Plain -> builder.appendWithLocalLinks(segment.text, colors)
             is InlineSegment.Bold -> builder.withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(segment.text) }
             is InlineSegment.Italic -> builder.withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(segment.text) }
             // In right-to-left prose a path or a command is isolated, so it keeps its own order
             // (and a `C:\...` path is not split into "C:" and the rest).
             is InlineSegment.Code -> builder.withStyle(
                 SpanStyle(fontFamily = codeStyle.fontFamily, color = codeStyle.color),
-            ) { append(inlineCodeDisplay(segment.text, paragraph = text)) }
+            ) {
+                // The isolate (right-to-left paragraphs only) goes around the span, not into the
+                // text the address finder sees, so a `http://localhost:8099/` span stays tappable.
+                val shown = inlineCodeDisplay(segment.text, paragraph = text)
+                val mark = (shown.length - segment.text.length) / 2
+                append(shown.substring(0, mark))
+                appendWithLocalLinks(segment.text, colors)
+                append(shown.substring(shown.length - mark))
+            }
             is InlineSegment.Link -> {
                 val path = if (safeHttpUrl(segment.url) == null) com.labteto.dshmobile.ui.screens.main.previewPath(segment.url) else null
                 builder.pushStringAnnotation("url", segment.url)
@@ -402,6 +432,29 @@ private fun buildInlineContent(
         }
     }
     return builder.toAnnotatedString()
+}
+
+/**
+ * [text] with its bare local web addresses (`http://localhost:5173/`, as an agent or a dev server
+ * prints them) made tappable: underlined as well as tinted, so a link is not told by colour alone.
+ * Public addresses stay plain text, so a paragraph that only mentions one keeps its long-press
+ * selection.
+ */
+private fun AnnotatedString.Builder.appendWithLocalLinks(text: String, colors: DsColors) {
+    val links = findLocalWebLinks(text)
+    if (links.isEmpty()) {
+        append(text)
+        return
+    }
+    var at = 0
+    links.forEach { link ->
+        append(text.substring(at, link.start))
+        pushStringAnnotation("url", link.url)
+        withStyle(SpanStyle(color = colors.accent, textDecoration = TextDecoration.Underline)) { append(link.url) }
+        pop()
+        at = link.end
+    }
+    append(text.substring(at))
 }
 
 /** The inline-content slot of the [index]th workspace-path pill in a paragraph. */

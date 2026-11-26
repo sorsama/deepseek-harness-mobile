@@ -229,6 +229,8 @@ fun ChatScreen(
     // A held prompt waiting on the reader's say-so before it replaces a draft they had started.
     var replaceDraftWith by remember(composer.key) { mutableStateOf<String?>(null) }
     var composerFocusTick by remember { mutableIntStateOf(0) }
+    // Ctrl+M: start or stop dictation. Each value is one press.
+    var dictationTick by remember { mutableIntStateOf(0) }
 
     // The Details panel's Subagents rows. The sheet closes the transcript stream when it goes, so
     // opening it here, and only here, leaves no stream behind.
@@ -600,6 +602,9 @@ fun ChatScreen(
         com.labteto.dshmobile.ui.components.LocalFolderOpener provides { path: String ->
             store.panels.get(composer.key).browse(path); panelKey = composer.key
         },
+        com.labteto.dshmobile.ui.components.LocalWebLinkOpener provides { url: String ->
+            store.panels.get(composer.key).openBrowser(url); panelKey = composer.key
+        },
     ) {
     // Files and text dropped from another window (the ChromeOS Files app, a browser, an app in the
     // next split) land in the tray and the draft, the same as picking them does.
@@ -616,7 +621,10 @@ fun ChatScreen(
     // Ctrl+K and Ctrl+/ move to the message box.
     val shortcutRouter = LocalShortcutRouter.current
     LaunchedEffect(shortcutRouter) {
-        shortcutRouter.events.collect { if (it == AppShortcut.FocusComposer) composerFocusTick++ }
+        shortcutRouter.events.collect {
+            if (it == AppShortcut.FocusComposer) composerFocusTick++
+            if (it == AppShortcut.ToggleDictation) dictationTick++
+        }
     }
     Surface(
         modifier = Modifier
@@ -1146,6 +1154,21 @@ fun ChatScreen(
                                     filePicker.launch(arrayOf("*/*"))
                                 }
                             }
+                        } else {
+                            null
+                        },
+                        // The microphone: off by the setting, and absent where the phone has no
+                        // speech service. A take belongs to the session it was started in.
+                        dictation = if (appSettings.dictationEnabled) {
+                            DictationConfig(
+                                languageChoice = appSettings.dictationLanguage,
+                                appLanguage = appSettings.localeOverride,
+                                noticeSeen = appSettings.dictationNoticeSeen,
+                                sessionKey = composer.key,
+                                toggleTick = dictationTick,
+                                onNoticeSeen = { scope.launch { hostsStore.setSetting { it.copy(dictationNoticeSeen = true) } } },
+                                onLanguageChoice = { choice -> scope.launch { hostsStore.setSetting { it.copy(dictationLanguage = choice) } } },
+                            )
                         } else {
                             null
                         },

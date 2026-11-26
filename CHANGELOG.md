@@ -42,7 +42,61 @@ All notable changes to DSH Mobile are documented here. Format based on
   too), shows its progress, and says **Nothing found** when no plugin adds anything. Works on this
   phone, on the local network and through a relay.
 
+- **Dictate a message.** On a phone that has a speech recognition service, the message box has a
+  microphone button. Tap it to start listening and tap again to stop: what you said goes into the
+  draft at the caret as ordinary text, with a space only where one belongs (Thai, Chinese and
+  Japanese are joined without one), and nothing is sent. While you speak, an animated level and a
+  **Listening…** line show it is on, what has been heard so far appears in the box in italics and
+  underlined, and **Cancel** throws the take away. The draft is never touched by a cancel, an error
+  or an interruption. It uses the phone's own speech service and prefers its offline model; the
+  audio is not sent to the harness, and the first time you use it the app says so. The microphone
+  permission is asked for on the first tap only; if it is refused for good, the message offers
+  **Open settings**. Dictation stops when the app goes to the background, another window covers it,
+  you switch session, or the speech service reports it lost the microphone, as a call does. Hold the microphone, or use Settings, Chat,
+  **Dictation language**, to choose the language (the app's, the phone's, or any of the 11); Ctrl+M
+  starts and stops it from a keyboard. **Settings, Chat, Dictation button** turns it off, and says
+  why it is missing on a phone without a speech service.
+
+- **A Browser tab in the Workspace.** Next to Files, Preview and Terminal, it shows web pages: an
+  address bar, back, forward, reload or stop, the page title, and **Open in browser**, **Copy link**
+  and **Clear site data for this tab**. Tapping a local link in the chat (`http://localhost:5173`, an
+  address on your network) opens it there, and the tab lists the local addresses the agent and its
+  commands printed in this chat. What it can reach depends on the connection: on the built-in
+  harness `localhost` is this phone and opens; over the local network or a relay the harness
+  computer's `localhost` can't be reached from the phone, so the tab says so and, where it can,
+  offers the computer's address instead. Pages get no access to the app, its sign-ins or other
+  apps' links without asking, and keep their cookies and storage to themselves; see
+  [docs/SECURITY.md](docs/SECURITY.md).
+
+- **Show your DeepSeek balance in a second currency.** Settings, General has a new **Also show balance
+  in** row. Pick **Off** (the default), **Match my region**, or one of 20 currencies (USD, CNY, EUR,
+  JPY, GBP, KRW, INR, HKD, SGD, TWD, AUD, CAD, CHF, RUB, BRL, MXN, THB, IDR, TRY, SAR), and the usage
+  card and the Account page add an approximate amount after your real balance, such as
+  `54.12$ · ≈ 361.59 CNY`. The real balance stays first and exactly as before. The estimate is cut,
+  never rounded, so it can never read higher than the money, and it is left out when you pick the
+  wallet's own currency. The rates come from the free ExchangeRate-API (open.er-api.com), with a
+  copy on jsDelivr as a fallback when it is down. The app fetches them at most once a day and only
+  while the setting is on, and the request carries nothing about you or your account. The last good
+  rates are kept on the phone and used when you are offline, and once they are more than 7 days old
+  the estimate disappears rather than guess. The Account page links to the rate source. Every
+  language has its own wording for the row. (#136)
+
 ### Fixed
+
+- **Keep your place in the transcript when its width changes.** Resizing the chat now preserves the
+  visible reading paragraph and the first visible history row without changing follow-tail behavior.
+  A reply still streaming also keeps its own stable row key while its text and caret update.
+
+- **A paired relay no longer shows as Unreachable when you can connect to it.** The Connect screen
+  decided a saved harness was reachable only if it could also read the host's home folder, and a
+  relay run with `privilegedMethods: loopback-only` (the setting its README recommends for a relay on
+  the internet) refuses exactly that request. The relay answered, a tap on its row connected, and the
+  row still said Unreachable; "reconnect to the last harness" skipped it for the same reason. A row is
+  now Reachable whenever the harness answers, with or without a home folder, and a successful
+  connection turns an Unreachable row Reachable and fills in its home. On iPhone the list is also
+  checked again when you come back to the Connect screen and when the app returns to the foreground,
+  as it already was on Android, instead of keeping the first answer until the app is closed.
+  (#141)
 
 - **The end of the newest message no longer hides under the composer's drawer.** Once a draft wraps
   past one line the message box lifts into a drawer over the chat, and the drawer covered the bottom
@@ -57,6 +111,18 @@ All notable changes to DSH Mobile are documented here. Format based on
   seconds, said **Command failed: transport failure: timeout**, and the harness's summary was thrown
   away halfway. Commands now wait for the harness to finish, the way plugin installs already did.
   (#139)
+
+### Internal
+
+- The shared UI is on Compose Multiplatform 1.11.1 and Kotlin 2.3.21 (from 1.7.1 and 2.0.21), with
+  the Compose BOM, Hilt, KSP and atomicfu moved to match, so the iOS screens to come get the common
+  back handler and the newer iOS text input. Android draws the same screens as before; the checked
+  shots are listed in the pull request.
+- iOS has a live connection behind the Connect screen: after connecting, the iPhone app reads the
+  harness's session list and shows how many sessions it has. The connection it reads through is one
+  port shared with Android (`HarnessConnection`), which the session list and chat build on next, and
+  `mock-harness --ci-fixtures` serves a demo harness with sessions, a transcript and a streamed reply
+  on port 3190 for those checks. (#141)
 
 ## [0.24.0] - 2026-11-19
 

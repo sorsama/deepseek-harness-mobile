@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,13 +27,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.core.DshCore
+import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.shared.resources.Res
 import com.labteto.dshmobile.shared.resources.common_connected
 import com.labteto.dshmobile.shared.resources.connect_harness_home
 import com.labteto.dshmobile.shared.resources.connect_protocol_baseline
+import com.labteto.dshmobile.shared.resources.connect_session_count
 import com.labteto.dshmobile.shared.resources.settings_connection_disconnect
 import com.labteto.dshmobile.ui.components.MascotMark
 import com.labteto.dshmobile.ui.components.MascotState
+import com.labteto.dshmobile.ui.components.localizedCount
 import com.labteto.dshmobile.ui.screens.connect.ConnectButtonVariant
 import com.labteto.dshmobile.ui.screens.connect.ConnectContent
 import com.labteto.dshmobile.ui.screens.connect.ConnectFailure
@@ -44,6 +49,10 @@ import com.labteto.dshmobile.ui.theme.DsType
 import com.labteto.dshmobile.ui.theme.DshTheme
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
+import platform.UIKit.UIApplicationDidBecomeActiveNotification
+import platform.UIKit.UIApplicationDidEnterBackgroundNotification
 
 /**
  * What the host asked the app to do when it opened, beyond showing the Connect screen.
@@ -63,6 +72,9 @@ import org.jetbrains.compose.resources.stringResource
  *   as a person would: [pairUrl] and [pairCode] fill the form and [pairSubmit] taps Pair; [pairPayload] hands the
  *   controller the text a QR scan would have decoded (a simulator has no camera); [pairScanner] opens the camera
  *   sheet. [onPairOutcome] hears the pairing result line (`DSH_PAIR_RESULT …`).
+ * - [onProbe] hears one `DSH_PROBE authority=… outcome=…` line per probe of a remembered host.
+ * - [onSessions] hears the result of the one session list call made after connecting
+ *   (`DSH_SESSIONS_RESULT listed count=…`, or `DSH_SESSIONS_RESULT failed code=…`).
  */
 internal class LaunchRequest(
     val address: String? = null,
@@ -79,6 +91,8 @@ internal class LaunchRequest(
     val pairScanner: Boolean = false,
     val onOutcome: ((String) -> Unit)? = null,
     val onPairOutcome: ((String) -> Unit)? = null,
+    val onProbe: ((String) -> Unit)? = null,
+    val onSessions: ((String) -> Unit)? = null,
 ) {
     /** Whether the app starts on the Pair screen. */
     val startsPairing: Boolean
@@ -94,7 +108,7 @@ private const val DEFAULT_PORT = "3080"
  *
  * Nothing sits behind a connection yet (the session list and the chat are later steps of the
  * port), so what a person sees on success is the result the screen has to give: which harness, its
- * home directory, and this client's protocol baseline, with a way to disconnect.
+ * home directory, how many sessions it has, and this client's protocol baseline, with a way to disconnect.
  */
 @Composable
 internal fun DshApp(app: IosApp, request: LaunchRequest) {
@@ -109,6 +123,62 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
         var pairPrefill by remember { mutableStateOf<String?>(null) }
         // The debug launch that asks for the camera sheet gets it once, not each time Pair is reopened.
         var scanFirst by remember { mutableStateOf(request.pairScanner) }
+
+        // The Recent rows are probed once when the controller is built, and a verdict was otherwise never revisited:
+        // a row that read Unreachable (the relay was asleep, the phone had no signal at launch) stayed that way for the
+        // life of the process. Android re-probes on every resume; this is the same for iOS, when the Connect screen
+        // comes back (after a disconnect, or after closing Pair) and when the app returns to the foreground.
+        var firstComposition by remember { mutableStateOf(true) }
+        LaunchedEffect(connected, pairing) {
+            if (firstComposition) {
+                // The controller's own first pass is already running.
+                firstComposition = false
+            } else if (!connected && !pairing) {
+                app.controller.refreshRecent()
+            }
+        }
+        val connectScreenShown by rememberUpdatedState(!connected && !pairing)
+        // iOS suspends an app soon after it leaves the screen, and its socket goes with it. Coming back from the
+        // background starts a fresh generation at once rather than waiting for the old one to notice; pulling down
+        // Control Center makes the app inactive without sending it to the background, and the socket is still there.
+        DisposableEffect(app) {
+            var wasInBackground = false
+            val center = NSNotificationCenter.defaultCenter
+            val background = center.addObserverForName(
+                name = UIApplicationDidEnterBackgroundNotification,
+                `object` = null,
+                queue = NSOperationQueue.mainQueue,
+            ) { _ -> wasInBackground = true }
+            val active = center.addObserverForName(
+                name = UIApplicationDidBecomeActiveNotification,
+                `object` = null,
+                queue = NSOperationQueue.mainQueue,
+            ) { _ ->
+                if (connectScreenShown) app.controller.refreshRecent()
+                if (wasInBackground) app.link.reconnectIfNeeded()
+                wasInBackground = false
+            }
+            onDispose {
+                center.removeObserver(background)
+                center.removeObserver(active)
+            }
+        }
+
+        // One session list call per connection, for the count on the Connected page (and the line a script reads).
+        // A reconnect keeps the page, so it keeps the count too.
+        var sessionCount by remember { mutableStateOf<Int?>(null) }
+        LaunchedEffect(connected, link.host) {
+            sessionCount = null
+            if (!connected) return@LaunchedEffect
+            val api = app.link.connectedApi ?: return@LaunchedEffect
+            when (val result = api.sessionList()) {
+                is RpcResult.Ok -> {
+                    sessionCount = result.value.items.size
+                    request.onSessions?.invoke("DSH_SESSIONS_RESULT listed count=${result.value.items.size}")
+                }
+                is RpcResult.Err -> request.onSessions?.invoke("DSH_SESSIONS_RESULT failed code=${result.error.code}")
+            }
+        }
 
         // Debug-launch behaviours, once. A tap on Connect is `connectManual`, so this is one.
         LaunchedEffect(Unit) {
@@ -179,6 +249,7 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                 authority = link.host?.authority.orEmpty(),
                 name = link.host?.name,
                 home = link.description?.home ?: link.host?.lastHome,
+                sessionCount = sessionCount,
                 onDisconnect = { app.controller.cancelConnect() },
             )
         } else {
@@ -231,9 +302,12 @@ private fun ConnectFailure.kind(): String = when (this) {
     is ConnectFailure.Other -> "OTHER"
 }
 
-/** Where a connection ends up for now: which harness, where its home is, and a way back to the form. */
+/**
+ * Where a connection ends up for now: which harness, where its home is, how many sessions it has, and a way back to
+ * the form. [sessionCount] is null until the list call has answered, and stays null if it failed.
+ */
 @Composable
-private fun ConnectedPage(authority: String, name: String?, home: String?, onDisconnect: () -> Unit) {
+private fun ConnectedPage(authority: String, name: String?, home: String?, sessionCount: Int?, onDisconnect: () -> Unit) {
     val colors = DsTheme.colors
     Surface(modifier = Modifier.fillMaxSize(), color = colors.bgBase) {
         Column(
@@ -269,6 +343,14 @@ private fun ConnectedPage(authority: String, name: String?, home: String?, onDis
             Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.tiny), horizontalAlignment = Alignment.CenterHorizontally) {
                 if (!home.isNullOrBlank()) {
                     Text(stringResource(Res.string.connect_harness_home, home), style = DsType.small13, color = colors.labelSecondary, textAlign = TextAlign.Center)
+                }
+                if (sessionCount != null) {
+                    Text(
+                        stringResource(Res.string.connect_session_count, localizedCount(sessionCount)),
+                        style = DsType.small13,
+                        color = colors.labelSecondary,
+                        textAlign = TextAlign.Center,
+                    )
                 }
                 Text(
                     stringResource(Res.string.connect_protocol_baseline, DshCore.PROTOCOL_BASELINE),

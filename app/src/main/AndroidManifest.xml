@@ -44,6 +44,18 @@
     <uses-feature
         android:name="android.hardware.camera.front"
         android:required="false" />
+    <!--
+        Only ever used for dictation in the message box, and requested the first time the
+        microphone button is tapped, never on launch. The audio goes to the phone's own speech
+        service (the platform SpeechRecognizer) and nowhere else: the app records nothing to disk
+        and does not send it to the harness. Declared `required="false"` so a device without a
+        microphone can still install: typing is a complete alternative. See docs/SECURITY.md,
+        "Dictation".
+    -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!--
         Both foreground services are `specialUse`. The built-in harness runtime is a local server
@@ -94,6 +106,14 @@
     -->
     <queries>
         <package android:name="com.termux" />
+        <!--
+            Whether the phone has a speech recognition service at all. From Android 11 on, the
+            platform's own availability check cannot see one without this, and would answer "no"
+            on a phone that has it, which hides the dictation button for no reason.
+        -->
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
     </queries>
 
     <application

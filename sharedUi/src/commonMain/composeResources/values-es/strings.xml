@@ -84,6 +84,7 @@
     <string name="connect_scanning">Escaneando tu red…</string>
     <string name="connect_section_discovered">Detectados</string>
     <string name="connect_section_discovered_relay">Relays detectados</string>
+    <string name="connect_session_count">Sesiones %1$s</string>
     <string name="connect_sign_in">Iniciar sesión</string>
     <string name="connect_sign_in_label">Enlace de arranque o token</string>
     <string name="connect_sign_in_link_body">El harness imprime un enlace al arrancar. Pega ese enlace, o solo el token tras ?token=.</string>

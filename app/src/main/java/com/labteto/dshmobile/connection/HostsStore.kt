@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.labteto.dshmobile.DshApplication
+import com.labteto.dshmobile.core.rates.BalanceCurrency
 import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.core.wire.dto.HostDescription
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -60,6 +61,10 @@ class HostsStore @Inject constructor(
         val DEFAULT_DELIVERY_MODE = stringPreferencesKey("default_delivery_mode")
         val AUTO_TRANSLATE_REASONING = booleanPreferencesKey("auto_translate_reasoning")
         val SHOW_UI_ADDONS = booleanPreferencesKey("show_ui_addons")
+        val DICTATION_ENABLED = booleanPreferencesKey("dictation_enabled")
+        val DICTATION_LANGUAGE = stringPreferencesKey("dictation_language")
+        val DICTATION_NOTICE_SEEN = booleanPreferencesKey("dictation_notice_seen")
+        val BALANCE_CURRENCY = stringPreferencesKey("balance_currency")
     }
 
     private val hostsSerializer = ListSerializer(HostConfig.serializer())
@@ -107,6 +112,10 @@ class HostsStore @Inject constructor(
             workStepDisplay = prefs.readWorkStepDisplay(),
             autoTranslateReasoning = prefs[Keys.AUTO_TRANSLATE_REASONING] ?: false,
             showUiAddons = prefs[Keys.SHOW_UI_ADDONS],
+            dictationEnabled = prefs[Keys.DICTATION_ENABLED] ?: true,
+            dictationLanguage = prefs[Keys.DICTATION_LANGUAGE],
+            dictationNoticeSeen = prefs[Keys.DICTATION_NOTICE_SEEN] ?: false,
+            balanceCurrency = BalanceCurrency.normalize(prefs[Keys.BALANCE_CURRENCY]),
         )
     }
 
@@ -316,6 +325,10 @@ class HostsStore @Inject constructor(
             prefs[Keys.AUTO_TRANSLATE_REASONING] = next.autoTranslateReasoning
             // Absent until someone sets it, so the memory-based default keeps applying until then.
             next.showUiAddons?.let { prefs[Keys.SHOW_UI_ADDONS] = it } ?: prefs.remove(Keys.SHOW_UI_ADDONS)
+            prefs[Keys.DICTATION_ENABLED] = next.dictationEnabled
+            next.dictationLanguage?.let { prefs[Keys.DICTATION_LANGUAGE] = it } ?: prefs.remove(Keys.DICTATION_LANGUAGE)
+            prefs[Keys.DICTATION_NOTICE_SEEN] = next.dictationNoticeSeen
+            prefs[Keys.BALANCE_CURRENCY] = BalanceCurrency.normalize(next.balanceCurrency)
             next.localeOverride?.let { prefs[Keys.LOCALE] = it } ?: prefs.remove(Keys.LOCALE)
         }
     }

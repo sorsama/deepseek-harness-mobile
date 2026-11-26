@@ -72,6 +72,15 @@ internal class PanelState(val key: ComposerKey) {
     var selectedTerminal by mutableStateOf<String?>(null)
     var shells by mutableStateOf<List<TerminalShell>>(emptyList())
     var shellPath by mutableStateOf<String?>(null)
+
+    /** The Browser tab's page, title and history flags; its web view belongs to the open panel. */
+    val browser = com.labteto.dshmobile.ui.screens.main.browser.BrowserTabState()
+
+    /** Show the Browser tab and open [url] there once it is on screen (a link the reader tapped). */
+    fun openBrowser(url: String) {
+        browser.pending = url
+        section = BROWSER_SECTION
+    }
     /**
      * Show Files at [path]. The listing is cleared so the panel fetches it when it next composes,
      * which is the same route the Files toolbar takes.
@@ -97,6 +106,9 @@ internal class PanelState(val key: ComposerKey) {
         section = 1
     }
 }
+
+/** [PanelState.section] of the Browser tab (Files 0, Preview 1, Terminal 2). */
+internal const val BROWSER_SECTION = 3
 
 internal class PanelRepository {
     private val panels = mutableMapOf<ComposerKey, PanelState>()

@@ -1,6 +1,6 @@
 # Architecture
 
-DSH Mobile is a four-module Gradle project (Kotlin 2.0, Compose, Hilt).
+DSH Mobile is a four-module Gradle project (Kotlin 2.3, Compose, Hilt).
 
 ```
 core/           Kotlin Multiplatform — shared logic in commonMain, no Android

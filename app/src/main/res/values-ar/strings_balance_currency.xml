@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="balance_currency_title">عرض الرصيد أيضًا بعملة</string>
+    <string name="balance_currency_hint">يضيف تقديرًا بجانب رصيدك في DeepSeek. تُجلب أسعار الصرف مرة واحدة في اليوم من خدمة عامة، ولا يُرسل أي شيء عنك.</string>
+    <string name="balance_currency_off">إيقاف</string>
+    <string name="balance_currency_region">حسب منطقتي</string>
+    <string name="balance_currency_region_hint">منطقة هاتفك تستخدم %1$s</string>
+    <string name="balance_currency_region_none">لا توجد عملة مطابقة لمنطقتك</string>
+    <string name="balance_estimate">≈ %1$s</string>
+    <string name="balance_rates_source">الأسعار من ExchangeRate-API، حُدّثت في %1$s</string>
+    <string name="balance_rates_source_fallback">الأسعار من Currency API، حُدّثت في %1$s</string>
+    <string name="balance_rates_credit">أسعار الصرف من ExchangeRate-API</string>
+</resources>

@@ -84,6 +84,7 @@
     <string name="connect_scanning">Сканирование сети…</string>
     <string name="connect_section_discovered">Найдено</string>
     <string name="connect_section_discovered_relay">Найденные релеи</string>
+    <string name="connect_session_count">Сеансы %1$s</string>
     <string name="connect_sign_in">Войти</string>
     <string name="connect_sign_in_label">Стартовая ссылка или токен</string>
     <string name="connect_sign_in_link_body">Harness печатает ссылку при запуске. Вставьте её или только токен после ?token=.</string>

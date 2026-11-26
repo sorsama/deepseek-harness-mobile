@@ -60,6 +60,8 @@ fun MainViewController(
                 // A pairing launch also reports the connection that follows it, so a script can wait for the relay.
                 onOutcome = if (autoConnect || report || pairing) ::reportOutcome else null,
                 onPairOutcome = if (pairing) ::reportPairOutcome else null,
+                onProbe = if (autoConnect || report || pairing) ::reportProbe else null,
+                onSessions = if (autoConnect || report || pairing) ::reportSessions else null,
             )
         }
         // One controller for the life of the process, on the main thread where Compose runs. The reset,
@@ -70,7 +72,7 @@ fun MainViewController(
                 "NO" -> UserDefaultsConnectStore.setAutoConnectLast(false)
                 "YES" -> UserDefaultsConnectStore.setAutoConnectLast(true)
             }
-            IosApp(CoroutineScope(SupervisorJob() + Dispatchers.Main), reportPair = request.onPairOutcome)
+            IosApp(CoroutineScope(SupervisorJob() + Dispatchers.Main), reportPair = request.onPairOutcome, reportProbe = request.onProbe)
         }
         DshApp(app, request)
     }
@@ -86,8 +88,14 @@ private fun resetStorage() {
 /** Where [reportOutcome] writes, inside the app's own Documents directory. */
 private const val OUTCOME_FILE = "dsh-connect-result.txt"
 
+/** Where [reportProbe] appends: one line per probe, in a file of its own so it never replaces the connection result. */
+private const val PROBE_OUTCOME_FILE = "dsh-probe-result.txt"
+
 /** Where [reportPairOutcome] writes: its own file, so a pairing result is not overwritten by the connection it starts. */
 private const val PAIR_OUTCOME_FILE = "dsh-pair-result.txt"
+
+/** Where [reportSessions] writes: the session list call made after connecting, in a file of its own. */
+private const val SESSIONS_OUTCOME_FILE = "dsh-sessions-result.txt"
 
 /**
  * Say what the last connect attempt did, to the two places a script can look: the process's output
@@ -100,12 +108,21 @@ private fun reportOutcome(line: String) = writeReport(OUTCOME_FILE, line)
 /** [reportOutcome] for the pairing screen (`Documents/dsh-pair-result.txt`). */
 private fun reportPairOutcome(line: String) = writeReport(PAIR_OUTCOME_FILE, line)
 
+/**
+ * [reportOutcome] for a probe (`Documents/dsh-probe-result.txt`). Appended, one line each, because every remembered
+ * host is probed and the last line alone would hide the others.
+ */
+private fun reportProbe(line: String) = writeReport(PROBE_OUTCOME_FILE, line, append = true)
+
+/** [reportOutcome] for the session list call made after connecting (`Documents/dsh-sessions-result.txt`). */
+private fun reportSessions(line: String) = writeReport(SESSIONS_OUTCOME_FILE, line)
+
 @OptIn(ExperimentalForeignApi::class)
-private fun writeReport(fileName: String, line: String) {
+private fun writeReport(fileName: String, line: String, append: Boolean = false) {
     println(line)
     val documents = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)
         .firstOrNull() as? String ?: return
-    val file = fopen("$documents/$fileName", "w") ?: return
-    fputs(line, file)
+    val file = fopen("$documents/$fileName", if (append) "a" else "w") ?: return
+    fputs(if (append) line + "\n" else line, file)
     fclose(file)
 }

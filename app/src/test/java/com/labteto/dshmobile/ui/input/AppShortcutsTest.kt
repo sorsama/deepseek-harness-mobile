@@ -19,6 +19,7 @@ class AppShortcutsTest {
         assertEquals(AppShortcut.FocusComposer, match(Key.Slash))
         assertEquals(AppShortcut.ToggleSessionList, match(Key.B))
         assertEquals(AppShortcut.OpenSettings, match(Key.Comma))
+        assertEquals(AppShortcut.ToggleDictation, match(Key.M))
     }
 
     @Test fun aBareKeyIsNeverAShortcut() {

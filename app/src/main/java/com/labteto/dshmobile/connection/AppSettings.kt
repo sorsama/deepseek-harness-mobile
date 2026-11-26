@@ -1,5 +1,7 @@
 package com.labteto.dshmobile.connection
 
+import com.labteto.dshmobile.core.rates.BalanceCurrency
+
 /** Read endpoint-specific history first, retaining the pre-prefix key as an upgrade fallback. */
 internal fun HostConfig.rememberedSession(saved: Map<String, String>): String? =
     saved[baseUrl] ?: saved["$host:$port"]
@@ -106,4 +108,23 @@ data class AppSettings(
      * page is a whole web client, about 250 MB.
      */
     val showUiAddons: Boolean? = null,
+    /**
+     * Whether the composer offers the microphone, on a phone whose speech service makes it possible.
+     * On by default; the control is absent altogether on a phone with no recognition service,
+     * whatever this says. Per device.
+     */
+    val dictationEnabled: Boolean = true,
+    /**
+     * The language dictation listens for: null follows the app's own language, `device` leaves it to
+     * the phone, anything else is one of the app's language codes (see `DictationLanguageChoice`).
+     */
+    val dictationLanguage: String? = null,
+    /** Whether the one-time note on where the speech goes (the phone's speech service, not the harness) was shown. */
+    val dictationNoticeSeen: Boolean = false,
+    /**
+     * Which currency the DeepSeek balance is also estimated in: `off` (the default), `region` (the
+     * phone's own) or one of the codes in `BalanceCurrency.choices`. Anything else reads as off. While
+     * it is off the app asks nobody for exchange rates. Per device.
+     */
+    val balanceCurrency: String = BalanceCurrency.OFF,
 )

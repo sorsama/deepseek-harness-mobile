@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="balance_currency_title">Also show balance in</string>
+    <string name="balance_currency_hint">Adds an estimate next to your DeepSeek balance. Exchange rates are looked up once a day from a public service, and nothing about you is sent.</string>
+    <string name="balance_currency_off">Off</string>
+    <string name="balance_currency_region">Match my region</string>
+    <string name="balance_currency_region_hint">Your phone\'s region uses %1$s</string>
+    <string name="balance_currency_region_none">No currency found for your region</string>
+    <string name="balance_estimate">≈ %1$s</string>
+    <string name="balance_rates_source">Rates from ExchangeRate-API, updated %1$s</string>
+    <string name="balance_rates_source_fallback">Rates from Currency API, updated %1$s</string>
+    <string name="balance_rates_credit">Exchange rates from ExchangeRate-API</string>
+</resources>

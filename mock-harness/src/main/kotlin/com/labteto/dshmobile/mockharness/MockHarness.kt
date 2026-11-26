@@ -309,6 +309,15 @@ class MockHarness(
                             HttpStatusCode.Forbidden,
                         )
                         finish()
+                    } else if (relay.refusePrivileged && path.removePrefix("/api/") in RELAY_PRIVILEGED_METHODS) {
+                        // `privilegedMethods: loopback-only`: the relay's own answer, after the bearer has been
+                        // accepted and before the call is forwarded to the harness.
+                        inbound.respondText(
+                            RELAY_PRIVILEGED_BODY,
+                            ContentType.Application.Json,
+                            HttpStatusCode.Forbidden,
+                        )
+                        finish()
                     }
                 }
             }
@@ -1300,7 +1309,27 @@ data class RelayMode(
      * relay as a missing one.
      */
     val refuseHost: Boolean = false,
+    /**
+     * Refuse the host's desktop and filesystem methods to a paired device, as a relay running
+     * `privilegedMethods: loopback-only` does (its README recommends that for a relay on the internet).
+     *
+     * The call is answered 403 with the relay's own body once the bearer has been accepted, so the harness
+     * behind it is reachable and the mux upgrade works, and the one call a client uses to read the host's
+     * home directory (`directoryPicker/list`) is the one that fails.
+     */
+    val refusePrivileged: Boolean = false,
 )
+
+/** The relay's privileged methods a client could meet on the Connect screen: the directory picker's three. */
+internal val RELAY_PRIVILEGED_METHODS: Set<String> = setOf(
+    "directoryPicker/pick",
+    "directoryPicker/list",
+    "directoryPicker/createDirectory",
+)
+
+/** What `dsh-relay` answers (HTTP 403) for a privileged method it refuses to serve to a paired device. */
+internal const val RELAY_PRIVILEGED_BODY: String =
+    """{"error":"forbidden","message":"this method is served only to the machine running the harness"}"""
 
 /** The raw-byte file-upload route harness 0.1.3 registers beside the RPC dispatcher. */
 internal const val FILE_UPLOAD_PATH = "/api/session/uploadFileBinary"

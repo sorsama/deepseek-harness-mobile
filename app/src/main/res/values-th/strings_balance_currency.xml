@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="balance_currency_title">แสดงยอดเงินเป็นสกุลเงินนี้ด้วย</string>
+    <string name="balance_currency_hint">เพิ่มยอดโดยประมาณไว้ข้างยอดเงิน DeepSeek ของคุณ อัตราแลกเปลี่ยนจะดึงจากบริการสาธารณะวันละครั้ง และไม่มีการส่งข้อมูลใด ๆ เกี่ยวกับคุณ</string>
+    <string name="balance_currency_off">ปิด</string>
+    <string name="balance_currency_region">ตามภูมิภาคของฉัน</string>
+    <string name="balance_currency_region_hint">ภูมิภาคของโทรศัพท์คุณใช้ %1$s</string>
+    <string name="balance_currency_region_none">ไม่พบสกุลเงินของภูมิภาคคุณ</string>
+    <string name="balance_estimate">≈ %1$s</string>
+    <string name="balance_rates_source">อัตราจาก ExchangeRate-API อัปเดต %1$s</string>
+    <string name="balance_rates_source_fallback">อัตราจาก Currency API อัปเดต %1$s</string>
+    <string name="balance_rates_credit">อัตราแลกเปลี่ยนจาก ExchangeRate-API</string>
+</resources>

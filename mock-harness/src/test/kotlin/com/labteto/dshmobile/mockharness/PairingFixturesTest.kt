@@ -60,6 +60,43 @@ class PairingFixturesTest {
         }
     }
 
+    private fun call(base: String, method: String, token: String?): HttpResponse<String> =
+        http.send(
+            HttpRequest.newBuilder(URI("$base/api/$method"))
+                .header("Content-Type", "application/json")
+                .apply { if (token != null) header("Authorization", "Bearer $token") }
+                .POST(
+                    HttpRequest.BodyPublishers.ofString(
+                        """{"type":"client-request","rpcId":"1","method":"$method","payload":{"args":{}}}""",
+                    ),
+                )
+                .build(),
+            HttpResponse.BodyHandlers.ofString(),
+        )
+
+    @Test
+    fun theRefusingRelayAnswersTheProbeButRefusesTheDirectoryListing() = runBlocking {
+        val servers = CiFixtures.start(withRefusingRelay = true)
+        try {
+            val base = servers.refusingUrl ?: error("the refusing relay was asked for and did not start")
+            val token = CiFixtures.refusingRelayMode.token
+            // What a paired device's probe asks: served, like any other call behind the bearer.
+            val probe = call(base, "session/canOpenWorkspacePath", token)
+            assertEquals(200, probe.statusCode())
+            assertTrue(probe.body(), probe.body().contains("\"ok\":true"))
+            // The directory listing a Recent row uses to learn the host's home: refused with the relay's body.
+            val listing = call(base, "directoryPicker/list", token)
+            assertEquals(403, listing.statusCode())
+            assertEquals(RELAY_PRIVILEGED_BODY, listing.body())
+            // Without the bearer it is the ordinary "pair first" 403, so the two are told apart by their text.
+            assertTrue(call(base, "directoryPicker/list", null).body().contains("pair this device"))
+            // The relay with no such setting keeps answering the listing.
+            assertEquals(200, call(servers.pairUrl, "directoryPicker/list", CiFixtures.pairRelayMode.token).statusCode())
+        } finally {
+            servers.stop()
+        }
+    }
+
     @Test
     fun theSingleUseRelayStillRefusesAReplayedCode() = runBlocking {
         val servers = CiFixtures.start()
