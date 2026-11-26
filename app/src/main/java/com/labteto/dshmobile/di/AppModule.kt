@@ -4,7 +4,10 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import com.labteto.dshmobile.connection.ConnectionManager
+import com.labteto.dshmobile.connection.HostsStore
 import com.labteto.dshmobile.core.wire.WireJson
+import com.labteto.dshmobile.data.SessionStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,4 +44,17 @@ object AppModule {
 
     @Provides
     fun provideIoDispatcher(): kotlinx.coroutines.CoroutineDispatcher = Dispatchers.IO
+
+    /**
+     * The process-wide session store. Built here rather than by an `@Inject` constructor because the store itself is
+     * platform-neutral (it moves to `:sharedUi` for iOS): Android hands it its resources, preferences and log through
+     * [AndroidStorePlatform], the connection as `HarnessConnection`, and `HostsStore` as its `LastSessionStore`.
+     */
+    @Provides
+    @Singleton
+    fun provideSessionStore(
+        @ApplicationContext context: Context,
+        connection: ConnectionManager,
+        hostsStore: HostsStore,
+    ): SessionStore = SessionStore(AndroidStorePlatform(context), connection, hostsStore)
 }

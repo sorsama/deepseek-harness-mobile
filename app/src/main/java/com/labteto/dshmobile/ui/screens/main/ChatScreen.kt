@@ -103,6 +103,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CancellationException
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import com.labteto.dshmobile.core.session.readImageBounded
 import com.labteto.dshmobile.core.wire.dto.ImageRejection
 
@@ -384,7 +386,7 @@ fun ChatScreen(
                 targetSessionId = target.key.sessionId,
                 targetHost = target.key.host,
                 size = file.size,
-                open = { runCatching { context.contentResolver.openInputStream(file.uri) }.getOrNull() },
+                open = { runCatching { context.contentResolver.openInputStream(file.uri)?.asSource()?.buffered() }.getOrNull() },
                 onProgress = { sent -> updateFile(target, file.id) { it.copy(state = FileUploadState.Uploading(sent)) } },
             )
             updateFile(target, file.id) {

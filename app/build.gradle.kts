@@ -188,6 +188,9 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(libs.kotlinx.coroutines.android)
+    // Common locks for the session store (`kotlinx.atomicfu.locks`), so it can move to `:sharedUi`'s common code.
+    // On the JVM `SynchronizedObject` is `Any` and `synchronized` is the monitor, so nothing changes at runtime.
+    implementation(libs.kotlinx.atomicfu)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)

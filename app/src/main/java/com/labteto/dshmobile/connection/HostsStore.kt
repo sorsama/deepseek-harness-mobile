@@ -10,6 +10,7 @@ import com.labteto.dshmobile.DshApplication
 import com.labteto.dshmobile.core.rates.BalanceCurrency
 import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.core.wire.dto.HostDescription
+import com.labteto.dshmobile.data.LastSessionStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -27,7 +28,7 @@ class HostsStore @Inject constructor(
     private val dataStore: DataStore<Preferences>,
     private val credentials: RelayCredentialStore,
     @ApplicationContext private val context: Context,
-) {
+) : LastSessionStore {
     private object Keys {
         val HOSTS = stringPreferencesKey("hosts_json")
         val AUTO_LAST = booleanPreferencesKey("auto_last")
@@ -208,10 +209,10 @@ class HostsStore @Inject constructor(
      * The session last opened on the complete endpoint, falling back to its legacy host:port key
      * for saved data from before proxy roots and TLS became part of session history identity.
      */
-    suspend fun lastSessionId(host: HostConfig): String? = host.rememberedSession(lastSessions())
+    override suspend fun lastSessionId(host: HostConfig): String? = host.rememberedSession(lastSessions())
 
     /** Remember [sessionId] as the landing session for [hostKey], keeping the newest 8 hosts. */
-    suspend fun setLastSessionId(hostKey: String, sessionId: String) {
+    override suspend fun setLastSessionId(hostKey: String, sessionId: String) {
         val next = LinkedHashMap<String, String>()
         next[hostKey] = sessionId
         lastSessions().forEach { (key, value) -> if (key != hostKey) next[key] = value }

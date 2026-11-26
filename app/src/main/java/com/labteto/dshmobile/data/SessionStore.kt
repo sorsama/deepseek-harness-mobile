@@ -5,11 +5,8 @@ import com.labteto.dshmobile.core.wire.marketIndexes
 import com.labteto.dshmobile.core.wire.pluginBundles
 import com.labteto.dshmobile.core.uisync.uiSyncPresence
 
-import android.util.Base64
-import android.util.Log
-import com.labteto.dshmobile.connection.ConnectionManager
 import com.labteto.dshmobile.connection.ConnectionPhase
-import com.labteto.dshmobile.connection.HostsStore
+import com.labteto.dshmobile.connection.HarnessConnection
 import com.labteto.dshmobile.core.session.AssistantLiveState
 import com.labteto.dshmobile.core.session.ChunkRows
 import com.labteto.dshmobile.core.session.ConversationSnapshot
@@ -110,13 +107,10 @@ import com.labteto.dshmobile.core.wire.RpcError
 import com.labteto.dshmobile.core.wire.TransportFailures
 import com.labteto.dshmobile.core.wire.encodeToJsonElement
 import com.labteto.dshmobile.core.wire.newPromptRequestId
-import java.io.InputStream
-import java.io.OutputStream
-import java.time.Instant
-import java.util.TimeZone
+import com.labteto.dshmobile.core.wire.blockingDispatcher
 import com.labteto.dshmobile.core.wire.dto.PermissionCatalog
-import javax.inject.Inject
-import javax.inject.Singleton
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -135,9 +129,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.io.asInputStream
-import kotlinx.io.asSource
-import kotlinx.io.buffered
+import kotlinx.io.Sink
+import kotlinx.io.Source
+import kotlinx.io.readByteArray
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -277,7 +271,7 @@ private fun WorkspaceView.toRow(): WorkspaceRow = WorkspaceRow(
     path = path,
     title = title,
     sessionIds = sessionIds,
-    updatedAtEpoch = runCatching { Instant.parse(updatedAt).toEpochMilli() }.getOrDefault(0L),
+    updatedAtEpoch = parseIsoInstantMillis(updatedAt) ?: 0L,
 )
 
 /** A pending sandbox/permission approval the user can answer (allow-once / reject). */
@@ -354,19 +348,22 @@ sealed interface ArchiveOutcome {
  * Single source of truth for the connected harness's live state. All public surface is
  * [StateFlow]; every RPC error becomes [connectionError] and never throws. The store survives
  * reconnects by re-baselining on the connection state transition and on `session/subscribed`.
+ *
+ * Platform-neutral: what it needs from the device comes through [platform], the live connection through the
+ * [HarnessConnection] port, and the remembered landing session through [lastSessions]. Android builds the one
+ * instance in `di/AppModule`.
  */
-@Singleton
-class SessionStore @Inject constructor(
-    @dagger.hilt.android.qualifiers.ApplicationContext context: android.content.Context,
-    private val connectionManager: ConnectionManager,
-    private val hostsStore: HostsStore,
+class SessionStore(
+    private val platform: StorePlatform,
+    private val connection: HarnessConnection,
+    private val lastSessions: LastSessionStore,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val lock = Any()
+    private val lock = SynchronizedObject()
     private val baselineMutex = Mutex()
-    private val noCurrentGoalMessage = { context.getString(com.labteto.dshmobile.R.string.goal_none) }
-    private val migrationRequiredMessage = { context.getString(com.labteto.dshmobile.R.string.alpha2_migration) }
-    private val subagentReadOnlyMessage = { context.getString(com.labteto.dshmobile.R.string.subagents_readonly) }
+    private val noCurrentGoalMessage = { platform.noCurrentGoalMessage }
+    private val migrationRequiredMessage = { platform.migrationRequiredMessage }
+    private val subagentReadOnlyMessage = { platform.subagentReadOnlyMessage }
     private val featureAvailability = FeatureAvailability { setConnectionError(it.message) }
     val automationAvailable = featureAvailability.state(HarnessFeature.AUTOMATION)
     val pluginManagementAvailable = featureAvailability.state(HarnessFeature.PLUGIN_MANAGEMENT)
@@ -403,7 +400,7 @@ class SessionStore @Inject constructor(
         scope,
         object : com.labteto.dshmobile.core.uisync.UiSyncSettingsPort {
             override suspend fun describe(): RpcResult<com.labteto.dshmobile.core.wire.dto.SettingsDescribeValue> {
-                val api = connectionManager.connectedApi ?: return notConnected()
+                val api = connection.connectedApi ?: return notConnected()
                 // The same answer says whether the companion is there at all, authoritatively: a describe
                 // that lists the namespace turns the feature on, one that does not turns it off.
                 val observe = featureObserver(HarnessFeature.UI_ADDONS, authoritative = true)
@@ -416,7 +413,7 @@ class SessionStore @Inject constructor(
                 ops: List<com.labteto.dshmobile.core.wire.dto.SettingsPathOpView>,
                 expectedRevision: Long?,
             ): RpcResult<com.labteto.dshmobile.core.wire.dto.SettingsNamespaceView> {
-                val api = connectionManager.connectedApi ?: return notConnected()
+                val api = connection.connectedApi ?: return notConnected()
                 return api.settingsMutate(com.labteto.dshmobile.core.uisync.UiSyncProtocol.NAMESPACE, ops, expectedRevision?.toInt())
             }
 
@@ -466,10 +463,10 @@ class SessionStore @Inject constructor(
         if (activeHostKey != host) return
         _uiAddonsInventory.value = UiAddonsInventory(host, (result as? RpcResult.Ok)?.value?.entries)
     }
-    val questionSessions = QuestionSessions(scope, { connectionManager.connectedApi },
-        { connectionManager.generation?.mux }, { connectionManager.generation?.clientId },
+    val questionSessions = QuestionSessions(scope, { connection.connectedApi },
+        { connection.generation?.mux }, { connection.generation?.clientId },
         onCapability = { clientId, result ->
-            if (clientId != null && clientId == connectionManager.generation?.clientId) {
+            if (clientId != null && clientId == connection.generation?.clientId) {
                 featureAvailability.observe(HarnessFeature.TIMED_QUESTIONS, featureAvailability.generation(), result)
             }
         },
@@ -477,16 +474,16 @@ class SessionStore @Inject constructor(
     private val _hostEvents = kotlinx.coroutines.flow.MutableSharedFlow<Pair<String, List<JsonElement>>>(extraBufferCapacity = 128)
     val hostEvents = _hostEvents as kotlinx.coroutines.flow.SharedFlow<Pair<String, List<JsonElement>>>
 
-    val pluginOperations = PluginOperations(scope, ::apiForHost, context.getSharedPreferences("plugin-operation", android.content.Context.MODE_PRIVATE),
+    val pluginOperations = PluginOperations(scope, ::apiForHost, platform.pluginOperationStore,
         observe = { featureObserver(HarnessFeature.PLUGIN_MANAGEMENT) },
         available = { pluginManagementAvailable.value != false })
-    val connectionState = connectionManager.state
-    val activeHostKey: String? get() = connectionManager.state.value.host?.let { "${it.baseUrl}|${it.id}" }
+    val connectionState = connection.state
+    val activeHostKey: String? get() = connection.state.value.host?.let { "${it.baseUrl}|${it.id}" }
     internal val panels = com.labteto.dshmobile.ui.screens.main.PanelRepository()
-    internal val composers = com.labteto.dshmobile.ui.screens.main.ComposerRepository(context.getSharedPreferences("composer-drafts", android.content.Context.MODE_PRIVATE))
-    fun apiForHost(key: String?): DshApiClient? = if (key != null && key == activeHostKey) connectionManager.connectedApi else null
-    fun muxForHost(key: String?) = if (key != null && key == activeHostKey) connectionManager.generation?.mux else null
-    fun retryConnection() = connectionManager.reconnectIfNeeded()
+    internal val composers = com.labteto.dshmobile.ui.screens.main.ComposerRepository(platform.composerDraftStore)
+    fun apiForHost(key: String?): DshApiClient? = if (key != null && key == activeHostKey) connection.connectedApi else null
+    fun muxForHost(key: String?) = if (key != null && key == activeHostKey) connection.generation?.mux else null
+    fun retryConnection() = connection.reconnectIfNeeded()
 
     suspend fun <T> featureCall(feature: HarnessFeature, api: DshApiClient, authoritative: Boolean = false, call: suspend () -> RpcResult<T>): RpcResult<T> {
         val observe = featureObserver(feature, authoritative)
@@ -507,16 +504,16 @@ class SessionStore @Inject constructor(
 
     private fun featureObserver(feature: HarnessFeature, authoritative: Boolean = false): (DshApiClient, RpcResult<*>) -> Unit {
         val epoch = featureAvailability.generation()
-        val clientId = connectionManager.generation?.clientId
+        val clientId = connection.generation?.clientId
         return { api, result ->
-            if (clientId != null && clientId == connectionManager.generation?.clientId && api === connectionManager.connectedApi) {
+            if (clientId != null && clientId == connection.generation?.clientId && api === connection.connectedApi) {
                 featureAvailability.observe(feature, epoch, result, authoritative)
             }
         }
     }
 
     private fun probeFeatures() {
-        val api = connectionManager.connectedApi ?: return
+        val api = connection.connectedApi ?: return
         scope.launch { featureCall(HarnessFeature.AUTOMATION, api) { api.automationCatalog() } }
         scope.launch { featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.pluginBundles() } }
         // `listIndexes` never fetches an index; it only says whether the market is there.
@@ -530,7 +527,7 @@ class SessionStore @Inject constructor(
      * bundle switched on or off while connected.
      */
     private fun probeUiAddons() {
-        if (connectionManager.state.value.host == null) return
+        if (connection.state.value.host == null) return
         scope.launch {
             uiAddonsSettings.reload()
             // With the companion there, the plugin list says whether the item store misses a plugin.
@@ -554,7 +551,7 @@ class SessionStore @Inject constructor(
      * app reconnects.
      */
     private fun recheckFeatures() {
-        val api = connectionManager.connectedApi ?: return
+        val api = connection.connectedApi ?: return
         // The companion can be switched off as well as on, so it is asked again either way.
         probeUiAddons()
         val probes = HarnessFeature.entries.mapNotNull { feature -> featureProbe(feature)?.let { feature to it } }.toMap()
@@ -720,7 +717,7 @@ class SessionStore @Inject constructor(
     val imageLimits: StateFlow<ImageLimitsView?> = projectionOf(ImageLimitsView.serializer(), "imageLimits")
     val planState: StateFlow<PlanStateView?> = projectionOf(PlanStateView.serializer(), "plan")
 
-    private val quotaRepository = com.labteto.dshmobile.core.usage.UsageRepository(System::currentTimeMillis)
+    private val quotaRepository = com.labteto.dshmobile.core.usage.UsageRepository(::wallClockMillis)
     val quotaStatus = quotaRepository.state
 
     /** Do not use `models.current`: that view prefers a queued next choice while a turn runs. */
@@ -731,9 +728,9 @@ class SessionStore @Inject constructor(
 
     /** The connection the account balance and the "no subscriptions-auth" evidence belong to. */
     private fun quotaHostKey(): String? {
-        if (connectionManager.state.value.phase != ConnectionPhase.CONNECTED) return null
-        val generation = connectionManager.generation ?: return null
-        val host = connectionManager.state.value.host ?: return null
+        if (connection.state.value.phase != ConnectionPhase.CONNECTED) return null
+        val generation = connection.generation ?: return null
+        val host = connection.state.value.host ?: return null
         return "${host.id}|${host.baseUrl}|${generation.clientId}"
     }
 
@@ -747,10 +744,9 @@ class SessionStore @Inject constructor(
         val identity = quotaIdentity()
         quotaRepository.bind(identity, quotaHostKey())
         if (identity == null) return@withContext
-        val api = connectionManager.connectedApi ?: return@withContext
+        val api = connection.connectedApi ?: return@withContext
         val metadata = com.labteto.dshmobile.core.wire.dto.AccountUiMetadata(
-            com.labteto.dshmobile.BuildConfig.VERSION_NAME, java.util.Locale.getDefault().toLanguageTag(),
-            java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000,
+            platform.appVersion, platform.languageTag, platform.timeZoneOffsetSeconds,
         )
         try {
             kotlinx.coroutines.withTimeoutOrNull(60_000) {
@@ -917,7 +913,7 @@ class SessionStore @Inject constructor(
             }
         }
         scope.launch(Dispatchers.Main.immediate) {
-            combine(connectionManager.state, currentSessionId, modelSelection, currentConversation) { _, _, _, _ -> quotaIdentity() }
+            combine(connection.state, currentSessionId, modelSelection, currentConversation) { _, _, _, _ -> quotaIdentity() }
                 .collect { quotaRepository.bind(it, quotaHostKey()) }
         }
         observeConnection()
@@ -963,8 +959,8 @@ class SessionStore @Inject constructor(
     // ------------------------------------------------------------------ connection lifecycle
     private fun observeConnection() {
         scope.launch {
-            var prev = connectionManager.state.value
-            connectionManager.state.collect { state ->
+            var prev = connection.state.value
+            connection.state.collect { state ->
                 if (prev.host?.id != state.host?.id || prev.host?.baseUrl != state.host?.baseUrl ||
                     (prev.phase != state.phase && (prev.phase == ConnectionPhase.CONNECTED || state.phase == ConnectionPhase.CONNECTED))) {
                     featureAvailability.reset()
@@ -996,7 +992,7 @@ class SessionStore @Inject constructor(
 
     private fun observeEvents() {
         scope.launch {
-            connectionManager.eventFrames.collect { handleEventFrame(it) }
+            connection.eventFrames.collect { handleEventFrame(it) }
         }
     }
 
@@ -1010,7 +1006,7 @@ class SessionStore @Inject constructor(
      * them.
      */
     private fun startHostStreams() {
-        val mux = connectionManager.generation?.mux ?: return
+        val mux = connection.generation?.mux ?: return
         controlJob?.cancel()
         // Preset watermarks are log positions as this host reported them. A harness restored from
         // an older snapshot can hand back the same session ids at lower positions, so the new
@@ -1058,7 +1054,7 @@ class SessionStore @Inject constructor(
         // Before the list read: the workspace and control streams each open with their own
         // complete baseline, and the list is what their increments are applied on top of.
         startHostStreams()
-        _hostInfo.value = connectionManager.generation?.description
+        _hostInfo.value = connection.generation?.description
         coroutineScope {
             // Host-scoped and needed before anything is tapped, but needed by nothing on the way to
             // the transcript: the chat bar names the session's preset as soon as it renders, and
@@ -1090,7 +1086,7 @@ class SessionStore @Inject constructor(
      * Returns null when there is nothing worth opening, which leaves the empty hero on screen.
      */
     private suspend fun resolveInitialSession(): String? {
-        val remembered = connectionManager.state.value.host?.let { hostsStore.lastSessionId(it) }
+        val remembered = connection.state.value.host?.let { lastSessions.lastSessionId(it) }
         val (rows, workspaces, archivedNow) = synchronized(lock) {
             Triple(
                 sessionRows.values.toList(),
@@ -1103,7 +1099,7 @@ class SessionStore @Inject constructor(
 
     /** Full endpoint identity: sessions behind different proxy roots belong to different hosts. */
     private fun hostKey(): String? =
-        connectionManager.state.value.host?.baseUrl
+        connection.state.value.host?.baseUrl
 
     // ------------------------------------------------------------------ host event frames
     /**
@@ -1496,13 +1492,13 @@ class SessionStore @Inject constructor(
      * A hook rather than a direct dependency: the notification observer already depends on this
      * store, and 0.1.2 leaves no all-session stream for it to read instead.
      */
-    @Volatile
+    @kotlin.concurrent.Volatile
     var notificationSink: ((String, SessionEventEnvelope) -> Unit)? = null
 
     private fun handleApprovalRequested(eventId: String, sessionId: String, request: ApprovalRequestEvent) {
         // Harness 0.1.7 sends a localized `displayReason` beside the raw one (an Auto review
         // denial, a sandbox escalation); the reader's own language wins, then English, then raw.
-        val reason = request.reasonFor(java.util.Locale.getDefault().language)
+        val reason = request.reasonFor(platform.language)
         synchronized(lock) {
             approvalRequests[eventId] =
                 ApprovalRequest(sessionId, eventId, request.toolName, reason, request.reason)
@@ -1930,7 +1926,7 @@ class SessionStore @Inject constructor(
                             listed = extractTitle(item.projections),
                             listedIsCurrent = item.projections?.kind != "cached",
                         )?.also { titleBySession[item.sessionId] = it }
-                        runningBySession.putIfAbsent(item.sessionId, item.running)
+                        runningBySession.getOrPut(item.sessionId) { item.running }
                         sessionRows[item.sessionId] = SessionRow(
                             sessionId = item.sessionId,
                             title = title,
@@ -2077,7 +2073,7 @@ class SessionStore @Inject constructor(
     private fun startFollow(sessionId: String) {
         followJob?.cancel()
         followCursor = null
-        val mux = connectionManager.generation?.mux
+        val mux = connection.generation?.mux
         if (mux == null) {
             log("cannot follow $sessionId: no connection generation")
             return
@@ -2137,7 +2133,7 @@ class SessionStore @Inject constructor(
      */
     private fun startJobs(sessionId: String) {
         jobsJob?.cancel()
-        val mux = connectionManager.generation?.mux ?: return
+        val mux = connection.generation?.mux ?: return
         val args = buildJsonObject {
             put("request", encodeToJsonElement(JobListRequest.serializer(), JobListRequest(sessionId)))
         }
@@ -2163,7 +2159,7 @@ class SessionStore @Inject constructor(
      */
     fun followJob(jobId: String): kotlinx.coroutines.flow.Flow<JobFollowFrame> = kotlinx.coroutines.flow.flow {
         val sid = currentSessionId.value ?: return@flow
-        val mux = connectionManager.generation?.mux ?: return@flow
+        val mux = connection.generation?.mux ?: return@flow
         val args = buildJsonObject {
             put("request", encodeToJsonElement(JobFollowRequest.serializer(), JobFollowRequest(jobId = jobId, sessionId = sid)))
         }
@@ -2245,7 +2241,7 @@ class SessionStore @Inject constructor(
     /** Persist the landing session for this harness; a write failure is not worth surfacing. */
     private suspend fun rememberLastSession(sessionId: String) {
         val key = hostKey() ?: return
-        runCatching { hostsStore.setLastSessionId(key, sessionId) }
+        runCatching { lastSessions.setLastSessionId(key, sessionId) }
             .onFailure { log("could not remember last session", it) }
     }
 
@@ -2469,26 +2465,26 @@ class SessionStore @Inject constructor(
     suspend fun uploadFile(
         name: String,
         size: Long,
-        open: () -> InputStream?,
+        open: () -> Source?,
         onProgress: (sent: Long) -> Unit = {},
         targetSessionId: String? = currentSessionId.value,
         targetHost: String? = activeHostKey,
-    ): RpcResult<FileUploadValue> = withContext(Dispatchers.IO) {
+    ): RpcResult<FileUploadValue> = withContext(blockingDispatcher) {
         val sid = targetSessionId
             ?: return@withContext RpcResult.Err(RpcError("internal", "no open session"))
         val api = apiForHost(targetHost)
             ?: return@withContext RpcResult.Err(RpcError("internal", "not connected"))
         val stream = open()
             ?: return@withContext RpcResult.Err(RpcError("internal", "could not read the file"))
-        val streamed = stream.use { api.uploadFileBinary(sid, name, size, it.asSource().buffered(), onProgress) }
+        val streamed = stream.use { api.uploadFileBinary(sid, name, size, it, onProgress) }
         if (streamed !is RpcResult.Err || streamed.error.code != "capability-unavailable") return@withContext streamed
         if (size !in 0..MAX_ENCODED_UPLOAD_BYTES) return@withContext streamed
         log("upload route unavailable; falling back to fileUploads/upload for ${size}B")
-        val bytes = open()?.use { it.readBytes() }
+        val bytes = open()?.use { it.readByteArray() }
             ?: return@withContext RpcResult.Err(RpcError("internal", "could not read the file"))
         api.fileUploadEncoded(
             sid,
-            EncodedFileUploadRequest(data = Base64.encodeToString(bytes, Base64.NO_WRAP), name = name),
+            EncodedFileUploadRequest(data = encodeBase64(bytes), name = name),
         ).also { onProgress(bytes.size.toLong()) }
     }
 
@@ -2496,7 +2492,7 @@ class SessionStore @Inject constructor(
         val sid = targetSessionId ?: return PromptOutcome.Failed("no open session")
         val api = apiForHost(targetHost) ?: return PromptOutcome.Failed("not connected")
         val safeMode = if (mode == "steer") "steer" else "queue"
-        val zone = TimeZone.getDefault().id
+        val zone = platform.timeZoneId
         // `session/prompt` resolves the ordinary agent behind the session, and a child's is owned
         // by subagent routing — the host refuses it outright. Delivery goes through
         // `subagents/prompt`, whose request still names the creator and the exact mode.
@@ -2638,7 +2634,7 @@ class SessionStore @Inject constructor(
             }
             return QuestionOutcome.Refused(NOT_PENDING)
         }
-        val clientId = connectionManager.generation?.clientId
+        val clientId = connection.generation?.clientId
         if (clientId == null) {
             log("cannot answer approval $approvalId: no connection generation")
             return QuestionOutcome.Unsent
@@ -2666,7 +2662,7 @@ class SessionStore @Inject constructor(
     suspend fun answerQuestions(sessionId: String, answer: AskUserQuestionAnswer): QuestionOutcome {
         val api = apiOrNull() ?: return QuestionOutcome.Unsent
         val eventId = pendingQuestionEvent(sessionId) ?: return abandonQuestions(sessionId)
-        val clientId = connectionManager.generation?.clientId ?: return QuestionOutcome.Unsent
+        val clientId = connection.generation?.clientId ?: return QuestionOutcome.Unsent
         // The waterfall returns the answer object itself; there is no envelope around it now.
         return answerOutcome(
             api.answerEvent(
@@ -2692,7 +2688,7 @@ class SessionStore @Inject constructor(
     suspend fun dismissQuestions(sessionId: String): QuestionOutcome {
         val api = apiOrNull() ?: return QuestionOutcome.Unsent
         val eventId = pendingQuestionEvent(sessionId) ?: return abandonQuestions(sessionId)
-        val clientId = connectionManager.generation?.clientId ?: return QuestionOutcome.Unsent
+        val clientId = connection.generation?.clientId ?: return QuestionOutcome.Unsent
         // A rejection, not an empty answer, and not `next`: `next` would delegate to the host's
         // own later listeners, which is a different thing from the user closing the prompt.
         return answerOutcome(
@@ -2863,7 +2859,7 @@ class SessionStore @Inject constructor(
             else -> first
         }
         return when (result) {
-            is RpcResult.Ok -> runCatching { Base64.decode(result.value.data, Base64.DEFAULT) }.getOrNull()
+            is RpcResult.Ok -> runCatching { decodeBase64Lenient(result.value.data) }.getOrNull()
             is RpcResult.Err -> {
                 setConnectionError(result.error.message)
                 null
@@ -2920,7 +2916,7 @@ class SessionStore @Inject constructor(
     suspend fun promptSubagent(childSessionId: String, text: String, delivery: String = "queue"): Boolean {
         val sid = currentSessionId.value ?: return false
         val api = apiOrNull() ?: return false
-        val zone = TimeZone.getDefault().id
+        val zone = platform.timeZoneId
         val request = SubagentPromptRequest(
             requestId = newPromptRequestId(),
             parentSessionId = sid,
@@ -3053,16 +3049,18 @@ class SessionStore @Inject constructor(
      */
     suspend fun moveSession(workspaceId: String, sessionId: String, beforeSessionId: String?): MoveOutcome {
         val api = apiOrNull() ?: return MoveOutcome.Failed(null)
-        val epoch: Int
-        synchronized(lock) {
+        // The block's value rather than an assignment inside it: atomicfu's `synchronized` declares no
+        // `callsInPlace` contract, so a `val` cannot be definitely assigned in its lambda.
+        val epoch: Int = synchronized(lock) {
             val row = workspaceRows[workspaceId] ?: return MoveOutcome.Failed(null)
             val base = pendingSessionOrder[workspaceId] ?: row.sessionIds
             val next = moveBefore(base, sessionId, beforeSessionId)
             if (next == base) return MoveOutcome.Unchanged
             pendingSessionOrder[workspaceId] = next
-            movesInFlight.merge(workspaceId, 1, Int::plus)
-            epoch = moveEpoch
+            movesInFlight[workspaceId] = (movesInFlight[workspaceId] ?: 0) + 1
+            val current = moveEpoch
             emitWorkspacesLocked()
+            current
         }
         return scope.async {
             moveMutex.withLock {
@@ -3086,15 +3084,16 @@ class SessionStore @Inject constructor(
      */
     suspend fun moveWorkspace(workspaceId: String, beforeWorkspaceId: String?): MoveOutcome {
         val api = apiOrNull() ?: return MoveOutcome.Failed(null)
-        val epoch: Int
-        synchronized(lock) {
+        // The block's value, for the reason given in [moveSession].
+        val epoch: Int = synchronized(lock) {
             val base = pendingWorkspaceOrder ?: _workspaces.value.map { it.workspaceId }
             val next = moveBefore(base, workspaceId, beforeWorkspaceId)
             if (next == base) return MoveOutcome.Unchanged
             pendingWorkspaceOrder = next
-            movesInFlight.merge(WORKSPACE_ORDER_KEY, 1, Int::plus)
-            epoch = moveEpoch
+            movesInFlight[WORKSPACE_ORDER_KEY] = (movesInFlight[WORKSPACE_ORDER_KEY] ?: 0) + 1
+            val current = moveEpoch
             emitWorkspacesLocked()
+            current
         }
         return scope.async {
             moveMutex.withLock {
@@ -3346,10 +3345,10 @@ class SessionStore @Inject constructor(
      * Stream the open session's log ZIP into [sink]. The caller owns [sink] and should close it;
      * the harness answers this as a plain attachment download, not an RPC.
      */
-    suspend fun exportSessionTo(sink: OutputStream, includeDescendants: Boolean = false, report: Boolean = true): ActionOutcome<Unit> {
+    suspend fun exportSessionTo(sink: Sink, includeDescendants: Boolean = false, report: Boolean = true): ActionOutcome<Unit> {
         val sid = currentSessionId.value ?: return ActionOutcome.Failed()
         val api = apiOrNull() ?: return ActionOutcome.Failed()
-        val result = api.sessionExport(sid, includeDescendants) { _, _, body -> body.asInputStream().copyTo(sink) }
+        val result = api.sessionExport(sid, includeDescendants) { _, _, body -> body.transferTo(sink) }
         return when (result) {
             is RpcResult.Ok -> ActionOutcome.Done(Unit)
             is RpcResult.Err -> {
@@ -3463,7 +3462,7 @@ class SessionStore @Inject constructor(
      * which no longer exists. Kept as a property so the composer's adjudication has one place to
      * consult if a future release makes it conditional again.
      */
-    val commandAttachmentsSupported: Boolean get() = connectionManager.connectedApi != null
+    val commandAttachmentsSupported: Boolean get() = connection.connectedApi != null
 
     suspend fun refreshPermissionCatalog() {
         val epoch = ++permissionCatalogEpoch
@@ -3490,18 +3489,16 @@ class SessionStore @Inject constructor(
     }
 
     private fun apiOrNull(): DshApiClient? {
-        val api = connectionManager.connectedApi
+        val api = connection.connectedApi
         if (api == null) log("not connected: ignoring request")
         return api
     }
 
     private fun log(message: String, throwable: Throwable? = null) {
-        if (throwable != null) Log.w(TAG, message, throwable) else Log.w(TAG, message)
+        platform.log(message, throwable)
     }
 
     private companion object {
-        const val TAG = "SessionStore"
-
         /**
          * The host's refusal of a prompt's or command's attachments (harness 0.1.3; it was
          * `attachment-error` through 0.1.2). Every business code is namespaced now.

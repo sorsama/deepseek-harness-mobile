@@ -1,9 +1,7 @@
 package com.labteto.dshmobile.data
 
-import android.content.SharedPreferences
 import com.labteto.dshmobile.core.wire.*
 import com.labteto.dshmobile.core.wire.dto.*
-import java.lang.reflect.Proxy
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.*
 import kotlinx.io.Source
@@ -53,26 +51,15 @@ class PluginOperationsTest {
         override suspend fun upload(path: String, contentType: String, contentLength: Long, body: Source, onProgress: ((Long) -> Unit)?): RpcHttpResponse = error("unused")
     }
 
-    /** Only the string persistence operations used by PluginOperations; no Android runtime needed. */
+    /** The string persistence PluginOperations uses, over a plain map; no Android runtime needed. */
     private class Preferences {
         val values = mutableMapOf<String, String>()
-        private val editor = Proxy.newProxyInstance(SharedPreferences.Editor::class.java.classLoader,
-            arrayOf(SharedPreferences.Editor::class.java)) { proxy, method, args ->
-            when (method.name) {
-                "putString" -> { values[args!![0] as String] = args[1] as String; proxy }
-                "remove" -> { values.remove(args!![0] as String); proxy }
-                "apply" -> null
-                else -> error("Unexpected editor method ${method.name}")
+        val store = object : KeyValueStore {
+            override fun getString(key: String): String? = values[key]
+            override fun edit(changes: Map<String, String?>) {
+                changes.forEach { (key, value) -> if (value == null) values.remove(key) else values[key] = value }
             }
-        } as SharedPreferences.Editor
-        val store = Proxy.newProxyInstance(SharedPreferences::class.java.classLoader,
-            arrayOf(SharedPreferences::class.java)) { _, method, args ->
-            when (method.name) {
-                "getString" -> values[args!![0] as String] ?: args[1]
-                "edit" -> editor
-                else -> error("Unexpected preferences method ${method.name}")
-            }
-        } as SharedPreferences
+        }
     }
 
     @Test fun `new installs and successful mutations retain old unknown requests after restart`() = runTest {

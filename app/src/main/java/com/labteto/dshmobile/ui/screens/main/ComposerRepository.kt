@@ -2,10 +2,10 @@ package com.labteto.dshmobile.ui.screens.main
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
-import android.content.SharedPreferences
 import com.labteto.dshmobile.connection.DELIVERY_QUEUE
 import com.labteto.dshmobile.connection.normalizeDeliveryMode
 import com.labteto.dshmobile.core.wire.WireJson
+import com.labteto.dshmobile.data.KeyValueStore
 import kotlinx.serialization.Serializable
 
 internal data class ComposerKey(val host: String, val sessionId: String)
@@ -76,14 +76,14 @@ internal class ComposerDraft(val key: ComposerKey, saved: SavedComposer = SavedC
     }
 }
 
-internal class ComposerRepository(private val preferences: SharedPreferences? = null) {
+internal class ComposerRepository(private val preferences: KeyValueStore? = null) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val drafts = mutableMapOf<ComposerKey, ComposerDraft>()
     fun get(key: ComposerKey): ComposerDraft = drafts.getOrPut(key) {
         val storageKey = "${key.host}/${key.sessionId}"
-        val raw = preferences?.getString(storageKey, null)
+        val raw = preferences?.getString(storageKey)
         val saved = raw?.let { runCatching { WireJson.decodeFromString(SavedComposer.serializer(), it) }.getOrElse { _ -> SavedComposer(it) } } ?: SavedComposer()
-        ComposerDraft(key, saved) { preferences?.edit()?.putString(storageKey, WireJson.encodeToString(SavedComposer.serializer(), it))?.apply() }
+        ComposerDraft(key, saved) { preferences?.edit(mapOf(storageKey to WireJson.encodeToString(SavedComposer.serializer(), it))) }
     }
     var imagePickTarget: Pair<ComposerDraft, com.labteto.dshmobile.core.wire.dto.ImageLimitsView>? = null
     var filePickTarget: ComposerDraft? = null

@@ -123,6 +123,11 @@ All notable changes to DSH Mobile are documented here. Format based on
   port shared with Android (`HarnessConnection`), which the session list and chat build on next, and
   `mock-harness --ci-fixtures` serves a demo harness with sessions, a transcript and a streamed reply
   on port 3190 for those checks. (#141)
+- The session store no longer touches Android directly: its locks are atomicfu's, and the device's strings,
+  time zone, language, app version, preference files and log reach it through one small port
+  (`StorePlatform`), with the connection as `HarnessConnection` and the remembered last session as
+  `LastSessionStore`. Nothing the app does or shows changes; this is what lets the same store run on iOS
+  next. (#141)
 
 ## [0.24.0] - 2026-11-19
 

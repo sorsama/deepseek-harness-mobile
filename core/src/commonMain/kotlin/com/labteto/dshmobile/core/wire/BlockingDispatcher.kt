@@ -10,5 +10,8 @@ import kotlinx.coroutines.CoroutineDispatcher
  * source set, which a project's `commonMain` does not see (the metadata compile reports
  * `Unresolved reference 'IO'`), while every platform this module targets has one. Both actuals are
  * the platform's `Dispatchers.IO`.
+ *
+ * Public so code outside `core` that blocks the same way (the session store reading a picked file into an upload)
+ * has one common name for it instead of `Dispatchers.IO`, which its own `commonMain` cannot see either.
  */
-internal expect val blockingDispatcher: CoroutineDispatcher
+expect val blockingDispatcher: CoroutineDispatcher
