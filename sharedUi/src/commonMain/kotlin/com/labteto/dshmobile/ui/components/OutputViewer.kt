@@ -10,12 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,13 +22,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.common_close
+import com.labteto.dshmobile.shared.resources.hold_copy_all
+import com.labteto.dshmobile.shared.resources.output_viewer_matches
+import com.labteto.dshmobile.shared.resources.output_viewer_next
+import com.labteto.dshmobile.shared.resources.output_viewer_no_matches
+import com.labteto.dshmobile.shared.resources.output_viewer_prev
+import com.labteto.dshmobile.shared.resources.output_viewer_search
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -74,17 +75,17 @@ fun OutputViewerDialog(
     val copy = rememberCopier()
     var searching by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
-    DsFullScreenDialog(onDismissRequest = onDismiss) {
+    DsFullScreenPage(onDismissRequest = onDismiss) {
         DsTopBar(
             title = title,
-            leading = { DsIconButton(Icons.Filled.Close, stringResource(R.string.common_close), onDismiss) },
+            leading = { DsIconButton(DsIcons.Close, stringResource(Res.string.common_close), onDismiss) },
             trailing = {
                 DsIconButton(
-                    Icons.Filled.Search, stringResource(R.string.output_viewer_search), { searching = !searching },
+                    DsIcons.Search, stringResource(Res.string.output_viewer_search), { searching = !searching },
                     selected = searching,
                 )
                 DsIconButton(
-                    Icons.Outlined.ContentCopy, stringResource(R.string.hold_copy_all), { loaded?.let { copy(it.text) } },
+                    DsIcons.ContentCopy, stringResource(Res.string.hold_copy_all), { loaded?.let { copy(it.text) } },
                     enabled = loaded != null,
                 )
             },
@@ -92,7 +93,7 @@ fun OutputViewerDialog(
         val ready = loaded
         if (ready == null) {
             DsProgress(Modifier.padding(horizontal = DsSpacing.comfortable))
-            return@DsFullScreenDialog
+            return@DsFullScreenPage
         }
         ViewerBody(ready, searching, query, onQuery = { query = it })
     }
@@ -133,18 +134,18 @@ private fun ColumnScope.ViewerBody(ready: ViewerText, searching: Boolean, query:
             DsSearchField(
                 value = query,
                 onValueChange = onQuery,
-                placeholder = stringResource(R.string.output_viewer_search),
+                placeholder = stringResource(Res.string.output_viewer_search),
                 modifier = Modifier.weight(1f),
                 autoFocus = true,
             )
-            DsIconButton(Icons.Filled.KeyboardArrowUp, stringResource(R.string.output_viewer_prev), { step(-1) }, enabled = matches.isNotEmpty())
-            DsIconButton(Icons.Filled.KeyboardArrowDown, stringResource(R.string.output_viewer_next), { step(1) }, enabled = matches.isNotEmpty())
+            DsIconButton(DsIcons.KeyboardArrowUp, stringResource(Res.string.output_viewer_prev), { step(-1) }, enabled = matches.isNotEmpty())
+            DsIconButton(DsIcons.KeyboardArrowDown, stringResource(Res.string.output_viewer_next), { step(1) }, enabled = matches.isNotEmpty())
         }
         if (needle.isNotEmpty()) {
             val capped = matches.size >= LineIndex.DEFAULT_MATCH_LIMIT
             Text(
-                if (matches.isEmpty()) stringResource(R.string.output_viewer_no_matches)
-                else stringResource(R.string.output_viewer_matches, current + 1, if (capped) "${matches.size}+" else "${matches.size}"),
+                if (matches.isEmpty()) stringResource(Res.string.output_viewer_no_matches)
+                else stringResource(Res.string.output_viewer_matches, localizedCount(current + 1), if (capped) "${matches.size}+" else "${matches.size}"),
                 style = DsType.caption11,
                 color = colors.labelCaption,
                 modifier = Modifier.padding(horizontal = DsSpacing.comfortable, vertical = DsSpacing.tiny),

@@ -41,7 +41,7 @@ import kotlinx.serialization.json.jsonPrimitive
  * One difference from the host's version: it skips any call with a `parentCallId` (a child
  * dispatch inside code mode), which this app's fold does not model, so there is no such guard.
  */
-internal fun buildToolCardView(
+fun buildToolCardView(
     call: ToolCallNode,
     result: ToolResultNode?,
     running: Boolean,

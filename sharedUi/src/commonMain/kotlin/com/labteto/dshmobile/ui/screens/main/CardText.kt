@@ -21,7 +21,7 @@ import com.labteto.dshmobile.ui.components.ToolCardView
  * Words the app itself says are not in it (the viewer is for what the tool produced): a diff line is
  * its `+`, `-` or space, then the line; a read line is its number, a tab and the line.
  */
-internal fun cardPlainText(card: ToolCardView): String = buildString {
+fun cardPlainText(card: ToolCardView): String = buildString {
     when (card) {
         is ToolCardView.TerminalCard -> {
             card.title?.takeIf { it.isNotEmpty() }?.let { append("$ ").append(it).append('\n') }

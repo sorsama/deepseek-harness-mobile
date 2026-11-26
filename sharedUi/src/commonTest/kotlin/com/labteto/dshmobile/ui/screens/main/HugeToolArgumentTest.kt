@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * A model can send a tool call with hundreds of kilobytes of arguments (a 300 KB command made the

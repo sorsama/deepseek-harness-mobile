@@ -53,6 +53,8 @@ import com.labteto.dshmobile.termux.HarnessControlFailure
 import com.labteto.dshmobile.termux.TermuxPaths
 import com.labteto.dshmobile.ui.components.AndroidHapticPlatform
 import com.labteto.dshmobile.ui.components.DsButton
+import com.labteto.dshmobile.ui.components.LocalAttachmentImage
+import com.labteto.dshmobile.ui.components.TranscriptAttachmentImage
 import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsDialog
 import com.labteto.dshmobile.ui.components.DsToastHost
@@ -125,7 +127,9 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
     val sessionStore = rememberProcessSessionStore()
 
     // `AndroidHapticPlatform` is the Android half of the shared haptic vocabulary (AndroidHaptics.kt).
-    CompositionLocalProvider(LocalSessionStore provides sessionStore) {
+    // The shared tool cards draw an image a tool returned through LocalAttachmentImage; on Android that
+    // is AttachmentImage, which loads it through the store above.
+    CompositionLocalProvider(LocalSessionStore provides sessionStore, LocalAttachmentImage provides TranscriptAttachmentImage) {
     DshTheme(
         customization = customization,
         hapticPlatform = AndroidHapticPlatform,

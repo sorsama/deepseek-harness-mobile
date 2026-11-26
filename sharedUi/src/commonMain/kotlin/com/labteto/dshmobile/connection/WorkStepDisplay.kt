@@ -1,9 +1,5 @@
 package com.labteto.dshmobile.connection
 
-import androidx.datastore.preferences.core.MutablePreferences
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.stringPreferencesKey
-
 /**
  * How much of the agent's work the transcript shows by default: the DSH Web "Work details"
  * setting (工作步骤展示), with the same four levels in the same order.
@@ -39,14 +35,3 @@ enum class WorkStepDisplay(val key: String) {
  * of the other three levels matches the old look.
  */
 val DEFAULT_WORK_STEP_DISPLAY: WorkStepDisplay = WorkStepDisplay.Compact
-
-/** The DataStore key the level is stored under. */
-internal val WORK_STEP_DISPLAY_PREF = stringPreferencesKey("work_step_display")
-
-/** The stored level's key, normalised: an absent or unknown value reads as the default. */
-internal fun Preferences.readWorkStepDisplay(): String = WorkStepDisplay.of(this[WORK_STEP_DISPLAY_PREF]).key
-
-/** Stores [value] as a known level's key; an unknown value is stored as the default. */
-internal fun MutablePreferences.writeWorkStepDisplay(value: String) {
-    this[WORK_STEP_DISPLAY_PREF] = WorkStepDisplay.of(value).key
-}

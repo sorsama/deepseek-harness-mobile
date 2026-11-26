@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNull
+import kotlin.test.Test
 
 /**
  * Tool rows read `Read · app\build.gradle.kts` rather than a presenter title and an absolute path.
@@ -11,7 +11,7 @@ import org.junit.Test
 class ToolRowModelTest {
 
     @Test
-    fun `a web search shows its queries, however many the model asked for`() {
+    fun `a web search shows its queries however many the model asked for`() {
         // Harness 0.1.0-rc.8 turned `web_search`'s single `query` into a 1-4 element `queries`
         // array. Reading only the old key left the row saying "Search" and nothing else.
         val one = toolRowModel(

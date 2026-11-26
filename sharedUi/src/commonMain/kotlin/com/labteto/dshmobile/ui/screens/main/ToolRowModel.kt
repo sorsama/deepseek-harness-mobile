@@ -20,7 +20,7 @@ import kotlinx.serialization.json.JsonObject
  * vocabulary, which it leaves untranslated in every locale, and a translated verb here would stop
  * matching the desktop UI it mirrors.
  */
-internal enum class ToolRowVariant(val title: String) {
+enum class ToolRowVariant(val title: String) {
     Search("Search"),
     Read("Read"),
     Bash("Bash"),
@@ -69,7 +69,7 @@ private val SUMMARY_KEYS: Map<ToolRowVariant, List<String>> = mapOf(
 private val LENIENT_JSON = Json { ignoreUnknownKeys = true; isLenient = true }
 
 /** The header a tool row shows: a verb plus the argument that identifies the call. */
-internal data class ToolRowModel(
+data class ToolRowModel(
     val variant: ToolRowVariant,
     val title: String,
     val summary: String?,
@@ -77,7 +77,7 @@ internal data class ToolRowModel(
     val filePath: String?,
 )
 
-internal fun classifyTool(toolName: String): ToolRowVariant =
+fun classifyTool(toolName: String): ToolRowVariant =
     TOOL_VARIANTS[toolName.lowercase()] ?: ToolRowVariant.Other
 
 /**
@@ -87,7 +87,7 @@ internal fun classifyTool(toolName: String): ToolRowVariant =
  * with the verb column: a `web_fetch` reads `Read` and gets the page glyph, not whatever card the
  * host chose to render its result in.
  */
-internal fun ToolRowVariant.featherIcon(): ImageVector = when (this) {
+fun ToolRowVariant.featherIcon(): ImageVector = when (this) {
     ToolRowVariant.Search -> FeatherIcons.Search
     ToolRowVariant.Read -> FeatherIcons.FileText
     ToolRowVariant.Bash -> FeatherIcons.Terminal
@@ -105,7 +105,7 @@ internal fun ToolRowVariant.featherIcon(): ImageVector = when (this) {
  * variant verb. An unrecognised tool with no presenter title keeps its raw name in the summary so
  * the row is still identifiable.
  */
-internal fun toolRowModel(
+fun toolRowModel(
     toolName: String,
     argumentsJson: String?,
     cwd: String?,
@@ -145,7 +145,7 @@ internal const val POWERSHELL_TITLE = "PowerShell"
  * their product names, anything else as [humanizeIdentifier] reads it. The job sheet, the Details
  * panel and the Jobs card all say "PowerShell", never the wire name `pwsh`.
  */
-internal fun jobKindLabel(kind: String): String = when (kind.lowercase()) {
+fun jobKindLabel(kind: String): String = when (kind.lowercase()) {
     "pwsh" -> POWERSHELL_TITLE
     "bash" -> "Bash"
     else -> humanizeIdentifier(kind)
@@ -156,7 +156,7 @@ internal fun jobKindLabel(kind: String): String = when (kind.lowercase()) {
  * `D:\LabTeto\deepseek-mobile\app\build.gradle.kts`. Handles either separator, because the harness
  * host may be Windows or POSIX regardless of what the phone runs.
  */
-internal fun relativizeToCwd(text: String, cwd: String?): String {
+fun relativizeToCwd(text: String, cwd: String?): String {
     val root = cwd?.takeIf { it.isNotBlank() } ?: return text
     val normalizedRoot = root.trimEnd('\\', '/')
     if (!text.startsWith(normalizedRoot, ignoreCase = true)) return text
@@ -198,7 +198,7 @@ internal const val ROW_SUMMARY_MAX_CHARS = 400
  * heap past 3 GB on a phone emulator (the built-in harness's oversized-command check, found in the
  * integration run). Only the first line is kept, and at most [ROW_SUMMARY_MAX_CHARS] characters of it.
  */
-internal fun rowSummaryText(summary: String): String {
+fun rowSummaryText(summary: String): String {
     val firstLine = summary.lineSequence().firstOrNull { it.isNotBlank() } ?: summary
     val cut = if (firstLine.length > ROW_SUMMARY_MAX_CHARS) firstLine.take(ROW_SUMMARY_MAX_CHARS) + "…" else firstLine
     return if (cut.length < summary.length && !cut.endsWith("…")) "$cut…" else cut

@@ -23,13 +23,107 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_stopped
+import com.labteto.dshmobile.shared.resources.chat_tool_ask_answered
+import com.labteto.dshmobile.shared.resources.chat_tool_ask_cancelled
+import com.labteto.dshmobile.shared.resources.chat_tool_ask_carried_on
+import com.labteto.dshmobile.shared.resources.chat_tool_ask_closed
+import com.labteto.dshmobile.shared.resources.chat_tool_ask_interrupted
+import com.labteto.dshmobile.shared.resources.chat_tool_ask_not_answered
+import com.labteto.dshmobile.shared.resources.chat_tool_ask_timed_out
+import com.labteto.dshmobile.shared.resources.chat_tool_ask_waiting
+import com.labteto.dshmobile.shared.resources.chat_tool_ask_your_answer
+import com.labteto.dshmobile.shared.resources.chat_tool_background
+import com.labteto.dshmobile.shared.resources.chat_tool_background_starting
+import com.labteto.dshmobile.shared.resources.chat_tool_field_exit_code
+import com.labteto.dshmobile.shared.resources.chat_tool_field_kind
+import com.labteto.dshmobile.shared.resources.chat_tool_field_lines
+import com.labteto.dshmobile.shared.resources.chat_tool_field_location
+import com.labteto.dshmobile.shared.resources.chat_tool_field_pid
+import com.labteto.dshmobile.shared.resources.chat_tool_field_process_group
+import com.labteto.dshmobile.shared.resources.chat_tool_field_reason
+import com.labteto.dshmobile.shared.resources.chat_tool_field_repeats
+import com.labteto.dshmobile.shared.resources.chat_tool_field_rounds
+import com.labteto.dshmobile.shared.resources.chat_tool_field_signal
+import com.labteto.dshmobile.shared.resources.chat_tool_field_type
+import com.labteto.dshmobile.shared.resources.chat_tool_field_value
+import com.labteto.dshmobile.shared.resources.chat_tool_field_when
+import com.labteto.dshmobile.shared.resources.chat_tool_files_count
+import com.labteto.dshmobile.shared.resources.chat_tool_goal_none
+import com.labteto.dshmobile.shared.resources.chat_tool_image_none
+import com.labteto.dshmobile.shared.resources.chat_tool_jobs_count
+import com.labteto.dshmobile.shared.resources.chat_tool_jobs_none
+import com.labteto.dshmobile.shared.resources.chat_tool_open_job
+import com.labteto.dshmobile.shared.resources.chat_tool_output_cut
+import com.labteto.dshmobile.shared.resources.chat_tool_places_count
+import com.labteto.dshmobile.shared.resources.chat_tool_places_none
+import com.labteto.dshmobile.shared.resources.chat_tool_reminders_count
+import com.labteto.dshmobile.shared.resources.chat_tool_reminders_none
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_cron
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_daily
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_days
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_every_day
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_every_hour
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_every_minute
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_every_second
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_hours
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_minutes
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_once
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_seconds
+import com.labteto.dshmobile.shared.resources.chat_tool_repeat_weekly
+import com.labteto.dshmobile.shared.resources.chat_tool_skill_loaded
+import com.labteto.dshmobile.shared.resources.chat_tool_skill_loading
+import com.labteto.dshmobile.shared.resources.chat_tool_skill_not_loaded
+import com.labteto.dshmobile.shared.resources.chat_tool_state_already_finished
+import com.labteto.dshmobile.shared.resources.chat_tool_state_closed
+import com.labteto.dshmobile.shared.resources.chat_tool_state_closing
+import com.labteto.dshmobile.shared.resources.chat_tool_state_deleted
+import com.labteto.dshmobile.shared.resources.chat_tool_state_exited
+import com.labteto.dshmobile.shared.resources.chat_tool_state_goal_cleared
+import com.labteto.dshmobile.shared.resources.chat_tool_state_goal_waiting
+import com.labteto.dshmobile.shared.resources.chat_tool_state_overdue
+import com.labteto.dshmobile.shared.resources.chat_tool_state_scheduled
+import com.labteto.dshmobile.shared.resources.chat_tool_state_signal_sent
+import com.labteto.dshmobile.shared.resources.chat_tool_state_started
+import com.labteto.dshmobile.shared.resources.chat_tool_state_stop_requested
+import com.labteto.dshmobile.shared.resources.chat_tool_subagent_failed
+import com.labteto.dshmobile.shared.resources.chat_tool_subagent_finished
+import com.labteto.dshmobile.shared.resources.chat_tool_subagent_model_label
+import com.labteto.dshmobile.shared.resources.chat_tool_subagent_open
+import com.labteto.dshmobile.shared.resources.chat_tool_subagent_replied
+import com.labteto.dshmobile.shared.resources.chat_tool_subagent_started
+import com.labteto.dshmobile.shared.resources.chat_tool_subagent_starting
+import com.labteto.dshmobile.shared.resources.chat_tool_subagent_working
+import com.labteto.dshmobile.shared.resources.chat_tool_terminals_count
+import com.labteto.dshmobile.shared.resources.chat_tool_terminals_none
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_added
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_change_added
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_change_moved
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_change_removed
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_change_was
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_changed
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_done
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_in_progress
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_no_changes
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_not_saved
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_pending
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_progress
+import com.labteto.dshmobile.shared.resources.chat_tool_todo_removed
+import com.labteto.dshmobile.shared.resources.goal_phase_active
+import com.labteto.dshmobile.shared.resources.goal_phase_blocked
+import com.labteto.dshmobile.shared.resources.goal_phase_complete
+import com.labteto.dshmobile.shared.resources.goal_phase_paused
+import com.labteto.dshmobile.shared.resources.jobs_completed
+import com.labteto.dshmobile.shared.resources.jobs_failed
+import com.labteto.dshmobile.shared.resources.jobs_killed
+import com.labteto.dshmobile.shared.resources.jobs_running
+import com.labteto.dshmobile.shared.resources.jobs_stopping
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
@@ -63,7 +157,7 @@ private fun technical(value: String): String = com.labteto.dshmobile.ui.screens.
  * generic card with no arguments, locations or content has nothing of its own to put in the box (the
  * tool's text is the transcript's Output row, drawn outside the card).
  */
-internal fun ToolCardView.hasBody(): Boolean = when (this) {
+fun ToolCardView.hasBody(): Boolean = when (this) {
     is TodoCard -> lines.isNotEmpty() || !recorded
     is DetailsCard -> !headerOnly
     is ToolCardView.GenericCard -> hasArguments(rawInput) || !locations.isNullOrEmpty() || !content.isNullOrEmpty()
@@ -72,7 +166,7 @@ internal fun ToolCardView.hasBody(): Boolean = when (this) {
 
 // ---- Header ---------------------------------------------------------------------------------
 
-internal fun ToolCardView.controlIcon(): ImageVector? = when (this) {
+fun ToolCardView.controlIcon(): ImageVector? = when (this) {
     is TodoCard -> FeatherIcons.List
     is QuestionCard -> FeatherIcons.Info
     is SubagentCard -> FeatherIcons.GitBranch
@@ -91,7 +185,7 @@ internal fun ToolCardView.controlIcon(): ImageVector? = when (this) {
 
 /** The header's summary for a control card, or null for the row model's own. */
 @Composable
-internal fun ToolCardView.controlSummary(): String? = when (this) {
+fun ToolCardView.controlSummary(): String? = when (this) {
     is TodoCard -> todoSummary()
     is QuestionCard -> questionOutcomeText()
     is SubagentCard -> listOfNotNull(title, subagentStateText()).joinToString(" · ")
@@ -103,14 +197,14 @@ internal fun ToolCardView.controlSummary(): String? = when (this) {
 
 @Composable
 private fun TodoCard.todoSummary(): String {
-    val parts = mutableListOf(stringResource(R.string.chat_tool_todo_progress, done, total))
+    val parts = mutableListOf(stringResource(Res.string.chat_tool_todo_progress, localizedCount(done), localizedCount(total)))
     if (recorded && !initial) {
         val changes = listOfNotNull(
-            added.takeIf { it > 0 }?.let { pluralStringResource(R.plurals.chat_tool_todo_added, it, it) },
-            updated.takeIf { it > 0 }?.let { pluralStringResource(R.plurals.chat_tool_todo_changed, it, it) },
-            removed.takeIf { it > 0 }?.let { pluralStringResource(R.plurals.chat_tool_todo_removed, it, it) },
+            added.takeIf { it > 0 }?.let { pluralStringResource(Res.plurals.chat_tool_todo_added, it, localizedCount(it)) },
+            updated.takeIf { it > 0 }?.let { pluralStringResource(Res.plurals.chat_tool_todo_changed, it, localizedCount(it)) },
+            removed.takeIf { it > 0 }?.let { pluralStringResource(Res.plurals.chat_tool_todo_removed, it, localizedCount(it)) },
         )
-        parts += changes.ifEmpty { listOf(stringResource(R.string.chat_tool_todo_no_changes)) }
+        parts += changes.ifEmpty { listOf(stringResource(Res.string.chat_tool_todo_no_changes)) }
     }
     active?.let { parts += if (activeExtra > 0) "$it +$activeExtra" else it }
     return parts.joinToString(" · ")
@@ -118,26 +212,26 @@ private fun TodoCard.todoSummary(): String {
 
 @Composable
 private fun QuestionCard.questionOutcomeText(): String = when (outcome) {
-    QuestionOutcome.Waiting -> stringResource(R.string.chat_tool_ask_waiting)
-    QuestionOutcome.Answered -> stringResource(R.string.chat_tool_ask_answered, answered, total)
-    QuestionOutcome.Cancelled -> stringResource(R.string.chat_tool_ask_cancelled)
-    QuestionOutcome.Interrupted -> stringResource(R.string.chat_tool_ask_interrupted)
-    QuestionOutcome.TimedOut -> stringResource(R.string.chat_tool_ask_timed_out)
-    QuestionOutcome.CarriedOn -> stringResource(R.string.chat_tool_ask_carried_on)
-    QuestionOutcome.Settled -> stringResource(R.string.chat_tool_ask_closed)
+    QuestionOutcome.Waiting -> stringResource(Res.string.chat_tool_ask_waiting)
+    QuestionOutcome.Answered -> stringResource(Res.string.chat_tool_ask_answered, localizedCount(answered), localizedCount(total))
+    QuestionOutcome.Cancelled -> stringResource(Res.string.chat_tool_ask_cancelled)
+    QuestionOutcome.Interrupted -> stringResource(Res.string.chat_tool_ask_interrupted)
+    QuestionOutcome.TimedOut -> stringResource(Res.string.chat_tool_ask_timed_out)
+    QuestionOutcome.CarriedOn -> stringResource(Res.string.chat_tool_ask_carried_on)
+    QuestionOutcome.Settled -> stringResource(Res.string.chat_tool_ask_closed)
 }
 
 /** The subagent's state: its call's own phase, refined by the live list once it has started. */
 @Composable
 private fun SubagentCard.subagentStateText(running: Boolean? = null): String = when (phase) {
-    SubagentPhase.Starting -> stringResource(R.string.chat_tool_subagent_starting)
-    SubagentPhase.Failed -> stringResource(R.string.chat_tool_subagent_failed)
-    SubagentPhase.Stopped -> stringResource(R.string.chat_stopped)
-    SubagentPhase.Replied -> stringResource(R.string.chat_tool_subagent_replied)
+    SubagentPhase.Starting -> stringResource(Res.string.chat_tool_subagent_starting)
+    SubagentPhase.Failed -> stringResource(Res.string.chat_tool_subagent_failed)
+    SubagentPhase.Stopped -> stringResource(Res.string.chat_stopped)
+    SubagentPhase.Replied -> stringResource(Res.string.chat_tool_subagent_replied)
     SubagentPhase.Started -> when (running) {
-        true -> stringResource(R.string.chat_tool_subagent_working)
-        false -> stringResource(R.string.chat_tool_subagent_finished)
-        null -> stringResource(R.string.chat_tool_subagent_started)
+        true -> stringResource(Res.string.chat_tool_subagent_working)
+        false -> stringResource(Res.string.chat_tool_subagent_finished)
+        null -> stringResource(Res.string.chat_tool_subagent_started)
     }
 }
 
@@ -146,12 +240,12 @@ private fun DetailsCard.detailsSummary(): String? {
     val first = items.firstOrNull()
     val state = first?.let { detailStateText(it) }
     return when (tool) {
-        DetailsTool.JobList -> if (items.isEmpty()) stringResource(R.string.chat_tool_jobs_none)
-            else pluralStringResource(R.plurals.chat_tool_jobs_count, items.size, items.size)
-        DetailsTool.TerminalList -> if (items.isEmpty()) stringResource(R.string.chat_tool_terminals_none)
-            else pluralStringResource(R.plurals.chat_tool_terminals_count, items.size, items.size)
-        DetailsTool.ScheduleList -> if (items.isEmpty()) stringResource(R.string.chat_tool_reminders_none)
-            else pluralStringResource(R.plurals.chat_tool_reminders_count, items.size, items.size)
+        DetailsTool.JobList -> if (items.isEmpty()) stringResource(Res.string.chat_tool_jobs_none)
+            else pluralStringResource(Res.plurals.chat_tool_jobs_count, items.size, localizedCount(items.size))
+        DetailsTool.TerminalList -> if (items.isEmpty()) stringResource(Res.string.chat_tool_terminals_none)
+            else pluralStringResource(Res.plurals.chat_tool_terminals_count, items.size, localizedCount(items.size))
+        DetailsTool.ScheduleList -> if (items.isEmpty()) stringResource(Res.string.chat_tool_reminders_none)
+            else pluralStringResource(Res.plurals.chat_tool_reminders_count, items.size, localizedCount(items.size))
         DetailsTool.Lsp -> {
             val places = items.count { it.technicalTitle }
             val hover = items.singleOrNull()?.description != null && first?.fields.isNullOrEmpty()
@@ -159,14 +253,14 @@ private fun DetailsCard.detailsSummary(): String? {
                 summary?.let(::technical),
                 when {
                     hover -> null
-                    places == 0 -> stringResource(R.string.chat_tool_places_none)
-                    else -> pluralStringResource(R.plurals.chat_tool_places_count, places, places)
+                    places == 0 -> stringResource(Res.string.chat_tool_places_none)
+                    else -> pluralStringResource(Res.plurals.chat_tool_places_count, places, localizedCount(places))
                 },
             ).joinToString(" · ")
         }
-        DetailsTool.GoalView -> if (items.isEmpty()) stringResource(R.string.chat_tool_goal_none)
+        DetailsTool.GoalView -> if (items.isEmpty()) stringResource(Res.string.chat_tool_goal_none)
             else listOfNotNull(first?.title, state).joinToString(" · ")
-        DetailsTool.Present -> summary?.let(::technical) ?: pluralStringResource(R.plurals.chat_tool_files_count, items.size, items.size)
+        DetailsTool.Present -> summary?.let(::technical) ?: pluralStringResource(Res.plurals.chat_tool_files_count, items.size, localizedCount(items.size))
         DetailsTool.ScheduleCreate, DetailsTool.ScheduleUpdate ->
             listOfNotNull(summary, first?.fields?.firstOrNull { it.label == DetailLabel.When }?.let { fieldValueText(it.value) }).joinToString(" · ")
         DetailsTool.GoalCreate, DetailsTool.GoalUpdate ->
@@ -203,16 +297,16 @@ private fun TodoMark.glyph(): String = when (this) {
 
 @Composable
 private fun TodoMark.label(): String = when (this) {
-    TodoMark.Pending -> stringResource(R.string.chat_tool_todo_pending)
-    TodoMark.InProgress -> stringResource(R.string.chat_tool_todo_in_progress)
-    TodoMark.Completed -> stringResource(R.string.chat_tool_todo_done)
+    TodoMark.Pending -> stringResource(Res.string.chat_tool_todo_pending)
+    TodoMark.InProgress -> stringResource(Res.string.chat_tool_todo_in_progress)
+    TodoMark.Completed -> stringResource(Res.string.chat_tool_todo_done)
 }
 
 @Composable
 private fun TodoBody(card: TodoCard) {
     val colors = DsTheme.colors
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        if (!card.recorded) Caption(stringResource(R.string.chat_tool_todo_not_saved))
+        if (!card.recorded) Caption(stringResource(Res.string.chat_tool_todo_not_saved))
         card.lines.forEach { line ->
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                 Text(
@@ -232,11 +326,11 @@ private fun TodoBody(card: TodoCard) {
                         color = if (line.change == TodoChange.Removed) colors.labelTertiary else colors.labelPrimary,
                     )
                     val note = when (line.change) {
-                        TodoChange.Added -> stringResource(R.string.chat_tool_todo_change_added) + " · " + line.mark.label()
-                        TodoChange.Moved -> stringResource(R.string.chat_tool_todo_change_moved) + " · " + line.mark.label()
-                        TodoChange.Removed -> stringResource(R.string.chat_tool_todo_change_removed)
+                        TodoChange.Added -> stringResource(Res.string.chat_tool_todo_change_added) + " · " + line.mark.label()
+                        TodoChange.Moved -> stringResource(Res.string.chat_tool_todo_change_moved) + " · " + line.mark.label()
+                        TodoChange.Removed -> stringResource(Res.string.chat_tool_todo_change_removed)
                         TodoChange.StatusChanged -> line.mark.label() + (line.previous?.let {
-                            " · " + stringResource(R.string.chat_tool_todo_change_was, it.label())
+                            " · " + stringResource(Res.string.chat_tool_todo_change_was, it.label())
                         }.orEmpty())
                         null -> line.mark.label()
                     }
@@ -261,10 +355,10 @@ private fun QuestionBody(card: QuestionCard) {
                         Text("·  $option", style = DsType.small13, color = colors.labelTertiary)
                     }
                 } else if (answers.isEmpty()) {
-                    Text(stringResource(R.string.chat_tool_ask_not_answered), style = DsType.small13, color = colors.labelTertiary)
+                    Text(stringResource(Res.string.chat_tool_ask_not_answered), style = DsType.small13, color = colors.labelTertiary)
                 } else {
                     Text(
-                        stringResource(R.string.chat_tool_ask_your_answer, answers.joinToString(", ")),
+                        stringResource(Res.string.chat_tool_ask_your_answer, answers.joinToString(", ")),
                         style = DsType.small13,
                         color = colors.labelSecondary,
                     )
@@ -284,7 +378,7 @@ private fun SubagentBody(card: SubagentCard, actions: ToolCardActions) {
         // The model's name is the harness's text: its own left-to-right run after the app's label.
         card.model?.let {
             com.labteto.dshmobile.ui.screens.main.LabeledTechnicalText(
-                label = stringResource(R.string.chat_tool_subagent_model_label),
+                label = stringResource(Res.string.chat_tool_subagent_model_label),
                 value = it,
                 style = DsType.caption11,
                 color = colors.labelCaption,
@@ -303,7 +397,7 @@ private fun SubagentBody(card: SubagentCard, actions: ToolCardActions) {
             Text(card.subagentStateText(running), style = DsType.caption11Strong, color = colors.labelSecondary)
         }
         val open = actions.openSubagent
-        if (open != null && card.childId != null) OpenRow(stringResource(R.string.chat_tool_subagent_open), FeatherIcons.GitBranch, open)
+        if (open != null && card.childId != null) OpenRow(stringResource(Res.string.chat_tool_subagent_open), FeatherIcons.GitBranch, open)
     }
 }
 
@@ -316,9 +410,9 @@ private fun SkillBody(card: SkillCard) {
         Caption(
             stringResource(
                 when (card.phase) {
-                    SkillPhase.Loading -> R.string.chat_tool_skill_loading
-                    SkillPhase.Loaded -> R.string.chat_tool_skill_loaded
-                    SkillPhase.Failed -> R.string.chat_tool_skill_not_loaded
+                    SkillPhase.Loading -> Res.string.chat_tool_skill_loading
+                    SkillPhase.Loaded -> Res.string.chat_tool_skill_loaded
+                    SkillPhase.Failed -> Res.string.chat_tool_skill_not_loaded
                 },
             ),
         )
@@ -328,12 +422,11 @@ private fun SkillBody(card: SkillCard) {
 @Composable
 private fun ImageBody(card: ImageCard) {
     val colors = DsTheme.colors
-    val context = LocalContext.current
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(technical(card.path), style = DsType.mdCode, color = colors.labelSecondary)
-        if (card.images.isEmpty()) Caption(stringResource(R.string.chat_tool_image_none))
+        if (card.images.isEmpty()) Caption(stringResource(Res.string.chat_tool_image_none))
         card.images.forEach { image ->
-            val size = android.text.format.Formatter.formatShortFileSize(context, image.bytes.toLong())
+            val size = shortFileSize(image.bytes.toLong())
             Caption(technical("${image.width} × ${image.height}") + " · " + size)
         }
     }
@@ -346,16 +439,16 @@ private fun DetailsBody(card: DetailsCard) {
         if (card.items.isEmpty()) {
             Caption(
                 when (card.tool) {
-                    DetailsTool.JobList -> stringResource(R.string.chat_tool_jobs_none)
-                    DetailsTool.TerminalList -> stringResource(R.string.chat_tool_terminals_none)
-                    DetailsTool.ScheduleList -> stringResource(R.string.chat_tool_reminders_none)
-                    DetailsTool.GoalView -> stringResource(R.string.chat_tool_goal_none)
-                    else -> stringResource(R.string.chat_tool_places_none)
+                    DetailsTool.JobList -> stringResource(Res.string.chat_tool_jobs_none)
+                    DetailsTool.TerminalList -> stringResource(Res.string.chat_tool_terminals_none)
+                    DetailsTool.ScheduleList -> stringResource(Res.string.chat_tool_reminders_none)
+                    DetailsTool.GoalView -> stringResource(Res.string.chat_tool_goal_none)
+                    else -> stringResource(Res.string.chat_tool_places_none)
                 },
             )
         }
         card.items.forEachIndexed { index, item -> DetailItemView(item, index) }
-        if (card.truncated) Caption(stringResource(R.string.chat_tool_output_cut))
+        if (card.truncated) Caption(stringResource(Res.string.chat_tool_output_cut))
     }
 }
 
@@ -379,7 +472,7 @@ private fun DetailItemView(item: DetailItem, index: Int) {
         }
         item.subtitle?.let { Caption(technical(it)) }
         item.fields.forEach { field ->
-            Caption(stringResource(R.string.chat_tool_field_value, fieldLabelText(field.label), fieldValueText(field.value)))
+            Caption(stringResource(Res.string.chat_tool_field_value, fieldLabelText(field.label), fieldValueText(field.value)))
         }
         item.description?.let { Text(it, style = DsType.small13, color = colors.labelSecondary) }
         item.code?.takeIf { it.isNotEmpty() }?.let { code ->
@@ -400,29 +493,29 @@ private fun DetailItemView(item: DetailItem, index: Int) {
 @Composable
 private fun detailStateText(item: DetailItem): String? = when (item.state) {
     null -> null
-    DetailState.Running -> stringResource(R.string.jobs_running)
-    DetailState.Stopping -> stringResource(R.string.jobs_stopping)
-    DetailState.Completed -> stringResource(R.string.jobs_completed)
-    DetailState.Failed -> stringResource(R.string.jobs_failed)
-    DetailState.Killed -> stringResource(R.string.jobs_killed)
-    DetailState.Exited -> stringResource(R.string.chat_tool_state_exited)
-    DetailState.Started -> stringResource(R.string.chat_tool_state_started)
-    DetailState.CancelRequested -> stringResource(R.string.chat_tool_state_stop_requested)
-    DetailState.AlreadyFinished -> stringResource(R.string.chat_tool_state_already_finished)
-    DetailState.SignalDelivered -> stringResource(R.string.chat_tool_state_signal_sent)
-    DetailState.Closed -> stringResource(R.string.chat_tool_state_closed)
-    DetailState.Closing -> stringResource(R.string.chat_tool_state_closing)
-    DetailState.Scheduled -> stringResource(R.string.chat_tool_state_scheduled)
-    DetailState.Overdue -> stringResource(R.string.chat_tool_state_overdue)
-    DetailState.Deleted -> stringResource(R.string.chat_tool_state_deleted)
-    DetailState.GoalActive -> stringResource(R.string.goal_phase_active)
-    DetailState.GoalWaiting -> stringResource(R.string.chat_tool_state_goal_waiting)
-    DetailState.GoalPaused -> stringResource(R.string.goal_phase_paused)
-    DetailState.GoalBlocked -> stringResource(R.string.goal_phase_blocked)
-    DetailState.GoalComplete -> stringResource(R.string.goal_phase_complete)
-    DetailState.GoalCleared -> stringResource(R.string.chat_tool_state_goal_cleared)
-    DetailState.Pending -> stringResource(R.string.chat_tool_todo_pending)
-    DetailState.InProgress -> stringResource(R.string.chat_tool_todo_in_progress)
+    DetailState.Running -> stringResource(Res.string.jobs_running)
+    DetailState.Stopping -> stringResource(Res.string.jobs_stopping)
+    DetailState.Completed -> stringResource(Res.string.jobs_completed)
+    DetailState.Failed -> stringResource(Res.string.jobs_failed)
+    DetailState.Killed -> stringResource(Res.string.jobs_killed)
+    DetailState.Exited -> stringResource(Res.string.chat_tool_state_exited)
+    DetailState.Started -> stringResource(Res.string.chat_tool_state_started)
+    DetailState.CancelRequested -> stringResource(Res.string.chat_tool_state_stop_requested)
+    DetailState.AlreadyFinished -> stringResource(Res.string.chat_tool_state_already_finished)
+    DetailState.SignalDelivered -> stringResource(Res.string.chat_tool_state_signal_sent)
+    DetailState.Closed -> stringResource(Res.string.chat_tool_state_closed)
+    DetailState.Closing -> stringResource(Res.string.chat_tool_state_closing)
+    DetailState.Scheduled -> stringResource(Res.string.chat_tool_state_scheduled)
+    DetailState.Overdue -> stringResource(Res.string.chat_tool_state_overdue)
+    DetailState.Deleted -> stringResource(Res.string.chat_tool_state_deleted)
+    DetailState.GoalActive -> stringResource(Res.string.goal_phase_active)
+    DetailState.GoalWaiting -> stringResource(Res.string.chat_tool_state_goal_waiting)
+    DetailState.GoalPaused -> stringResource(Res.string.goal_phase_paused)
+    DetailState.GoalBlocked -> stringResource(Res.string.goal_phase_blocked)
+    DetailState.GoalComplete -> stringResource(Res.string.goal_phase_complete)
+    DetailState.GoalCleared -> stringResource(Res.string.chat_tool_state_goal_cleared)
+    DetailState.Pending -> stringResource(Res.string.chat_tool_todo_pending)
+    DetailState.InProgress -> stringResource(Res.string.chat_tool_todo_in_progress)
     DetailState.Other -> item.stateRaw
 }
 
@@ -479,18 +572,18 @@ private fun StateChip(text: String, tone: Tone, modifier: Modifier = Modifier) {
 @Composable
 private fun fieldLabelText(label: DetailLabel): String = stringResource(
     when (label) {
-        DetailLabel.Type -> R.string.chat_tool_field_type
-        DetailLabel.Pid -> R.string.chat_tool_field_pid
-        DetailLabel.ExitCode -> R.string.chat_tool_field_exit_code
-        DetailLabel.Signal -> R.string.chat_tool_field_signal
-        DetailLabel.ProcessGroup -> R.string.chat_tool_field_process_group
-        DetailLabel.Lines -> R.string.chat_tool_field_lines
-        DetailLabel.Rounds -> R.string.chat_tool_field_rounds
-        DetailLabel.Reason -> R.string.chat_tool_field_reason
-        DetailLabel.When -> R.string.chat_tool_field_when
-        DetailLabel.Repeats -> R.string.chat_tool_field_repeats
-        DetailLabel.Location -> R.string.chat_tool_field_location
-        DetailLabel.Kind -> R.string.chat_tool_field_kind
+        DetailLabel.Type -> Res.string.chat_tool_field_type
+        DetailLabel.Pid -> Res.string.chat_tool_field_pid
+        DetailLabel.ExitCode -> Res.string.chat_tool_field_exit_code
+        DetailLabel.Signal -> Res.string.chat_tool_field_signal
+        DetailLabel.ProcessGroup -> Res.string.chat_tool_field_process_group
+        DetailLabel.Lines -> Res.string.chat_tool_field_lines
+        DetailLabel.Rounds -> Res.string.chat_tool_field_rounds
+        DetailLabel.Reason -> Res.string.chat_tool_field_reason
+        DetailLabel.When -> Res.string.chat_tool_field_when
+        DetailLabel.Repeats -> Res.string.chat_tool_field_repeats
+        DetailLabel.Location -> Res.string.chat_tool_field_location
+        DetailLabel.Kind -> Res.string.chat_tool_field_kind
     },
 )
 
@@ -507,36 +600,26 @@ private fun fieldValueText(value: DetailValue): String = when (value) {
 
 private val SCHEDULE_INSTANT = Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$")
 
-private fun localDateTime(iso: String): String = runCatching {
-    java.time.format.DateTimeFormatter
-        .ofLocalizedDateTime(java.time.format.FormatStyle.MEDIUM, java.time.format.FormatStyle.SHORT)
-        .withZone(java.time.ZoneId.systemDefault())
-        .format(java.time.Instant.parse(iso))
-}.getOrDefault(iso)
-
 @Composable
 private fun repeatText(rule: ScheduleRepeat): String = when (rule) {
-    ScheduleRepeat.Once -> stringResource(R.string.chat_tool_repeat_once)
+    ScheduleRepeat.Once -> stringResource(Res.string.chat_tool_repeat_once)
     is ScheduleRepeat.Every -> {
         val s = rule.seconds
         // "Every minute" rather than "Every 1 minute": one of a unit has its own wording.
         val (count, single, plural) = when {
-            s % 86_400 == 0L -> Triple(s / 86_400, R.string.chat_tool_repeat_every_day, R.plurals.chat_tool_repeat_days)
-            s % 3_600 == 0L -> Triple(s / 3_600, R.string.chat_tool_repeat_every_hour, R.plurals.chat_tool_repeat_hours)
-            s % 60 == 0L -> Triple(s / 60, R.string.chat_tool_repeat_every_minute, R.plurals.chat_tool_repeat_minutes)
-            else -> Triple(s, R.string.chat_tool_repeat_every_second, R.plurals.chat_tool_repeat_seconds)
+            s % 86_400 == 0L -> Triple(s / 86_400, Res.string.chat_tool_repeat_every_day, Res.plurals.chat_tool_repeat_days)
+            s % 3_600 == 0L -> Triple(s / 3_600, Res.string.chat_tool_repeat_every_hour, Res.plurals.chat_tool_repeat_hours)
+            s % 60 == 0L -> Triple(s / 60, Res.string.chat_tool_repeat_every_minute, Res.plurals.chat_tool_repeat_minutes)
+            else -> Triple(s, Res.string.chat_tool_repeat_every_second, Res.plurals.chat_tool_repeat_seconds)
         }
-        if (count == 1L) stringResource(single) else pluralStringResource(plural, count.toInt(), count.toInt())
+        if (count == 1L) stringResource(single) else pluralStringResource(plural, count.toInt(), localizedCount(count.toInt()))
     }
-    is ScheduleRepeat.Daily -> stringResource(R.string.chat_tool_repeat_daily, technical(rule.time), technical(rule.zone))
+    is ScheduleRepeat.Daily -> stringResource(Res.string.chat_tool_repeat_daily, technical(rule.time), technical(rule.zone))
     is ScheduleRepeat.Weekly -> {
-        val locale = java.util.Locale.getDefault()
-        val days = rule.days.joinToString(", ") {
-            java.time.DayOfWeek.of(it).getDisplayName(java.time.format.TextStyle.SHORT, locale)
-        }
-        stringResource(R.string.chat_tool_repeat_weekly, days, technical(rule.time), technical(rule.zone))
+        val days = rule.days.joinToString(", ") { shortWeekdayName(it) }
+        stringResource(Res.string.chat_tool_repeat_weekly, days, technical(rule.time), technical(rule.zone))
     }
-    is ScheduleRepeat.Cron -> stringResource(R.string.chat_tool_repeat_cron, technical(rule.expression), technical(rule.zone))
+    is ScheduleRepeat.Cron -> stringResource(Res.string.chat_tool_repeat_cron, technical(rule.expression), technical(rule.zone))
 }
 
 // ---- Background command ---------------------------------------------------------------------
@@ -551,7 +634,7 @@ internal fun BackgroundJobLine(card: ToolCardView.TerminalCard, actions: ToolCar
         // large text size): the chip used to be squeezed to one letter instead.
         LabelWithChip {
             Text(
-                stringResource(if (card.running == true) R.string.chat_tool_background_starting else R.string.chat_tool_background),
+                stringResource(if (card.running == true) Res.string.chat_tool_background_starting else Res.string.chat_tool_background),
                 style = DsType.small13,
                 color = colors.labelSecondary,
                 modifier = Modifier.align(Alignment.CenterVertically),
@@ -559,7 +642,7 @@ internal fun BackgroundJobLine(card: ToolCardView.TerminalCard, actions: ToolCar
             actions.jobState?.let { StateChip(it, if (actions.jobRunning) Tone.Info else Tone.Neutral, Modifier.align(Alignment.CenterVertically)) }
         }
         val open = actions.openJob
-        if (open != null && card.jobId != null) OpenRow(stringResource(R.string.chat_tool_open_job), FeatherIcons.Terminal, open)
+        if (open != null && card.jobId != null) OpenRow(stringResource(Res.string.chat_tool_open_job), FeatherIcons.Terminal, open)
     }
 }
 

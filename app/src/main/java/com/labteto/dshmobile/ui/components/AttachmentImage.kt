@@ -45,6 +45,10 @@ import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 
+/** [AttachmentImage] as the shared tool cards ask for it ([LocalAttachmentImage]); AppRoot provides it. */
+val TranscriptAttachmentImage: @Composable (ImageAttachmentRef, String?) -> Unit =
+    { ref, contentDescription -> AttachmentImage(ref = ref, contentDescription = contentDescription) }
+
 /**
  * One raster attachment in the transcript: a placeholder holding the reference's own aspect ratio
  * while it loads, then the decoded image, tappable for a full-screen view.

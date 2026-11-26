@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -15,16 +13,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.text.BidiFormatter
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.system_line_command
+import com.labteto.dshmobile.shared.resources.system_line_command_failed
+import com.labteto.dshmobile.shared.resources.system_line_compact
+import com.labteto.dshmobile.shared.resources.system_line_permission_changed
+import com.labteto.dshmobile.shared.resources.system_line_permission_changed_plain
+import com.labteto.dshmobile.shared.resources.system_line_permission_failed
+import com.labteto.dshmobile.shared.resources.system_line_plan_off
+import com.labteto.dshmobile.shared.resources.system_line_plan_on
 import com.labteto.dshmobile.core.session.ChatNode
 import com.labteto.dshmobile.core.session.CommandNode
+import com.labteto.dshmobile.ui.components.DsIcons
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.serialization.json.JsonObject
@@ -40,7 +46,7 @@ import kotlinx.serialization.json.JsonObject
  *
  * Only the wording lives here as data. The text, icon and colours are decided by [SystemLineRow].
  */
-internal sealed interface SystemLine {
+sealed interface SystemLine {
     /**
      * `/permission <preset>`. [preset] is the wire value; null when the node does not carry it, which
      * reads as the plain "You changed the permission".
@@ -71,7 +77,7 @@ private val CommandNode.fields: JsonObject? get() = data as? JsonObject
 /** The id that pairs a `command/run` with the `command/done` that settles it. */
 internal val CommandNode.commandId: String? get() = fields?.get("commandId").asString()
 
-internal val CommandNode.isRun: Boolean get() = kind == COMMAND_RUN
+val CommandNode.isRun: Boolean get() = kind == COMMAND_RUN
 internal val CommandNode.isDone: Boolean get() = kind == COMMAND_DONE
 
 /** The command's name without the slash, or null when the event does not carry one. */
@@ -105,7 +111,7 @@ private val CommandNode.doneText: String? get() = fields?.get("text").asString()
  * [nodes] is searched for the `command/done` that settled the run, so the outcome can colour the
  * wording; a run that has not settled yet reads as having gone through.
  */
-internal fun systemLineFor(run: CommandNode, nodes: List<ChatNode>): SystemLine? {
+fun systemLineFor(run: CommandNode, nodes: List<ChatNode>): SystemLine? {
     if (!run.isRun || !run.isUserIssued) return null
     val name = run.commandName ?: return null
     val done = run.commandId?.let { id ->
@@ -151,7 +157,7 @@ private val PRESET_SETTLEMENT = Regex("""preset (\S+)""")
  * own when it succeeded; a failure keeps its ordinary row, because that is the one line the reader
  * might need.
  */
-internal fun foldedCommandDones(nodes: List<ChatNode>): Set<Long> {
+fun foldedCommandDones(nodes: List<ChatNode>): Set<Long> {
     val commands = nodes.filterIsInstance<CommandNode>()
     if (commands.isEmpty()) return emptySet()
     val runs = commands.filter { it.isRun }
@@ -169,7 +175,7 @@ internal fun foldedCommandDones(nodes: List<ChatNode>): Set<Long> {
  * work. It draws no click target and carries the sentence as its description.
  */
 @Composable
-internal fun SystemLineRow(
+fun SystemLineRow(
     line: SystemLine,
     presetNames: Map<String, String>,
     modifier: Modifier = Modifier,
@@ -179,23 +185,23 @@ internal fun SystemLineRow(
         is SystemLine.PermissionChanged -> {
             val preset = line.preset
             if (preset == null) {
-                Shown(stringResource(R.string.system_line_permission_changed_plain), Icons.Outlined.Shield, colors.labelTertiary)
+                Shown(stringResource(Res.string.system_line_permission_changed_plain), DsIcons.Shield, colors.labelTertiary)
             } else {
                 val name = presetNames[preset]
                 Shown(
-                    stringResource(R.string.system_line_permission_changed, permissionPresetLabel(preset, name)),
-                    Icons.Outlined.Shield,
+                    stringResource(Res.string.system_line_permission_changed, permissionPresetLabel(preset, name)),
+                    DsIcons.Shield,
                     permissionPresetTint(preset, name, colors),
                 )
             }
         }
         SystemLine.PermissionFailed ->
-            Shown(stringResource(R.string.system_line_permission_failed), Icons.Outlined.Shield, colors.labelTertiary)
-        SystemLine.Compacted -> Shown(stringResource(R.string.system_line_compact))
+            Shown(stringResource(Res.string.system_line_permission_failed), DsIcons.Shield, colors.labelTertiary)
+        SystemLine.Compacted -> Shown(stringResource(Res.string.system_line_compact))
         is SystemLine.PlanMode ->
-            Shown(stringResource(if (line.on) R.string.system_line_plan_on else R.string.system_line_plan_off))
-        is SystemLine.Ran -> Shown(stringResource(R.string.system_line_command, line.command.isolated()))
-        is SystemLine.RanFailed -> Shown(stringResource(R.string.system_line_command_failed, line.command.isolated()))
+            Shown(stringResource(if (line.on) Res.string.system_line_plan_on else Res.string.system_line_plan_off))
+        is SystemLine.Ran -> Shown(stringResource(Res.string.system_line_command, line.command.isolated()))
+        is SystemLine.RanFailed -> Shown(stringResource(Res.string.system_line_command_failed, line.command.isolated()))
     }
     Row(
         modifier = modifier
@@ -235,4 +241,4 @@ private class Shown(val text: String, val icon: ImageVector? = null, val tint: C
  * A command name inside a translated sentence. `/xyz` is Latin text with a leading neutral
  * character, and in a right-to-left sentence the slash would drift to the wrong end of it.
  */
-private fun String.isolated(): String = BidiFormatter.getInstance().unicodeWrap(this)
+private fun String.isolated(): String = isolatedCommand(this)

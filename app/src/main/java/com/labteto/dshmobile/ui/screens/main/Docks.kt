@@ -317,7 +317,7 @@ internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier
         trailing = if (rounds != null && cap != null) {
             stringResource(R.string.chat_todo_progress, rounds, cap)
         } else {
-            stringResource(goalPhaseLabelRes(goal.phase))
+            goalPhaseLabel(goal.phase)
         },
         fraction = fraction,
         expanded = expanded,
@@ -480,7 +480,7 @@ internal fun GoalActions(
 /** A status is descriptive, not a disabled action; suppress the shared pill's click semantics. */
 @Composable
 private fun GoalPhaseBadge(phase: GoalPhase) {
-    val label = stringResource(goalPhaseLabelRes(phase))
+    val label = goalPhaseLabel(phase)
     Box(Modifier.clearAndSetSemantics { contentDescription = label }) { DsPill(text = label) }
 }
 

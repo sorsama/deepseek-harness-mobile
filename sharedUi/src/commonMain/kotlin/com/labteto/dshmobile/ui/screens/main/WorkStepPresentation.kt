@@ -16,7 +16,7 @@ import com.labteto.dshmobile.ui.components.ToolCardView
  * When a turn's tool calls sit behind a collapsible group header. The three values are the DSH Web
  * client's own (`stepGrouping`): every turn, only turns that are no longer running, or none.
  */
-internal enum class StepGrouping { Collapsed, History, None }
+enum class StepGrouping { Collapsed, History, None }
 
 /**
  * What one [WorkStepDisplay] level changes in the transcript.
@@ -27,7 +27,7 @@ internal enum class StepGrouping { Collapsed, History, None }
  * closed until it is tapped, in every level, but this feature's reporter wants the fully expanded
  * level to open the rows themselves, so on a phone that level also opens them.
  */
-internal data class WorkStepPolicy(
+data class WorkStepPolicy(
     val mode: WorkStepDisplay,
     /** Whether a finished turn folds its steps behind one row (see [foldProcessRows]). */
     val foldCompletedTurns: Boolean,
@@ -41,7 +41,7 @@ internal data class WorkStepPolicy(
 )
 
 /** The policy for [mode]. One instance per level, so equal levels compare equal by reference too. */
-internal fun workStepPolicyFor(mode: WorkStepDisplay): WorkStepPolicy = POLICIES.getValue(mode)
+fun workStepPolicyFor(mode: WorkStepDisplay): WorkStepPolicy = POLICIES.getValue(mode)
 
 private val POLICIES: Map<WorkStepDisplay, WorkStepPolicy> = mapOf(
     WorkStepDisplay.Compact to WorkStepPolicy(
@@ -83,7 +83,7 @@ private val POLICIES: Map<WorkStepDisplay, WorkStepPolicy> = mapOf(
  * and says so. [Full] is a row the reader opened by tapping it, which shows everything, as every
  * manual expansion always has.
  */
-internal enum class RowDisclosure { Closed, Preview, Full }
+enum class RowDisclosure { Closed, Preview, Full }
 
 /**
  * The reader's own taps, by row. A tap is a temporary override of the level's default: it lives
@@ -94,7 +94,7 @@ internal enum class RowDisclosure { Closed, Preview, Full }
  * back open (in the fully expanded level) would undo the reader's tap.
  */
 @Stable
-internal class RowDisclosureMemory {
+class RowDisclosureMemory {
     private val taps = mutableStateMapOf<String, RowDisclosure>()
 
     /** The state of [key]: the reader's tap if there is one, otherwise [default]. */
@@ -122,7 +122,7 @@ internal class RowDisclosureMemory {
  * The subagent sheet lays its child's rows out in a plain column, so it only lets the newest ones
  * start open.
  */
-internal data class WorkStepPresentation(
+data class WorkStepPresentation(
     val policy: WorkStepPolicy,
     val taps: RowDisclosureMemory? = null,
     val openFromSeq: Long = Long.MIN_VALUE,
@@ -138,7 +138,7 @@ internal data class WorkStepPresentation(
 }
 
 /** One row's open state and what its two gestures do. */
-internal class RowDisclosureHandle(
+class RowDisclosureHandle(
     val state: RowDisclosure,
     val toggle: () -> Unit,
     val showAll: () -> Unit,
@@ -152,7 +152,7 @@ internal class RowDisclosureHandle(
  * the row keeps its own, which is right wherever rows are short-lived.
  */
 @Composable
-internal fun rememberRowDisclosure(presentation: WorkStepPresentation, key: String, seq: Long): RowDisclosureHandle {
+fun rememberRowDisclosure(presentation: WorkStepPresentation, key: String, seq: Long): RowDisclosureHandle {
     val taps = presentation.taps ?: remember(presentation.policy.mode) { RowDisclosureMemory() }
     val default = presentation.defaultFor(seq)
     return RowDisclosureHandle(
@@ -171,22 +171,22 @@ internal fun rememberRowDisclosure(presentation: WorkStepPresentation, key: Stri
  * ones the level opened and the ones the reader tapped alike: the rest is one tap away in the
  * full-screen viewer ("Show all"), which is lazy by line.
  */
-internal const val PREVIEW_MAX_CHARS = 4_000
+const val PREVIEW_MAX_CHARS = 4_000
 
 /**
  * The most lines of one text a block lays out inline. Code does not wrap, so a line is a line of
  * height: 24 of them are about a screen, and a block never takes several screens of the transcript.
  */
-internal const val PREVIEW_MAX_LINES = 24
+const val PREVIEW_MAX_LINES = 24
 
 /** The most items of a list (search hits, locations, content blocks, nested calls) a preview lists. */
-internal const val PREVIEW_MAX_ITEMS = 8
+const val PREVIEW_MAX_ITEMS = 8
 
 /** The most rows of the subagent sheet's child transcript that start open. */
-internal const val CHILD_OPEN_ROWS = 12
+const val CHILD_OPEN_ROWS = 12
 
 /** The first line of [text] with blank lines skipped, at most [maxChars] long; null if it has none. */
-internal fun firstLinePreview(text: String, maxChars: Int = 160): String? {
+fun firstLinePreview(text: String, maxChars: Int = 160): String? {
     var start = 0
     // Bounded scan: a reasoning block can be megabytes and the preview must not touch all of it.
     val limit = minOf(text.length, 4_000)
@@ -201,7 +201,7 @@ internal fun firstLinePreview(text: String, maxChars: Int = 160): String? {
 }
 
 /** [text] cut to [PREVIEW_MAX_LINES] lines and [PREVIEW_MAX_CHARS] characters, ending in an ellipsis when cut. */
-internal fun clipPreview(text: String): String {
+fun clipPreview(text: String): String {
     val limit = minOf(text.length, PREVIEW_MAX_CHARS)
     var lines = 0
     var index = 0
@@ -213,17 +213,17 @@ internal fun clipPreview(text: String): String {
 }
 
 /** Whether [clipPreview] would cut [text]. */
-internal fun exceedsPreview(text: String): Boolean = clipPreview(text).length != text.length
+fun exceedsPreview(text: String): Boolean = clipPreview(text).length != text.length
 
 /** A card cut to the preview bounds, and whether anything was cut. */
-internal class ClippedCard(val view: ToolCardView, val clipped: Boolean)
+class ClippedCard(val view: ToolCardView, val clipped: Boolean)
 
 /**
  * [card] cut to the preview bounds: text to [clipPreview], lists to [PREVIEW_MAX_ITEMS] items (and
  * search hits and read lines to [PREVIEW_MAX_LINES]). Only the cut is made here; nothing is
  * measured or laid out, and it runs only for a row that is on screen and open.
  */
-internal fun clipCardForPreview(card: ToolCardView): ClippedCard {
+fun clipCardForPreview(card: ToolCardView): ClippedCard {
     var clipped = false
     fun clip(text: String?): String? {
         if (text == null) return null

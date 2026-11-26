@@ -28,7 +28,7 @@ import kotlinx.serialization.json.contentOrNull
 // ---------------------------------------------------------------------------
 
 /** A goal snapshot, whether it arrived bare or wrapped in a `{ goal: … }` envelope. */
-internal fun parseGoal(element: JsonElement?): GoalSnapshot? {
+fun parseGoal(element: JsonElement?): GoalSnapshot? {
     if (element == null) return null
     val direct = runCatching { decodeFromJsonElement(GoalSnapshot.serializer(), element) }.getOrNull()
     if (direct != null) return direct
@@ -37,7 +37,7 @@ internal fun parseGoal(element: JsonElement?): GoalSnapshot? {
 }
 
 /** One to-do entry as the dock renders it. */
-internal data class TodoEntry(val content: String, val status: String)
+data class TodoEntry(val content: String, val status: String)
 
 /**
  * The highest goal round the harness has started, from the newest `goal/change` event.
@@ -46,7 +46,7 @@ internal data class TodoEntry(val content: String, val status: String)
  * count rides the event that produced the snapshot, so the journal is the place to read it. Used
  * only for the compact dock's `3/10` meter — absent means "not known", never zero.
  */
-internal fun goalRoundsStarted(journal: List<com.labteto.dshmobile.core.session.SessionEventEnvelope>): Int? =
+fun goalRoundsStarted(journal: List<com.labteto.dshmobile.core.session.SessionEventEnvelope>): Int? =
     journal.asReversed().firstNotNullOfOrNull { event ->
         if (event.type != "goal/change") {
             null
@@ -59,7 +59,7 @@ internal fun goalRoundsStarted(journal: List<com.labteto.dshmobile.core.session.
     }
 
 /** The todo list, whether it arrived bare or wrapped in a `{ todos: [...] }` envelope. */
-internal fun parseTodos(element: JsonElement?): List<TodoEntry>? {
+fun parseTodos(element: JsonElement?): List<TodoEntry>? {
     if (element == null) return null
     return runCatching {
         val obj = element as? JsonObject
@@ -82,7 +82,7 @@ internal fun parseTodos(element: JsonElement?): List<TodoEntry>? {
  * [ChatBlock.raw] keeps the whole wire object, so the ref — including the intrinsic width and
  * height a decoder needs to downsample correctly — is available without a second round trip.
  */
-internal fun parseImageRef(block: ChatBlock): ImageAttachmentRef? {
+fun parseImageRef(block: ChatBlock): ImageAttachmentRef? {
     val raw = block.raw as? JsonObject ?: return null
     val attachment = raw["attachment"] ?: raw
     return runCatching { decodeFromJsonElement(ImageAttachmentRef.serializer(), attachment) }.getOrNull()
@@ -93,7 +93,7 @@ internal fun parseImageRef(block: ChatBlock): ImageAttachmentRef? {
  * `[text envelope, { type: "image", attachment }]`, and the attachment is durable: it is the image
  * the model saw, still there after the file on disk has changed or been deleted.
  */
-internal fun toolResultImages(content: JsonElement?): List<ImageAttachmentRef> =
+fun toolResultImages(content: JsonElement?): List<ImageAttachmentRef> =
     (content as? JsonArray).orEmpty().mapNotNull { block ->
         val obj = block as? JsonObject ?: return@mapNotNull null
         if ((obj["type"] as? JsonPrimitive)?.contentOrNull != "image") return@mapNotNull null
@@ -102,7 +102,7 @@ internal fun toolResultImages(content: JsonElement?): List<ImageAttachmentRef> =
     }
 
 /** The durable file reference behind a `file` block (harness 0.1.3), or null when malformed. */
-internal fun parseFileRef(block: ChatBlock): FileAttachmentRef? {
+fun parseFileRef(block: ChatBlock): FileAttachmentRef? {
     val raw = block.raw as? JsonObject ?: return null
     val attachment = raw["attachment"] ?: raw
     return runCatching { decodeFromJsonElement(FileAttachmentRef.serializer(), attachment) }.getOrNull()
@@ -114,10 +114,10 @@ internal fun parseFileRef(block: ChatBlock): FileAttachmentRef? {
  * `imageSizeText` prints megabytes only, because it names a limit the harness itself wrote in
  * megabytes; a 3 KB text file would read as `0.0MB` there, which is a size in name only.
  */
-internal fun fileSizeText(bytes: Long): String = when {
+fun fileSizeText(bytes: Long): String = when {
     bytes < 1024 -> "${bytes}B"
     bytes < 1024 * 1024 -> "${bytes / 1024}KB"
-    else -> String.format(java.util.Locale.US, "%.1fMB", bytes.toDouble() / (1024 * 1024))
+    else -> com.labteto.dshmobile.ui.components.oneDecimal(bytes.toDouble() / (1024 * 1024)) + "MB"
 }
 
 // ---------------------------------------------------------------------------
@@ -125,14 +125,14 @@ internal fun fileSizeText(bytes: Long): String = when {
 // ---------------------------------------------------------------------------
 
 /** One member row of a workflow disclosure. */
-internal data class WorkflowMember(
+data class WorkflowMember(
     val label: String?,
     val childId: String?,
     val status: String?,
 )
 
 /** Flatten a workflow event payload into its member rows, tolerating both wire shapes. */
-internal fun parseWorkflowMembers(data: JsonElement): List<WorkflowMember> {
+fun parseWorkflowMembers(data: JsonElement): List<WorkflowMember> {
     val obj = data as? JsonObject ?: return emptyList()
     val status = obj["status"].asString() ?: obj["stopReason"].asString() ?: obj["outcome"].asString()
     val array = obj["members"] as? JsonArray ?: obj["phases"] as? JsonArray
@@ -164,7 +164,7 @@ internal fun parseWorkflowMembers(data: JsonElement): List<WorkflowMember> {
  * page can begin mid-turn — are dropped, which is what both the trajectory and the details ledger
  * want.
  */
-internal fun groupByTurn(nodes: List<ChatNode>): List<Pair<Int, List<ChatNode>>> {
+fun groupByTurn(nodes: List<ChatNode>): List<Pair<Int, List<ChatNode>>> {
     val groups = mutableListOf<Pair<Int, MutableList<ChatNode>>>()
     for (node in nodes) {
         when {
@@ -179,9 +179,9 @@ internal fun groupByTurn(nodes: List<ChatNode>): List<Pair<Int, List<ChatNode>>>
 // Defensive JSON accessors
 // ---------------------------------------------------------------------------
 
-internal fun JsonElement?.asString(): String? = (this as? JsonPrimitive)?.contentOrNull
+fun JsonElement?.asString(): String? = (this as? JsonPrimitive)?.contentOrNull
 
-internal fun JsonElement?.asLong(): Long? = (this as? JsonPrimitive)?.content?.toLongOrNull()
+fun JsonElement?.asLong(): Long? = (this as? JsonPrimitive)?.content?.toLongOrNull()
 
 internal fun JsonElement?.asBoolean(): Boolean? = when (val text = (this as? JsonPrimitive)?.content) {
     "true" -> true

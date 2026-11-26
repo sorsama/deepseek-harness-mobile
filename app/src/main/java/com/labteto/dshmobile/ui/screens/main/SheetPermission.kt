@@ -121,12 +121,12 @@ internal fun PermissionMenu(
  */
 @Composable
 private fun PermissionCard(option: PresetOption, selected: Boolean, onSelect: () -> Unit) {
-    val own = permissionPresetDescriptionRes(option.value, option.name)
+    val own = permissionPresetDescription(option.value, option.name)
     ChoiceCard(
         icon = permissionIcon(option.value),
         title = permissionPresetLabel(option.value, option.name),
         description = when {
-            own != null -> stringResource(own)
+            own != null -> own
             !option.description.isNullOrBlank() -> option.description.orEmpty()
             else -> permissionFallbackDescription(option.value)
         },

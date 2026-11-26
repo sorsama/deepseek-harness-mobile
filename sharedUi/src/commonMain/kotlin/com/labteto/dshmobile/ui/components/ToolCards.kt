@@ -28,14 +28,34 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_tool_arguments
+import com.labteto.dshmobile.shared.resources.chat_tool_arguments_count
+import com.labteto.dshmobile.shared.resources.toolcard_blocks
+import com.labteto.dshmobile.shared.resources.toolcard_exit_code
+import com.labteto.dshmobile.shared.resources.toolcard_files
+import com.labteto.dshmobile.shared.resources.toolcard_killed_by
+import com.labteto.dshmobile.shared.resources.toolcard_lines
+import com.labteto.dshmobile.shared.resources.toolcard_locations
+import com.labteto.dshmobile.shared.resources.toolcard_more
+import com.labteto.dshmobile.shared.resources.toolcard_results
+import com.labteto.dshmobile.shared.resources.toolcard_running
+import com.labteto.dshmobile.shared.resources.toolcard_section_locations
+import com.labteto.dshmobile.shared.resources.toolcard_section_out
+import com.labteto.dshmobile.shared.resources.toolcard_showing_of
+import com.labteto.dshmobile.shared.resources.toolcard_sources
+import com.labteto.dshmobile.shared.resources.toolcard_title_diff
+import com.labteto.dshmobile.shared.resources.toolcard_title_search
+import com.labteto.dshmobile.shared.resources.toolcard_title_terminal
+import com.labteto.dshmobile.shared.resources.toolcard_title_tool
+import com.labteto.dshmobile.shared.resources.toolcard_title_web
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -111,31 +131,31 @@ fun ToolCard(
 
 @Composable
 private fun ToolCardView.displayTitle(): String = when (this) {
-    is ToolCardView.GenericCard -> title ?: kind ?: stringResource(R.string.toolcard_title_tool)
-    is ToolCardView.TerminalCard -> title ?: stringResource(R.string.toolcard_title_terminal)
-    is ToolCardView.DiffCard -> title ?: stringResource(R.string.toolcard_title_diff)
-    is ToolCardView.SearchCard -> title ?: stringResource(R.string.toolcard_title_search)
+    is ToolCardView.GenericCard -> title ?: kind ?: stringResource(Res.string.toolcard_title_tool)
+    is ToolCardView.TerminalCard -> title ?: stringResource(Res.string.toolcard_title_terminal)
+    is ToolCardView.DiffCard -> title ?: stringResource(Res.string.toolcard_title_diff)
+    is ToolCardView.SearchCard -> title ?: stringResource(Res.string.toolcard_title_search)
     is ToolCardView.ReadCard -> label
-    is ToolCardView.WebCard -> title ?: stringResource(R.string.toolcard_title_web)
+    is ToolCardView.WebCard -> title ?: stringResource(Res.string.toolcard_title_web)
     // The transcript always passes its own title for these; this is only the fallback.
-    else -> stringResource(R.string.toolcard_title_tool)
+    else -> stringResource(Res.string.toolcard_title_tool)
 }
 
 @Composable
 private fun ToolCardView.summary(): String? = when (this) {
     is ToolCardView.GenericCard ->
-        content?.size?.let { pluralStringResource(R.plurals.toolcard_blocks, it, it) }
-            ?: locations?.size?.let { pluralStringResource(R.plurals.toolcard_locations, it, it) }
+        content?.size?.let { pluralStringResource(Res.plurals.toolcard_blocks, it, localizedCount(it)) }
+            ?: locations?.size?.let { pluralStringResource(Res.plurals.toolcard_locations, it, localizedCount(it)) }
     is ToolCardView.TerminalCard -> terminalStatus() ?: description ?: cwd
     is ToolCardView.DiffCard -> {
         val (added, removed, files) = diffStats(this)
-        "+$added -$removed · " + pluralStringResource(R.plurals.toolcard_files, files, files)
+        "+$added -$removed · " + pluralStringResource(Res.plurals.toolcard_files, files, localizedCount(files))
     }
-    is ToolCardView.SearchCard -> (total ?: resultCount()).let { pluralStringResource(R.plurals.toolcard_results, it, it) }
-    is ToolCardView.ReadCard -> pluralStringResource(R.plurals.toolcard_lines, totalLines, totalLines)
+    is ToolCardView.SearchCard -> (total ?: resultCount()).let { pluralStringResource(Res.plurals.toolcard_results, it, localizedCount(it)) }
+    is ToolCardView.ReadCard -> pluralStringResource(Res.plurals.toolcard_lines, totalLines, localizedCount(totalLines))
     is ToolCardView.WebCard -> when (val kind = kind) {
         is WebCardKind.Search -> kind.answer?.take(64)
-            ?: kind.sources.size.let { pluralStringResource(R.plurals.toolcard_sources, it, it) }
+            ?: kind.sources.size.let { pluralStringResource(Res.plurals.toolcard_sources, it, localizedCount(it)) }
         is WebCardKind.Fetch -> kind.statusCode?.let { "HTTP $it" } ?: kind.url
     }
     else -> controlSummary()
@@ -149,9 +169,9 @@ private fun ToolCardView.TerminalCard.terminalStatus(): String? {
     return when {
         // A background launch has no exit of its own; the job it started has the status.
         background -> null
-        running == true -> stringResource(R.string.toolcard_running)
-        signal != null -> stringResource(R.string.toolcard_killed_by, signal)
-        exitCode != null -> stringResource(R.string.toolcard_exit_code, exitCode)
+        running == true -> stringResource(Res.string.toolcard_running)
+        signal != null -> stringResource(Res.string.toolcard_killed_by, signal)
+        exitCode != null -> stringResource(Res.string.toolcard_exit_code, localizedCount(exitCode))
         else -> null
     }
 }
@@ -308,7 +328,7 @@ private fun DiffBody(card: ToolCardView.DiffCard) {
             Text("-$removed", style = DsType.caption11Strong, color = colors.error)
             Spacer(Modifier.width(4.dp))
             Text(
-                "· " + pluralStringResource(R.plurals.toolcard_files, files, files),
+                "· " + pluralStringResource(Res.plurals.toolcard_files, files, localizedCount(files)),
                 style = DsType.caption11,
                 color = colors.labelCaption,
             )
@@ -372,7 +392,7 @@ private fun SearchBody(card: ToolCardView.SearchCard) {
         }
         if (card.truncated) {
             Text(
-                stringResource(R.string.toolcard_showing_of, shown, card.total ?: shown),
+                stringResource(Res.string.toolcard_showing_of, localizedCount(shown), localizedCount(card.total ?: shown)),
                 style = DsType.caption11,
                 color = colors.labelCaption,
             )
@@ -385,7 +405,7 @@ private fun ReadBody(card: ToolCardView.ReadCard) {
     val colors = DsTheme.colors
     if (card.lines.isEmpty()) {
         Text(
-            "(" + pluralStringResource(R.plurals.toolcard_lines, card.totalLines, card.totalLines) + ")",
+            "(" + pluralStringResource(Res.plurals.toolcard_lines, card.totalLines, localizedCount(card.totalLines)) + ")",
             style = DsType.caption11,
             color = colors.labelCaption,
         )
@@ -449,7 +469,7 @@ private fun WebBody(card: ToolCardView.WebCard) {
                 }
                 if (kind.sources.size > 8) {
                     Text(
-                        stringResource(R.string.toolcard_more, kind.sources.size - 8),
+                        stringResource(Res.string.toolcard_more, localizedCount(kind.sources.size - 8)),
                         style = DsType.caption11,
                         color = colors.labelCaption,
                     )
@@ -490,8 +510,8 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
             var open by androidx.compose.runtime.saveable.rememberSaveable(raw) { androidx.compose.runtime.mutableStateOf(false) }
             val fields = remember(raw) { topLevelFieldCount(raw) }
             DisclosureRow(
-                title = stringResource(R.string.chat_tool_arguments),
-                summary = fields?.let { pluralStringResource(R.plurals.chat_tool_arguments_count, it, it) },
+                title = stringResource(Res.string.chat_tool_arguments),
+                summary = fields?.let { pluralStringResource(Res.plurals.chat_tool_arguments_count, it, localizedCount(it)) },
                 icon = FeatherIcons.Code,
                 expanded = open,
                 onToggle = { open = !open },
@@ -509,7 +529,7 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
             }
         }
         card.locations?.takeIf { it.isNotEmpty() }?.let { locations ->
-            SectionLabel(stringResource(R.string.toolcard_section_locations))
+            SectionLabel(stringResource(Res.string.toolcard_section_locations))
             locations.forEach { location ->
                 Text(
                     com.labteto.dshmobile.ui.screens.main.technicalDisplay(location),
@@ -521,7 +541,7 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
             }
         }
         card.content?.takeIf { it.isNotEmpty() }?.let { blocks ->
-            SectionLabel(stringResource(R.string.toolcard_section_out))
+            SectionLabel(stringResource(Res.string.toolcard_section_out))
             blocks.forEachIndexed { blockIndex, block ->
                 when (block) {
                     is ContentBlockView.TextBlock -> CodeText(block.text, blockId = "text$blockIndex", fadeColor = colors.codeBlockBg)
@@ -531,8 +551,8 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
                         color = colors.labelTertiary,
                     )
                     // A tool that returns a screenshot arrives here, not on the message path.
-                    is ContentBlockView.ImageBlock -> AttachmentImage(
-                        ref = com.labteto.dshmobile.core.wire.dto.ImageAttachmentRef(
+                    is ContentBlockView.ImageBlock -> LocalAttachmentImage.current?.invoke(
+                        com.labteto.dshmobile.core.wire.dto.ImageAttachmentRef(
                             attachmentId = block.attachmentId,
                             mediaType = block.mediaType,
                             bytes = block.bytes,
@@ -540,7 +560,7 @@ private fun GenericBody(card: ToolCardView.GenericCard) {
                             height = block.height,
                             name = block.name,
                         ),
-                        contentDescription = block.name,
+                        block.name,
                     )
                 }
             }
@@ -568,7 +588,7 @@ internal fun topLevelFieldCount(raw: String): Int? = runCatching {
  * (`{}`, `{ }`), which is how a tool that takes nothing (`list_agents`) is called. Such a call gets
  * no arguments row and no empty box.
  */
-internal fun hasArguments(raw: String?): Boolean {
+fun hasArguments(raw: String?): Boolean {
     if (raw.isNullOrBlank()) return false
     val trimmed = raw.trim()
     if (trimmed == "{}") return false

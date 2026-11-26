@@ -36,11 +36,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_state_failed
+import com.labteto.dshmobile.shared.resources.chat_state_stopped
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -147,11 +149,11 @@ fun DisclosureRow(
             when {
                 // The dot is a picture: it is named for a screen reader as what it says.
                 state == DisclosureState.Error -> {
-                    val named = stringResource(R.string.chat_state_failed)
+                    val named = stringResource(Res.string.chat_state_failed)
                     LeadingSlot(Modifier.semantics { contentDescription = named }) { StateDot(StateDotState.Error, size = 8.dp) }
                 }
                 state == DisclosureState.Stopped -> {
-                    val named = stringResource(R.string.chat_state_stopped)
+                    val named = stringResource(Res.string.chat_state_stopped)
                     LeadingSlot(Modifier.semantics { contentDescription = named }) { StateDot(StateDotState.Warning, size = 8.dp) }
                 }
                 icon != null -> LeadingSlot {

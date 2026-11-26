@@ -2,9 +2,9 @@ package com.labteto.dshmobile.ui.screens.main
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 class ToolResultImagesTest {
     @Test fun `read_image result yields its durable attachment`() {
@@ -17,7 +17,7 @@ class ToolResultImagesTest {
         assertEquals(640 to 480, images.single().width to images.single().height)
     }
 
-    @Test fun `text, malformed and bare-string results yield no images`() {
+    @Test fun `text malformed and bare-string results yield no images`() {
         assertTrue(toolResultImages(null).isEmpty())
         assertTrue(toolResultImages(JsonPrimitive("plain output")).isEmpty())
         assertTrue(toolResultImages(Json.parseToJsonElement("""[{"type":"text","text":"x"}]""")).isEmpty())

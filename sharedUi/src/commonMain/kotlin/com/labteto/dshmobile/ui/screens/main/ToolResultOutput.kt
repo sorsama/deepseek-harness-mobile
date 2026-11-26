@@ -18,9 +18,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_output_placeholder
+import com.labteto.dshmobile.shared.resources.common_copy
+import com.labteto.dshmobile.shared.resources.work_steps_clipped
+import com.labteto.dshmobile.shared.resources.work_steps_show_all
 import com.labteto.dshmobile.core.session.ToolResultReading
 import com.labteto.dshmobile.core.session.readToolResult
 import com.labteto.dshmobile.ui.components.CodeText
@@ -63,13 +67,13 @@ import kotlinx.serialization.json.JsonPrimitive
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ToolResultOutput(
+fun ToolResultOutput(
     content: JsonElement,
     modifier: Modifier = Modifier,
     label: String? = null,
     blockId: String = "output",
     /** What the viewer is titled; the call's own title where there is one. */
-    viewerTitle: String = stringResource(R.string.chat_output_placeholder),
+    viewerTitle: String = stringResource(Res.string.chat_output_placeholder),
 ) {
     val colors = DsTheme.colors
     // A result of megabytes is read off the main thread: unwrapping its protocol layers walks all of it.
@@ -105,7 +109,7 @@ internal fun ToolResultOutput(
                     modifier = Modifier.padding(top = 2.dp, end = DsSpacing.tiny),
                 )
             }
-            JsonAction(stringResource(R.string.common_copy)) { copy(full) }
+            JsonAction(stringResource(Res.string.common_copy)) { copy(full) }
             if (hasLongLine(shown)) WrapToggle(wrap)
         }
         Box(
@@ -152,19 +156,19 @@ internal const val HUGE_RESULT_CHARS = 200_000
 /** "Showing the start of a long result", with the action that opens the rest in the viewer. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ClippedNote(onShowAll: () -> Unit) {
+fun ClippedNote(onShowAll: () -> Unit) {
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            stringResource(R.string.work_steps_clipped),
+            stringResource(Res.string.work_steps_clipped),
             style = DsType.caption11,
             color = DsTheme.colors.labelCaption,
             modifier = Modifier.padding(top = 2.dp),
         )
-        JsonAction(stringResource(R.string.work_steps_show_all), onShowAll)
+        JsonAction(stringResource(Res.string.work_steps_show_all), onShowAll)
     }
 }
 
@@ -174,7 +178,7 @@ internal fun ClippedNote(onShowAll: () -> Unit) {
  * said twice.
  */
 @Composable
-internal fun ToolResultOutputRow(
+fun ToolResultOutputRow(
     title: String,
     content: JsonElement,
     blockId: String = "output",

@@ -5,6 +5,7 @@ import com.labteto.dshmobile.core.permission.permissionDenialOf
 import com.labteto.dshmobile.core.session.ToolCallNode
 import com.labteto.dshmobile.core.session.ToolResultNode
 import com.labteto.dshmobile.core.session.readToolResult
+import com.labteto.dshmobile.core.session.unwrapToolText
 import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.ui.components.DetailField
 import com.labteto.dshmobile.ui.components.DetailItem
@@ -35,6 +36,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 
 /**
@@ -219,7 +221,7 @@ internal fun questionCard(args: JsonObject, result: ToolResultNode?): QuestionCa
  *   `{ pending: true }` result, so this code only reaches a result when a client rejected an
  *   untimed question that way.
  */
-internal fun questionVerdictOf(result: ToolResultNode?): QuestionOutcome? {
+fun questionVerdictOf(result: ToolResultNode?): QuestionOutcome? {
     if (result == null || !result.isError) return null
     return questionEndingOf(result.errorCode, result.errorName)
 }
@@ -596,7 +598,7 @@ private fun shortTime(time: String): String = time.removeSuffix(":00.000").remov
 // ============================================================================================
 
 /** Why a settled call did not do what it set out to, in terms the transcript can word plainly. */
-internal sealed interface ToolFailure {
+sealed interface ToolFailure {
     /** The turn was stopped while the call ran or before it started ([isAbortedResult]). */
     data object Interrupted : ToolFailure
 
@@ -627,7 +629,7 @@ internal const val ABORT_ERROR_NAME = "AbortError"
  *   (`ASK_ABORTED`, `WEB_ABORTED`, `FS_ABORTED`).
  * - `interrupted`, from records written before these existed.
  */
-internal fun isAbortedResult(result: ToolResultNode?): Boolean {
+fun isAbortedResult(result: ToolResultNode?): Boolean {
     if (result == null || !result.isError) return false
     return isAbortError(result.errorCode, result.errorName)
 }
@@ -643,7 +645,7 @@ internal fun isAbortError(code: String?, name: String?): Boolean =
  * a nested call's row. Each of them used to ask "is the result an error?" for itself, and a stopped
  * command (an error, by the harness's records) was amber on the row and still red inside its card.
  */
-internal enum class ToolOutcome {
+enum class ToolOutcome {
     /** No result yet, and the session is working. */
     Running,
 
@@ -662,14 +664,14 @@ internal enum class ToolOutcome {
  * result in a session that is not working is [ToolOutcome.Done]: nothing is going to change it, and
  * the row has never shown such a call as anything but plain.
  */
-internal fun toolOutcome(name: String, result: ToolResultNode?, running: Boolean): ToolOutcome =
+fun toolOutcome(name: String, result: ToolResultNode?, running: Boolean): ToolOutcome =
     toolOutcomeOfRecord(name, result != null, result?.isError == true, result?.errorCode, result?.errorName, running)
 
 /**
  * [toolOutcome] for a record that is not a [ToolResultNode] (a nested call's settlement), from the
  * facts every kind of record carries. All of the logic is here; the other overload only reads a result.
  */
-internal fun toolOutcomeOfRecord(
+fun toolOutcomeOfRecord(
     name: String,
     settled: Boolean,
     isError: Boolean,
@@ -686,7 +688,7 @@ internal fun toolOutcomeOfRecord(
 }
 
 /** The leading slot and the shimmer of a row for this outcome: a failed call is red, a stopped one amber. */
-internal fun ToolOutcome.disclosureState(): DisclosureState = when (this) {
+fun ToolOutcome.disclosureState(): DisclosureState = when (this) {
     ToolOutcome.Running -> DisclosureState.Running
     ToolOutcome.Done -> DisclosureState.Idle
     ToolOutcome.Failed -> DisclosureState.Error
@@ -698,7 +700,7 @@ internal fun ToolOutcome.disclosureState(): DisclosureState = when (this) {
  * short, and a question the reader closed or left unanswered, are outcomes the row states in their
  * own plain words; none of them is a failure.
  */
-internal fun callFailed(call: ToolCallNode, result: ToolResultNode?): Boolean =
+fun callFailed(call: ToolCallNode, result: ToolResultNode?): Boolean =
     toolOutcome(call.name, result, running = false) == ToolOutcome.Failed
 
 /**
@@ -707,7 +709,7 @@ internal fun callFailed(call: ToolCallNode, result: ToolResultNode?): Boolean =
  * marks only spawn errors and aborts as errors (tool-bash's `render.ts`), and the terminal card shows
  * that status itself.
  */
-internal fun toolFailureOf(result: ToolResultNode?): ToolFailure? {
+fun toolFailureOf(result: ToolResultNode?): ToolFailure? {
     if (result == null || !result.isError) return null
     if (isAbortedResult(result)) return ToolFailure.Interrupted
     permissionDenialOf(result)?.let { denial ->
@@ -721,7 +723,7 @@ internal fun toolFailureOf(result: ToolResultNode?): ToolFailure? {
 private val ERROR_PREFIX = Regex("^(?:[A-Za-z_][A-Za-z0-9_.]*(?:Error|Exception)|Error|error|ERROR|Exception)\\s*:\\s*")
 
 /** The longest failure line the transcript lays out; the whole text stays in the output and the hold menu. */
-internal const val FAILURE_LINE_MAX_CHARS = 240
+const val FAILURE_LINE_MAX_CHARS = 240
 
 /**
  * A tool's failure text as one plain line to put after the app's own "Failed:". The harness renders
@@ -729,7 +731,7 @@ internal const val FAILURE_LINE_MAX_CHARS = 240
  * "Failed: Error: …"; the prefix is dropped here. Only the first line is kept, cut to
  * [FAILURE_LINE_MAX_CHARS]. Null when nothing is left.
  */
-internal fun plainFailureMessage(text: String?): String? {
+fun plainFailureMessage(text: String?): String? {
     if (text == null) return null
     var line = firstLine(text)
     // Bounded: "Error: Error: x" is one prefix said twice, not a loop to trust.
@@ -749,7 +751,7 @@ internal fun plainFailureMessage(text: String?): String? {
  * Whether the transcript draws an Output row for the call: its card does not already say what the
  * result does, the failure line is not the same words, and there is text to show.
  */
-internal fun showsOutputRow(card: ToolCardView, result: ToolResultNode?, failure: ToolFailure?): Boolean {
+fun showsOutputRow(card: ToolCardView, result: ToolResultNode?, failure: ToolFailure?): Boolean {
     val content = result?.content ?: return false
     if (card.coversOutput() || outputRepeatsFailure(result, failure)) return false
     return readToolResult(content)?.text?.isNotBlank() == true
@@ -760,7 +762,7 @@ internal fun showsOutputRow(card: ToolCardView, result: ToolResultNode?, failure
  * same words. The unknown tool's `Error: unknown tool "x"` was drawn as the failure line and again as
  * the Output text right above it. Output with more to say (a second line, a trace) is kept.
  */
-internal fun outputRepeatsFailure(result: ToolResultNode?, failure: ToolFailure?): Boolean {
+fun outputRepeatsFailure(result: ToolResultNode?, failure: ToolFailure?): Boolean {
     if (result == null || failure == null || !result.isError) return false
     val text = readToolResult(result.content)?.text?.trim() ?: return false
     if (text.isEmpty() || text.contains('\n')) return false
@@ -784,7 +786,7 @@ internal fun backgroundJobId(result: ToolResultNode?): String? =
  * `plugin:acme/sync-run` reads "Plugin acme sync run". For names that have no title of their own;
  * the identifier itself stays one tap away in the hold menu.
  */
-internal fun humanizeIdentifier(name: String): String {
+fun humanizeIdentifier(name: String): String {
     val words = name.split(Regex("[_\\-./:\\s]+")).filter { it.isNotEmpty() }
     if (words.isEmpty()) return name
     val joined = words.joinToString(" ")
@@ -792,7 +794,7 @@ internal fun humanizeIdentifier(name: String): String {
 }
 
 /** The tools whose row title is a phrase of the app's own, in the reader's language. */
-internal enum class ToolTitle {
+enum class ToolTitle {
     TodoWrite, AskUser, Subagent, Skill, ReadImage,
     JobList, JobOutput, JobKill,
     TerminalOpen, TerminalRead, TerminalList, TerminalSignal, TerminalClose, TerminalSend,
@@ -800,7 +802,7 @@ internal enum class ToolTitle {
     ScheduleCreate, ScheduleList, ScheduleUpdate, ScheduleDelete, Present,
 }
 
-internal fun toolTitle(name: String): ToolTitle? = when (name) {
+fun toolTitle(name: String): ToolTitle? = when (name) {
     "todo_write" -> ToolTitle.TodoWrite
     "ask_user_question" -> ToolTitle.AskUser
     "subagent" -> ToolTitle.Subagent
@@ -828,7 +830,7 @@ internal fun toolTitle(name: String): ToolTitle? = when (name) {
 }
 
 /** Whether a card already says everything its result does, so the transcript adds no Output row. */
-internal fun ToolCardView.coversOutput(): Boolean = when (this) {
+fun ToolCardView.coversOutput(): Boolean = when (this) {
     is TodoCard, is QuestionCard, is ImageCard, is DetailsCard -> true
     is SubagentCard -> phase != SubagentPhase.Replied
     is ToolCardView.TerminalCard -> background
@@ -840,11 +842,11 @@ internal fun ToolCardView.coversOutput(): Boolean = when (this) {
  * question the reader closed, one that timed out, and one the turn's stop cut short each say so in
  * the header and the body.
  */
-internal fun ToolCardView.explainsFailure(result: ToolResultNode?): Boolean =
+fun ToolCardView.explainsFailure(result: ToolResultNode?): Boolean =
     this is QuestionCard && questionVerdictOf(result) != null
 
 /** The most recent `todo_write` list before [beforeSeq], for the task-list diff; null when none. */
-internal fun previousTodoList(nodes: List<com.labteto.dshmobile.core.session.ChatNode>, beforeSeq: Long): List<TodoEntry>? =
+fun previousTodoList(nodes: List<com.labteto.dshmobile.core.session.ChatNode>, beforeSeq: Long): List<TodoEntry>? =
     nodes.lastOrNull { it is com.labteto.dshmobile.core.session.TodoNode && it.seq < beforeSeq }
         ?.let { parseTodos((it as com.labteto.dshmobile.core.session.TodoNode).todos) }
 
@@ -883,3 +885,44 @@ private fun str(o: JsonObject, key: String): String? = (o[key] as? JsonPrimitive
 private fun parseJson(text: String): JsonElement? = runCatching { WireJson.parseToJsonElement(text) }.getOrNull()
 
 private fun firstLine(text: String): String = text.lineSequence().map { it.trim() }.firstOrNull { it.isNotEmpty() } ?: text.trim()
+
+/**
+ * The readable failure text out of a `tool/result` body, or null when it carries none.
+ *
+ * `ToolResultNode.content` is the result body, `[ { type: "text", text: "Error: …" }, … ]`, in
+ * both session formats: the fold unwraps the `tool-result` part that format v3 nested it in. The
+ * walk still recurses through any `content` array it meets and takes the first `text` part at any
+ * depth, so a tool that nests its own parts, or a container kind this build has not seen, still
+ * yields its prose rather than the generic string.
+ *
+ * A bare string body is accepted too: some tools answer with one.
+ */
+fun toolFailureMessage(content: JsonElement?): String? {
+    // A failure whose text is itself a block list or envelope is unwrapped like any other output.
+    fun fromText(value: String?): String? = value?.let(::unwrapToolText)?.trim()?.takeIf { it.isNotEmpty() }
+
+    /** First prose part at or below [element], depth-first, or null. */
+    fun walk(element: JsonElement?): String? = when (element) {
+        null -> null
+        is JsonPrimitive -> fromText(element.contentOrNull)
+        is JsonArray -> element.firstNotNullOfOrNull { walk(it) }
+        is JsonObject -> {
+            val type = element["type"]?.jsonPrimitive?.contentOrNull
+            // A container part (tool-result, or a nesting this build has not seen) is descended
+            // into; a text part ends the search; anything else — an image, a structured blob — is
+            // skipped rather than dumped at the reader.
+            when {
+                type == "text" || (type == null && element.containsKey("text")) ->
+                    fromText(element["text"]?.jsonPrimitive?.contentOrNull)
+                element.containsKey("content") -> walk(element["content"])
+                // A flat error object: take its human-readable field.
+                else -> fromText(
+                    (element["message"] ?: element["error"])?.jsonPrimitive?.contentOrNull,
+                )
+            }
+        }
+        else -> null
+    }
+
+    return walk(content)
+}

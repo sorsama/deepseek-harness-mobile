@@ -17,11 +17,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.common_copy
+import com.labteto.dshmobile.shared.resources.panel_preview
 import com.labteto.dshmobile.ui.components.DisclosureRow
 import com.labteto.dshmobile.ui.components.LeftToRight
 import com.labteto.dshmobile.ui.components.OutputViewerDialog
@@ -35,7 +37,7 @@ import kotlinx.serialization.json.*
 
 /** JSON strings can contain embedded JSON; expand those without losing the original copy value. */
 @Composable
-internal fun JsonDisclosure(title: String, value: JsonElement, depth: Int = 0) {
+fun JsonDisclosure(title: String, value: JsonElement, depth: Int = 0) {
     var expanded by remember(value) { mutableStateOf(false) }
     val open = com.labteto.dshmobile.ui.components.LocalFileOpener.current
     val colors = DsTheme.colors
@@ -56,17 +58,18 @@ internal fun JsonDisclosure(title: String, value: JsonElement, depth: Int = 0) {
                         )
                     }.getOrNull()
                 }
-                if (ref != null) {
-                    com.labteto.dshmobile.ui.components.AttachmentImage(ref = ref, contentDescription = ref.name)
+                val image = com.labteto.dshmobile.ui.components.LocalAttachmentImage.current
+                if (ref != null && image != null) {
+                    image(ref, ref.name)
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                 if (value is JsonPrimitive && value.isString && title in setOf("path", "absolutePath", "file_path", "filePath")) {
                     previewPath(value.content)?.let { path ->
-                        JsonAction(stringResource(R.string.panel_preview)) { open(path) }
+                        JsonAction(stringResource(Res.string.panel_preview)) { open(path) }
                     }
                 }
-                JsonAction(stringResource(R.string.common_copy)) { copy(value.toString()) }
+                JsonAction(stringResource(Res.string.common_copy)) { copy(value.toString()) }
             }
             when {
                 depth >= 8 -> JsonCode(value.toString())
@@ -136,7 +139,7 @@ internal fun JsonCode(text: String) {
     }
 }
 
-internal fun fuzzyContains(name: String, query: String): Boolean {
+fun fuzzyContains(name: String, query: String): Boolean {
     val needle = query.trim().lowercase()
     if (needle.isEmpty()) return true
     var index = 0
