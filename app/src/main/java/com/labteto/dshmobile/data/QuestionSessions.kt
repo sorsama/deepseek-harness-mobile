@@ -2,6 +2,8 @@ package com.labteto.dshmobile.data
 
 import com.labteto.dshmobile.core.wire.*
 import com.labteto.dshmobile.core.wire.dto.*
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,7 +44,9 @@ class QuestionSessions(
     private val onUnavailable: (String, String, List<AskUserQuestionItem>) -> Unit = { _, _, _ -> },
 ) {
     private data class Request(val eventId: String, val generation: String, val job: Job?)
-    private val lock = Any()
+    // Reentrant on purpose: `change` takes this lock and is called from inside it (`updateClaim`,
+    // `cancelled`, the answer paths), which the JVM monitor this replaced allowed.
+    private val lock = reentrantLock()
     private val requests = mutableMapOf<String, Request>()
     private var epoch = 0L
     private val versions = mutableMapOf<String, Int>()
@@ -51,22 +55,22 @@ class QuestionSessions(
     private val _cards = MutableStateFlow<List<QuestionCardState>>(emptyList())
     val cards = _cards.asStateFlow()
 
-    fun reset() = synchronized(lock) {
+    fun reset() = lock.withLock {
         epoch++
         requests.values.forEach { it.job?.cancel() }; requests.clear(); versions.clear(); revisions.clear(); _cards.value = emptyList()
     }
 
-    fun disconnect() = synchronized(lock) {
+    fun disconnect() = lock.withLock {
         epoch++
         requests.values.forEach { it.job?.cancel() }; requests.clear(); versions.clear(); revisions.clear()
         _cards.value = _cards.value.map { it.copy(ready = false, remainingMs = null) }
     }
 
-    private fun change(key: String, transform: (QuestionCardState) -> QuestionCardState) = synchronized(lock) {
+    private fun change(key: String, transform: (QuestionCardState) -> QuestionCardState) = lock.withLock {
         _cards.value = _cards.value.map { if (it.key == key) transform(it) else it }
     }
 
-    fun removeSession(sessionId: String) = synchronized(lock) {
+    fun removeSession(sessionId: String) = lock.withLock {
         val removed = _cards.value.filter { it.sessionId == sessionId }
         removed.forEach { requests.remove(it.key)?.job?.cancel() }
         versions.remove(sessionId)
@@ -84,11 +88,11 @@ class QuestionSessions(
         val requestApi = api() ?: return
         val requestMux = mux()
         val key = "$sessionId/${wait.callId}"
-        fun updateClaim(transform: (QuestionCardState) -> QuestionCardState) = synchronized(lock) {
+        fun updateClaim(transform: (QuestionCardState) -> QuestionCardState) = lock.withLock {
             val current = requests[key]
             if (current?.eventId == eventId && current.generation == clientId) change(key, transform)
         }
-        synchronized(lock) {
+        lock.withLock {
             requests.remove(key)?.job?.cancel()
             val old = _cards.value.firstOrNull { it.key == key }
             val card = (old ?: QuestionCardState(sessionId, wait.callId, request.questions))
@@ -146,7 +150,7 @@ class QuestionSessions(
                 }
                 finally {
                     stream?.cancel()
-                    synchronized(lock) {
+                    lock.withLock {
                         if (requests[key]?.eventId == eventId) updateClaim {
                             if (it.state == "open") it.copy(ready = false, remainingMs = null) else it
                         }
@@ -158,15 +162,15 @@ class QuestionSessions(
         }
     }
 
-    fun cancelled(eventId: String) = synchronized(lock) {
-        val entry = requests.entries.firstOrNull { it.value.eventId == eventId } ?: return@synchronized
+    fun cancelled(eventId: String) = lock.withLock {
+        val entry = requests.entries.firstOrNull { it.value.eventId == eventId } ?: return@withLock
         requests.remove(entry.key)?.job?.cancel()
         change(entry.key) { it.copy(ready = false, remainingMs = null, needsAction = false) }
     }
 
     fun projection(sessionId: String, seq: Int, value: JsonElement) {
         val view = runCatching { WireJson.decodeFromJsonElement(UserQuestionsView.serializer(), value) }.getOrNull() ?: return
-        synchronized(lock) {
+        lock.withLock {
             if (seq < (versions[sessionId] ?: -1)) return
             versions[sessionId] = seq
             revisions[sessionId] = ++revision
@@ -200,7 +204,7 @@ class QuestionSessions(
             .mapNotNull { row -> (row as? JsonObject)?.get("source") as? JsonObject }
             .filter { it["kind"]?.jsonPrimitive?.contentOrNull == "user-question-reply" }
             .mapNotNull { it["callId"]?.jsonPrimitive?.contentOrNull }.toSet()
-        synchronized(lock) {
+        lock.withLock {
             revisions[sessionId] = ++revision
             _cards.value = _cards.value.map { if (it.sessionId == sessionId) it.copy(queued = it.state == "continued" && it.callId in replies) else it }
         }
@@ -209,7 +213,7 @@ class QuestionSessions(
     fun restoreSettled(snapshot: com.labteto.dshmobile.core.session.ConversationSnapshot) {
         val raw = snapshot.projections["userQuestions"] ?: return
         val view = runCatching { WireJson.decodeFromJsonElement(UserQuestionsView.serializer(), raw) }.getOrNull() ?: return
-        synchronized(lock) {
+        lock.withLock {
             val existing = _cards.value.map { it.key }.toSet()
             val calls = snapshot.nodes.filterIsInstance<com.labteto.dshmobile.core.session.ToolCallNode>().associateBy { it.callId }
             val restored = view.settled.mapNotNull { settled ->
@@ -223,7 +227,7 @@ class QuestionSessions(
     }
 
     suspend fun answer(key: String, answer: AskUserQuestionAnswer): String? {
-        val (answeringEpoch, card, answeringRevision) = synchronized(lock) {
+        val (answeringEpoch, card, answeringRevision) = lock.withLock {
             val card = _cards.value.firstOrNull { it.key == key } ?: return null
             Triple(epoch, card, revisions[card.sessionId])
         }
@@ -235,7 +239,7 @@ class QuestionSessions(
             return when (result) {
                 is RpcResult.Err -> result.error.message
                 is RpcResult.Ok -> {
-                    synchronized(lock) {
+                    lock.withLock {
                         if (answeringEpoch == epoch && answeringRevision == revisions[card.sessionId]) {
                             change(key) {
                                 if (it.state != "continued") it
@@ -248,14 +252,14 @@ class QuestionSessions(
                 }
             }
         }
-        val request = synchronized(lock) { requests[key] } ?: return "Disconnected"
+        val request = lock.withLock { requests[key] } ?: return "Disconnected"
         if (request.generation != generation()) return "Disconnected"
         return when (val result = client.answerEvent(request.generation, request.eventId,
             RemoteEventOutcome.Result(value = WireJson.encodeToJsonElement(AskUserQuestionAnswer.serializer(), answer)))) {
             is RpcResult.Err -> result.error.message
             is RpcResult.Ok -> {
                 // Sending an event result is not evidence that we won another client's answer.
-                synchronized(lock) {
+                lock.withLock {
                     if (epoch == answeringEpoch && requests[key] == request) change(key) {
                         if (it.state == "open") it.copy(ready = false, needsAction = false) else it
                     }

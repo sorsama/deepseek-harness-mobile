@@ -1,5 +1,7 @@
 package com.labteto.dshmobile.data
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -76,7 +78,7 @@ internal class PermissionSwitch(
     /** The preset a switch is in flight for, or null when nothing is waiting on the harness. */
     val pending: StateFlow<String?> = _pending.asStateFlow()
 
-    private val lock = Any()
+    private val lock = SynchronizedObject()
     private var attempt: Attempt? = null
 
     private class Attempt(val target: String, val baseline: String?) {

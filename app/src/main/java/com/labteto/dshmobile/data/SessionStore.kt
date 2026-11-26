@@ -116,6 +116,8 @@ import java.util.TimeZone
 import com.labteto.dshmobile.core.wire.dto.PermissionCatalog
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -358,7 +360,7 @@ class SessionStore @Inject constructor(
     private val hostsStore: HostsStore,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val lock = Any()
+    private val lock = SynchronizedObject()
     private val baselineMutex = Mutex()
     private val noCurrentGoalMessage = { context.getString(com.labteto.dshmobile.R.string.goal_none) }
     private val migrationRequiredMessage = { context.getString(com.labteto.dshmobile.R.string.alpha2_migration) }
@@ -2939,16 +2941,18 @@ class SessionStore @Inject constructor(
      */
     suspend fun moveSession(workspaceId: String, sessionId: String, beforeSessionId: String?): MoveOutcome {
         val api = apiOrNull() ?: return MoveOutcome.Failed(null)
-        val epoch: Int
-        synchronized(lock) {
+        // The block's value rather than an assignment inside it: atomicfu's `synchronized` declares no
+        // `callsInPlace` contract, so a `val` cannot be definitely assigned in its lambda.
+        val epoch: Int = synchronized(lock) {
             val row = workspaceRows[workspaceId] ?: return MoveOutcome.Failed(null)
             val base = pendingSessionOrder[workspaceId] ?: row.sessionIds
             val next = moveBefore(base, sessionId, beforeSessionId)
             if (next == base) return MoveOutcome.Unchanged
             pendingSessionOrder[workspaceId] = next
             movesInFlight.merge(workspaceId, 1, Int::plus)
-            epoch = moveEpoch
+            val current = moveEpoch
             emitWorkspacesLocked()
+            current
         }
         return scope.async {
             moveMutex.withLock {
@@ -2972,15 +2976,16 @@ class SessionStore @Inject constructor(
      */
     suspend fun moveWorkspace(workspaceId: String, beforeWorkspaceId: String?): MoveOutcome {
         val api = apiOrNull() ?: return MoveOutcome.Failed(null)
-        val epoch: Int
-        synchronized(lock) {
+        // The block's value, for the reason given in [moveSession].
+        val epoch: Int = synchronized(lock) {
             val base = pendingWorkspaceOrder ?: _workspaces.value.map { it.workspaceId }
             val next = moveBefore(base, workspaceId, beforeWorkspaceId)
             if (next == base) return MoveOutcome.Unchanged
             pendingWorkspaceOrder = next
             movesInFlight.merge(WORKSPACE_ORDER_KEY, 1, Int::plus)
-            epoch = moveEpoch
+            val current = moveEpoch
             emitWorkspacesLocked()
+            current
         }
         return scope.async {
             moveMutex.withLock {

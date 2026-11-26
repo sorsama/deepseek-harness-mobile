@@ -2,6 +2,8 @@ package com.labteto.dshmobile.data
 
 import com.labteto.dshmobile.core.wire.*
 import com.labteto.dshmobile.core.wire.dto.*
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,6 +41,9 @@ class PluginOperations(
     private val operations = mutableMapOf<Pair<String, String>, Job>()
     private val attempts = mutableMapOf<Pair<String, String>, Long>()
     private var attempt = 0L
+    // Was `@Synchronized` (the instance monitor). Reentrant on purpose: `resume` and `event` call `revise` with it
+    // held, and a lazily started attempt can reach `finish` while `install` still holds it.
+    private val lock = reentrantLock()
 
     private fun restorePending(): List<PluginOperationState> {
         val prefs = preferences ?: return emptyList()
@@ -79,9 +84,8 @@ class PluginOperations(
         job.start()
     }
 
-    @Synchronized
     fun install(host: String, spec: String, registry: String?, approvedBuilds: List<String>? = null,
-                enabled: Boolean = false, saveExact: Boolean? = null, replaces: String? = null) {
+                enabled: Boolean = false, saveExact: Boolean? = null, replaces: String? = null): Unit = lock.withLock {
         if (busy(host) || !available()) return
         val id = UUID.randomUUID().toString()
         _pending.value += PluginOperationState(host, id, busy = true, subject = spec, registry = registry,
@@ -94,8 +98,7 @@ class PluginOperations(
         }
     }
 
-    @Synchronized
-    fun resume(host: String, requestId: String? = null) {
+    fun resume(host: String, requestId: String? = null): Unit = lock.withLock {
         if (!available()) return
         _pending.value.filter { it.host == host && (requestId == null || it.requestId == requestId) }.forEach { old ->
             val id = old.requestId ?: return@forEach
@@ -111,8 +114,7 @@ class PluginOperations(
         }
     }
 
-    @Synchronized
-    private fun revise(host: String, id: String, version: Long? = null, transform: (PluginOperationState) -> PluginOperationState) {
+    private fun revise(host: String, id: String, version: Long? = null, transform: (PluginOperationState) -> PluginOperationState): Unit = lock.withLock {
         if (version != null && attempts[host to id] != version) return
         _pending.value = _pending.value.map { if (it.host == host && it.requestId == id) transform(it) else it }
     }
@@ -129,15 +131,13 @@ class PluginOperations(
         }
     }
 
-    @Synchronized
-    fun changed(host: String, result: PluginChangeResult) {
+    fun changed(host: String, result: PluginChangeResult): Unit = lock.withLock {
         if (!busy(host) && available()) {
             _state.value = PluginOperationState(host = host, result = result)
         }
     }
 
-    @Synchronized
-    private fun finish(host: String, id: String, version: Long, result: PluginChangeResult) {
+    private fun finish(host: String, id: String, version: Long, result: PluginChangeResult): Unit = lock.withLock {
         if (attempts[host to id] != version) return
         val old = _pending.value.firstOrNull { it.host == host && it.requestId == id } ?: return
         _pending.value = _pending.value - old
@@ -147,16 +147,14 @@ class PluginOperations(
     }
 
     /** Explicit local dismissal records no success or failure for an unknown host outcome. */
-    @Synchronized
-    fun dismissUnknown(host: String, id: String) {
+    fun dismissUnknown(host: String, id: String): Unit = lock.withLock {
         val old = _pending.value.firstOrNull { it.host == host && it.requestId == id && it.unknown && !it.busy } ?: return
         _pending.value = _pending.value - old
         attempts.remove(host to id); operations.remove(host to id)?.cancel()
         persistPending()
     }
 
-    @Synchronized
-    fun event(host: String?, name: String, args: List<JsonElement>) {
+    fun event(host: String?, name: String, args: List<JsonElement>): Unit = lock.withLock {
         if (host == null) return
         val value = args.firstOrNull() as? JsonObject ?: return
         val id = value["requestId"]?.jsonPrimitive?.contentOrNull ?: return

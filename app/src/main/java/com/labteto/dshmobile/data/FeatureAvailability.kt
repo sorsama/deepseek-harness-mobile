@@ -3,6 +3,8 @@ package com.labteto.dshmobile.data
 import com.labteto.dshmobile.core.wire.RpcError
 import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.core.wire.classifyCapability
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,13 +16,13 @@ enum class HarnessFeature {
 }
 
 /** Connection-scoped evidence: authorization failures do not imply a missing capability. */
-internal class FeatureAvailability(private val report: (RpcError) -> Unit) {
+internal class FeatureAvailability(private val report: (RpcError) -> Unit) : SynchronizedObject() {
     private val states = HarnessFeature.entries.associateWith { MutableStateFlow<Boolean?>(null) }
     private var epoch = 0L
 
     fun state(feature: HarnessFeature): StateFlow<Boolean?> = states.getValue(feature).asStateFlow()
-    @Synchronized fun generation(): Long = epoch
-    @Synchronized fun reset() {
+    fun generation(): Long = synchronized(this) { epoch }
+    fun reset(): Unit = synchronized(this) {
         epoch++
         states.values.forEach { it.value = null }
     }
@@ -32,12 +34,12 @@ internal class FeatureAvailability(private val report: (RpcError) -> Unit) {
      * app reconnected. A result still in flight from before the change is dropped. A feature that
      * reads available is left alone: the next call that finds it gone says so.
      */
-    @Synchronized fun relax(probeable: Set<HarnessFeature>): List<HarnessFeature> {
+    fun relax(probeable: Set<HarnessFeature>): List<HarnessFeature> = synchronized(this) {
         val lapsed = probeable.filter { states.getValue(it).value == false }
         if (lapsed.isEmpty()) return emptyList()
         epoch++
         lapsed.forEach { states.getValue(it).value = null }
-        return lapsed
+        lapsed
     }
 
     /**
@@ -46,7 +48,7 @@ internal class FeatureAvailability(private val report: (RpcError) -> Unit) {
      * because a concurrent read can succeed on a family with a missing method; an answer to the question itself
      * can, for a feature that appears and disappears while connected (the optional market bundle).
      */
-    @Synchronized fun observe(feature: HarnessFeature, generation: Long, result: RpcResult<*>, authoritative: Boolean = false) {
+    fun observe(feature: HarnessFeature, generation: Long, result: RpcResult<*>, authoritative: Boolean = false): Unit = synchronized(this) {
         if (generation != epoch) return
         val state = states.getValue(feature)
         when (result) {

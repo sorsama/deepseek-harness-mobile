@@ -1,5 +1,7 @@
 package com.labteto.dshmobile.data
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -49,24 +51,22 @@ sealed interface SessionListRefresh {
 internal class RefreshThrottle(
     private val minIntervalMs: Long,
     private val now: () -> Long = System::currentTimeMillis,
-) {
+) : SynchronizedObject() {
     private var lastBeganAt: Long? = null
     private var inFlight = false
 
     /** True when the caller may read now; it must then call [end] when the read finishes. */
-    @Synchronized
-    fun begin(force: Boolean = false): Boolean {
+    fun begin(force: Boolean = false): Boolean = synchronized(this) {
         if (inFlight) return false
         val t = now()
         val last = lastBeganAt
         if (!force && last != null && t - last in 0 until minIntervalMs) return false
         inFlight = true
         lastBeganAt = t
-        return true
+        true
     }
 
-    @Synchronized
-    fun end() {
+    fun end(): Unit = synchronized(this) {
         inFlight = false
     }
 }
