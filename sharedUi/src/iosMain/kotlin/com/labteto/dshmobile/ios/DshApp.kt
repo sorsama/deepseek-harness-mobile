@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,10 +35,14 @@ import com.labteto.dshmobile.shared.resources.common_connected
 import com.labteto.dshmobile.shared.resources.connect_harness_home
 import com.labteto.dshmobile.shared.resources.connect_protocol_baseline
 import com.labteto.dshmobile.shared.resources.connect_session_count
+import com.labteto.dshmobile.shared.resources.ink_chat_sessions
 import com.labteto.dshmobile.shared.resources.settings_connection_disconnect
+import com.labteto.dshmobile.ui.LocalSessionStore
+import com.labteto.dshmobile.ui.RootRoute
 import com.labteto.dshmobile.ui.components.MascotMark
 import com.labteto.dshmobile.ui.components.MascotState
 import com.labteto.dshmobile.ui.components.localizedCount
+import com.labteto.dshmobile.ui.rootRouteOf
 import com.labteto.dshmobile.ui.screens.connect.ConnectButtonVariant
 import com.labteto.dshmobile.ui.screens.connect.ConnectContent
 import com.labteto.dshmobile.ui.screens.connect.ConnectFailure
@@ -80,6 +85,8 @@ import platform.UIKit.UIApplicationDidEnterBackgroundNotification
  *   again after every reconnect (`DSH_SESSIONS_RESULT listed count=…`, or `DSH_SESSIONS_RESULT failed reason=…`).
  * - [reconnectOnce] starts a fresh connection once, after the first list has been read: the call the app makes when
  *   it comes back from the background, which a simulator script cannot otherwise cause without restarting the app.
+ * - [openDrawer] opens the session list as soon as the main screen shows (on a phone, where it is a drawer), and
+ *   [onDrawer] hears `DSH_DRAWER_RESULT shown docked=… sessions=…` once the list is on screen with sessions in it.
  */
 internal class LaunchRequest(
     val address: String? = null,
@@ -99,6 +106,8 @@ internal class LaunchRequest(
     val onProbe: ((String) -> Unit)? = null,
     val onSessions: ((String) -> Unit)? = null,
     val reconnectOnce: Boolean = false,
+    val openDrawer: Boolean = false,
+    val onDrawer: ((String) -> Unit)? = null,
 ) {
     /** Whether the app starts on the Pair screen. */
     val startsPairing: Boolean
@@ -109,12 +118,14 @@ internal class LaunchRequest(
 private const val DEFAULT_PORT = "3080"
 
 /**
- * The iOS app: the shared Connect screen until a harness answers, then a plain "Connected" page.
- * Pairing with a relay is the shared Pair screen, opened from the Connect screen's Relay mode.
+ * The iOS app: the shared Connect screen until a harness answers, then the main screen: the shared session list
+ * beside (on a phone, in a drawer over) a chat pane. Pairing with a relay is the shared Pair screen, opened from the
+ * Connect screen's Relay mode. Which of them shows is [rootRouteOf], the decision the Android root makes too; iOS has
+ * no Settings screen yet.
  *
- * The session store follows the connection, but no screen shows its sessions yet (the session list and the chat
- * are later steps of the port), so what a person sees on success is the result the screen has to give: which
- * harness, its home directory, how many sessions it has, and this client's protocol baseline, with a way to disconnect.
+ * The chat is a later step of the port, so the chat pane is still the Connected page: which harness, its home
+ * directory, how many sessions it has, and this client's protocol baseline, with a way to disconnect. The list's
+ * overflow menu has Disconnect too.
  */
 @Composable
 internal fun DshApp(app: IosApp, request: LaunchRequest) {
@@ -122,8 +133,7 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
         val state by app.controller.state.collectAsState()
         val link by app.link.state.collectAsState()
         val pairState by app.pair.state.collectAsState()
-        val connected = link.phase == ConnectionPhase.CONNECTED ||
-            (link.phase == ConnectionPhase.RECONNECTING && link.hasConnected)
+        val connected = rootRouteOf(link.phase, link.hasConnected, showSettings = false, showPair = false) == RootRoute.Main
         // The Pair screen is a destination of the app, like the Android root's `showPair`.
         var pairing by remember { mutableStateOf(request.startsPairing) }
         var pairPrefill by remember { mutableStateOf<String?>(null) }
@@ -258,40 +268,51 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
             }
         }
 
-        if (pairing) {
-            PairContent(
-                state = pairState,
-                controller = app.pair,
-                onClose = {
-                    pairing = false
-                    pairPrefill = null
-                    scanFirst = false
-                },
-                scanner = { close, decoded, typeCode -> IosQrScanner(close, decoded, typeCode) },
-                prefillUrl = pairPrefill,
-                initiallyScanning = scanFirst,
-                scrollToFailure = true,
-            )
-        } else if (connected) {
-            ConnectedPage(
-                authority = link.host?.authority.orEmpty(),
-                name = link.host?.name,
-                home = link.description?.home ?: link.host?.lastHome,
-                sessionCount = sessionCount,
-                onDisconnect = { app.controller.cancelConnect() },
-            )
-        } else {
-            ConnectContent(
-                state = state,
-                controller = app.controller,
-                features = IosConnectFeatures,
-                onOpenSettings = {},
-                onPair = { url ->
-                    pairPrefill = url
-                    pairing = true
-                },
-                initialHost = request.address.orEmpty(),
-            )
+        when (rootRouteOf(link.phase, link.hasConnected, showSettings = false, showPair = pairing)) {
+            RootRoute.Pair -> {
+                PairContent(
+                    state = pairState,
+                    controller = app.pair,
+                    onClose = {
+                        pairing = false
+                        pairPrefill = null
+                        scanFirst = false
+                    },
+                    scanner = { close, decoded, typeCode -> IosQrScanner(close, decoded, typeCode) },
+                    prefillUrl = pairPrefill,
+                    initiallyScanning = scanFirst,
+                    scrollToFailure = true,
+                )
+            }
+            RootRoute.Main -> CompositionLocalProvider(LocalSessionStore provides app.sessionStore) {
+                IosMainPage(
+                    openDrawer = request.openDrawer,
+                    onDrawerShown = request.onDrawer,
+                    onDisconnect = { app.controller.cancelConnect() },
+                ) { onOpenSessions ->
+                    ConnectedPage(
+                        authority = link.host?.authority.orEmpty(),
+                        name = link.host?.name,
+                        home = link.description?.home ?: link.host?.lastHome,
+                        sessionCount = sessionCount,
+                        onOpenSessions = onOpenSessions,
+                        onDisconnect = { app.controller.cancelConnect() },
+                    )
+                }
+            }
+            RootRoute.Connect, RootRoute.Settings -> {
+                ConnectContent(
+                    state = state,
+                    controller = app.controller,
+                    features = IosConnectFeatures,
+                    onOpenSettings = {},
+                    onPair = { url ->
+                        pairPrefill = url
+                        pairing = true
+                    },
+                    initialHost = request.address.orEmpty(),
+                )
+            }
         }
     }
 }
@@ -331,11 +352,19 @@ private fun ConnectFailure.kind(): String = when (this) {
 }
 
 /**
- * Where a connection ends up for now: which harness, where its home is, how many sessions it has, and a way back to
- * the form. [sessionCount] is null until the list call has answered, and stays null if it failed.
+ * The chat pane until the chat moves: which harness, where its home is, how many sessions it has, and a way back to
+ * the form. [sessionCount] is null until the list call has answered, and stays null if it failed. [onOpenSessions]
+ * (null where the list is docked beside this pane) opens the session list.
  */
 @Composable
-private fun ConnectedPage(authority: String, name: String?, home: String?, sessionCount: Int?, onDisconnect: () -> Unit) {
+private fun ConnectedPage(
+    authority: String,
+    name: String?,
+    home: String?,
+    sessionCount: Int?,
+    onOpenSessions: (() -> Unit)?,
+    onDisconnect: () -> Unit,
+) {
     val colors = DsTheme.colors
     Surface(modifier = Modifier.fillMaxSize(), color = colors.bgBase) {
         Column(
@@ -388,6 +417,15 @@ private fun ConnectedPage(authority: String, name: String?, home: String?, sessi
                 )
             }
             Spacer(Modifier.weight(1f))
+            if (onOpenSessions != null) {
+                DsConnectButton(
+                    text = stringResource(Res.string.ink_chat_sessions),
+                    onClick = onOpenSessions,
+                    large = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(DsSpacing.small))
+            }
             DsConnectButton(
                 text = stringResource(Res.string.settings_connection_disconnect),
                 onClick = onDisconnect,

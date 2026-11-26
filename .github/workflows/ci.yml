@@ -187,6 +187,11 @@ jobs:
           echo "SIM_UDID=${picked%%|*}" >> "$GITHUB_ENV"
           echo "SIM_NAME=${picked#*|}" >> "$GITHUB_ENV"
           echo "Using simulator $picked"
+          # The session list is docked as a pane on an iPad, so its scenarios run on one too (simulator-check.sh).
+          ipad="$(xcrun simctl list devices available -j | jq -r '[.devices | to_entries | sort_by(.key) | reverse | .[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPad"))][0] | "\(.udid)|\(.name)"')"
+          test -n "$ipad" && test "$ipad" != "null" || { echo "::error::no iPad simulator on this runner"; exit 1; }
+          echo "SIM_IPAD_UDID=${ipad%%|*}" >> "$GITHUB_ENV"
+          echo "Using iPad simulator $ipad"
       # Three harnesses and some test-only routes, as their own process: the simulator shares the
       # Mac's network, so the Kotlin/Native tests and the app reach them on 127.0.0.1.
       - name: Start the fixture harnesses
@@ -262,6 +267,19 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           iosApp/scripts/simulator-check.sh "$SIM_UDID" "build/ios-derived/Build/Products/Debug-iphonesimulator/DSH Mobile.app" build/ios-screenshots
+      # The session list's screenshots, iPhone and iPad, light, dark, French and Arabic. The scenarios above already fail
+      # when the app does not report the list on screen; this fails when a screenshot of it is missing.
+      - name: Check the session list screenshots
+        if: ${{ !cancelled() }}
+        run: |
+          missing=0
+          for device in iphone ipad; do
+            for look in light dark fr ar; do
+              f="build/ios-screenshots/drawer/$device-$look.png"
+              if [ -s "$f" ]; then echo "$f: $(wc -c < "$f") bytes"; else echo "::error::missing $f"; missing=$((missing + 1)); fi
+            done
+          done
+          test "$missing" -eq 0
       - name: Stop the fixture harnesses
         if: always()
         run: kill "$(cat "$RUNNER_TEMP/fixtures.pid")" 2>/dev/null || true
@@ -272,6 +290,13 @@ jobs:
           name: ios-simulator-screenshots
           path: build/ios-screenshots
           if-no-files-found: warn
+      - name: Upload the session list screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-session-list-screenshots
+          path: build/ios-screenshots/drawer
+          if-no-files-found: error
       - name: Upload iOS reports
         if: always()
         uses: actions/upload-artifact@v4

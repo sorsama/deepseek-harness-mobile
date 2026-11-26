@@ -19,6 +19,7 @@
     <string name="chatlist_empty">暂无会话</string>
     <string name="chatlist_group_other">其他</string>
     <string name="chatlist_home_directory">主目录</string>
+    <string name="chatlist_move_announce">已移到第 %1$d 位，共 %2$d 位</string>
     <string name="chatlist_move_down">下移</string>
     <string name="chatlist_move_up">上移</string>
     <string name="chatlist_needs_action">待你处理</string>
@@ -182,7 +183,9 @@
     <string name="ink_chat_sessions">会话</string>
     <string name="ink_chat_start_task">在 %1$s 上开始任务…</string>
     <string name="ink_chat_streaming">流式输出</string>
+    <string name="ink_chat_today">今天</string>
     <string name="ink_chat_workspaces">项目</string>
+    <string name="ink_chat_yesterday">昨天</string>
     <string name="pair_code_hint">8 位数字</string>
     <string name="pair_code_label">配对码</string>
     <string name="pair_fail_certificate">%1$s 的密钥与该配对码指明的不一致。请不要配对，该地址上可能是别的设备在应答。</string>

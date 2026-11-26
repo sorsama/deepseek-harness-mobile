@@ -19,6 +19,7 @@
     <string name="chatlist_empty">ยังไม่มีเซสชัน</string>
     <string name="chatlist_group_other">อื่น ๆ</string>
     <string name="chatlist_home_directory">โฮมไดเรกทอรี</string>
+    <string name="chatlist_move_announce">ย้ายไปตำแหน่งที่ %1$d จาก %2$d</string>
     <string name="chatlist_move_down">เลื่อนลง</string>
     <string name="chatlist_move_up">เลื่อนขึ้น</string>
     <string name="chatlist_needs_action">รอคุณอยู่</string>
@@ -182,7 +183,9 @@
     <string name="ink_chat_sessions">เซสชัน</string>
     <string name="ink_chat_start_task">เริ่มงานบน %1$s…</string>
     <string name="ink_chat_streaming">กำลังสตรีม</string>
+    <string name="ink_chat_today">วันนี้</string>
     <string name="ink_chat_workspaces">โปรเจกต์</string>
+    <string name="ink_chat_yesterday">เมื่อวาน</string>
     <string name="pair_code_hint">8 หลัก</string>
     <string name="pair_code_label">รหัสจับคู่</string>
     <string name="pair_fail_certificate">กุญแจที่ %1$s ไม่ตรงกับที่รหัสนี้ระบุไว้ อย่าเพิ่งจับคู่ เพราะอาจมีเครื่องอื่นตอบแทนอยู่ที่ที่อยู่นั้น</string>

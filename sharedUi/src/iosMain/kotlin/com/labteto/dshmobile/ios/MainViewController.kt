@@ -41,6 +41,7 @@ fun MainViewController(
     pairPayload: String?,
     pairScanner: Boolean,
     reconnectOnce: Boolean,
+    openDrawer: Boolean,
 ): UIViewController =
     ComposeUIViewController {
         val request = remember {
@@ -69,6 +70,8 @@ fun MainViewController(
                     else -> null
                 },
                 reconnectOnce = reconnectOnce,
+                openDrawer = openDrawer,
+                onDrawer = if (openDrawer) ::reportDrawer else null,
             )
         }
         // One controller for the life of the process, on the main thread where Compose runs. The reset,
@@ -104,6 +107,9 @@ private const val PAIR_OUTCOME_FILE = "dsh-pair-result.txt"
 /** Where [reportSessions] writes: the session list call made after connecting, in a file of its own. */
 private const val SESSIONS_OUTCOME_FILE = "dsh-sessions-result.txt"
 
+/** Where [reportDrawer] writes: whether the session list is on screen, for `-DshOpenDrawer`. */
+private const val DRAWER_OUTCOME_FILE = "dsh-drawer-result.txt"
+
 /**
  * Say what the last connect attempt did, to the two places a script can look: the process's output
  * (`xcrun simctl launch --console`) and a file in the app container
@@ -126,6 +132,9 @@ private fun reportSessions(line: String) = writeReport(SESSIONS_OUTCOME_FILE, li
 
 /** [reportSessions] that keeps every line, one per line, for `-DshReconnectOnce`. */
 private fun appendSessions(line: String) = writeReport(SESSIONS_OUTCOME_FILE, line, append = true)
+
+/** [reportOutcome] for the session list being on screen (`Documents/dsh-drawer-result.txt`). */
+private fun reportDrawer(line: String) = writeReport(DRAWER_OUTCOME_FILE, line)
 
 @OptIn(ExperimentalForeignApi::class)
 private fun writeReport(fileName: String, line: String, append: Boolean = false) {

@@ -19,6 +19,7 @@
     <string name="chatlist_empty">এখনো কোনো সেশন নেই</string>
     <string name="chatlist_group_other">অন্যান্য</string>
     <string name="chatlist_home_directory">হোম ফোল্ডার</string>
+    <string name="chatlist_move_announce">%2$dটির মধ্যে %1$d নম্বরে সরানো হয়েছে</string>
     <string name="chatlist_move_down">নিচে নিন</string>
     <string name="chatlist_move_up">উপরে নিন</string>
     <string name="chatlist_needs_action">আপনাকে দরকার</string>
@@ -182,7 +183,9 @@
     <string name="ink_chat_sessions">সেশন</string>
     <string name="ink_chat_start_task">%1$s-এ একটি কাজ শুরু করুন…</string>
     <string name="ink_chat_streaming">স্ট্রিমিং</string>
+    <string name="ink_chat_today">আজ</string>
     <string name="ink_chat_workspaces">প্রজেক্ট</string>
+    <string name="ink_chat_yesterday">গতকাল</string>
     <string name="pair_code_hint">8 সংখ্যা</string>
     <string name="pair_code_label">পেয়ারিং কোড</string>
     <string name="pair_fail_certificate">%1$s-এর কী এই কোডে লেখা কী নয়। পেয়ার করবেন না। ওই ঠিকানায় অন্য কেউ সাড়া দিতে পারে।</string>

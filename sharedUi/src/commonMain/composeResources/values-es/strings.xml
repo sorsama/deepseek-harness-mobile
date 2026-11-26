@@ -19,6 +19,7 @@
     <string name="chatlist_empty">Aún no hay sesiones</string>
     <string name="chatlist_group_other">Otras</string>
     <string name="chatlist_home_directory">Directorio de inicio</string>
+    <string name="chatlist_move_announce">Movida a la posición %1$d de %2$d</string>
     <string name="chatlist_move_down">Bajar</string>
     <string name="chatlist_move_up">Subir</string>
     <string name="chatlist_needs_action">Te necesita</string>
@@ -182,7 +183,9 @@
     <string name="ink_chat_sessions">Sesiones</string>
     <string name="ink_chat_start_task">Inicia una tarea en %1$s…</string>
     <string name="ink_chat_streaming">Respondiendo</string>
+    <string name="ink_chat_today">Hoy</string>
     <string name="ink_chat_workspaces">Proyectos</string>
+    <string name="ink_chat_yesterday">Ayer</string>
     <string name="pair_code_hint">8 dígitos</string>
     <string name="pair_code_label">Código de emparejamiento</string>
     <string name="pair_fail_certificate">La clave de %1$s no es la que indica este código. No emparejes: puede que otra cosa esté respondiendo en esa dirección.</string>

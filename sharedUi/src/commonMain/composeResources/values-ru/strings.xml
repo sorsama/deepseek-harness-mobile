@@ -19,6 +19,7 @@
     <string name="chatlist_empty">Сеансов пока нет</string>
     <string name="chatlist_group_other">Другие</string>
     <string name="chatlist_home_directory">Домашний каталог</string>
+    <string name="chatlist_move_announce">Перемещено на позицию %1$d из %2$d</string>
     <string name="chatlist_move_down">Ниже</string>
     <string name="chatlist_move_up">Выше</string>
     <string name="chatlist_needs_action">Ждёт вас</string>
@@ -182,7 +183,9 @@
     <string name="ink_chat_sessions">Сеансы</string>
     <string name="ink_chat_start_task">Начать задачу на %1$s…</string>
     <string name="ink_chat_streaming">Отвечает</string>
+    <string name="ink_chat_today">Сегодня</string>
     <string name="ink_chat_workspaces">Проекты</string>
+    <string name="ink_chat_yesterday">Вчера</string>
     <string name="pair_code_hint">8 цифр</string>
     <string name="pair_code_label">Код сопряжения</string>
     <string name="pair_fail_certificate">Ключ по адресу %1$s не совпадает с указанным в коде. Не сопрягайтесь: по этому адресу может отвечать что-то другое.</string>

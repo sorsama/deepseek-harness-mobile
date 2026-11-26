@@ -19,6 +19,7 @@
     <string name="chatlist_empty">No sessions yet</string>
     <string name="chatlist_group_other">Other</string>
     <string name="chatlist_home_directory">Home directory</string>
+    <string name="chatlist_move_announce">Moved to position %1$d of %2$d</string>
     <string name="chatlist_move_down">Move down</string>
     <string name="chatlist_move_up">Move up</string>
     <string name="chatlist_needs_action">Needs you</string>
@@ -182,7 +183,9 @@
     <string name="ink_chat_sessions">Sessions</string>
     <string name="ink_chat_start_task">Start a task on %1$s…</string>
     <string name="ink_chat_streaming">Streaming</string>
+    <string name="ink_chat_today">Today</string>
     <string name="ink_chat_workspaces">Projects</string>
+    <string name="ink_chat_yesterday">Yesterday</string>
     <string name="pair_code_hint">8 digits</string>
     <string name="pair_code_label">Pairing code</string>
     <string name="pair_fail_certificate">The key at %1$s isn't the one this code names. Don't pair. Something else may be answering at that address.</string>

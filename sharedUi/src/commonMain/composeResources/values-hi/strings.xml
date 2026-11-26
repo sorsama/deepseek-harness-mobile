@@ -19,6 +19,7 @@
     <string name="chatlist_empty">अभी कोई सेशन नहीं</string>
     <string name="chatlist_group_other">अन्य</string>
     <string name="chatlist_home_directory">होम फ़ोल्डर</string>
+    <string name="chatlist_move_announce">%2$d में से %1$d नंबर पर ले जाया गया</string>
     <string name="chatlist_move_down">नीचे ले जाएँ</string>
     <string name="chatlist_move_up">ऊपर ले जाएँ</string>
     <string name="chatlist_needs_action">आपकी ज़रूरत है</string>
@@ -182,7 +183,9 @@
     <string name="ink_chat_sessions">सेशन</string>
     <string name="ink_chat_start_task">%1$s पर कोई काम शुरू करें…</string>
     <string name="ink_chat_streaming">स्ट्रीमिंग</string>
+    <string name="ink_chat_today">आज</string>
     <string name="ink_chat_workspaces">प्रोजेक्ट</string>
+    <string name="ink_chat_yesterday">कल</string>
     <string name="pair_code_hint">8 अंक</string>
     <string name="pair_code_label">पेयरिंग कोड</string>
     <string name="pair_fail_certificate">%1$s की कुंजी वह नहीं है जो इस कोड में बताई गई है। पेयर न करें। उस पते पर कोई और जवाब दे रहा हो सकता है।</string>

@@ -19,6 +19,7 @@
     <string name="chatlist_empty">ابھی کوئی سیشن نہیں</string>
     <string name="chatlist_group_other">دیگر</string>
     <string name="chatlist_home_directory">ہوم ڈائریکٹری</string>
+    <string name="chatlist_move_announce">%2$d میں سے %1$d نمبر پر منتقل ہو گیا</string>
     <string name="chatlist_move_down">نیچے لے جائیں</string>
     <string name="chatlist_move_up">اوپر لے جائیں</string>
     <string name="chatlist_needs_action">آپ کی ضرورت ہے</string>
@@ -182,7 +183,9 @@
     <string name="ink_chat_sessions">سیشنز</string>
     <string name="ink_chat_start_task">%1$s پر کام شروع کریں…</string>
     <string name="ink_chat_streaming">اسٹریمنگ</string>
+    <string name="ink_chat_today">آج</string>
     <string name="ink_chat_workspaces">پروجیکٹس</string>
+    <string name="ink_chat_yesterday">کل</string>
     <string name="pair_code_hint">8 ہندسے</string>
     <string name="pair_code_label">پیئرنگ کوڈ</string>
     <string name="pair_fail_certificate">‎%1$s‎ کی کلید وہ نہیں جو اس کوڈ میں بتائی گئی ہے۔ پیئر نہ کریں۔ ہو سکتا ہے اُس پتے پر کوئی اور جواب دے رہا ہو۔</string>

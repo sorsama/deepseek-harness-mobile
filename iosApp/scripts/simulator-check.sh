@@ -3,6 +3,9 @@
 #
 #   simulator-check.sh <simulator udid> <path to "DSH Mobile.app" built for the simulator> <output dir> [fixtures log]
 #
+# With SIM_IPAD_UDID set to an iPad simulator, the session list scenarios also run there (the list is docked as a pane
+# on an iPad); their screenshots go to <output dir>/drawer/, next to the iPhone ones.
+#
 # The fixtures log is the output of `mock-harness --ci-fixtures`; the pairing scenarios read the relay's code
 # and the TLS relay's key from its `ci pairing:` line (default: $SIM_REPORTS/fixtures.log).
 #
@@ -37,6 +40,7 @@ result="$data/Documents/dsh-connect-result.txt"
 pair_result="$data/Documents/dsh-pair-result.txt"
 probe_result="$data/Documents/dsh-probe-result.txt"
 sessions_result="$data/Documents/dsh-sessions-result.txt"
+drawer_result="$data/Documents/dsh-drawer-result.txt"
 fixtures="${4:-${SIM_REPORTS:-build/ios-reports}/fixtures.log}"
 
 shot() {
@@ -45,7 +49,7 @@ shot() {
 
 # Starts the app with the given arguments; its console output goes to console.log, tagged.
 launch() {
-  rm -f "$result" "$pair_result" "$probe_result" "$sessions_result"
+  rm -f "$result" "$pair_result" "$probe_result" "$sessions_result" "$drawer_result"
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
   echo "=== launch: $*" >> "$out/console.log"
   xcrun simctl launch --console "$udid" "$bundle" "$@" >> "$out/console.log" 2>&1 &
@@ -120,6 +124,49 @@ expect_sessions() {
     failures=$((failures + 1))
   fi
   sleep 3
+}
+
+# Like `expect`, for the session list being on screen (Documents/dsh-drawer-result.txt, written with `-DshOpenDrawer`):
+# `DSH_DRAWER_RESULT shown docked=… sessions=…` once the list is visible with sessions in it. No line means no list: the
+# scenario fails, whatever the screenshot shows.
+expect_drawer() {
+  local label="$1" pattern="$2" line
+  for _ in $(seq 1 45); do
+    [ -s "$drawer_result" ] && break
+    sleep 1
+  done
+  line="$(cat "$drawer_result" 2>/dev/null || echo '<no drawer result within 45 s>')"
+  echo "[$label] $line" | cut -c1-400
+  if ! grep -q -- "$pattern" <<<"$line"; then
+    echo "::error::[$label] expected the session list on screen: $pattern"
+    failures=$((failures + 1))
+  fi
+  # The rows arrive with a short stagger; let them settle before the screenshot.
+  sleep 4
+}
+
+# The session list (shared with Android since iOS M4b) against the demo harness, opened by `-DshOpenDrawer YES`: light,
+# dark, French and Arabic (right to left). $1 names the device in the screenshots, $2 is whether the list is docked as a
+# pane there (an iPad) rather than a drawer (an iPhone in portrait).
+drawer_scenarios() {
+  local device="$1" docked="$2" look
+  mkdir -p "$out/drawer"
+  for look in light dark fr ar; do
+    local extra=()
+    case "$look" in
+      dark) xcrun simctl ui "$udid" appearance dark ;;
+      *) xcrun simctl ui "$udid" appearance light ;;
+    esac
+    case "$look" in
+      fr) extra=(-AppleLanguages "(fr)" -AppleLocale fr_FR) ;;
+      ar) extra=(-AppleLanguages "(ar)" -AppleLocale ar_SA) ;;
+    esac
+    launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshOpenDrawer YES ${extra[@]+"${extra[@]}"}
+    expect "drawer-$device-$look-connected" "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
+    expect_drawer "drawer-$device-$look" "DSH_DRAWER_RESULT shown docked=$docked sessions=$demo_count$"
+    shot "drawer/$device-$look"
+  done
+  xcrun simctl ui "$udid" appearance light
 }
 
 # Every scenario but the two about what is remembered starts from `-DshReset YES`, which forgets the
@@ -416,6 +463,29 @@ else
     failures=$((failures + 1))
   fi
   shot "36-session-count-after-a-reconnect"
+
+  # 37 to 40. The session list on this iPhone: a drawer over the chat pane, opened by the launch argument.
+  drawer_scenarios iphone false
+fi
+
+# 41 to 44. The same list on an iPad, where it is a pane beside the chat (the Android tablet layout: planShell docks
+# the list from 600dp wide). Same app, installed on the second simulator.
+if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" ] && [ -n "$demo_count" ]; then
+  xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
+  udid="$SIM_IPAD_UDID"
+  xcrun simctl boot "$udid" 2>/dev/null || true
+  xcrun simctl bootstatus "$udid" -b > /dev/null
+  xcrun simctl uninstall "$udid" "$bundle" 2>/dev/null || true
+  xcrun simctl install "$udid" "$app"
+  data="$(xcrun simctl get_app_container "$udid" "$bundle" data)"
+  result="$data/Documents/dsh-connect-result.txt"
+  pair_result="$data/Documents/dsh-pair-result.txt"
+  probe_result="$data/Documents/dsh-probe-result.txt"
+  sessions_result="$data/Documents/dsh-sessions-result.txt"
+  drawer_result="$data/Documents/dsh-drawer-result.txt"
+  drawer_scenarios ipad true
+elif [ -z "${SIM_IPAD_UDID:-}" ]; then
+  echo "SIM_IPAD_UDID is not set: the iPad session list scenarios did not run"
 fi
 
 xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true

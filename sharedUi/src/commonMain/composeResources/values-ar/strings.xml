@@ -19,6 +19,7 @@
     <string name="chatlist_empty">لا توجد جلسات بعد</string>
     <string name="chatlist_group_other">أخرى</string>
     <string name="chatlist_home_directory">المجلد الرئيسي</string>
+    <string name="chatlist_move_announce">نُقلت إلى الموضع %1$d من %2$d</string>
     <string name="chatlist_move_down">نقل لأسفل</string>
     <string name="chatlist_move_up">نقل لأعلى</string>
     <string name="chatlist_needs_action">بانتظارك</string>
@@ -182,7 +183,9 @@
     <string name="ink_chat_sessions">الجلسات</string>
     <string name="ink_chat_start_task">ابدأ مهمة على %1$s…</string>
     <string name="ink_chat_streaming">يكتب</string>
+    <string name="ink_chat_today">اليوم</string>
     <string name="ink_chat_workspaces">المشاريع</string>
+    <string name="ink_chat_yesterday">أمس</string>
     <string name="pair_code_hint">8 أرقام</string>
     <string name="pair_code_label">رمز الاقتران</string>
     <string name="pair_fail_certificate">المفتاح على %1$s ليس المفتاح الذي يذكره هذا الرمز. لا تُجرِ الاقتران، فقد يكون جهاز آخر يردّ على ذلك العنوان.</string>
