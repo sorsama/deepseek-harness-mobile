@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">منتقلی مکمل کرنے کے لیے اصل سیشن کھولیں، پھر دوبارہ کوشش کریں۔</string>
+    <string name="archive_activity_job">پس منظر کے کام</string>
+    <string name="archive_activity_more">اور %1$d</string>
+    <string name="archive_activity_schedule">شیڈول</string>
+    <string name="archive_activity_subagent">ذیلی ایجنٹ</string>
+    <string name="archive_activity_turn">موجودہ ٹرن</string>
+    <string name="archive_busy_after">روکا ہوا کام خود بخود دوبارہ شروع نہیں ہوگا۔ آپ یہ سیشن بعد میں «آرکائیو شدہ سیشن» میں ڈھونڈ کر دوبارہ چلا سکتے ہیں۔</string>
+    <string name="archive_busy_body">اس سیشن میں ابھی کام چل رہا ہے۔ آرکائیو کرنے سے پہلے وہ کام روک دیا جائے گا۔</string>
+    <string name="archive_busy_confirm">روکیں اور آرکائیو کریں</string>
+    <string name="archive_busy_title">اس سیشن کو روک کر آرکائیو کریں؟</string>
     <string name="common_back">واپس</string>
     <string name="common_cancel">منسوخ کریں</string>
     <string name="common_close">بند کریں</string>
     <string name="common_connected">منسلک</string>
+    <string name="common_copied">کاپی ہو گیا</string>
+    <string name="common_error">کچھ غلط ہو گیا</string>
     <string name="common_retry">دوبارہ کوشش کریں</string>
+    <string name="common_save">محفوظ کریں</string>
     <string name="connect_auto_lan">Wi-Fi پر دریافت شدہ harness سے خودکار طور پر منسلک ہوں</string>
     <string name="connect_auto_last">آخری استعمال شدہ harness سے دوبارہ منسلک ہوں</string>
     <string name="connect_auto_loopback">اس ڈیوائس پر موجود harness سے خودکار طور پر منسلک ہوں</string>
@@ -104,6 +116,8 @@
     <string name="connect_try_again">دوبارہ کوشش کریں</string>
     <string name="connect_unreachable">ناقابل رسائی</string>
     <string name="goal_none">کوئی فعال ہدف نہیں</string>
+    <string name="hold_copy_all">سب کاپی کریں</string>
+    <string name="hold_select_text">متن منتخب کریں</string>
     <string name="pair_code_hint">8 ہندسے</string>
     <string name="pair_code_label">پیئرنگ کوڈ</string>
     <string name="pair_fail_certificate">‎%1$s‎ کی کلید وہ نہیں جو اس کوڈ میں بتائی گئی ہے۔ پیئر نہ کریں۔ ہو سکتا ہے اُس پتے پر کوئی اور جواب دے رہا ہو۔</string>
@@ -188,4 +202,11 @@
     <string name="settings_connection_disconnect">کنکشن ختم کریں</string>
     <string name="settings_title">سیٹنگز</string>
     <string name="subagents_readonly">یہ ذیلی ایجنٹ پیغامات قبول نہیں کرتا۔</string>
+    <string name="time_days">%1$d دن</string>
+    <string name="time_hours">%1$d گھنٹے</string>
+    <string name="time_minutes">%1$d منٹ</string>
+    <string name="time_months">%1$d ماہ</string>
+    <string name="time_now">ابھی</string>
+    <string name="time_years">%1$d سال</string>
+    <string name="ux_b_clear_search">تلاش صاف کریں</string>
 </resources>

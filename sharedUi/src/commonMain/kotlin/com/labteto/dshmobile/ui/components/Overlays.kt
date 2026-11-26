@@ -33,9 +33,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -343,7 +340,7 @@ internal fun DsMenuPopup(expanded: Boolean, onDismiss: () -> Unit, items: List<M
                         {
                             if (item.selected) {
                                 Icon(
-                                    Icons.Filled.Check,
+                                    DsIcons.Check,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
                                     tint = colors.accent,
@@ -376,7 +373,7 @@ private fun DsMenuPreview() {
         DsMenu(
             anchor = { DsButton("Menu", onClick = {}) },
             items = listOf(
-                MenuItem("Open", icon = Icons.Filled.Edit, onClick = {}),
+                MenuItem("Open", icon = DsIcons.Edit, onClick = {}),
                 MenuItem("Delete", danger = true, onClick = {}),
             ),
         )

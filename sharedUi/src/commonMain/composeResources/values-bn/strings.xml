@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">মাইগ্রেশন শেষ করতে আগের সেশনটি খুলুন, তারপর আবার চেষ্টা করুন।</string>
+    <string name="archive_activity_job">ব্যাকগ্রাউন্ড কাজ</string>
+    <string name="archive_activity_more">আরও %1$dটি</string>
+    <string name="archive_activity_schedule">সময়সূচি</string>
+    <string name="archive_activity_subagent">সাবএজেন্ট</string>
+    <string name="archive_activity_turn">বর্তমান টার্ন</string>
+    <string name="archive_busy_after">থামানো কাজ নিজে থেকে আবার চলবে না। পরে “আর্কাইভ করা সেশন” থেকে সেশনটি খুঁজে নিয়ে আবার চালিয়ে যেতে পারবেন।</string>
+    <string name="archive_busy_body">এই সেশনে এখনও কাজ চলছে। আর্কাইভ করলে আগে সেই কাজ থামানো হবে।</string>
+    <string name="archive_busy_confirm">থামান ও আর্কাইভ করুন</string>
+    <string name="archive_busy_title">এই সেশন থামিয়ে আর্কাইভ করবেন?</string>
     <string name="common_back">পিছনে</string>
     <string name="common_cancel">বাতিল</string>
     <string name="common_close">বন্ধ করুন</string>
     <string name="common_connected">সংযুক্ত</string>
+    <string name="common_copied">কপি হয়েছে</string>
+    <string name="common_error">কিছু একটা ভুল হয়েছে</string>
     <string name="common_retry">আবার চেষ্টা করুন</string>
+    <string name="common_save">সেভ করুন</string>
     <string name="connect_auto_lan">Wi-Fi-তে পাওয়া harness-এ নিজে থেকে সংযুক্ত হোন</string>
     <string name="connect_auto_last">শেষবার যে harness ব্যবহার করেছিলেন, তাতে আবার সংযুক্ত হোন</string>
     <string name="connect_auto_loopback">এই ডিভাইসের harness-এ নিজে থেকে সংযুক্ত হোন</string>
@@ -104,6 +116,8 @@
     <string name="connect_try_again">আবার চেষ্টা করুন</string>
     <string name="connect_unreachable">পৌঁছানো যাচ্ছে না</string>
     <string name="goal_none">কোনো চালু লক্ষ্য নেই</string>
+    <string name="hold_copy_all">সব কপি করুন</string>
+    <string name="hold_select_text">টেক্সট বাছুন</string>
     <string name="pair_code_hint">8 সংখ্যা</string>
     <string name="pair_code_label">পেয়ারিং কোড</string>
     <string name="pair_fail_certificate">%1$s-এর কী এই কোডে লেখা কী নয়। পেয়ার করবেন না। ওই ঠিকানায় অন্য কেউ সাড়া দিতে পারে।</string>
@@ -188,4 +202,11 @@
     <string name="settings_connection_disconnect">সংযোগ বিচ্ছিন্ন করুন</string>
     <string name="settings_title">সেটিংস</string>
     <string name="subagents_readonly">এই সাবএজেন্ট বার্তা নেয় না।</string>
+    <string name="time_days">%1$d দিন</string>
+    <string name="time_hours">%1$d ঘ</string>
+    <string name="time_minutes">%1$d মিন</string>
+    <string name="time_months">%1$d মাস</string>
+    <string name="time_now">এইমাত্র</string>
+    <string name="time_years">%1$d বছর</string>
+    <string name="ux_b_clear_search">খোঁজা মুছুন</string>
 </resources>

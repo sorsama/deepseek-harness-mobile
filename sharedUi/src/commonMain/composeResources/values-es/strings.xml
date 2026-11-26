@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">Abre la sesión original para completar la migración y vuelve a intentarlo.</string>
+    <string name="archive_activity_job">Trabajos en segundo plano</string>
+    <string name="archive_activity_more">y %1$d más</string>
+    <string name="archive_activity_schedule">Programaciones</string>
+    <string name="archive_activity_subagent">Subagentes</string>
+    <string name="archive_activity_turn">Turno actual</string>
+    <string name="archive_busy_after">El trabajo detenido no continuará solo. Puedes encontrar la sesión en Sesiones archivadas y retomarla desde ahí.</string>
+    <string name="archive_busy_body">Esta sesión todavía tiene trabajo en ejecución. Al archivarla, ese trabajo se detiene primero.</string>
+    <string name="archive_busy_confirm">Detener y archivar</string>
+    <string name="archive_busy_title">¿Detener y archivar esta sesión?</string>
     <string name="common_back">Atrás</string>
     <string name="common_cancel">Cancelar</string>
     <string name="common_close">Cerrar</string>
     <string name="common_connected">Conectado</string>
+    <string name="common_copied">Copiado</string>
+    <string name="common_error">Algo salió mal</string>
     <string name="common_retry">Reintentar</string>
+    <string name="common_save">Guardar</string>
     <string name="connect_auto_lan">Conectarse automáticamente al harness descubierto por Wi-Fi</string>
     <string name="connect_auto_last">Reconectar con el último harness usado</string>
     <string name="connect_auto_loopback">Conectarse automáticamente al harness de este dispositivo</string>
@@ -104,6 +116,8 @@
     <string name="connect_try_again">Intentar de nuevo</string>
     <string name="connect_unreachable">No disponible</string>
     <string name="goal_none">Sin objetivo activo</string>
+    <string name="hold_copy_all">Copiar todo</string>
+    <string name="hold_select_text">Seleccionar texto</string>
     <string name="pair_code_hint">8 dígitos</string>
     <string name="pair_code_label">Código de emparejamiento</string>
     <string name="pair_fail_certificate">La clave de %1$s no es la que indica este código. No emparejes: puede que otra cosa esté respondiendo en esa dirección.</string>
@@ -188,4 +202,11 @@
     <string name="settings_connection_disconnect">Desconectar</string>
     <string name="settings_title">Ajustes</string>
     <string name="subagents_readonly">Este subagente no acepta mensajes.</string>
+    <string name="time_days">%1$d d</string>
+    <string name="time_hours">%1$d h</string>
+    <string name="time_minutes">%1$d min</string>
+    <string name="time_months">%1$d m</string>
+    <string name="time_now">ahora</string>
+    <string name="time_years">%1$d a</string>
+    <string name="ux_b_clear_search">Borrar búsqueda</string>
 </resources>

@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">Откройте исходный сеанс, чтобы завершить перенос, и повторите попытку.</string>
+    <string name="archive_activity_job">Фоновые задачи</string>
+    <string name="archive_activity_more">и ещё %1$d</string>
+    <string name="archive_activity_schedule">Расписания</string>
+    <string name="archive_activity_subagent">Субагенты</string>
+    <string name="archive_activity_turn">Текущий ход</string>
+    <string name="archive_busy_after">Остановленная работа сама не продолжится. Сеанс можно найти в «Архивных сеансах» и возобновить.</string>
+    <string name="archive_busy_body">В этом сеансе ещё выполняется работа. Перед архивацией она будет остановлена.</string>
+    <string name="archive_busy_confirm">Остановить и архивировать</string>
+    <string name="archive_busy_title">Остановить и архивировать этот сеанс?</string>
     <string name="common_back">Назад</string>
     <string name="common_cancel">Отмена</string>
     <string name="common_close">Закрыть</string>
     <string name="common_connected">Подключено</string>
+    <string name="common_copied">Скопировано</string>
+    <string name="common_error">Что-то пошло не так</string>
     <string name="common_retry">Повторить</string>
+    <string name="common_save">Сохранить</string>
     <string name="connect_auto_lan">Автоподключение к обнаруженному harness по Wi-Fi</string>
     <string name="connect_auto_last">Переподключаться к последнему использованному harness</string>
     <string name="connect_auto_loopback">Автоподключение к harness на этом устройстве</string>
@@ -104,6 +116,8 @@
     <string name="connect_try_again">Повторить попытку</string>
     <string name="connect_unreachable">Недоступен</string>
     <string name="goal_none">Нет активной цели</string>
+    <string name="hold_copy_all">Копировать всё</string>
+    <string name="hold_select_text">Выделить текст</string>
     <string name="pair_code_hint">8 цифр</string>
     <string name="pair_code_label">Код сопряжения</string>
     <string name="pair_fail_certificate">Ключ по адресу %1$s не совпадает с указанным в коде. Не сопрягайтесь: по этому адресу может отвечать что-то другое.</string>
@@ -188,4 +202,11 @@
     <string name="settings_connection_disconnect">Отключиться</string>
     <string name="settings_title">Настройки</string>
     <string name="subagents_readonly">Этот субагент не принимает сообщения.</string>
+    <string name="time_days">%1$d дн</string>
+    <string name="time_hours">%1$d ч</string>
+    <string name="time_minutes">%1$d мин</string>
+    <string name="time_months">%1$d мес</string>
+    <string name="time_now">только что</string>
+    <string name="time_years">%1$d г</string>
+    <string name="ux_b_clear_search">Очистить поиск</string>
 </resources>

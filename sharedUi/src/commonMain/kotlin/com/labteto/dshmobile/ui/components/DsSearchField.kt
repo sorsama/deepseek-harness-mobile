@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,18 +30,19 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.ux_b_clear_search
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import org.jetbrains.compose.resources.stringResource
 
 /** The kit's `.inp` height, and the floor the field keeps at large font scales. */
 private val SearchFieldHeight = 48.dp
@@ -89,7 +88,7 @@ fun DsSearchField(
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val style = DsType.body15.copy(color = colors.labelPrimary)
-    val clearLabel = stringResource(R.string.ux_b_clear_search)
+    val clearLabel = stringResource(Res.string.ux_b_clear_search)
 
     LaunchedEffect(autoFocus, focusTick) {
         if (autoFocus) {
@@ -159,7 +158,7 @@ fun DsSearchField(
                 }
                 if (hasText) {
                     DsIconButton(
-                        icon = Icons.Filled.Close,
+                        icon = DsIcons.Close,
                         contentDescription = clearLabel,
                         onClick = {
                             onValueChange("")

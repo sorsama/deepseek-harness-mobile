@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">Abra a sessão original para concluir a migração e tente novamente.</string>
+    <string name="archive_activity_job">Trabalhos em segundo plano</string>
+    <string name="archive_activity_more">e mais %1$d</string>
+    <string name="archive_activity_schedule">Agendamentos</string>
+    <string name="archive_activity_subagent">Subagentes</string>
+    <string name="archive_activity_turn">Turno atual</string>
+    <string name="archive_busy_after">O trabalho parado não continua sozinho. Você encontra a sessão em Sessões arquivadas e pode retomá-la por lá.</string>
+    <string name="archive_busy_body">Esta sessão ainda tem trabalho em execução. Arquivá-la interrompe esse trabalho primeiro.</string>
+    <string name="archive_busy_confirm">Parar e arquivar</string>
+    <string name="archive_busy_title">Parar e arquivar esta sessão?</string>
     <string name="common_back">Voltar</string>
     <string name="common_cancel">Cancelar</string>
     <string name="common_close">Fechar</string>
     <string name="common_connected">Conectado</string>
+    <string name="common_copied">Copiado</string>
+    <string name="common_error">Algo deu errado</string>
     <string name="common_retry">Tentar novamente</string>
+    <string name="common_save">Salvar</string>
     <string name="connect_auto_lan">Conectar automaticamente ao harness descoberto no Wi-Fi</string>
     <string name="connect_auto_last">Reconectar ao último harness usado</string>
     <string name="connect_auto_loopback">Conectar automaticamente ao harness deste dispositivo</string>
@@ -104,6 +116,8 @@
     <string name="connect_try_again">Tentar de novo</string>
     <string name="connect_unreachable">Inacessível</string>
     <string name="goal_none">Nenhum objetivo ativo</string>
+    <string name="hold_copy_all">Copiar tudo</string>
+    <string name="hold_select_text">Selecionar texto</string>
     <string name="pair_code_hint">8 dígitos</string>
     <string name="pair_code_label">Código de pareamento</string>
     <string name="pair_fail_certificate">A chave em %1$s não é a indicada por este código. Não pareie. Outra coisa pode estar respondendo nesse endereço.</string>
@@ -188,4 +202,11 @@
     <string name="settings_connection_disconnect">Desconectar</string>
     <string name="settings_title">Configurações</string>
     <string name="subagents_readonly">Este subagente não aceita mensagens.</string>
+    <string name="time_days">%1$d d</string>
+    <string name="time_hours">%1$d h</string>
+    <string name="time_minutes">%1$d min</string>
+    <string name="time_months">%1$d m</string>
+    <string name="time_now">agora</string>
+    <string name="time_years">%1$d a</string>
+    <string name="ux_b_clear_search">Limpar pesquisa</string>
 </resources>

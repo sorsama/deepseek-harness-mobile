@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">请先打开原会话完成迁移，然后重试。</string>
+    <string name="archive_activity_job">后台任务</string>
+    <string name="archive_activity_more">还有 %1$d 项</string>
+    <string name="archive_activity_schedule">定时任务</string>
+    <string name="archive_activity_subagent">子智能体</string>
+    <string name="archive_activity_turn">当前回合</string>
+    <string name="archive_busy_after">停止的任务不会自动继续。之后可以在“已归档会话”里找到这个会话，再接着用。</string>
+    <string name="archive_busy_body">此会话还有任务在运行，归档会先停止它们。</string>
+    <string name="archive_busy_confirm">停止并归档</string>
+    <string name="archive_busy_title">停止并归档此会话？</string>
     <string name="common_back">返回</string>
     <string name="common_cancel">取消</string>
     <string name="common_close">关闭</string>
     <string name="common_connected">已连接</string>
+    <string name="common_copied">已复制</string>
+    <string name="common_error">出了点问题</string>
     <string name="common_retry">重试</string>
+    <string name="common_save">保存</string>
     <string name="connect_auto_lan">在 Wi-Fi 下自动连接已发现的 harness</string>
     <string name="connect_auto_last">重新连接上次使用的 harness</string>
     <string name="connect_auto_loopback">自动连接本设备上的 harness</string>
@@ -104,6 +116,8 @@
     <string name="connect_try_again">重试连接</string>
     <string name="connect_unreachable">无法连接</string>
     <string name="goal_none">没有进行中的目标</string>
+    <string name="hold_copy_all">全部复制</string>
+    <string name="hold_select_text">选择文本</string>
     <string name="pair_code_hint">8 位数字</string>
     <string name="pair_code_label">配对码</string>
     <string name="pair_fail_certificate">%1$s 的密钥与该配对码指明的不一致。请不要配对，该地址上可能是别的设备在应答。</string>
@@ -188,4 +202,11 @@
     <string name="settings_connection_disconnect">断开连接</string>
     <string name="settings_title">设置</string>
     <string name="subagents_readonly">该子智能体不接受消息。</string>
+    <string name="time_days">%1$d 天</string>
+    <string name="time_hours">%1$d 小时</string>
+    <string name="time_minutes">%1$d 分钟</string>
+    <string name="time_months">%1$d 个月</string>
+    <string name="time_now">刚刚</string>
+    <string name="time_years">%1$d 年</string>
+    <string name="ux_b_clear_search">清除搜索</string>
 </resources>
