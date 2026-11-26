@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="code_wrap">पंक्तियाँ लपेटें</string>
     <string name="output_viewer_search">आउटपुट में खोजें</string>
     <string name="output_viewer_prev">पिछला मिलान</string>
     <string name="output_viewer_next">अगला मिलान</string>

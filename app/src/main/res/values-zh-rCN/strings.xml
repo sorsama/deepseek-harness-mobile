@@ -48,7 +48,6 @@
     <string name="chat_load_older">加载更早的消息</string>
     <string name="chat_loading_older">正在加载更早的消息…</string>
     <string name="chat_load_older_retry">无法加载更早的消息，点按即可重试</string>
-    <string name="chat_thinking">思考中</string>
     <string name="chat_stopped">已停止</string>
     <string name="chat_error_turn">回合失败</string>
     <string name="chat_max_tokens">已达到令牌上限</string>
@@ -352,7 +351,6 @@
     <string name="feedback_send">提交反馈</string>
     <string name="system_prompt">系统提示词</string>
     <string name="image_offload">请求中已省略历史图片</string>
-    <string name="tool_copy_code">复制代码</string>
     <string name="jobs_stop">停止任务</string>
     <string name="jobs_stopping">正在停止</string>
     <string name="jobs_output_empty">暂无输出</string>

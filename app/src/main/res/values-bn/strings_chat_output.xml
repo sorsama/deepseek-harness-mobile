@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="code_wrap">লাইন র‍্যাপ করুন</string>
     <string name="output_viewer_search">আউটপুটে খুঁজুন</string>
     <string name="output_viewer_prev">আগের মিল</string>
     <string name="output_viewer_next">পরের মিল</string>

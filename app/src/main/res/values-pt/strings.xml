@@ -48,7 +48,6 @@
     <string name="chat_load_older">Carregar mensagens anteriores</string>
     <string name="chat_loading_older">Carregando mensagens anteriores…</string>
     <string name="chat_load_older_retry">Não foi possível carregar as mensagens anteriores. Toque para tentar novamente</string>
-    <string name="chat_thinking">Pensando</string>
     <string name="chat_stopped">Parado</string>
     <string name="chat_error_turn">O turno falhou</string>
     <string name="chat_max_tokens">Limite de tokens atingido</string>
@@ -352,7 +351,6 @@
     <string name="feedback_send">Enviar comentário</string>
     <string name="system_prompt">Instruções do sistema</string>
     <string name="image_offload">Imagens antigas não incluídas na solicitação</string>
-    <string name="tool_copy_code">Copiar código</string>
     <string name="jobs_stop">Parar trabalho</string>
     <string name="jobs_stopping">Parando</string>
     <string name="jobs_output_empty">Ainda sem saída</string>

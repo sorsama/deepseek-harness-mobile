@@ -48,7 +48,6 @@
     <string name="chat_load_older">পুরোনো বার্তা লোড করুন</string>
     <string name="chat_loading_older">পুরোনো বার্তা লোড হচ্ছে…</string>
     <string name="chat_load_older_retry">পুরোনো বার্তা লোড করা যায়নি। আবার চেষ্টা করতে ট্যাপ করুন।</string>
-    <string name="chat_thinking">ভাবছে</string>
     <string name="chat_stopped">থামানো হয়েছে</string>
     <string name="chat_error_turn">টার্ন শেষ করা যায়নি</string>
     <string name="chat_max_tokens">টোকেনের সীমায় পৌঁছে গেছে</string>
@@ -352,7 +351,6 @@
     <string name="feedback_send">মতামত পাঠান</string>
     <string name="system_prompt">সিস্টেম নির্দেশনা</string>
     <string name="image_offload">অনুরোধ থেকে পুরোনো ছবি বাদ দেওয়া হয়েছে</string>
-    <string name="tool_copy_code">কোড কপি করুন</string>
     <string name="jobs_stop">কাজ থামান</string>
     <string name="jobs_stopping">থামানো হচ্ছে</string>
     <string name="jobs_output_empty">এখনও কোনো আউটপুট নেই</string>

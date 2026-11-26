@@ -48,7 +48,6 @@
     <string name="chat_load_older">โหลดข้อความเก่าเพิ่ม</string>
     <string name="chat_loading_older">กำลังโหลดข้อความเก่า…</string>
     <string name="chat_load_older_retry">โหลดข้อความเก่าไม่สำเร็จ แตะเพื่อลองใหม่</string>
-    <string name="chat_thinking">กำลังคิด</string>
     <string name="chat_stopped">หยุดแล้ว</string>
     <string name="chat_error_turn">เทิร์นล้มเหลว</string>
     <string name="chat_max_tokens">ถึงขีดจำกัดโทเคนแล้ว</string>
@@ -352,7 +351,6 @@
     <string name="feedback_send">ส่งความคิดเห็น</string>
     <string name="system_prompt">คำสั่งระบบ</string>
     <string name="image_offload">ตัดรูปภาพเก่าออกจากคำขอแล้ว</string>
-    <string name="tool_copy_code">คัดลอกโค้ด</string>
     <string name="jobs_stop">หยุดงาน</string>
     <string name="jobs_stopping">กำลังหยุด</string>
     <string name="jobs_output_empty">ยังไม่มีเอาต์พุต</string>

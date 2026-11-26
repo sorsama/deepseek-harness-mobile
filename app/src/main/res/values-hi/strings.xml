@@ -48,7 +48,6 @@
     <string name="chat_load_older">पुराने संदेश लोड करें</string>
     <string name="chat_loading_older">पुराने संदेश लोड हो रहे हैं…</string>
     <string name="chat_load_older_retry">पुराने संदेश लोड नहीं हो सके। फिर कोशिश के लिए टैप करें।</string>
-    <string name="chat_thinking">सोच रहा है</string>
     <string name="chat_stopped">रोका गया</string>
     <string name="chat_error_turn">टर्न पूरा नहीं हो सका</string>
     <string name="chat_max_tokens">टोकन की सीमा पूरी हो गई</string>
@@ -352,7 +351,6 @@
     <string name="feedback_send">फ़ीडबैक भेजें</string>
     <string name="system_prompt">सिस्टम निर्देश</string>
     <string name="image_offload">अनुरोध से पुरानी तस्वीरें हटाई गईं</string>
-    <string name="tool_copy_code">कोड कॉपी करें</string>
     <string name="jobs_stop">काम रोकें</string>
     <string name="jobs_stopping">रोका जा रहा है</string>
     <string name="jobs_output_empty">अभी कोई आउटपुट नहीं</string>

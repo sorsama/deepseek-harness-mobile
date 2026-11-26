@@ -79,7 +79,6 @@
     <string name="chat_load_older">Load older messages</string>
     <string name="chat_loading_older">Loading earlier messages…</string>
     <string name="chat_load_older_retry">Couldn\'t load earlier messages. Tap to retry.</string>
-    <string name="chat_thinking">Thinking</string>
     <string name="chat_stopped">Stopped</string>
     <string name="chat_error_turn">Turn failed</string>
     <string name="chat_max_tokens">Token limit reached</string>
@@ -359,7 +358,6 @@
     <string name="feedback_send">Submit feedback</string>
     <string name="system_prompt">System prompt</string>
     <string name="image_offload">Older images left out of this request</string>
-    <string name="tool_copy_code">Copy code</string>
     <string name="jobs_stop">Stop job</string>
     <string name="jobs_stopping">Stopping</string>
     <string name="jobs_output_empty">No output yet</string>

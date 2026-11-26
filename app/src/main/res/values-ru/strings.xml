@@ -48,7 +48,6 @@
     <string name="chat_load_older">Загрузить более ранние сообщения</string>
     <string name="chat_loading_older">Загрузка более ранних сообщений…</string>
     <string name="chat_load_older_retry">Не удалось загрузить более ранние сообщения. Нажмите, чтобы повторить</string>
-    <string name="chat_thinking">Размышляет</string>
     <string name="chat_stopped">Остановлено</string>
     <string name="chat_error_turn">Ход завершился ошибкой</string>
     <string name="chat_max_tokens">Достигнут лимит токенов</string>
@@ -352,7 +351,6 @@
     <string name="feedback_send">Отправить отзыв</string>
     <string name="system_prompt">Системные инструкции</string>
     <string name="image_offload">Из запроса исключены прежние изображения</string>
-    <string name="tool_copy_code">Копировать код</string>
     <string name="jobs_stop">Остановить задачу</string>
     <string name="jobs_stopping">Останавливается</string>
     <string name="jobs_output_empty">Вывода пока нет</string>
