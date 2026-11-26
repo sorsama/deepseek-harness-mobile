@@ -285,7 +285,7 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
                     color = if (result.application == "restart-required") colors.warnText else colors.labelSecondary,
                 )
             }
-            result.error?.let { Text(stringResource(pluginReason(it.code)), color = colors.error, style = DsType.small13) }
+            result.error?.let { Text(stringResource(pluginReason(it.code, it.diagnostic)), color = colors.error, style = DsType.small13) }
             state.approvalSubject()?.let { approval ->
                 FeatureAction(stringResource(R.string.ux_a_approve_retry), !busy, DsButtonVariant.Primary) { confirm = approval }
             }
@@ -513,7 +513,7 @@ internal fun PluginManagerScreen(onClose: () -> Unit, onDraftOpened: () -> Unit 
             Text(listOfNotNull(inspected.name, inspected.version).joinToString(" · ", transform = ::technicalDisplay), style = DsType.std14Strong, color = colors.labelPrimary)
             inspected.description?.let { Text(it, style = DsType.std14, color = colors.labelSecondary) }
             Text(stringResource(if (inspected.status == "accepted") R.string.ux_a_inspected else R.string.ux_a_inspect_notice), style = DsType.small13, color = colors.labelSecondary)
-            if (inspected.problem != null || inspected.reason != null) Text(stringResource(pluginReason(inspected.problem)), style = DsType.small13, color = colors.error)
+            if (inspected.problem != null || inspected.reason != null) Text(stringResource(pluginReason(inspected.problem, inspected.reason)), style = DsType.small13, color = colors.error)
             FeatureDiagnostics(listOfNotNull(inspected.status, inspected.problem, inspected.reason).joinToString("\n"))
         } }
         DsButton(

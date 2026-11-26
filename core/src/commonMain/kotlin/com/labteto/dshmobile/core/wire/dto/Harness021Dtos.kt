@@ -169,6 +169,8 @@ data class ManagedPlugin(
     val moduleName: String,
     val enabled: Boolean,
     val patchId: String? = null,
+    /** The plugin package's own display fields (`pluginManager/listPlugins` `meta`), when it has any. */
+    val meta: PluginMeta? = null,
     val readOnlyReason: String? = null,
 )
 

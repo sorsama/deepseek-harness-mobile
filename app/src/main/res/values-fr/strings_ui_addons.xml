@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add-ons: desktop web plugin items over the chat (Settings card, the Add-ons page). -->
+    <string name="ua_title">Modules</string>
+    <string name="ua_entry">Choisir où s\'affiche chaque module</string>
+    <string name="ua_switch">Afficher les modules des plugins</string>
+    <string name="ua_switch_hint">Affiche sur le chat des éléments venant des plugins du harness, comme un animal ou des boutons en plus. Utilise environ 250 Mo de mémoire tant qu\'un chat est ouvert.</string>
+    <string name="ua_switch_low_memory">Désactivé par défaut sur ce téléphone, car il a moins de 6 Go de mémoire.</string>
+    <string name="ua_intro">Choisissez où s\'affiche chaque élément. Le harness garde votre choix, donc l\'ordinateur le suit aussi.</string>
+    <string name="ua_target_both">Les deux</string>
+    <string name="ua_target_phone">Téléphone</string>
+    <string name="ua_target_desktop">Ordinateur</string>
+    <string name="ua_target_off">Arrêt</string>
+    <string name="ua_target_both_long">Téléphone et ordinateur</string>
+    <string name="ua_target_phone_long">Téléphone seul</string>
+    <string name="ua_target_desktop_long">Ordinateur seul</string>
+    <string name="ua_target_show_desktop">Afficher sur l\'ordinateur</string>
+    <string name="ua_target_group">Où s\'affiche %1$s</string>
+    <string name="ua_slot_overlay">Sur le chat</string>
+    <string name="ua_slot_message_box">Bouton à côté de la zone de message</string>
+    <string name="ua_slot_session_header">Bouton dans l\'en-tête de la session</string>
+    <string name="ua_slot_plugin_row">Ligne de la liste des plugins</string>
+    <string name="ua_slot_sidebar_footer">Bouton en bas de la barre latérale</string>
+    <string name="ua_slot_other">Ailleurs dans le harness</string>
+    <string name="ua_place_none">Seul l\'ordinateur a une place pour celui-ci.</string>
+    <string name="ua_empty">Les animaux, les boutons en plus et les autres éléments des plugins du harness apparaissent ici une fois que la page du harness les a listés.</string>
+    <string name="ua_off_notice">Les modules sont masqués sur ce téléphone. Vos choix ici valent toujours pour l\'ordinateur.</string>
+    <string name="ua_read_only">Le harness garde ces réglages en lecture seule, ils ne peuvent donc pas être modifiés d\'ici.</string>
+    <string name="ua_missing">Le harness n\'a plus le plugin dsh-ui-sync.</string>
+    <string name="ua_refresh_failed">Actualisation impossible. Les données chargées plus tôt restent affichées.</string>
+    <string name="ua_err_conflict">Quelqu\'un d\'autre a modifié ces réglages au même moment. Réessayez.</string>
+    <string name="ua_err_rejected">Le harness n\'a pas accepté ce changement.</string>
+    <string name="ua_err_unreachable">Impossible de joindre le harness. Rien n\'a été enregistré.</string>
+    <string name="ua_err_unavailable">Cette connexion ne permet pas de modifier les modules.</string>
+    <!-- Finding add-ons when the harness has not listed them yet. -->
+    <string name="ua_empty_title">Aucun module pour l\'instant</string>
+    <string name="ua_stale">Un plugin a été ajouté ou modifié depuis cette liste, il peut donc en manquer.</string>
+    <string name="ua_find">Chercher des modules</string>
+    <string name="ua_find_more">Chercher de nouveaux modules</string>
+    <string name="ua_find_again">Chercher à nouveau</string>
+    <string name="ua_find_hint">La page du harness s\'ouvre quelques secondes sans s\'afficher, pour que ses plugins disent ce qu\'ils ajoutent. Elle se referme ensuite.</string>
+    <string name="ua_finding">Recherche de modules</string>
+    <string name="ua_found">Modules trouvés. Choisissez où s\'affiche chacun.</string>
+    <string name="ua_nothing_title">Aucun résultat</string>
+    <string name="ua_nothing">Aucun plugin de ce harness n\'ajoute d\'animal, de bouton ni rien d\'autre que le téléphone ou l\'ordinateur peut afficher.</string>
+    <string name="ua_find_failed">Impossible d\'ouvrir la page du harness pour chercher. Vérifiez la connexion et réessayez.</string>
+</resources>

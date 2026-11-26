@@ -39,6 +39,17 @@ fun looksLikeMissingPackageManager(problem: String?, reason: String?): Boolean =
     problem == "unknown" && reason != null && reason.contains("pnpm", ignoreCase = true) && MISSING_TOOL.containsMatchIn(reason)
 
 /**
+ * The same missing `pnpm` on the plugin manager's own inspect and install calls. Harness 0.2.2-rc.1 (the
+ * built-in runtime) answers an install with code `operation-error` and `spawn pnpm ENOENT` in its
+ * diagnostic, and an inspect with `unknown`; only a code that classifies nothing can be this one.
+ */
+fun looksLikeMissingPnpm(code: String?, text: String?): Boolean =
+    code == "pnpm-missing" || ((code == null || code == "unknown" || code == "operation-error") &&
+        text != null && PNPM_MISSING.containsMatchIn(text))
+
+private val PNPM_MISSING = Regex("spawn pnpm ENOENT|'pnpm' is not recognized|pnpm: (command )?not found", RegexOption.IGNORE_CASE)
+
+/**
  * A refusal that is about the harness's package tool and not about the package or the network: the host
  * classified nothing (`unknown`, or no code) and passed on what the tool said. A missing `pnpm` is told apart
  * first (see [looksLikeMissingPackageManager]); a package that is not found, a bad spec and a network failure

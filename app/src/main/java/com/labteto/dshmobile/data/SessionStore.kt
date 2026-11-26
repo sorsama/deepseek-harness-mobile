@@ -3,6 +3,7 @@ package com.labteto.dshmobile.data
 import com.labteto.dshmobile.core.wire.automationCatalog
 import com.labteto.dshmobile.core.wire.marketIndexes
 import com.labteto.dshmobile.core.wire.pluginBundles
+import com.labteto.dshmobile.core.uisync.uiSyncPresence
 
 import android.util.Base64
 import android.util.Log
@@ -160,6 +161,9 @@ internal fun goalRefFromProjection(value: JsonElement?): GoalRef? {
         runCatching { decodeFromJsonElement(GoalRef.serializer(), it) }.getOrNull()
     }?.takeIf { it.id.isNotBlank() && it.revision > 0 }
 }
+
+/** The plugin list of host [host] (an [SessionStore.activeHostKey]) for the add-on discovery; [entries] null when the harness refused it. */
+data class UiAddonsInventory(val host: String, val entries: List<com.labteto.dshmobile.core.wire.dto.PluginInventoryEntry>?)
 
 /** One renderable session list row (manual order, live). */
 data class SessionRow(
@@ -380,6 +384,88 @@ class SessionStore @Inject constructor(
      * missing capability before it reports here. Unknown until the Account page first asks.
      */
     val accountAvailable = featureAvailability.state(HarnessFeature.ACCOUNT)
+    /**
+     * Whether the harness has the `dsh-ui-sync` companion (its `ui-sync` settings namespace), so the chat
+     * can draw desktop web plugin items over itself and Settings offers Add-ons. Asked on every connection,
+     * a relay's too: relay 0.5.0 lets a paired device describe and change that one namespace. An older relay
+     * refuses the call, which leaves it unknown, and the app looks as it always did.
+     */
+    val uiAddonsAvailable = featureAvailability.state(HarnessFeature.UI_ADDONS)
+    /** The live add-on page's bridge state (its item list, the page attached right now). */
+    val uiAddons = com.labteto.dshmobile.core.uisync.UiSyncState()
+
+    /**
+     * The `ui-sync` settings row: the item store the companion's pages keep (whether anything would show
+     * on the phone) and the per-item targets Settings > Add-ons writes. Read on every connection, again
+     * when the harness says the namespace changed, and whenever the chat comes back.
+     */
+    val uiAddonsSettings = com.labteto.dshmobile.core.uisync.UiSyncSettings(
+        scope,
+        object : com.labteto.dshmobile.core.uisync.UiSyncSettingsPort {
+            override suspend fun describe(): RpcResult<com.labteto.dshmobile.core.wire.dto.SettingsDescribeValue> {
+                val api = connectionManager.connectedApi ?: return notConnected()
+                // The same answer says whether the companion is there at all, authoritatively: a describe
+                // that lists the namespace turns the feature on, one that does not turns it off.
+                val observe = featureObserver(HarnessFeature.UI_ADDONS, authoritative = true)
+                val result = api.settingsDescribe()
+                observe(api, result.uiSyncPresence())
+                return result
+            }
+
+            override suspend fun mutate(
+                ops: List<com.labteto.dshmobile.core.wire.dto.SettingsPathOpView>,
+                expectedRevision: Long?,
+            ): RpcResult<com.labteto.dshmobile.core.wire.dto.SettingsNamespaceView> {
+                val api = connectionManager.connectedApi ?: return notConnected()
+                return api.settingsMutate(com.labteto.dshmobile.core.uisync.UiSyncProtocol.NAMESPACE, ops, expectedRevision?.toInt())
+            }
+
+            private fun notConnected() = RpcResult.Err(com.labteto.dshmobile.core.wire.RpcError(code = "internal", message = "not connected"))
+        },
+    )
+
+    /**
+     * Read the add-on settings row again (the chat came back, Settings > Add-ons opened or asked), and
+     * the plugin list with it: a plugin added on the computer with the CLI sends no change notice,
+     * and the list is how the app sees that the item store misses it.
+     */
+    fun refreshUiAddons() {
+        uiAddonsSettings.refresh()
+        if (uiAddonsAvailable.value == true) scope.launch { readUiAddonsInventory() }
+    }
+
+    /**
+     * The discovery load that fills the item store when no page has (see [com.labteto.dshmobile.core.uisync.UiSyncDiscovery]):
+     * started by the web layer when the store looks incomplete, or by "Find add-ons"; the Add-ons page shows its progress.
+     */
+    val uiAddonsDiscovery = com.labteto.dshmobile.core.uisync.UiSyncDiscovery()
+
+    private val _uiAddonsInventory = MutableStateFlow<UiAddonsInventory?>(null)
+
+    /**
+     * The connected host's plugin list as the add-on discovery reads it, to tell whether a plugin has
+     * nothing in the item store yet. Null until read; entries null when the harness refused the list
+     * (a relay that keeps it to its own machine).
+     */
+    val uiAddonsInventory: StateFlow<UiAddonsInventory?> = _uiAddonsInventory.asStateFlow()
+
+    /**
+     * Read the plugin list for the add-on discovery. Straight from the API on purpose: a refusal
+     * here must not take the Plugins card off Settings.
+     */
+    private suspend fun readUiAddonsInventory() {
+        val host = activeHostKey ?: return
+        val api = apiForHost(host) ?: return
+        val result = try {
+            api.pluginInventoryList()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            RpcResult.Err(com.labteto.dshmobile.core.wire.RpcError(code = "internal", message = e.message.orEmpty()))
+        }
+        if (activeHostKey != host) return
+        _uiAddonsInventory.value = UiAddonsInventory(host, (result as? RpcResult.Ok)?.value?.entries)
+    }
     val questionSessions = QuestionSessions(scope, { connectionManager.connectedApi },
         { connectionManager.generation?.mux }, { connectionManager.generation?.clientId },
         onCapability = { clientId, result ->
@@ -435,6 +521,21 @@ class SessionStore @Inject constructor(
         scope.launch { featureCall(HarnessFeature.PLUGIN_MANAGEMENT, api) { api.pluginBundles() } }
         // `listIndexes` never fetches an index; it only says whether the market is there.
         scope.launch { featureCall(HarnessFeature.PLUGIN_MARKET, api) { api.marketIndexes() } }
+        probeUiAddons()
+    }
+
+    /**
+     * Asks whether the harness has the `dsh-ui-sync` companion, and reads its settings row with the same
+     * call (see [uiAddonsSettings]). The answer may turn the feature off as well as on, for a companion
+     * bundle switched on or off while connected.
+     */
+    private fun probeUiAddons() {
+        if (connectionManager.state.value.host == null) return
+        scope.launch {
+            uiAddonsSettings.reload()
+            // With the companion there, the plugin list says whether the item store misses a plugin.
+            if (uiAddonsAvailable.value == true) readUiAddonsInventory()
+        }
     }
 
     /** The cheap call that tells whether the harness has [feature] now, for the features that have one. */
@@ -454,6 +555,8 @@ class SessionStore @Inject constructor(
      */
     private fun recheckFeatures() {
         val api = connectionManager.connectedApi ?: return
+        // The companion can be switched off as well as on, so it is asked again either way.
+        probeUiAddons()
         val probes = HarnessFeature.entries.mapNotNull { feature -> featureProbe(feature)?.let { feature to it } }.toMap()
         featureAvailability.relax(probes.keys).forEach { feature ->
             val probe = probes.getValue(feature)
@@ -866,7 +969,13 @@ class SessionStore @Inject constructor(
                     (prev.phase != state.phase && (prev.phase == ConnectionPhase.CONNECTED || state.phase == ConnectionPhase.CONNECTED))) {
                     featureAvailability.reset()
                 }
-                if (prev.host?.id != state.host?.id || prev.host?.baseUrl != state.host?.baseUrl) questionSessions.reset()
+                if (prev.host?.id != state.host?.id || prev.host?.baseUrl != state.host?.baseUrl) {
+                    questionSessions.reset()
+                    uiAddons.reset()
+                    uiAddonsSettings.reset()
+                    uiAddonsDiscovery.cancel()
+                    _uiAddonsInventory.value = null
+                }
                 else if (prev.phase == ConnectionPhase.CONNECTED && state.phase != ConnectionPhase.CONNECTED) questionSessions.disconnect()
                 val initialConnect = !prev.hasConnected && state.hasConnected
                 val reconnect = prev.hasConnected &&
@@ -1047,6 +1156,11 @@ class SessionStore @Inject constructor(
             "api-session/error" -> setConnectionError(str(1))
             "commands/change" -> scope.launch { refreshCommands() }
             "plugin-manager/changed" -> recheckFeatures()
+            // A page recorded its add-on items, or another client changed where one shows.
+            "settings/document-updated" -> {
+                val ns = str(0) ?: return
+                uiAddonsSettings.onDocumentUpdated(ns, (args.getOrNull(1) as? kotlinx.serialization.json.JsonPrimitive)?.contentOrNull?.toLongOrNull())
+            }
             "agent-preset/selected" -> scope.launch {
                 refreshAgentPresets()
                 refreshCommands()
