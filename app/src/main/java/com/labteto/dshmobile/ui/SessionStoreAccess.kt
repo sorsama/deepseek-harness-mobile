@@ -39,9 +39,12 @@ internal fun rememberReasoningTranslationEngine(): com.labteto.dshmobile.transla
     }
 }
 
-/** Resolves the process-scoped [SessionStore] once per composition. */
+/**
+ * Resolves the process-scoped [SessionStore] once per composition, for [AppRoot] to provide as
+ * [LocalSessionStore]. Screens read `LocalSessionStore.current`, which the shared screens can too.
+ */
 @Composable
-internal fun rememberSessionStore(): SessionStore {
+internal fun rememberProcessSessionStore(): SessionStore {
     val context = LocalContext.current.applicationContext
     return remember {
         EntryPointAccessors.fromApplication(context, SessionStoreEntryPoint::class.java).sessionStore()

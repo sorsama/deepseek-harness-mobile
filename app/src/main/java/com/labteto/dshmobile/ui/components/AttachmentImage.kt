@@ -40,7 +40,7 @@ import com.labteto.dshmobile.ui.media.AttachmentImageState
 import com.labteto.dshmobile.ui.media.aspectRatioOf
 import com.labteto.dshmobile.ui.media.rememberAttachmentCache
 import com.labteto.dshmobile.ui.media.rememberAttachmentImage
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -60,7 +60,7 @@ fun AttachmentImage(
     contentDescription: String? = null,
 ) {
     val colors = DsTheme.colors
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val cache = rememberAttachmentCache()
     val density = LocalDensity.current
     val screenWidthDp = LocalConfiguration.current.screenWidthDp

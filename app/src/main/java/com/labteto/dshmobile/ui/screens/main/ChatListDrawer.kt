@@ -128,7 +128,7 @@ import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.components.rememberPullToRefresh
 import com.labteto.dshmobile.ui.components.relativeTime
 import com.labteto.dshmobile.ui.rememberHostsStore
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSizes
@@ -180,7 +180,7 @@ fun ChatListDrawer(
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val automationAvailable by store.automationAvailable.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val hostsStore = rememberHostsStore()

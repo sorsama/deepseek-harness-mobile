@@ -15,7 +15,7 @@ import com.labteto.dshmobile.core.wire.translationLimits
 import com.labteto.dshmobile.translation.canTranslate
 import com.labteto.dshmobile.ui.components.ToggleRow
 import com.labteto.dshmobile.ui.rememberReasoningTranslationEngine
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.coroutines.CancellationException
@@ -31,7 +31,7 @@ internal enum class TranslationAvailability { Checking, NoHost, Available, Unava
  */
 @Composable
 internal fun AutoTranslateReasoningRow(checked: Boolean, onToggle: () -> Unit) {
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val engine = rememberReasoningTranslationEngine()
     val connection by store.connectionState.collectAsStateWithLifecycle()
     val phase = connection.phase

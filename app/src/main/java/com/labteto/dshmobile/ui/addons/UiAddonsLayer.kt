@@ -37,7 +37,7 @@ import com.labteto.dshmobile.connection.RelayHandoffOutcome
 import com.labteto.dshmobile.connection.RelaySessionHandoff
 import com.labteto.dshmobile.core.uisync.uiSyncDiscoveryNeed
 import com.labteto.dshmobile.core.uisync.uiSyncPluginFingerprint
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.theme.LocalThemeCustomization
 import com.labteto.dshmobile.ui.theme.isDsDark
 import dagger.hilt.EntryPoint
@@ -103,7 +103,7 @@ internal fun uiAddonsDefaultOn(context: Context): Boolean {
 internal fun rememberUiAddonsHost(): UiAddonsHost? {
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() as? ComponentActivity } ?: return null
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val entry = remember(context) { EntryPointAccessors.fromApplication(context.applicationContext, UiAddonsEntryPoint::class.java) }
     val sessions = remember(entry) { entry.uiAddonsHarnessSessions() }
     val relayHandoff = remember(entry) { entry.uiAddonsRelayHandoff() }
@@ -170,7 +170,7 @@ internal fun UiAddonsChat(covered: Boolean, content: @Composable () -> Unit) {
         content()
         return
     }
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val session by store.currentSessionId.collectAsStateWithLifecycle()
     val dark = isDsDark(LocalThemeCustomization.current)
     // The app's layout direction, which follows the in-app locale (the activity handles locale and

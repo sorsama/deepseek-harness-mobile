@@ -60,7 +60,7 @@ import com.labteto.dshmobile.ui.components.SecureContent
 import com.labteto.dshmobile.ui.components.clickable
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.skeleton
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.screens.main.FeatureAction
 import com.labteto.dshmobile.ui.screens.main.FeatureDiagnostics
 import com.labteto.dshmobile.ui.screens.main.FeaturePage
@@ -116,7 +116,7 @@ fun HarnessSettingsRow(onOpen: () -> Unit) {
  */
 @Composable
 fun HarnessSettingsScreen(onClose: () -> Unit) {
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val connection by store.connectionState.collectAsStateWithLifecycle()
     val host = store.activeHostKey
     val api = store.apiForHost(host)

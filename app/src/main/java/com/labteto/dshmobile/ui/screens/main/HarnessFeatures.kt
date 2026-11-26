@@ -40,7 +40,7 @@ import com.labteto.dshmobile.core.wire.*
 import com.labteto.dshmobile.core.wire.dto.*
 import com.labteto.dshmobile.data.HarnessFeature
 import com.labteto.dshmobile.data.SessionStore
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.components.*
 import com.labteto.dshmobile.ui.theme.*
 import kotlinx.coroutines.CancellationException
@@ -325,7 +325,7 @@ internal suspend fun SessionStore.stageFeatureDraft(host: String, text: String, 
 
 @Composable
 internal fun AutomationScreen(sessionId: String? = null, onClose: () -> Unit, onUnsupported: () -> Unit = onClose) {
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val available by store.automationAvailable.collectAsStateWithLifecycle()
     // MainScreen owns the single unavailable toast and resets its open state.
     LaunchedEffect(available) { if (available == false) onUnsupported() }

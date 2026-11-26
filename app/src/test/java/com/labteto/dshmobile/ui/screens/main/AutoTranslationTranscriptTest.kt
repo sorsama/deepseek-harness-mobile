@@ -116,7 +116,7 @@ class AutoTranslationTranscriptTest {
         files.forEach { file ->
             val code = file.readText().lineSequence().filterNot { it.trimStart().startsWith("*") || it.trimStart().startsWith("//") || it.trimStart().startsWith("/*") }.joinToString("\n")
             forbidden.forEach { name ->
-                assertFalse("${file.name} refers to $name", Regex("\\b$name\\b").containsMatchIn(code.replace("rememberSessionStore", "")))
+                assertFalse("${file.name} refers to $name", Regex("\\b$name\\b").containsMatchIn(code.replace("LocalSessionStore", "")))
             }
         }
     }

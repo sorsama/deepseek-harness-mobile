@@ -66,7 +66,7 @@ import com.labteto.dshmobile.ui.components.ToggleRow
 import com.labteto.dshmobile.ui.components.clickable
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.skeleton
-import com.labteto.dshmobile.ui.rememberSessionStore
+import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.screens.main.FeatureAction
 import com.labteto.dshmobile.ui.screens.main.FeatureDiagnostics
 import com.labteto.dshmobile.ui.screens.main.FeaturePage
@@ -141,7 +141,7 @@ private fun UiAddonsRow(onOpen: () -> Unit) {
  */
 @Composable
 fun UiAddonsScreen(settings: AppSettings, onClose: () -> Unit) {
-    val store = rememberSessionStore()
+    val store = LocalSessionStore.current
     val state by store.uiAddonsSettings.state.collectAsStateWithLifecycle()
     val connection by store.connectionState.collectAsStateWithLifecycle()
     val shownHere = rememberUiAddonsShown(settings)
