@@ -26,15 +26,7 @@
 
 
     <string name="approval_command_title">Run this command?</string>
-    <string name="approval_file_title">Change a file outside the workspace?</string>
-    <string name="approval_tool_title">Allow %1$s?</string>
-    <string name="approval_shortened">The harness only sent the first 2,000 characters of this.</string>
-    <string name="approval_show_all">Show all</string>
     <string name="approval_show_less">Show less</string>
-    <plurals name="approval_more_waiting">
-        <item quantity="one">%1$d more request is waiting</item>
-        <item quantity="other">%1$d more requests are waiting</item>
-    </plurals>
 
     <string name="sandbox_notice_builtin">This chat is on a setting that needs a sandbox, and a phone can\'t give it one, so that command didn\'t run. Switch the chat, then ask again.</string>
     <string name="sandbox_notice_switch">Switch to “%1$s”</string>

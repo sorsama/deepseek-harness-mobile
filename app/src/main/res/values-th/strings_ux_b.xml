@@ -8,18 +8,8 @@
     <string name="ux_b_session">บทสนทนา</string>
     <string name="ux_b_browse_folder">เรียกดูโฟลเดอร์ %1$s</string>
     <string name="ux_b_open_reference">เปิด%1$s: %2$s</string>
-    <string name="ux_b_paused">หยุดนับเวลาขณะแก้ไข</string>
-    <string name="ux_b_held">จะรอจนกว่าคุณจะตอบ</string>
-    <string name="ux_b_continued">ทำงานต่อแล้ว คุณยังตอบได้</string>
-    <string name="ux_b_countdown_description">กำลังนับเวลารอคำตอบ</string>
     <string name="ux_b_view_questions">ดูคำถาม</string>
-    <string name="ux_b_view_answers">ดูคำตอบ</string>
-    <string name="ux_b_skipped">ข้ามแล้ว</string>
-    <string name="ux_b_answer">คำตอบ</string>
     <string name="ux_b_automation_unavailable">harness นี้ไม่รองรับงานอัตโนมัติ</string>
-    <plurals name="ux_b_countdown_seconds">
-        <item quantity="other">จะทำงานต่อใน %1$s วินาที</item>
-    </plurals>
     <string name="ux_b_select_reference">เพิ่มรายการอ้างอิง%1$s: %2$s</string>
     <string name="ux_b_expanded">ขยายแล้ว</string>
     <string name="ux_b_collapsed">ย่อแล้ว</string>

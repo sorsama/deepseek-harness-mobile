@@ -24,16 +24,7 @@
 
 
     <string name="approval_command_title">Executar este comando?</string>
-    <string name="approval_file_title">Alterar um arquivo fora do espaço de trabalho?</string>
-    <string name="approval_tool_title">Permitir %1$s?</string>
-    <string name="approval_shortened">O harness só enviou os primeiros 2.000 caracteres.</string>
-    <string name="approval_show_all">Ver tudo</string>
     <string name="approval_show_less">Ver menos</string>
-    <plurals name="approval_more_waiting">
-        <item quantity="one">Mais %1$d pedido esperando</item>
-        <item quantity="many">Mais %1$d pedidos esperando</item>
-        <item quantity="other">Mais %1$d pedidos esperando</item>
-    </plurals>
 
     <string name="sandbox_notice_builtin">Esta conversa usa uma configuração que precisa de um sandbox, e um celular não consegue dar um, então esse comando não rodou. Mude a conversa e peça de novo.</string>
     <string name="sandbox_notice_switch">Mudar para “%1$s”</string>

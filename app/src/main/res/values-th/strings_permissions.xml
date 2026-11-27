@@ -24,14 +24,7 @@
 
 
     <string name="approval_command_title">รันคำสั่งนี้ไหม</string>
-    <string name="approval_file_title">แก้ไขไฟล์นอกพื้นที่ทำงานไหม</string>
-    <string name="approval_tool_title">อนุญาต %1$s ไหม</string>
-    <string name="approval_shortened">harness ส่งมาแค่ 2,000 ตัวอักษรแรก</string>
-    <string name="approval_show_all">แสดงทั้งหมด</string>
     <string name="approval_show_less">แสดงน้อยลง</string>
-    <plurals name="approval_more_waiting">
-        <item quantity="other">มีอีก %1$d คำขอรออยู่</item>
-    </plurals>
 
     <string name="sandbox_notice_builtin">แชตนี้ใช้การตั้งค่าที่ต้องมี sandbox แต่โทรศัพท์ให้ไม่ได้ คำสั่งนั้นจึงไม่ได้รัน สลับการตั้งค่าของแชตแล้วลองขออีกครั้ง</string>
     <string name="sandbox_notice_switch">สลับเป็น “%1$s”</string>

@@ -24,14 +24,7 @@
 
 
     <string name="approval_command_title">运行这条命令？</string>
-    <string name="approval_file_title">修改工作区以外的文件？</string>
-    <string name="approval_tool_title">允许 %1$s？</string>
-    <string name="approval_shortened">harness 只发来了前 2000 个字符。</string>
-    <string name="approval_show_all">显示全部</string>
     <string name="approval_show_less">收起</string>
-    <plurals name="approval_more_waiting">
-        <item quantity="other">还有 %1$d 个请求在等待</item>
-    </plurals>
 
     <string name="sandbox_notice_builtin">这个聊天的设置需要沙盒，而手机无法提供，所以那条命令没有运行。切换设置后再让它试一次。</string>
     <string name="sandbox_notice_switch">切换到“%1$s”</string>

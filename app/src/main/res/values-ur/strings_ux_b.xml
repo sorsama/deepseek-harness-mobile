@@ -8,19 +8,8 @@
     <string name="ux_b_session">گفتگو</string>
     <string name="ux_b_browse_folder">فولڈر %1$s دیکھیں</string>
     <string name="ux_b_open_reference">%1$s کھولیں: %2$s</string>
-    <string name="ux_b_paused">ترمیم کے دوران موقوف</string>
-    <string name="ux_b_held">آپ کے جواب کا انتظار ہے</string>
-    <string name="ux_b_continued">کام جاری ہے؛ آپ اب بھی جواب دے سکتے ہیں</string>
-    <string name="ux_b_countdown_description">جواب کی الٹی گنتی جاری ہے</string>
     <string name="ux_b_view_questions">سوالات دیکھیں</string>
-    <string name="ux_b_view_answers">جوابات دیکھیں</string>
-    <string name="ux_b_skipped">چھوڑ دیا گیا</string>
-    <string name="ux_b_answer">جواب</string>
     <string name="ux_b_automation_unavailable">یہ harness آٹومیشن کی سہولت نہیں دیتا۔</string>
-    <plurals name="ux_b_countdown_seconds">
-        <item quantity="one">%1$s سیکنڈ میں کام جاری ہوگا</item>
-        <item quantity="other">%1$s سیکنڈ میں کام جاری ہوگا</item>
-    </plurals>
     <string name="ux_b_select_reference">%1$s کا حوالہ شامل کریں: %2$s</string>
     <string name="ux_b_expanded">کھلا ہوا</string>
     <string name="ux_b_collapsed">سمٹا ہوا</string>

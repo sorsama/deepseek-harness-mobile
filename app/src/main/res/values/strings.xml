@@ -79,32 +79,10 @@
     <string name="goal_none">No active goal</string>
     <string name="goal_blocked_reason">Blocker: %1$s</string>
     <string name="goal_max_rounds">Max rounds: %1$s</string>
-    <string name="plan_review_title">Plan ready for review</string>
-    <string name="plan_review_approve">Approve</string>
-    <string name="plan_review_decline">Decline</string>
-    <string name="plan_review_discuss">Discuss</string>
-    <string name="approval_title">Permission needed</string>
-    <string name="approval_allow_once">Allow once</string>
-    <string name="approval_reject">Don\'t allow</string>
-    <string name="approval_reason">Reason: %1$s</string>
     <string name="permission_preset">Permission</string>
     <string name="permission_unconfirmed">The harness didn’t confirm the permission change</string>
-    <string name="questions_skip">Skip</string>
-    <string name="questions_next">Next</string>
     <string name="questions_submit">Submit</string>
-    <string name="questions_collapse">Collapse the question card</string>
-    <string name="questions_expand">Expand the question card</string>
-    <string name="questions_dismiss">Dismiss all questions</string>
-    <string name="questions_nav_previous">Previous question</string>
-    <string name="questions_nav_next">Next question</string>
-    <string name="questions_recommended">Recommended</string>
-    <string name="questions_custom_placeholder">Type your answer</string>
-    <string name="questions_error_unanswered">Pick an option or type your own answer.</string>
-    <string name="questions_error_incomplete">Answer this question first.</string>
     <string name="questions_submitting">Submitting…</string>
-    <string name="questions_progress">%1$d / %2$d</string>
-    <string name="questions_answer_refused">The harness didn\'t accept that answer (%1$s).</string>
-    <string name="questions_answer_unsent">Couldn\'t reach the harness.</string>
     <string name="subagents_title">Subagents</string>
     <string name="subagents_empty">No subagents</string>
     <string name="subagents_running">Running</string>
@@ -294,10 +272,6 @@
     <string name="jobs_output_dropped">Earlier output was dropped</string>
     <!-- Pull-to-refresh in the Sessions drawer: the overflow item and the screen-reader action. -->
 
-    <string name="harness_questions">Questions</string>
-    <string name="harness_reply_queued">Reply queued</string>
-    <string name="harness_answered">Answered</string>
-    <string name="harness_take_time">More time</string>
     <string name="harness_automations">Automations</string>
     <string name="harness_new">New</string>
     <string name="harness_automation_draft">Help me create an automation. Ask me what it should do and when it should run.</string>

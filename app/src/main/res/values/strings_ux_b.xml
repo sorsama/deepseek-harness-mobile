@@ -8,19 +8,8 @@
     <string name="ux_b_session">Conversation</string>
     <string name="ux_b_browse_folder">Browse folder %1$s</string>
     <string name="ux_b_open_reference">Open %1$s: %2$s</string>
-    <string name="ux_b_paused">Paused while editing</string>
-    <string name="ux_b_held">Waiting until you answer</string>
-    <string name="ux_b_continued">Work continued. You can still answer.</string>
-    <string name="ux_b_countdown_description">Answer countdown running</string>
     <string name="ux_b_view_questions">View questions</string>
-    <string name="ux_b_view_answers">View answers</string>
-    <string name="ux_b_skipped">Skipped</string>
-    <string name="ux_b_answer">Answer</string>
     <string name="ux_b_automation_unavailable">This harness doesn\'t support automations.</string>
-    <plurals name="ux_b_countdown_seconds">
-        <item quantity="one">Continuing in %1$s second</item>
-        <item quantity="other">Continuing in %1$s seconds</item>
-    </plurals>
     <string name="ux_b_select_reference">Add %1$s reference: %2$s</string>
     <string name="ux_b_expanded">Expanded</string>
     <string name="ux_b_collapsed">Collapsed</string>
