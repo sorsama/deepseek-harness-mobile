@@ -48,6 +48,9 @@ class ConnectionManager @Inject constructor(
     private var api: DshApiClient? = null
     private var activeHost: HostConfig? = null
 
+    /** Handshakes completed over the manager's life: each CONNECTED state is numbered (`connectedGeneration`). */
+    private var generationsOpened = 0
+
     /**
      * The current generation, or null while disconnected.
      *
@@ -79,6 +82,9 @@ class ConnectionManager @Inject constructor(
             this@ConnectionManager.generation = generation
             val host = activeHost
             if (host != null) scope.launch { hostsStore.touchHost(host.id) }
+            // Numbered, so a reconnect is a new value even to a collector that missed the drop before it: the
+            // state is otherwise equal to the last generation's (see ConnectionUiState.connectedGeneration).
+            generationsOpened += 1
             _state.value = ConnectionUiState(
                 phase = ConnectionPhase.CONNECTED,
                 host = activeHost,
@@ -87,6 +93,7 @@ class ConnectionManager @Inject constructor(
                 failure = null,
                 attempts = 0,
                 hasConnected = true,
+                connectedGeneration = generationsOpened,
             )
             maybeStartService()
         }

@@ -230,6 +230,9 @@ internal class IosConnectionLink(
     private var loop: ConnectionLoop? = null
     private var activeHost: HostConfig? = null
 
+    /** Handshakes completed over the link's life: each CONNECTED state is numbered (`connectedGeneration`). */
+    private var generationsOpened = 0
+
     @Volatile
     override var generation: HostGeneration? = null
         private set
@@ -257,6 +260,9 @@ internal class IosConnectionLink(
                     store.cacheDescription(host.id, generation.description)
                 }
             }
+            // Numbered, so a reconnect is a new value even to a collector that missed the drop before it: the
+            // state is otherwise equal to the last generation's (see ConnectionUiState.connectedGeneration).
+            generationsOpened += 1
             _state.value = ConnectionUiState(
                 phase = ConnectionPhase.CONNECTED,
                 host = host,
@@ -265,6 +271,7 @@ internal class IosConnectionLink(
                 failure = null,
                 attempts = 0,
                 hasConnected = true,
+                connectedGeneration = generationsOpened,
             )
         }
 

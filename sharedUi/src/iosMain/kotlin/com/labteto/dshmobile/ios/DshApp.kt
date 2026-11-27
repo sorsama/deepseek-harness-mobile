@@ -92,6 +92,8 @@ import platform.UIKit.UIApplicationDidEnterBackgroundNotification
  *   session, or a session id. [chatScroll] says where the transcript is left ([ChatScroll]), and [onChat] hears
  *   `DSH_CHAT_RESULT opened rows=… session=… more=…` once it is laid out (then `older …` after a page back), or
  *   `DSH_CHAT_RESULT failed reason=…` when there is no such session.
+ * - [composerDraft] is what the opened session's composer starts with; [chatDrive] sends a prompt, presses Stop or
+ *   brings the keyboard up once it is open ([ChatDrive]), and [onChat] hears what came of it.
  */
 internal class LaunchRequest(
     val address: String? = null,
@@ -118,6 +120,8 @@ internal class LaunchRequest(
     val onChat: ((String) -> Unit)? = null,
     /** `-DshComposerDraft`: what the opened session's composer starts with. */
     val composerDraft: String? = null,
+    /** `-DshPrompt`, `-DshSendPrompt`, `-DshPressStop`, `-DshFocusComposer`: what the chat pane does once open. */
+    val chatDrive: ChatDrive = ChatDrive(),
 ) {
     /** Whether the app starts on the Pair screen. */
     val startsPairing: Boolean
@@ -134,7 +138,7 @@ private const val DEFAULT_PORT = "3080"
  * no Settings screen yet.
  *
  * The chat pane is the open session's transcript under the shared top bar, with the shared composer below it
- * ([IosChatPane]; sending is the next step of the port).
+ * ([IosChatPane], the shared chat content: it sends, stops and lifts its composer as Android does).
  * Before a session is opened it is the Connected page: which harness, its home directory, how many sessions it has, and
  * this client's protocol baseline, with a way to disconnect. The list's overflow menu has Disconnect too.
  */
@@ -197,7 +201,9 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
         // because the store's own read is not observable: a list equal to the one before is no new value of
         // `sessions`. A reconnect keeps the page, so it keeps the count too; another harness starts without one.
         // Watched in a coroutine and keyed on the generation, not on Compose state: a reconnect on a fast network can
-        // pass through RECONNECTING and back within one frame, which a recomposition would never see.
+        // pass through RECONNECTING and back within one frame, which a recomposition would never see. A coroutine on
+        // the main thread can miss it as well, while the chat pane composes (a StateFlow hands over only its latest
+        // value); what still reaches it is the new generation's number in the state (`connectedGeneration`).
         val sessions by app.sessionStore.sessions.collectAsState()
         var listedHost by remember { mutableStateOf<String?>(null) }
         LaunchedEffect(app) {
@@ -323,6 +329,7 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                         scroll = request.chatScroll,
                         onReport = request.onChat,
                         initialDraft = request.composerDraft,
+                        drive = request.chatDrive,
                     ) {
                         ConnectedPage(
                             authority = link.host?.authority.orEmpty(),

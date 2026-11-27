@@ -270,7 +270,7 @@ jobs:
       # The session list's screenshots, iPhone and iPad, light, dark, French and Arabic, the Markdown and tool-card
       # samples', an opened session's transcript, and its composer. The scenarios above already fail when the app does not report them
       # on screen; this fails when a screenshot is missing.
-      - name: Check the session list, Markdown, tool card, transcript and composer screenshots
+      - name: Check the session list, Markdown, tool card, transcript, composer and send screenshots
         if: ${{ !cancelled() }}
         run: |
           missing=0
@@ -304,6 +304,13 @@ jobs:
           # light and dark, and the iPad with the list docked.
           for shot in iphone-light-empty iphone-light-typed iphone-dark-empty iphone-dark-typed ipad-light-typed; do
             f="build/ios-screenshots/composer/$shot.png"
+            if [ -s "$f" ]; then echo "$f: $(wc -c < "$f") bytes"; else echo "::error::missing $f"; missing=$((missing + 1)); fi
+          done
+          # Sending from that composer (iOS M6b): a reply mid-stream and settled, a held reply mid-stream and stopped, and
+          # the software keyboard up under a typed draft.
+          for shot in send/iphone-light-reply-streaming send/iphone-light-reply-settled send/iphone-dark-stop-streaming \
+            send/iphone-dark-stop-stopped keyboard/iphone-light-typed; do
+            f="build/ios-screenshots/$shot.png"
             if [ -s "$f" ]; then echo "$f: $(wc -c < "$f") bytes"; else echo "::error::missing $f"; missing=$((missing + 1)); fi
           done
           test "$missing" -eq 0
