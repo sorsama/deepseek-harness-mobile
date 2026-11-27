@@ -45,7 +45,11 @@ struct ComposeView: UIViewControllerRepresentable {
             prompt: launch.prompt,
             sendPrompt: launch.sendPrompt,
             pressStop: launch.pressStop,
-            focusComposer: launch.focusComposer
+            focusComposer: launch.focusComposer,
+            answer: launch.answer,
+            reconnect: launch.reconnect,
+            awaitBanner: launch.awaitBanner,
+            focusAddress: launch.focusAddress
         )
     }
 
@@ -88,6 +92,14 @@ struct ComposeView: UIViewControllerRepresentable {
 ///   arrives. `-DshPressStop YES` presses Stop instead once the reply streams and the script has created
 ///   `Documents/dsh-press-stop`, and adds `DSH_CHAT_RESULT stopped …`. `-DshFocusComposer YES` moves focus into the
 ///   composer, which brings the software keyboard up, and adds `DSH_CHAT_RESULT keyboard ime=… above=…`.
+/// - `-DshAnswer allow` (or `deny`, or for questions the options picked, `2`, `1+2/1`: `+` between options, `/` between
+///   questions) answers the approval or question the sent prompt's turn puts to the reader, once the script has created
+///   `Documents/dsh-answer`, and adds `DSH_CHAT_RESULT request …`, `answered …` and `settled …`. `-DshReconnect YES`
+///   starts a fresh connection while that request is open, as coming back to the foreground does, and adds
+///   `DSH_CHAT_RESULT reconnected …`. `-DshAwaitBanner YES` waits for the chat's red connection strip instead of a
+///   reply and adds `DSH_CHAT_RESULT banner shown=…`.
+/// - `-DshFocusAddress YES` brings the software keyboard up over the Connect screen's address field and writes
+///   `DSH_KEYBOARD_RESULT field=address ime=… above=…` to `Documents/dsh-keyboard-result.txt`.
 ///
 /// Debug builds only. A release build ignores them, so the shipped app has no way to be told which
 /// address to connect to, or what to forget, from outside.
@@ -117,6 +129,10 @@ struct LaunchOptions {
     let sendPrompt: Bool
     let pressStop: Bool
     let focusComposer: Bool
+    let answer: String?
+    let reconnect: Bool
+    let awaitBanner: Bool
+    let focusAddress: Bool
 
     /// A launch argument's value is parsed as a property list before the app sees it, which mangles JSON, so a
     /// pairing payload is passed hex-encoded (`xxd -p`). A value that is not hex is returned as it was given.
@@ -163,7 +179,11 @@ struct LaunchOptions {
             prompt: decodeHex(defaults.string(forKey: "DshPrompt")),
             sendPrompt: defaults.bool(forKey: "DshSendPrompt"),
             pressStop: defaults.bool(forKey: "DshPressStop"),
-            focusComposer: defaults.bool(forKey: "DshFocusComposer")
+            focusComposer: defaults.bool(forKey: "DshFocusComposer"),
+            answer: defaults.string(forKey: "DshAnswer"),
+            reconnect: defaults.bool(forKey: "DshReconnect"),
+            awaitBanner: defaults.bool(forKey: "DshAwaitBanner"),
+            focusAddress: defaults.bool(forKey: "DshFocusAddress")
         )
         #else
         return LaunchOptions(
@@ -171,7 +191,7 @@ struct LaunchOptions {
             autoReconnect: nil, connectMode: nil, openPair: false, pairUrl: nil, pairCode: nil, pairSubmit: false,
             pairPayload: nil, pairScanner: false, reconnectOnce: false, openDrawer: false, markdownSample: nil,
             toolCardsSample: nil, openSession: nil, chatScroll: nil, composerDraft: nil, prompt: nil, sendPrompt: false,
-            pressStop: false, focusComposer: false
+            pressStop: false, focusComposer: false, answer: nil, reconnect: false, awaitBanner: false, focusAddress: false
         )
         #endif
     }

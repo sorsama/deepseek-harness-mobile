@@ -118,6 +118,28 @@ data class ProbeTimeouts(val connectMs: Long, val readMs: Long) {
 }
 
 /**
+ * How many times a connect probes an address before it says nothing answered: a [ProbeOutcome.Timeout] is asked once
+ * more, a fresh request with the same [ProbeTimeouts.Manual] budget.
+ *
+ * The first request a device makes after it starts or wakes can pay for its network stack starting up, and on a slow
+ * network or a busy phone that alone can outlast the budget, while the same request a moment later answers at once.
+ * iOS CI showed exactly that (PR #162): the first connect to a harness on a freshly booted simulator timed out on
+ * 127.0.0.1, and the next launch connected. Saying "Timeout" there sends the person to check a firewall that is fine.
+ * One more try is cheap next to that, and bounded: a host that is really gone is reported after two budgets.
+ */
+const val CONNECT_PROBE_ATTEMPTS = 2
+
+/**
+ * Whether a connect asks again after its probe came back [outcome] on attempt number [attempt] (the first is 1).
+ *
+ * Only a timeout, which is the one outcome that is not an answer: a refusal, a sign-in or trust-fence status, a TLS or
+ * DNS failure, "no route" and "not a harness" all came from something that replied, and asking again would only say
+ * the same thing later.
+ */
+fun retriesConnectProbe(outcome: ProbeOutcome, attempt: Int): Boolean =
+    outcome is ProbeOutcome.Timeout && attempt < CONNECT_PROBE_ATTEMPTS
+
+/**
  * What a refused probe means, given whether the address is a relay this device paired with.
  *
  * Free function for the same reason as [sameSubnet]: the statuses are the part worth pinning, and

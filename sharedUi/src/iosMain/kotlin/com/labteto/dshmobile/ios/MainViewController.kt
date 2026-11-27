@@ -38,6 +38,11 @@ import platform.posix.fputs
  * (`-DshSendPrompt YES`) sends as the send button does; [pressStop] (`-DshPressStop YES`) presses Stop once the reply
  * streams and the script has created `Documents/dsh-press-stop` (after its mid-stream screenshot); [focusComposer]
  * (`-DshFocusComposer YES`) moves focus into the composer, which brings the software keyboard up (see [ChatDrive]).
+ * [answer] (`-DshAnswer allow|deny|<options>`) answers the request the sent prompt's turn puts to the reader once the
+ * script has created `Documents/dsh-answer` (after its screenshot of the card); [reconnect] (`-DshReconnect YES`) starts
+ * a fresh connection while that request is open; [awaitBanner] (`-DshAwaitBanner YES`) waits for the chat's red
+ * connection strip instead of a reply. [focusAddress] (`-DshFocusAddress YES`) brings the keyboard up over the Connect
+ * screen's address field and writes `DSH_KEYBOARD_RESULT …` to `Documents/dsh-keyboard-result.txt`.
  *
  * The keyboard is left to the insets (`OnFocusBehavior.DoNothing`): every shared screen pads itself with
  * `safeDrawing`, which includes the keyboard, so the chat's composer rests on the keyboard and the transcript gets
@@ -70,6 +75,10 @@ fun MainViewController(
     sendPrompt: Boolean,
     pressStop: Boolean,
     focusComposer: Boolean,
+    answer: String?,
+    reconnect: Boolean,
+    awaitBanner: Boolean,
+    focusAddress: Boolean,
 ): UIViewController =
     ComposeUIViewController(configure = { onFocusBehavior = OnFocusBehavior.DoNothing }) {
         if (markdownSample != null) {
@@ -122,7 +131,13 @@ fun MainViewController(
                     pressStop = pressStop,
                     awaitStop = { awaitSignal(STOP_SIGNAL_WAIT_MS) { documentExists(STOP_SIGNAL_FILE) } },
                     focusComposer = focusComposer,
+                    answer = answer,
+                    awaitAnswer = { awaitSignal(STOP_SIGNAL_WAIT_MS) { documentExists(ANSWER_SIGNAL_FILE) } },
+                    reconnect = reconnect,
+                    awaitBanner = awaitBanner,
                 ),
+                focusAddress = focusAddress,
+                onKeyboard = if (focusAddress) ::reportKeyboard else null,
             )
         }
         // One controller for the life of the process, on the main thread where Compose runs. The reset,
@@ -170,7 +185,13 @@ private const val TOOL_CARDS_OUTCOME_FILE = "dsh-toolcards-result.txt"
 /** What a script creates in Documents once it has its mid-stream screenshot: `-DshPressStop` then presses Stop. */
 private const val STOP_SIGNAL_FILE = "dsh-press-stop"
 
-/** How long `-DshPressStop` waits for [STOP_SIGNAL_FILE] before it presses Stop anyway. */
+/** What a script creates in Documents once it has its screenshot of a request's card: `-DshAnswer` then answers. */
+private const val ANSWER_SIGNAL_FILE = "dsh-answer"
+
+/** Where [reportKeyboard] writes: the keyboard over the Connect screen's address field, for `-DshFocusAddress`. */
+private const val KEYBOARD_OUTCOME_FILE = "dsh-keyboard-result.txt"
+
+/** How long `-DshPressStop` (and `-DshAnswer`) waits for its signal file before it acts anyway. */
 private const val STOP_SIGNAL_WAIT_MS = 120_000L
 
 /** Where [reportChat] appends: what the opened session's transcript shows, for `-DshOpenSession`. */
@@ -207,6 +228,9 @@ private fun reportDrawer(line: String) = writeReport(DRAWER_OUTCOME_FILE, line)
  * `-DshChatScroll older` run writes the `opened` line and then the `older` one, and a script checks both.
  */
 private fun reportChat(line: String) = writeReport(CHAT_OUTCOME_FILE, line, append = true)
+
+/** [reportOutcome] for the keyboard over the Connect screen's address field (`Documents/dsh-keyboard-result.txt`). */
+private fun reportKeyboard(line: String) = writeReport(KEYBOARD_OUTCOME_FILE, line)
 
 /** Whether the app's Documents directory holds a file of this name (a script's signal). */
 private fun documentExists(fileName: String): Boolean {

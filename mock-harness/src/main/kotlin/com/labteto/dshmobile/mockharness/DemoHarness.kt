@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.mockharness
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -59,6 +60,12 @@ import kotlinx.serialization.json.putJsonObject
  *   [SLOW_PREFIX] streams the whole reply [SLOW_CHUNK_DELAY_MS] a piece, long enough to be caught mid-stream.
  * - `session/cancel`: stops the session's running turn as the harness's agent loop does on a cancel mid-stream: the
  *   attempt commits what it streamed as the `assistant/message`, and the turn ends `aborted` (`{kind: user}`).
+ * - Requests the reader answers (iOS M7): a prompt that starts with [INSTALL_PREFIX] or [TEST_PREFIX] gets a turn
+ *   whose `bash` call waits for approval, one that starts with [ASK_PREFIX] or [CHOOSE_PREFIX] a turn that asks
+ *   questions, and one that starts with [PLAN_PREFIX] a plan review ([waitingTurn]); the turn goes on with what the
+ *   client answers on `$events/result`. A request still open is handed again to a client that opens `$events`, as
+ *   the gateway hands pending requests to a new connection. A prompt that starts with [FAIL_PREFIX] fails before a
+ *   turn starts ([failedPrompt]).
  *
  * A follow stream is not told apart by session in the mock, so a reply is pushed to every open follow; the app
  * follows one session at a time.
@@ -77,6 +84,9 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
     /** The assistant stream's revision counter, per session. */
     private val revisions = mutableMapOf<String, Int>()
 
+    /** The requests turns wait on, by event id, in the order asked: the waterfall frame and where its answer goes. */
+    private val waiting = LinkedHashMap<String, Pair<JsonObject, CompletableDeferred<JsonObject>>>()
+
     init {
         harness.remote("session", "list", setOf("_request")) { listValue() }
         harness.remote("session", "modelCatalog", emptySet()) { Json.parseToJsonElement(MODEL_CATALOG) }
@@ -94,6 +104,14 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
             )
         }
         harness.onStream(SESSION_FOLLOW_ENDPOINT) { args -> listOf(snapshot(args["request"] as? JsonObject)) }
+        // A new `$events` stream is a new client generation: the gateway hands it every request still open.
+        harness.onStream(EVENTS_ENDPOINT) { synchronized(lock) { waiting.values.map { it.first } } }
+        harness.onEventResult = { eventId, outcome ->
+            // A delegation (`next`) leaves the request open for another client; anything else settles it.
+            if ((outcome["kind"] as? JsonPrimitive)?.contentOrNull != "next") {
+                synchronized(lock) { waiting.remove(eventId) }?.second?.complete(outcome)
+            }
+        }
         harness.requestRemote(
             "session",
             "page",
@@ -234,6 +252,8 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
 
     /** One prompt's turn, played out on the follow streams. */
     private suspend fun reply(sessionId: String, content: JsonArray) {
+        val prompt = ((content.firstOrNull() as? JsonObject)?.get("text") as? JsonPrimitive)?.contentOrNull.orEmpty()
+        if (prompt.startsWith(FAIL_PREFIX)) return failedPrompt(sessionId)
         val turn = synchronized(lock) { logs.getValue(sessionId).count { it.type == "turn/start" } + 1 }
         append(sessionId, "turn/start", buildJsonObject { put("turn", turn) })
         append(
@@ -246,6 +266,7 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
                 put("content", content)
             },
         )
+        askFor(prompt)?.let { return waitingTurn(sessionId, turn, it) }
         val attemptId = "$sessionId:$turn"
         val startedAfter = synchronized(lock) { logs.getValue(sessionId).size - 1 }
         harness.pushAssistantStream(
@@ -259,7 +280,6 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
             },
         )
         val pieces = REPLY.chunked(REPLY_PIECE)
-        val prompt = ((content.firstOrNull() as? JsonObject)?.get("text") as? JsonPrimitive)?.contentOrNull.orEmpty()
         val holds = prompt.startsWith(HOLD_PREFIX)
         val pace = if (prompt.startsWith(SLOW_PREFIX)) SLOW_CHUNK_DELAY_MS else CHUNK_DELAY_MS
         harness.pushAssistantStream(chunkFrame(sessionId, attemptId, 0, buildJsonObject { put("type", "block-start"); put("index", 0); put("blockType", "text") }))
@@ -322,6 +342,133 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         append(sessionId, "assistant/message", assistantMessage(turn, 1, "$sessionId-a$turn", text(REPLY)))
         append(sessionId, "turn/end", buildJsonObject { put("turn", turn); putJsonObject("reason") { put("kind", "completed") } })
     }
+
+    /**
+     * A turn whose one tool call waits on the reader, as the harness runs one: the assistant calls [ask]'s tool, the
+     * harness puts the request to the client as an `$events` waterfall ([ask]'s event, `eventId`, the session as
+     * `agentId`), and the call goes on with the answer the client posts to `$events/result`. An approval is bracketed by
+     * the `approval/asked` and `approval/decided` audit events the harness's approval service appends. The request stays
+     * open across a reconnect: a client that opens `$events` again is handed it once more, as the gateway hands every
+     * pending request to a new owner client. Stopped while it waits, the request is withdrawn (a `cancel` frame) and the
+     * turn ends aborted.
+     */
+    private suspend fun waitingTurn(sessionId: String, turn: Int, ask: DemoAsk) {
+        val callId = "$sessionId-call-$turn"
+        val eventId = "$sessionId-ask-$turn"
+        val auditId = "$sessionId-approval-$turn"
+        val arguments = ask.arguments.toString()
+        val approval = ask.event == APPROVAL_EVENT
+        append(
+            sessionId,
+            "assistant/message",
+            assistantMessage(
+                turn,
+                1,
+                "$sessionId-a$turn",
+                text(ask.lead),
+                buildJsonObject { put("type", "tool-call"); put("id", callId); put("name", ask.tool); put("arguments", arguments) },
+            ),
+        )
+        append(
+            sessionId,
+            "tool/call",
+            buildJsonObject { put("turn", turn); put("step", 1); put("callId", callId); put("name", ask.tool); put("arguments", arguments) },
+        )
+        val request = ask.request(callId)
+        if (approval) {
+            append(
+                sessionId,
+                "approval/asked",
+                buildJsonObject {
+                    put("id", auditId)
+                    put("toolName", ask.tool)
+                    put("callId", callId)
+                    request["reason"]?.let { put("reason", it) }
+                },
+            )
+        }
+        val frame = buildJsonObject {
+            put("type", "waterfall")
+            put("event", ask.event)
+            put("eventId", eventId)
+            put("agentId", sessionId)
+            put("request", request)
+        }
+        val answer = CompletableDeferred<JsonObject>()
+        synchronized(lock) { waiting[eventId] = frame to answer }
+        harness.pushEvent(frame)
+        val outcome = try {
+            answer.await()
+        } catch (stop: Stopped) {
+            withContext(NonCancellable) {
+                synchronized(lock) { waiting.remove(eventId) }
+                harness.pushEvent(buildJsonObject { put("type", "cancel"); put("eventId", eventId) })
+                if (approval) append(sessionId, "approval/decided", buildJsonObject { put("id", auditId); put("outcome", "cancelled") })
+                // The harness's own results for a call stopped before it ran (an approval) or while it ran (a question).
+                val aborted = if (approval) "tool call aborted before dispatch" else "tool call aborted"
+                val code = if (approval) "ABORTED_BEFORE_DISPATCH" else "ABORTED"
+                append(
+                    sessionId,
+                    "tool/result",
+                    toolResult(turn, 1, callId, ToolStep(ask.tool, ask.arguments, "Error: $aborted", error = buildJsonObject { put("name", "AbortError"); put("code", code) })),
+                )
+                append(
+                    sessionId,
+                    "turn/end",
+                    buildJsonObject {
+                        put("turn", turn)
+                        putJsonObject("reason") {
+                            put("kind", "aborted")
+                            putJsonObject("reason") { put("kind", "user") }
+                        }
+                    },
+                )
+            }
+            throw stop
+        }
+        val settled = ask.settle(outcome)
+        if (approval) {
+            val decided = ((outcome["value"] as? JsonPrimitive)?.contentOrNull).orEmpty()
+            append(sessionId, "approval/decided", buildJsonObject { put("id", auditId); put("outcome", decided) })
+        }
+        append(sessionId, "tool/result", toolResult(turn, 1, callId, ToolStep(ask.tool, ask.arguments, settled.output, error = settled.error)))
+        append(sessionId, "assistant/message", assistantMessage(turn, 2, "$sessionId-a$turn-2", text(settled.reply)))
+        append(sessionId, "turn/end", buildJsonObject { put("turn", turn); putJsonObject("reason") { put("kind", "completed") } })
+    }
+
+    /**
+     * A prompt the session's agent fails on before it starts a turn: the harness reports such a failure live, with no
+     * turn position, as an `api-session/error` emit (`[sessionId, message]`, the outlet for an `agent/error`), and the
+     * chat shows it as its red strip with Retry.
+     */
+    private suspend fun failedPrompt(sessionId: String) {
+        harness.pushEvent(
+            buildJsonObject {
+                put("type", "emit")
+                put("event", "api-session/error")
+                putJsonArray("args") {
+                    add(JsonPrimitive(sessionId))
+                    add(JsonPrimitive(FAILURE))
+                }
+            },
+        )
+    }
+
+    /**
+     * One tool call that waits on the reader: [tool] called with [arguments] after [lead], the waterfall [event] with
+     * [request] (given the call's id), and what the call returns for the client's outcome ([settle]).
+     */
+    private class DemoAsk(
+        val tool: String,
+        val arguments: JsonObject,
+        val lead: String,
+        val event: String,
+        val request: (callId: String) -> JsonObject,
+        val settle: (outcome: JsonObject) -> Settled,
+    )
+
+    /** What a waiting call ends with: the tool's text (an error when [error] is set) and the assistant's reply. */
+    private class Settled(val output: String, val error: JsonObject?, val reply: String)
 
     private fun chunkFrame(sessionId: String, attemptId: String, index: Int, chunk: JsonObject) = buildJsonObject {
         put("type", "chunk")
@@ -796,6 +943,278 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         const val PERMISSIONS: String =
             """{"options":[{"value":"read-only","name":"Read only"},{"value":"workspace-write","name":"Workspace Write"},""" +
                 """{"value":"danger-full-access","name":"Full access"}],"currentValue":"workspace-write"}"""
+
+        /**
+         * A prompt that starts with this gets a turn that asks to escalate a `bash` call's sandbox, worded as a desktop
+         * harness's sandbox escalation asks (rc2 `packages/sandbox/sandbox/src/escalation.ts`): the chat's approval card
+         * with the harness's own reason.
+         */
+        const val INSTALL_PREFIX: String = "Install"
+
+        /**
+         * A prompt that starts with this gets a turn whose `bash` call waits for approval worded as the built-in
+         * harness's "Ask before commands" gate words it (`bash: <command>`, dsh-mobile-runtime's `permission.mjs`): the
+         * approval card that shows the command whole.
+         */
+        const val TEST_PREFIX: String = "Test"
+
+        /** A prompt that starts with this gets a turn that asks one question with two options (`ask_user_question`). */
+        const val ASK_PREFIX: String = "Ask"
+
+        /** A prompt that starts with this gets a turn that asks two questions at once, the first a multiple choice. */
+        const val CHOOSE_PREFIX: String = "Choose"
+
+        /** A prompt that starts with this gets a plan review (`exit_plan_mode`, worded as rc2's plan mode words it). */
+        const val PLAN_PREFIX: String = "Plan"
+
+        /** A prompt that starts with this fails before a turn starts: the harness's live `api-session/error`. */
+        const val FAIL_PREFIX: String = "Fail"
+
+        /** What [FAIL_PREFIX] reports. */
+        const val FAILURE: String = "The agent could not start: the model provider is not configured."
+
+        /** The `$events` waterfall an approval is asked through. */
+        private const val APPROVAL_EVENT = "approval/request"
+
+        /** The `$events` waterfall a question batch is asked through. */
+        private const val QUESTIONS_EVENT = "user-questions/request"
+
+        private const val ESCALATION_JUSTIFICATION = "Installing a global npm package writes outside the workspace."
+
+        /** The command [TEST_PREFIX]'s turn asks to run. */
+        const val TEST_COMMAND: String = "./gradlew :app:testDebugUnitTest --tests '*SyncQueue*'"
+
+        /** The plan [PLAN_PREFIX]'s turn submits for review. */
+        const val PLAN: String =
+            "# Guard the empty password\n\n1. Return early when the password is empty.\n2. Show the field's error message.\n" +
+                "3. Add a test for the empty case."
+
+        private fun allowed(outcome: JsonObject): Boolean = (outcome["value"] as? JsonPrimitive)?.contentOrNull == "allowed-once"
+
+        /** A dismissed question, as the tool fails on it: the rejection's message, and its name and code. */
+        private fun dismissed(outcome: JsonObject, reply: String): Settled {
+            val error = outcome["error"] as? JsonObject
+            val message = (error?.get("message") as? JsonPrimitive)?.contentOrNull.orEmpty()
+            return Settled(
+                "Error: $message",
+                buildJsonObject {
+                    put("name", error?.get("name") ?: JsonPrimitive("UserQuestionError"))
+                    error?.get("code")?.let { put("code", it) }
+                },
+                reply,
+            )
+        }
+
+        /**
+         * An answered batch as `ask_user_question` returns it (`JSON.stringify({answers})`, each answer's `id`, `selected`
+         * and `custom` when there is one), and a reply naming the choices; a dismissal is the error the tool throws.
+         */
+        private fun answered(outcome: JsonObject): Settled {
+            if ((outcome["kind"] as? JsonPrimitive)?.contentOrNull == "rejected") return dismissed(outcome, "All right, I'll leave it as it is.")
+            val answers = ((outcome["value"] as? JsonObject)?.get("answers") as? JsonArray).orEmpty().mapNotNull { it as? JsonObject }
+            val text = buildJsonObject {
+                putJsonArray("answers") {
+                    for (answer in answers) {
+                        addJsonObject {
+                            put("id", answer["id"] ?: JsonPrimitive(""))
+                            put("selected", answer["selected"] ?: JsonArray(emptyList()))
+                            answer["custom"]?.let { put("custom", it) }
+                        }
+                    }
+                }
+            }.toString()
+            val picked = answers.flatMap { answer ->
+                (answer["selected"] as? JsonArray).orEmpty().mapNotNull { (it as? JsonPrimitive)?.contentOrNull?.removeSuffix(" (Recommended)") } +
+                    listOfNotNull((answer["custom"] as? JsonPrimitive)?.contentOrNull)
+            }
+            return Settled(text, null, "Got it: ${picked.joinToString(", ")}.")
+        }
+
+        private val INSTALL_ASK = DemoAsk(
+            tool = "bash",
+            arguments = buildJsonObject {
+                put("command", "npm install --global firebase-tools")
+                put("description", "Install the Firebase command line tools")
+                put("sandbox_permissions", "danger-full-access")
+                put("justification", ESCALATION_JUSTIFICATION)
+            },
+            lead = "The Firebase tools install globally, so I have to ask first.",
+            event = APPROVAL_EVENT,
+            request = { callId ->
+                buildJsonObject {
+                    put("toolName", "bash")
+                    put("callId", callId)
+                    put("reason", "escalate sandbox to danger-full-access: $ESCALATION_JUSTIFICATION")
+                    putJsonObject("displayReason") {
+                        put("en", "Allow this operation with danger-full-access permissions: $ESCALATION_JUSTIFICATION")
+                        put("zh", "允许本次操作使用 danger-full-access 权限：$ESCALATION_JUSTIFICATION")
+                    }
+                }
+            },
+            settle = { outcome ->
+                if (allowed(outcome)) {
+                    Settled("added 1 package in 6s", null, "Installed. The `firebase` command is on your path now.")
+                } else {
+                    Settled(
+                        "Error: the user rejected escalating this command to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+                        buildJsonObject { put("name", "Error") },
+                        "I did not install it. Run `npm install --global firebase-tools` yourself when you want it.",
+                    )
+                }
+            },
+        )
+
+        private val TEST_ASK = DemoAsk(
+            tool = "bash",
+            arguments = buildJsonObject {
+                put("command", TEST_COMMAND)
+                put("description", "Run the sync tests")
+            },
+            lead = "I'll run the sync tests.",
+            event = APPROVAL_EVENT,
+            request = { callId ->
+                buildJsonObject {
+                    put("toolName", "bash")
+                    put("callId", callId)
+                    put("reason", "bash: $TEST_COMMAND")
+                    putJsonObject("displayReason") { put("en", "Run this command?\n$TEST_COMMAND") }
+                }
+            },
+            settle = { outcome ->
+                if (allowed(outcome)) {
+                    Settled("BUILD SUCCESSFUL in 38s\n3 tests completed", null, "All three sync tests pass.")
+                } else {
+                    Settled(
+                        "Error: the user rejected tool \"bash\"",
+                        buildJsonObject { put("name", "DshMobilePermissionDenied"); put("code", "APPROVAL_REJECTED_BY_USER") },
+                        "I did not run the tests. Say when you want them run.",
+                    )
+                }
+            },
+        )
+
+        /** [ASK_PREFIX]'s question, in the keys the client's request carries (the tool's own argument names match). */
+        private val RETRY_QUESTION = buildJsonObject {
+            put("id", "retry")
+            put("question", "Should a refused upload be retried later?")
+            put("header", "Retries")
+            putJsonArray("options") {
+                addJsonObject {
+                    put("label", "No, drop it (Recommended)")
+                    put("description", "The server refused it, so the same upload would be refused again.")
+                }
+                addJsonObject {
+                    put("label", "Yes, once")
+                    put("description", "Try again on the next sync, then drop it.")
+                }
+            }
+        }
+
+        private val ASK_ASK = DemoAsk(
+            tool = "ask_user_question",
+            arguments = buildJsonObject { putJsonArray("questions") { add(RETRY_QUESTION) } },
+            lead = "One thing before I change the queue.",
+            event = QUESTIONS_EVENT,
+            request = { buildJsonObject { putJsonArray("questions") { add(RETRY_QUESTION) } } },
+            settle = ::answered,
+        )
+
+        /**
+         * [CHOOSE_PREFIX]'s two questions: which checks (several may be picked) and where the build goes. The tool's
+         * argument says `multi_select`; the request the client is handed says `multiSelect` ([toRequest]).
+         */
+        private fun releaseQuestions(toRequest: Boolean) = buildJsonArray {
+            addJsonObject {
+                put("id", "checks")
+                put("question", "Which checks should run before a release?")
+                put("header", "Checks")
+                putJsonArray("options") {
+                    addJsonObject { put("label", "Unit tests") }
+                    addJsonObject { put("label", "Lint") }
+                    addJsonObject {
+                        put("label", "Instrumented tests")
+                        put("description", "Needs an emulator, about ten minutes.")
+                    }
+                }
+                put(if (toRequest) "multiSelect" else "multi_select", true)
+            }
+            addJsonObject {
+                put("id", "channel")
+                put("question", "Where should the build go first?")
+                put("header", "Channel")
+                putJsonArray("options") {
+                    addJsonObject { put("label", "Internal testing (Recommended)") }
+                    addJsonObject { put("label", "Production") }
+                }
+            }
+        }
+
+        private val CHOOSE_ASK = DemoAsk(
+            tool = "ask_user_question",
+            arguments = buildJsonObject { put("questions", releaseQuestions(toRequest = false)) },
+            lead = "Two things before I set up the release.",
+            event = QUESTIONS_EVENT,
+            request = { buildJsonObject { put("questions", releaseQuestions(toRequest = true)) } },
+            settle = ::answered,
+        )
+
+        private val PLAN_ASK = DemoAsk(
+            tool = "exit_plan_mode",
+            arguments = buildJsonObject { put("plan", PLAN) },
+            lead = "Here is the plan.",
+            event = QUESTIONS_EVENT,
+            request = { callId ->
+                buildJsonObject {
+                    putJsonArray("questions") {
+                        addJsonObject {
+                            put("id", "plan-review")
+                            put("header", "Plan review")
+                            put("question", "Approve this plan and leave plan mode?")
+                            put("detail", PLAN)
+                            putJsonArray("options") {
+                                addJsonObject {
+                                    put("label", "Approve")
+                                    put("description", "Leave plan mode; the plan is carried out from the next step.")
+                                }
+                                addJsonObject {
+                                    put("label", "Keep planning")
+                                    put("description", "Stay in plan mode; feedback goes back to the model.")
+                                }
+                            }
+                            putJsonObject("intent") {
+                                put("kind", "plan-review")
+                                put("approve", "Approve")
+                                put("callId", callId)
+                            }
+                        }
+                    }
+                }
+            },
+            settle = { outcome ->
+                val first = ((outcome["value"] as? JsonObject)?.get("answers") as? JsonArray)?.firstOrNull() as? JsonObject
+                val selected = (first?.get("selected") as? JsonArray).orEmpty().mapNotNull { (it as? JsonPrimitive)?.contentOrNull }
+                when {
+                    (outcome["kind"] as? JsonPrimitive)?.contentOrNull == "rejected" -> dismissed(outcome, "What would you like to change?")
+                    selected == listOf("Approve") && first?.get("custom") == null ->
+                        Settled("Plan approved — plan mode exited; carry out the plan starting with your next step.", null, "Starting with step 1.")
+                    else -> Settled(
+                        "Error: The user chose to keep planning; revise the plan and present it again.",
+                        buildJsonObject { put("name", "Error") },
+                        "I'll rework the plan.",
+                    )
+                }
+            },
+        )
+
+        /** The turn a prompt asks for, by its first word; null for the scripted reply. */
+        private fun askFor(prompt: String): DemoAsk? = when {
+            prompt.startsWith(INSTALL_PREFIX) -> INSTALL_ASK
+            prompt.startsWith(TEST_PREFIX) -> TEST_ASK
+            prompt.startsWith(ASK_PREFIX) -> ASK_ASK
+            prompt.startsWith(CHOOSE_PREFIX) -> CHOOSE_ASK
+            prompt.startsWith(PLAN_PREFIX) -> PLAN_ASK
+            else -> null
+        }
 
         private const val REPLY_PIECE = 16
         private const val MINUTE_MS = 60_000L

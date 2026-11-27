@@ -270,7 +270,7 @@ jobs:
       # The session list's screenshots, iPhone and iPad, light, dark, French and Arabic, the Markdown and tool-card
       # samples', an opened session's transcript, and its composer. The scenarios above already fail when the app does not report them
       # on screen; this fails when a screenshot is missing.
-      - name: Check the session list, Markdown, tool card, transcript, composer and send screenshots
+      - name: Check the session list, Markdown, tool card, transcript, composer, send and request screenshots
         if: ${{ !cancelled() }}
         run: |
           missing=0
@@ -310,6 +310,20 @@ jobs:
           # the software keyboard up under a typed draft.
           for shot in send/iphone-light-reply-streaming send/iphone-light-reply-settled send/iphone-dark-stop-streaming \
             send/iphone-dark-stop-stopped keyboard/iphone-light-typed; do
+            f="build/ios-screenshots/$shot.png"
+            if [ -s "$f" ]; then echo "$f: $(wc -c < "$f") bytes"; else echo "::error::missing $f"; missing=$((missing + 1)); fi
+          done
+          # What a turn asks the reader, answered (iOS M7): each card before and after its answer, the iPhone in light, dark
+          # and Arabic and the iPad with the list docked; an approval across a reconnect; the red connection strip; and the
+          # software keyboard over the Connect screen's address field.
+          for shot in iphone-light-approval iphone-dark-command iphone-light-question iphone-ar-batch iphone-dark-plan \
+            iphone-light-reconnect ipad-light-approval; do
+            for at in pending answered; do
+              f="build/ios-screenshots/requests/$shot-$at.png"
+              if [ -s "$f" ]; then echo "$f: $(wc -c < "$f") bytes"; else echo "::error::missing $f"; missing=$((missing + 1)); fi
+            done
+          done
+          for shot in requests/iphone-light-banner keyboard/iphone-light-connect; do
             f="build/ios-screenshots/$shot.png"
             if [ -s "$f" ]; then echo "$f: $(wc -c < "$f") bytes"; else echo "::error::missing $f"; missing=$((missing + 1)); fi
           done

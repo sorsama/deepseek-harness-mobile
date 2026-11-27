@@ -286,6 +286,191 @@ class DemoHarnessTest {
         }
     }
 
+    /** A mux socket with `$events` open, its items in order; [close] ends it. */
+    private class Events(val items: LinkedBlockingQueue<JsonObject>, val close: () -> Unit) {
+        /** The next `$events` value whose `type` is [type], skipping the others. */
+        fun next(type: String): JsonObject {
+            while (true) {
+                val value = items.poll(10, TimeUnit.SECONDS)?.get("value")?.jsonObject ?: error("no $type frame on \$events")
+                if (value["type"]!!.jsonPrimitive.content == type) return value
+            }
+        }
+    }
+
+    private fun openEvents(port: Int): Events {
+        val items = LinkedBlockingQueue<JsonObject>()
+        val listener = object : WebSocket.Listener {
+            private val buffer = StringBuilder()
+            override fun onText(webSocket: WebSocket, data: CharSequence, last: Boolean): CompletionStage<*>? {
+                buffer.append(data)
+                if (last) {
+                    items.add(Json.parseToJsonElement(buffer.toString()).jsonObject)
+                    buffer.clear()
+                }
+                webSocket.request(1)
+                return null
+            }
+        }
+        val socket = http.newWebSocketBuilder()
+            .buildAsync(URI.create("ws://127.0.0.1:$port/api/remote.mux"), listener)
+            .get(5, TimeUnit.SECONDS)
+        socket.sendText("""{"type":"open","streamId":"e","endpoint":"${'$'}events","payload":{"args":{}}}""", true).get(5, TimeUnit.SECONDS)
+        return Events(items) { socket.sendClose(WebSocket.NORMAL_CLOSURE, "done") }
+    }
+
+    private fun prompt(base: String, sessionId: String, text: String) = call(
+        base,
+        "session/prompt",
+        """{"request":{"requestId":"r1","sessionId":"$sessionId","mode":"queue","content":[{"type":"text","text":"$text"}]}}""",
+    )
+
+    /** What the app's answer posts: the envelope's `args` with this mock's client id, the request's event id and [outcome]. */
+    private fun answer(base: String, eventId: String, outcome: String) =
+        call(base, "\$events/result", """{"clientId":"mock-client","eventId":"$eventId","outcome":$outcome}""")
+
+    /** The events [sessionId]'s log gained after its first [skip], once it holds [count] of them (at most five seconds). */
+    private fun added(servers: CiFixtureServers, sessionId: String, skip: Int, count: Int): List<JsonObject> {
+        var added = emptyList<JsonObject>()
+        for (attempt in 0 until 50) {
+            added = servers.demo!!.log(sessionId).drop(skip)
+            if (added.size >= count) break
+            Thread.sleep(100)
+        }
+        return added
+    }
+
+    private fun types(events: List<JsonObject>) = events.map { it["type"]!!.jsonPrimitive.content }
+
+    private fun toolResultText(event: JsonObject) =
+        event["data"]!!.jsonObject["message"]!!.jsonObject["content"]!!.jsonArray.single().jsonObject["text"]!!.jsonPrimitive.content
+
+    @Test
+    fun anInstallPromptWaitsForApprovalAndRunsOnceAllowed() = withDemo { servers ->
+        val events = openEvents(servers.demoPort!!)
+        try {
+            events.next("ready")
+            prompt(servers.demoUrl!!, "demo-02", "${DemoHarness.INSTALL_PREFIX} the Firebase tools.")
+            val waterfall = events.next("waterfall")
+            assertEquals("approval/request", waterfall["event"]!!.jsonPrimitive.content)
+            assertEquals("demo-02", waterfall["agentId"]!!.jsonPrimitive.content)
+            val request = waterfall["request"]!!.jsonObject
+            assertEquals("bash", request["toolName"]!!.jsonPrimitive.content)
+            assertTrue(request["reason"]!!.jsonPrimitive.content.startsWith("escalate sandbox to danger-full-access: "))
+            assertTrue(request["displayReason"]!!.jsonObject["en"]!!.jsonPrimitive.content.startsWith("Allow this operation with danger-full-access permissions: "))
+            // Waiting: the call and the audit's first half are in the log, nothing after them.
+            assertEquals(
+                listOf("turn/start", "user/message", "assistant/message", "tool/call", "approval/asked"),
+                types(added(servers, "demo-02", 4, 5)),
+            )
+            answer(servers.demoUrl!!, waterfall["eventId"]!!.jsonPrimitive.content, """{"kind":"result","value":"allowed-once"}""")
+            val turn = added(servers, "demo-02", 4, 9)
+            assertEquals(
+                listOf(
+                    "turn/start", "user/message", "assistant/message", "tool/call", "approval/asked", "approval/decided", "tool/result",
+                    "assistant/message", "turn/end",
+                ),
+                types(turn),
+            )
+            assertEquals("allowed-once", turn[5]["data"]!!.jsonObject["outcome"]!!.jsonPrimitive.content)
+            assertEquals("false", turn[6]["data"]!!.jsonObject["message"]!!.jsonObject["isError"]!!.jsonPrimitive.content)
+            assertEquals("completed", turn[8]["data"]!!.jsonObject["reason"]!!.jsonObject["kind"]!!.jsonPrimitive.content)
+        } finally {
+            events.close()
+        }
+    }
+
+    @Test
+    fun aRejectedCommandEndsInTheGatesRefusal() = withDemo { servers ->
+        val events = openEvents(servers.demoPort!!)
+        try {
+            events.next("ready")
+            prompt(servers.demoUrl!!, "demo-03", "${DemoHarness.TEST_PREFIX} the sync queue.")
+            val waterfall = events.next("waterfall")
+            assertEquals("bash: ${DemoHarness.TEST_COMMAND}", waterfall["request"]!!.jsonObject["reason"]!!.jsonPrimitive.content)
+            val before = servers.demo!!.log("demo-03").size - 5
+            answer(servers.demoUrl!!, waterfall["eventId"]!!.jsonPrimitive.content, """{"kind":"result","value":"rejected"}""")
+            val turn = added(servers, "demo-03", before, 9)
+            assertEquals("rejected", turn[5]["data"]!!.jsonObject["outcome"]!!.jsonPrimitive.content)
+            val result = turn[6]["data"]!!.jsonObject
+            assertEquals("true", result["message"]!!.jsonObject["isError"]!!.jsonPrimitive.content)
+            assertEquals("APPROVAL_REJECTED_BY_USER", result["error"]!!.jsonObject["code"]!!.jsonPrimitive.content)
+            assertEquals("Error: the user rejected tool \"bash\"", toolResultText(turn[6]))
+        } finally {
+            events.close()
+        }
+    }
+
+    @Test
+    fun aQuestionIsAnsweredWithWhatTheToolReturns() = withDemo { servers ->
+        val events = openEvents(servers.demoPort!!)
+        try {
+            events.next("ready")
+            prompt(servers.demoUrl!!, "demo-02", "${DemoHarness.CHOOSE_PREFIX} the release checks.")
+            val waterfall = events.next("waterfall")
+            assertEquals("user-questions/request", waterfall["event"]!!.jsonPrimitive.content)
+            val questions = waterfall["request"]!!.jsonObject["questions"]!!.jsonArray.map { it.jsonObject }
+            assertEquals(listOf("checks", "channel"), questions.map { it["id"]!!.jsonPrimitive.content })
+            assertEquals("true", questions[0]["multiSelect"]!!.jsonPrimitive.content)
+            // The host's own acceptance law judges the answer (QuestionAcceptance): every question, labels it offered.
+            answer(
+                servers.demoUrl!!,
+                waterfall["eventId"]!!.jsonPrimitive.content,
+                """{"kind":"result","value":{"answers":[{"id":"checks","selected":["Unit tests","Lint"]},""" +
+                    """{"id":"channel","selected":["Internal testing (Recommended)"]}]}}""",
+            )
+            val turn = added(servers, "demo-02", 4, 7)
+            assertEquals(
+                listOf("turn/start", "user/message", "assistant/message", "tool/call", "tool/result", "assistant/message", "turn/end"),
+                types(turn),
+            )
+            assertEquals(
+                """{"answers":[{"id":"checks","selected":["Unit tests","Lint"]},{"id":"channel","selected":["Internal testing (Recommended)"]}]}""",
+                toolResultText(turn[4]),
+            )
+        } finally {
+            events.close()
+        }
+    }
+
+    @Test
+    fun anOpenRequestIsHandedAgainToANewConnection() = withDemo { servers ->
+        val first = openEvents(servers.demoPort!!)
+        val eventId = try {
+            first.next("ready")
+            prompt(servers.demoUrl!!, "demo-02", "${DemoHarness.ASK_PREFIX} about retries.")
+            first.next("waterfall")["eventId"]!!.jsonPrimitive.content
+        } finally {
+            first.close()
+        }
+        // What coming back from the background does: a new socket, a new `$events`, the same open request.
+        val second = openEvents(servers.demoPort!!)
+        try {
+            second.next("ready")
+            assertEquals(eventId, second.next("waterfall")["eventId"]!!.jsonPrimitive.content)
+            answer(servers.demoUrl!!, eventId, """{"kind":"result","value":{"answers":[{"id":"retry","selected":["Yes, once"]}]}}""")
+            assertEquals("turn/end", types(added(servers, "demo-02", 4, 7)).last())
+        } finally {
+            second.close()
+        }
+    }
+
+    @Test
+    fun aFailPromptIsReportedAsTheHarnessReportsALiveFailure() = withDemo { servers ->
+        val events = openEvents(servers.demoPort!!)
+        try {
+            events.next("ready")
+            prompt(servers.demoUrl!!, "demo-02", "${DemoHarness.FAIL_PREFIX} on purpose.")
+            val emit = events.next("emit")
+            assertEquals("api-session/error", emit["event"]!!.jsonPrimitive.content)
+            assertEquals(listOf("demo-02", DemoHarness.FAILURE), emit["args"]!!.jsonArray.map { it.jsonPrimitive.content })
+            // No turn: the agent failed before it started one.
+            Thread.sleep(300)
+            assertEquals(4, servers.demo!!.log("demo-02").size)
+        } finally {
+            events.close()
+        }
+    }
+
     private companion object {
         const val NOW = 1_795_000_000_000L
     }

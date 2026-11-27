@@ -76,6 +76,12 @@ The port has started at the bottom, where the sharing is real:
   AVFoundation. A simulator has no camera, so CI pairs through the typed form and through a launch argument that hands the
   controller what a scan would have decoded, against pairing relays in the mock harness, one of which speaks TLS with a
   self-signed key. See "Pairing on iOS".
+- **Issue #141 brought the session list and the chat (its own M0 to M7).** The shared session store, the session list, the
+  transcript, the composer and the send path, and since M7 the requests a turn puts to the reader (approvals, questions, plan
+  reviews, timed questions) and the chat's connection strips are the Android code, in `:sharedUi`, drawn by both apps. On
+  iOS that is a working client for one harness: connect or pair, list and open sessions, read them, send, stop, steer or queue,
+  answer what the agent asks, and come back from the background to the same session. It is the first iOS build worth trying
+  on a device; nothing of it has run on one yet (see "Follow-ups" for what a device has to show).
 
 ## The iOS compile gate
 
@@ -499,7 +505,14 @@ approvals and questions, the `/` menu, the composer's extras (`ChatComposerExtra
 paste, dictation) and its command decorations (`dispatchDecorated`) in as slots and hooks, and keeps every sheet. A
 toast written when a call comes back reads its words while composing (`ChatCopy`, `ImageErrorCopy`) and fills them
 with `fillTemplate`, which writes what Android's `getString(id, args)` wrote. On iOS, `IosChatPane` is `ChatContent`
-under the shared top bar: it sends, stops, lifts its composer and rests on the software keyboard.
+under the shared top bar: it sends, stops, lifts its composer and rests on the software keyboard. M7 moved what a turn
+asks the reader: the approval cards (`InteractionPanels`: the card with the harness's reason, the one that shows a command
+whole, the plan review), the question card (`QuestionComposer` and its model), the timed questions (`ModernQuestions`,
+`QuestionDrafts`, `QuestionPresentation`) and `DsCard`. `ChatRequests` and `ChatConnectionBanners` are what `ChatScreen`
+passed into the `requests` and `notices` slots, moved line for line, so both apps draw them; Android still wraps the
+strips in its built-in runtime's notice. Three seams: `screenHeight()` (Android's `screenHeightDp`, the command card's
+cap), `countdownNumber()` (Android's `NumberFormat` digits; Western digits on iOS) and the question drafts' file
+(`QuestionDraftFile`: Android keeps its `question-drafts` preferences, iOS one entry in `NSUserDefaults`).
 
 Not moved, on purpose: the "This phone" card and the Termux controller (Termux is Android), the Hilt view models
 (`ConnectViewModel` and `PairViewModel` are thin: each owns a controller over `viewModelScope`), the stores and the
@@ -756,6 +769,10 @@ what the screen does. CI drives the app with them, and so can a person:
 | `-DshPairPayload <hex of the QR text>` | hands the Pair controller the text a scan would have decoded, so it pairs at once; hex because launch arguments are parsed as property lists, which mangles JSON |
 | `-DshPairScanner YES` | opens the camera sheet |
 | `-DshReconnectOnce YES` | once the session list has been read, starts a fresh connection (what coming back from the background does) and keeps every `DSH_SESSIONS_RESULT` line instead of the last |
+| `-DshAnswer allow`, `deny`, or the options picked (`2`, `1+2/1`) | with `-DshPrompt` and `-DshSendPrompt`: answers the approval or question the prompt's turn puts to the reader, once the script has created `Documents/dsh-answer` (see "What CI proves") |
+| `-DshReconnect YES` | with `-DshAnswer`: starts a fresh connection while the request is open, as coming back from the background does, and answers over the new one |
+| `-DshAwaitBanner YES` | with `-DshSendPrompt`: waits for the chat's red connection strip instead of a reply |
+| `-DshFocusAddress YES` | moves focus into the Connect screen's address field, which brings the software keyboard up, and writes `DSH_KEYBOARD_RESULT …` to `Documents/dsh-keyboard-result.txt` |
 
 With auto-connect, report or a pairing argument on, the app writes one result line (`DSH_CONNECT_RESULT connected …` or
 `… failed kind=…`) to `Documents/dsh-connect-result.txt` in its container, and a pairing run also writes
@@ -898,6 +915,19 @@ the steps after the tests run even if the tests fail, so one push says everythin
   software keyboard up, and adds `DSH_CHAT_RESULT keyboard ime=… composer=… window=… above=yes` once the column has
   settled on it. Screenshots: the reply streaming and settled (light), the held reply and the stopped turn (dark), and
   the keyboard up under a two-line draft (light). The same step fails when one of the five is missing.
+- then what a turn asks the reader (M7). The demo harness asks by a prompt's first word, in the harness's own wire shapes
+  (an `$events` waterfall, the approval audit pair, the tool's own result): "Install" a sandbox escalation, "Test" a command
+  worded as the built-in runtime's gate words it, "Ask" one question, "Choose" two with a multiple choice, "Plan" a plan
+  review, "Fail" a live `api-session/error`; an open request is handed again to a client that reconnects, as the gateway
+  does. With `-DshAnswer` the app writes `DSH_CHAT_RESULT request kind=… ` once the card is up, answers with the store
+  calls the card's buttons make once the script creates `Documents/dsh-answer`, and writes `answered … outcome=accepted`
+  and `settled state=idle tool=ok|error reply=<chars>` once the turn has ended. Scenarios: an approval allowed (light), a
+  command refused (dark), a question answered (light), a batch with a multiple choice answered (Arabic), a plan review
+  approved (dark), an approval left open across `-DshReconnect` and allowed over the new connection (`reconnected
+  generation=2 request=approval`, then the turn's end arrives on the new session follow), the red connection strip
+  (`banner shown=error`), and on the iPad an approval with the list docked. Each card is screenshotted before and after
+  its answer. Last, the software keyboard over the Connect screen's address field: `DSH_KEYBOARD_RESULT field=address
+  ime=… bottom=… window=… above=yes` (the screen pads itself for the keyboard; nothing else moves it).
 - `ios-compile` also compiles `:sharedUi` for the two iOS targets and checks that the klibs exist.
 
 **`ios-ipa`** (10 to 25 minutes depending on whether Gradle's cache has the Release link of Compose Multiplatform, which dominates it, so a separate job in parallel):
@@ -1052,8 +1082,18 @@ Open items the port knows about and has deliberately not done, so they are not r
   into its drawer as Android's does (the shared `ChatContent`, M6b). The model chip states the model without a picker,
   and there are no history, details or tabs in the bar. Enter adds a line on iOS whatever the keyboard
   (`hardwareKeyboardAttached()` is false there). A typed `/command` still goes through the command gateway (the send
-  path adjudicates it), but nothing opens a command's own picker. Approvals, questions and the connection banner come
-  with M7.
+  path adjudicates it), but nothing opens a command's own picker.
+- **What a turn asks the reader is answered in the app, not announced.** iOS has no notifications yet, so an approval or a
+  question that arrives while the app is in the background waits unseen until the person opens it; the harness's wait
+  stays open meanwhile and the request is handed to the app again when it reconnects.
+- **Not drawn by any iOS scenario:** the timed questions (`ModernQuestions`: the demo harness asks untimed ones, and its
+  countdown and hold need the harness's `userQuestions` projection), the command card's "Show all" sheet (the fixture's
+  command is short), and the amber "Reconnecting" strip (it shows while the open session's journal has a hole, which the
+  demo never makes). The code is Android's, unchanged.
+- **On a device, M7 has to show:** an approval and a question answered with a finger (the CI scenarios answer through
+  the store calls the buttons make), the question card's text field with the software keyboard up (it lives in the
+  card above the composer, and `OnFocusBehavior.DoNothing` leaves it to the insets), the app coming back from the
+  background to an open approval, and the Connect and sign-in fields with the keyboard up on a small iPhone.
 - **The keyboard is left to the insets on iOS.** `MainViewController` sets `OnFocusBehavior.DoNothing`: every shared
   screen pads itself with `safeDrawing`, which includes the keyboard, so the composer rests on it and the transcript
   gets what is left, as Android's window resize does. The simulator scenario checks the composer ends above the

@@ -22,17 +22,32 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
+import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.connection.DEFAULT_WORK_STEP_DISPLAY
+import com.labteto.dshmobile.core.permission.approvalPromptOf
 import com.labteto.dshmobile.core.session.AssistantMessageNode
 import com.labteto.dshmobile.core.session.ConversationSnapshot
+import com.labteto.dshmobile.core.session.ToolResultNode
 import com.labteto.dshmobile.core.session.TurnEndNode
 import com.labteto.dshmobile.core.session.effectiveWorkingDirectory
+import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswer
+import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswerItem
+import com.labteto.dshmobile.core.wire.dto.AskUserQuestionItem
+import com.labteto.dshmobile.data.PendingApproval
+import com.labteto.dshmobile.data.PendingQuestions
+import com.labteto.dshmobile.data.QuestionOutcome
+import com.labteto.dshmobile.data.SessionStore
 import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.adaptive.ListControl
+import com.labteto.dshmobile.ui.components.QuestionDraft
+import com.labteto.dshmobile.ui.components.encodeAnswers
+import com.labteto.dshmobile.ui.components.planReviewOf
 import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.screens.main.AssistantMemory
+import com.labteto.dshmobile.ui.screens.main.ChatConnectionBanners
 import com.labteto.dshmobile.ui.screens.main.ChatContent
 import com.labteto.dshmobile.ui.screens.main.ChatNodeContext
+import com.labteto.dshmobile.ui.screens.main.ChatRequests
 import com.labteto.dshmobile.ui.screens.main.ChatTab
 import com.labteto.dshmobile.ui.screens.main.ChatTopBar
 import com.labteto.dshmobile.ui.screens.main.ComposerKey
@@ -58,6 +73,12 @@ internal enum class ChatScroll { Tail, Older }
  * it. [pressStop] (`-DshPressStop`) presses Stop once the reply is streaming and [awaitStop] has returned (the script
  * says so after its mid-stream screenshot). [focusComposer] (`-DshFocusComposer`) moves focus into the composer, which
  * brings the software keyboard up.
+ *
+ * For a prompt whose turn waits on the reader (M7), [answer] (`-DshAnswer`) is what the reader answers once
+ * [awaitAnswer] has returned (the script has its screenshot of the card): `allow` or `deny` for an approval, the options
+ * picked for a question batch ([questionDraftsOf]). [reconnect] (`-DshReconnect`) starts a fresh connection while the
+ * request is open, as coming back to the foreground does, and the answer goes over the new one. [awaitBanner]
+ * (`-DshAwaitBanner`) waits for the chat's red connection strip instead of a reply.
  */
 internal class ChatDrive(
     val prompt: String? = null,
@@ -65,6 +86,10 @@ internal class ChatDrive(
     val pressStop: Boolean = false,
     val awaitStop: (suspend () -> Unit)? = null,
     val focusComposer: Boolean = false,
+    val answer: String? = null,
+    val awaitAnswer: (suspend () -> Unit)? = null,
+    val reconnect: Boolean = false,
+    val awaitBanner: Boolean = false,
 )
 
 /**
@@ -73,8 +98,10 @@ internal class ChatDrive(
  * drawer over the transcript from two wrapped lines, and the column rests on the software keyboard (the view
  * controller leaves the keyboard to the insets, see [MainViewController]). What iOS does not have yet is left out
  * rather than drawn dead: in the bar the model picker (the chip states the model), the preset, subagent and team
- * chips, history, details and the tabs; in the composer the `+` sheet, the `@` picker, attachments and dictation; the
- * `/` menu, approvals and questions (M7), and the connection banner (M7). Sending, Stop and the permission chip work.
+ * chips, history, details and the tabs; in the composer the `+` sheet, the `@` picker, attachments and dictation; and
+ * the `/` menu. Sending, Stop and the permission chip work, and since M7 so do the requests a turn puts to the reader
+ * ([ChatRequests]: approvals, questions, plan reviews, timed questions) and the chat's connection strips
+ * ([ChatConnectionBanners]: the error with Retry, and Reconnecting), Android's code in both cases.
  * A reply's Branch and feedback buttons and a subagent card's tap are left out too (null in [ChatNodeContext]). The
  * draft is the store's per-session one, as on Android, so it survives a session switch.
  *
@@ -92,7 +119,10 @@ internal class ChatDrive(
  * order: `keyboard ime=… composer=… window=… above=…` (pixels: the keyboard's height, the composer block's bottom and
  * the window's height, and whether the block ends above the keyboard), `sent chars=… session=…`, `streaming chars=…`
  * (the first streamed text of the reply), then `replied chars=… state=idle` once the reply has settled, or with
- * [ChatDrive.pressStop] `stopped state=idle turn=… chars=…` (the turn's end and the text the reply kept).
+ * [ChatDrive.pressStop] `stopped state=idle turn=… chars=…` (the turn's end and the text the reply kept). With
+ * [ChatDrive.answer] it writes the request lines of [driveRequest] instead, and with [ChatDrive.awaitBanner]
+ * `banner shown=error|none` once the store reports a failure. [onReconnect] starts a fresh connection (the app's own
+ * foreground path).
  */
 @Composable
 internal fun IosChatPane(
@@ -101,6 +131,7 @@ internal fun IosChatPane(
     onReport: ((String) -> Unit)?,
     initialDraft: String? = null,
     drive: ChatDrive = ChatDrive(),
+    onReconnect: () -> Unit = {},
     empty: @Composable () -> Unit,
 ) {
     val store = LocalSessionStore.current
@@ -116,6 +147,7 @@ internal fun IosChatPane(
     val models by store.models.collectAsState()
     val pendingApproval by store.pendingApproval.collectAsState()
     val pendingQuestions by store.pendingQuestions.collectAsState()
+    val connectionError by store.connectionError.collectAsState()
 
     val session = sessions.firstOrNull { it.sessionId == id }
     val title = session?.title ?: session?.cwd?.let { basename(it) } ?: id
@@ -229,10 +261,23 @@ internal fun IosChatPane(
             if (prompt != null && drive.send) {
                 val settledBefore = opened.nodes.count { it is AssistantMessageNode && !it.streaming }
                 // What the send button does: the field empties and the draft goes to the send path.
+                val lastSeqBefore = store.currentConversation.value?.takeIf { it.sessionId == id }?.nodes?.lastOrNull()?.seq
+                    ?: opened.nodes.lastOrNull()?.seq ?: -1L
                 composer.text = ""
                 composer.selection = 0
                 currentActions.send(prompt)
                 onReport("DSH_CHAT_RESULT sent chars=${prompt.length} session=$id")
+                if (drive.answer != null) {
+                    driveRequest(store, id, drive, lastSeqBefore, onReconnect, onReport)
+                    return@LaunchedEffect
+                }
+                if (drive.awaitBanner) {
+                    val error = withTimeoutOrNull(REPLY_WAIT_MS) { store.connectionError.first { it != null } }
+                    // Drawn, not only reported: the strip slides in over a few frames.
+                    repeat(BANNER_FRAMES) { withFrameNanos { } }
+                    onReport("DSH_CHAT_RESULT banner shown=${if (error != null) "error" else "none"} session=$id")
+                    return@LaunchedEffect
+                }
                 val streaming = withTimeoutOrNull(REPLY_WAIT_MS) {
                     store.currentConversation.first { c ->
                         c?.sessionId == id && c.nodes.any { it is AssistantMessageNode && it.streaming && it.plainText.isNotEmpty() }
@@ -284,6 +329,16 @@ internal fun IosChatPane(
         composerBlockModifier = Modifier.onGloballyPositioned {
             composerBottom.intValue = it.boundsInWindow().bottom.roundToInt()
         },
+        // Android's strips, without its built-in runtime notice (there is no harness on an iPhone) and without its model
+        // setup notice (no model settings on iOS yet), so the store's error is shown as it comes.
+        notices = {
+            ChatConnectionBanners(
+                error = connectionError,
+                reconnecting = conversation?.gap == true && connectionError == null,
+                onRetry = { store.retryConnection() },
+            )
+        },
+        requests = { gutter -> ChatRequests(gutter, toast.second) },
         topBar = {
             ChatTopBar(
                 title = title,
@@ -319,6 +374,9 @@ private const val OLDER_PAGE_WAIT_MS = 40_000L
 
 /** How long a sent prompt's reply may take to start, and to end (the demo's slow reply takes about 18 s). */
 private const val REPLY_WAIT_MS = 60_000L
+
+/** How many frames `-DshAwaitBanner` lets the strip slide in for before it reports. */
+private const val BANNER_FRAMES = 30
 
 /** How long `-DshFocusComposer` waits for the software keyboard to come up before it reports what it sees. */
 private const val KEYBOARD_WAIT_MS = 15_000L
@@ -367,3 +425,137 @@ internal suspend fun awaitSignal(timeoutMs: Long, present: () -> Boolean) {
         while (!present()) delay(STOP_SIGNAL_POLL_MS)
     }
 }
+
+/** How long `-DshReconnect` waits for the new connection to complete its handshake. */
+private const val RECONNECT_WAIT_MS = 30_000L
+
+/** The request [sessionId] is waiting on the reader for, if any: its approval first, else its question batch. */
+private fun pendingRequest(store: SessionStore, sessionId: String): Any? =
+    store.pendingApproval.value?.takeIf { it.sessionId == sessionId }
+        ?: store.pendingQuestions.value?.takeIf { it.sessionId == sessionId }
+
+/** What a report line calls a pending request. */
+private fun requestKind(request: Any?): String = when (request) {
+    is PendingApproval -> "approval"
+    is PendingQuestions -> "questions"
+    else -> "none"
+}
+
+/** What a report line calls a request's answer coming back. */
+private fun outcomeName(outcome: QuestionOutcome?): String = when (outcome) {
+    is QuestionOutcome.Accepted -> "accepted"
+    is QuestionOutcome.Refused -> "refused"
+    is QuestionOutcome.Unsent -> "unsent"
+    null -> "none"
+}
+
+/**
+ * `-DshAnswer`'s choices for a question batch: per question (`/` between them) the 1-based numbers of the options picked
+ * (`+` between them), as taps on the card's option rows pick them. Null when the text does not fit the batch.
+ */
+internal fun questionDraftsOf(items: List<AskUserQuestionItem>, spec: String): List<QuestionDraft>? {
+    val groups = spec.split('/')
+    if (groups.size != items.size) return null
+    return items.mapIndexed { index, item ->
+        val options = item.options.orEmpty()
+        val picked = groups[index].split('+').map { number ->
+            number.trim().toIntOrNull()?.let { options.getOrNull(it - 1)?.label } ?: return null
+        }
+        QuestionDraft(selected = picked)
+    }
+}
+
+/**
+ * The request half of a [ChatDrive] (#141 M7), once its prompt has been sent: waits for the request the turn puts to the
+ * reader and writes `DSH_CHAT_RESULT request kind=approval tool=… card=command|reason waiting=…` or `… kind=questions
+ * count=… multi=… review=yes|no`. With [ChatDrive.reconnect] it then starts a fresh connection, the call the app makes
+ * when it comes back to the foreground, waits for it, and writes `reconnected generation=… request=…` (the request the
+ * store holds for the session on the new connection). Once [ChatDrive.awaitAnswer] has returned (the script has its
+ * screenshot of the card) it answers as the card's buttons do, with the same store calls ([ChatRequests]): an approval
+ * `allow` or `deny`, a question batch the options [questionDraftsOf] reads, a plan review its option (the first
+ * approves). It writes `answered <answer> outcome=…`, then `settled state=idle tool=ok|error reply=<chars>` once the turn
+ * has ended: the tool call's result and the reply that followed it.
+ */
+private suspend fun driveRequest(
+    store: SessionStore,
+    sessionId: String,
+    drive: ChatDrive,
+    lastSeqBefore: Long,
+    onReconnect: () -> Unit,
+    onReport: (String) -> Unit,
+) {
+    val answer = drive.answer ?: return
+    val asked = withTimeoutOrNull(REPLY_WAIT_MS) {
+        combine(store.pendingApproval, store.pendingQuestions) { approval, questions ->
+            approval?.takeIf { it.sessionId == sessionId } ?: questions?.takeIf { it.sessionId == sessionId }
+        }.first { it != null }
+    }
+    when (asked) {
+        is PendingApproval -> {
+            val card = if (approvalPromptOf(asked.toolName, asked.rawReason, asked.reason).detail != null) "command" else "reason"
+            onReport(
+                "DSH_CHAT_RESULT request kind=approval tool=${asked.toolName} card=$card waiting=${asked.waitingAfter} " +
+                    "session=$sessionId",
+            )
+        }
+        is PendingQuestions -> onReport(
+            "DSH_CHAT_RESULT request kind=questions count=${asked.items.size} " +
+                "multi=${asked.items.count { it.multiSelect == true }} " +
+                "review=${if (planReviewOf(asked.items) != null) "yes" else "no"} session=$sessionId",
+        )
+        else -> {
+            onReport("DSH_CHAT_RESULT request kind=none session=$sessionId")
+            return
+        }
+    }
+    if (drive.reconnect) {
+        val before = store.connectionState.value.connectedGeneration
+        onReconnect()
+        val back = withTimeoutOrNull(RECONNECT_WAIT_MS) {
+            store.connectionState.first { it.phase == ConnectionPhase.CONNECTED && it.connectedGeneration > before }
+        }
+        // The new connection's `$events` hands the open request over again; give it, and the session's new follow, a
+        // moment to land before saying what the store holds.
+        delay(RECONNECT_SETTLE_MS)
+        onReport(
+            "DSH_CHAT_RESULT reconnected generation=${back?.connectedGeneration ?: before} " +
+                "request=${requestKind(pendingRequest(store, sessionId))} session=$sessionId",
+        )
+    }
+    drive.awaitAnswer?.invoke()
+    val outcome = when (val request = pendingRequest(store, sessionId)) {
+        is PendingApproval -> store.respondApproval(request.sessionId, request.approvalId, allow = answer.equals("allow", ignoreCase = true))
+        is PendingQuestions -> {
+            val drafts = questionDraftsOf(request.items, answer)
+            val review = planReviewOf(request.items)
+            when {
+                drafts == null -> null
+                // The plan review card answers its one question with the option tapped, as its buttons do.
+                review != null -> store.answerQuestions(
+                    request.sessionId,
+                    AskUserQuestionAnswer(listOf(AskUserQuestionAnswerItem(review.id, drafts.single().selected))),
+                )
+                else -> store.answerQuestions(request.sessionId, encodeAnswers(request.items, drafts))
+            }
+        }
+        else -> null
+    }
+    onReport("DSH_CHAT_RESULT answered $answer outcome=${outcomeName(outcome)} session=$sessionId")
+    if (outcome !is QuestionOutcome.Accepted) return
+    val settled = withTimeoutOrNull(REPLY_WAIT_MS) {
+        store.currentConversation.first { c ->
+            val last = c?.nodes?.lastOrNull()
+            c?.sessionId == sessionId && !c.running && last is TurnEndNode && last.seq > lastSeqBefore
+        }
+    }
+    val tool = settled?.nodes?.lastOrNull { it is ToolResultNode } as? ToolResultNode
+    val reply = settled?.nodes?.lastOrNull { it is AssistantMessageNode && !it.streaming } as? AssistantMessageNode
+    onReport(
+        "DSH_CHAT_RESULT settled state=${if (settled != null) "idle" else "running"} " +
+            "tool=${when { tool == null -> "none"; tool.isError -> "error"; else -> "ok" }} " +
+            "reply=${reply?.plainText?.length ?: 0} session=$sessionId",
+    )
+}
+
+/** After a reconnect, how long the report waits for the new connection's requests and follow to land. */
+private const val RECONNECT_SETTLE_MS = 2_000L

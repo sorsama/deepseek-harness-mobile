@@ -853,6 +853,24 @@ class SessionStore(
 
     // Open-session fold state.
     private var currentId: String? = null
+
+    /**
+     * How many opens there have been, bumped under [lock] by each one as it makes its session the open one.
+     *
+     * Two opens can be under way at once: the landing session [baseline] picks after connecting, and the row the
+     * person tapped on the list that same read put on screen (or iOS's `-DshOpenSession`, which waits for that list
+     * too). Whichever commits last is the open session, so each later step asks whether its open is still the latest:
+     * the landing open, which decided before the person did, stands down ([openSessionIfLatest]), and a superseded open
+     * neither starts its streams over the newer one's ([startFollow], [startJobs]) nor remembers its session for the
+     * next launch ([rememberLastSession]).
+     */
+    private var openCount = 0L
+
+    /**
+     * One landing-session write at a time, each checking under it that its open is still the latest: otherwise a
+     * superseded open's write could land after the newer one's and bring the app back to the wrong session next time.
+     */
+    private val rememberMutex = Mutex()
     /**
      * Identity of the open session when it is a subagent child, mirroring [currentSubagent].
      *
@@ -1077,8 +1095,15 @@ class SessionStore(
             // On a reconnect `currentSessionId` is already set, so the resolver only ever runs on
             // the first connect of a process — no double-open, and reconnect keeps reopening what
             // was open.
-            val sid = currentSessionId.value ?: resolveInitialSession() ?: return@coroutineScope
-            openSession(sid)
+            //
+            // The list just read is on screen now, and choosing takes a moment (the remembered
+            // session is read from storage), so the person may open a session from it first. The
+            // open count is read with the open session, before choosing, and the open below stands
+            // down if anything was opened since: a session someone picked is never swapped for the
+            // one the app would have landed in.
+            val (open, opens) = synchronized(lock) { currentId to openCount }
+            val sid = open ?: resolveInitialSession() ?: return@coroutineScope
+            openSessionIfLatest(sid, expectedOpens = opens)
         }
     }
 
@@ -1997,15 +2022,26 @@ class SessionStore(
      */
     private fun applyWorkspaceValue(value: WorkspaceValue) = upsertWorkspace(value.workspace)
 
-    suspend fun openSession(sessionId: String) = withContext(Dispatchers.Default) {
+    suspend fun openSession(sessionId: String) = openSessionIfLatest(sessionId, expectedOpens = null)
+
+    /**
+     * Open [sessionId], or, with [expectedOpens], only if no other open has come since [openCount] read that.
+     *
+     * [expectedOpens] is for the open the store makes by itself after connecting ([baseline]): it reads the count
+     * before it chooses, and the person may open a session meanwhile, from the list the same read has just put on
+     * screen. Theirs is the session they asked for, so this one stands down. A person's open passes null and always
+     * goes ahead: the latest tap wins.
+     */
+    private suspend fun openSessionIfLatest(sessionId: String, expectedOpens: Long?) = withContext(Dispatchers.Default) {
         val api = apiOrNull() ?: return@withContext
-        _loadOlderFailed.value = false
         // A target the list read never saw — a search hit, or a session reference that raced the
         // `session-added` frame — has no row, and a child's creator is only in that row. Without it
         // the follow would fall back to the plain address this fix exists to avoid. One list read
         // closes that hole; an ordinary tap already has the row and skips the round trip.
         if (synchronized(lock) { sessionRows[sessionId] == null }) refreshSessions()
-        val subagent = synchronized(lock) {
+        val opened = synchronized(lock) {
+            if (expectedOpens != null && openCount != expectedOpens) return@synchronized null
+            val open = ++openCount
             // The list row is the only place the child's creator is known without reading the
             // child's own log, and the follow address is built before that read — so it has to be
             // settled here. A row whose `subagent` projection is absent still produces an identity
@@ -2035,10 +2071,12 @@ class SessionStore(
                 _subagentMode.value = null
                 _commands.value = emptyList()
             }
-            resolved
-        }
-        startFollow(sessionId)
-        startJobs(sessionId)
+            open to resolved
+        } ?: return@withContext
+        val (open, subagent) = opened
+        _loadOlderFailed.value = false
+        startFollow(sessionId, open)
+        startJobs(sessionId, open)
         // Everything past the follow stream furnishes the chrome around the transcript — the skill
         // and model pickers, the subagent list, the command catalog — and none of it is needed to
         // paint a single message. Run in series they stacked four round trips onto every session
@@ -2056,7 +2094,7 @@ class SessionStore(
             launch { refreshCommands() }
             // A child landing would be filtered on the next launch anyway (see InitialSession), so
             // remembering one here only displaces the session the app would otherwise return to.
-            if (subagent == null) launch { rememberLastSession(sessionId) }
+            if (subagent == null) launch { rememberLastSession(sessionId, open) }
         }
     }
 
@@ -2078,14 +2116,8 @@ class SessionStore(
      * snapshot immediately and promotes it in the background, so opening a transcript is an
      * observation rather than an execution.
      */
-    private fun startFollow(sessionId: String) {
-        followJob?.cancel()
-        followCursor = null
+    private fun startFollow(sessionId: String, open: Long) {
         val mux = connection.generation?.mux
-        if (mux == null) {
-            log("cannot follow $sessionId: no connection generation")
-            return
-        }
         val args = buildJsonObject {
             put(
                 "request",
@@ -2099,20 +2131,32 @@ class SessionStore(
                 ),
             )
         }
-        followJob = scope.launch {
-            runCatching {
-                mux.openStream("session/follow", args).collect { item ->
-                    when (val frame = decodeOrNull(SessionFollowFrameSerializer, item)) {
-                        is SessionFollowFrame.Snapshot -> applyFollowSnapshot(sessionId, frame)
-                        is SessionFollowFrame.Entry -> applyFollowEntry(sessionId, frame.record)
-                        is SessionFollowFrame.AssistantStream -> applyAssistantFrame(sessionId, frame)
-                        null -> log("undecodable session/follow frame")
+        synchronized(lock) {
+            // Another open has committed since this one did ([openCount]): the follow it starts is the one the open
+            // session needs. Replacing it with this one would leave the transcript waiting on a journal for a session
+            // that is no longer open, whose frames the fold drops.
+            if (openCount != open) return
+            followJob?.cancel()
+            followCursor = null
+            if (mux == null) {
+                log("cannot follow $sessionId: no connection generation")
+                return
+            }
+            followJob = scope.launch {
+                runCatching {
+                    mux.openStream("session/follow", args).collect { item ->
+                        when (val frame = decodeOrNull(SessionFollowFrameSerializer, item)) {
+                            is SessionFollowFrame.Snapshot -> applyFollowSnapshot(sessionId, frame)
+                            is SessionFollowFrame.Entry -> applyFollowEntry(sessionId, frame.record)
+                            is SessionFollowFrame.AssistantStream -> applyAssistantFrame(sessionId, frame)
+                            null -> log("undecodable session/follow frame")
+                        }
                     }
+                }.onFailure { failure ->
+                    if (failure is kotlinx.coroutines.CancellationException) throw failure
+                    log("session/follow ended for $sessionId", failure)
+                    setConnectionError(failure.message)
                 }
-            }.onFailure { failure ->
-                if (failure is kotlinx.coroutines.CancellationException) throw failure
-                log("session/follow ended for $sessionId", failure)
-                setConnectionError(failure.message)
             }
         }
     }
@@ -2139,22 +2183,27 @@ class SessionStore(
      * can see on open and after every change. A 0.1.6 host refuses the endpoint, which only ends
      * this stream: its control-stream jobs frames still feed [jobs] through [applyJobs].
      */
-    private fun startJobs(sessionId: String) {
-        jobsJob?.cancel()
-        val mux = connection.generation?.mux ?: return
+    private fun startJobs(sessionId: String, open: Long) {
+        val mux = connection.generation?.mux
         val args = buildJsonObject {
             put("request", encodeToJsonElement(JobListRequest.serializer(), JobListRequest(sessionId)))
         }
-        jobsJob = scope.launch {
-            runCatching {
-                mux.openStream("job/list", args).collect { item ->
-                    val rows = jobRowsOf(item) ?: return@collect
-                    _jobControls.value = true
-                    applyJobs(sessionId, rows)
+        synchronized(lock) {
+            // As in [startFollow]: a newer open's stream is the one to keep.
+            if (openCount != open) return
+            jobsJob?.cancel()
+            if (mux == null) return
+            jobsJob = scope.launch {
+                runCatching {
+                    mux.openStream("job/list", args).collect { item ->
+                        val rows = jobRowsOf(item) ?: return@collect
+                        _jobControls.value = true
+                        applyJobs(sessionId, rows)
+                    }
+                }.onFailure { failure ->
+                    if (failure is kotlinx.coroutines.CancellationException) throw failure
+                    log("job/list ended for $sessionId", failure)
                 }
-            }.onFailure { failure ->
-                if (failure is kotlinx.coroutines.CancellationException) throw failure
-                log("job/list ended for $sessionId", failure)
             }
         }
     }
@@ -2246,11 +2295,18 @@ class SessionStore(
     private fun expandRecords(records: List<SessionHistoryRecord>): List<SessionEventEnvelope> =
         ChunkRows.expandAll(records).map { wireEventToEnvelope(it) }
 
-    /** Persist the landing session for this harness; a write failure is not worth surfacing. */
-    private suspend fun rememberLastSession(sessionId: String) {
+    /**
+     * Persist the landing session for this harness; a write failure is not worth surfacing. Only while [open] is still
+     * the latest open: a newer one remembers its own session, and this write landing after it would bring the next
+     * launch back to the session the person moved away from.
+     */
+    private suspend fun rememberLastSession(sessionId: String, open: Long) {
         val key = hostKey() ?: return
-        runCatching { lastSessions.setLastSessionId(key, sessionId) }
-            .onFailure { log("could not remember last session", it) }
+        rememberMutex.withLock {
+            if (synchronized(lock) { openCount != open }) return
+            runCatching { lastSessions.setLastSessionId(key, sessionId) }
+                .onFailure { log("could not remember last session", it) }
+        }
     }
 
     /**

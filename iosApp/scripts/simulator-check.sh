@@ -36,6 +36,14 @@ mkdir -p "$out"
 defaults write com.apple.iphonesimulator ConnectHardwareKeyboard -bool false 2>/dev/null || true
 xcrun simctl boot "$udid" 2>/dev/null || true
 xcrun simctl bootstatus "$udid" -b > /dev/null
+# Best effort, not checked: the keyboard's first-run "slide to type" tip would cover the keys in a keyboard screenshot.
+# These are the preference keys simulator tooling sets to skip it; they are undocumented, so nothing depends on them.
+skip_keyboard_tips() {
+  xcrun simctl spawn "$1" defaults write com.apple.Preferences DidShowContinuousPathIntroduction -bool true 2>/dev/null || true
+  xcrun simctl spawn "$1" defaults write com.apple.keyboard.preferences DidShowContinuousPathIntroduction -bool true 2>/dev/null || true
+  xcrun simctl spawn "$1" defaults write com.apple.Preferences KeyboardContinuousPathEnabled -bool false 2>/dev/null || true
+}
+skip_keyboard_tips "$udid"
 xcrun simctl ui "$udid" appearance light
 xcrun simctl uninstall "$udid" "$bundle" 2>/dev/null || true
 xcrun simctl install "$udid" "$app"
@@ -49,6 +57,8 @@ markdown_result="$data/Documents/dsh-markdown-result.txt"
 toolcards_result="$data/Documents/dsh-toolcards-result.txt"
 chat_result="$data/Documents/dsh-chat-result.txt"
 stop_signal="$data/Documents/dsh-press-stop"
+answer_signal="$data/Documents/dsh-answer"
+keyboard_result="$data/Documents/dsh-keyboard-result.txt"
 fixtures="${4:-${SIM_REPORTS:-build/ios-reports}/fixtures.log}"
 
 shot() {
@@ -58,7 +68,7 @@ shot() {
 # Starts the app with the given arguments; its console output goes to console.log, tagged.
 launch() {
   rm -f "$result" "$pair_result" "$probe_result" "$sessions_result" "$drawer_result" "$markdown_result" "$toolcards_result" "$chat_result" \
-    "$stop_signal"
+    "$stop_signal" "$answer_signal" "$keyboard_result"
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
   echo "=== launch: $*" >> "$out/console.log"
   xcrun simctl launch --console "$udid" "$bundle" "$@" >> "$out/console.log" 2>&1 &
@@ -298,6 +308,117 @@ keyboard_scenario() {
   expect_chat "keyboard-$device-$look" \
     "^DSH_CHAT_RESULT keyboard ime=[1-9][0-9]* composer=[1-9][0-9]* window=[1-9][0-9]* above=yes$"
   shot "keyboard/$device-$look-typed"
+  xcrun simctl ui "$udid" appearance light
+}
+
+# A request a turn puts to the reader, answered from the chat (iOS M7: the shared approval, question and plan review
+# cards): $1 names the device, $2 the look (light, dark or ar), $3 the session, $4 the kind, $5 the answer
+# (`-DshAnswer`). The demo harness asks by the prompt's first word (DemoHarness): `approval` sends "Install …" (a sandbox
+# escalation: the card with the harness's reason), `command` "Test …" (the built-in gate's `bash: <command>`: the card
+# that shows the command), `question` "Ask …" (one question), `batch` "Choose …" (two, the first a multiple choice),
+# `plan` "Plan …" (a plan review), and `reconnect` sends "Install …" too and makes the app start a fresh connection while
+# the card is open, as coming back to the foreground does: the request is handed to the new connection and the session's
+# follow starts again, so the turn's end arrives over the new one. The app writes `request …` once the card is up (the
+# first screenshot), answers once the script creates Documents/dsh-answer, and writes `answered …` and `settled state=idle
+# tool=ok|error reply=<the reply's length>` once the turn has ended (the second screenshot).
+# The screenshots are requests/<device>-<look>-<kind>-{pending,answered}.png.
+request_scenario() {
+  local device="$1" look="$2" session="$3" kind="$4" answer="$5" text extra=() request tool reply
+  mkdir -p "$out/requests"
+  case "$look" in
+    dark) xcrun simctl ui "$udid" appearance dark ;;
+    *) xcrun simctl ui "$udid" appearance light ;;
+  esac
+  [ "$look" = ar ] && extra=(-AppleLanguages "(ar)" -AppleLocale ar_SA)
+  case "$kind" in
+    approval|reconnect)
+      text="Install the Firebase tools."
+      request="kind=approval tool=bash card=reason waiting=0"
+      if [ "$answer" = allow ]; then tool=ok; reply='Installed. The `firebase` command is on your path now.'
+      else tool=error; reply='I did not install it. Run `npm install --global firebase-tools` yourself when you want it.'; fi
+      ;;
+    command)
+      text="Test the sync queue."
+      request="kind=approval tool=bash card=command waiting=0"
+      if [ "$answer" = allow ]; then tool=ok; reply='All three sync tests pass.'
+      else tool=error; reply='I did not run the tests. Say when you want them run.'; fi
+      ;;
+    question)
+      text="Ask about retries."
+      request="kind=questions count=1 multi=0 review=no"
+      tool=ok; reply='Got it: Yes, once.'
+      ;;
+    batch)
+      text="Choose the release checks."
+      request="kind=questions count=2 multi=1 review=no"
+      tool=ok; reply='Got it: Unit tests, Lint, Internal testing.'
+      ;;
+    plan)
+      text="Plan the guard."
+      request="kind=questions count=1 multi=0 review=yes"
+      tool=ok; reply='Starting with step 1.'
+      ;;
+  esac
+  [ "$kind" = reconnect ] && extra+=(-DshReconnect YES)
+  launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshOpenSession "$session" -DshChatScroll tail \
+    -DshPrompt "$(printf '%s' "$text" | xxd -p | tr -d '\n')" -DshSendPrompt YES -DshAnswer "$answer" ${extra[@]+"${extra[@]}"}
+  expect "request-$device-$look-$kind-connected" "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
+  expect_chat "request-$device-$look-$kind-opened" "^DSH_CHAT_RESULT opened rows=[1-9][0-9]* session=$session more="
+  expect_chat "request-$device-$look-$kind-sent" "^DSH_CHAT_RESULT sent chars=${#text} session=$session$"
+  expect_chat "request-$device-$look-$kind-asked" "^DSH_CHAT_RESULT request $request session=$session$"
+  if [ "$kind" = reconnect ]; then
+    # The first connection is generation 1; the reconnect's is a later one, and the store still holds the approval.
+    expect_chat "request-$device-$look-reconnected" "^DSH_CHAT_RESULT reconnected generation=[2-9][0-9]* request=approval session=$session$"
+  fi
+  shot "requests/$device-$look-$kind-pending"
+  touch "$answer_signal"
+  expect_chat "request-$device-$look-$kind-answered" "^DSH_CHAT_RESULT answered $answer outcome=accepted session=$session$"
+  expect_chat "request-$device-$look-$kind-settled" "^DSH_CHAT_RESULT settled state=idle tool=$tool reply=${#reply} session=$session$"
+  shot "requests/$device-$look-$kind-answered"
+  xcrun simctl ui "$udid" appearance light
+}
+
+# The chat's red connection strip (iOS M7: the shared strips, Android's code): a prompt the demo's agent fails on before
+# it starts a turn ("Fail …"), which the harness reports live (`api-session/error`). The app writes `banner shown=error`
+# once the store has the failure and the strip has slid in. The screenshot is requests/<device>-<look>-banner.png.
+banner_scenario() {
+  local device="$1" look="$2" session="$3" text="Fail on purpose."
+  mkdir -p "$out/requests"
+  case "$look" in
+    dark) xcrun simctl ui "$udid" appearance dark ;;
+    *) xcrun simctl ui "$udid" appearance light ;;
+  esac
+  launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshOpenSession "$session" -DshChatScroll tail \
+    -DshPrompt "$(printf '%s' "$text" | xxd -p | tr -d '\n')" -DshSendPrompt YES -DshAwaitBanner YES
+  expect "banner-$device-$look-connected" "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
+  expect_chat "banner-$device-$look-sent" "^DSH_CHAT_RESULT sent chars=${#text} session=$session$"
+  expect_chat "banner-$device-$look" "^DSH_CHAT_RESULT banner shown=error session=$session$"
+  shot "requests/$device-$look-banner"
+  xcrun simctl ui "$udid" appearance light
+}
+
+# The software keyboard up over the Connect screen (iOS M7): every shared screen pads itself for the keyboard
+# (`safeDrawing`, with the view controller's `OnFocusBehavior.DoNothing`), so a focused field on a screen that is not the
+# chat must still end above it. `-DshFocusAddress YES` moves focus into the address field as a tap does; the app writes
+# `DSH_KEYBOARD_RESULT field=address ime=… bottom=… window=… above=yes` (pixels) to Documents/dsh-keyboard-result.txt
+# once the screen has settled on the keyboard. The screenshot is keyboard/<device>-<look>-connect.png.
+connect_keyboard_scenario() {
+  local device="$1" look="$2" line
+  mkdir -p "$out/keyboard"
+  xcrun simctl ui "$udid" appearance "$look"
+  launch -DshReset YES -DshConnectAddress "http://127.0.0.1:3181" -DshFocusAddress YES
+  for _ in $(seq 1 45); do
+    [ -s "$keyboard_result" ] && break
+    sleep 1
+  done
+  line="$(cat "$keyboard_result" 2>/dev/null || echo '<no keyboard result within 45 s>')"
+  echo "[keyboard-$device-$look-connect] $line" | cut -c1-400
+  if ! grep -q -- "^DSH_KEYBOARD_RESULT field=address ime=[1-9][0-9]* bottom=[1-9][0-9]* window=[1-9][0-9]* above=yes$" <<<"$line"; then
+    echo "::error::[keyboard-$device-$look-connect] expected the address field above the software keyboard"
+    failures=$((failures + 1))
+  fi
+  sleep 2
+  shot "keyboard/$device-$look-connect"
   xcrun simctl ui "$udid" appearance light
 }
 
@@ -737,6 +858,22 @@ if [ -n "$demo_url" ] && [ "$demo_url" != "null" ]; then
   keyboard_scenario iphone light
 fi
 
+# 67 to 74. What a turn asks the reader, answered from the chat on this iPhone (iOS M7): an approval allowed (light), a
+#     command refused (dark), one question answered (light), a batch with a multiple choice answered (Arabic, right to
+#     left), a plan review approved (dark), an approval that stays open across a reconnect and is allowed over the new
+#     connection (light), and the red connection strip (light). Each fails without its `DSH_CHAT_RESULT` lines.
+#     75. The software keyboard over the Connect screen's address field.
+if [ -n "$demo_url" ] && [ "$demo_url" != "null" ]; then
+  request_scenario iphone light demo-02 approval allow
+  request_scenario iphone dark demo-05 command deny
+  request_scenario iphone light demo-07 question 2
+  request_scenario iphone ar demo-08 batch 1+2/1
+  request_scenario iphone dark demo-09 plan 1
+  request_scenario iphone light demo-10 reconnect allow
+  banner_scenario iphone light demo-11
+fi
+connect_keyboard_scenario iphone light
+
 # 54 to 57. The same list on an iPad, where it is a pane beside the chat (the Android tablet layout: planShell docks
 # the list from 600dp wide). Same app, installed on the second simulator.
 if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" ] && [ -n "$demo_count" ]; then
@@ -762,6 +899,9 @@ if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" 
   toolcards_result="$data/Documents/dsh-toolcards-result.txt"
   chat_result="$data/Documents/dsh-chat-result.txt"
   stop_signal="$data/Documents/dsh-press-stop"
+  answer_signal="$data/Documents/dsh-answer"
+  keyboard_result="$data/Documents/dsh-keyboard-result.txt"
+  skip_keyboard_tips "$udid"
   fixtures_listening ipad 3181 3190
   warm_up warm-up-ipad
   drawer_scenarios ipad true
@@ -769,6 +909,8 @@ if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" 
   chat_scenario ipad light first tail
   # 63. The composer under the transcript with the list docked, a typed draft.
   composer_scenario ipad light typed
+  # 76. An approval with the list docked, allowed.
+  request_scenario ipad light demo-02 approval allow
 elif [ -z "${SIM_IPAD_UDID:-}" ]; then
   echo "SIM_IPAD_UDID is not set: the iPad session list scenarios did not run"
 fi
