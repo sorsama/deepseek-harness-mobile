@@ -1,7 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="chat_state_running">چل رہا ہے</string>
-    <string name="chat_state_done">مکمل</string>
-    <string name="chat_state_failed">ناکام</string>
-    <string name="chat_state_stopped">روک دیا گیا</string>
 </resources>

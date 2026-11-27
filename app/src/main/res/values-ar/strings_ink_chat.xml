@@ -3,12 +3,10 @@
 <resources>
     <string name="ink_chat_filter_all">الكل %1$d</string>
     <string name="ink_chat_files_tab">الملفات · %1$d</string>
-    <string name="ink_chat_files_empty">لم تتغير ملفات بعد</string>
     <string name="ink_chat_steer_hint">وجّه الوكيل…</string>
     <string name="ink_chat_goal_dock">الهدف · %1$s</string>
     <string name="ink_chat_more">المزيد</string>
     <string name="ink_chat_queue_next_turn">الجولة التالية</string>
     <string name="ink_chat_today">اليوم</string>
     <string name="ink_chat_yesterday">أمس</string>
-    <string name="ink_chat_changed_this_session">ملفات هذه الجلسة</string>
 </resources>

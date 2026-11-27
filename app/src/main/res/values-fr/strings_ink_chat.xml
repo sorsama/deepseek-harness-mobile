@@ -3,12 +3,10 @@
 <resources>
     <string name="ink_chat_filter_all">Toutes %1$d</string>
     <string name="ink_chat_files_tab">Fichiers · %1$d</string>
-    <string name="ink_chat_files_empty">Aucun fichier modifié</string>
     <string name="ink_chat_steer_hint">Pilotez l’agent…</string>
     <string name="ink_chat_goal_dock">Objectif · %1$s</string>
     <string name="ink_chat_more">Plus</string>
     <string name="ink_chat_queue_next_turn">Tour suivant</string>
     <string name="ink_chat_today">Aujourd’hui</string>
     <string name="ink_chat_yesterday">Hier</string>
-    <string name="ink_chat_changed_this_session">Modifié dans cette session</string>
 </resources>

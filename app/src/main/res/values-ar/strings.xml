@@ -43,16 +43,8 @@
     <string name="chat_composer_stop">إيقاف</string>
     <string name="chat_composer_attach">إرفاق صورة</string>
     <string name="chat_composer_remove_image">إزالة الصورة</string>
-    <string name="chat_empty_title">ابدأ العمل مع harness الخاص بك</string>
-    <string name="chat_empty_hint">أرسل رسالة لبدء جولة جديدة.</string>
     <string name="chat_load_older">تحميل الرسائل الأقدم</string>
-    <string name="chat_loading_older">جارٍ تحميل الرسائل الأقدم…</string>
-    <string name="chat_load_older_retry">تعذّر تحميل الرسائل الأقدم. اضغط للمحاولة مرة أخرى</string>
     <string name="chat_stopped">متوقف</string>
-    <string name="chat_max_tokens">تم الوصول إلى الحد الأقصى للرموز</string>
-    <string name="chat_retry_scheduled">إعادة المحاولة خلال %1$d ثانية</string>
-    <string name="chat_copy_message">نسخ الرسالة</string>
-    <string name="chat_branch_message">تفريع من هنا</string>
     <string name="chat_queue_title">الجولات في قائمة الانتظار</string>
     <string name="chat_queue_edit">تعديل</string>
     <string name="chat_queue_remove">إزالة</string>
@@ -61,13 +53,9 @@
     <string name="chat_context_system">النظام</string>
     <string name="chat_context_tools">الأدوات</string>
     <string name="chat_context_messages">الرسائل</string>
-    <string name="chat_compaction">مضغوط</string>
-    <string name="chat_compaction_summary">الملخص</string>
     <string name="chat_details_title">التفاصيل</string>
     <string name="chat_details_empty">حدد صف أداة في المحادثة لعرض المدخلات والمخرجات.</string>
     <string name="chat_input_placeholder">المدخلات</string>
-    <string name="chat_output_placeholder">المخرجات</string>
-    <string name="tool_output_show_raw">عرض JSON الخام</string>
     <string name="tool_output_hide_raw">إخفاء JSON الخام</string>
     <string name="goal_title">الهدف</string>
     <string name="goal_none">لا يوجد هدف نشط</string>
@@ -78,8 +66,6 @@
     <string name="goal_clear">مسح الهدف</string>
     <string name="goal_blocked_reason">العائق: %1$s</string>
     <string name="goal_max_rounds">الحد الأقصى للجولات: %1$s</string>
-    <string name="plan_mode_on">وضع الخطة: مفعّل</string>
-    <string name="plan_mode_off">وضع الخطة: معطّل</string>
     <string name="plan_review_title">الخطة جاهزة للمراجعة</string>
     <string name="plan_review_approve">موافقة</string>
     <string name="plan_review_decline">رفض</string>
@@ -219,7 +205,6 @@
     <string name="chat_composer_mode_steer_hint">يقاطع الجولة الجارية</string>
     <string name="chat_composer_steer_idle">التوجيه يحتاج جولة جارية</string>
     <string name="chat_tab">المحادثة</string>
-    <string name="chat_todo_title">المهام</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">لا توجد أوامر في هذه الجلسة</string>
     <string name="chat_commands_unavailable">لا يوفّر هذا الـ harness قائمة أوامر</string>
@@ -263,7 +248,6 @@
     <string name="settings_notifications_action_hint">موافقة أو سؤال أو خطة بانتظارك</string>
     <string name="settings_background_hint">يُبقي التحديثات تصلك. يعرض Android إشعارًا.</string>
     <string name="trajectory_turn">الجولة %1$d</string>
-    <string name="chat_retrying">إعادة المحاولة…</string>
     <string name="plan_mode_title">وضع التخطيط</string>
     <string name="plan_mode_hint">البحث واقتراح خطة قبل إجراء أي تعديل.</string>
     <string name="plugins_enabled">مُفعّل</string>
@@ -333,8 +317,6 @@
     <string name="terminal_control">تولي التحكم</string>
     <string name="feedback_note">ملاحظة التقييم (اختيارية)</string>
     <string name="feedback_send">إرسال التقييم</string>
-    <string name="system_prompt">تعليمات النظام</string>
-    <string name="image_offload">حُذفت الصور السابقة من الطلب</string>
     <string name="jobs_stop">إيقاف المهمة</string>
     <string name="jobs_stopping">جارٍ الإيقاف</string>
     <string name="jobs_output_empty">لا يوجد إخراج بعد</string>
@@ -394,7 +376,6 @@
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
-    <string name="rewind_marker">تمت الإعادة إلى هنا</string>
     <string name="rewind_no_text">(بدون نص)</string>
     <string name="rewind_to">الإعادة إلى: %1$s</string>
     <string name="rewind_mode_chat">إعادة المحادثة فقط</string>
@@ -413,7 +394,6 @@
     <string name="details_section_activity">النشاط</string>
     <string name="details_section_host">المضيف</string>
     <string name="details_preset_label">الإعداد المسبق</string>
-    <string name="details_copy_link">نسخ الرابط</string>
     <string name="chat_model_label">النموذج</string>
     <string name="panel_empty_folder">هذا المجلد فارغ</string>
     <string name="panel_preview_hint">انقر على ملف في الملفات لفتحه هنا</string>
@@ -421,9 +401,7 @@
     <string name="settings_update_up_to_date">لديك أحدث إصدار.</string>
     <string name="settings_update_unreachable">تعذر الوصول إلى GitHub.</string>
     <string name="chat_tool_group_count">استدعاءات الأدوات: %1$d</string>
-    <string name="chat_tool_group_failed">%1$d فشلت</string>
     <string name="chat_thought_process">عملية التفكير</string>
-    <string name="chat_process_title">سير العمل</string>
     <!-- ==== This phone (Termux) ==== -->
     <string name="connect_mode_loopback">هذا الهاتف</string>
     <string name="connect_loopback_title">harness على هذا الهاتف</string>
@@ -463,20 +441,11 @@
     <string name="chat_history_no_match">لا توجد رسائل مطابقة.</string>
     <string name="chat_history_image">صورة</string>
     <string name="hold_message_actions">إجراءات الرسالة</string>
-    <string name="hold_tool_actions">إجراءات استدعاء الأداة</string>
     <string name="hold_file_actions">إجراءات الملف</string>
-    <string name="hold_select_text">تحديد النص</string>
     <string name="hold_edit_as_new">تعديل كرسالة جديدة</string>
-    <string name="hold_edit_as_new_detail">يضعها في مربع الكتابة، وتبقى الرسالة الأصلية.</string>
     <string name="hold_rewind_here">الإعادة إلى هذه الرسالة</string>
-    <string name="hold_rewind_here_detail">يسحبها مع كل ما بعدها، ثم يعيدها إلى مربع الكتابة</string>
     <string name="hold_copy_command">نسخ الأمر</string>
-    <string name="hold_copy_path">نسخ المسار</string>
-    <string name="hold_copy_query">نسخ البحث</string>
     <string name="hold_copy_output">نسخ المخرجات</string>
-    <string name="hold_copy_arguments">نسخ الوسائط</string>
-    <string name="hold_open_file">فتح الملف</string>
-    <string name="hold_mention">الإشارة في الرسالة</string>
     <string name="hold_send_label">اختيار طريقة الإرسال</string>
     <string name="hold_send_steer">توجيه الآن</string>
     <string name="hold_send_queue">إضافة إلى قائمة الانتظار بعد هذه الجولة</string>

@@ -1,7 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="chat_state_running">运行中</string>
-    <string name="chat_state_done">已完成</string>
-    <string name="chat_state_failed">失败</string>
-    <string name="chat_state_stopped">已停止</string>
 </resources>

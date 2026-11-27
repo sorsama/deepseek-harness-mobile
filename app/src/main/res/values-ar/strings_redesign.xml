@@ -1,22 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="chat_jump_latest">الانتقال إلى الأحدث</string>
-    <string name="chat_suggest_overview">أعطني نظرة عامة على هذا المشروع</string>
-    <string name="chat_suggest_tests">شغّل الاختبارات وأصلح ما يفشل</string>
-    <string name="chat_suggest_changes">راجع تغييراتي التي لم تُثبَّت بعد</string>
     <string name="chat_queue_placement_queued">الجولة التالية</string>
     <string name="chat_queue_placement_steering">توجيه</string>
     <string name="chat_queue_placement_context">سياق</string>
     <string name="chat_status_running">يعمل</string>
     <string name="chat_status_idle">في الانتظار</string>
-    <plurals name="chat_jump_latest_new">
-        <item quantity="zero">%d جديدة</item>
-        <item quantity="one">%d جديدة</item>
-        <item quantity="two">%d جديدة</item>
-        <item quantity="few">%d جديدة</item>
-        <item quantity="many">%d جديدة</item>
-        <item quantity="other">%d جديدة</item>
-    </plurals>
     <plurals name="trajectory_step_count">
         <item quantity="zero">%d خطوة</item>
         <item quantity="one">%d خطوة</item>

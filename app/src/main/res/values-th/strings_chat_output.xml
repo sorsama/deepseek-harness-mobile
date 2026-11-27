@@ -1,7 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="chat_state_running">กำลังทำงาน</string>
-    <string name="chat_state_done">เสร็จแล้ว</string>
-    <string name="chat_state_failed">ล้มเหลว</string>
-    <string name="chat_state_stopped">หยุดแล้ว</string>
 </resources>
