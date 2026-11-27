@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">Arrêter et archiver</string>
     <string name="archive_busy_title">Arrêter et archiver cette session ?</string>
     <string name="archived_restore">Restaurer</string>
+    <string name="chat_attachment_still_uploading">Attendez la fin de l'envoi avant d'envoyer le message.</string>
     <string name="chat_attachment_upload_failed">L'envoi a échoué. Touchez pour réessayer.</string>
     <string name="chat_attachment_uploading">Envoi en cours…</string>
     <string name="chat_branch_message">Créer une branche ici</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">Réessayer</string>
     <string name="connect_unreachable">Injoignable</string>
     <string name="details_copy_link">Copier le lien</string>
+    <string name="err_command_failed">La commande a échoué : %1$s</string>
+    <string name="err_command_images_host">/%1$s ne prend pas en charge les pièces jointes sur ce harness. Retirez-les d'abord.</string>
+    <string name="err_command_no_images">/%1$s n'accepte pas les pièces jointes. Retirez-les d'abord.</string>
+    <string name="err_command_unknown">Commande inconnue : %1$s</string>
     <string name="err_file_not_staged">Le harness ne conserve plus ce fichier. Joignez-le à nouveau.</string>
     <string name="err_file_subagent_unsupported">Les sessions de sous-agent n'acceptent pas les fichiers.</string>
     <string name="err_image_batch_too_large">Ces images dépassent %1$s au total. Retirez-en quelques-unes et réessayez.</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">Adresse du relais</string>
     <string name="pair_working">Appairage…</string>
+    <string name="panel_failed">Impossible de charger ce contenu</string>
     <string name="panel_preview">Aperçu</string>
     <string name="panel_workspace">Espace de travail</string>
     <string name="permission_confirm_ack">Je comprends le risque</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">Lance les commandes et modifie les fichiers sans demander.</string>
     <string name="permission_preset_read_only">Lecture seule</string>
     <string name="permission_preset_workspace_write">Écriture dans l'espace de travail</string>
+    <string name="permission_unconfirmed">Le harness n’a pas confirmé le changement de permissions</string>
     <string name="photos_preparing">Préparation des photos…</string>
     <string name="plan_mode_off">Mode plan : désactivé</string>
     <string name="plan_mode_on">Mode plan : activé</string>

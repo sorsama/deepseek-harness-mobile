@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">停止并归档</string>
     <string name="archive_busy_title">停止并归档此会话？</string>
     <string name="archived_restore">恢复</string>
+    <string name="chat_attachment_still_uploading">请等待上传完成后再发送。</string>
     <string name="chat_attachment_upload_failed">上传失败，点按重试。</string>
     <string name="chat_attachment_uploading">上传中…</string>
     <string name="chat_branch_message">从此处分支</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">重试连接</string>
     <string name="connect_unreachable">无法连接</string>
     <string name="details_copy_link">复制链接</string>
+    <string name="err_command_failed">命令失败：%1$s</string>
+    <string name="err_command_images_host">此 harness 不支持给 /%1$s 带附件，请先移除。</string>
+    <string name="err_command_no_images">/%1$s 不接受附件，请先移除。</string>
+    <string name="err_command_unknown">未知命令：%1$s</string>
     <string name="err_file_not_staged">harness 上已经没有这个文件了，请重新添加。</string>
     <string name="err_file_subagent_unsupported">子智能体会话不接受文件。</string>
     <string name="err_image_batch_too_large">图片总大小超过 %1$s，请移除部分图片。</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">中继地址</string>
     <string name="pair_working">正在配对…</string>
+    <string name="panel_failed">无法加载此内容</string>
     <string name="panel_preview">预览</string>
     <string name="panel_workspace">工作区</string>
     <string name="permission_confirm_ack">我了解其中的风险</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">直接运行命令和修改文件，不询问。</string>
     <string name="permission_preset_read_only">仅可查看</string>
     <string name="permission_preset_workspace_write">工作区内修改</string>
+    <string name="permission_unconfirmed">harness 没有确认权限变更</string>
     <string name="photos_preparing">正在准备照片…</string>
     <string name="plan_mode_off">计划模式：关</string>
     <string name="plan_mode_on">计划模式：开</string>

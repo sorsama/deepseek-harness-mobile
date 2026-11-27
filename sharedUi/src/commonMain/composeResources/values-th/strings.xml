@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">หยุดและเก็บถาวร</string>
     <string name="archive_busy_title">หยุดและเก็บถาวรเซสชันนี้ไหม</string>
     <string name="archived_restore">กู้คืน</string>
+    <string name="chat_attachment_still_uploading">รอให้อัปโหลดเสร็จก่อนส่ง</string>
     <string name="chat_attachment_upload_failed">อัปโหลดไม่สำเร็จ แตะเพื่อลองใหม่</string>
     <string name="chat_attachment_uploading">กำลังอัปโหลด…</string>
     <string name="chat_branch_message">แตกสาขาจากตรงนี้</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">ลองอีกครั้ง</string>
     <string name="connect_unreachable">เข้าถึงไม่ได้</string>
     <string name="details_copy_link">คัดลอกลิงก์</string>
+    <string name="err_command_failed">คำสั่งไม่สำเร็จ: %1$s</string>
+    <string name="err_command_images_host">/%1$s แนบไฟล์บน harness นี้ไม่ได้ ลบไฟล์แนบออกก่อน</string>
+    <string name="err_command_no_images">/%1$s ไม่รับไฟล์แนบ ลบไฟล์แนบออกก่อน</string>
+    <string name="err_command_unknown">ไม่รู้จักคำสั่ง: %1$s</string>
     <string name="err_file_not_staged">harness ไม่มีไฟล์นั้นแล้ว ลองแนบใหม่</string>
     <string name="err_file_subagent_unsupported">เซสชันซับเอเจนต์ไม่รับไฟล์</string>
     <string name="err_image_batch_too_large">รูปภาพรวมกันเกิน %1$s ลองลบออกบางรูปแล้วส่งใหม่</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">ที่อยู่รีเลย์</string>
     <string name="pair_working">กำลังจับคู่…</string>
+    <string name="panel_failed">โหลดเนื้อหานี้ไม่ได้</string>
     <string name="panel_preview">ดูตัวอย่าง</string>
     <string name="panel_workspace">พื้นที่ทำงาน</string>
     <string name="permission_confirm_ack">ฉันเข้าใจความเสี่ยง</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">รันคำสั่งและแก้ไขไฟล์โดยไม่ถาม</string>
     <string name="permission_preset_read_only">อ่านอย่างเดียว</string>
     <string name="permission_preset_workspace_write">เขียนในเวิร์กสเปซ</string>
+    <string name="permission_unconfirmed">harness ไม่ได้ยืนยันการเปลี่ยนสิทธิ์</string>
     <string name="photos_preparing">กำลังเตรียมรูปภาพ…</string>
     <string name="plan_mode_off">โหมดวางแผน: ปิด</string>
     <string name="plan_mode_on">โหมดวางแผน: เปิด</string>

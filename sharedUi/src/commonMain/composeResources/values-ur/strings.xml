@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">روکیں اور آرکائیو کریں</string>
     <string name="archive_busy_title">اس سیشن کو روک کر آرکائیو کریں؟</string>
     <string name="archived_restore">بحال کریں</string>
+    <string name="chat_attachment_still_uploading">بھیجنے سے پہلے اپ لوڈ مکمل ہونے کا انتظار کریں۔</string>
     <string name="chat_attachment_upload_failed">اپ لوڈ ناکام رہا۔ دوبارہ کوشش کے لیے تھپتھپائیں۔</string>
     <string name="chat_attachment_uploading">اپ لوڈ ہو رہا ہے…</string>
     <string name="chat_branch_message">یہاں سے برانچ کریں</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">دوبارہ کوشش کریں</string>
     <string name="connect_unreachable">ناقابل رسائی</string>
     <string name="details_copy_link">لنک کاپی کریں</string>
+    <string name="err_command_failed">کمانڈ ناکام: %1$s</string>
+    <string name="err_command_images_host">/%1$s اس harness پر منسلکات نہیں لے جا سکتا۔ پہلے انہیں ہٹائیں۔</string>
+    <string name="err_command_no_images">/%1$s منسلکات قبول نہیں کرتا۔ پہلے انہیں ہٹائیں۔</string>
+    <string name="err_command_unknown">نامعلوم کمانڈ: %1$s</string>
     <string name="err_file_not_staged">harness کے پاس اب وہ فائل نہیں ہے۔ اسے دوبارہ منسلک کریں۔</string>
     <string name="err_file_subagent_unsupported">ذیلی ایجنٹ سیشن فائلیں قبول نہیں کرتے۔</string>
     <string name="err_image_batch_too_large">یہ تصاویر مل کر %1$s سے زیادہ ہیں۔ کچھ ہٹا کر دوبارہ کوشش کریں۔</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">ریلے کا پتہ</string>
     <string name="pair_working">پیئر ہو رہا ہے…</string>
+    <string name="panel_failed">مواد لوڈ نہیں ہو سکا</string>
     <string name="panel_preview">پیش منظر</string>
     <string name="panel_workspace">ورک اسپیس</string>
     <string name="permission_confirm_ack">مجھے خطرے کا علم ہے</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">بغیر پوچھے کمانڈز چلاتا ہے اور فائلیں بدلتا ہے۔</string>
     <string name="permission_preset_read_only">صرف پڑھنا</string>
     <string name="permission_preset_workspace_write">ورک اسپیس میں لکھنا</string>
+    <string name="permission_unconfirmed">Harness نے اجازت کی تبدیلی کی تصدیق نہیں کی</string>
     <string name="photos_preparing">تصاویر تیار ہو رہی ہیں…</string>
     <string name="plan_mode_off">پلان موڈ: آف</string>
     <string name="plan_mode_on">پلان موڈ: آن</string>

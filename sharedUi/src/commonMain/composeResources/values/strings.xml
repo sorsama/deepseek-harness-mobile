@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">Stop and archive</string>
     <string name="archive_busy_title">Stop and archive this session?</string>
     <string name="archived_restore">Restore</string>
+    <string name="chat_attachment_still_uploading">Wait for the upload to finish before sending.</string>
     <string name="chat_attachment_upload_failed">Upload failed. Tap to retry.</string>
     <string name="chat_attachment_uploading">Uploading…</string>
     <string name="chat_branch_message">Branch from here</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">Try again</string>
     <string name="connect_unreachable">Unreachable</string>
     <string name="details_copy_link">Copy link</string>
+    <string name="err_command_failed">Command failed: %1$s</string>
+    <string name="err_command_images_host">/%1$s can't take attachments on this harness. Remove them first.</string>
+    <string name="err_command_no_images">/%1$s doesn't take attachments. Remove them first.</string>
+    <string name="err_command_unknown">Unknown command: %1$s</string>
     <string name="err_file_not_staged">The harness no longer holds that file. Attach it again.</string>
     <string name="err_file_subagent_unsupported">Subagent sessions don't take files.</string>
     <string name="err_image_batch_too_large">These images add up to more than %1$s. Remove some and try again.</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">Relay address</string>
     <string name="pair_working">Pairing…</string>
+    <string name="panel_failed">Couldn't load this content</string>
     <string name="panel_preview">Preview</string>
     <string name="panel_workspace">Workspace</string>
     <string name="permission_confirm_ack">I understand the risk</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">Runs commands and changes files without asking.</string>
     <string name="permission_preset_read_only">Read Only</string>
     <string name="permission_preset_workspace_write">Workspace Write</string>
+    <string name="permission_unconfirmed">The harness didn’t confirm the permission change</string>
     <string name="photos_preparing">Preparing photos…</string>
     <string name="plan_mode_off">Plan mode: off</string>
     <string name="plan_mode_on">Plan mode: on</string>

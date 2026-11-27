@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">रोकें और आर्काइव करें</string>
     <string name="archive_busy_title">इस सेशन को रोककर आर्काइव करें?</string>
     <string name="archived_restore">वापस लाएँ</string>
+    <string name="chat_attachment_still_uploading">भेजने से पहले अपलोड पूरा होने दें।</string>
     <string name="chat_attachment_upload_failed">अपलोड नहीं हो सका। फिर कोशिश के लिए टैप करें।</string>
     <string name="chat_attachment_uploading">अपलोड हो रहा है…</string>
     <string name="chat_branch_message">यहाँ से ब्रांच करें</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">फिर से कोशिश करें</string>
     <string name="connect_unreachable">पहुँच से बाहर</string>
     <string name="details_copy_link">लिंक कॉपी करें</string>
+    <string name="err_command_failed">कमांड नहीं चल सकी: %1$s</string>
+    <string name="err_command_images_host">इस harness पर /%1$s के साथ अटैचमेंट नहीं चल सकते। पहले उन्हें हटाएँ।</string>
+    <string name="err_command_no_images">/%1$s के साथ अटैचमेंट नहीं चलते। पहले उन्हें हटाएँ।</string>
+    <string name="err_command_unknown">ऐसी कोई कमांड नहीं: %1$s</string>
     <string name="err_file_not_staged">harness के पास अब वह फ़ाइल नहीं है। इसे फिर से अटैच करें।</string>
     <string name="err_file_subagent_unsupported">सबएजेंट सेशन में फ़ाइलें नहीं भेजी जा सकतीं।</string>
     <string name="err_image_batch_too_large">ये तस्वीरें मिलाकर %1$s से ज़्यादा हैं। कुछ हटाकर फिर कोशिश करें।</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">रिले का पता</string>
     <string name="pair_working">पेयर हो रहा है…</string>
+    <string name="panel_failed">यह कॉन्टेंट लोड नहीं हो सका</string>
     <string name="panel_preview">प्रीव्यू</string>
     <string name="panel_workspace">वर्कस्पेस</string>
     <string name="permission_confirm_ack">मुझे जोखिम पता है</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">बिना पूछे कमांड चलाता है और फ़ाइलें बदलता है।</string>
     <string name="permission_preset_read_only">केवल पढ़ें</string>
     <string name="permission_preset_workspace_write">वर्कस्पेस में लिखें</string>
+    <string name="permission_unconfirmed">harness ने अनुमति का बदलाव पक्का नहीं किया</string>
     <string name="photos_preparing">फ़ोटो तैयार हो रहे हैं…</string>
     <string name="plan_mode_off">प्लान मोड: बंद</string>
     <string name="plan_mode_on">प्लान मोड: चालू</string>

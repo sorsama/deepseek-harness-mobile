@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">إيقاف وأرشفة</string>
     <string name="archive_busy_title">إيقاف هذه الجلسة وأرشفتها؟</string>
     <string name="archived_restore">استعادة</string>
+    <string name="chat_attachment_still_uploading">انتظر اكتمال الرفع قبل الإرسال.</string>
     <string name="chat_attachment_upload_failed">فشل الرفع. انقر لإعادة المحاولة.</string>
     <string name="chat_attachment_uploading">جارٍ الرفع…</string>
     <string name="chat_branch_message">تفريع من هنا</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">حاول مرة أخرى</string>
     <string name="connect_unreachable">غير قابل للوصول</string>
     <string name="details_copy_link">نسخ الرابط</string>
+    <string name="err_command_failed">فشل الأمر: %1$s</string>
+    <string name="err_command_images_host">/%1$s لا يمكنه حمل المرفقات على harness هذا. أزلها أولًا.</string>
+    <string name="err_command_no_images">/%1$s لا يقبل المرفقات. أزلها أولًا.</string>
+    <string name="err_command_unknown">أمر غير معروف: %1$s</string>
     <string name="err_file_not_staged">لم يعد harness يحتفظ بهذا الملف. أرفقه مجددًا.</string>
     <string name="err_file_subagent_unsupported">جلسات الوكيل الفرعي لا تقبل الملفات.</string>
     <string name="err_image_batch_too_large">يتجاوز مجموع هذه الصور %1$s. أزل بعضها ثم أعد المحاولة.</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">عنوان المُرحِّل</string>
     <string name="pair_working">جارٍ الاقتران…</string>
+    <string name="panel_failed">تعذر تحميل المحتوى</string>
     <string name="panel_preview">معاينة</string>
     <string name="panel_workspace">مساحة العمل</string>
     <string name="permission_confirm_ack">أدرك المخاطرة</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">يشغّل الأوامر ويغيّر الملفات دون سؤال.</string>
     <string name="permission_preset_read_only">قراءة فقط</string>
     <string name="permission_preset_workspace_write">كتابة في مساحة العمل</string>
+    <string name="permission_unconfirmed">لم يؤكّد الـ harness تغيير الأذونات</string>
     <string name="photos_preparing">جارٍ تجهيز الصور…</string>
     <string name="plan_mode_off">وضع الخطة: معطّل</string>
     <string name="plan_mode_on">وضع الخطة: مفعّل</string>

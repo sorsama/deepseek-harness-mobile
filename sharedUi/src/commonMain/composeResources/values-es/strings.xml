@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">Detener y archivar</string>
     <string name="archive_busy_title">¿Detener y archivar esta sesión?</string>
     <string name="archived_restore">Restaurar</string>
+    <string name="chat_attachment_still_uploading">Espera a que termine la subida antes de enviar.</string>
     <string name="chat_attachment_upload_failed">La subida falló. Toca para reintentar.</string>
     <string name="chat_attachment_uploading">Subiendo…</string>
     <string name="chat_branch_message">Bifurcar desde aquí</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">Intentar de nuevo</string>
     <string name="connect_unreachable">No disponible</string>
     <string name="details_copy_link">Copiar enlace</string>
+    <string name="err_command_failed">El comando falló: %1$s</string>
+    <string name="err_command_images_host">/%1$s no puede llevar adjuntos en este harness. Quítalos primero.</string>
+    <string name="err_command_no_images">/%1$s no acepta adjuntos. Quítalos primero.</string>
+    <string name="err_command_unknown">Comando desconocido: %1$s</string>
     <string name="err_file_not_staged">El harness ya no conserva ese archivo. Adjúntalo de nuevo.</string>
     <string name="err_file_subagent_unsupported">Las sesiones de subagente no aceptan archivos.</string>
     <string name="err_image_batch_too_large">Estas imágenes suman más de %1$s. Quita algunas e inténtalo de nuevo.</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">Dirección del relay</string>
     <string name="pair_working">Emparejando…</string>
+    <string name="panel_failed">No se pudo cargar el contenido</string>
     <string name="panel_preview">Vista previa</string>
     <string name="panel_workspace">Espacio de trabajo</string>
     <string name="permission_confirm_ack">Entiendo el riesgo</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">Ejecuta comandos y cambia archivos sin preguntar.</string>
     <string name="permission_preset_read_only">Sólo lectura</string>
     <string name="permission_preset_workspace_write">Escritura en el espacio de trabajo</string>
+    <string name="permission_unconfirmed">El harness no confirmó el cambio de permisos</string>
     <string name="photos_preparing">Preparando fotos…</string>
     <string name="plan_mode_off">Modo plan: desactivado</string>
     <string name="plan_mode_on">Modo plan: activado</string>

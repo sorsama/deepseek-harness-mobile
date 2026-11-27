@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">থামান ও আর্কাইভ করুন</string>
     <string name="archive_busy_title">এই সেশন থামিয়ে আর্কাইভ করবেন?</string>
     <string name="archived_restore">ফিরিয়ে আনুন</string>
+    <string name="chat_attachment_still_uploading">পাঠানোর আগে আপলোড শেষ হতে দিন।</string>
     <string name="chat_attachment_upload_failed">আপলোড হয়নি। আবার চেষ্টা করতে ট্যাপ করুন।</string>
     <string name="chat_attachment_uploading">আপলোড হচ্ছে…</string>
     <string name="chat_branch_message">এখান থেকে ব্রাঞ্চ করুন</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">আবার চেষ্টা করুন</string>
     <string name="connect_unreachable">পৌঁছানো যাচ্ছে না</string>
     <string name="details_copy_link">লিংক কপি করুন</string>
+    <string name="err_command_failed">কমান্ড চলেনি: %1$s</string>
+    <string name="err_command_images_host">এই harness-এ /%1$s অ্যাটাচমেন্ট নিতে পারে না। আগে সেগুলো সরান।</string>
+    <string name="err_command_no_images">/%1$s-এর সঙ্গে অ্যাটাচমেন্ট চলে না। আগে সেগুলো সরান।</string>
+    <string name="err_command_unknown">এই কমান্ডটি চেনা যায়নি: %1$s</string>
     <string name="err_file_not_staged">harness-এর কাছে আর ফাইলটি নেই। আবার যোগ করুন।</string>
     <string name="err_file_subagent_unsupported">সাবএজেন্ট সেশনে ফাইল পাঠানো যায় না।</string>
     <string name="err_image_batch_too_large">এই ছবিগুলো মিলিয়ে %1$s ছাড়িয়ে গেছে। কয়েকটি সরিয়ে আবার চেষ্টা করুন।</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">রিলের ঠিকানা</string>
     <string name="pair_working">পেয়ার হচ্ছে…</string>
+    <string name="panel_failed">কনটেন্ট লোড করা যায়নি</string>
     <string name="panel_preview">প্রিভিউ</string>
     <string name="panel_workspace">ওয়ার্কস্পেস</string>
     <string name="permission_confirm_ack">আমি ঝুঁকিটা বুঝি</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">জিজ্ঞেস না করেই কমান্ড চালায় ও ফাইল বদলায়।</string>
     <string name="permission_preset_read_only">শুধু পড়া</string>
     <string name="permission_preset_workspace_write">ওয়ার্কস্পেসে লেখা</string>
+    <string name="permission_unconfirmed">harness অনুমতি বদলানোর কথা নিশ্চিত করেনি</string>
     <string name="photos_preparing">ছবি প্রস্তুত হচ্ছে…</string>
     <string name="plan_mode_off">প্ল্যান মোড: বন্ধ</string>
     <string name="plan_mode_on">প্ল্যান মোড: চালু</string>

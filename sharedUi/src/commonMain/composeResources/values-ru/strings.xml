@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">Остановить и архивировать</string>
     <string name="archive_busy_title">Остановить и архивировать этот сеанс?</string>
     <string name="archived_restore">Восстановить</string>
+    <string name="chat_attachment_still_uploading">Дождитесь окончания загрузки перед отправкой.</string>
     <string name="chat_attachment_upload_failed">Загрузка не удалась. Нажмите, чтобы повторить.</string>
     <string name="chat_attachment_uploading">Загрузка…</string>
     <string name="chat_branch_message">Создать ветку отсюда</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">Повторить попытку</string>
     <string name="connect_unreachable">Недоступен</string>
     <string name="details_copy_link">Копировать ссылку</string>
+    <string name="err_command_failed">Команда не выполнена: %1$s</string>
+    <string name="err_command_images_host">/%1$s не может передавать вложения на этом harness. Сначала уберите их.</string>
+    <string name="err_command_no_images">/%1$s не принимает вложения. Сначала уберите их.</string>
+    <string name="err_command_unknown">Неизвестная команда: %1$s</string>
     <string name="err_file_not_staged">Harness больше не хранит этот файл. Прикрепите его снова.</string>
     <string name="err_file_subagent_unsupported">Сеансы субагента не принимают файлы.</string>
     <string name="err_image_batch_too_large">Суммарный размер изображений превышает %1$s. Удалите часть и попробуйте снова.</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">Адрес реле</string>
     <string name="pair_working">Сопряжение…</string>
+    <string name="panel_failed">Не удалось загрузить содержимое</string>
     <string name="panel_preview">Просмотр</string>
     <string name="panel_workspace">Рабочая область</string>
     <string name="permission_confirm_ack">Я понимаю риск</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">Выполняет команды и меняет файлы без вопросов.</string>
     <string name="permission_preset_read_only">Только чтение</string>
     <string name="permission_preset_workspace_write">Запись в рабочей области</string>
+    <string name="permission_unconfirmed">Harness не подтвердил смену разрешений</string>
     <string name="photos_preparing">Подготовка фото…</string>
     <string name="plan_mode_off">Режим плана: выкл.</string>
     <string name="plan_mode_on">Режим плана: вкл.</string>

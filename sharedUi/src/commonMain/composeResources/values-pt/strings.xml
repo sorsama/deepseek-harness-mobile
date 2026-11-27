@@ -11,6 +11,7 @@
     <string name="archive_busy_confirm">Parar e arquivar</string>
     <string name="archive_busy_title">Parar e arquivar esta sessão?</string>
     <string name="archived_restore">Restaurar</string>
+    <string name="chat_attachment_still_uploading">Aguarde o envio terminar antes de enviar a mensagem.</string>
     <string name="chat_attachment_upload_failed">O envio falhou. Toque para tentar de novo.</string>
     <string name="chat_attachment_uploading">Enviando…</string>
     <string name="chat_branch_message">Bifurcar a partir daqui</string>
@@ -364,6 +365,10 @@
     <string name="connect_try_again">Tentar de novo</string>
     <string name="connect_unreachable">Inacessível</string>
     <string name="details_copy_link">Copiar link</string>
+    <string name="err_command_failed">O comando falhou: %1$s</string>
+    <string name="err_command_images_host">/%1$s não pode levar anexos neste harness. Remova-os primeiro.</string>
+    <string name="err_command_no_images">/%1$s não aceita anexos. Remova-os primeiro.</string>
+    <string name="err_command_unknown">Comando desconhecido: %1$s</string>
     <string name="err_file_not_staged">O harness não guarda mais esse arquivo. Anexe-o de novo.</string>
     <string name="err_file_subagent_unsupported">Sessões de subagente não aceitam arquivos.</string>
     <string name="err_image_batch_too_large">Estas imagens somam mais de %1$s. Remova algumas e tente novamente.</string>
@@ -473,6 +478,7 @@
     <string name="pair_url_hint">https://192.168.1.5:3443</string>
     <string name="pair_url_label">Endereço do relay</string>
     <string name="pair_working">Pareando…</string>
+    <string name="panel_failed">Não foi possível carregar o conteúdo</string>
     <string name="panel_preview">Prévia</string>
     <string name="panel_workspace">Espaço de trabalho</string>
     <string name="permission_confirm_ack">Entendo o risco</string>
@@ -489,6 +495,7 @@
     <string name="permission_preset_full_access_desc">Executa comandos e altera arquivos sem perguntar.</string>
     <string name="permission_preset_read_only">Somente leitura</string>
     <string name="permission_preset_workspace_write">Gravação no espaço de trabalho</string>
+    <string name="permission_unconfirmed">O harness não confirmou a alteração de permissão</string>
     <string name="photos_preparing">Preparando fotos…</string>
     <string name="plan_mode_off">Modo de plano: desativado</string>
     <string name="plan_mode_on">Modo de plano: ativado</string>
