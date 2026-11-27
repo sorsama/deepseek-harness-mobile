@@ -118,6 +118,15 @@ All notable changes to DSH Mobile are documented here. Format based on
   not chosen, or in yours with no messages showing, and the next launch went back to the app's
   pick. The session you open now always wins, and it is the one remembered for next time. (#141)
 
+- **Connecting no longer says Timeout because the network was slow to wake up.** Before it
+  connects, the app checks that a harness answers at the address and gives it a few seconds. The
+  first request after the phone wakes, or in a busy moment, can take longer than that by itself,
+  so a harness that was fine was reported as not answering and you were sent to check a firewall.
+  A check that times out is now asked once more before the app says so, and the same goes for
+  reconnecting to the last harness when the app opens. A refusal, a sign-in request or any other
+  answer is shown at once, as before; an address where nothing answers at all now takes twice as
+  long to report. (#141)
+
 ### Internal
 
 - The shared UI is on Compose Multiplatform 1.11.1 and Kotlin 2.3.21 (from 1.7.1 and 2.0.21), with

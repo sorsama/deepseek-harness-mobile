@@ -9,6 +9,7 @@ import com.labteto.dshmobile.connection.ProbeOutcome
 import com.labteto.dshmobile.connection.ProbeTimeouts
 import com.labteto.dshmobile.connection.belongsTo
 import com.labteto.dshmobile.connection.parseHostInput
+import com.labteto.dshmobile.connection.retriesConnectProbe
 import com.labteto.dshmobile.core.wire.SessionExchange
 import com.labteto.dshmobile.runtime.BuiltInHarnessState
 import com.labteto.dshmobile.runtime.RuntimeState
@@ -21,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -313,7 +315,7 @@ class ConnectController(
         if (settings.autoConnectLast) {
             val last = store.hosts.first().firstOrNull { it.belongsTo(mode) }
             if (last != null) {
-                val outcome = network.probeOutcome(last.host, last.port, ProbeTimeouts.Manual, config = last)
+                val outcome = probeToConnect(last.host, last.port, config = last)
                 if (outcome is ProbeOutcome.Reachable) {
                     connectTo(last)
                     return
@@ -729,10 +731,9 @@ class ConnectController(
             }
             localStage = ConnectStage.Reaching
             _state.update { it.copy(stage = ConnectStage.Reaching) }
-            val outcome = network.probeOutcome(
+            val outcome = probeToConnect(
                 host = input.host,
                 port = portInt,
-                timeouts = ProbeTimeouts.Manual,
                 preflight = true,
                 useTls = useTls,
                 config = known,
@@ -783,6 +784,29 @@ class ConnectController(
             ensureActive()
             followLoopback(isLoopback, portInt)
             connectTo(config)
+        }
+    }
+
+    /**
+     * The probe in front of a connect, with [ProbeTimeouts.Manual]: one that timed out is asked once more
+     * ([retriesConnectProbe]), so a device whose network is still waking up is not told that nothing answered.
+     * Each answer that is not a timeout is returned as it came.
+     */
+    private suspend fun probeToConnect(
+        host: String,
+        port: Int,
+        preflight: Boolean = false,
+        useTls: Boolean = false,
+        config: HostConfig? = null,
+        basePath: String = "",
+    ): ProbeOutcome {
+        var attempt = 1
+        while (true) {
+            val outcome = network.probeOutcome(host, port, ProbeTimeouts.Manual, preflight, useTls, config, basePath)
+            if (!retriesConnectProbe(outcome, attempt)) return outcome
+            // A probe does not notice a cancel while it runs; one that came meanwhile asks nothing more.
+            currentCoroutineContext().ensureActive()
+            attempt++
         }
     }
 

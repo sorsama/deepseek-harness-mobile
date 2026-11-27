@@ -95,8 +95,11 @@ class ConnectControllerTest {
 
     private class FakeNetwork : ConnectNetwork {
         var outcome: ProbeOutcome = ProbeOutcome.Refused
+        /** Answers for the next probes, in order, before [outcome] answers the rest. */
+        val first = ArrayDeque<ProbeOutcome>()
         var gate: CompletableDeferred<Unit>? = null
         val probed = mutableListOf<String>()
+        val budgets = mutableListOf<ProbeTimeouts>()
 
         override suspend fun probeOutcome(
             host: String,
@@ -108,8 +111,9 @@ class ConnectControllerTest {
             basePath: String,
         ): ProbeOutcome {
             probed += "$host:$port"
+            budgets += timeouts
             gate?.await()
-            return outcome
+            return first.removeFirstOrNull() ?: outcome
         }
 
         override suspend fun scan(ports: List<Int>, onProgress: (Int, Int) -> Unit, onFound: (DiscoveredHost) -> Unit) = emptyList<DiscoveredHost>()
@@ -289,6 +293,92 @@ class ConnectControllerTest {
         val link = FakeLink()
         ConnectController(backgroundScope, store, network, link, FakeSignIn(), NoLoopbackHarness, true)
         runCurrent()
+        assertEquals(listOf(last), link.connected)
+    }
+
+    // A connect's probe that timed out is asked once more (iOS CI, PR #162: the first connect on a freshly booted
+    // simulator timed out on 127.0.0.1 and the next launch connected). Nothing else is asked again.
+
+    @Test
+    fun `a probe that timed out is asked once more and an answer then connects`() = runTest {
+        val rig = Rig(this)
+        runCurrent()
+        rig.network.first += ProbeOutcome.Timeout
+        rig.network.outcome = ProbeOutcome.Reachable(HostDescription("/home/demo"))
+        rig.controller.connectManual("10.0.0.5", "3080")
+        runCurrent()
+        assertEquals(listOf("10.0.0.5:3080", "10.0.0.5:3080"), rig.network.probed)
+        assertEquals("each try has the whole budget", listOf(ProbeTimeouts.Manual, ProbeTimeouts.Manual), rig.network.budgets)
+        assertNull(rig.controller.state.value.failure)
+        assertEquals("10.0.0.5:3080", rig.link.connected.single().authority)
+    }
+
+    @Test
+    fun `an address that times out twice is reported as a timeout after two probes`() = runTest {
+        val rig = Rig(this)
+        runCurrent()
+        rig.network.outcome = ProbeOutcome.Timeout
+        rig.controller.connectManual("10.0.0.5", "3080")
+        runCurrent()
+        assertEquals(2, rig.network.probed.size)
+        assertEquals(ConnectFailure.Timeout, rig.controller.state.value.failure)
+        assertEquals(ConnectStage.Idle, rig.controller.state.value.stage)
+        assertTrue(rig.link.connected.isEmpty())
+    }
+
+    @Test
+    fun `an answer that is not a timeout is not asked again`() = runTest {
+        val answers = listOf(
+            ProbeOutcome.Refused,
+            ProbeOutcome.Unauthenticated,
+            ProbeOutcome.TrustFence,
+            ProbeOutcome.Unreachable,
+            ProbeOutcome.DnsFailure,
+            ProbeOutcome.NotAHarness,
+            ProbeOutcome.TlsFailure,
+            ProbeOutcome.Other("upstream down"),
+        )
+        for (answer in answers) {
+            val rig = Rig(this)
+            runCurrent()
+            rig.network.outcome = answer
+            rig.controller.connectManual("10.0.0.5", "3080")
+            runCurrent()
+            assertEquals("$answer", 1, rig.network.probed.size)
+            assertEquals("$answer", ConnectFailure.from(answer), rig.controller.state.value.failure)
+        }
+    }
+
+    @Test
+    fun `a cancel while the first probe waits asks nothing more`() = runTest {
+        val rig = Rig(this)
+        runCurrent()
+        val gate = CompletableDeferred<Unit>()
+        rig.network.gate = gate
+        rig.network.outcome = ProbeOutcome.Timeout
+        rig.controller.connectManual("10.0.0.5", "3080")
+        runCurrent()
+        rig.controller.cancelConnect()
+        gate.complete(Unit)
+        runCurrent()
+        assertEquals(1, rig.network.probed.size)
+        assertNull(rig.controller.state.value.failure)
+        assertFalse(rig.controller.state.value.connecting)
+    }
+
+    @Test
+    fun `the harness last used is reconnected to when it answers the second probe`() = runTest {
+        val store = FakeStore()
+        val last = store.rememberHost("home", "10.0.0.7", 3080, false, false, null, "")
+        val network = FakeNetwork().apply {
+            first += ProbeOutcome.Timeout
+            outcome = ProbeOutcome.Reachable(HostDescription("/home/demo"))
+        }
+        val link = FakeLink()
+        ConnectController(backgroundScope, store, network, link, FakeSignIn(), NoLoopbackHarness, true)
+        runCurrent()
+        // The reconnect runs first and asks twice; the Recent list's liveness pass asks once after it.
+        assertEquals(3, network.probed.size)
         assertEquals(listOf(last), link.connected)
     }
 
