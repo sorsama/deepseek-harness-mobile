@@ -2,9 +2,7 @@
 <!-- Ink redesign: sessions drawer, chat chrome and docks. Area-owned by impl-chat. -->
 <resources>
     <string name="ink_chat_filter_all">Todas %1$d</string>
-    <string name="ink_chat_goal_dock">Objetivo · %1$s</string>
     <string name="ink_chat_more">Más</string>
-    <string name="ink_chat_queue_next_turn">Siguiente turno</string>
     <string name="ink_chat_today">Hoy</string>
     <string name="ink_chat_yesterday">Ayer</string>
 </resources>

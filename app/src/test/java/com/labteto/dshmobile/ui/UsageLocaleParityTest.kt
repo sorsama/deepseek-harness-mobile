@@ -8,12 +8,16 @@ import javax.xml.parsers.DocumentBuilderFactory
 class UsageLocaleParityTest {
     @Test fun allSupportedLocalesTranslateEveryUsageKeyAndPreserveArguments() {
         val res = File("src/main/res")
-        fun strings(directory: File): Map<String,String> {
-            val document=DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(File(directory,"strings.xml"))
-            val nodes=document.getElementsByTagName("string")
-            return (0 until nodes.length).map { nodes.item(it) }.filter { it.attributes.getNamedItem("name").nodeValue.startsWith("quota_") }
-                .associate { it.attributes.getNamedItem("name").nodeValue to it.textContent }
-        }
+        // The compact window names moved to the shared UI's resources with the chat's stats footer (iOS M6b); a usage
+        // key is checked wherever it lives, in the same locale.
+        val shared = File("../sharedUi/src/commonMain/composeResources")
+        fun strings(directory: File): Map<String,String> =
+            listOf(File(directory,"strings.xml"), File(File(shared,directory.name),"strings.xml")).filter { it.exists() }.flatMap { file ->
+                val document=DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
+                val nodes=document.getElementsByTagName("string")
+                (0 until nodes.length).map { nodes.item(it) }.filter { it.attributes.getNamedItem("name").nodeValue.startsWith("quota_") }
+                    .map { it.attributes.getNamedItem("name").nodeValue to it.textContent }
+            }.toMap()
         val baseline=strings(File(res,"values"))
         assertEquals(31,baseline.size)
         // The card never prints "no data": an unknown state is simply not drawn.

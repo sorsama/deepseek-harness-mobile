@@ -3,7 +3,6 @@
     <string name="chat_jump_latest">सबसे नए पर जाएँ</string>
     <string name="chat_queue_placement_queued">अगला टर्न</string>
     <string name="chat_queue_placement_steering">दिशा</string>
-    <string name="chat_queue_placement_context">कॉन्टेक्स्ट</string>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d चरण</item>
         <item quantity="other">%d चरण</item>

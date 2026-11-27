@@ -34,7 +34,6 @@
     <string name="chatlist_session_rename">เปลี่ยนชื่อเซสชัน</string>
     <string name="chatlist_session_fork">ฟอร์กเซสชัน</string>
     <string name="chatlist_session_archive">เก็บถาวรเซสชัน</string>
-    <string name="chat_composer_hint">ส่งข้อความถึงเอเจนต์…</string>
     <string name="chat_composer_expand">เปิดตัวแก้ไขแบบเต็มหน้าจอ</string>
     <string name="chat_composer_fullscreen_title">ข้อความ</string>
     <string name="chat_composer_queue">คิว</string>
@@ -45,9 +44,6 @@
     <string name="chat_load_older">โหลดข้อความเก่าเพิ่ม</string>
     <string name="chat_stopped">หยุดแล้ว</string>
     <string name="chat_queue_title">เทิร์นที่รอคิว</string>
-    <string name="chat_queue_edit">แก้ไข</string>
-    <string name="chat_queue_remove">ลบออก</string>
-    <string name="chat_queue_steer">แทรกในเทิร์นที่กำลังทำงาน</string>
     <string name="chat_context_title">บริบท</string>
     <string name="chat_context_system">ระบบ</string>
     <string name="chat_context_tools">เครื่องมือ</string>
@@ -58,11 +54,6 @@
     <string name="tool_output_hide_raw">ซ่อน JSON ดิบ</string>
     <string name="goal_title">เป้าหมาย</string>
     <string name="goal_none">ไม่มีเป้าหมายที่ใช้งานอยู่</string>
-    <string name="goal_rounds">รอบที่ %1$d จาก %2$s</string>
-    <string name="goal_pause">หยุดชั่วคราว</string>
-    <string name="goal_resume">ทำต่อ</string>
-    <string name="goal_edit">แก้ไขเป้าหมาย</string>
-    <string name="goal_clear">ล้างเป้าหมาย</string>
     <string name="goal_blocked_reason">สาเหตุที่ติดขัด: %1$s</string>
     <string name="goal_max_rounds">รอบสูงสุด: %1$s</string>
     <string name="plan_review_title">แผนพร้อมให้ตรวจแล้ว</string>
@@ -179,18 +170,7 @@
     <string name="err_command_unknown">ไม่รู้จักคำสั่ง: %1$s</string>
     <string name="err_command_failed">คำสั่งไม่สำเร็จ: %1$s</string>
     <string name="err_attachment_failed">แนบรูปภาพนั้นไม่ได้</string>
-    <string name="err_image_unsupported_type">รองรับเฉพาะรูปภาพ PNG, JPG, WebP และ GIF</string>
-    <string name="err_image_too_large">รูปภาพแต่ละรูปต้องมีขนาดเล็กกว่า %1$s</string>
-    <string name="err_image_pixels">รูปภาพนี้ละเอียดเกินไป ลองบีบอัดแล้วส่งใหม่</string>
-    <string name="err_image_dimension">รูปภาพต้องกว้างและสูงไม่เกิน %1$dpx ลองย่อขนาดแล้วส่งใหม่</string>
-    <string name="err_image_too_many">หนึ่งข้อความแนบรูปภาพได้สูงสุด %1$d รูป</string>
-    <string name="err_image_batch_too_large">รูปภาพรวมกันเกิน %1$s ลองลบออกบางรูปแล้วส่งใหม่</string>
-    <string name="err_image_model_unsupported">โมเดลนี้ไม่รองรับรูปภาพ ลองเปลี่ยนเป็นโมเดลที่รองรับ</string>
-    <string name="err_image_subagent_unsupported">เซสชันซับเอเจนต์ไม่รับรูปภาพ</string>
-    <string name="err_image_send_failed">ส่งรูปภาพไม่สำเร็จ (%1$s) ลองแนบใหม่อีกครั้ง</string>
-    <string name="err_image_send_failed_plain">ส่งรูปภาพไม่สำเร็จ ลองแนบใหม่อีกครั้ง</string>
     <string name="err_command_no_images">/%1$s ไม่รับไฟล์แนบ ลบไฟล์แนบออกก่อน</string>
-    <string name="err_command_images_host">/%1$s แนบไฟล์บน harness นี้ไม่ได้ ลบไฟล์แนบออกก่อน</string>
     <string name="common_remove">นำออก</string>
     <string name="common_unavailable">ไม่พร้อมใช้งาน</string>
     <string name="chatlist_needs_action">รอคุณอยู่</string>
@@ -200,7 +180,6 @@
     <string name="chat_composer_mode_queue_hint">ทำหลังเทิร์นนี้จบ</string>
     <string name="chat_composer_mode_steer_hint">แทรกเข้าไปในเทิร์นที่กำลังทำงาน</string>
     <string name="chat_composer_steer_idle">แทรกได้เมื่อมีเทิร์นที่กำลังทำงานอยู่</string>
-    <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">เซสชันนี้ไม่มีคำสั่ง</string>
     <string name="chat_commands_unavailable">harness นี้ไม่มีรายการคำสั่งให้ใช้</string>
     <string name="chat_image_open">เปิดรูปภาพ</string>
@@ -213,8 +192,6 @@
     <string name="chat_stats_turns">%1$d เทิร์น · %2$d ขั้น</string>
     <string name="chat_stats_timing">LLM %1$s · เครื่องมือ %2$s</string>
     <string name="chat_stats_speed">TTFT %1$s · %2$s tok/s</string>
-    <string name="chat_stats_tokens">เข้า %1$s · ออก %2$s</string>
-    <string name="chat_stats_cache">แคช %1$d%%</string>
     <string name="chat_context_used">ใช้บริบทไปแล้ว %1$d%%</string>
     <string name="permission_unconfirmed">harness ไม่ได้ยืนยันการเปลี่ยนสิทธิ์</string>
     <string name="presets_current">พรีเซ็ตปัจจุบัน</string>
@@ -279,9 +256,7 @@
     <string name="chat_composer_attach_file">แนบไฟล์</string>
     <string name="chat_composer_remove_file">นำไฟล์ออก</string>
     <string name="chat_attachment_upload_failed">อัปโหลดไม่สำเร็จ แตะเพื่อลองใหม่</string>
-    <string name="chat_attachment_still_uploading">รอให้อัปโหลดเสร็จก่อนส่ง</string>
     <string name="err_file_read_failed">อ่านไฟล์นั้นไม่ได้</string>
-    <string name="err_file_not_staged">harness ไม่มีไฟล์นั้นแล้ว ลองแนบใหม่</string>
     <string name="err_file_subagent_unsupported">เซสชันซับเอเจนต์ไม่รับไฟล์</string>
     <string name="photos_skipped">ข้าม: %1$d รายการ %2$s</string>
     <string name="archived_title">เซสชันที่เก็บถาวร</string>
@@ -452,11 +427,6 @@
     <string name="quota_stale">ข้อมูลล้าสมัย</string>
     <string name="quota_reset">รีเซ็ต: %1$s</string>
     <string name="quota_checking">กำลังตรวจสอบ…</string>
-    <string name="quota_compact_session">5ชม</string>
-    <string name="quota_compact_week">สัปดาห์</string>
-    <string name="quota_compact_day">วัน</string>
-    <string name="quota_compact_hour">ชม</string>
-    <string name="quota_compact_minute">นาที</string>
     <string name="quota_other">ขีดจำกัดอื่น</string>
     <string name="quota_remaining_percent">คงเหลือ: %1$s</string>
     <string name="quota_session_title">เซสชันนี้</string>

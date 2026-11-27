@@ -34,7 +34,6 @@
     <string name="chatlist_session_rename">Переименовать сеанс</string>
     <string name="chatlist_session_fork">Создать ветку сеанса</string>
     <string name="chatlist_session_archive">Архивировать сеанс</string>
-    <string name="chat_composer_hint">Напишите агенту…</string>
     <string name="chat_composer_expand">Открыть полноэкранный редактор</string>
     <string name="chat_composer_fullscreen_title">Сообщение</string>
     <string name="chat_composer_queue">Очередь</string>
@@ -45,9 +44,6 @@
     <string name="chat_load_older">Загрузить более ранние сообщения</string>
     <string name="chat_stopped">Остановлено</string>
     <string name="chat_queue_title">Ходы в очереди</string>
-    <string name="chat_queue_edit">Изменить</string>
-    <string name="chat_queue_remove">Убрать</string>
-    <string name="chat_queue_steer">Направить текущий ход</string>
     <string name="chat_context_title">Контекст</string>
     <string name="chat_context_system">Система</string>
     <string name="chat_context_tools">Инструменты</string>
@@ -58,11 +54,6 @@
     <string name="tool_output_hide_raw">Скрыть исходный JSON</string>
     <string name="goal_title">Цель</string>
     <string name="goal_none">Нет активной цели</string>
-    <string name="goal_rounds">Раунд %1$d из %2$s</string>
-    <string name="goal_pause">Пауза</string>
-    <string name="goal_resume">Продолжить</string>
-    <string name="goal_edit">Изменить цель</string>
-    <string name="goal_clear">Очистить цель</string>
     <string name="goal_blocked_reason">Блокировка: %1$s</string>
     <string name="goal_max_rounds">Максимум раундов: %1$s</string>
     <string name="plan_review_title">План готов к проверке</string>
@@ -179,18 +170,7 @@
     <string name="err_command_unknown">Неизвестная команда: %1$s</string>
     <string name="err_command_failed">Команда не выполнена: %1$s</string>
     <string name="err_attachment_failed">Не удалось прикрепить это изображение.</string>
-    <string name="err_image_unsupported_type">Поддерживаются только изображения PNG, JPG, WebP и GIF.</string>
-    <string name="err_image_too_large">Каждое изображение должно быть меньше %1$s.</string>
-    <string name="err_image_pixels">Слишком высокое разрешение изображения. Сожмите его и попробуйте снова.</string>
-    <string name="err_image_dimension">Стороны изображения не должны превышать %1$dpx. Уменьшите его и попробуйте снова.</string>
-    <string name="err_image_too_many">Максимум изображений в одном сообщении: %1$d.</string>
-    <string name="err_image_batch_too_large">Суммарный размер изображений превышает %1$s. Удалите часть и попробуйте снова.</string>
-    <string name="err_image_model_unsupported">Эта модель не работает с изображениями. Выберите модель, которая их поддерживает.</string>
-    <string name="err_image_subagent_unsupported">Сеансы субагента не принимают изображения.</string>
-    <string name="err_image_send_failed">Не удалось отправить изображение (%1$s). Прикрепите его заново и попробуйте снова.</string>
-    <string name="err_image_send_failed_plain">Не удалось отправить изображение. Прикрепите его заново и попробуйте снова.</string>
     <string name="err_command_no_images">/%1$s не принимает вложения. Сначала уберите их.</string>
-    <string name="err_command_images_host">/%1$s не может передавать вложения на этом harness. Сначала уберите их.</string>
     <string name="common_remove">Удалить</string>
     <string name="common_unavailable">Недоступно</string>
     <string name="chatlist_needs_action">Ждёт вас</string>
@@ -200,7 +180,6 @@
     <string name="chat_composer_mode_queue_hint">Выполнится после завершения текущего хода</string>
     <string name="chat_composer_mode_steer_hint">Прерывает текущий ход</string>
     <string name="chat_composer_steer_idle">Направлять можно только во время хода</string>
-    <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">В этом сеансе нет команд</string>
     <string name="chat_commands_unavailable">В этом harness нет списка команд</string>
     <string name="chat_image_open">Открыть изображение</string>
@@ -213,8 +192,6 @@
     <string name="chat_stats_turns">Ходов: %1$d · шагов: %2$d</string>
     <string name="chat_stats_timing">LLM %1$s · инструменты %2$s</string>
     <string name="chat_stats_speed">TTFT %1$s · %2$s tok/s</string>
-    <string name="chat_stats_tokens">Вход %1$s · выход %2$s</string>
-    <string name="chat_stats_cache">Кэш %1$d%%</string>
     <string name="chat_context_used">Использовано %1$d%% контекста</string>
     <string name="permission_unconfirmed">Harness не подтвердил смену разрешений</string>
     <string name="presets_current">Текущий пресет</string>
@@ -279,9 +256,7 @@
     <string name="chat_composer_attach_file">Прикрепить файл</string>
     <string name="chat_composer_remove_file">Убрать файл</string>
     <string name="chat_attachment_upload_failed">Загрузка не удалась. Нажмите, чтобы повторить.</string>
-    <string name="chat_attachment_still_uploading">Дождитесь окончания загрузки перед отправкой.</string>
     <string name="err_file_read_failed">Не удалось прочитать этот файл.</string>
-    <string name="err_file_not_staged">Harness больше не хранит этот файл. Прикрепите его снова.</string>
     <string name="err_file_subagent_unsupported">Сеансы субагента не принимают файлы.</string>
     <string name="photos_skipped">Пропущено: %1$d. %2$s</string>
     <string name="archived_title">Архивные сеансы</string>
@@ -452,11 +427,6 @@
     <string name="quota_stale">Данные устарели</string>
     <string name="quota_reset">Сброс: %1$s</string>
     <string name="quota_checking">Проверяем…</string>
-    <string name="quota_compact_session">5ч</string>
-    <string name="quota_compact_week">нед</string>
-    <string name="quota_compact_day">д</string>
-    <string name="quota_compact_hour">ч</string>
-    <string name="quota_compact_minute">м</string>
     <string name="quota_other">Другой лимит</string>
     <string name="quota_remaining_percent">Осталось: %1$s</string>
     <string name="quota_session_title">Эта сессия</string>
