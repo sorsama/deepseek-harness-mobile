@@ -490,9 +490,16 @@ host is small too: `hardwareKeyboardAttached()` and `KeyEvent.toComposerKeyPress
 configuration and the native event, iOS answers no keyboard), `onPasteFiles` (the host reads its own clipboard),
 `ComposerVoiceSource` (dictation: `DictationConfig` in `:app` implements it over the phone's speech service), and
 nullable entries for what a platform cannot offer yet (`onOpenSheet`, `onAddReference`, `onAttachFile`, `onSend`;
-in the bar `onOpenDetails` and `showTabs`). The composer drawer that lifts over the transcript is still decided by
-Android's `ChatScreen`, which moves in M6b. On iOS, `IosChatPane` shows the open session's transcript under the shared
-top bar, with the shared composer below it: typing, the permission chip and Stop work; send is drawn disabled until M6b.
+in the bar `onOpenDetails` and `showTabs`). M6b split Android's `ChatScreen`: `ChatContent` is the chat column below
+the chrome (the transcript or another tab, the todo, goal and queue docks from `Docks.kt`, the composer with the drawer
+that lifts over the transcript from two wrapped lines, the stats footer, the toast host), and `ChatActions` is its send
+path (slash adjudication, Steer to Queue when idle, attachments, the command gateway, the toasts), Stop and the
+permission chip. `ChatScreen` stays in `:app` as the host: it passes the top bar, the notices, the other tabs, the
+approvals and questions, the `/` menu, the composer's extras (`ChatComposerExtras`: the `+` sheet, `@`, pickers,
+paste, dictation) and its command decorations (`dispatchDecorated`) in as slots and hooks, and keeps every sheet. A
+toast written when a call comes back reads its words while composing (`ChatCopy`, `ImageErrorCopy`) and fills them
+with `fillTemplate`, which writes what Android's `getString(id, args)` wrote. On iOS, `IosChatPane` is `ChatContent`
+under the shared top bar: it sends, stops, lifts its composer and rests on the software keyboard.
 
 Not moved, on purpose: the "This phone" card and the Termux controller (Termux is Android), the Hilt view models
 (`ConnectViewModel` and `PairViewModel` are thin: each owns a controller over `viewModelScope`), the stores and the
@@ -877,9 +884,20 @@ the steps after the tests run even if the tests fail, so one push says everythin
   long session (92 messages, a page is 60) paged back to its start in light and dark, and on the iPad the list docked
   beside the transcript. The same step fails when one of the six is missing.
 - then the composer under that transcript (M6a): once it has been laid out the app adds `DSH_CHAT_RESULT composer
-  chars=… lines=… send=off`, and `-DshComposerDraft <hex>` puts a draft in it as typing would. Screenshots: the iPhone
-  with the composer empty and with a two-line draft in light and dark, and the iPad with the list docked and the draft.
-  The same step fails when one of the five is missing.
+  chars=… lines=… send=…` (`send=on` when pressing send would send), and `-DshComposerDraft <hex>` puts a draft in it as
+  typing would; a two-line draft lifts the composer into its drawer (M6b). Screenshots: the iPhone with the composer
+  empty and with a two-line draft in light and dark, and the iPad with the list docked and the draft. The same step
+  fails when one of the five is missing.
+- then sending from it (M6b): `-DshPrompt <hex>` puts a prompt in the composer and `-DshSendPrompt YES` sends it as the
+  send button does; the app adds `DSH_CHAT_RESULT sent …`, `streaming chars=…` when the reply starts to stream and
+  `replied chars=201 state=idle` when it has settled (the demo streams a "Slowly" prompt over about 18 s, so the
+  mid-stream screenshot is not a race). With `-DshPressStop YES` a "Hold" prompt, which the demo streams half of and
+  holds, is stopped once the script has its mid-stream screenshot and creates `Documents/dsh-press-stop`: the app
+  presses Stop and adds `stopped state=idle turn=aborted chars=96` (the demo ends the turn as the harness does on a
+  cancel mid-stream, keeping what streamed). `-DshFocusComposer YES` moves focus into the composer, which brings the
+  software keyboard up, and adds `DSH_CHAT_RESULT keyboard ime=… composer=… window=… above=yes` once the column has
+  settled on it. Screenshots: the reply streaming and settled (light), the held reply and the stopped turn (dark), and
+  the keyboard up under a two-line draft (light). The same step fails when one of the five is missing.
 - `ios-compile` also compiles `:sharedUi` for the two iOS targets and checks that the klibs exist.
 
 **`ios-ipa`** (10 to 25 minutes depending on whether Gradle's cache has the Release link of Compose Multiplatform, which dominates it, so a separate job in parallel):
@@ -1030,10 +1048,17 @@ Open items the port knows about and has deliberately not done, so they are not r
   can show a reachable host.
 - **The Connected page on iOS is a placeholder.** It reports what the screen has to give (with the harness's session count
   since M1 of the session list port) and is what the chat pane shows until a session is opened.
-- **The iOS composer cannot send yet (M6b), and has no `+` sheet, `@` picker, attachments or dictation.** The model chip
-  states the model without a picker, and there are no history, details or tabs in the bar. Enter adds a line on iOS
-  whatever the keyboard (`hardwareKeyboardAttached()` is false there), and the composer stays in the column's flow:
-  Android's lifted drawer comes with M6b.
+- **The iOS composer has no `+` sheet, `@` picker, attachments, dictation or `/` menu.** It sends, stops and lifts
+  into its drawer as Android's does (the shared `ChatContent`, M6b). The model chip states the model without a picker,
+  and there are no history, details or tabs in the bar. Enter adds a line on iOS whatever the keyboard
+  (`hardwareKeyboardAttached()` is false there). A typed `/command` still goes through the command gateway (the send
+  path adjudicates it), but nothing opens a command's own picker. Approvals, questions and the connection banner come
+  with M7.
+- **The keyboard is left to the insets on iOS.** `MainViewController` sets `OnFocusBehavior.DoNothing`: every shared
+  screen pads itself with `safeDrawing`, which includes the keyboard, so the composer rests on it and the transcript
+  gets what is left, as Android's window resize does. The simulator scenario checks the composer ends above the
+  keyboard; how the keyboard's rise and fall feel (the inset follows the keyboard's animation frame by frame) has not
+  been seen on a device.
 - **The iOS transcript is read only and has dead file taps.** `LocalFileOpener` has no iOS provider yet, so "Open file"
   in a tool call's hold menu and a tap on a changed file do nothing there; file previews come with a later milestone.
 - **`ios-ipa` and `ios-app` build Compose Multiplatform for iOS twice.** The shared module is bigger than the

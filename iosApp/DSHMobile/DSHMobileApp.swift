@@ -41,7 +41,11 @@ struct ComposeView: UIViewControllerRepresentable {
             toolCardsSample: launch.toolCardsSample,
             openSession: launch.openSession,
             chatScroll: launch.chatScroll,
-            composerDraft: launch.composerDraft
+            composerDraft: launch.composerDraft,
+            prompt: launch.prompt,
+            sendPrompt: launch.sendPrompt,
+            pressStop: launch.pressStop,
+            focusComposer: launch.focusComposer
         )
     }
 
@@ -79,6 +83,11 @@ struct ComposeView: UIViewControllerRepresentable {
 ///   has been laid out it adds `DSH_CHAT_RESULT composer chars=… lines=… send=…`.
 /// - `-DshComposerDraft <hex of the text>` puts that text in the composer of the session `-DshOpenSession` opens, as
 ///   typing it would (hex for the reason `-DshPairPayload` is: newlines and quotes survive).
+/// - `-DshPrompt <hex of the text>` puts a prompt in that composer the same way; `-DshSendPrompt YES` sends it as the
+///   send button does and adds `DSH_CHAT_RESULT sent …`, `streaming …` and `replied chars=… state=idle` as the reply
+///   arrives. `-DshPressStop YES` presses Stop instead once the reply streams and the script has created
+///   `Documents/dsh-press-stop`, and adds `DSH_CHAT_RESULT stopped …`. `-DshFocusComposer YES` moves focus into the
+///   composer, which brings the software keyboard up, and adds `DSH_CHAT_RESULT keyboard ime=… above=…`.
 ///
 /// Debug builds only. A release build ignores them, so the shipped app has no way to be told which
 /// address to connect to, or what to forget, from outside.
@@ -104,6 +113,10 @@ struct LaunchOptions {
     let openSession: String?
     let chatScroll: String?
     let composerDraft: String?
+    let prompt: String?
+    let sendPrompt: Bool
+    let pressStop: Bool
+    let focusComposer: Bool
 
     /// A launch argument's value is parsed as a property list before the app sees it, which mangles JSON, so a
     /// pairing payload is passed hex-encoded (`xxd -p`). A value that is not hex is returned as it was given.
@@ -146,14 +159,19 @@ struct LaunchOptions {
             toolCardsSample: defaults.string(forKey: "DshToolCardsSample"),
             openSession: defaults.string(forKey: "DshOpenSession"),
             chatScroll: defaults.string(forKey: "DshChatScroll"),
-            composerDraft: decodeHex(defaults.string(forKey: "DshComposerDraft"))
+            composerDraft: decodeHex(defaults.string(forKey: "DshComposerDraft")),
+            prompt: decodeHex(defaults.string(forKey: "DshPrompt")),
+            sendPrompt: defaults.bool(forKey: "DshSendPrompt"),
+            pressStop: defaults.bool(forKey: "DshPressStop"),
+            focusComposer: defaults.bool(forKey: "DshFocusComposer")
         )
         #else
         return LaunchOptions(
             address: nil, autoConnect: false, openSignIn: false, signInToken: nil, reset: false, report: false,
             autoReconnect: nil, connectMode: nil, openPair: false, pairUrl: nil, pairCode: nil, pairSubmit: false,
             pairPayload: nil, pairScanner: false, reconnectOnce: false, openDrawer: false, markdownSample: nil,
-            toolCardsSample: nil, openSession: nil, chatScroll: nil, composerDraft: nil
+            toolCardsSample: nil, openSession: nil, chatScroll: nil, composerDraft: nil, prompt: nil, sendPrompt: false,
+            pressStop: false, focusComposer: false
         )
         #endif
     }

@@ -30,6 +30,10 @@ failures=0
 
 mkdir -p "$out"
 : > "$out/console.log"
+# No hardware keyboard on the simulators, so a focused text field brings the software keyboard up (the keyboard
+# scenario needs it on screen). Simulator.app reads this when it attaches the Mac's keyboard; a headless simulator has
+# none attached anyway.
+defaults write com.apple.iphonesimulator ConnectHardwareKeyboard -bool false 2>/dev/null || true
 xcrun simctl boot "$udid" 2>/dev/null || true
 xcrun simctl bootstatus "$udid" -b > /dev/null
 xcrun simctl ui "$udid" appearance light
@@ -44,6 +48,7 @@ drawer_result="$data/Documents/dsh-drawer-result.txt"
 markdown_result="$data/Documents/dsh-markdown-result.txt"
 toolcards_result="$data/Documents/dsh-toolcards-result.txt"
 chat_result="$data/Documents/dsh-chat-result.txt"
+stop_signal="$data/Documents/dsh-press-stop"
 fixtures="${4:-${SIM_REPORTS:-build/ios-reports}/fixtures.log}"
 
 shot() {
@@ -52,7 +57,8 @@ shot() {
 
 # Starts the app with the given arguments; its console output goes to console.log, tagged.
 launch() {
-  rm -f "$result" "$pair_result" "$probe_result" "$sessions_result" "$drawer_result" "$markdown_result" "$toolcards_result" "$chat_result"
+  rm -f "$result" "$pair_result" "$probe_result" "$sessions_result" "$drawer_result" "$markdown_result" "$toolcards_result" "$chat_result" \
+    "$stop_signal"
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
   echo "=== launch: $*" >> "$out/console.log"
   xcrun simctl launch --console "$udid" "$bundle" "$@" >> "$out/console.log" 2>&1 &
@@ -205,12 +211,13 @@ chat_scenario() {
 
 # The composer under an opened session (shared with Android since iOS M6a): $1 names the device, $2 the look (light or
 # dark), $3 the draft (empty, or typed: a two-line text put in by `-DshComposerDraft`, as typing it would). The session
-# is the rich one at its newest message. Send stays disabled until iOS sends (M6b), and the line says so (send=off). The
-# screenshot is composer/<device>-<look>-<empty|typed>.png.
+# is the rich one at its newest message. The line says whether pressing send would send (send=on with a draft, off
+# without one); a typed draft paints two lines or more, which lifts the composer into its drawer over the transcript
+# (the shared chat content, M6b). The screenshot is composer/<device>-<look>-<empty|typed>.png.
 composer_text="Add a dark mode switch to Settings.
 Keep the system theme as the default."
 composer_scenario() {
-  local device="$1" look="$2" draft="$3" extra=() chars=0 lines=1
+  local device="$1" look="$2" draft="$3" extra=() chars=0 lines=1 send=off
   mkdir -p "$out/composer"
   case "$look" in
     dark) xcrun simctl ui "$udid" appearance dark ;;
@@ -221,13 +228,76 @@ composer_scenario() {
     chars=${#composer_text}
     # Two lines at least (the text has a line break); more where the phone wraps the first one.
     lines='[2-8]'
+    send=on
   fi
   launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshOpenSession first -DshChatScroll tail \
     ${extra[@]+"${extra[@]}"}
   expect "composer-$device-$look-$draft-connected" "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
   expect_chat "composer-$device-$look-$draft-opened" "^DSH_CHAT_RESULT opened rows=[1-9][0-9]* session=demo-01 more=true$"
-  expect_chat "composer-$device-$look-$draft" "^DSH_CHAT_RESULT composer chars=$chars lines=$lines send=off$"
+  expect_chat "composer-$device-$look-$draft" "^DSH_CHAT_RESULT composer chars=$chars lines=$lines send=$send$"
   shot "composer/$device-$look-$draft"
+  xcrun simctl ui "$udid" appearance light
+}
+
+# A prompt sent from the composer of an opened session, as the send button sends it (iOS M6b: the shared chat content's
+# send path): $1 names the device, $2 the look (light or dark), $3 the session, $4 the kind. `reply` sends a prompt the
+# demo streams slowly (its "Slowly" prefix, about 18 s): a screenshot while the reply streams, then once it has
+# settled (`replied chars=201`, the demo's whole reply, `state=idle`). `stop` sends one the demo streams half of and
+# holds (its "Hold" prefix): a screenshot while it holds, then the script says so (Documents/dsh-press-stop), the app
+# presses Stop, and a screenshot of the stopped turn (`turn=aborted`, the 96 characters it streamed kept, as the
+# harness keeps them). The screenshots are send/<device>-<look>-<kind>-{streaming,settled|stopped}.png.
+send_scenario() {
+  local device="$1" look="$2" session="$3" kind="$4" text extra=()
+  mkdir -p "$out/send"
+  case "$look" in
+    dark) xcrun simctl ui "$udid" appearance dark ;;
+    *) xcrun simctl ui "$udid" appearance light ;;
+  esac
+  if [ "$kind" = stop ]; then
+    text="Hold on, plan it first."
+    extra=(-DshPressStop YES)
+  else
+    text="Slowly, plan the fix for the login crash."
+  fi
+  launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshOpenSession "$session" -DshChatScroll tail \
+    -DshPrompt "$(printf '%s' "$text" | xxd -p | tr -d '\n')" -DshSendPrompt YES ${extra[@]+"${extra[@]}"}
+  expect "send-$device-$look-$kind-connected" "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
+  expect_chat "send-$device-$look-$kind-opened" "^DSH_CHAT_RESULT opened rows=[1-9][0-9]* session=$session more="
+  expect_chat "send-$device-$look-$kind-typed" "^DSH_CHAT_RESULT composer chars=${#text} lines=[1-8] send=on$"
+  expect_chat "send-$device-$look-$kind-sent" "^DSH_CHAT_RESULT sent chars=${#text} session=$session$"
+  expect_chat "send-$device-$look-$kind-streaming" "^DSH_CHAT_RESULT streaming chars=[1-9][0-9]* session=$session$"
+  shot "send/$device-$look-$kind-streaming"
+  if [ "$kind" = stop ]; then
+    touch "$stop_signal"
+    expect_chat "send-$device-$look-stopped" "^DSH_CHAT_RESULT stopped state=idle turn=aborted chars=96$"
+    shot "send/$device-$look-$kind-stopped"
+  else
+    expect_chat "send-$device-$look-replied" "^DSH_CHAT_RESULT replied chars=201 state=idle session=$session$"
+    shot "send/$device-$look-$kind-settled"
+  fi
+  xcrun simctl ui "$udid" appearance light
+}
+
+# The software keyboard up under the rich session's composer (iOS M6b): the typed two-line draft, and focus moved into
+# the field (`-DshFocusComposer`), which brings the keyboard up. The line gives the keyboard's height, the composer
+# block's bottom and the window's height in pixels, and `above=yes` when the block ends on or above the keyboard: the
+# column pads itself for the keyboard on iOS as Android's window resize does. The screenshot is
+# keyboard/<device>-<look>-typed.png.
+keyboard_scenario() {
+  local device="$1" look="$2"
+  mkdir -p "$out/keyboard"
+  case "$look" in
+    dark) xcrun simctl ui "$udid" appearance dark ;;
+    *) xcrun simctl ui "$udid" appearance light ;;
+  esac
+  launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshOpenSession first -DshChatScroll tail \
+    -DshComposerDraft "$(printf '%s' "$composer_text" | xxd -p | tr -d '\n')" -DshFocusComposer YES
+  expect "keyboard-$device-$look-connected" "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
+  expect_chat "keyboard-$device-$look-opened" "^DSH_CHAT_RESULT opened rows=[1-9][0-9]* session=demo-01 more=true$"
+  expect_chat "keyboard-$device-$look-typed" "^DSH_CHAT_RESULT composer chars=${#composer_text} lines=[2-8] send=on$"
+  expect_chat "keyboard-$device-$look" \
+    "^DSH_CHAT_RESULT keyboard ime=[1-9][0-9]* composer=[1-9][0-9]* window=[1-9][0-9]* above=yes$"
+  shot "keyboard/$device-$look-typed"
   xcrun simctl ui "$udid" appearance light
 }
 
@@ -658,6 +728,15 @@ if [ -n "$demo_url" ] && [ "$demo_url" != "null" ]; then
   composer_scenario iphone dark typed
 fi
 
+# 64 to 66. Sending from that composer on this iPhone (the shared chat content, M6b): a prompt streamed slowly and
+#     settled (light, demo-02), a held one stopped with Stop (dark, demo-05), and the software keyboard up under a
+#     typed draft (light). Each fails without its `DSH_CHAT_RESULT` lines.
+if [ -n "$demo_url" ] && [ "$demo_url" != "null" ]; then
+  send_scenario iphone light demo-02 reply
+  send_scenario iphone dark demo-05 stop
+  keyboard_scenario iphone light
+fi
+
 # 54 to 57. The same list on an iPad, where it is a pane beside the chat (the Android tablet layout: planShell docks
 # the list from 600dp wide). Same app, installed on the second simulator.
 if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" ] && [ -n "$demo_count" ]; then
@@ -682,6 +761,7 @@ if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" 
   markdown_result="$data/Documents/dsh-markdown-result.txt"
   toolcards_result="$data/Documents/dsh-toolcards-result.txt"
   chat_result="$data/Documents/dsh-chat-result.txt"
+  stop_signal="$data/Documents/dsh-press-stop"
   fixtures_listening ipad 3181 3190
   warm_up warm-up-ipad
   drawer_scenarios ipad true

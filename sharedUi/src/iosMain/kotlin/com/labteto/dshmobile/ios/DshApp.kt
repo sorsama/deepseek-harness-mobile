@@ -92,6 +92,8 @@ import platform.UIKit.UIApplicationDidEnterBackgroundNotification
  *   session, or a session id. [chatScroll] says where the transcript is left ([ChatScroll]), and [onChat] hears
  *   `DSH_CHAT_RESULT opened rows=… session=… more=…` once it is laid out (then `older …` after a page back), or
  *   `DSH_CHAT_RESULT failed reason=…` when there is no such session.
+ * - [composerDraft] is what the opened session's composer starts with; [chatDrive] sends a prompt, presses Stop or
+ *   brings the keyboard up once it is open ([ChatDrive]), and [onChat] hears what came of it.
  */
 internal class LaunchRequest(
     val address: String? = null,
@@ -118,6 +120,8 @@ internal class LaunchRequest(
     val onChat: ((String) -> Unit)? = null,
     /** `-DshComposerDraft`: what the opened session's composer starts with. */
     val composerDraft: String? = null,
+    /** `-DshPrompt`, `-DshSendPrompt`, `-DshPressStop`, `-DshFocusComposer`: what the chat pane does once open. */
+    val chatDrive: ChatDrive = ChatDrive(),
 ) {
     /** Whether the app starts on the Pair screen. */
     val startsPairing: Boolean
@@ -134,7 +138,7 @@ private const val DEFAULT_PORT = "3080"
  * no Settings screen yet.
  *
  * The chat pane is the open session's transcript under the shared top bar, with the shared composer below it
- * ([IosChatPane]; sending is the next step of the port).
+ * ([IosChatPane], the shared chat content: it sends, stops and lifts its composer as Android does).
  * Before a session is opened it is the Connected page: which harness, its home directory, how many sessions it has, and
  * this client's protocol baseline, with a way to disconnect. The list's overflow menu has Disconnect too.
  */
@@ -323,6 +327,7 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                         scroll = request.chatScroll,
                         onReport = request.onChat,
                         initialDraft = request.composerDraft,
+                        drive = request.chatDrive,
                     ) {
                         ConnectedPage(
                             authority = link.host?.authority.orEmpty(),

@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.ios
 
 import androidx.compose.runtime.remember
+import androidx.compose.ui.uikit.OnFocusBehavior
 import androidx.compose.ui.window.ComposeUIViewController
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.CoroutineScope
@@ -8,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import platform.Foundation.NSBundle
 import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSUserDefaults
 import platform.Foundation.NSUserDomainMask
@@ -32,7 +34,15 @@ import platform.posix.fputs
  * [openSession] (`-DshOpenSession first|<session id>`) opens a session once connected, and [chatScroll]
  * (`-DshChatScroll tail|older`) says where its transcript is left; both write `DSH_CHAT_RESULT …` lines (see
  * [reportChat]). [composerDraft] (`-DshComposerDraft <hex>`, decoded by the host) is the text the opened session's
- * composer starts with, as if typed.
+ * composer starts with, as if typed. [prompt] (`-DshPrompt <hex>`) is a prompt put there the same way, which [sendPrompt]
+ * (`-DshSendPrompt YES`) sends as the send button does; [pressStop] (`-DshPressStop YES`) presses Stop once the reply
+ * streams and the script has created `Documents/dsh-press-stop` (after its mid-stream screenshot); [focusComposer]
+ * (`-DshFocusComposer YES`) moves focus into the composer, which brings the software keyboard up (see [ChatDrive]).
+ *
+ * The keyboard is left to the insets (`OnFocusBehavior.DoNothing`): every shared screen pads itself with
+ * `safeDrawing`, which includes the keyboard, so the chat's composer rests on the keyboard and the transcript gets
+ * what is left, as Android's window resize does. The default behaviour would also move the whole view up by the
+ * keyboard's height on focus, pushing the top bar off screen and counting the keyboard twice.
  */
 fun MainViewController(
     prefillAddress: String?,
@@ -56,8 +66,12 @@ fun MainViewController(
     openSession: String?,
     chatScroll: String?,
     composerDraft: String?,
+    prompt: String?,
+    sendPrompt: Boolean,
+    pressStop: Boolean,
+    focusComposer: Boolean,
 ): UIViewController =
-    ComposeUIViewController {
+    ComposeUIViewController(configure = { onFocusBehavior = OnFocusBehavior.DoNothing }) {
         if (markdownSample != null) {
             MarkdownSamplePage(markdownSample.lowercase()) { writeReport(MARKDOWN_OUTCOME_FILE, it) }
             return@ComposeUIViewController
@@ -102,6 +116,13 @@ fun MainViewController(
                 },
                 onChat = if (openSession != null) ::reportChat else null,
                 composerDraft = composerDraft,
+                chatDrive = ChatDrive(
+                    prompt = prompt,
+                    send = sendPrompt,
+                    pressStop = pressStop,
+                    awaitStop = { awaitSignal(STOP_SIGNAL_WAIT_MS) { documentExists(STOP_SIGNAL_FILE) } },
+                    focusComposer = focusComposer,
+                ),
             )
         }
         // One controller for the life of the process, on the main thread where Compose runs. The reset,
@@ -146,6 +167,12 @@ private const val MARKDOWN_OUTCOME_FILE = "dsh-markdown-result.txt"
 /** Where the tool-card sample page (`-DshToolCardsSample`) says it has been laid out. */
 private const val TOOL_CARDS_OUTCOME_FILE = "dsh-toolcards-result.txt"
 
+/** What a script creates in Documents once it has its mid-stream screenshot: `-DshPressStop` then presses Stop. */
+private const val STOP_SIGNAL_FILE = "dsh-press-stop"
+
+/** How long `-DshPressStop` waits for [STOP_SIGNAL_FILE] before it presses Stop anyway. */
+private const val STOP_SIGNAL_WAIT_MS = 120_000L
+
 /** Where [reportChat] appends: what the opened session's transcript shows, for `-DshOpenSession`. */
 private const val CHAT_OUTCOME_FILE = "dsh-chat-result.txt"
 
@@ -180,6 +207,13 @@ private fun reportDrawer(line: String) = writeReport(DRAWER_OUTCOME_FILE, line)
  * `-DshChatScroll older` run writes the `opened` line and then the `older` one, and a script checks both.
  */
 private fun reportChat(line: String) = writeReport(CHAT_OUTCOME_FILE, line, append = true)
+
+/** Whether the app's Documents directory holds a file of this name (a script's signal). */
+private fun documentExists(fileName: String): Boolean {
+    val documents = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)
+        .firstOrNull() as? String ?: return false
+    return NSFileManager.defaultManager.fileExistsAtPath("$documents/$fileName")
+}
 
 @OptIn(ExperimentalForeignApi::class)
 private fun writeReport(fileName: String, line: String, append: Boolean = false) {
