@@ -194,6 +194,33 @@ class DemoHarnessTest {
     }
 
     @Test
+    fun aStoppedHoldTurnCommitsWhatItStreamedAndEndsAborted() = withDemo { servers ->
+        call(
+            servers.demoUrl!!,
+            "session/prompt",
+            """{"request":{"requestId":"r1","sessionId":"demo-05","mode":"queue","content":[{"type":"text","text":"${DemoHarness.HOLD_PREFIX} on, plan it first"}]}}""",
+        )
+        // Long enough for the first half to stream and the turn to hold.
+        Thread.sleep(DemoHarness.REPLY.length / 16 * DemoHarness.CHUNK_DELAY_MS + 1_500)
+        // What the app's Stop sends (SessionCancelRequest).
+        call(servers.demoUrl!!, "session/cancel", """{"request":{"sessionId":"demo-05"}}""")
+        var added = emptyList<JsonObject>()
+        for (attempt in 0 until 50) {
+            added = servers.demo!!.log("demo-05").drop(4)
+            if (added.size >= 4) break
+            Thread.sleep(100)
+        }
+        assertEquals(listOf("turn/start", "user/message", "assistant/message", "turn/end"), added.map { it["type"]!!.jsonPrimitive.content })
+        // The first half of the reply, as the harness's agent loop commits a stream it was told to stop.
+        val pieces = DemoHarness.REPLY.chunked(16)
+        val text = added[2]["data"]!!.jsonObject["message"]!!.jsonObject["content"]!!.jsonArray.single().jsonObject["text"]!!.jsonPrimitive.content
+        assertEquals(pieces.take(pieces.size / 2).joinToString(""), text)
+        val reason = added[3]["data"]!!.jsonObject["reason"]!!.jsonObject
+        assertEquals("aborted", reason["kind"]!!.jsonPrimitive.content)
+        assertEquals("user", reason["reason"]!!.jsonObject["kind"]!!.jsonPrimitive.content)
+    }
+
+    @Test
     fun aPromptIsAnsweredOnTheFollowStreamAndStaysInTheLog() = withDemo { servers ->
         val items = LinkedBlockingQueue<JsonObject>()
         val listener = object : WebSocket.Listener {

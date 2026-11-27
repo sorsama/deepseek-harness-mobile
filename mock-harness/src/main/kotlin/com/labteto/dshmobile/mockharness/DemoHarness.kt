@@ -1,12 +1,16 @@
 package com.labteto.dshmobile.mockharness
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -49,8 +53,11 @@ import kotlinx.serialization.json.putJsonObject
  * - `session/prompt`: accepted, then the turn plays out on every open follow stream: `turn/start`, the user's
  *   message, an assistant stream ([REPLY] in pieces, [CHUNK_DELAY_MS] apart), the settled `assistant/message`
  *   and `turn/end`. The new events stay in the session's log, so a later follow shows them. A prompt that starts
- *   with [HOLD_PREFIX] streams the first half of the reply and then holds there, the turn still running, until the
- *   harness stops: a fixed mid-stream state for a screenshot (and for a Stop button to stop).
+ *   with [HOLD_PREFIX] streams the first half of the reply and then holds there, the turn still running, until it is
+ *   stopped: a fixed mid-stream state for a screenshot (and for a Stop button to stop). One that starts with
+ *   [SLOW_PREFIX] streams the whole reply [SLOW_CHUNK_DELAY_MS] a piece, long enough to be caught mid-stream.
+ * - `session/cancel`: stops the session's running turn as the harness's agent loop does on a cancel mid-stream: the
+ *   attempt commits what it streamed as the `assistant/message`, and the turn ends `aborted` (`{kind: user}`).
  *
  * A follow stream is not told apart by session in the mock, so a reply is pushed to every open follow; the app
  * follows one session at a time.
@@ -62,6 +69,9 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
 
     /** Each session's durable log, as wire events (`{type, seq, time, data}`). */
     private val logs: Map<String, MutableList<JsonObject>> = SESSIONS.associate { it.id to initialLog(it).toMutableList() }
+
+    /** The turn each session has playing out, so that `session/cancel` can stop it. */
+    private val turns = mutableMapOf<String, Job>()
 
     /** The assistant stream's revision counter, per session. */
     private val revisions = mutableMapOf<String, Int>()
@@ -97,7 +107,16 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         ) { request ->
             harness.sessionPrompts.add(request)
             val sessionId = (request["sessionId"] as? JsonPrimitive)?.contentOrNull.orEmpty()
-            if (sessionId in logs) scope.launch { reply(sessionId, request["content"] as? JsonArray ?: JsonArray(emptyList())) }
+            if (sessionId in logs) {
+                val job = scope.launch { reply(sessionId, request["content"] as? JsonArray ?: JsonArray(emptyList())) }
+                synchronized(lock) { turns[sessionId] = job }
+                job.invokeOnCompletion { synchronized(lock) { if (turns[sessionId] === job) turns.remove(sessionId) } }
+            }
+            buildJsonObject { put("accepted", true) }
+        }
+        harness.requestRemote("session", "cancel", required = setOf("sessionId")) { request ->
+            val sessionId = (request["sessionId"] as? JsonPrimitive)?.contentOrNull.orEmpty()
+            synchronized(lock) { turns[sessionId] }?.cancel(Stopped())
             buildJsonObject { put("accepted", true) }
         }
     }
@@ -235,17 +254,53 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
             },
         )
         val pieces = REPLY.chunked(REPLY_PIECE)
-        val holds = ((content.firstOrNull() as? JsonObject)?.get("text") as? JsonPrimitive)?.contentOrNull
-            ?.startsWith(HOLD_PREFIX) == true
+        val prompt = ((content.firstOrNull() as? JsonObject)?.get("text") as? JsonPrimitive)?.contentOrNull.orEmpty()
+        val holds = prompt.startsWith(HOLD_PREFIX)
+        val pace = if (prompt.startsWith(SLOW_PREFIX)) SLOW_CHUNK_DELAY_MS else CHUNK_DELAY_MS
         harness.pushAssistantStream(chunkFrame(sessionId, attemptId, 0, buildJsonObject { put("type", "block-start"); put("index", 0); put("blockType", "text") }))
-        for ((i, piece) in pieces.withIndex()) {
-            if (holds && i == pieces.size / 2) awaitCancellation()
-            delay(CHUNK_DELAY_MS)
-            harness.pushAssistantStream(
-                chunkFrame(sessionId, attemptId, i + 1, buildJsonObject { put("type", "text-delta"); put("index", 0); put("text", piece) }),
-            )
+        var streamed = 0
+        try {
+            for ((i, piece) in pieces.withIndex()) {
+                if (holds && i == pieces.size / 2) awaitCancellation()
+                delay(pace)
+                harness.pushAssistantStream(
+                    chunkFrame(sessionId, attemptId, i + 1, buildJsonObject { put("type", "text-delta"); put("index", 0); put("text", piece) }),
+                )
+                streamed = i + 1
+            }
+        } catch (stop: Stopped) {
+            // What the harness's agent loop does on a cancel mid-stream: the attempt commits what it streamed, and
+            // the turn ends aborted by the user.
+            withContext(NonCancellable) {
+                harness.pushAssistantStream(
+                    buildJsonObject {
+                        put("type", "end")
+                        put("attemptId", attemptId)
+                        put("revision", nextRevision(sessionId))
+                        put("index", streamed + 1)
+                        putJsonObject("outcome") {
+                            put("kind", "committed")
+                            put("eventType", "assistant/message")
+                            put("seq", startedAfter + 1)
+                        }
+                    },
+                )
+                append(sessionId, "assistant/message", assistantMessage(turn, 1, "$sessionId-a$turn", text(pieces.take(streamed).joinToString(""))))
+                append(
+                    sessionId,
+                    "turn/end",
+                    buildJsonObject {
+                        put("turn", turn)
+                        putJsonObject("reason") {
+                            put("kind", "aborted")
+                            putJsonObject("reason") { put("kind", "user") }
+                        }
+                    },
+                )
+            }
+            throw stop
         }
-        delay(CHUNK_DELAY_MS)
+        delay(pace)
         harness.pushAssistantStream(
             buildJsonObject {
                 put("type", "end")
@@ -698,6 +753,9 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
 
     internal data class DemoWorkspace(val id: String, val title: String, val path: String)
 
+    /** Why a turn was cancelled when `session/cancel` stopped it, rather than the harness shutting down. */
+    private class Stopped : CancellationException("stopped by session/cancel")
+
     internal data class DemoSession(val id: String, val title: String, val summary: String, val workspace: DemoWorkspace)
 
     companion object {
@@ -714,6 +772,12 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
 
         /** A prompt that starts with this gets half the reply and then a turn that stays running (see the class doc). */
         const val HOLD_PREFIX: String = "Hold"
+
+        /** A prompt that starts with this gets the reply at [SLOW_CHUNK_DELAY_MS] a piece (see the class doc). */
+        const val SLOW_PREFIX: String = "Slowly"
+
+        /** Time between two pieces of a [SLOW_PREFIX] reply: about 18 s for the whole of it. */
+        const val SLOW_CHUNK_DELAY_MS: Long = 1_500
 
         /** What `session/modelCatalog` answers: the default route and the one provider that serves it. */
         const val MODEL_CATALOG: String =
