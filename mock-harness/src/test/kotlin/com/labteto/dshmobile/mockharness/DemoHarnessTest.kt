@@ -146,6 +146,23 @@ class DemoHarnessTest {
     }
 
     @Test
+    fun aSessionShorterThanAPageComesWholeAndStartsWithItsTurn() = withDemo { servers ->
+        val page = call(
+            servers.demoUrl!!,
+            "session/page",
+            """{"request":{"address":{"kind":"session","sessionId":"demo-01"},"throughSeq":1000,"maxMessages":60}}""",
+        )
+        val events = page["records"]!!.jsonArray.map { it.jsonObject["event"]!!.jsonObject }
+        // Fewer messages than the page: nothing older, as the harness's own cut says (`hasMore` is `cut > 0`).
+        assertEquals("false", page["hasMore"]!!.jsonPrimitive.content)
+        assertEquals(servers.demo!!.log("demo-01").size, events.size)
+        // A harness log opens with the turn (seq 0) and then its prompt (seq 1): the app's store opens a session at
+        // its first prompt and so still counts seq 0 as older history to load, which the iOS scenario reports.
+        assertEquals(listOf("turn/start", "user/message"), events.take(2).map { it["type"]!!.jsonPrimitive.content })
+        assertEquals(listOf(0, 1), events.take(2).map { it["seq"]!!.jsonPrimitive.int })
+    }
+
+    @Test
     fun aHoldPromptLeavesItsTurnRunning() = withDemo { servers ->
         call(
             servers.demoUrl!!,
