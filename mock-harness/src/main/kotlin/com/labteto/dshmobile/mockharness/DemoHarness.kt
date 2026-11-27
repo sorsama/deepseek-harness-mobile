@@ -49,7 +49,8 @@ import kotlinx.serialization.json.putJsonObject
  * - `session/page`: the records at or below `throughSeq` and below `beforeSeq`, cut the same way.
  * - `session/modelCatalog`: one provider with two models, so the chat's model chip names one ([MODEL_CATALOG]).
  * - A `permissions` projection on every session ([PERMISSIONS], Workspace Write in force), so the composer's preset chip
- *   and its sheet draw.
+ *   and its sheet draw. [DOCKS_SESSION] also carries a `todos` and a `goal` projection ([TODOS], [GOAL]), so the chat's
+ *   to-do and goal docks draw above the composer.
  * - `session/prompt`: accepted, then the turn plays out on every open follow stream: `turn/start`, the user's
  *   message, an assistant stream ([REPLY] in pieces, [CHUNK_DELAY_MS] apart), the settled `assistant/message`
  *   and `turn/end`. The new events stay in the session's log, so a later follow shows them. A prompt that starts
@@ -186,6 +187,10 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
                 putJsonObject("values") {
                     SESSIONS.firstOrNull { it.id == sessionId }?.let { put("title", it.title) }
                     put("permissions", Json.parseToJsonElement(PERMISSIONS))
+                    if (sessionId == DOCKS_SESSION) {
+                        put("todos", Json.parseToJsonElement(TODOS))
+                        put("goal", Json.parseToJsonElement(GOAL))
+                    }
                 }
             }
             putJsonArray("records") { shown.forEach { add(record(it)) } }
@@ -890,6 +895,24 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
 
         /** The short turns before [LONG_SESSION]'s last: 46 turns, 92 messages, so a page of 60 leaves 32 older. */
         const val LONG_TURNS: Int = 45
+
+        /** Which session carries the to-do and goal projections: the sixth, "Translate the onboarding copy". */
+        const val DOCKS_INDEX: Int = 5
+
+        /** The id of the session whose chat shows the to-do and goal docks. */
+        val DOCKS_SESSION: String get() = SESSIONS[DOCKS_INDEX].id
+
+        /** [DOCKS_SESSION]'s `todos` projection: four steps, one done and one under way. */
+        const val TODOS: String =
+            """{"todos":[{"content":"List every onboarding string","status":"completed"},""" +
+                """{"content":"Translate the strings into Spanish","status":"in_progress"},""" +
+                """{"content":"Translate the strings into French","status":"pending"},""" +
+                """{"content":"Check the longest lines on a small phone","status":"pending"}]}"""
+
+        /** [DOCKS_SESSION]'s `goal` projection: an active goal with a ten-round cap. */
+        const val GOAL: String =
+            """{"id":"goal-1","revision":1,"objective":"Ship the onboarding copy in four languages",""" +
+                """"phase":"active","maxGoalRounds":10}"""
 
         /** The events the harness counts toward a page's `maxMessages`. */
         private val MESSAGE_TYPES = setOf("user/message", "assistant/message")

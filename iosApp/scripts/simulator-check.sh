@@ -729,10 +729,10 @@ if [ -n "$demo_url" ] && [ "$demo_url" != "null" ]; then
 fi
 
 # 64 to 66. Sending from that composer on this iPhone (the shared chat content, M6b): a prompt streamed slowly and
-#     settled (light, demo-02), a held one stopped with Stop (dark, demo-05), and the software keyboard up under a
-#     typed draft (light). Each fails without its `DSH_CHAT_RESULT` lines.
+#     settled (light, demo-06, which has the to-do and goal docks), a held one stopped with Stop (dark, demo-05),
+#     and the software keyboard up under a typed draft (light). Each fails without its `DSH_CHAT_RESULT` lines.
 if [ -n "$demo_url" ] && [ "$demo_url" != "null" ]; then
-  send_scenario iphone light demo-02 reply
+  send_scenario iphone light demo-06 reply
   send_scenario iphone dark demo-05 stop
   keyboard_scenario iphone light
 fi
