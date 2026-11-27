@@ -4,8 +4,6 @@
     <string name="chat_queue_placement_queued">Следующий ход</string>
     <string name="chat_queue_placement_steering">Направляется</string>
     <string name="chat_queue_placement_context">Контекст</string>
-    <string name="chat_status_running">Работает</string>
-    <string name="chat_status_idle">Ожидает</string>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d шаг</item>
         <item quantity="few">%d шага</item>

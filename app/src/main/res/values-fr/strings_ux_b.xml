@@ -5,11 +5,9 @@
     <string name="ux_b_no_matches">Aucune référence correspondante</string>
     <string name="ux_b_reference_error">Certaines références n’ont pas pu être chargées. Réessayez.</string>
     <string name="ux_b_file">Fichier</string>
-    <string name="ux_b_folder">Dossier</string>
     <string name="ux_b_session">Conversation</string>
     <string name="ux_b_browse_folder">Parcourir le dossier %1$s</string>
     <string name="ux_b_open_reference">Ouvrir %1$s : %2$s</string>
-    <string name="ux_b_remove_reference">Supprimer la référence %1$s</string>
     <string name="ux_b_paused">En pause pendant la modification</string>
     <string name="ux_b_held">En attente de votre réponse</string>
     <string name="ux_b_continued">Le travail a repris, mais vous pouvez encore répondre</string>

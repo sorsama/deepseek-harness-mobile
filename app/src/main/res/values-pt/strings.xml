@@ -30,7 +30,6 @@
     <string name="connect_sign_in">Entrar</string>
     <string name="connect_checking">Verificando…</string>
     <string name="connect_scan_progress">Verificando sua rede… %1$d de %2$d</string>
-    <string name="chatlist_subagents">Subagentes</string>
     <string name="chatlist_archived">Arquivadas</string>
     <string name="chatlist_session_rename">Renomear sessão</string>
     <string name="chatlist_session_fork">Bifurcar sessão</string>
@@ -194,9 +193,6 @@
     <string name="err_command_images_host">/%1$s não pode levar anexos neste harness. Remova-os primeiro.</string>
     <string name="common_remove">Remover</string>
     <string name="common_unavailable">Indisponível</string>
-    <string name="chatlist_open">Abrir conversas</string>
-    <string name="chatlist_hide">Ocultar conversas</string>
-    <string name="chatlist_show">Mostrar conversas</string>
     <string name="chatlist_needs_action">Precisa de você</string>
     <string name="chat_composer_send">Enviar mensagem</string>
     <string name="chat_composer_commands">Comandos</string>
@@ -204,7 +200,6 @@
     <string name="chat_composer_mode_queue_hint">Executa quando o turno atual terminar</string>
     <string name="chat_composer_mode_steer_hint">Interrompe o turno em andamento</string>
     <string name="chat_composer_steer_idle">Direcionar exige um turno em andamento</string>
-    <string name="chat_tab">Conversa</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">Esta sessão não tem comandos</string>
     <string name="chat_commands_unavailable">Este harness não oferece uma lista de comandos</string>
@@ -221,10 +216,6 @@
     <string name="chat_stats_tokens">%1$s entrada · %2$s saída</string>
     <string name="chat_stats_cache">Cache %1$d%%</string>
     <string name="chat_context_used">%1$d%% do contexto usado</string>
-    <string name="permission_custom_hint">As configurações atuais de sandbox e aprovação não correspondem a nenhuma predefinição.</string>
-    <string name="permission_confirm_title">Conceder acesso total?</string>
-    <string name="permission_confirm_body">O agente poderá ler e gravar em qualquer lugar do computador do harness e deixará de pedir aprovação.</string>
-    <string name="permission_confirm_ack">Entendo o risco</string>
     <string name="permission_unconfirmed">O harness não confirmou a alteração de permissão</string>
     <string name="presets_current">Predefinição atual</string>
     <string name="presets_locked">A predefinição fica fixa depois que a sessão começa. Inicie uma nova sessão para escolher outra.</string>
@@ -287,14 +278,12 @@
     <string name="scan_detected">Código lido</string>
     <string name="chat_composer_attach_file">Anexar arquivo</string>
     <string name="chat_composer_remove_file">Remover arquivo</string>
-    <string name="chat_attachment_uploading">Enviando…</string>
     <string name="chat_attachment_upload_failed">O envio falhou. Toque para tentar de novo.</string>
     <string name="chat_attachment_still_uploading">Aguarde o envio terminar antes de enviar a mensagem.</string>
     <string name="err_file_read_failed">Não foi possível ler esse arquivo.</string>
     <string name="err_file_not_staged">O harness não guarda mais esse arquivo. Anexe-o de novo.</string>
     <string name="err_file_subagent_unsupported">Sessões de subagente não aceitam arquivos.</string>
     <string name="photos_skipped">Ignorados: %1$d. %2$s</string>
-    <string name="photos_preparing">Preparando fotos…</string>
     <string name="archived_title">Sessões arquivadas</string>
     <string name="archived_empty">Nenhuma sessão arquivada correspondente</string>
     <string name="archived_restore">Restaurar</string>
@@ -446,9 +435,6 @@
     <string name="hold_rewind_here">Retroceder para esta mensagem</string>
     <string name="hold_copy_command">Copiar comando</string>
     <string name="hold_copy_output">Copiar saída</string>
-    <string name="hold_send_label">Escolher como enviar</string>
-    <string name="hold_send_steer">Direcionar agora</string>
-    <string name="hold_send_queue">Enfileirar após este turno</string>
     <string name="hold_send_tip">Dica: segure Enviar para escolher como enviar só esta mensagem.</string>
     <string name="hold_replace_draft_title">Substituir o rascunho?</string>
     <string name="hold_replace_draft_body">O editor já tem texto. Editar esta mensagem vai substituí-lo.</string>
@@ -487,7 +473,6 @@
     <string name="quota_limit_short">Limite atingido</string>
     <string name="quota_rate_short">Limite de requisições</string>
     <string name="permission_preset_workspace_write">Gravação no espaço de trabalho</string>
-    <string name="permission_preset_auto_desc">Executa sem um sandbox após uma revisão experimental do mesmo modelo de cada chamada de ferramenta nativa e chamada interna PTC.</string>
     <string name="shortcuts_group_message">Caixa de mensagem</string>
     <string name="shortcuts_group_sessions">Sessões</string>
     <string name="shortcuts_group_general">Geral</string>

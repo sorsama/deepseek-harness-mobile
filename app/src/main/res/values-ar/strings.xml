@@ -30,7 +30,6 @@
     <string name="connect_sign_in">تسجيل الدخول</string>
     <string name="connect_checking">جارٍ التحقق…</string>
     <string name="connect_scan_progress">جارٍ فحص شبكتك… %1$d من %2$d</string>
-    <string name="chatlist_subagents">الوكلاء الفرعيون</string>
     <string name="chatlist_archived">المؤرشفة</string>
     <string name="chatlist_session_rename">إعادة تسمية الجلسة</string>
     <string name="chatlist_session_fork">تفريع الجلسة</string>
@@ -194,9 +193,6 @@
     <string name="err_command_images_host">/%1$s لا يمكنه حمل المرفقات على harness هذا. أزلها أولًا.</string>
     <string name="common_remove">إزالة</string>
     <string name="common_unavailable">غير متاح</string>
-    <string name="chatlist_open">فتح المحادثات</string>
-    <string name="chatlist_hide">إخفاء المحادثات</string>
-    <string name="chatlist_show">إظهار المحادثات</string>
     <string name="chatlist_needs_action">بانتظارك</string>
     <string name="chat_composer_send">إرسال الرسالة</string>
     <string name="chat_composer_commands">الأوامر</string>
@@ -204,7 +200,6 @@
     <string name="chat_composer_mode_queue_hint">يُنفَّذ بعد انتهاء الجولة الحالية</string>
     <string name="chat_composer_mode_steer_hint">يقاطع الجولة الجارية</string>
     <string name="chat_composer_steer_idle">التوجيه يحتاج جولة جارية</string>
-    <string name="chat_tab">المحادثة</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">لا توجد أوامر في هذه الجلسة</string>
     <string name="chat_commands_unavailable">لا يوفّر هذا الـ harness قائمة أوامر</string>
@@ -221,10 +216,6 @@
     <string name="chat_stats_tokens">%1$s دخل · %2$s خرج</string>
     <string name="chat_stats_cache">التخزين المؤقت %1$d%%</string>
     <string name="chat_context_used">استُخدم %1$d%% من السياق</string>
-    <string name="permission_custom_hint">إعدادات العزل والموافقة الحالية لا تطابق أي إعداد مسبق.</string>
-    <string name="permission_confirm_title">منح وصول كامل؟</string>
-    <string name="permission_confirm_body">سيتمكن الوكيل من القراءة والكتابة في أي مكان على حاسوب harness ولن يطلب الموافقة بعد الآن.</string>
-    <string name="permission_confirm_ack">أدرك المخاطرة</string>
     <string name="permission_unconfirmed">لم يؤكّد الـ harness تغيير الأذونات</string>
     <string name="presets_current">الإعداد المسبق الحالي</string>
     <string name="presets_locked">يثبت الإعداد المسبق بمجرد بدء الجلسة. ابدأ جلسة جديدة لاختيار غيره.</string>
@@ -287,14 +278,12 @@
     <string name="scan_detected">تمت قراءة الرمز</string>
     <string name="chat_composer_attach_file">إرفاق ملف</string>
     <string name="chat_composer_remove_file">إزالة الملف</string>
-    <string name="chat_attachment_uploading">جارٍ الرفع…</string>
     <string name="chat_attachment_upload_failed">فشل الرفع. انقر لإعادة المحاولة.</string>
     <string name="chat_attachment_still_uploading">انتظر اكتمال الرفع قبل الإرسال.</string>
     <string name="err_file_read_failed">تعذّر قراءة هذا الملف.</string>
     <string name="err_file_not_staged">لم يعد harness يحتفظ بهذا الملف. أرفقه مجددًا.</string>
     <string name="err_file_subagent_unsupported">جلسات الوكيل الفرعي لا تقبل الملفات.</string>
     <string name="photos_skipped">تم تخطي %1$d. %2$s</string>
-    <string name="photos_preparing">جارٍ تجهيز الصور…</string>
     <string name="archived_title">الجلسات المؤرشفة</string>
     <string name="archived_empty">لا توجد جلسات مؤرشفة مطابقة</string>
     <string name="archived_restore">استعادة</string>
@@ -446,9 +435,6 @@
     <string name="hold_rewind_here">الإعادة إلى هذه الرسالة</string>
     <string name="hold_copy_command">نسخ الأمر</string>
     <string name="hold_copy_output">نسخ المخرجات</string>
-    <string name="hold_send_label">اختيار طريقة الإرسال</string>
-    <string name="hold_send_steer">توجيه الآن</string>
-    <string name="hold_send_queue">إضافة إلى قائمة الانتظار بعد هذه الجولة</string>
     <string name="hold_send_tip">تلميح: اضغط مطولًا على «إرسال» لتختار الطريقة لرسالة واحدة فقط.</string>
     <string name="hold_replace_draft_title">استبدال المسودة؟</string>
     <string name="hold_replace_draft_body">يحتوي مربع الكتابة على نص بالفعل. تعديل هذه الرسالة سيستبدله.</string>
@@ -487,7 +473,6 @@
     <string name="quota_limit_short">تم بلوغ الحد</string>
     <string name="quota_rate_short">الطلبات محدودة</string>
     <string name="permission_preset_workspace_write">كتابة في مساحة العمل</string>
-    <string name="permission_preset_auto_desc">يعمل بدون صندوق حماية بعد مراجعة تجريبية من نفس النموذج لكل استدعاء أداة أصلي وكل استدعاء PTC داخلي.</string>
     <string name="shortcuts_group_message">مربع الرسالة</string>
     <string name="shortcuts_group_sessions">الجلسات</string>
     <string name="shortcuts_group_general">عام</string>

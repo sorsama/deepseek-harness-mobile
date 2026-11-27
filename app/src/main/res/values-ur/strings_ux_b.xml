@@ -5,11 +5,9 @@
     <string name="ux_b_no_matches">کوئی مماثل حوالہ نہیں</string>
     <string name="ux_b_reference_error">کچھ حوالے لوڈ نہیں ہو سکے۔ دوبارہ کوشش کریں۔</string>
     <string name="ux_b_file">فائل</string>
-    <string name="ux_b_folder">فولڈر</string>
     <string name="ux_b_session">گفتگو</string>
     <string name="ux_b_browse_folder">فولڈر %1$s دیکھیں</string>
     <string name="ux_b_open_reference">%1$s کھولیں: %2$s</string>
-    <string name="ux_b_remove_reference">حوالہ %1$s ہٹائیں</string>
     <string name="ux_b_paused">ترمیم کے دوران موقوف</string>
     <string name="ux_b_held">آپ کے جواب کا انتظار ہے</string>
     <string name="ux_b_continued">کام جاری ہے؛ آپ اب بھی جواب دے سکتے ہیں</string>

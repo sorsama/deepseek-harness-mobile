@@ -33,14 +33,10 @@
     <string name="connect_sign_in">Sign in</string>
     <string name="connect_checking">Checking…</string>
     <string name="connect_scan_progress">Scanning your network… %1$d of %2$d</string>
-    <string name="chatlist_subagents">Subagents</string>
     <string name="chatlist_archived">Archived</string>
     <string name="chatlist_session_rename">Rename session</string>
     <string name="chatlist_session_fork">Fork session</string>
     <string name="chatlist_session_archive">Archive session</string>
-    <string name="chatlist_open">Open chats</string>
-    <string name="chatlist_hide">Hide chats</string>
-    <string name="chatlist_show">Show chats</string>
     <string name="chatlist_needs_action">Needs you</string>
     <string name="chat_composer_hint">Message the agent</string>
     <string name="chat_composer_expand">Open the full screen editor</string>
@@ -51,7 +47,6 @@
     <string name="chat_composer_mode_queue_hint">Runs after the current turn finishes</string>
     <string name="chat_composer_mode_steer_hint">Interrupts the running turn</string>
     <string name="chat_composer_steer_idle">Steering needs a running turn</string>
-    <string name="chat_tab">Chat</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">This session has no commands</string>
     <string name="chat_commands_unavailable">This harness doesn\'t share a command list</string>
@@ -105,10 +100,6 @@
     <string name="approval_reject">Don\'t allow</string>
     <string name="approval_reason">Reason: %1$s</string>
     <string name="permission_preset">Permission</string>
-    <string name="permission_custom_hint">Your sandbox and approval settings don\'t match any preset.</string>
-    <string name="permission_confirm_title">Grant full access?</string>
-    <string name="permission_confirm_body">The agent will be able to read and write anywhere on the harness computer and will stop asking for approval.</string>
-    <string name="permission_confirm_ack">I understand the risk</string>
     <string name="permission_unconfirmed">The harness didn’t confirm the permission change</string>
     <string name="questions_skip">Skip</string>
     <string name="questions_next">Next</string>
@@ -294,14 +285,12 @@
     <string name="scan_detected">Code read</string>
     <string name="chat_composer_attach_file">Attach file</string>
     <string name="chat_composer_remove_file">Remove file</string>
-    <string name="chat_attachment_uploading">Uploading…</string>
     <string name="chat_attachment_upload_failed">Upload failed. Tap to retry.</string>
     <string name="chat_attachment_still_uploading">Wait for the upload to finish before sending.</string>
     <string name="err_file_read_failed">Couldn\'t read that file.</string>
     <string name="err_file_not_staged">The harness no longer holds that file. Attach it again.</string>
     <string name="err_file_subagent_unsupported">Subagent sessions don\'t take files.</string>
     <string name="photos_skipped">Skipped: %1$d. %2$s</string>
-    <string name="photos_preparing">Preparing photos…</string>
     <string name="archived_title">Archived sessions</string>
     <string name="archived_empty">No archived sessions match</string>
     <string name="archived_restore">Restore</string>
@@ -454,9 +443,6 @@
     <string name="hold_rewind_here">Rewind to this message</string>
     <string name="hold_copy_command">Copy command</string>
     <string name="hold_copy_output">Copy output</string>
-    <string name="hold_send_label">Choose how to send</string>
-    <string name="hold_send_steer">Steer now</string>
-    <string name="hold_send_queue">Queue for after this turn</string>
     <string name="hold_send_tip">Tip: hold Send to choose for a single message.</string>
     <string name="hold_replace_draft_title">Replace your draft?</string>
     <string name="hold_replace_draft_body">The composer already has text in it. Editing this message replaces it.</string>
@@ -495,7 +481,6 @@
     <string name="quota_limit_short">Limit reached</string>
     <string name="quota_rate_short">Rate limited</string>
     <string name="permission_preset_workspace_write">Workspace Write</string>
-    <string name="permission_preset_auto_desc">Run without a sandbox after an experimental same-model review of every native tool call and PTC inner call.</string>
     <string name="shortcuts_group_message">Message box</string>
     <string name="shortcuts_group_sessions">Sessions</string>
     <string name="shortcuts_group_general">General</string>

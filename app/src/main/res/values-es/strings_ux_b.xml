@@ -5,11 +5,9 @@
     <string name="ux_b_no_matches">No hay referencias coincidentes</string>
     <string name="ux_b_reference_error">No se pudieron cargar algunas referencias. Inténtalo de nuevo.</string>
     <string name="ux_b_file">Archivo</string>
-    <string name="ux_b_folder">Carpeta</string>
     <string name="ux_b_session">Conversación</string>
     <string name="ux_b_browse_folder">Explorar carpeta %1$s</string>
     <string name="ux_b_open_reference">Abrir %1$s: %2$s</string>
-    <string name="ux_b_remove_reference">Quitar referencia %1$s</string>
     <string name="ux_b_paused">En pausa mientras editas</string>
     <string name="ux_b_held">Esperando tu respuesta</string>
     <string name="ux_b_continued">El trabajo continuó; aún puedes responder</string>

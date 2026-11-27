@@ -30,7 +30,6 @@
     <string name="connect_sign_in">সাইন ইন</string>
     <string name="connect_checking">দেখা হচ্ছে…</string>
     <string name="connect_scan_progress">আপনার নেটওয়ার্ক স্ক্যান হচ্ছে… %2$d-এর মধ্যে %1$d</string>
-    <string name="chatlist_subagents">সাবএজেন্ট</string>
     <string name="chatlist_archived">আর্কাইভ করা</string>
     <string name="chatlist_session_rename">সেশনের নাম বদলান</string>
     <string name="chatlist_session_fork">সেশন ফর্ক করুন</string>
@@ -194,9 +193,6 @@
     <string name="err_command_images_host">এই harness-এ /%1$s অ্যাটাচমেন্ট নিতে পারে না। আগে সেগুলো সরান।</string>
     <string name="common_remove">সরান</string>
     <string name="common_unavailable">পাওয়া যাচ্ছে না</string>
-    <string name="chatlist_open">চ্যাট খুলুন</string>
-    <string name="chatlist_hide">চ্যাট লুকান</string>
-    <string name="chatlist_show">চ্যাট দেখান</string>
     <string name="chatlist_needs_action">আপনাকে দরকার</string>
     <string name="chat_composer_send">বার্তা পাঠান</string>
     <string name="chat_composer_commands">কমান্ড</string>
@@ -204,7 +200,6 @@
     <string name="chat_composer_mode_queue_hint">বর্তমান টার্ন শেষ হলে চলবে</string>
     <string name="chat_composer_mode_steer_hint">চলমান টার্ন মাঝপথে থামিয়ে দেয়</string>
     <string name="chat_composer_steer_idle">নির্দেশ দিতে একটি টার্ন চলতে হবে</string>
-    <string name="chat_tab">চ্যাট</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">এই সেশনে কোনো কমান্ড নেই</string>
     <string name="chat_commands_unavailable">এই harness কমান্ডের তালিকা দেয় না</string>
@@ -221,10 +216,6 @@
     <string name="chat_stats_tokens">%1$s ইনপুট · %2$s আউটপুট</string>
     <string name="chat_stats_cache">ক্যাশ %1$d%%</string>
     <string name="chat_context_used">%1$d%% কনটেক্সট ব্যবহার হয়েছে</string>
-    <string name="permission_custom_hint">বর্তমান স্যান্ডবক্স ও অনুমোদন সেটিং কোনো প্রিসেটের সঙ্গে মেলে না।</string>
-    <string name="permission_confirm_title">সম্পূর্ণ অ্যাক্সেস দেবেন?</string>
-    <string name="permission_confirm_body">এজেন্ট harness-এর কম্পিউটারের যেকোনো জায়গায় পড়তে ও লিখতে পারবে, আর অনুমোদন চাইবে না।</string>
-    <string name="permission_confirm_ack">আমি ঝুঁকিটা বুঝি</string>
     <string name="permission_unconfirmed">harness অনুমতি বদলানোর কথা নিশ্চিত করেনি</string>
     <string name="presets_current">বর্তমান প্রিসেট</string>
     <string name="presets_locked">সেশন শুরু হলে প্রিসেট ঠিক হয়ে যায়। অন্যটি বাছতে নতুন সেশন শুরু করুন।</string>
@@ -287,14 +278,12 @@
     <string name="scan_detected">কোড পড়া হয়েছে</string>
     <string name="chat_composer_attach_file">ফাইল যোগ করুন</string>
     <string name="chat_composer_remove_file">ফাইল সরান</string>
-    <string name="chat_attachment_uploading">আপলোড হচ্ছে…</string>
     <string name="chat_attachment_upload_failed">আপলোড হয়নি। আবার চেষ্টা করতে ট্যাপ করুন।</string>
     <string name="chat_attachment_still_uploading">পাঠানোর আগে আপলোড শেষ হতে দিন।</string>
     <string name="err_file_read_failed">ফাইলটি পড়া যায়নি।</string>
     <string name="err_file_not_staged">harness-এর কাছে আর ফাইলটি নেই। আবার যোগ করুন।</string>
     <string name="err_file_subagent_unsupported">সাবএজেন্ট সেশনে ফাইল পাঠানো যায় না।</string>
     <string name="photos_skipped">বাদ দেওয়া হয়েছে: %1$d। %2$s</string>
-    <string name="photos_preparing">ছবি প্রস্তুত হচ্ছে…</string>
     <string name="archived_title">আর্কাইভ করা সেশন</string>
     <string name="archived_empty">মেলে এমন কোনো আর্কাইভ করা সেশন নেই</string>
     <string name="archived_restore">ফিরিয়ে আনুন</string>
@@ -446,9 +435,6 @@
     <string name="hold_rewind_here">এই বার্তায় রিওয়াইন্ড করুন</string>
     <string name="hold_copy_command">কমান্ড কপি করুন</string>
     <string name="hold_copy_output">আউটপুট কপি করুন</string>
-    <string name="hold_send_label">কীভাবে পাঠাবেন বাছুন</string>
-    <string name="hold_send_steer">এখনই নির্দেশ দিন</string>
-    <string name="hold_send_queue">এই টার্নের পরে কিউতে রাখুন</string>
     <string name="hold_send_tip">টিপ: কোনো একটি বার্তার জন্য বেছে নিতে পাঠান বোতামটি চেপে ধরে রাখুন।</string>
     <string name="hold_replace_draft_title">খসড়া বদলাবেন?</string>
     <string name="hold_replace_draft_body">কম্পোজারে আগে থেকেই লেখা আছে। এই বার্তা এডিট করলে সেটি বদলে যাবে।</string>
@@ -487,7 +473,6 @@
     <string name="quota_limit_short">সীমা শেষ</string>
     <string name="quota_rate_short">অনুরোধ সীমিত</string>
     <string name="permission_preset_workspace_write">ওয়ার্কস্পেসে লেখা</string>
-    <string name="permission_preset_auto_desc">প্রতিটি নেটিভ টুল কল এবং PTC অভ্যন্তরীণ কলের আগে একই মডেলের পরীক্ষামূলক পর্যালোচনার পরে স্যান্ডবক্স ছাড়াই চলে।</string>
     <string name="shortcuts_group_message">বার্তার ঘর</string>
     <string name="shortcuts_group_sessions">সেশন</string>
     <string name="shortcuts_group_general">সাধারণ</string>

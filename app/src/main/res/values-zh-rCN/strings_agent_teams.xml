@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="team_title">智能体团队</string>
-    <string name="team_chip">团队</string>
     <string name="team_beta_badge">测试版</string>
     <string name="team_tab_members">成员（%1$d）</string>
     <string name="team_tab_tasks">任务（%1$d）</string>

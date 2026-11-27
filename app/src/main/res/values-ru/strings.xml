@@ -30,7 +30,6 @@
     <string name="connect_sign_in">Войти</string>
     <string name="connect_checking">Проверка…</string>
     <string name="connect_scan_progress">Сканирование сети… %1$d из %2$d</string>
-    <string name="chatlist_subagents">Субагенты</string>
     <string name="chatlist_archived">В архиве</string>
     <string name="chatlist_session_rename">Переименовать сеанс</string>
     <string name="chatlist_session_fork">Создать ветку сеанса</string>
@@ -194,9 +193,6 @@
     <string name="err_command_images_host">/%1$s не может передавать вложения на этом harness. Сначала уберите их.</string>
     <string name="common_remove">Удалить</string>
     <string name="common_unavailable">Недоступно</string>
-    <string name="chatlist_open">Открыть чаты</string>
-    <string name="chatlist_hide">Скрыть чаты</string>
-    <string name="chatlist_show">Показать чаты</string>
     <string name="chatlist_needs_action">Ждёт вас</string>
     <string name="chat_composer_send">Отправить сообщение</string>
     <string name="chat_composer_commands">Команды</string>
@@ -204,7 +200,6 @@
     <string name="chat_composer_mode_queue_hint">Выполнится после завершения текущего хода</string>
     <string name="chat_composer_mode_steer_hint">Прерывает текущий ход</string>
     <string name="chat_composer_steer_idle">Направлять можно только во время хода</string>
-    <string name="chat_tab">Чат</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">В этом сеансе нет команд</string>
     <string name="chat_commands_unavailable">В этом harness нет списка команд</string>
@@ -221,10 +216,6 @@
     <string name="chat_stats_tokens">Вход %1$s · выход %2$s</string>
     <string name="chat_stats_cache">Кэш %1$d%%</string>
     <string name="chat_context_used">Использовано %1$d%% контекста</string>
-    <string name="permission_custom_hint">Текущие настройки песочницы и подтверждений не совпадают ни с одним пресетом.</string>
-    <string name="permission_confirm_title">Предоставить полный доступ?</string>
-    <string name="permission_confirm_body">Агент сможет читать и записывать файлы в любом месте компьютера с harness и перестанет спрашивать подтверждение.</string>
-    <string name="permission_confirm_ack">Я понимаю риск</string>
     <string name="permission_unconfirmed">Harness не подтвердил смену разрешений</string>
     <string name="presets_current">Текущий пресет</string>
     <string name="presets_locked">После начала сеанса пресет фиксируется. Начните новый сеанс, чтобы выбрать другой.</string>
@@ -287,14 +278,12 @@
     <string name="scan_detected">Код прочитан</string>
     <string name="chat_composer_attach_file">Прикрепить файл</string>
     <string name="chat_composer_remove_file">Убрать файл</string>
-    <string name="chat_attachment_uploading">Загрузка…</string>
     <string name="chat_attachment_upload_failed">Загрузка не удалась. Нажмите, чтобы повторить.</string>
     <string name="chat_attachment_still_uploading">Дождитесь окончания загрузки перед отправкой.</string>
     <string name="err_file_read_failed">Не удалось прочитать этот файл.</string>
     <string name="err_file_not_staged">Harness больше не хранит этот файл. Прикрепите его снова.</string>
     <string name="err_file_subagent_unsupported">Сеансы субагента не принимают файлы.</string>
     <string name="photos_skipped">Пропущено: %1$d. %2$s</string>
-    <string name="photos_preparing">Подготовка фото…</string>
     <string name="archived_title">Архивные сеансы</string>
     <string name="archived_empty">Подходящих архивных сеансов нет</string>
     <string name="archived_restore">Восстановить</string>
@@ -446,9 +435,6 @@
     <string name="hold_rewind_here">Откатить к этому сообщению</string>
     <string name="hold_copy_command">Копировать команду</string>
     <string name="hold_copy_output">Копировать вывод</string>
-    <string name="hold_send_label">Выбрать способ отправки</string>
-    <string name="hold_send_steer">Направить сейчас</string>
-    <string name="hold_send_queue">В очередь после этого хода</string>
     <string name="hold_send_tip">Совет: удерживайте «Отправить», чтобы выбрать способ для одного сообщения.</string>
     <string name="hold_replace_draft_title">Заменить черновик?</string>
     <string name="hold_replace_draft_body">В поле ввода уже есть текст. Изменение этого сообщения заменит его.</string>
@@ -487,7 +473,6 @@
     <string name="quota_limit_short">Лимит исчерпан</string>
     <string name="quota_rate_short">Лимит запросов</string>
     <string name="permission_preset_workspace_write">Запись в рабочей области</string>
-    <string name="permission_preset_auto_desc">Запуск без песочницы после экспериментальной проверки той же моделью каждого вызова встроенного инструмента и внутреннего вызова PTC.</string>
     <string name="shortcuts_group_message">Поле сообщения</string>
     <string name="shortcuts_group_sessions">Сеансы</string>
     <string name="shortcuts_group_general">Общие</string>

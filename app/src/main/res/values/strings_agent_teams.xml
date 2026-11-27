@@ -2,7 +2,6 @@
 <resources>
     <!-- Agent Teams (experimental): the team chip in the chat header and its sheet. -->
     <string name="team_title">Agent team</string>
-    <string name="team_chip">Team</string>
     <string name="team_beta_badge">Beta</string>
     <string name="team_tab_members">Members (%1$d)</string>
     <string name="team_tab_tasks">Tasks (%1$d)</string>

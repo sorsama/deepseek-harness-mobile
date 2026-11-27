@@ -4,8 +4,6 @@
     <string name="chat_queue_placement_queued">下一回合</string>
     <string name="chat_queue_placement_steering">引导中</string>
     <string name="chat_queue_placement_context">上下文</string>
-    <string name="chat_status_running">工作中</string>
-    <string name="chat_status_idle">空闲</string>
     <plurals name="trajectory_step_count">
         <item quantity="other">%d 步</item>
     </plurals>

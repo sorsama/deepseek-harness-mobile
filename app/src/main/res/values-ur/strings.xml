@@ -30,7 +30,6 @@
     <string name="connect_sign_in">سائن ان</string>
     <string name="connect_checking">جانچ ہو رہی ہے…</string>
     <string name="connect_scan_progress">آپ کا نیٹ ورک اسکین ہو رہا ہے… %2$d میں سے %1$d</string>
-    <string name="chatlist_subagents">ذیلی ایجنٹ</string>
     <string name="chatlist_archived">آرکائیو شدہ</string>
     <string name="chatlist_session_rename">سیشن کا نام تبدیل کریں</string>
     <string name="chatlist_session_fork">سیشن فورک کریں</string>
@@ -194,9 +193,6 @@
     <string name="err_command_images_host">/%1$s اس harness پر منسلکات نہیں لے جا سکتا۔ پہلے انہیں ہٹائیں۔</string>
     <string name="common_remove">ہٹائیں</string>
     <string name="common_unavailable">دستیاب نہیں</string>
-    <string name="chatlist_open">چیٹس کھولیں</string>
-    <string name="chatlist_hide">چیٹس چھپائیں</string>
-    <string name="chatlist_show">چیٹس دکھائیں</string>
     <string name="chatlist_needs_action">آپ کی ضرورت ہے</string>
     <string name="chat_composer_send">پیغام بھیجیں</string>
     <string name="chat_composer_commands">کمانڈز</string>
@@ -204,7 +200,6 @@
     <string name="chat_composer_mode_queue_hint">موجودہ ٹرن ختم ہونے پر چلے گا</string>
     <string name="chat_composer_mode_steer_hint">جاری ٹرن میں مداخلت کرتا ہے</string>
     <string name="chat_composer_steer_idle">مداخلت کے لیے جاری ٹرن ضروری ہے</string>
-    <string name="chat_tab">چیٹ</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">اس سیشن میں کوئی کمانڈ نہیں</string>
     <string name="chat_commands_unavailable">یہ harness کمانڈ فہرست فراہم نہیں کرتا</string>
@@ -221,10 +216,6 @@
     <string name="chat_stats_tokens">%1$s ان پٹ · %2$s آؤٹ پٹ</string>
     <string name="chat_stats_cache">کیش %1$d%%</string>
     <string name="chat_context_used">%1$d%% سیاق استعمال ہوا</string>
-    <string name="permission_custom_hint">موجودہ سینڈ باکس اور منظوری کی ترتیبات کسی پری سیٹ سے میل نہیں کھاتیں۔</string>
-    <string name="permission_confirm_title">مکمل رسائی دیں؟</string>
-    <string name="permission_confirm_body">ایجنٹ harness کمپیوٹر پر کہیں بھی پڑھ اور لکھ سکے گا اور منظوری مانگنا بند کر دے گا۔</string>
-    <string name="permission_confirm_ack">مجھے خطرے کا علم ہے</string>
     <string name="permission_unconfirmed">Harness نے اجازت کی تبدیلی کی تصدیق نہیں کی</string>
     <string name="presets_current">موجودہ پری سیٹ</string>
     <string name="presets_locked">سیشن شروع ہونے کے بعد پری سیٹ طے ہو جاتا ہے۔ دوسرا منتخب کرنے کے لیے نیا سیشن شروع کریں۔</string>
@@ -287,14 +278,12 @@
     <string name="scan_detected">کوڈ پڑھ لیا گیا</string>
     <string name="chat_composer_attach_file">فائل منسلک کریں</string>
     <string name="chat_composer_remove_file">فائل ہٹائیں</string>
-    <string name="chat_attachment_uploading">اپ لوڈ ہو رہا ہے…</string>
     <string name="chat_attachment_upload_failed">اپ لوڈ ناکام رہا۔ دوبارہ کوشش کے لیے تھپتھپائیں۔</string>
     <string name="chat_attachment_still_uploading">بھیجنے سے پہلے اپ لوڈ مکمل ہونے کا انتظار کریں۔</string>
     <string name="err_file_read_failed">وہ فائل پڑھی نہیں جا سکی۔</string>
     <string name="err_file_not_staged">harness کے پاس اب وہ فائل نہیں ہے۔ اسے دوبارہ منسلک کریں۔</string>
     <string name="err_file_subagent_unsupported">ذیلی ایجنٹ سیشن فائلیں قبول نہیں کرتے۔</string>
     <string name="photos_skipped">چھوڑے گئے: %1$d۔ %2$s</string>
-    <string name="photos_preparing">تصاویر تیار ہو رہی ہیں…</string>
     <string name="archived_title">آرکائیو شدہ سیشن</string>
     <string name="archived_empty">کوئی مماثل آرکائیو شدہ سیشن نہیں</string>
     <string name="archived_restore">بحال کریں</string>
@@ -446,9 +435,6 @@
     <string name="hold_rewind_here">اس پیغام تک ریوائنڈ کریں</string>
     <string name="hold_copy_command">کمانڈ کاپی کریں</string>
     <string name="hold_copy_output">آؤٹ پٹ کاپی کریں</string>
-    <string name="hold_send_label">بھیجنے کا طریقہ چنیں</string>
-    <string name="hold_send_steer">ابھی رہنمائی کریں</string>
-    <string name="hold_send_queue">اس ٹرن کے بعد قطار میں رکھیں</string>
     <string name="hold_send_tip">مشورہ: صرف ایک پیغام کے لیے طریقہ چننا ہو تو بھیجیں کا بٹن دبا کر رکھیں۔</string>
     <string name="hold_replace_draft_title">ڈرافٹ بدلیں؟</string>
     <string name="hold_replace_draft_body">کمپوزر میں پہلے سے متن موجود ہے۔ اس پیغام میں ترمیم اسے بدل دے گی۔</string>
@@ -487,7 +473,6 @@
     <string name="quota_limit_short">حد پوری ہو گئی</string>
     <string name="quota_rate_short">درخواستیں محدود</string>
     <string name="permission_preset_workspace_write">ورک اسپیس میں لکھنا</string>
-    <string name="permission_preset_auto_desc">ہر نیٹو ٹول کال اور PTC اندرونی کال سے پہلے ایک ہی ماڈل کا تجرباتی جائزہ لینے کے بعد بغیر سیٹ باکس کے چلتا ہے۔</string>
     <string name="shortcuts_group_message">پیغام کا خانہ</string>
     <string name="shortcuts_group_sessions">سیشنز</string>
     <string name="shortcuts_group_general">عمومی</string>

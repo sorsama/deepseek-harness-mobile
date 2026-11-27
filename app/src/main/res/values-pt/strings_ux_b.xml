@@ -5,11 +5,9 @@
     <string name="ux_b_no_matches">Nenhuma referência correspondente</string>
     <string name="ux_b_reference_error">Não foi possível carregar algumas referências. Tente novamente.</string>
     <string name="ux_b_file">Arquivo</string>
-    <string name="ux_b_folder">Pasta</string>
     <string name="ux_b_session">Conversa</string>
     <string name="ux_b_browse_folder">Explorar pasta %1$s</string>
     <string name="ux_b_open_reference">Abrir %1$s: %2$s</string>
-    <string name="ux_b_remove_reference">Remover referência %1$s</string>
     <string name="ux_b_paused">Pausado durante a edição</string>
     <string name="ux_b_held">Aguardando sua resposta</string>
     <string name="ux_b_continued">O trabalho continuou; você ainda pode responder</string>

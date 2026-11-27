@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="team_title">Equipe de agentes</string>
-    <string name="team_chip">Equipe</string>
     <string name="team_beta_badge">Beta</string>
     <string name="team_tab_members">Membros (%1$d)</string>
     <string name="team_tab_tasks">Tarefas (%1$d)</string>
