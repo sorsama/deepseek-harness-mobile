@@ -40,7 +40,8 @@ struct ComposeView: UIViewControllerRepresentable {
             markdownSample: launch.markdownSample,
             toolCardsSample: launch.toolCardsSample,
             openSession: launch.openSession,
-            chatScroll: launch.chatScroll
+            chatScroll: launch.chatScroll,
+            composerDraft: launch.composerDraft
         )
     }
 
@@ -74,7 +75,10 @@ struct ComposeView: UIViewControllerRepresentable {
 /// - `-DshOpenSession first` (or a session id) opens that session once connected, as a tap on its row does, and writes
 ///   `DSH_CHAT_RESULT opened rows=… session=… more=…` to `Documents/dsh-chat-result.txt` once its transcript is laid
 ///   out. `-DshChatScroll older` then drags the transcript up to the oldest loaded message as a finger does, which loads
-///   the page before it, and adds `DSH_CHAT_RESULT older …` once it has landed.
+///   the page before it, and adds `DSH_CHAT_RESULT older …` once it has landed. Once the composer under the transcript
+///   has been laid out it adds `DSH_CHAT_RESULT composer chars=… lines=… send=…`.
+/// - `-DshComposerDraft <hex of the text>` puts that text in the composer of the session `-DshOpenSession` opens, as
+///   typing it would (hex for the reason `-DshPairPayload` is: newlines and quotes survive).
 ///
 /// Debug builds only. A release build ignores them, so the shipped app has no way to be told which
 /// address to connect to, or what to forget, from outside.
@@ -99,6 +103,7 @@ struct LaunchOptions {
     let toolCardsSample: String?
     let openSession: String?
     let chatScroll: String?
+    let composerDraft: String?
 
     /// A launch argument's value is parsed as a property list before the app sees it, which mangles JSON, so a
     /// pairing payload is passed hex-encoded (`xxd -p`). A value that is not hex is returned as it was given.
@@ -140,14 +145,15 @@ struct LaunchOptions {
             markdownSample: defaults.string(forKey: "DshMarkdownSample"),
             toolCardsSample: defaults.string(forKey: "DshToolCardsSample"),
             openSession: defaults.string(forKey: "DshOpenSession"),
-            chatScroll: defaults.string(forKey: "DshChatScroll")
+            chatScroll: defaults.string(forKey: "DshChatScroll"),
+            composerDraft: decodeHex(defaults.string(forKey: "DshComposerDraft"))
         )
         #else
         return LaunchOptions(
             address: nil, autoConnect: false, openSignIn: false, signInToken: nil, reset: false, report: false,
             autoReconnect: nil, connectMode: nil, openPair: false, pairUrl: nil, pairCode: nil, pairSubmit: false,
             pairPayload: nil, pairScanner: false, reconnectOnce: false, openDrawer: false, markdownSample: nil,
-            toolCardsSample: nil, openSession: nil, chatScroll: nil
+            toolCardsSample: nil, openSession: nil, chatScroll: nil, composerDraft: nil
         )
         #endif
     }

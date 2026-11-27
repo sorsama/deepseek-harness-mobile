@@ -116,6 +116,8 @@ internal class LaunchRequest(
     val openSession: String? = null,
     val chatScroll: ChatScroll? = null,
     val onChat: ((String) -> Unit)? = null,
+    /** `-DshComposerDraft`: what the opened session's composer starts with. */
+    val composerDraft: String? = null,
 ) {
     /** Whether the app starts on the Pair screen. */
     val startsPairing: Boolean
@@ -131,7 +133,8 @@ private const val DEFAULT_PORT = "3080"
  * Connect screen's Relay mode. Which of them shows is [rootRouteOf], the decision the Android root makes too; iOS has
  * no Settings screen yet.
  *
- * The chat pane is the open session's transcript, read only ([IosChatPane]; the composer is a later step of the port).
+ * The chat pane is the open session's transcript under the shared top bar, with the shared composer below it
+ * ([IosChatPane]; sending is the next step of the port).
  * Before a session is opened it is the Connected page: which harness, its home directory, how many sessions it has, and
  * this client's protocol baseline, with a way to disconnect. The list's overflow menu has Disconnect too.
  */
@@ -319,6 +322,7 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                         onOpenSessions = onOpenSessions,
                         scroll = request.chatScroll,
                         onReport = request.onChat,
+                        initialDraft = request.composerDraft,
                     ) {
                         ConnectedPage(
                             authority = link.host?.authority.orEmpty(),
