@@ -7,6 +7,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -42,6 +43,9 @@ import kotlinx.serialization.json.putJsonObject
  *   user and assistant messages, and `hasMore` when older records are left. Only [LONG_SESSION] is long enough to be
  *   cut by the app's page of 60.
  * - `session/page`: the records at or below `throughSeq` and below `beforeSeq`, cut the same way.
+ * - `session/modelCatalog`: one provider with two models, so the chat's model chip names one ([MODEL_CATALOG]).
+ * - A `permissions` projection on every session ([PERMISSIONS], Workspace Write in force), so the composer's preset chip
+ *   and its sheet draw.
  * - `session/prompt`: accepted, then the turn plays out on every open follow stream: `turn/start`, the user's
  *   message, an assistant stream ([REPLY] in pieces, [CHUNK_DELAY_MS] apart), the settled `assistant/message`
  *   and `turn/end`. The new events stay in the session's log, so a later follow shows them. A prompt that starts
@@ -64,6 +68,7 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
 
     init {
         harness.remote("session", "list", setOf("_request")) { listValue() }
+        harness.remote("session", "modelCatalog", emptySet()) { Json.parseToJsonElement(MODEL_CATALOG) }
         harness.onStream("workspace/follow") { listOf(workspaceBaseline()) }
         harness.onStream(SESSION_CONTROL_ENDPOINT) {
             listOf(
@@ -159,7 +164,10 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
             }
             putJsonObject("projections") {
                 put("asOfSeq", events.size - 1)
-                putJsonObject("values") { SESSIONS.firstOrNull { it.id == sessionId }?.let { put("title", it.title) } }
+                putJsonObject("values") {
+                    SESSIONS.firstOrNull { it.id == sessionId }?.let { put("title", it.title) }
+                    put("permissions", Json.parseToJsonElement(PERMISSIONS))
+                }
             }
             putJsonArray("records") { shown.forEach { add(record(it)) } }
             if (assistantStream) {
@@ -706,6 +714,19 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
 
         /** A prompt that starts with this gets half the reply and then a turn that stays running (see the class doc). */
         const val HOLD_PREFIX: String = "Hold"
+
+        /** What `session/modelCatalog` answers: the default route and the one provider that serves it. */
+        const val MODEL_CATALOG: String =
+            """{"default":{"provider":"deepseek","model":"deepseek-chat"},"routableProviders":["deepseek"],""" +
+                """"groups":[{"id":"deepseek","name":"DeepSeek","models":[""" +
+                """{"id":"deepseek-chat","name":"DeepSeek-V3.2"},""" +
+                """{"id":"deepseek-reasoner","name":"DeepSeek-V3.2 Thinking","reasoning":{"efforts":[""" +
+                """{"id":"high","name":"High"},{"id":"max","name":"Max"}],"defaultEffort":"high"}}]}],"failures":[]}"""
+
+        /** Every session's `permissions` projection: the three presets a harness ships, Workspace Write in force. */
+        const val PERMISSIONS: String =
+            """{"options":[{"value":"read-only","name":"Read only"},{"value":"workspace-write","name":"Workspace Write"},""" +
+                """{"value":"danger-full-access","name":"Full access"}],"currentValue":"workspace-write"}"""
 
         private const val REPLY_PIECE = 16
         private const val MINUTE_MS = 60_000L
