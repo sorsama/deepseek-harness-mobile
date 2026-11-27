@@ -16,16 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.CallSplit
-import androidx.compose.material.icons.automirrored.outlined.Undo
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.TextFields
-import androidx.compose.material.icons.filled.ThumbDown
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -43,11 +33,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.expandVertically
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.session.AssistantMessageNode
 import com.labteto.dshmobile.core.session.ChatNode
 import com.labteto.dshmobile.core.session.CommandNode
@@ -68,7 +56,8 @@ import com.labteto.dshmobile.core.session.TurnErrorNode
 import com.labteto.dshmobile.core.session.TurnStartNode
 import com.labteto.dshmobile.core.session.UserMessageNode
 import com.labteto.dshmobile.core.session.WorkflowNode
-import com.labteto.dshmobile.ui.components.AttachmentImage
+import com.labteto.dshmobile.ui.components.LocalAttachmentImage
+import com.labteto.dshmobile.ui.components.localizedCount
 import com.labteto.dshmobile.ui.components.CallStateMark
 import com.labteto.dshmobile.ui.components.LeftToRight
 import com.labteto.dshmobile.ui.components.LocalCodeOwner
@@ -102,17 +91,54 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import org.jetbrains.compose.resources.stringResource
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_branch_message
+import com.labteto.dshmobile.shared.resources.chat_compaction
+import com.labteto.dshmobile.shared.resources.chat_compaction_summary
+import com.labteto.dshmobile.shared.resources.chat_context_title
+import com.labteto.dshmobile.shared.resources.chat_context_tools
+import com.labteto.dshmobile.shared.resources.chat_copy_message
+import com.labteto.dshmobile.shared.resources.chat_feedback_down
+import com.labteto.dshmobile.shared.resources.chat_feedback_up
+import com.labteto.dshmobile.shared.resources.chat_max_tokens
+import com.labteto.dshmobile.shared.resources.chat_output_placeholder
+import com.labteto.dshmobile.shared.resources.chat_retry_scheduled
+import com.labteto.dshmobile.shared.resources.chat_retrying
+import com.labteto.dshmobile.shared.resources.chat_stopped
+import com.labteto.dshmobile.shared.resources.common_copy
+import com.labteto.dshmobile.shared.resources.hold_edit_as_new
+import com.labteto.dshmobile.shared.resources.hold_edit_as_new_detail
+import com.labteto.dshmobile.shared.resources.hold_message_actions
+import com.labteto.dshmobile.shared.resources.hold_rewind_here
+import com.labteto.dshmobile.shared.resources.hold_rewind_here_detail
+import com.labteto.dshmobile.shared.resources.hold_select_text
+import com.labteto.dshmobile.shared.resources.hold_tool_actions
+import com.labteto.dshmobile.shared.resources.image_offload
+import com.labteto.dshmobile.shared.resources.plan_mode_off
+import com.labteto.dshmobile.shared.resources.plan_mode_on
+import com.labteto.dshmobile.shared.resources.rewind_marker
+import com.labteto.dshmobile.shared.resources.system_prompt
+import com.labteto.dshmobile.shared.resources.workflow_title
+import com.labteto.dshmobile.ui.components.DsIcons
 
 /** Everything one transcript row needs that is not on the node itself. */
-internal data class ChatNodeContext(
+data class ChatNodeContext(
     val nodes: List<ChatNode>,
     val running: Boolean,
     val cwd: String?,
     /** Host account home, used only to abbreviate a leftover home-rooted path as `~`. */
     val home: String? = null,
-    val onOpenSubagent: (String) -> Unit,
-    val onBranchFrom: (Long) -> Unit,
-    val onFeedback: (Long, Boolean) -> Unit,
+    /**
+     * Opens a subagent's conversation by child id; null where there is nowhere to open it (the iOS
+     * transcript before the subagent sheet exists), which leaves a subagent card and a workflow
+     * member with nothing to tap.
+     */
+    val onOpenSubagent: ((String) -> Unit)? = null,
+    /** Forks the session at a message; null offers no Branch action under a reply. */
+    val onBranchFrom: ((Long) -> Unit)? = null,
+    /** Sends a thumbs up or down for a reply; null offers neither button. */
+    val onFeedback: ((Long, Boolean) -> Unit)? = null,
     val eventTimes: Map<Long, Long> = emptyMap(),
     /** Puts a sent prompt's text back in the composer; null where there is no composer. */
     val onEditPrompt: ((String) -> Unit)? = null,
@@ -156,7 +182,7 @@ internal data class ChatNodeContext(
  * dropping it, and this shows it rather than a gap in the transcript.
  */
 @Composable
-internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
+fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
     val colors = DsTheme.colors
     when (node) {
         // Turn boundaries are structure, not content — the transcript shows the work, not the frame.
@@ -165,7 +191,7 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
         is UserMessageNode -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             node.blocks.filter { it.kind == "image" }.forEach { block ->
                 parseImageRef(block)?.let { ref ->
-                    AttachmentImage(ref = ref, contentDescription = ref.name)
+                    LocalAttachmentImage.current?.invoke(ref, ref.name)
                 }
             }
             // A file is a chip, not a preview: the host stores it verbatim and the model reads it
@@ -199,11 +225,11 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
 
         is TurnEndNode -> when (node.reasonKind) {
             "completed" -> Unit
-            "aborted", "interrupted" -> DsPill(text = stringResource(R.string.chat_stopped), warn = true)
+            "aborted", "interrupted" -> DsPill(text = stringResource(Res.string.chat_stopped), warn = true)
             // What went wrong in words chosen by the failure's code; the provider's message and the
             // code itself stay one tap away under Technical details.
             "error" -> TurnFailureRow(node.failureCode, node.failureMessage)
-            "max-tokens" -> DsPill(text = stringResource(R.string.chat_max_tokens), warn = true)
+            "max-tokens" -> DsPill(text = stringResource(Res.string.chat_max_tokens), warn = true)
             else -> Unit
         }
 
@@ -212,7 +238,7 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
         is GoalNode -> parseGoal(node.data)?.let { GoalSummary(it) }
 
         is PlanModeNode -> DsPill(
-            text = stringResource(if (node.active) R.string.plan_mode_on else R.string.plan_mode_off),
+            text = stringResource(if (node.active) Res.string.plan_mode_on else Res.string.plan_mode_off),
             warn = true,
         )
 
@@ -223,11 +249,11 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
                 obj["delayMs"].asLong() ?: obj["ms"].asLong() ?: obj["providerRetryAfterMs"].asLong()
             }
             val label = if (delayMs != null && delayMs > 0) {
-                stringResource(R.string.chat_retry_scheduled, (delayMs / 1000).toInt().coerceAtLeast(1))
+                stringResource(Res.string.chat_retry_scheduled, localizedCount((delayMs / 1000).toInt().coerceAtLeast(1)))
             } else {
                 // A retry with no stated delay used to read "Loading…", which says nothing about
                 // what happened; four of them in a row before a failure is a story worth telling.
-                stringResource(R.string.chat_retrying)
+                stringResource(Res.string.chat_retrying)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StateDot(StateDotState.Warning, size = 8.dp)
@@ -277,8 +303,8 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
                     }
                 }
             } else JsonDisclosure(when (node.type) {
-                "system/message", "request/context" -> stringResource(R.string.system_prompt)
-                "image/offload" -> stringResource(R.string.image_offload)
+                "system/message", "request/context" -> stringResource(Res.string.system_prompt)
+                "image/offload" -> stringResource(Res.string.image_offload)
                 // An event this build has no words for: its type in words, not its wire form.
                 else -> humanizeIdentifier(node.type)
             }, node.data)
@@ -287,7 +313,7 @@ internal fun ChatNodeItem(node: ChatNode, context: ChatNodeContext) {
 }
 
 /** Event types that carry no user-facing content; they frame the transcript rather than fill it. */
-internal val STRUCTURAL_EVENT_TYPES = setOf(
+val STRUCTURAL_EVENT_TYPES = setOf(
     "step/start",
     "step/end",
     "session/end-seed",
@@ -318,7 +344,7 @@ internal fun FileChip(name: String, bytes: Long, modifier: Modifier = Modifier) 
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Icon(
-            Icons.Outlined.Description,
+            DsIcons.Description,
             contentDescription = null,
             tint = colors.labelSecondary,
             modifier = Modifier.size(18.dp),
@@ -356,27 +382,27 @@ private fun UserMessageBubble(node: UserMessageNode, text: String, context: Chat
     UserBubble(
         text = text,
         onHold = { menuOpen = true },
-        holdLabel = stringResource(R.string.hold_message_actions),
+        holdLabel = stringResource(Res.string.hold_message_actions),
     )
     if (menuOpen) {
         val actions = buildList {
-            add(HoldAction(stringResource(R.string.common_copy), Icons.Outlined.ContentCopy) { copy(text) })
-            add(HoldAction(stringResource(R.string.hold_select_text), Icons.Outlined.TextFields) { selecting = true })
+            add(HoldAction(stringResource(Res.string.common_copy), DsIcons.ContentCopy) { copy(text) })
+            add(HoldAction(stringResource(Res.string.hold_select_text), DsIcons.TextFields) { selecting = true })
             context.onEditPrompt?.let { edit ->
                 add(
                     HoldAction(
-                        stringResource(R.string.hold_edit_as_new),
-                        Icons.Outlined.Edit,
-                        detail = stringResource(R.string.hold_edit_as_new_detail),
+                        stringResource(Res.string.hold_edit_as_new),
+                        DsIcons.Edit,
+                        detail = stringResource(Res.string.hold_edit_as_new_detail),
                     ) { edit(text) },
                 )
             }
             context.onRewindTo?.let { rewind ->
                 add(
                     HoldAction(
-                        stringResource(R.string.hold_rewind_here),
-                        Icons.AutoMirrored.Outlined.Undo,
-                        detail = stringResource(R.string.hold_rewind_here_detail),
+                        stringResource(Res.string.hold_rewind_here),
+                        DsIcons.Undo,
+                        detail = stringResource(Res.string.hold_rewind_here_detail),
                     ) { rewind(node.seq, node.previewText) },
                 )
             }
@@ -460,10 +486,10 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
                         // the reply after it is still being written. The block's identity is its
                         // message's state key plus its index, which replay and reconnects keep.
                         content = {
-                            ReasoningContent(
+                            LocalReasoningContent.current(
                                 block.text.orEmpty(),
-                                complete = !streaming || index < node.blocks.lastIndex,
-                                blockId = "$stateKey#$index",
+                                !streaming || index < node.blocks.lastIndex,
+                                "$stateKey#$index",
                             )
                         },
                     )
@@ -476,7 +502,7 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
                 }
                 "tool-result" -> Unit
                 "image" -> parseImageRef(block)?.let { ref ->
-                    AttachmentImage(ref = ref, contentDescription = ref.name)
+                    LocalAttachmentImage.current?.invoke(ref, ref.name)
                 }
                 "file" -> parseFileRef(block)?.let { ref -> FileChip(name = ref.name, bytes = ref.bytes) }
                 else -> block.text?.let {
@@ -485,7 +511,7 @@ private fun AssistantMessage(node: AssistantMessageNode, context: ChatNodeContex
             }
         }
         if (node.showsStoppedPill(stoppedTurns)) {
-            DsPill(text = stringResource(R.string.chat_stopped), warn = true)
+            DsPill(text = stringResource(Res.string.chat_stopped), warn = true)
         }
         AnimatedVisibility(
             visible = actionsVisible && !streaming,
@@ -508,17 +534,21 @@ private fun MessageActionsRow(node: AssistantMessageNode, context: ChatNodeConte
         horizontalArrangement = Arrangement.spacedBy(0.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ActionIcon(Icons.Filled.ContentCopy, stringResource(R.string.chat_copy_message)) {
+        ActionIcon(DsIcons.ContentCopyFilled, stringResource(Res.string.chat_copy_message)) {
             copy(node.plainText)
         }
-        ActionIcon(Icons.AutoMirrored.Outlined.CallSplit, stringResource(R.string.chat_branch_message)) {
-            context.onBranchFrom(node.seq)
+        context.onBranchFrom?.let { branch ->
+            ActionIcon(DsIcons.CallSplit, stringResource(Res.string.chat_branch_message)) {
+                branch(node.seq)
+            }
         }
-        ActionIcon(Icons.Filled.ThumbUp, stringResource(R.string.chat_feedback_up)) {
-            context.onFeedback(node.seq, true)
-        }
-        ActionIcon(Icons.Filled.ThumbDown, stringResource(R.string.chat_feedback_down)) {
-            context.onFeedback(node.seq, false)
+        context.onFeedback?.let { feedback ->
+            ActionIcon(DsIcons.ThumbUp, stringResource(Res.string.chat_feedback_up)) {
+                feedback(node.seq, true)
+            }
+            ActionIcon(DsIcons.ThumbDown, stringResource(Res.string.chat_feedback_down)) {
+                feedback(node.seq, false)
+            }
         }
     }
 }
@@ -606,7 +636,7 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
     var viewer by remember(node.callId) { mutableStateOf<OutputViewerRequest?>(null) }
     var holdOpen by remember(node.callId) { mutableStateOf(false) }
     var rawOpen by remember(node.callId) { mutableStateOf(false) }
-    val holdLabel = stringResource(R.string.hold_tool_actions)
+    val holdLabel = stringResource(Res.string.hold_tool_actions)
     // The leading slot carries the outcome: a red dot for a failed call, an amber one for a call the
     // turn's stop cut short, the tool glyph otherwise. The card's own dot and the group's failed count
     // read the same function, so they cannot disagree with this row.
@@ -673,7 +703,7 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
         // What the call returned, not the file as it is now: the durable attachment survives the
         // file changing or being deleted, and shares the transcript's decoded-image cache.
         images.forEach { ref ->
-            AttachmentImage(ref = ref, contentDescription = ref.name)
+            LocalAttachmentImage.current?.invoke(ref, ref.name)
         }
         // The text the tool returned, not the protocol JSON around it. A generic card has no output
         // of its own, so the text sits right under the input; the specialised cards (a terminal, a
@@ -687,12 +717,12 @@ internal fun ToolCallRow(node: ToolCallNode, context: ChatNodeContext, compact: 
             if (card is com.labteto.dshmobile.ui.components.ToolCardView.GenericCard) {
                 ToolResultOutput(
                     content,
-                    label = stringResource(R.string.chat_output_placeholder),
+                    label = stringResource(Res.string.chat_output_placeholder),
                     viewerTitle = row.title,
                 )
             } else {
                 ToolResultOutputRow(
-                    stringResource(R.string.chat_output_placeholder),
+                    stringResource(Res.string.chat_output_placeholder),
                     content,
                     viewerTitle = row.title,
                 )
@@ -742,7 +772,7 @@ private fun toolCardActions(card: ToolCardView, context: ChatNodeContext): ToolC
     is SubagentCard -> {
         val child = card.childId
         ToolCardActions(
-            openSubagent = child?.let { id -> { context.onOpenSubagent(id) } },
+            openSubagent = context.onOpenSubagent?.let { open -> child?.let { id -> { open(id) } } },
             subagentRunning = child?.let { context.subagentRunning[it] },
         )
     }
@@ -766,15 +796,15 @@ private fun CompactionRow(node: CompactionNode) {
         // A summary the harness sent without text: keep the row as the marker of where the context
         // was compacted, but give it no chevron, since there is nothing to open.
         DisclosureRow(
-            title = stringResource(R.string.chat_compaction),
-            summary = stringResource(R.string.chat_compaction_summary),
+            title = stringResource(Res.string.chat_compaction),
+            summary = stringResource(Res.string.chat_compaction_summary),
             icon = FeatherIcons.Archive,
         )
         return
     }
     DisclosureRow(
-        title = stringResource(R.string.chat_compaction),
-        summary = stringResource(R.string.chat_compaction_summary),
+        title = stringResource(Res.string.chat_compaction),
+        summary = stringResource(Res.string.chat_compaction_summary),
         icon = FeatherIcons.Archive,
         expanded = expanded,
         onToggle = { expanded = !expanded },
@@ -794,7 +824,7 @@ private fun RewindMarkerRow() {
     ) {
         HorizontalDivider(modifier = Modifier.weight(1f), color = colors.borderL1)
         Text(
-            stringResource(R.string.rewind_marker),
+            stringResource(Res.string.rewind_marker),
             style = DsType.caption11,
             color = colors.labelTertiary,
         )
@@ -848,7 +878,7 @@ private fun WorkflowRow(
     val members = remember(data) { parseWorkflowMembers(data) }
     val disclosure = rememberRowDisclosure(context.presentation, "wf:$seq", seq)
     DisclosureRow(
-        title = stringResource(R.string.workflow_title),
+        title = stringResource(Res.string.workflow_title),
         summary = listOfNotNull(name, workflowStatusLabel(status)).joinToString(" · ").ifEmpty { null },
         icon = FeatherIcons.GitBranch,
         expanded = disclosure.open,
@@ -861,7 +891,7 @@ private fun WorkflowRow(
                     .fillMaxWidth()
                     .padding(start = 28.dp, top = 2.dp)
                     .then(
-                        if (memberChildId != null) {
+                        if (memberChildId != null && onOpenMember != null) {
                             Modifier.clickable { onOpenMember(memberChildId) }
                         } else {
                             Modifier
@@ -904,7 +934,7 @@ private fun WorkflowRow(
 private fun InjectedContextRow(node: UserMessageNode, text: String) {
     var expanded by remember(node.seq) { mutableStateOf(false) }
     DisclosureRow(
-        title = stringResource(R.string.chat_context_title),
+        title = stringResource(Res.string.chat_context_title),
         summary = node.sourceKind ?: text.take(80),
         icon = FeatherIcons.Info,
         expanded = expanded,
@@ -924,8 +954,8 @@ private fun ToolSetChangeRow(node: DeveloperMessageNode) {
     var expanded by remember(node.seq) { mutableStateOf(false) }
     val summary = (node.addedTools.map { "+$it" } + node.removedTools.map { "−$it" }).joinToString(", ")
     DisclosureRow(
-        title = stringResource(R.string.chat_context_title),
-        summary = stringResource(R.string.chat_context_tools) + " · " + summary,
+        title = stringResource(Res.string.chat_context_title),
+        summary = stringResource(Res.string.chat_context_tools) + " · " + summary,
         icon = FeatherIcons.Info,
         expanded = expanded,
         onToggle = { expanded = !expanded },

@@ -60,6 +60,18 @@ const ICONS = [
   // The chat's tool cards and their full-screen output viewer (iOS M5b).
   ['KeyboardArrowUp', 'Filled.KeyboardArrowUp'],
   ['Search', 'Filled.Search'],
+  // The chat transcript: message actions, hold menus, file chips, call outcomes, the jump button (iOS M5c).
+  ['TextFields', 'Outlined.TextFields'],
+  ['ThumbUp', 'Filled.ThumbUp'],
+  ['ThumbDown', 'Filled.ThumbDown'],
+  ['Description', 'Outlined.Description'],
+  ['Undo', 'AutoMirrored.Outlined.Undo'],
+  ['AlternateEmail', 'Outlined.AlternateEmail'],
+  ['Code', 'Outlined.Code'],
+  ['FolderOpen', 'Outlined.FolderOpen'],
+  ['Stop', 'Filled.Stop'],
+  ['ErrorOutline', 'Outlined.ErrorOutline'],
+  ['ArrowDownward', 'Filled.ArrowDownward'],
 ];
 
 const args = process.argv.slice(2);

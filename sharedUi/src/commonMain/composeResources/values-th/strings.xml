@@ -11,15 +11,40 @@
     <string name="archive_busy_confirm">หยุดและเก็บถาวร</string>
     <string name="archive_busy_title">หยุดและเก็บถาวรเซสชันนี้ไหม</string>
     <string name="archived_restore">กู้คืน</string>
+    <string name="chat_branch_message">แตกสาขาจากตรงนี้</string>
+    <string name="chat_compaction">บีบอัดแล้ว</string>
+    <string name="chat_compaction_summary">สรุป</string>
     <string name="chat_composer_send">ส่งข้อความ</string>
+    <string name="chat_context_title">บริบท</string>
+    <string name="chat_context_tools">เครื่องมือ</string>
+    <string name="chat_copy_message">คัดลอกข้อความ</string>
+    <string name="chat_empty_hint">ส่งข้อความเพื่อเริ่มเทิร์นใหม่</string>
+    <string name="chat_empty_title">เริ่มทำงานกับ harness ของคุณ</string>
     <string name="chat_error_turn">เทิร์นล้มเหลว</string>
+    <string name="chat_feedback_down">ไม่มีประโยชน์</string>
+    <string name="chat_feedback_up">มีประโยชน์</string>
+    <string name="chat_jump_latest">ไปที่ข้อความล่าสุด</string>
+    <string name="chat_load_older">โหลดข้อความเก่าเพิ่ม</string>
+    <string name="chat_load_older_retry">โหลดข้อความเก่าไม่สำเร็จ แตะเพื่อลองใหม่</string>
+    <string name="chat_loading_older">กำลังโหลดข้อความเก่า…</string>
+    <string name="chat_max_tokens">ถึงขีดจำกัดโทเคนแล้ว</string>
     <string name="chat_output_placeholder">เอาต์พุต</string>
+    <string name="chat_process_title">ขั้นตอนการทำงาน</string>
+    <string name="chat_retry_scheduled">จะลองอีกครั้งใน %1$d วินาที</string>
+    <string name="chat_retrying">กำลังลองใหม่…</string>
+    <string name="chat_state_done">เสร็จแล้ว</string>
     <string name="chat_state_failed">ล้มเหลว</string>
+    <string name="chat_state_running">กำลังทำงาน</string>
     <string name="chat_state_stopped">หยุดแล้ว</string>
     <string name="chat_status_idle">ว่าง</string>
     <string name="chat_stopped">หยุดแล้ว</string>
+    <string name="chat_suggest_changes">รีวิวการเปลี่ยนแปลงที่ยังไม่ได้ commit</string>
+    <string name="chat_suggest_overview">สรุปภาพรวมของโปรเจกต์นี้ให้หน่อย</string>
+    <string name="chat_suggest_tests">รันเทสต์แล้วแก้ส่วนที่ไม่ผ่าน</string>
     <string name="chat_thinking">กำลังคิด</string>
     <string name="chat_thought_process">กระบวนการคิด</string>
+    <string name="chat_todo_progress">%1$d/%2$d</string>
+    <string name="chat_todo_title">สิ่งที่ต้องทำ</string>
     <string name="chat_tool_arguments">อาร์กิวเมนต์</string>
     <string name="chat_tool_ask_answered">ตอบแล้ว %1$d จาก %2$d</string>
     <string name="chat_tool_ask_cancelled">คุณปิดคำถามเหล่านี้แล้ว</string>
@@ -49,6 +74,8 @@
     <string name="chat_tool_field_value">%1$s: %2$s</string>
     <string name="chat_tool_field_when">เมื่อไร</string>
     <string name="chat_tool_goal_none">ยังไม่ได้ตั้งเป้าหมาย</string>
+    <string name="chat_tool_group_count">เรียกเครื่องมือ: %1$d</string>
+    <string name="chat_tool_group_failed">ล้มเหลว %1$d</string>
     <string name="chat_tool_image_none">ไม่มีรูปภาพส่งกลับมา</string>
     <string name="chat_tool_jobs_none">ไม่มีงานเบื้องหลัง</string>
     <string name="chat_tool_open_job">เปิดงาน</string>
@@ -152,6 +179,7 @@
     <string name="chatlist_new_session_in">เซสชันใหม่ใน…</string>
     <string name="chatlist_new_workspace">โปรเจกต์ใหม่</string>
     <string name="chatlist_no_workspaces">ยังไม่มีโปรเจกต์ เพิ่มได้จากเมนู</string>
+    <string name="chatlist_open">เปิดรายการแชท</string>
     <string name="chatlist_pinned">ปักหมุดแล้ว</string>
     <string name="chatlist_project_collapse">ยุบ %1$s</string>
     <string name="chatlist_project_expand">ขยาย %1$s</string>
@@ -302,6 +330,8 @@
     <string name="connect_title">เชื่อมต่อกับ harness</string>
     <string name="connect_try_again">ลองอีกครั้ง</string>
     <string name="connect_unreachable">เข้าถึงไม่ได้</string>
+    <string name="details_copy_link">คัดลอกลิงก์</string>
+    <string name="goal_blocked_reason">สาเหตุที่ติดขัด: %1$s</string>
     <string name="goal_none">ไม่มีเป้าหมายที่ใช้งานอยู่</string>
     <string name="goal_phase_active">ใช้งานอยู่</string>
     <string name="goal_phase_blocked">ติดขัด</string>
@@ -309,12 +339,30 @@
     <string name="goal_phase_paused">หยุดชั่วคราว</string>
     <string name="harness_automations">งานอัตโนมัติ</string>
     <string name="hold_copy_all">คัดลอกทั้งหมด</string>
+    <string name="hold_copy_arguments">คัดลอกอาร์กิวเมนต์</string>
+    <string name="hold_copy_command">คัดลอกคำสั่ง</string>
+    <string name="hold_copy_output">คัดลอกผลลัพธ์</string>
+    <string name="hold_copy_path">คัดลอกพาธ</string>
+    <string name="hold_copy_query">คัดลอกคำค้นหา</string>
+    <string name="hold_edit_as_new">แก้ไขเป็นข้อความใหม่</string>
+    <string name="hold_edit_as_new_detail">ใส่ลงในช่องพิมพ์ ข้อความเดิมยังอยู่</string>
+    <string name="hold_file_actions">ตัวเลือกของไฟล์</string>
+    <string name="hold_mention">อ้างถึงในข้อความ</string>
+    <string name="hold_message_actions">ตัวเลือกของข้อความ</string>
+    <string name="hold_open_file">เปิดไฟล์</string>
+    <string name="hold_rewind_here">ย้อนกลับไปที่ข้อความนี้</string>
+    <string name="hold_rewind_here_detail">ถอนข้อความนี้กับทุกอย่างที่ตามมา แล้วใส่กลับในช่องพิมพ์</string>
     <string name="hold_select_text">เลือกข้อความ</string>
     <string name="hold_session_actions">ตัวเลือกของเซสชัน</string>
+    <string name="hold_tool_actions">ตัวเลือกของการเรียกเครื่องมือ</string>
+    <string name="image_offload">ตัดรูปภาพเก่าออกจากคำขอแล้ว</string>
     <string name="ink_chat_approve">อนุมัติ</string>
+    <string name="ink_chat_changed_this_session">เปลี่ยนในเซสชันนี้</string>
+    <string name="ink_chat_files_empty">ยังไม่มีไฟล์ที่เปลี่ยน</string>
     <string name="ink_chat_filter_all">ทั้งหมด %1$d</string>
     <string name="ink_chat_filter_needs_you">รอคุณอยู่ %1$d</string>
     <string name="ink_chat_filter_running">กำลังทำงาน %1$d</string>
+    <string name="ink_chat_goal_dock">เป้าหมาย · %1$s</string>
     <string name="ink_chat_more">เพิ่มเติม</string>
     <string name="ink_chat_review">ตรวจสอบ</string>
     <string name="ink_chat_sessions">เซสชัน</string>
@@ -372,6 +420,8 @@
     <string name="permission_preset_full_access_desc">รันคำสั่งและแก้ไขไฟล์โดยไม่ถาม</string>
     <string name="permission_preset_read_only">อ่านอย่างเดียว</string>
     <string name="permission_preset_workspace_write">เขียนในเวิร์กสเปซ</string>
+    <string name="plan_mode_off">โหมดวางแผน: ปิด</string>
+    <string name="plan_mode_on">โหมดวางแผน: เปิด</string>
     <string name="preset_code_desc">ทุกอย่างของโหมดมาตรฐาน พร้อมเครื่องมือที่ใช้ได้ผ่าน Code Mode SDK เพื่อให้โมเดลรวมหลายขั้นตอนไว้ในโปรแกรม TypeScript เดียว</string>
     <string name="preset_code_name">โหมด PTC</string>
     <string name="preset_cordis_desc">สำหรับสร้างพรีเซ็ตเอเจนต์ของคุณเอง มีทุกอย่างของโหมดมาตรฐาน พร้อมเครื่องมือตรวจสอบขณะทำงาน ทดลองปลั๊กอิน และคำแนะนำในการเขียนพรีเซ็ต</string>
@@ -383,6 +433,7 @@
     <string name="projects_title">โปรเจกต์ในโทรศัพท์เครื่องนี้</string>
     <string name="questions_answer_refused">harness ไม่รับคำตอบนั้น (%1$s)</string>
     <string name="questions_answer_unsent">ติดต่อ harness ไม่ได้</string>
+    <string name="rewind_marker">ย้อนกลับมาถึงตรงนี้</string>
     <string name="runtime_action_free_space">เพิ่มพื้นที่ว่าง</string>
     <string name="runtime_action_open_controls">จัดการ</string>
     <string name="runtime_action_restart">เริ่มใหม่</string>
@@ -447,6 +498,7 @@
     <string name="system_line_permission_failed">เปลี่ยนสิทธิ์ไม่สำเร็จ</string>
     <string name="system_line_plan_off">คุณปิดโหมดวางแผน</string>
     <string name="system_line_plan_on">คุณเปิดโหมดวางแผน</string>
+    <string name="system_prompt">คำสั่งระบบ</string>
     <string name="time_days">%1$d วัน</string>
     <string name="time_hours">%1$d ชม.</string>
     <string name="time_minutes">%1$d นาที</string>
@@ -455,6 +507,7 @@
     <string name="time_years">%1$d ปี</string>
     <string name="tool_copy_code">คัดลอกโค้ด</string>
     <string name="tool_output_copy_raw">คัดลอก JSON ดิบ</string>
+    <string name="tool_output_show_raw">แสดง JSON ดิบ</string>
     <string name="toolcard_exit_code">รหัสออก %1$d</string>
     <string name="toolcard_killed_by">ถูกยุติโดย %1$s</string>
     <string name="toolcard_more">อีก %1$d รายการ</string>
@@ -474,6 +527,13 @@
     <string name="workflow_completed">เสร็จแล้ว</string>
     <string name="workflow_failed">ล้มเหลว</string>
     <string name="workflow_running">กำลังทำงาน</string>
+    <string name="workflow_title">เวิร์กโฟลว์</string>
+    <plurals name="chat_changed_files">
+        <item quantity="other">เปลี่ยน %1$d ไฟล์</item>
+    </plurals>
+    <plurals name="chat_jump_latest_new">
+        <item quantity="other">ใหม่ %1$d</item>
+    </plurals>
     <plurals name="chat_tool_arguments_count">
         <item quantity="other">%1$d ฟิลด์</item>
     </plurals>
@@ -530,5 +590,8 @@
     </plurals>
     <plurals name="toolcard_sources">
         <item quantity="other">%1$d แหล่งที่มา</item>
+    </plurals>
+    <plurals name="trajectory_step_count">
+        <item quantity="other">%1$d ขั้น</item>
     </plurals>
 </resources>

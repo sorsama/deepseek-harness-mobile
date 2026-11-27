@@ -41,6 +41,10 @@ import kotlinx.coroutines.launch
  */
 internal val LocalAutoTranslateReasoning = staticCompositionLocalOf { false }
 
+/** [ReasoningContent] as the shared transcript asks for it ([LocalReasoningContent]); AppRoot provides it. */
+val TranscriptReasoningContent: @Composable (String, Boolean, String) -> Unit =
+    { text, complete, blockId -> ReasoningContent(text, complete = complete, blockId = blockId) }
+
 /**
  * The body of an open reasoning block: the text, and the translation of it.
  *

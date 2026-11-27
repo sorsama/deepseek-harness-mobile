@@ -4,8 +4,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.CallSplit
+import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.AlternateEmail
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.FolderOpen
+import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Close
@@ -74,6 +85,17 @@ class DsIconsMatchMaterialTest {
         Triple("ContentCopyFilled", DsIcons.ContentCopyFilled, Icons.Filled.ContentCopy),
         Triple("KeyboardArrowUp", DsIcons.KeyboardArrowUp, Icons.Filled.KeyboardArrowUp),
         Triple("Search", DsIcons.Search, Icons.Filled.Search),
+        Triple("TextFields", DsIcons.TextFields, Icons.Outlined.TextFields),
+        Triple("ThumbUp", DsIcons.ThumbUp, Icons.Filled.ThumbUp),
+        Triple("ThumbDown", DsIcons.ThumbDown, Icons.Filled.ThumbDown),
+        Triple("Description", DsIcons.Description, Icons.Outlined.Description),
+        Triple("Undo", DsIcons.Undo, Icons.AutoMirrored.Outlined.Undo),
+        Triple("AlternateEmail", DsIcons.AlternateEmail, Icons.Outlined.AlternateEmail),
+        Triple("Code", DsIcons.Code, Icons.Outlined.Code),
+        Triple("FolderOpen", DsIcons.FolderOpen, Icons.Outlined.FolderOpen),
+        Triple("Stop", DsIcons.Stop, Icons.Filled.Stop),
+        Triple("ErrorOutline", DsIcons.ErrorOutline, Icons.Outlined.ErrorOutline),
+        Triple("ArrowDownward", DsIcons.ArrowDownward, Icons.Filled.ArrowDownward),
     )
 
     @Test

@@ -59,7 +59,7 @@ internal fun AssistantMessageNode.showsToolPreview(
 ): Boolean = streaming && running && !interrupted && block.kind == "tool-call" &&
     block.toolCallId !in knownToolCallIds
 
-internal fun renderableChatNodes(nodes: List<ChatNode>, running: Boolean): List<ChatNode> {
+fun renderableChatNodes(nodes: List<ChatNode>, running: Boolean): List<ChatNode> {
     val knownToolCallIds = nodes.filterIsInstance<ToolCallNode>().mapTo(mutableSetOf()) { it.callId }
     // What a rewind withdrew. The harness still serves those events; the browser hides them from
     // the command ledger, and so does this. The marker the rewind appended stays, drawn as a

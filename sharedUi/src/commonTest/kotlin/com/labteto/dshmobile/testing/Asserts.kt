@@ -47,6 +47,8 @@ fun <T> assertNotEquals(unexpected: T, actual: T) = kotlin.test.assertNotEquals(
 
 fun <T> assertSame(expected: T, actual: T) = kotlin.test.assertSame(expected, actual)
 
+fun <T> assertNotSame(unexpected: T, actual: T) = kotlin.test.assertNotSame(unexpected, actual)
+
 fun assertArrayEquals(expected: IntArray, actual: IntArray) {
     if (!expected.contentEquals(actual)) fail("expected:<${expected.contentToString()}> but was:<${actual.contentToString()}>")
 }
