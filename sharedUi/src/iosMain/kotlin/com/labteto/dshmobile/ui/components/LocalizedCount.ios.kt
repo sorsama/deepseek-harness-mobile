@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.ui.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 
 /**
  * Western digits. Android localizes the digits of a count (see the `expect`) because its `getString`
@@ -23,3 +24,7 @@ actual fun localizedDecimal(value: Double, decimals: Int): String {
     val sign = if (scaled < 0 && whole == 0L) "-" else ""
     return "$sign$whole.$fraction"
 }
+
+/** Western digits, like [localizedCount]. */
+@Composable
+actual fun rememberCountFormat(): (Int) -> String = remember { { value: Int -> value.toString() } }

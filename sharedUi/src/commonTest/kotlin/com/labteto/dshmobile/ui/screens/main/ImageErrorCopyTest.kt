@@ -1,7 +1,7 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import kotlin.test.Test
 
 /**
  * The size a limit is reported at.

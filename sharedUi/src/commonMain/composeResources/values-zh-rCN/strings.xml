@@ -26,6 +26,7 @@
     <string name="chat_composer_remove_file">移除文件</string>
     <string name="chat_composer_remove_image">移除图片</string>
     <string name="chat_composer_send">发送消息</string>
+    <string name="chat_composer_steer_idle">有回合正在进行时才能引导</string>
     <string name="chat_composer_stop">停止</string>
     <string name="chat_context_messages">消息</string>
     <string name="chat_context_system">系统</string>
@@ -47,12 +48,22 @@
     <string name="chat_max_tokens">已达到令牌上限</string>
     <string name="chat_output_placeholder">输出</string>
     <string name="chat_process_title">过程</string>
+    <string name="chat_queue_edit">编辑</string>
+    <string name="chat_queue_placement_context">上下文</string>
+    <string name="chat_queue_placement_steering">引导中</string>
+    <string name="chat_queue_remove">移除</string>
+    <string name="chat_queue_steer">引导正在进行的回合</string>
+    <string name="chat_queue_title">排队中的回合</string>
     <string name="chat_retry_scheduled">%1$d 秒后重试</string>
     <string name="chat_retrying">正在重试…</string>
     <string name="chat_state_done">已完成</string>
     <string name="chat_state_failed">失败</string>
     <string name="chat_state_running">运行中</string>
     <string name="chat_state_stopped">已停止</string>
+    <string name="chat_stats_cache">缓存 %1$d%%</string>
+    <string name="chat_stats_speed">首字 %1$s · %2$s tok/s</string>
+    <string name="chat_stats_timing">模型 %1$s · 工具 %2$s</string>
+    <string name="chat_stats_tokens">输入 %1$s · 输出 %2$s</string>
     <string name="chat_status_idle">空闲</string>
     <string name="chat_status_running">工作中</string>
     <string name="chat_stopped">已停止</string>
@@ -353,12 +364,31 @@
     <string name="connect_try_again">重试连接</string>
     <string name="connect_unreachable">无法连接</string>
     <string name="details_copy_link">复制链接</string>
+    <string name="err_file_not_staged">harness 上已经没有这个文件了，请重新添加。</string>
+    <string name="err_file_subagent_unsupported">子智能体会话不接受文件。</string>
+    <string name="err_image_batch_too_large">图片总大小超过 %1$s，请移除部分图片。</string>
+    <string name="err_image_dimension">图片宽高不能超过 %1$dpx，请缩小后重试。</string>
+    <string name="err_image_model_unsupported">当前模型不支持图片，请切换支持图片的模型。</string>
+    <string name="err_image_pixels">该图片分辨率过大，请压缩后重试。</string>
+    <string name="err_image_send_failed">图片发送失败（%1$s），请重新添加后再试。</string>
+    <string name="err_image_send_failed_plain">图片发送失败，请重新添加后再试。</string>
+    <string name="err_image_subagent_unsupported">子智能体会话暂不支持图片。</string>
+    <string name="err_image_too_large">单张图片不能超过 %1$s。</string>
+    <string name="err_image_too_many">一条消息最多添加 %1$d 张图片。</string>
+    <string name="err_image_unsupported_type">仅支持 PNG、JPG、WebP、GIF 格式的图片。</string>
     <string name="goal_blocked_reason">受阻原因：%1$s</string>
+    <string name="goal_clear">清除目标</string>
+    <string name="goal_edit">编辑目标</string>
+    <string name="goal_max_rounds">最大轮数：%1$s</string>
     <string name="goal_none">没有进行中的目标</string>
+    <string name="goal_pause">暂停</string>
     <string name="goal_phase_active">进行中</string>
     <string name="goal_phase_blocked">受阻</string>
     <string name="goal_phase_complete">已完成</string>
     <string name="goal_phase_paused">已暂停</string>
+    <string name="goal_resume">恢复</string>
+    <string name="goal_rounds">第 %1$d 轮，共 %2$s 轮</string>
+    <string name="goal_title">目标</string>
     <string name="harness_add_reference">添加引用</string>
     <string name="harness_automations">自动化</string>
     <string name="hold_copy_all">全部复制</string>
@@ -391,6 +421,7 @@
     <string name="ink_chat_filter_running">运行中 %1$d</string>
     <string name="ink_chat_goal_dock">目标 · %1$s</string>
     <string name="ink_chat_more">更多</string>
+    <string name="ink_chat_queue_next_turn">下一回合</string>
     <string name="ink_chat_review">查看</string>
     <string name="ink_chat_sessions">会话</string>
     <string name="ink_chat_start_task">在 %1$s 上开始任务…</string>
@@ -472,6 +503,11 @@
     <string name="projects_title">这部手机上的项目</string>
     <string name="questions_answer_refused">harness 没有接受这个答案（%1$s）。</string>
     <string name="questions_answer_unsent">无法连接到 harness。</string>
+    <string name="quota_compact_day">天</string>
+    <string name="quota_compact_hour">小时</string>
+    <string name="quota_compact_minute">分</string>
+    <string name="quota_compact_session">5小时</string>
+    <string name="quota_compact_week">周</string>
     <string name="rewind_marker">已回退到此处</string>
     <string name="runtime_action_free_space">释放空间</string>
     <string name="runtime_action_open_controls">管理</string>
@@ -580,6 +616,9 @@
     </plurals>
     <plurals name="chat_jump_latest_new">
         <item quantity="other">%1$d 条新内容</item>
+    </plurals>
+    <plurals name="chat_stats_turn_count">
+        <item quantity="other">%1$d 回合</item>
     </plurals>
     <plurals name="chat_tool_arguments_count">
         <item quantity="other">%1$d 个字段</item>

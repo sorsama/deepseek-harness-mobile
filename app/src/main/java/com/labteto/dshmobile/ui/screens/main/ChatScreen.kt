@@ -148,6 +148,8 @@ fun ChatScreen(
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     val toast = rememberDsToast()
+    // The refusal copy in this screen's language, for a refusal written after a pick is read or a send returns.
+    val imageErrorCopy = rememberImageErrorCopy()
     // Where the plugin add-on layer over the chat keeps its trays: below the top bar, above the composer.
     val addonsChrome = com.labteto.dshmobile.ui.addons.LocalUiAddonsChrome.current
 
@@ -323,7 +325,7 @@ fun ChatScreen(
                         for (uri in uris) {
                             try {
                                 if (admission.full) {
-                                    failures.add(imageRejectionText(context, ImageRejection.TOO_MANY, limits))
+                                    failures.add(imageRejectionText(imageErrorCopy, ImageRejection.TOO_MANY, limits))
                                     continue
                                 }
                                 val resolver = context.contentResolver
@@ -332,7 +334,7 @@ fun ChatScreen(
                                     readImageBounded(it, limits.maxImageBytes.coerceIn(0, Int.MAX_VALUE.toLong() - 1))
                                 }
                                 if (bytes == null) {
-                                    failures.add(imageRejectionText(context, ImageRejection.TOO_LARGE, limits))
+                                    failures.add(imageRejectionText(imageErrorCopy, ImageRejection.TOO_LARGE, limits))
                                     continue
                                 }
                                 val pick = decodePick(bytes)
@@ -340,7 +342,7 @@ fun ChatScreen(
                                     mediaType.orEmpty(), pick.detectedMediaType, bytes.size, pick.width, pick.height,
                                 )
                                 if (rejection != null) {
-                                    failures.add(imageRejectionText(context, rejection, limits))
+                                    failures.add(imageRejectionText(imageErrorCopy, rejection, limits))
                                     continue
                                 }
                                 selected.add(PendingAttachment.Image(
@@ -586,7 +588,7 @@ fun ChatScreen(
                     if (outcome !is PromptOutcome.Ok) {
                         composer.restoreRejected(text, pending)
                         toast.second(
-                            if (outcome is PromptOutcome.Rejected) imageRejectionText(context, outcome.rejection, imageLimits, outcome.reason)
+                            if (outcome is PromptOutcome.Rejected) imageRejectionText(imageErrorCopy, outcome.rejection, imageLimits, outcome.reason)
                             else (outcome as PromptOutcome.Failed).message,
                         )
                     }

@@ -79,6 +79,8 @@ const ICONS = [
   ['Schedule', 'Outlined.Schedule'],
   ['Groups', 'Outlined.Groups'],
   ['Diversity3', 'Outlined.Diversity3'],
+  // The queue dock's row menu (iOS M6b).
+  ['MoreVertFilled', 'Filled.MoreVert'],
 ];
 
 const args = process.argv.slice(2);

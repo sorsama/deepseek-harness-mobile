@@ -38,17 +38,6 @@ import kotlinx.coroutines.delay
 import java.text.DateFormat
 import java.util.Date
 
-@Composable internal fun quotaLabels(): UsageLabels {
-    val locale = appLocale()
-    val symbols = java.text.DecimalFormatSymbols.getInstance(locale)
-    return UsageLabels(
-        stringResource(R.string.quota_compact_session), stringResource(R.string.quota_compact_week),
-        stringResource(R.string.quota_compact_day), stringResource(R.string.quota_compact_hour), stringResource(R.string.quota_compact_minute),
-        symbols.decimalSeparator.toString(), (0..9).map { symbols.zeroDigit + it }.joinToString(""),
-        symbols.groupingSeparator.toString(),
-    )
-}
-
 /** Visible-only local clock; repository coalesces the card and footer's simultaneous refreshes. */
 @Composable internal fun rememberQuotaClock(store: SessionStore, identity: Any?, includeAll: Boolean = false): Long {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }

@@ -1,10 +1,26 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import android.content.Context
-import com.labteto.dshmobile.R
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import com.labteto.dshmobile.core.wire.dto.ImageLimitsView
 import com.labteto.dshmobile.core.wire.dto.ImageRejection
-import java.util.Locale
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.err_file_not_staged
+import com.labteto.dshmobile.shared.resources.err_file_subagent_unsupported
+import com.labteto.dshmobile.shared.resources.err_image_batch_too_large
+import com.labteto.dshmobile.shared.resources.err_image_dimension
+import com.labteto.dshmobile.shared.resources.err_image_model_unsupported
+import com.labteto.dshmobile.shared.resources.err_image_pixels
+import com.labteto.dshmobile.shared.resources.err_image_send_failed
+import com.labteto.dshmobile.shared.resources.err_image_send_failed_plain
+import com.labteto.dshmobile.shared.resources.err_image_subagent_unsupported
+import com.labteto.dshmobile.shared.resources.err_image_too_large
+import com.labteto.dshmobile.shared.resources.err_image_too_many
+import com.labteto.dshmobile.shared.resources.err_image_unsupported_type
+import com.labteto.dshmobile.ui.components.fillTemplate
+import com.labteto.dshmobile.ui.components.oneDecimal
+import com.labteto.dshmobile.ui.components.rememberCountFormat
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * What to tell the user when an image will not go.
@@ -24,7 +40,56 @@ import java.util.Locale
  */
 internal fun imageSizeText(bytes: Long): String {
     val mb = bytes.toDouble() / (1024 * 1024)
-    return if (mb == Math.floor(mb)) "${mb.toLong()}MB" else String.format(Locale.US, "%.1fMB", mb)
+    return if (mb == kotlin.math.floor(mb)) "${mb.toLong()}MB" else oneDecimal(mb) + "MB"
+}
+
+/**
+ * The refusal copy in the reader's language, read while composing and used later: a refusal is written when a call
+ * comes back, or while picked images are read off the main thread, where no string resource can be looked up. Each
+ * line is the Android string resource of the same name, filled as Android's `getString(id, args)` fills it
+ * ([fillTemplate]; a count in the reader's own digits).
+ */
+class ImageErrorCopy internal constructor(
+    internal val unsupportedType: String,
+    internal val modelUnsupported: String,
+    internal val subagentUnsupported: String,
+    internal val pixels: String,
+    internal val tooLarge: String,
+    internal val batchTooLarge: String,
+    internal val tooMany: String,
+    internal val dimension: String,
+    internal val fileNotStaged: String,
+    internal val fileSubagentUnsupported: String,
+    internal val sendFailedPlain: String,
+    internal val sendFailed: String,
+    internal val count: (Int) -> String,
+)
+
+/** The [ImageErrorCopy] of the language this composition is in. */
+@Composable
+fun rememberImageErrorCopy(): ImageErrorCopy {
+    val unsupportedType = stringResource(Res.string.err_image_unsupported_type)
+    val modelUnsupported = stringResource(Res.string.err_image_model_unsupported)
+    val subagentUnsupported = stringResource(Res.string.err_image_subagent_unsupported)
+    val pixels = stringResource(Res.string.err_image_pixels)
+    val tooLarge = stringResource(Res.string.err_image_too_large)
+    val batchTooLarge = stringResource(Res.string.err_image_batch_too_large)
+    val tooMany = stringResource(Res.string.err_image_too_many)
+    val dimension = stringResource(Res.string.err_image_dimension)
+    val fileNotStaged = stringResource(Res.string.err_file_not_staged)
+    val fileSubagentUnsupported = stringResource(Res.string.err_file_subagent_unsupported)
+    val sendFailedPlain = stringResource(Res.string.err_image_send_failed_plain)
+    val sendFailed = stringResource(Res.string.err_image_send_failed)
+    val count = rememberCountFormat()
+    return remember(
+        unsupportedType, modelUnsupported, subagentUnsupported, pixels, tooLarge, batchTooLarge, tooMany, dimension,
+        fileNotStaged, fileSubagentUnsupported, sendFailedPlain, sendFailed, count,
+    ) {
+        ImageErrorCopy(
+            unsupportedType, modelUnsupported, subagentUnsupported, pixels, tooLarge, batchTooLarge, tooMany, dimension,
+            fileNotStaged, fileSubagentUnsupported, sendFailedPlain, sendFailed, count,
+        )
+    }
 }
 
 /**
@@ -37,38 +102,38 @@ internal fun imageSizeText(bytes: Long): String {
  * @param rawReason the wire `details.reason` when the refusal came from the host, so an
  *   [ImageRejection.UNKNOWN] can still carry something a bug report can act on.
  */
-internal fun imageRejectionText(
-    context: Context,
+fun imageRejectionText(
+    copy: ImageErrorCopy,
     rejection: ImageRejection,
     limits: ImageLimitsView?,
     rawReason: String? = null,
 ): String = when (rejection) {
-    ImageRejection.UNSUPPORTED_TYPE -> context.getString(R.string.err_image_unsupported_type)
-    ImageRejection.MODEL_UNSUPPORTED -> context.getString(R.string.err_image_model_unsupported)
-    ImageRejection.SUBAGENT_UNSUPPORTED -> context.getString(R.string.err_image_subagent_unsupported)
-    ImageRejection.TOO_MANY_PIXELS -> context.getString(R.string.err_image_pixels)
+    ImageRejection.UNSUPPORTED_TYPE -> copy.unsupportedType
+    ImageRejection.MODEL_UNSUPPORTED -> copy.modelUnsupported
+    ImageRejection.SUBAGENT_UNSUPPORTED -> copy.subagentUnsupported
+    ImageRejection.TOO_MANY_PIXELS -> copy.pixels
     ImageRejection.TOO_LARGE -> limits
-        ?.let { context.getString(R.string.err_image_too_large, imageSizeText(it.maxImageBytes)) }
-        ?: sendFailed(context, rawReason)
+        ?.let { fillTemplate(copy.tooLarge, imageSizeText(it.maxImageBytes)) }
+        ?: sendFailed(copy, rawReason)
     ImageRejection.BATCH_TOO_LARGE -> limits
-        ?.let { context.getString(R.string.err_image_batch_too_large, imageSizeText(it.maxMessageImageBytes)) }
-        ?: sendFailed(context, rawReason)
+        ?.let { fillTemplate(copy.batchTooLarge, imageSizeText(it.maxMessageImageBytes)) }
+        ?: sendFailed(copy, rawReason)
     ImageRejection.TOO_MANY -> limits
-        ?.let { context.getString(R.string.err_image_too_many, it.maxImagesPerMessage) }
-        ?: sendFailed(context, rawReason)
+        ?.let { fillTemplate(copy.tooMany, copy.count(it.maxImagesPerMessage)) }
+        ?: sendFailed(copy, rawReason)
     ImageRejection.DIMENSION_TOO_LARGE -> limits
-        ?.let { context.getString(R.string.err_image_dimension, it.maxImageDimension) }
-        ?: sendFailed(context, rawReason)
+        ?.let { fillTemplate(copy.dimension, copy.count(it.maxImageDimension)) }
+        ?: sendFailed(copy, rawReason)
     // Files (harness 0.1.3). A spent or foreign receipt means the upload has to happen again;
     // there is nothing in the bytes to correct, so the copy says to re-attach rather than resize.
-    ImageRejection.FILE_NOT_STAGED -> context.getString(R.string.err_file_not_staged)
-    ImageRejection.SUBAGENT_FILE_UNSUPPORTED -> context.getString(R.string.err_file_subagent_unsupported)
-    ImageRejection.UNKNOWN -> sendFailed(context, rawReason)
+    ImageRejection.FILE_NOT_STAGED -> copy.fileNotStaged
+    ImageRejection.SUBAGENT_FILE_UNSUPPORTED -> copy.fileSubagentUnsupported
+    ImageRejection.UNKNOWN -> sendFailed(copy, rawReason)
 }
 
-private fun sendFailed(context: Context, rawReason: String?): String =
+private fun sendFailed(copy: ImageErrorCopy, rawReason: String?): String =
     if (rawReason.isNullOrBlank()) {
-        context.getString(R.string.err_image_send_failed_plain)
+        copy.sendFailedPlain
     } else {
-        context.getString(R.string.err_image_send_failed, rawReason)
+        fillTemplate(copy.sendFailed, rawReason)
     }

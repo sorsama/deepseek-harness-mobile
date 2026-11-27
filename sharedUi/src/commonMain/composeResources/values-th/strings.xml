@@ -26,6 +26,7 @@
     <string name="chat_composer_remove_file">นำไฟล์ออก</string>
     <string name="chat_composer_remove_image">ลบรูปภาพ</string>
     <string name="chat_composer_send">ส่งข้อความ</string>
+    <string name="chat_composer_steer_idle">แทรกได้เมื่อมีเทิร์นที่กำลังทำงานอยู่</string>
     <string name="chat_composer_stop">หยุด</string>
     <string name="chat_context_messages">ข้อความ</string>
     <string name="chat_context_system">ระบบ</string>
@@ -47,12 +48,22 @@
     <string name="chat_max_tokens">ถึงขีดจำกัดโทเคนแล้ว</string>
     <string name="chat_output_placeholder">เอาต์พุต</string>
     <string name="chat_process_title">ขั้นตอนการทำงาน</string>
+    <string name="chat_queue_edit">แก้ไข</string>
+    <string name="chat_queue_placement_context">บริบท</string>
+    <string name="chat_queue_placement_steering">กำลังแทรก</string>
+    <string name="chat_queue_remove">ลบออก</string>
+    <string name="chat_queue_steer">แทรกในเทิร์นที่กำลังทำงาน</string>
+    <string name="chat_queue_title">เทิร์นที่รอคิว</string>
     <string name="chat_retry_scheduled">จะลองอีกครั้งใน %1$d วินาที</string>
     <string name="chat_retrying">กำลังลองใหม่…</string>
     <string name="chat_state_done">เสร็จแล้ว</string>
     <string name="chat_state_failed">ล้มเหลว</string>
     <string name="chat_state_running">กำลังทำงาน</string>
     <string name="chat_state_stopped">หยุดแล้ว</string>
+    <string name="chat_stats_cache">แคช %1$d%%</string>
+    <string name="chat_stats_speed">TTFT %1$s · %2$s tok/s</string>
+    <string name="chat_stats_timing">LLM %1$s · เครื่องมือ %2$s</string>
+    <string name="chat_stats_tokens">เข้า %1$s · ออก %2$s</string>
     <string name="chat_status_idle">ว่าง</string>
     <string name="chat_status_running">กำลังทำงาน</string>
     <string name="chat_stopped">หยุดแล้ว</string>
@@ -353,12 +364,31 @@
     <string name="connect_try_again">ลองอีกครั้ง</string>
     <string name="connect_unreachable">เข้าถึงไม่ได้</string>
     <string name="details_copy_link">คัดลอกลิงก์</string>
+    <string name="err_file_not_staged">harness ไม่มีไฟล์นั้นแล้ว ลองแนบใหม่</string>
+    <string name="err_file_subagent_unsupported">เซสชันซับเอเจนต์ไม่รับไฟล์</string>
+    <string name="err_image_batch_too_large">รูปภาพรวมกันเกิน %1$s ลองลบออกบางรูปแล้วส่งใหม่</string>
+    <string name="err_image_dimension">รูปภาพต้องกว้างและสูงไม่เกิน %1$dpx ลองย่อขนาดแล้วส่งใหม่</string>
+    <string name="err_image_model_unsupported">โมเดลนี้ไม่รองรับรูปภาพ ลองเปลี่ยนเป็นโมเดลที่รองรับ</string>
+    <string name="err_image_pixels">รูปภาพนี้ละเอียดเกินไป ลองบีบอัดแล้วส่งใหม่</string>
+    <string name="err_image_send_failed">ส่งรูปภาพไม่สำเร็จ (%1$s) ลองแนบใหม่อีกครั้ง</string>
+    <string name="err_image_send_failed_plain">ส่งรูปภาพไม่สำเร็จ ลองแนบใหม่อีกครั้ง</string>
+    <string name="err_image_subagent_unsupported">เซสชันซับเอเจนต์ไม่รับรูปภาพ</string>
+    <string name="err_image_too_large">รูปภาพแต่ละรูปต้องมีขนาดเล็กกว่า %1$s</string>
+    <string name="err_image_too_many">หนึ่งข้อความแนบรูปภาพได้สูงสุด %1$d รูป</string>
+    <string name="err_image_unsupported_type">รองรับเฉพาะรูปภาพ PNG, JPG, WebP และ GIF</string>
     <string name="goal_blocked_reason">สาเหตุที่ติดขัด: %1$s</string>
+    <string name="goal_clear">ล้างเป้าหมาย</string>
+    <string name="goal_edit">แก้ไขเป้าหมาย</string>
+    <string name="goal_max_rounds">รอบสูงสุด: %1$s</string>
     <string name="goal_none">ไม่มีเป้าหมายที่ใช้งานอยู่</string>
+    <string name="goal_pause">หยุดชั่วคราว</string>
     <string name="goal_phase_active">ใช้งานอยู่</string>
     <string name="goal_phase_blocked">ติดขัด</string>
     <string name="goal_phase_complete">เสร็จแล้ว</string>
     <string name="goal_phase_paused">หยุดชั่วคราว</string>
+    <string name="goal_resume">ทำต่อ</string>
+    <string name="goal_rounds">รอบที่ %1$d จาก %2$s</string>
+    <string name="goal_title">เป้าหมาย</string>
     <string name="harness_add_reference">เพิ่มรายการอ้างอิง</string>
     <string name="harness_automations">งานอัตโนมัติ</string>
     <string name="hold_copy_all">คัดลอกทั้งหมด</string>
@@ -391,6 +421,7 @@
     <string name="ink_chat_filter_running">กำลังทำงาน %1$d</string>
     <string name="ink_chat_goal_dock">เป้าหมาย · %1$s</string>
     <string name="ink_chat_more">เพิ่มเติม</string>
+    <string name="ink_chat_queue_next_turn">เทิร์นถัดไป</string>
     <string name="ink_chat_review">ตรวจสอบ</string>
     <string name="ink_chat_sessions">เซสชัน</string>
     <string name="ink_chat_start_task">เริ่มงานบน %1$s…</string>
@@ -472,6 +503,11 @@
     <string name="projects_title">โปรเจกต์ในโทรศัพท์เครื่องนี้</string>
     <string name="questions_answer_refused">harness ไม่รับคำตอบนั้น (%1$s)</string>
     <string name="questions_answer_unsent">ติดต่อ harness ไม่ได้</string>
+    <string name="quota_compact_day">วัน</string>
+    <string name="quota_compact_hour">ชม</string>
+    <string name="quota_compact_minute">นาที</string>
+    <string name="quota_compact_session">5ชม</string>
+    <string name="quota_compact_week">สัปดาห์</string>
     <string name="rewind_marker">ย้อนกลับมาถึงตรงนี้</string>
     <string name="runtime_action_free_space">เพิ่มพื้นที่ว่าง</string>
     <string name="runtime_action_open_controls">จัดการ</string>
@@ -580,6 +616,9 @@
     </plurals>
     <plurals name="chat_jump_latest_new">
         <item quantity="other">ใหม่ %1$d</item>
+    </plurals>
+    <plurals name="chat_stats_turn_count">
+        <item quantity="other">%1$d เทิร์น</item>
     </plurals>
     <plurals name="chat_tool_arguments_count">
         <item quantity="other">%1$d ฟิลด์</item>

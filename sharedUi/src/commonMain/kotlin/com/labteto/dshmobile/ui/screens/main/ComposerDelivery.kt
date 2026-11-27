@@ -12,5 +12,5 @@ import com.labteto.dshmobile.connection.DELIVERY_STEER
  * instead of a refusal the reader cannot act on. The same rule covers a Steer picked mid-turn
  * when the turn ended before send was pressed.
  */
-internal fun promptDelivery(requested: String, running: Boolean): String =
+fun promptDelivery(requested: String, running: Boolean): String =
     if (requested == DELIVERY_STEER && !running) DELIVERY_QUEUE else requested

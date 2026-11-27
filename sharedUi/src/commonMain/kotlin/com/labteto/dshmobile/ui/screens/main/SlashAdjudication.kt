@@ -8,7 +8,7 @@ import com.labteto.dshmobile.core.wire.dto.CommandDescriptor
  * A slash line is not a prompt: `session/prompt` hands its content straight to the model, so a
  * command has to be recognised here and written through `commands/execute` instead.
  */
-internal sealed interface Submission {
+sealed interface Submission {
     /** A registered command line; goes to the command gateway, never to the model. */
     data class Command(val line: String) : Submission
 
@@ -25,7 +25,7 @@ internal sealed interface Submission {
 }
 
 /** Why a command line refused the composer's attachments. */
-internal enum class RefusalReason {
+enum class RefusalReason {
     /** The command itself declares no attachment acceptance — most of them. */
     COMMAND_TAKES_NO_ATTACHMENTS,
 
@@ -54,7 +54,7 @@ internal enum class RefusalReason {
  * @param hostAcceptsAttachments whether this harness's `commands/execute` carries attachments at
  *   all (`SessionStore.commandAttachmentsSupported`).
  */
-internal fun adjudicate(
+fun adjudicate(
     draft: String,
     catalog: List<CommandDescriptor>,
     attachments: Int,
