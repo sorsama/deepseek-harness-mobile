@@ -3,9 +3,9 @@ package com.labteto.dshmobile.ui.components
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionIntent
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionItem
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionOption
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNull
+import kotlin.test.Test
 
 /**
  * Which card answers a request.

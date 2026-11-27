@@ -1,9 +1,8 @@
 package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.data.QuestionCardState
-import org.junit.Assert.*
-import org.junit.Test
-import java.util.Locale
+import com.labteto.dshmobile.testing.assertEquals
+import kotlin.test.Test
 
 class QuestionPresentationTest {
     private val card = QuestionCardState("s", "c", emptyList(), remainingMs = 24_000, ready = true)
@@ -16,12 +15,6 @@ class QuestionPresentationTest {
         assertEquals(2, countdownSeconds(1_001))
         assertEquals(24, countdownSeconds(23_001))
         assertEquals(Int.MAX_VALUE, countdownSeconds(Long.MAX_VALUE))
-    }
-
-    @Test fun `formatted quantity uses the display locale numbering system`() {
-        assertEquals("24", countdownNumber(24, Locale.ENGLISH))
-        assertEquals("٢٤", countdownNumber(24, Locale.forLanguageTag("ar-u-nu-arab")))
-        assertEquals("২৪", countdownNumber(24, Locale.forLanguageTag("bn-u-nu-beng")))
     }
 
     @Test fun `focus pauses countdown and take time gives persistent held feedback`() {

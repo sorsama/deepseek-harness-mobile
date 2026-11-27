@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">Откройте исходный сеанс, чтобы завершить перенос, и повторите попытку.</string>
+    <string name="approval_allow_once">Разрешить один раз</string>
+    <string name="approval_command_title">Выполнить эту команду?</string>
+    <string name="approval_file_title">Изменить файл вне рабочей папки?</string>
+    <string name="approval_reason">Причина: %1$s</string>
+    <string name="approval_reject">Не разрешать</string>
+    <string name="approval_shortened">Harness прислал только первые 2000 символов.</string>
+    <string name="approval_show_all">Показать всё</string>
+    <string name="approval_title">Нужно ваше разрешение</string>
+    <string name="approval_tool_title">Разрешить %1$s?</string>
     <string name="archive_activity_job">Фоновые задачи</string>
     <string name="archive_activity_more">и ещё %1$d</string>
     <string name="archive_activity_schedule">Расписания</string>
@@ -260,6 +269,7 @@
     <string name="common_copied">Скопировано</string>
     <string name="common_copy">Копировать</string>
     <string name="common_error">Что-то пошло не так</string>
+    <string name="common_loading">Загрузка…</string>
     <string name="common_offline">Офлайн</string>
     <string name="common_ok">ОК</string>
     <string name="common_reconnecting">Переподключение…</string>
@@ -395,7 +405,11 @@
     <string name="goal_rounds">Раунд %1$d из %2$s</string>
     <string name="goal_title">Цель</string>
     <string name="harness_add_reference">Добавить ссылку</string>
+    <string name="harness_answered">Ответ отправлен</string>
     <string name="harness_automations">Автоматизация</string>
+    <string name="harness_questions">Вопросы</string>
+    <string name="harness_reply_queued">Ответ в очереди</string>
+    <string name="harness_take_time">Больше времени</string>
     <string name="hold_copy_all">Копировать всё</string>
     <string name="hold_copy_arguments">Копировать аргументы</string>
     <string name="hold_copy_command">Копировать команду</string>
@@ -499,6 +513,10 @@
     <string name="photos_preparing">Подготовка фото…</string>
     <string name="plan_mode_off">Режим плана: выкл.</string>
     <string name="plan_mode_on">Режим плана: вкл.</string>
+    <string name="plan_review_approve">Одобрить</string>
+    <string name="plan_review_decline">Отклонить</string>
+    <string name="plan_review_discuss">Обсудить</string>
+    <string name="plan_review_title">План готов к проверке</string>
     <string name="preset_code_desc">Всё, что умеет стандартный режим, но инструменты доступны через Code Mode SDK, поэтому модель может объединять несколько шагов в одну программу на TypeScript.</string>
     <string name="preset_code_name">Режим PTC</string>
     <string name="preset_cordis_desc">Для создания своих пресетов агента: всё, что есть в стандартном режиме, плюс проверка во время работы, эксперименты с плагинами и руководство по написанию пресетов.</string>
@@ -510,6 +528,20 @@
     <string name="projects_title">Проекты на этом телефоне</string>
     <string name="questions_answer_refused">Harness не принял этот ответ (%1$s).</string>
     <string name="questions_answer_unsent">Не удалось связаться с harness.</string>
+    <string name="questions_collapse">Свернуть карточку вопроса</string>
+    <string name="questions_custom_placeholder">Введите свой ответ</string>
+    <string name="questions_dismiss">Отклонить все вопросы</string>
+    <string name="questions_error_incomplete">Сначала ответьте на этот вопрос.</string>
+    <string name="questions_error_unanswered">Выберите вариант или введите свой ответ.</string>
+    <string name="questions_expand">Развернуть карточку вопроса</string>
+    <string name="questions_nav_next">Следующий вопрос</string>
+    <string name="questions_nav_previous">Предыдущий вопрос</string>
+    <string name="questions_next">Далее</string>
+    <string name="questions_progress">%1$d / %2$d</string>
+    <string name="questions_recommended">Рекомендуется</string>
+    <string name="questions_skip">Пропустить</string>
+    <string name="questions_submit">Отправить</string>
+    <string name="questions_submitting">Отправка…</string>
     <string name="quota_compact_day">д</string>
     <string name="quota_compact_hour">ч</string>
     <string name="quota_compact_minute">м</string>
@@ -606,18 +638,34 @@
     <string name="toolcard_title_web">Веб</string>
     <string name="trajectory_title">Траектория</string>
     <string name="ux_a_details">Технические сведения</string>
+    <string name="ux_b_answer">Ответ</string>
     <string name="ux_b_clear_search">Очистить поиск</string>
+    <string name="ux_b_collapsed">Свёрнуто</string>
+    <string name="ux_b_continued">Работа продолжилась, но вы ещё можете ответить</string>
+    <string name="ux_b_countdown_description">Идёт отсчёт времени для ответа</string>
+    <string name="ux_b_expanded">Развёрнуто</string>
     <string name="ux_b_file">Файл</string>
     <string name="ux_b_folder">Папка</string>
+    <string name="ux_b_held">Ожидание вашего ответа</string>
     <string name="ux_b_open_reference">Открыть %1$s: %2$s</string>
+    <string name="ux_b_paused">Приостановлено на время редактирования</string>
     <string name="ux_b_remove_reference">Удалить ссылку %1$s</string>
     <string name="ux_b_session">Чат</string>
+    <string name="ux_b_skipped">Пропущено</string>
+    <string name="ux_b_view_answers">Посмотреть ответы</string>
+    <string name="ux_b_view_questions">Посмотреть вопросы</string>
     <string name="work_steps_clipped">Показано начало длинного результата.</string>
     <string name="work_steps_show_all">Показать всё</string>
     <string name="workflow_completed">Завершён</string>
     <string name="workflow_failed">Сбой</string>
     <string name="workflow_running">Выполняется</string>
     <string name="workflow_title">Рабочий процесс</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">Ещё %1$d запрос ждёт</item>
+        <item quantity="few">Ещё %1$d запроса ждут</item>
+        <item quantity="many">Ещё %1$d запросов ждут</item>
+        <item quantity="other">Ещё %1$d запроса ждут</item>
+    </plurals>
     <plurals name="chat_changed_files">
         <item quantity="one">Изменён %1$d файл</item>
         <item quantity="few">Изменено %1$d файла</item>
@@ -755,5 +803,11 @@
         <item quantity="few">%1$d шага</item>
         <item quantity="many">%1$d шагов</item>
         <item quantity="other">%1$d шага</item>
+    </plurals>
+    <plurals name="ux_b_countdown_seconds">
+        <item quantity="one">Продолжение через %1$s секунду</item>
+        <item quantity="few">Продолжение через %1$s секунды</item>
+        <item quantity="many">Продолжение через %1$s секунд</item>
+        <item quantity="other">Продолжение через %1$s секунды</item>
     </plurals>
 </resources>

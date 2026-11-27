@@ -81,6 +81,10 @@ const ICONS = [
   ['Diversity3', 'Outlined.Diversity3'],
   // The queue dock's row menu (iOS M6b).
   ['MoreVertFilled', 'Filled.MoreVert'],
+  // The approval card and the question card (iOS M7).
+  ['WarningAmber', 'Filled.WarningAmber'],
+  ['KeyboardArrowLeft', 'AutoMirrored.Filled.KeyboardArrowLeft'],
+  ['EditFilled', 'Filled.Edit'],
 ];
 
 const args = process.argv.slice(2);

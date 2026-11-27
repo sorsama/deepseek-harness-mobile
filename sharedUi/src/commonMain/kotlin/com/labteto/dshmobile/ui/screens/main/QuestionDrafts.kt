@@ -1,6 +1,7 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import android.content.SharedPreferences
+import androidx.compose.runtime.Composable
+import com.labteto.dshmobile.data.wallClockMillis
 
 /**
  * What a timed question's half-typed answer leaves on disk, and when it goes.
@@ -59,21 +60,39 @@ internal fun sweepQuestionDrafts(
     return DraftSweep(delete, stamp)
 }
 
+/**
+ * The file the drafts are kept in, as the few calls [QuestionDraftStore] makes on it. Android keeps them in the
+ * `question-drafts` `SharedPreferences` file it always used (a draft's JSON as a String, its save time as a Long beside
+ * it), so nothing on a phone moves; iOS keeps the same entries in `NSUserDefaults`.
+ */
+internal interface QuestionDraftFile {
+    fun getString(key: String): String?
+
+    fun contains(key: String): Boolean
+
+    /** Every entry: a draft's JSON (a String) or a save time (a Long). */
+    val all: Map<String, *>
+
+    /** Apply [changes] together: each key set to its String or Long value, or removed when the value is null. */
+    fun apply(changes: Map<String, Any?>)
+}
+
+/** The question drafts of this device, opened once per composition that asks. */
+@Composable
+internal expect fun rememberQuestionDraftStore(): QuestionDraftStore
+
 /** The `question-drafts` preferences, behind the few things the question surface does to them. */
-internal class QuestionDraftStore(private val prefs: SharedPreferences, private val clock: () -> Long = System::currentTimeMillis) {
-    fun read(draftKey: String): String? = prefs.getString(draftKey, null)
+internal class QuestionDraftStore(private val prefs: QuestionDraftFile, private val clock: () -> Long = ::wallClockMillis) {
+    fun read(draftKey: String): String? = prefs.getString(draftKey)
 
     fun save(draftKey: String, json: String) {
-        prefs.edit()
-            .putString(draftKey, json)
-            .putLong(questionDraftStampKey(draftKey), clock())
-            .apply()
+        prefs.apply(mapOf(draftKey to json, questionDraftStampKey(draftKey) to clock()))
     }
 
     /** Remove a draft and its date. Safe when there is none. */
     fun drop(draftKey: String) {
         if (!prefs.contains(draftKey) && !prefs.contains(questionDraftStampKey(draftKey))) return
-        prefs.edit().remove(draftKey).remove(questionDraftStampKey(draftKey)).apply()
+        prefs.apply(mapOf(draftKey to null, questionDraftStampKey(draftKey) to null))
     }
 
     /** Apply [sweepQuestionDrafts] to what is stored, given the drafts live cards own. */
@@ -86,10 +105,11 @@ internal class QuestionDraftStore(private val prefs: SharedPreferences, private 
         // Stamp keys with no draft beside them are debris from an earlier crash.
         val strayStamps = all.keys.filter { isQuestionDraftStampKey(it) && it.removeSuffix(STAMP_SUFFIX) !in all }
         if (plan.delete.isEmpty() && plan.stampNow.isEmpty() && strayStamps.isEmpty()) return
-        val edit = prefs.edit()
-        plan.delete.forEach { edit.remove(it).remove(questionDraftStampKey(it)) }
-        plan.stampNow.forEach { edit.putLong(questionDraftStampKey(it), clock()) }
-        strayStamps.forEach { edit.remove(it) }
-        edit.apply()
+        // The three sets name different keys (a stray stamp has no draft, the others do), so one map holds them.
+        val changes = LinkedHashMap<String, Any?>()
+        plan.delete.forEach { changes[it] = null; changes[questionDraftStampKey(it)] = null }
+        plan.stampNow.forEach { changes[questionDraftStampKey(it)] = clock() }
+        strayStamps.forEach { changes[it] = null }
+        prefs.apply(changes)
     }
 }

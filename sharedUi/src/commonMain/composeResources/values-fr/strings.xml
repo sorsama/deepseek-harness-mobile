@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">Ouvrez la session d’origine pour terminer la migration, puis réessayez.</string>
+    <string name="approval_allow_once">Autoriser une fois</string>
+    <string name="approval_command_title">Lancer cette commande ?</string>
+    <string name="approval_file_title">Modifier un fichier hors de l'espace de travail ?</string>
+    <string name="approval_reason">Raison : %1$s</string>
+    <string name="approval_reject">Ne pas autoriser</string>
+    <string name="approval_shortened">Le harness n'a envoyé que les 2 000 premiers caractères.</string>
+    <string name="approval_show_all">Tout afficher</string>
+    <string name="approval_title">Autorisation requise</string>
+    <string name="approval_tool_title">Autoriser %1$s ?</string>
     <string name="archive_activity_job">Tâches en arrière-plan</string>
     <string name="archive_activity_more">et %1$d de plus</string>
     <string name="archive_activity_schedule">Planifications</string>
@@ -260,6 +269,7 @@
     <string name="common_copied">Copié</string>
     <string name="common_copy">Copier</string>
     <string name="common_error">Une erreur est survenue</string>
+    <string name="common_loading">Chargement…</string>
     <string name="common_offline">Hors ligne</string>
     <string name="common_ok">OK</string>
     <string name="common_reconnecting">Reconnexion…</string>
@@ -395,7 +405,11 @@
     <string name="goal_rounds">Tour %1$d sur %2$s</string>
     <string name="goal_title">Objectif</string>
     <string name="harness_add_reference">Ajouter une référence</string>
+    <string name="harness_answered">Répondu</string>
     <string name="harness_automations">Automatisations</string>
+    <string name="harness_questions">Questions</string>
+    <string name="harness_reply_queued">Réponse en attente</string>
+    <string name="harness_take_time">Plus de temps</string>
     <string name="hold_copy_all">Tout copier</string>
     <string name="hold_copy_arguments">Copier les arguments</string>
     <string name="hold_copy_command">Copier la commande</string>
@@ -499,6 +513,10 @@
     <string name="photos_preparing">Préparation des photos…</string>
     <string name="plan_mode_off">Mode plan : désactivé</string>
     <string name="plan_mode_on">Mode plan : activé</string>
+    <string name="plan_review_approve">Approuver</string>
+    <string name="plan_review_decline">Refuser</string>
+    <string name="plan_review_discuss">Discuter</string>
+    <string name="plan_review_title">Plan prêt à relire</string>
     <string name="preset_code_desc">Tout ce que fait le mode standard, avec des outils accessibles via le SDK Code Mode : le modèle peut enchaîner plusieurs opérations dans un seul programme TypeScript.</string>
     <string name="preset_code_name">Mode PTC</string>
     <string name="preset_cordis_desc">Pour créer vos propres préréglages d’agent : tout le mode standard, plus l’inspection à l’exécution, des essais de plugins et un guide de rédaction.</string>
@@ -510,6 +528,20 @@
     <string name="projects_title">Projets sur ce téléphone</string>
     <string name="questions_answer_refused">Le harness a refusé cette réponse (%1$s).</string>
     <string name="questions_answer_unsent">Impossible de joindre le harness.</string>
+    <string name="questions_collapse">Réduire la carte de question</string>
+    <string name="questions_custom_placeholder">Saisissez votre réponse</string>
+    <string name="questions_dismiss">Ignorer toutes les questions</string>
+    <string name="questions_error_incomplete">Terminez d’abord cette question.</string>
+    <string name="questions_error_unanswered">Sélectionnez une option ou saisissez une réponse.</string>
+    <string name="questions_expand">Développer la carte de question</string>
+    <string name="questions_nav_next">Question suivante</string>
+    <string name="questions_nav_previous">Question précédente</string>
+    <string name="questions_next">Suivant</string>
+    <string name="questions_progress">%1$d / %2$d</string>
+    <string name="questions_recommended">Recommandé</string>
+    <string name="questions_skip">Passer</string>
+    <string name="questions_submit">Envoyer</string>
+    <string name="questions_submitting">Envoi…</string>
     <string name="quota_compact_day">j</string>
     <string name="quota_compact_hour">h</string>
     <string name="quota_compact_minute">min</string>
@@ -606,18 +638,33 @@
     <string name="toolcard_title_web">Web</string>
     <string name="trajectory_title">Trajectoire</string>
     <string name="ux_a_details">Détails techniques</string>
+    <string name="ux_b_answer">Réponse</string>
     <string name="ux_b_clear_search">Effacer la recherche</string>
+    <string name="ux_b_collapsed">Réduit</string>
+    <string name="ux_b_continued">Le travail a repris, mais vous pouvez encore répondre</string>
+    <string name="ux_b_countdown_description">Compte à rebours de réponse en cours</string>
+    <string name="ux_b_expanded">Développé</string>
     <string name="ux_b_file">Fichier</string>
     <string name="ux_b_folder">Dossier</string>
+    <string name="ux_b_held">En attente de votre réponse</string>
     <string name="ux_b_open_reference">Ouvrir %1$s : %2$s</string>
+    <string name="ux_b_paused">En pause pendant la modification</string>
     <string name="ux_b_remove_reference">Supprimer la référence %1$s</string>
     <string name="ux_b_session">Conversation</string>
+    <string name="ux_b_skipped">Ignorée</string>
+    <string name="ux_b_view_answers">Voir les réponses</string>
+    <string name="ux_b_view_questions">Voir les questions</string>
     <string name="work_steps_clipped">Début d’un long résultat.</string>
     <string name="work_steps_show_all">Tout afficher</string>
     <string name="workflow_completed">Terminé</string>
     <string name="workflow_failed">Échoué</string>
     <string name="workflow_running">En cours</string>
     <string name="workflow_title">Flux de travail</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">%1$d autre demande en attente</item>
+        <item quantity="many">%1$d autres demandes en attente</item>
+        <item quantity="other">%1$d autres demandes en attente</item>
+    </plurals>
     <plurals name="chat_changed_files">
         <item quantity="one">%1$d fichier modifié</item>
         <item quantity="many">%1$d fichiers modifiés</item>
@@ -732,5 +779,10 @@
         <item quantity="one">%1$d étape</item>
         <item quantity="many">%1$d étapes</item>
         <item quantity="other">%1$d étapes</item>
+    </plurals>
+    <plurals name="ux_b_countdown_seconds">
+        <item quantity="one">Reprise dans %1$s seconde</item>
+        <item quantity="other">Reprise dans %1$s secondes</item>
+        <item quantity="many">Reprise dans %1$s secondes</item>
     </plurals>
 </resources>

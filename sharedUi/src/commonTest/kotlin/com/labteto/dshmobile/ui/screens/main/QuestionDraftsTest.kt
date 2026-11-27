@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertTrue
+import com.labteto.dshmobile.testing.assertEquals
+import kotlin.test.Test
 
 class QuestionDraftsTest {
 
@@ -47,7 +47,7 @@ class QuestionDraftsTest {
     }
 
     @Test
-    fun `a recent orphan is kept, since its card may be about to come back`() {
+    fun `a recent orphan is kept since its card may be about to come back`() {
         val plan = sweepQuestionDrafts(
             drafts = listOf(StoredDraft("h/s/maybe", savedAt = now - 2 * hour)),
             liveKeys = emptySet(),
@@ -82,7 +82,7 @@ class QuestionDraftsTest {
     }
 
     @Test
-    fun `a mixed store sorts into keep, stamp and delete`() {
+    fun `a mixed store sorts into keep stamp and delete`() {
         val plan = sweepQuestionDrafts(
             drafts = listOf(
                 StoredDraft("h/s/live", savedAt = null),

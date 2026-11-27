@@ -3,11 +3,11 @@ package com.labteto.dshmobile.ui.components
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionItem
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionOption
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertTrue
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNull
+import kotlin.test.Test
 
 /**
  * The rules the host checks, restated here so a change to the composer cannot quietly break them.
@@ -35,7 +35,7 @@ class QuestionComposerModelTest {
     // ---- the encoder ------------------------------------------------------
 
     @Test
-    fun `a free-text answer rides its own question, not the batch`() {
+    fun `a free-text answer rides its own question not the batch`() {
         val questions = listOf(question("a", options = arrayOf("Alpha")), question("b"))
         val drafts = listOf(QuestionDraft(selected = listOf("Alpha")), QuestionDraft(custom = "my own"))
         val answer = encodeAnswers(questions, drafts)
@@ -50,7 +50,7 @@ class QuestionComposerModelTest {
     }
 
     @Test
-    fun `a single-select question sends free text or a selection, never both`() {
+    fun `a single-select question sends free text or a selection never both`() {
         val questions = listOf(question("a", options = arrayOf("Alpha", "Beta")))
         val drafts = listOf(QuestionDraft(selected = listOf("Alpha"), custom = "neither"))
         val answer = encodeAnswers(questions, drafts)
@@ -156,7 +156,7 @@ class QuestionComposerModelTest {
     }
 
     @Test
-    fun `a single-select pick advances, except on the last question`() {
+    fun `a single-select pick advances except on the last question`() {
         assertEquals(1, advanceFrom(0, count = 3))
         assertEquals(2, advanceFrom(2, count = 3))
     }
@@ -189,7 +189,7 @@ class QuestionComposerModelTest {
     }
 
     @Test
-    fun `the wire keeps the label the asker wrote, marker and all`() {
+    fun `the wire keeps the label the asker wrote marker and all`() {
         val questions = listOf(question("a", options = arrayOf("Use OAuth (Recommended)")))
         val drafts = listOf(QuestionDraft(selected = listOf("Use OAuth (Recommended)")))
         assertEquals(

@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">เปิดเซสชันต้นฉบับเพื่อย้ายข้อมูลให้เสร็จ แล้วลองอีกครั้ง</string>
+    <string name="approval_allow_once">อนุญาตครั้งเดียว</string>
+    <string name="approval_command_title">รันคำสั่งนี้ไหม</string>
+    <string name="approval_file_title">แก้ไขไฟล์นอกพื้นที่ทำงานไหม</string>
+    <string name="approval_reason">เหตุผล: %1$s</string>
+    <string name="approval_reject">ไม่อนุญาต</string>
+    <string name="approval_shortened">harness ส่งมาแค่ 2,000 ตัวอักษรแรก</string>
+    <string name="approval_show_all">แสดงทั้งหมด</string>
+    <string name="approval_title">ต้องการการอนุญาต</string>
+    <string name="approval_tool_title">อนุญาต %1$s ไหม</string>
     <string name="archive_activity_job">งานเบื้องหลัง</string>
     <string name="archive_activity_more">และอีก %1$d</string>
     <string name="archive_activity_schedule">งานตามกำหนดเวลา</string>
@@ -260,6 +269,7 @@
     <string name="common_copied">คัดลอกแล้ว</string>
     <string name="common_copy">คัดลอก</string>
     <string name="common_error">มีบางอย่างผิดพลาด</string>
+    <string name="common_loading">กำลังโหลด…</string>
     <string name="common_offline">ออฟไลน์</string>
     <string name="common_ok">ตกลง</string>
     <string name="common_reconnecting">กำลังเชื่อมต่อใหม่…</string>
@@ -395,7 +405,11 @@
     <string name="goal_rounds">รอบที่ %1$d จาก %2$s</string>
     <string name="goal_title">เป้าหมาย</string>
     <string name="harness_add_reference">เพิ่มรายการอ้างอิง</string>
+    <string name="harness_answered">ตอบแล้ว</string>
     <string name="harness_automations">งานอัตโนมัติ</string>
+    <string name="harness_questions">คำถาม</string>
+    <string name="harness_reply_queued">คำตอบอยู่ในคิวแล้ว</string>
+    <string name="harness_take_time">ขอเวลาเพิ่ม</string>
     <string name="hold_copy_all">คัดลอกทั้งหมด</string>
     <string name="hold_copy_arguments">คัดลอกอาร์กิวเมนต์</string>
     <string name="hold_copy_command">คัดลอกคำสั่ง</string>
@@ -499,6 +513,10 @@
     <string name="photos_preparing">กำลังเตรียมรูปภาพ…</string>
     <string name="plan_mode_off">โหมดวางแผน: ปิด</string>
     <string name="plan_mode_on">โหมดวางแผน: เปิด</string>
+    <string name="plan_review_approve">อนุมัติ</string>
+    <string name="plan_review_decline">ปฏิเสธ</string>
+    <string name="plan_review_discuss">คุยก่อน</string>
+    <string name="plan_review_title">แผนพร้อมให้ตรวจแล้ว</string>
     <string name="preset_code_desc">ทุกอย่างของโหมดมาตรฐาน พร้อมเครื่องมือที่ใช้ได้ผ่าน Code Mode SDK เพื่อให้โมเดลรวมหลายขั้นตอนไว้ในโปรแกรม TypeScript เดียว</string>
     <string name="preset_code_name">โหมด PTC</string>
     <string name="preset_cordis_desc">สำหรับสร้างพรีเซ็ตเอเจนต์ของคุณเอง มีทุกอย่างของโหมดมาตรฐาน พร้อมเครื่องมือตรวจสอบขณะทำงาน ทดลองปลั๊กอิน และคำแนะนำในการเขียนพรีเซ็ต</string>
@@ -510,6 +528,20 @@
     <string name="projects_title">โปรเจกต์ในโทรศัพท์เครื่องนี้</string>
     <string name="questions_answer_refused">harness ไม่รับคำตอบนั้น (%1$s)</string>
     <string name="questions_answer_unsent">ติดต่อ harness ไม่ได้</string>
+    <string name="questions_collapse">ย่อการ์ดคำถาม</string>
+    <string name="questions_custom_placeholder">พิมพ์คำตอบของคุณ</string>
+    <string name="questions_dismiss">ปิดคำถามทั้งหมด</string>
+    <string name="questions_error_incomplete">ตอบคำถามนี้ให้เสร็จก่อน</string>
+    <string name="questions_error_unanswered">เลือกตัวเลือกหรือพิมพ์คำตอบของคุณ</string>
+    <string name="questions_expand">ขยายการ์ดคำถาม</string>
+    <string name="questions_nav_next">คำถามถัดไป</string>
+    <string name="questions_nav_previous">คำถามก่อนหน้า</string>
+    <string name="questions_next">ถัดไป</string>
+    <string name="questions_progress">%1$d / %2$d</string>
+    <string name="questions_recommended">แนะนำ</string>
+    <string name="questions_skip">ข้าม</string>
+    <string name="questions_submit">ส่ง</string>
+    <string name="questions_submitting">กำลังส่ง…</string>
     <string name="quota_compact_day">วัน</string>
     <string name="quota_compact_hour">ชม</string>
     <string name="quota_compact_minute">นาที</string>
@@ -606,18 +638,31 @@
     <string name="toolcard_title_web">เว็บ</string>
     <string name="trajectory_title">เส้นทาง</string>
     <string name="ux_a_details">รายละเอียดทางเทคนิค</string>
+    <string name="ux_b_answer">คำตอบ</string>
     <string name="ux_b_clear_search">ล้างการค้นหา</string>
+    <string name="ux_b_collapsed">ย่อแล้ว</string>
+    <string name="ux_b_continued">ทำงานต่อแล้ว คุณยังตอบได้</string>
+    <string name="ux_b_countdown_description">กำลังนับเวลารอคำตอบ</string>
+    <string name="ux_b_expanded">ขยายแล้ว</string>
     <string name="ux_b_file">ไฟล์</string>
     <string name="ux_b_folder">โฟลเดอร์</string>
+    <string name="ux_b_held">จะรอจนกว่าคุณจะตอบ</string>
     <string name="ux_b_open_reference">เปิด%1$s: %2$s</string>
+    <string name="ux_b_paused">หยุดนับเวลาขณะแก้ไข</string>
     <string name="ux_b_remove_reference">นำรายการอ้างอิง %1$s ออก</string>
     <string name="ux_b_session">บทสนทนา</string>
+    <string name="ux_b_skipped">ข้ามแล้ว</string>
+    <string name="ux_b_view_answers">ดูคำตอบ</string>
+    <string name="ux_b_view_questions">ดูคำถาม</string>
     <string name="work_steps_clipped">แสดงส่วนต้นของผลลัพธ์ที่ยาว</string>
     <string name="work_steps_show_all">แสดงทั้งหมด</string>
     <string name="workflow_completed">เสร็จแล้ว</string>
     <string name="workflow_failed">ล้มเหลว</string>
     <string name="workflow_running">กำลังทำงาน</string>
     <string name="workflow_title">เวิร์กโฟลว์</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="other">มีอีก %1$d คำขอรออยู่</item>
+    </plurals>
     <plurals name="chat_changed_files">
         <item quantity="other">เปลี่ยน %1$d ไฟล์</item>
     </plurals>
@@ -686,5 +731,8 @@
     </plurals>
     <plurals name="trajectory_step_count">
         <item quantity="other">%1$d ขั้น</item>
+    </plurals>
+    <plurals name="ux_b_countdown_seconds">
+        <item quantity="other">จะทำงานต่อใน %1$s วินาที</item>
     </plurals>
 </resources>

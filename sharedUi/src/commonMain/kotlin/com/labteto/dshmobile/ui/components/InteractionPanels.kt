@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,13 +26,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.approval_allow_once
+import com.labteto.dshmobile.shared.resources.approval_command_title
+import com.labteto.dshmobile.shared.resources.approval_file_title
+import com.labteto.dshmobile.shared.resources.approval_more_waiting
+import com.labteto.dshmobile.shared.resources.approval_reason
+import com.labteto.dshmobile.shared.resources.approval_reject
+import com.labteto.dshmobile.shared.resources.approval_shortened
+import com.labteto.dshmobile.shared.resources.approval_show_all
+import com.labteto.dshmobile.shared.resources.approval_title
+import com.labteto.dshmobile.shared.resources.approval_tool_title
+import com.labteto.dshmobile.shared.resources.plan_review_approve
+import com.labteto.dshmobile.shared.resources.plan_review_decline
+import com.labteto.dshmobile.shared.resources.plan_review_discuss
+import com.labteto.dshmobile.shared.resources.plan_review_title
 
 // ---------------------------------------------------------------------------
 // Interaction takeovers: sandbox-approval and plan review. The ask_user_question
@@ -98,14 +109,14 @@ fun ApprovalPanel(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    Icons.Filled.WarningAmber,
+                    DsIcons.WarningAmber,
                     contentDescription = null,
                     tint = colors.warn,
                     modifier = Modifier.size(16.dp),
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    stringResource(R.string.approval_title),
+                    stringResource(Res.string.approval_title),
                     style = DsType.small13Strong,
                     color = colors.warnText,
                 )
@@ -126,7 +137,7 @@ fun ApprovalPanel(
                         .verticalScroll(rememberScrollState()),
                 ) {
                     Text(
-                        stringResource(R.string.approval_reason, prompt.text ?: toolName),
+                        stringResource(Res.string.approval_reason, prompt.text ?: toolName),
                         style = DsType.std14,
                         color = colors.labelSecondary,
                     )
@@ -136,14 +147,14 @@ fun ApprovalPanel(
                 // targets on the card, with Reject away from the thumb's rest position.
                 Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                     DsButton(
-                        text = stringResource(R.string.approval_allow_once),
+                        text = stringResource(Res.string.approval_allow_once),
                         onClick = { haptics.confirm(); onAllow() },
                         variant = DsButtonVariant.Attention,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                         DsButton(
-                            text = stringResource(R.string.approval_reject),
+                            text = stringResource(Res.string.approval_reject),
                             onClick = { haptics.reject(); onReject() },
                             variant = DsButtonVariant.Danger,
                             modifier = Modifier.weight(1f),
@@ -179,7 +190,7 @@ private fun CommandApprovalPanel(
     val scroll = rememberScrollState()
     // The card is not height-bound by the screen around it, so the box keeps to a fraction of the
     // window: a short window (landscape, a desktop window, large text) keeps room for the buttons.
-    val windowHeight = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp
+    val windowHeight = screenHeight()
     val cap = minOf(ApprovalCommandMaxHeight, windowHeight * 0.25f)
     val question = approvalQuestion(prompt)
     Surface(
@@ -197,7 +208,7 @@ private fun CommandApprovalPanel(
                     .padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Filled.WarningAmber, contentDescription = null, tint = colors.warn, modifier = Modifier.size(16.dp))
+                Icon(DsIcons.WarningAmber, contentDescription = null, tint = colors.warn, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(
                     question,
@@ -214,14 +225,14 @@ private fun CommandApprovalPanel(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         if (prompt.shortened) {
-                            Text(stringResource(R.string.approval_shortened), style = DsType.caption11, color = colors.warnLabel)
+                            Text(stringResource(Res.string.approval_shortened), style = DsType.caption11, color = colors.warnLabel)
                         }
                         if (waitingAfter > 0) WaitingLine(waitingAfter)
                     }
                     // Taller than the box: the rest is a scroll away, or all of it in the sheet.
                     if (scroll.maxValue > 0) {
                         DsButton(
-                            text = stringResource(R.string.approval_show_all),
+                            text = stringResource(Res.string.approval_show_all),
                             onClick = {
                                 haptics.tap()
                                 showAll = true
@@ -241,7 +252,7 @@ private fun CommandApprovalPanel(
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
                 CommandText(prompt.detail.orEmpty(), Modifier.weight(1f, fill = false), rememberScrollState())
                 if (prompt.shortened) {
-                    Text(stringResource(R.string.approval_shortened), style = DsType.caption11, color = colors.warnLabel)
+                    Text(stringResource(Res.string.approval_shortened), style = DsType.caption11, color = colors.warnLabel)
                 }
                 ApprovalAnswers(
                     onAllow = { hide { showAll = false; onAllow() } },
@@ -256,10 +267,10 @@ private fun CommandApprovalPanel(
 /** The question a gated request asks, in the app's words. */
 @Composable
 private fun approvalQuestion(prompt: com.labteto.dshmobile.core.permission.ApprovalPrompt): String = when (prompt.kind) {
-    com.labteto.dshmobile.core.permission.ApprovalPrompt.Kind.FileChange -> stringResource(R.string.approval_file_title)
+    com.labteto.dshmobile.core.permission.ApprovalPrompt.Kind.FileChange -> stringResource(Res.string.approval_file_title)
     com.labteto.dshmobile.core.permission.ApprovalPrompt.Kind.Command ->
-        if (prompt.toolName == "bash") stringResource(R.string.approval_command_title) else stringResource(R.string.approval_tool_title, prompt.toolName)
-    else -> stringResource(R.string.approval_tool_title, prompt.toolName)
+        if (prompt.toolName == "bash") stringResource(Res.string.approval_command_title) else stringResource(Res.string.approval_tool_title, prompt.toolName)
+    else -> stringResource(Res.string.approval_tool_title, prompt.toolName)
 }
 
 /** The command in monospace, left to right, wrapping, selectable, scrolling inside [modifier]'s bounds. */
@@ -293,14 +304,14 @@ private fun ApprovalAnswers(onAllow: () -> Unit, onReject: () -> Unit, modifier:
     val haptics = rememberDsHaptics()
     Row(modifier.fillMaxWidth().padding(top = DsSpacing.xsmall), horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
         DsButton(
-            text = stringResource(R.string.approval_reject),
+            text = stringResource(Res.string.approval_reject),
             onClick = { haptics.reject(); onReject() },
             variant = DsButtonVariant.Danger,
             allowWrap = true,
             modifier = Modifier.weight(1f),
         )
         DsButton(
-            text = stringResource(R.string.approval_allow_once),
+            text = stringResource(Res.string.approval_allow_once),
             onClick = { haptics.confirm(); onAllow() },
             variant = DsButtonVariant.Attention,
             allowWrap = true,
@@ -313,7 +324,7 @@ private fun ApprovalAnswers(onAllow: () -> Unit, onReject: () -> Unit, modifier:
 @Composable
 private fun WaitingLine(count: Int) {
     Text(
-        androidx.compose.ui.res.pluralStringResource(R.plurals.approval_more_waiting, count, count),
+        org.jetbrains.compose.resources.pluralStringResource(Res.plurals.approval_more_waiting, count, localizedCount(count)),
         style = DsType.caption11,
         color = DsTheme.colors.labelTertiary,
     )
@@ -328,7 +339,7 @@ private fun WaitingLine(count: Int) {
  * the host refuses a batch shorter than the request it resolves.
  */
 @Composable
-internal fun PlanReviewPanel(
+fun PlanReviewPanel(
     review: PlanReview,
     busy: Boolean,
     onApprove: () -> Unit,
@@ -357,7 +368,7 @@ internal fun PlanReviewPanel(
                 Spacer(Modifier.width(10.dp))
                 Column {
                     Text(
-                        stringResource(R.string.plan_review_title),
+                        stringResource(Res.string.plan_review_title),
                         style = DsType.small13Strong,
                         color = colors.accent,
                     )
@@ -376,7 +387,7 @@ internal fun PlanReviewPanel(
                     MarkdownText(review.plan)
                 }
                 DsButton(
-                    text = stringResource(R.string.plan_review_approve),
+                    text = stringResource(Res.string.plan_review_approve),
                     onClick = { haptics.confirm(); onApprove() },
                     enabled = !busy,
                     variant = DsButtonVariant.Info,
@@ -387,7 +398,7 @@ internal fun PlanReviewPanel(
                     // refusal, which is what the harness's own card does — declining picks a stated
                     // option, whereas wanting to talk first is not one of the choices on offer.
                     DsButton(
-                        text = stringResource(R.string.plan_review_discuss),
+                        text = stringResource(Res.string.plan_review_discuss),
                         onClick = onDiscuss,
                         enabled = !busy,
                         variant = DsButtonVariant.Outline,
@@ -398,7 +409,7 @@ internal fun PlanReviewPanel(
                     // question's own options and refuses one it does not recognise.
                     if (review.decline != null) {
                         DsButton(
-                            text = stringResource(R.string.plan_review_decline),
+                            text = stringResource(Res.string.plan_review_decline),
                             onClick = { haptics.reject(); onDecline() },
                             enabled = !busy,
                             variant = DsButtonVariant.Danger,
