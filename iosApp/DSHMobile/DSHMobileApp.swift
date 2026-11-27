@@ -73,8 +73,8 @@ struct ComposeView: UIViewControllerRepresentable {
 ///   `DSH_TOOLCARDS_RESULT shown …` to `Documents/dsh-toolcards-result.txt`.
 /// - `-DshOpenSession first` (or a session id) opens that session once connected, as a tap on its row does, and writes
 ///   `DSH_CHAT_RESULT opened rows=… session=… more=…` to `Documents/dsh-chat-result.txt` once its transcript is laid
-///   out. `-DshChatScroll older` then scrolls to the oldest loaded message, which loads the page before it, and adds
-///   `DSH_CHAT_RESULT older …` once it has landed.
+///   out. `-DshChatScroll older` then drags the transcript up to the oldest loaded message as a finger does, which loads
+///   the page before it, and adds `DSH_CHAT_RESULT older …` once it has landed.
 ///
 /// Debug builds only. A release build ignores them, so the shipped app has no way to be told which
 /// address to connect to, or what to forget, from outside.

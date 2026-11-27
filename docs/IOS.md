@@ -859,9 +859,12 @@ the steps after the tests run even if the tests fail, so one push says everythin
   `docked=true`). The eight screenshots are also their own artifact, `ios-session-list-screenshots`, and a step fails
   when one is missing.
 - then an opened session (M5c): `-DshOpenSession first` (or a session id) opens it as a tap on its row does, and the app
-  writes `DSH_CHAT_RESULT opened rows=… session=… more=…` once its transcript is laid out; `-DshChatScroll older`
-  scrolls to the oldest loaded message, which pages in the one before it as a reader's scroll does, and adds
-  `DSH_CHAT_RESULT older …`. Screenshots: the rich session at its newest message in light, dark and Arabic, the demo's
+  writes `DSH_CHAT_RESULT opened rows=… session=… more=…` once its history is in and its transcript laid out (`more`
+  is the store's `hasMore`, true for the short rich session too: the store opens at the first prompt and counts the
+  `turn/start` before it as older history); `-DshChatScroll older` drags the transcript up to the oldest loaded message
+  as a finger does, so the transcript's own trigger pages in the one before it, and adds `DSH_CHAT_RESULT older …
+  asked=…` (how many pages the transcript asked for) once that page has landed. Screenshots: the rich session at its
+  newest message in light, dark and Arabic, the demo's
   long session (92 messages, a page is 60) paged back to its start in light and dark, and on the iPad the list docked
   beside the transcript. The same step fails when one of the six is missing.
 - `ios-compile` also compiles `:sharedUi` for the two iOS targets and checks that the klibs exist.

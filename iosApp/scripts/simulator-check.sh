@@ -170,24 +170,34 @@ expect_chat() {
 
 # One opened session against the demo harness (the transcript is shared with Android since iOS M5c): $1 names the device,
 # $2 the look (light, dark or ar), $3 the session (`first` is demo-01, the rich transcript; demo-04 is the one too long
-# for a page), $4 where the transcript is left (tail, or older: scrolled to the oldest loaded message, which loads the page
-# before it). The screenshot is chat/<device>-<look>-<tail|older>.png.
+# for a page), $4 where the transcript is left (tail, or older: dragged up to the oldest loaded message, which loads the
+# page before it, and on to the top). The screenshot is chat/<device>-<look>-<tail|older>.png. The older scenario is
+# written for demo-04 (its row counts are fixed below).
 chat_scenario() {
-  local device="$1" look="$2" session="$3" scroll="$4" extra=() id more
+  local device="$1" look="$2" session="$3" scroll="$4" extra=() id rows
   mkdir -p "$out/chat"
   case "$look" in
     dark) xcrun simctl ui "$udid" appearance dark ;;
     *) xcrun simctl ui "$udid" appearance light ;;
   esac
   [ "$look" = ar ] && extra=(-AppleLanguages "(ar)" -AppleLocale ar_SA)
-  id="$session"; more=true
-  [ "$session" = first ] && { id=demo-01; more=false; }
+  id="$session"; rows='[1-9][0-9]*'
+  [ "$session" = first ] && id=demo-01
+  # demo-04 has 92 messages, one row each: the app's page of 60 opens on the last 60, and one page back holds the rest.
+  [ "$session" = demo-04 ] && rows=60
   launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshOpenSession "$session" -DshChatScroll "$scroll" \
     ${extra[@]+"${extra[@]}"}
   expect "chat-$device-$look-$scroll-connected" "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
-  expect_chat "chat-$device-$look-$scroll-opened" "^DSH_CHAT_RESULT opened rows=[1-9][0-9]* session=$id more=$more$"
+  # Both sessions open with more=true, demo-01 although it is shorter than a page. The harness sends its whole log and
+  # hasMore=false, but that log starts the way harness logs do, with the turn's `turn/start` (seq 0) before the prompt,
+  # and the store opens a session at its first prompt (`trimToUserPrompt`) and counts what it left out as older history
+  # still to load. That is the shared store's state on Android too: a Load older row at the top until the reader comes
+  # near it, when one page brings seq 0 and ends the paging without adding a row.
+  expect_chat "chat-$device-$look-$scroll-opened" "^DSH_CHAT_RESULT opened rows=$rows session=$id more=true$"
   if [ "$scroll" = older ]; then
-    expect_chat "chat-$device-$look-older" "^DSH_CHAT_RESULT older rows=[1-9][0-9]* session=$id more=false failed=false$"
+    # Dragged up to the oldest loaded message, the transcript asks for the page before it itself (asked=1, not 0).
+    expect_chat "chat-$device-$look-older" \
+      "^DSH_CHAT_RESULT older rows=92 session=$id more=false failed=false asked=[1-9][0-9]*$"
   fi
   shot "chat/$device-$look-$scroll"
   xcrun simctl ui "$udid" appearance light
