@@ -3,9 +3,11 @@ package com.labteto.dshmobile.ios
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
@@ -15,14 +17,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -43,10 +52,12 @@ import com.labteto.dshmobile.ui.components.MascotMark
 import com.labteto.dshmobile.ui.components.MascotState
 import com.labteto.dshmobile.ui.components.localizedCount
 import com.labteto.dshmobile.ui.rootRouteOf
+import com.labteto.dshmobile.ui.screens.connect.AddressFieldProbe
 import com.labteto.dshmobile.ui.screens.connect.ConnectButtonVariant
 import com.labteto.dshmobile.ui.screens.connect.ConnectContent
 import com.labteto.dshmobile.ui.screens.connect.ConnectFailure
 import com.labteto.dshmobile.ui.screens.connect.DsConnectButton
+import com.labteto.dshmobile.ui.screens.connect.LocalAddressFieldProbe
 import com.labteto.dshmobile.ui.screens.pair.PairContent
 import com.labteto.dshmobile.ui.screens.pair.PairFailure
 import com.labteto.dshmobile.ui.theme.DsSpacing
@@ -57,6 +68,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.math.roundToInt
 import org.jetbrains.compose.resources.stringResource
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
@@ -93,7 +106,11 @@ import platform.UIKit.UIApplicationDidEnterBackgroundNotification
  *   `DSH_CHAT_RESULT opened rows=… session=… more=…` once it is laid out (then `older …` after a page back), or
  *   `DSH_CHAT_RESULT failed reason=…` when there is no such session.
  * - [composerDraft] is what the opened session's composer starts with; [chatDrive] sends a prompt, presses Stop or
- *   brings the keyboard up once it is open ([ChatDrive]), and [onChat] hears what came of it.
+ *   brings the keyboard up once it is open, answers the request a turn puts to the reader, reconnects while it is open
+ *   ([ChatDrive]), and [onChat] hears what came of it.
+ * - [focusAddress] moves focus into the Connect screen's address field, which brings the software keyboard up, and
+ *   [onKeyboard] hears `DSH_KEYBOARD_RESULT field=address ime=… bottom=… window=… above=yes|no` once the screen has
+ *   settled on it ([ConnectKeyboardProbe]).
  */
 internal class LaunchRequest(
     val address: String? = null,
@@ -122,6 +139,9 @@ internal class LaunchRequest(
     val composerDraft: String? = null,
     /** `-DshPrompt`, `-DshSendPrompt`, `-DshPressStop`, `-DshFocusComposer`: what the chat pane does once open. */
     val chatDrive: ChatDrive = ChatDrive(),
+    /** `-DshFocusAddress`: the software keyboard up over the Connect screen's address field. */
+    val focusAddress: Boolean = false,
+    val onKeyboard: ((String) -> Unit)? = null,
 ) {
     /** Whether the app starts on the Pair screen. */
     val startsPairing: Boolean
@@ -330,6 +350,8 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                         onReport = request.onChat,
                         initialDraft = request.composerDraft,
                         drive = request.chatDrive,
+                        // The call coming back to the foreground makes (the observer above).
+                        onReconnect = { app.link.reconnectIfNeeded() },
                     ) {
                         ConnectedPage(
                             authority = link.host?.authority.orEmpty(),
@@ -342,7 +364,7 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                     }
                 }
             }
-            RootRoute.Connect, RootRoute.Settings -> {
+            RootRoute.Connect, RootRoute.Settings -> ConnectKeyboardProbe(if (request.focusAddress) request.onKeyboard else null) {
                 ConnectContent(
                     state = state,
                     controller = app.controller,
@@ -358,6 +380,59 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
         }
     }
 }
+
+/**
+ * [content] (the Connect screen) with the software keyboard brought up over its address field, for `-DshFocusAddress`;
+ * just [content] when [onReport] is null. Once the field has been placed, focus moves into it as a tap does
+ * ([AddressFieldProbe]); once the keyboard is up and the inset has been still for ten frames, [onReport] hears
+ * `DSH_KEYBOARD_RESULT field=address ime=… bottom=… window=… above=yes|no` (pixels: the keyboard's height, the field's
+ * bottom and the window's height; `above=yes` when the field ends on or above the keyboard). Every shared screen pads
+ * itself with `safeDrawing`, keyboard included, and the view controller leaves the keyboard to the insets
+ * (`OnFocusBehavior.DoNothing`), so this is the check that a focused field there is not left under the keyboard.
+ */
+@Composable
+private fun ConnectKeyboardProbe(onReport: ((String) -> Unit)?, content: @Composable () -> Unit) {
+    if (onReport == null) {
+        content()
+        return
+    }
+    val focus = remember { FocusRequester() }
+    val fieldBottom = remember { mutableIntStateOf(0) }
+    val imeBottom = remember { mutableIntStateOf(0) }
+    val ime = WindowInsets.ime.getBottom(LocalDensity.current)
+    SideEffect { imeBottom.intValue = ime }
+    val windowHeight = LocalWindowInfo.current.containerSize.height
+    val probe = remember { AddressFieldProbe(focus) { fieldBottom.intValue = it.bottom.roundToInt() } }
+    CompositionLocalProvider(LocalAddressFieldProbe provides probe) { content() }
+    LaunchedEffect(probe) {
+        snapshotFlow { fieldBottom.intValue > 0 }.first { it }
+        withFrameNanos { }
+        focus.requestFocus()
+        withTimeoutOrNull(KEYBOARD_WAIT_MS) { snapshotFlow { imeBottom.intValue > 0 }.first { it } }
+        var still = 0
+        var last = -1
+        var frames = 0
+        while (still < 10 && frames < KEYBOARD_SETTLE_FRAMES) {
+            withFrameNanos { }
+            frames++
+            val now = imeBottom.intValue
+            still = if (now == last && now > 0) still + 1 else 0
+            last = now
+        }
+        val keyboard = imeBottom.intValue
+        val bottom = fieldBottom.intValue
+        val above = keyboard > 0 && bottom <= windowHeight - keyboard + 1
+        onReport(
+            "DSH_KEYBOARD_RESULT field=address ime=$keyboard bottom=$bottom window=$windowHeight above=${if (above) "yes" else "no"}",
+        )
+    }
+}
+
+/** How long `-DshFocusAddress` waits for the software keyboard to come up. */
+private const val KEYBOARD_WAIT_MS = 15_000L
+
+/** A bound on the wait for the screen to settle on the keyboard: about five seconds of frames. */
+private const val KEYBOARD_SETTLE_FRAMES = 300
 
 /** The verdicts a script greps for in `DSH_PAIR_RESULT failed kind=…`. */
 private fun PairFailure.kind(): String = when (this) {

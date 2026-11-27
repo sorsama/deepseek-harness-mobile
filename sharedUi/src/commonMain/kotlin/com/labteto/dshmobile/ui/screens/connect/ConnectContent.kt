@@ -54,6 +54,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -1073,6 +1075,7 @@ private fun ManualSection(
     connecting: Boolean,
 ) {
     val colors = DsTheme.colors
+    val probe = LocalAddressFieldProbe.current
     Column(verticalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
         ConnectSectionLabel(stringResource(Res.string.connect_manual_title))
         Row(
@@ -1083,7 +1086,10 @@ private fun ManualSection(
             InkTextField(
                 value = host,
                 onValueChange = onHostChange,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).then(
+                    if (probe != null) Modifier.onGloballyPositioned { probe.onBounds(it.boundsInWindow()) } else Modifier,
+                ),
+                focusRequester = probe?.focusRequester,
                 placeholder = stringResource(Res.string.connect_host_hint),
                 contentDescription = stringResource(Res.string.connect_host_label),
                 mono = true,
