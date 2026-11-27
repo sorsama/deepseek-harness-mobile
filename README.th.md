@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://dshm.zyphite.com"><img alt="Website" src="https://img.shields.io/badge/website-dshm.zyphite.com-4176E6?style=flat-square"></a>
+  <a href="https://discord.gg/KNQSuDfhYv"><img alt="Discord" src="https://img.shields.io/badge/Discord-join%20the%20chat-5865F2?style=flat-square&logo=discord&logoColor=white"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/sorsama/deepseek-harness-mobile?style=flat-square"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/sorsama/deepseek-harness-mobile/ci.yml?branch=main&style=flat-square"></a>
   <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square">
@@ -37,6 +38,8 @@ Wi-Fi หรือจากที่ไหนก็ได้ผ่านรี�
 
 [เว็บไซต์ของโปรเจกต์](https://dshm.zyphite.com) สรุปภาพรวมไว้ในหน้าเดียว ส่วน
 [wiki](https://github.com/sorsama/deepseek-harness-mobile/wiki) มีคู่มือผู้ใช้ฉบับเต็ม
+
+มีคำถาม ติดปัญหา หรืออยากคุยเล่น มาที่ [Discord](https://discord.gg/KNQSuDfhYv) ได้เลย
 
 ## ภาพหน้าจอ
 
@@ -179,6 +182,12 @@ dsh web --host 192.168.1.20
 ถ้าเชื่อมต่อไม่สำเร็จ แอปจะบอกสาเหตุ และ
 [หน้าการแก้ปัญหา](https://github.com/sorsama/deepseek-harness-mobile/wiki/Troubleshooting) ใน wiki
 ก็จัดเรียงตามข้อความเหล่านั้น
+
+## ชุมชนและความช่วยเหลือ
+
+- **ถามคำถาม ขอความช่วยเหลือ และพูดคุย:** [เซิร์ฟเวอร์ Discord](https://discord.gg/KNQSuDfhYv)
+- **บั๊กและคำขอฟีเจอร์:** [GitHub Issues](https://github.com/sorsama/deepseek-harness-mobile/issues)
+- **ปัญหาด้านความปลอดภัย:** แจ้งแบบส่วนตัวผ่าน[นโยบายความปลอดภัย](https://github.com/sorsama/deepseek-harness-mobile/security/policy) ไม่ใช่ใน Discord หรือ issue สาธารณะ
 
 ## ความปลอดภัย
 

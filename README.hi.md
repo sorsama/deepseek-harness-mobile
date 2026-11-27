@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://dshm.zyphite.com"><img alt="Website" src="https://img.shields.io/badge/website-dshm.zyphite.com-4176E6?style=flat-square"></a>
+  <a href="https://discord.gg/KNQSuDfhYv"><img alt="Discord" src="https://img.shields.io/badge/Discord-join%20the%20chat-5865F2?style=flat-square&logo=discord&logoColor=white"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/sorsama/deepseek-harness-mobile?style=flat-square"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/sorsama/deepseek-harness-mobile/ci.yml?branch=main&style=flat-square"></a>
   <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square">
@@ -38,6 +39,8 @@ DSH Mobile उस harness से जुड़ता है और आपको �
 
 [प्रोजेक्ट साइट](https://dshm.zyphite.com) पर एक पेज में पूरा परिचय है, और
 [wiki](https://github.com/sorsama/deepseek-harness-mobile/wiki) में पूरी उपयोगकर्ता गाइड है।
+
+सवाल है, कहीं अटक गए हैं, या बस बातचीत करनी है? [Discord](https://discord.gg/KNQSuDfhYv) से जुड़ें।
 
 ## स्क्रीनशॉट
 
@@ -183,6 +186,12 @@ harness प्लगइन है जो पासवर्ड, एन्क्�
 विफल होता है, तो ऐप उसकी वजह बताता है, और wiki का
 [समस्या-निवारण पेज](https://github.com/sorsama/deepseek-harness-mobile/wiki/Troubleshooting) इन्हीं
 संदेशों के हिसाब से बना है।
+
+## समुदाय और मदद
+
+- **सवाल, मदद और बातचीत:** [Discord सर्वर](https://discord.gg/KNQSuDfhYv)।
+- **बग और नए फ़ीचर के सुझाव:** [GitHub Issues](https://github.com/sorsama/deepseek-harness-mobile/issues)।
+- **सुरक्षा से जुड़ी समस्याएँ:** इन्हें Discord पर या सार्वजनिक issue में नहीं, बल्कि [सिक्योरिटी पॉलिसी](https://github.com/sorsama/deepseek-harness-mobile/security/policy) के ज़रिए निजी तौर पर बताएँ।
 
 ## सुरक्षा
 

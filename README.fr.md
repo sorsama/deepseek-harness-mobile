@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://dshm.zyphite.com"><img alt="Website" src="https://img.shields.io/badge/website-dshm.zyphite.com-4176E6?style=flat-square"></a>
+  <a href="https://discord.gg/KNQSuDfhYv"><img alt="Discord" src="https://img.shields.io/badge/Discord-join%20the%20chat-5865F2?style=flat-square&logo=discord&logoColor=white"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/sorsama/deepseek-harness-mobile?style=flat-square"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/sorsama/deepseek-harness-mobile/ci.yml?branch=main&style=flat-square"></a>
   <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square">
@@ -39,6 +40,8 @@ Il s'agit d'une application non officielle, développée par la communauté.
 
 Le [site du projet](https://dshm.zyphite.com) présente l'application sur une seule page, et le
 [wiki](https://github.com/sorsama/deepseek-harness-mobile/wiki) contient le guide d'utilisation complet.
+
+Une question, un blocage, ou simplement envie de discuter ? Rejoignez le [Discord](https://discord.gg/KNQSuDfhYv).
 
 ## Captures d'écran
 
@@ -198,6 +201,12 @@ Choisissez une session dans la liste (balayez depuis le bord gauche) ou démarre
 Si une connexion échoue, l'application en donne la raison, et la
 [page de dépannage](https://github.com/sorsama/deepseek-harness-mobile/wiki/Troubleshooting) du wiki
 est organisée selon ces messages.
+
+## Communauté et aide
+
+- **Questions, aide et discussion :** le [serveur Discord](https://discord.gg/KNQSuDfhYv).
+- **Bugs et demandes de fonctionnalités :** [GitHub Issues](https://github.com/sorsama/deepseek-harness-mobile/issues).
+- **Failles de sécurité :** signalez-les en privé via la [politique de sécurité](https://github.com/sorsama/deepseek-harness-mobile/security/policy), pas sur Discord ni dans une issue publique.
 
 ## Sécurité
 
