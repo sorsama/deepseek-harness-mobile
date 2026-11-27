@@ -5,6 +5,43 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-11-28
+
+![An iPhone and an iPad side by side: the iPhone shows a chat asking to allow a command, the iPad shows the session list beside a chat](docs/images/releases/0.25.0/devices/ios-beta-iphone-ipad.png)
+
+### iOS beta: DSH Mobile on iPhone and iPad
+
+DSH Mobile now runs on iPhone and iPad. The session list and the chat are the same screens as on
+Android, drawn by the same shared code, and an iPad shows the list and the chat side by side. This
+is a **beta**: every check so far ran in the iOS simulator in CI, and nobody has run this build on
+a real iPhone or iPad yet. If you have one, please try it and tell us what breaks.
+
+- **What works:** connecting to a harness on your computer over the local network, pairing with a
+  relay (typed or scanned code), the session list with search and filters, reading a chat with
+  Markdown and tool cards, writing and sending a message, stopping a reply, and answering what the
+  agent asks you: approvals, questions and plan reviews. The app reconnects by itself when you come
+  back to it.
+- **Not on iOS yet:** attachments, Settings, picking a model or an agent preset, slash commands,
+  subagents, the Trajectory and Files tabs, dictation and notifications. The built-in harness stays
+  Android only, so an iPhone needs a harness on a computer.
+- **How to install:** download `DSH-Mobile-0.25.0-unsigned.ipa` from the release and sideload it
+  with Sideloadly or AltStore and your Apple ID. It needs iOS 15 or newer. With a free Apple ID the
+  app stops opening after 7 days until it is signed again (AltStore can refresh it for you). Step
+  by step: [Installing on an iPhone](docs/IOS.md#installing-on-an-iphone).
+- **Tell us what happens:** open an [issue](https://github.com/sorsama/deepseek-harness-mobile/issues/new)
+  with your device, the iOS version and what you saw. A screenshot helps a lot. (#141)
+
+<p>
+  <img src="docs/images/releases/0.25.0/devices/ios-session-list-iphone.png" alt="iPhone: the session list in a drawer, grouped by day, with search and filters" width="200">
+  <img src="docs/images/releases/0.25.0/devices/ios-chat-iphone.png" alt="iPhone: a chat with a Kotlin code block, a build log and links" width="200">
+  <img src="docs/images/releases/0.25.0/devices/ios-tool-cards-iphone.png" alt="iPhone: tool cards for a task list, two searches and a file read" width="200">
+  <img src="docs/images/releases/0.25.0/devices/ios-question-iphone.png" alt="iPhone: the agent asks whether a refused upload should be retried, with two answers to pick" width="200">
+</p>
+<p>
+  <img src="docs/images/releases/0.25.0/devices/ios-two-pane-ipad.png" alt="iPad: the session list beside the open chat" width="400">
+  <img src="docs/images/releases/0.25.0/devices/ios-approval-ipad.png" alt="iPad: a command waiting for Allow once or Don't allow beside the session list" width="400">
+</p>
+
 ### Added
 
 - **Desktop web plugin items on the phone, and where each one shows.** With the `dsh-ui-sync`
@@ -33,6 +70,9 @@ All notable changes to DSH Mobile are documented here. Format based on
   this phone,
   on the local network and through a relay (relay 0.5.0 or later).
 
+  <img src="docs/images/releases/0.25.0/devices/addons-pet-chat-phone.png" alt="A chat with a plugin pet sitting over it and the plugin's Give treat button next to the reply" width="260">
+  <img src="docs/images/releases/0.25.0/devices/addons-page-phone.png" alt="Settings, Add-ons: each plugin item with Both, Phone, Desktop or Off" width="260">
+
 - **Add-ons show up without opening the harness on the desktop first.** A harness lists its plugin
   items only once its web page has been opened, so on a harness nobody opened in a browser since the
   plugin went in, the phone had nothing to show and Settings > Add-ons stayed empty. Now the app
@@ -57,6 +97,8 @@ All notable changes to DSH Mobile are documented here. Format based on
   starts and stops it from a keyboard. **Settings, Chat, Dictation button** turns it off, and says
   why it is missing on a phone without a speech service.
 
+  <img src="docs/images/releases/0.25.0/devices/dictation-phone.png" alt="The message box while dictating: a stop button, an animated level, Listening and Cancel" width="260">
+
 - **A Browser tab in the Workspace.** Next to Files, Preview and Terminal, it shows web pages: an
   address bar, back, forward, reload or stop, the page title, and **Open in browser**, **Copy link**
   and **Clear site data for this tab**. Tapping a local link in the chat (`http://localhost:5173`, an
@@ -67,6 +109,9 @@ All notable changes to DSH Mobile are documented here. Format based on
   offers the computer's address instead. Pages get no access to the app, its sign-ins or other
   apps' links without asking, and keep their cookies and storage to themselves; see
   [docs/SECURITY.md](docs/SECURITY.md).
+
+  <img src="docs/images/releases/0.25.0/devices/browser-localhost-phone.png" alt="The Browser tab explaining that localhost is the harness computer, with Try on 10.0.2.2:5173" width="260">
+  <img src="docs/images/releases/0.25.0/devices/browser-tab-phone.png" alt="The Browser tab showing a local dev server page" width="260">
 
 - **Show your DeepSeek balance in a second currency.** Settings, General has a new **Also show balance
   in** row. Pick **Off** (the default), **Match my region**, or one of 20 currencies (USD, CNY, EUR,

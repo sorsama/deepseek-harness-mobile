@@ -5,7 +5,7 @@
 <h1 align="center">DSH Mobile</h1>
 
 <p align="center">
-  An Android app for driving a <a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a> from your phone.
+  An Android app, now with an iPhone and iPad beta, for driving a <a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a> from your phone.
 </p>
 
 <p align="center">
@@ -13,6 +13,7 @@
   <a href="https://github.com/sorsama/deepseek-harness-mobile/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/sorsama/deepseek-harness-mobile?style=flat-square"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/sorsama/deepseek-harness-mobile/ci.yml?branch=main&style=flat-square"></a>
   <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square">
+  <img alt="iOS 15+ beta" src="https://img.shields.io/badge/iOS-15%2B%20beta-0A84FF?style=flat-square">
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
 </p>
 
@@ -125,6 +126,28 @@ you would run on a computer, with the same sessions and tools.
 
 The full guide, with troubleshooting by the messages the app shows, is
 [`harness/ON-DEVICE.md`](harness/ON-DEVICE.md).
+
+## iPhone and iPad (Beta)
+
+<p align="center">
+  <img src="docs/images/releases/0.25.0/devices/ios-beta-iphone-ipad.png" alt="DSH Mobile on an iPhone and an iPad: a chat asking to allow a command, and the session list beside a chat" width="100%">
+</p>
+
+**We are beta testing iOS now.** Since 0.25.0 the app also runs on iPhone and iPad, with the same
+session list and chat as on Android. An iPad shows the list and the chat side by side. So far it has
+only been checked in the iOS simulator, so expect rough edges, and please
+[open an issue](https://github.com/sorsama/deepseek-harness-mobile/issues/new) with your device, the
+iOS version and what you saw.
+
+- **What works:** connecting to a harness on your computer over the local network, pairing with a
+  relay, the session list, reading and sending in a chat, stopping a reply, and answering approvals,
+  questions and plan reviews.
+- **Not yet:** attachments, Settings, picking a model or an agent preset, slash commands, subagents,
+  the Trajectory and Files tabs, dictation and notifications. The built-in harness is Android only.
+- **Install:** each release has a `DSH-Mobile-<version>-unsigned.ipa`. Sideload it with Sideloadly
+  or AltStore and your Apple ID (iOS 15 or newer); the steps are in
+  [Installing on an iPhone](docs/IOS.md#installing-on-an-iphone). With a free Apple ID the app has
+  to be signed again every 7 days.
 
 ## Getting started
 
