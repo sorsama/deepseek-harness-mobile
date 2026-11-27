@@ -5,11 +5,9 @@
     <string name="ux_b_no_matches">没有匹配的引用</string>
     <string name="ux_b_reference_error">部分引用加载失败，请重试。</string>
     <string name="ux_b_file">文件</string>
-    <string name="ux_b_folder">文件夹</string>
     <string name="ux_b_session">对话</string>
     <string name="ux_b_browse_folder">浏览文件夹 %1$s</string>
     <string name="ux_b_open_reference">打开%1$s：%2$s</string>
-    <string name="ux_b_remove_reference">移除引用 %1$s</string>
     <string name="ux_b_paused">编辑时已暂停</string>
     <string name="ux_b_held">会一直等你回答</string>
     <string name="ux_b_continued">已继续工作，仍可回答</string>

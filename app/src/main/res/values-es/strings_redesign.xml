@@ -4,8 +4,6 @@
     <string name="chat_queue_placement_queued">Siguiente turno</string>
     <string name="chat_queue_placement_steering">Dirigiendo</string>
     <string name="chat_queue_placement_context">Contexto</string>
-    <string name="chat_status_running">Trabajando</string>
-    <string name="chat_status_idle">Inactivo</string>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d paso</item>
         <item quantity="many">%d pasos</item>

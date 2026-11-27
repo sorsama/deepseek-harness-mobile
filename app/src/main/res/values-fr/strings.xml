@@ -30,7 +30,6 @@
     <string name="connect_sign_in">Se connecter</string>
     <string name="connect_checking">Vérification…</string>
     <string name="connect_scan_progress">Analyse de votre réseau… %1$d sur %2$d</string>
-    <string name="chatlist_subagents">Sous-agents</string>
     <string name="chatlist_archived">Archivées</string>
     <string name="chatlist_session_rename">Renommer la session</string>
     <string name="chatlist_session_fork">Dupliquer la session</string>
@@ -194,9 +193,6 @@
     <string name="err_command_images_host">/%1$s ne prend pas en charge les pièces jointes sur ce harness. Retirez-les d\'abord.</string>
     <string name="common_remove">Retirer</string>
     <string name="common_unavailable">Indisponible</string>
-    <string name="chatlist_open">Ouvrir les discussions</string>
-    <string name="chatlist_hide">Masquer les discussions</string>
-    <string name="chatlist_show">Afficher les discussions</string>
     <string name="chatlist_needs_action">Attend une action</string>
     <string name="chat_composer_send">Envoyer le message</string>
     <string name="chat_composer_commands">Commandes</string>
@@ -204,7 +200,6 @@
     <string name="chat_composer_mode_queue_hint">S’exécute à la fin du tour en cours</string>
     <string name="chat_composer_mode_steer_hint">Interrompt le tour en cours</string>
     <string name="chat_composer_steer_idle">Orienter n’est possible que pendant un tour en cours</string>
-    <string name="chat_tab">Discussion</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">Cette session n’a aucune commande</string>
     <string name="chat_commands_unavailable">Ce harness ne fournit pas de liste de commandes</string>
@@ -221,10 +216,6 @@
     <string name="chat_stats_tokens">%1$s entrée · %2$s sortie</string>
     <string name="chat_stats_cache">Cache %1$d%%</string>
     <string name="chat_context_used">%1$d%% du contexte utilisé</string>
-    <string name="permission_custom_hint">Les réglages actuels de bac à sable et d’approbation ne correspondent à aucun préréglage.</string>
-    <string name="permission_confirm_title">Accorder l’accès complet ?</string>
-    <string name="permission_confirm_body">L’agent pourra lire et écrire partout sur l’ordinateur du harness et cessera de demander une approbation.</string>
-    <string name="permission_confirm_ack">Je comprends le risque</string>
     <string name="permission_unconfirmed">Le harness n’a pas confirmé le changement de permissions</string>
     <string name="presets_current">Préréglage actuel</string>
     <string name="presets_locked">Le préréglage est figé une fois la session démarrée. Démarrez une nouvelle session pour en choisir un autre.</string>
@@ -287,14 +278,12 @@
     <string name="scan_detected">Code lu</string>
     <string name="chat_composer_attach_file">Joindre un fichier</string>
     <string name="chat_composer_remove_file">Retirer le fichier</string>
-    <string name="chat_attachment_uploading">Envoi en cours…</string>
     <string name="chat_attachment_upload_failed">L\'envoi a échoué. Touchez pour réessayer.</string>
     <string name="chat_attachment_still_uploading">Attendez la fin de l\'envoi avant d\'envoyer le message.</string>
     <string name="err_file_read_failed">Impossible de lire ce fichier.</string>
     <string name="err_file_not_staged">Le harness ne conserve plus ce fichier. Joignez-le à nouveau.</string>
     <string name="err_file_subagent_unsupported">Les sessions de sous-agent n\'acceptent pas les fichiers.</string>
     <string name="photos_skipped">Ignorés : %1$d. %2$s</string>
-    <string name="photos_preparing">Préparation des photos…</string>
     <string name="archived_title">Sessions archivées</string>
     <string name="archived_empty">Aucune session archivée ne correspond</string>
     <string name="archived_restore">Restaurer</string>
@@ -446,9 +435,6 @@
     <string name="hold_rewind_here">Rembobiner jusqu’à ce message</string>
     <string name="hold_copy_command">Copier la commande</string>
     <string name="hold_copy_output">Copier la sortie</string>
-    <string name="hold_send_label">Choisir comment envoyer</string>
-    <string name="hold_send_steer">Orienter maintenant</string>
-    <string name="hold_send_queue">Mettre en file après ce tour</string>
     <string name="hold_send_tip">Astuce : maintenez Envoyer pour choisir le mode d’un seul message.</string>
     <string name="hold_replace_draft_title">Remplacer le brouillon ?</string>
     <string name="hold_replace_draft_body">La zone de saisie contient déjà du texte. Modifier ce message le remplace.</string>
@@ -487,7 +473,6 @@
     <string name="quota_limit_short">Limite atteinte</string>
     <string name="quota_rate_short">Limite de requêtes</string>
     <string name="permission_preset_workspace_write">Écriture dans l\'espace de travail</string>
-    <string name="permission_preset_auto_desc">S\'exécute sans bac à sable après une révision expérimentale par le même modèle de chaque appel d\'outil natif et appel interne PTC.</string>
     <string name="shortcuts_group_message">Zone de message</string>
     <string name="shortcuts_group_sessions">Sessions</string>
     <string name="shortcuts_group_general">Général</string>

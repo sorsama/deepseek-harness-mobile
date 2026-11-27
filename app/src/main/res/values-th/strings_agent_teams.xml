@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="team_title">ทีมเอเจนต์</string>
-    <string name="team_chip">ทีม</string>
     <string name="team_beta_badge">เบต้า</string>
     <string name="team_tab_members">สมาชิก (%1$d)</string>
     <string name="team_tab_tasks">งาน (%1$d)</string>

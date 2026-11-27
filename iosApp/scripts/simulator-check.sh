@@ -203,6 +203,34 @@ chat_scenario() {
   xcrun simctl ui "$udid" appearance light
 }
 
+# The composer under an opened session (shared with Android since iOS M6a): $1 names the device, $2 the look (light or
+# dark), $3 the draft (empty, or typed: a two-line text put in by `-DshComposerDraft`, as typing it would). The session
+# is the rich one at its newest message. Send stays disabled until iOS sends (M6b), and the line says so (send=off). The
+# screenshot is composer/<device>-<look>-<empty|typed>.png.
+composer_text="Add a dark mode switch to Settings.
+Keep the system theme as the default."
+composer_scenario() {
+  local device="$1" look="$2" draft="$3" extra=() chars=0 lines=1
+  mkdir -p "$out/composer"
+  case "$look" in
+    dark) xcrun simctl ui "$udid" appearance dark ;;
+    *) xcrun simctl ui "$udid" appearance light ;;
+  esac
+  if [ "$draft" = typed ]; then
+    extra=(-DshComposerDraft "$(printf '%s' "$composer_text" | xxd -p | tr -d '\n')")
+    chars=${#composer_text}
+    # Two lines at least (the text has a line break); more where the phone wraps the first one.
+    lines='[2-8]'
+  fi
+  launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshOpenSession first -DshChatScroll tail \
+    ${extra[@]+"${extra[@]}"}
+  expect "composer-$device-$look-$draft-connected" "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
+  expect_chat "composer-$device-$look-$draft-opened" "^DSH_CHAT_RESULT opened rows=[1-9][0-9]* session=demo-01 more=true$"
+  expect_chat "composer-$device-$look-$draft" "^DSH_CHAT_RESULT composer chars=$chars lines=$lines send=off$"
+  shot "composer/$device-$look-$draft"
+  xcrun simctl ui "$udid" appearance light
+}
+
 # Readiness, not a scenario (see "0. A warm-up" below): unasserted launches until one connects to 3181, at most three,
 # each line with its time. $1 labels the lines. A device on which none connects gets a warning, and the scenarios that
 # follow then report whatever is wrong with it themselves.
@@ -621,6 +649,15 @@ if [ -n "$demo_url" ] && [ "$demo_url" != "null" ]; then
   chat_scenario iphone dark demo-04 older
 fi
 
+# 59 to 62. The composer under the rich session on this iPhone, light and dark, empty and with a typed two-line draft.
+#     Each fails without its `DSH_CHAT_RESULT composer` line.
+if [ -n "$demo_url" ] && [ "$demo_url" != "null" ]; then
+  composer_scenario iphone light empty
+  composer_scenario iphone light typed
+  composer_scenario iphone dark empty
+  composer_scenario iphone dark typed
+fi
+
 # 54 to 57. The same list on an iPad, where it is a pane beside the chat (the Android tablet layout: planShell docks
 # the list from 600dp wide). Same app, installed on the second simulator.
 if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" ] && [ -n "$demo_count" ]; then
@@ -650,6 +687,8 @@ if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" 
   drawer_scenarios ipad true
   # 58. The list docked beside an opened session's transcript, as the Android tablet layout has it.
   chat_scenario ipad light first tail
+  # 63. The composer under the transcript with the list docked, a typed draft.
+  composer_scenario ipad light typed
 elif [ -z "${SIM_IPAD_UDID:-}" ]; then
   echo "SIM_IPAD_UDID is not set: the iPad session list scenarios did not run"
 fi

@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -82,6 +83,7 @@ import com.labteto.dshmobile.ui.input.AppShortcut
 import com.labteto.dshmobile.ui.input.DropHighlight
 import com.labteto.dshmobile.ui.input.LocalShortcutRouter
 import com.labteto.dshmobile.ui.input.attachmentDropTarget
+import com.labteto.dshmobile.ui.input.clipboardFiles
 import com.labteto.dshmobile.ui.LocalSessionStore
 import com.labteto.dshmobile.ui.screens.main.commands.CommandContext
 import com.labteto.dshmobile.ui.screens.main.commands.CommandDecorations
@@ -144,6 +146,7 @@ fun ChatScreen(
     val scope = rememberCoroutineScope()
     val colors = DsTheme.colors
     val context = LocalContext.current
+    val clipboard = LocalClipboardManager.current
     val toast = rememberDsToast()
     // Where the plugin add-on layer over the chat keeps its trays: below the top bar, above the composer.
     val addonsChrome = com.labteto.dshmobile.ui.addons.LocalUiAddonsChrome.current
@@ -1145,7 +1148,7 @@ fun ChatScreen(
                         onStop = { scope.launch { store.cancelTurn() } },
                         focusTick = composerFocusTick,
                         // Ctrl+V with an image or a file on the clipboard attaches it; text is pasted as usual.
-                        onPasteFiles = { uris -> attachArrivals(uris) },
+                        onPasteFiles = { attachArrivals(clipboardFiles(clipboard, context)) },
                         // The page's attach button reaches the same picker the `+` sheet does, and a
                         // child session refuses attachments the way it refuses commands, so it gets
                         // no button rather than one that ends in an error.

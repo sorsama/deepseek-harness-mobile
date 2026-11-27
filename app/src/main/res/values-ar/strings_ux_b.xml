@@ -5,11 +5,9 @@
     <string name="ux_b_no_matches">لا توجد مراجع مطابقة</string>
     <string name="ux_b_reference_error">تعذر تحميل بعض المراجع. حاول مجددًا.</string>
     <string name="ux_b_file">ملف</string>
-    <string name="ux_b_folder">مجلد</string>
     <string name="ux_b_session">محادثة</string>
     <string name="ux_b_browse_folder">تصفح المجلد %1$s</string>
     <string name="ux_b_open_reference">فتح %1$s: %2$s</string>
-    <string name="ux_b_remove_reference">إزالة المرجع %1$s</string>
     <string name="ux_b_paused">متوقف مؤقتًا أثناء التحرير</string>
     <string name="ux_b_held">بانتظار إجابتك</string>
     <string name="ux_b_continued">استمر العمل؛ لا يزال بإمكانك الإجابة</string>

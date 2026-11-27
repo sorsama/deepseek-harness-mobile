@@ -1,6 +1,5 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
@@ -36,18 +35,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.OpenInFull
-import androidx.compose.material.icons.outlined.Bolt
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -56,14 +43,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import com.labteto.dshmobile.ui.components.HoverTooltip
 import com.labteto.dshmobile.ui.components.horizontalWheelScroll
 import com.labteto.dshmobile.ui.input.ComposerKeyOutcome
-import com.labteto.dshmobile.ui.input.clipboardFiles
 import com.labteto.dshmobile.ui.input.decideComposerKey
+import com.labteto.dshmobile.ui.input.hardwareKeyboardAttached
 import com.labteto.dshmobile.ui.input.insertNewline
 import com.labteto.dshmobile.ui.input.isPasteChord
 import com.labteto.dshmobile.ui.input.toComposerKeyPress
@@ -99,10 +83,34 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_attachment_upload_failed
+import com.labteto.dshmobile.shared.resources.chat_attachment_uploading
+import com.labteto.dshmobile.shared.resources.chat_composer_attach_file
+import com.labteto.dshmobile.shared.resources.chat_composer_commands
+import com.labteto.dshmobile.shared.resources.chat_composer_expand
+import com.labteto.dshmobile.shared.resources.chat_composer_fullscreen_title
+import com.labteto.dshmobile.shared.resources.chat_composer_hint
+import com.labteto.dshmobile.shared.resources.chat_composer_mode_queue_hint
+import com.labteto.dshmobile.shared.resources.chat_composer_mode_steer_hint
+import com.labteto.dshmobile.shared.resources.chat_composer_remove_file
+import com.labteto.dshmobile.shared.resources.chat_composer_remove_image
+import com.labteto.dshmobile.shared.resources.chat_composer_send
+import com.labteto.dshmobile.shared.resources.chat_composer_stop
+import com.labteto.dshmobile.shared.resources.common_back
+import com.labteto.dshmobile.shared.resources.harness_add_reference
+import com.labteto.dshmobile.shared.resources.hold_send_label
+import com.labteto.dshmobile.shared.resources.hold_send_queue
+import com.labteto.dshmobile.shared.resources.hold_send_steer
+import com.labteto.dshmobile.shared.resources.ink_chat_steer_hint
+import com.labteto.dshmobile.shared.resources.permission_preset
+import com.labteto.dshmobile.shared.resources.photos_preparing
+import com.labteto.dshmobile.shared.resources.ux_b_open_reference
+import com.labteto.dshmobile.shared.resources.ux_b_remove_reference
+import com.labteto.dshmobile.ui.components.DsIcons
 import com.labteto.dshmobile.core.wire.dto.ContextBreakdownView
 import com.labteto.dshmobile.core.wire.dto.ContextPressureView
 import com.labteto.dshmobile.core.wire.dto.FULL_ACCESS_PRESET
@@ -110,8 +118,9 @@ import com.labteto.dshmobile.core.wire.dto.PermissionSelect
 import com.labteto.dshmobile.ui.components.ContextMeter
 import com.labteto.dshmobile.ui.components.ContextMeterBarHeight
 import com.labteto.dshmobile.ui.components.ContextMeterBarWidth
+import com.labteto.dshmobile.ui.components.contextUsedText
 import com.labteto.dshmobile.ui.components.FeatherIcons
-import com.labteto.dshmobile.ui.components.DsFullScreenDialog
+import com.labteto.dshmobile.ui.components.DsFullScreenPage
 import com.labteto.dshmobile.ui.components.DsIconButton
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.skeleton
@@ -129,9 +138,14 @@ import com.labteto.dshmobile.ui.theme.DsType
  * The model selector is deliberately *not* here — it moved to the top bar, which leaves this row
  * for the two controls you change mid-conversation and keeps the composer from wrapping on a
  * narrow phone.
+ *
+ * Shared by both apps (issue #141). What a platform cannot offer yet is a null here and is not drawn:
+ * the `+` sheet ([onOpenSheet]), the `@` picker ([onAddReference]), the page's attach button
+ * ([onAttachFile]), pasting files ([onPasteFiles]) and dictation ([dictation]). Android passes all of
+ * them. iOS passes none of them for now, and no [onSend] either until it sends (M6b).
  */
 @Composable
-internal fun Composer(
+fun Composer(
     draft: String,
     onDraftChange: (String) -> Unit,
     attachments: List<PendingAttachment>,
@@ -144,8 +158,10 @@ internal fun Composer(
     contextPressure: ContextPressureView?,
     running: Boolean,
     enabled: Boolean,
-    onOpenSheet: () -> Unit,
-    onSend: (String) -> Unit,
+    /** Opens the `+` sheet (commands, attachments, delivery modes). Null leaves the `+` button out. */
+    onOpenSheet: (() -> Unit)?,
+    /** Null draws send disabled whatever the draft holds: a host that cannot send yet. */
+    onSend: ((String) -> Unit)?,
     onStop: () -> Unit,
     modifier: Modifier = Modifier,
     preparing: Boolean = false,
@@ -159,7 +175,8 @@ internal fun Composer(
     onCursorChange: (Int) -> Unit = {},
     references: List<DraftReference> = emptyList(),
     onOpenReference: (DraftReference) -> Unit = {},
-    onAddReference: () -> Unit = {},
+    /** Opens the `@` reference picker. Null leaves the `@` buttons out, on the card and on the page. */
+    onAddReference: (() -> Unit)? = {},
     /**
      * Sends with a delivery mode chosen for this one message, from holding send mid-turn. Null
      * leaves send with its tap alone.
@@ -185,15 +202,17 @@ internal fun Composer(
      */
     onAttachFile: (() -> Unit)? = null,
     /**
-     * Called when Ctrl+V pastes a copied image or file instead of text. Returns true when it took
-     * them (they are in the tray), false to let the field paste whatever it can.
+     * Called when Ctrl+V pastes and the host's clipboard holds a copied image or file instead of text.
+     * The host reads its own clipboard (on Android the files are `content://` addresses). Returns true
+     * when it took them (they are in the tray), false to let the field paste whatever it can.
      */
-    onPasteFiles: ((List<Uri>) -> Boolean)? = null,
+    onPasteFiles: (() -> Boolean)? = null,
     /**
-     * Dictation through the phone's speech service. Null (the default) leaves the composer without
-     * a microphone; so does a phone that has no recognition service, whatever this says.
+     * Dictation, as the host offers it: the phone's speech service on Android. Null (the default)
+     * leaves the composer without a microphone; so does a host that has no recognition service,
+     * whatever this says.
      */
-    dictation: DictationConfig? = null,
+    dictation: ComposerVoiceSource? = null,
 ) {
     var editor by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(draft, androidx.compose.ui.text.TextRange(cursor))) }
     androidx.compose.runtime.LaunchedEffect(draft, cursor) {
@@ -201,16 +220,14 @@ internal fun Composer(
     }
     val colors = DsTheme.colors
     // A hardware keyboard changes what Enter means: it sends, and Shift+Enter adds a line. The
-    // configuration reports one while a keyboard is attached (a Chromebook always has one) and
-    // none on a bare phone, so the soft keyboard's behaviour is never touched.
-    val hardwareKeyboard = LocalConfiguration.current.keyboard != android.content.res.Configuration.KEYBOARD_NOKEYS
-    val clipboard = LocalClipboardManager.current
-    val context = LocalContext.current
+    // platform reports one while a keyboard is attached (a Chromebook always has one) and none on a
+    // bare phone, so the soft keyboard's behaviour is never touched.
+    val hardwareKeyboard = hardwareKeyboardAttached()
     val haptics = rememberDsHaptics()
     // A file that is still uploading has no receipt to cite yet, and one that failed never will;
     // the send affordance waits for the chips rather than sending a message that names neither.
     val attachmentsSettled = attachments.none { it is PendingAttachment.File && it.state !is FileUploadState.Ready }
-    val canSend = enabled && !submitting && !preparing && (draft.isNotBlank() || attachments.isNotEmpty()) && attachmentsSettled
+    val canSend = onSend != null && enabled && !submitting && !preparing && (draft.isNotBlank() || attachments.isNotEmpty()) && attachmentsSettled
     // The buttons that start something wait for a send in flight; the field itself stays live.
     val controlsEnabled = enabled && !submitting
     val currentDraft by rememberUpdatedState(draft)
@@ -229,10 +246,8 @@ internal fun Composer(
 
     // Dictation puts its text in through the same door as typing, at the caret as it is when the
     // take ends, so a recognised phrase is ordinary editable text and the chips stay whole.
-    val voice = rememberComposerDictation(dictation, enabled) { spoken ->
-        com.labteto.dshmobile.ui.voice.insertDictation(editor.text, editor.selection.end, spoken)?.let {
-            applyEdit(androidx.compose.ui.text.input.TextFieldValue(it.text, androidx.compose.ui.text.TextRange(it.cursor)))
-        }
+    val voice = dictation?.rememberVoice(enabled) { spoken ->
+        dictation.insert(editor.text, editor.selection.end, spoken)?.let { applyEdit(it) }
     }
     val currentVoice by rememberUpdatedState(voice)
 
@@ -373,7 +388,7 @@ internal fun Composer(
                     ) {
                         references.forEach { reference ->
                             val type = referenceKindLabel(reference.kind)
-                            val openLabel = stringResource(R.string.ux_b_open_reference, type, reference.label)
+                            val openLabel = stringResource(Res.string.ux_b_open_reference, type, reference.label)
                             Row(
                                 Modifier.clip(DsShapes.cube).background(colors.hoverSolid),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -390,7 +405,7 @@ internal fun Composer(
                                     Text(technicalDisplay(reference.label), maxLines = 1, overflow = TextOverflow.Ellipsis,
                                         style = DsType.small13, color = colors.labelSecondary)
                                 }
-                                DsIconButton(Icons.Filled.Close, stringResource(R.string.ux_b_remove_reference, reference.label), {
+                                DsIconButton(DsIcons.Close, stringResource(Res.string.ux_b_remove_reference, reference.label), {
                                     onDraftChange(draft.removeRange(reference.start, reference.end))
                                     onCursorChange(reference.start)
                                 })
@@ -401,17 +416,13 @@ internal fun Composer(
                 TextField(
                     value = editor,
                     onValueChange = applyEdit,
-                    visualTransformation = pendingDictationTransformation(
-                        base = remember(references, colors.accent, colors.accentTertiary) {
-                            ReferenceTransformation(references, androidx.compose.ui.text.SpanStyle(color = colors.accent, background = colors.accentTertiary))
-                        },
+                    visualTransformation = remember(references, colors.accent, colors.accentTertiary) {
+                        ReferenceTransformation(references, androidx.compose.ui.text.SpanStyle(color = colors.accent, background = colors.accentTertiary))
+                    }.let { base ->
                         // What is being heard is painted at the caret and is not in the draft
-                        // until the take ends (see PendingDictationTransformation).
-                        state = voice?.state ?: com.labteto.dshmobile.ui.voice.DictationState.Idle,
-                        draft = editor.text,
-                        cursor = editor.selection.end,
-                        style = pendingDictationStyle(colors.accent),
-                    ),
+                        // until the take ends (see ComposerVoice.pending).
+                        voice?.pending?.invoke(base, editor.text, editor.selection.end) ?: base
+                    },
                     // The height is decided by the column above, which gives the action row its
                     // space first; the field takes what is left and scrolls past it. The minimum
                     // only guarantees a line to tap when the drawer is at its cap.
@@ -426,11 +437,11 @@ internal fun Composer(
                             // text in it is left to the field's own paste.
                             if (event.type == KeyEventType.KeyDown && isPasteChord(event)) {
                                 val files = onPasteFiles
-                                if (files != null && files(clipboardFiles(clipboard, context))) return@onPreviewKeyEvent true
+                                if (files != null && files()) return@onPreviewKeyEvent true
                             }
                             when (decideComposerKey(event.toComposerKeyPress(), hardwareKeyboard)) {
                                 ComposerKeyOutcome.Send -> {
-                                    if (canSend) submitDraft { currentOnSend(it) }
+                                    if (canSend) submitDraft { currentOnSend?.invoke(it) }
                                     true
                                 }
                                 ComposerKeyOutcome.Newline -> {
@@ -454,7 +465,7 @@ internal fun Composer(
                             // placeholder says so instead of offering the same "Message the agent"
                             // as an idle session. Both are the same field and the same button.
                             stringResource(
-                                if (running) R.string.ink_chat_steer_hint else R.string.chat_composer_hint,
+                                if (running) Res.string.ink_chat_steer_hint else Res.string.chat_composer_hint,
                             ),
                             style = DsType.std14,
                             color = colors.labelTertiary,
@@ -469,15 +480,15 @@ internal fun Composer(
                     //
                     // The microphone, on a phone that can dictate, is in the same slot and always
                     // there, ahead of the expand button. It goes here and not in that row because
-                    // the row has no 48dp to spare (see DictationMicButton).
+                    // the row has no 48dp to spare (see Android's DictationMicButton).
                     trailingIcon = if (expanded || micShown) {
                         {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (micVoice != null) DictationMicButton(micVoice)
+                                if (micVoice != null) micVoice.micButton()
                                 if (expanded) {
                                     DsIconButton(
-                                        icon = Icons.Filled.OpenInFull,
-                                        contentDescription = stringResource(R.string.chat_composer_expand),
+                                        icon = DsIcons.OpenInFull,
+                                        contentDescription = stringResource(Res.string.chat_composer_expand),
                                         onClick = { fullScreen = true },
                                     )
                                 }
@@ -500,39 +511,43 @@ internal fun Composer(
                     ),
                 )
 
-                if (preparing) Text(stringResource(R.string.photos_preparing), style = DsType.caption11)
+                if (preparing) Text(stringResource(Res.string.photos_preparing), style = DsType.caption11)
                 }
 
                 // While a take runs, and for the few seconds a message lives. It sits with the row
                 // of controls, which are measured first, so the editor is what gives way for it.
-                if (micVoice != null && micVoice.stripVisible()) DictationStrip(micVoice)
+                if (micVoice != null && micVoice.stripVisible) micVoice.strip()
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp),
                     horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
                 ) {
-                    CircleAction(
-                        icon = Icons.Filled.Add,
-                        description = stringResource(R.string.chat_composer_commands),
-                        size = 44,
-                        background = colors.bgLayer3,
-                        tint = colors.labelPrimary,
-                        enabled = controlsEnabled,
-                        onClick = onOpenSheet,
-                        haptic = { haptics.tap() },
-                    )
+                    if (onOpenSheet != null) {
+                        CircleAction(
+                            icon = DsIcons.Add,
+                            description = stringResource(Res.string.chat_composer_commands),
+                            size = 44,
+                            background = colors.bgLayer3,
+                            tint = colors.labelPrimary,
+                            enabled = controlsEnabled,
+                            onClick = onOpenSheet,
+                            haptic = { haptics.tap() },
+                        )
+                    }
 
-                    CircleAction(
-                        icon = FeatherIcons.AtSign,
-                        description = stringResource(R.string.harness_add_reference),
-                        size = 44,
-                        background = colors.bgLayer3,
-                        tint = colors.labelPrimary,
-                        enabled = controlsEnabled,
-                        onClick = onAddReference,
-                        haptic = { haptics.tap() },
-                    )
+                    if (onAddReference != null) {
+                        CircleAction(
+                            icon = FeatherIcons.AtSign,
+                            description = stringResource(Res.string.harness_add_reference),
+                            size = 44,
+                            background = colors.bgLayer3,
+                            tint = colors.labelPrimary,
+                            enabled = controlsEnabled,
+                            onClick = onAddReference,
+                            haptic = { haptics.tap() },
+                        )
+                    }
 
                     // The flexible space between the controls and send. The chip is the thing that
                     // lives here; the context meter only borrows what the chip leaves over, and only
@@ -550,7 +565,7 @@ internal fun Composer(
                         },
                         meter = if (showsContextMeter(contextPressure) && contextUsed != null) {
                             {
-                                val used = stringResource(R.string.chat_context_used, contextUsed)
+                                val used = contextUsedText(contextUsed)
                                 ContextMeter(
                                     contextBreakdown,
                                     contextPressure,
@@ -596,16 +611,16 @@ internal fun Composer(
                     // for this message alone, the way a hold anywhere else opens what a thing can do.
                     val sendWith = onSendWith?.takeIf { running && canSend }
                     CircleAction(
-                        icon = Icons.Filled.ArrowUpward,
-                        description = stringResource(R.string.chat_composer_send),
+                        icon = DsIcons.ArrowUpward,
+                        description = stringResource(Res.string.chat_composer_send),
                         size = 44,
                         background = sendFill,
                         tint = sendTint,
                         enabled = canSend,
                         modifier = Modifier.graphicsLayer { scaleX = sendScale; scaleY = sendScale },
-                        onClick = { submitDraft { currentOnSend(it) } },
+                        onClick = { submitDraft { currentOnSend?.invoke(it) } },
                         onLongClick = sendWith?.let { { sendMenuOpen = true } },
-                        longClickLabel = stringResource(R.string.hold_send_label),
+                        longClickLabel = stringResource(Res.string.hold_send_label),
                     )
                     // A turn that ends under the open menu takes it away: steering an idle session
                     // is refused, and queueing is then just a send.
@@ -615,14 +630,14 @@ internal fun Composer(
                             onDismiss = { sendMenuOpen = false },
                             actions = listOf(
                                 HoldAction(
-                                    stringResource(R.string.hold_send_steer),
-                                    Icons.Outlined.Bolt,
-                                    detail = stringResource(R.string.chat_composer_mode_steer_hint),
+                                    stringResource(Res.string.hold_send_steer),
+                                    DsIcons.Bolt,
+                                    detail = stringResource(Res.string.chat_composer_mode_steer_hint),
                                 ) { submitDraft { text -> sendWith(text, "steer") } },
                                 HoldAction(
-                                    stringResource(R.string.hold_send_queue),
-                                    Icons.Outlined.Schedule,
-                                    detail = stringResource(R.string.chat_composer_mode_queue_hint),
+                                    stringResource(Res.string.hold_send_queue),
+                                    DsIcons.Schedule,
+                                    detail = stringResource(Res.string.chat_composer_mode_queue_hint),
                                 ) { submitDraft { text -> sendWith(text, "queue") } },
                             ),
                         )
@@ -637,7 +652,7 @@ internal fun Composer(
                     ) {
                         CircleAction(
                             icon = null,
-                            description = stringResource(R.string.chat_composer_stop),
+                            description = stringResource(Res.string.chat_composer_stop),
                             size = 44,
                             background = colors.error,
                             tint = Color.White,
@@ -684,7 +699,7 @@ internal fun Composer(
             onPermissionPick = onPermissionPick,
             onSend = {
                 submitDraft { text ->
-                    currentOnSend(text)
+                    currentOnSend?.invoke(text)
                     fullScreen = false
                 }
             },
@@ -699,7 +714,7 @@ internal fun Composer(
  * It exists because of #87's other half: once a draft is several lines the card is no place to
  * write in — it is capped by the conversation above and the keyboard below — while the send row is
  * the thing that must never move. Here the draft gets every pixel between the bars, the keyboard
- * insets come from [DsFullScreenDialog] (the app's one full-screen window, see `WindowRulesTest`),
+ * insets come from [DsFullScreenPage] (on Android the app's one full-screen window, see `WindowRulesTest`),
  * and the send row sits above the keyboard rather than under it.
  *
  * The page takes the composer's own value and change handler, so there is only ever one draft:
@@ -716,7 +731,7 @@ private fun FullScreenComposer(
     attachments: List<PendingAttachment>,
     onRemoveAttachment: (Int) -> Unit,
     onRetryAttachment: (Int) -> Unit,
-    onAddReference: () -> Unit,
+    onAddReference: (() -> Unit)?,
     onAttachFile: (() -> Unit)?,
     permissions: PermissionSelect?,
     pendingPermission: String?,
@@ -749,7 +764,7 @@ private fun FullScreenComposer(
         androidx.compose.runtime.withFrameNanos { }
         onValueChange(value.copy(selection = androidx.compose.ui.text.TextRange(caret)))
     }
-    DsFullScreenDialog(onDismissRequest = onDismiss, visibleState = visibleState, onWindowReady = onWindowReady) {
+    DsFullScreenPage(onDismissRequest = onDismiss, visibleState = visibleState, onWindowReady = onWindowReady) {
         // Every action the page has sits in this one bar, icon only: back on the leading edge, then
         // reference, attach, permission and send on the trailing edge. The card behind the page
         // spells its controls out ("Workspace Write", "Send message"); on a page the words cost the
@@ -761,32 +776,34 @@ private fun FullScreenComposer(
             horizontalArrangement = Arrangement.spacedBy(DsSpacing.small),
         ) {
             DsIconButton(
-                icon = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.common_back),
+                icon = DsIcons.ArrowBack,
+                contentDescription = stringResource(Res.string.common_back),
                 onClick = onDismiss,
             )
             Text(
-                stringResource(R.string.chat_composer_fullscreen_title),
+                stringResource(Res.string.chat_composer_fullscreen_title),
                 style = DsType.std14,
                 color = colors.labelPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            CircleAction(
-                icon = FeatherIcons.AtSign,
-                description = stringResource(R.string.harness_add_reference),
-                size = 40,
-                background = colors.bgLayer3,
-                tint = colors.labelPrimary,
-                enabled = enabled,
-                onClick = onAddReference,
-                haptic = { haptics.tap() },
-            )
+            if (onAddReference != null) {
+                CircleAction(
+                    icon = FeatherIcons.AtSign,
+                    description = stringResource(Res.string.harness_add_reference),
+                    size = 40,
+                    background = colors.bgLayer3,
+                    tint = colors.labelPrimary,
+                    enabled = enabled,
+                    onClick = onAddReference,
+                    haptic = { haptics.tap() },
+                )
+            }
             if (onAttachFile != null) {
                 CircleAction(
-                    icon = Icons.Filled.AttachFile,
-                    description = stringResource(R.string.chat_composer_attach_file),
+                    icon = DsIcons.AttachFile,
+                    description = stringResource(Res.string.chat_composer_attach_file),
                     size = 40,
                     background = colors.bgLayer3,
                     tint = colors.labelPrimary,
@@ -806,8 +823,8 @@ private fun FullScreenComposer(
                 iconOnly = true,
             )
             CircleAction(
-                icon = Icons.Filled.ArrowUpward,
-                description = stringResource(R.string.chat_composer_send),
+                icon = DsIcons.ArrowUpward,
+                description = stringResource(Res.string.chat_composer_send),
                 size = 40,
                 background = if (canSend) colors.buttonInfoFill else colors.buttonPrimaryDimmed,
                 tint = if (canSend) colors.onAccent else colors.labelTertiary,
@@ -852,7 +869,7 @@ private fun FullScreenComposer(
                     enabled = enabled,
                     placeholder = {
                         Text(
-                            stringResource(R.string.chat_composer_hint),
+                            stringResource(Res.string.chat_composer_hint),
                             style = DsType.std14,
                             color = colors.labelTertiary,
                         )
@@ -921,7 +938,7 @@ private fun PermissionChip(
             ) {
                 HoverTooltip(label, chipInteraction) {
                 Icon(
-                    Icons.Outlined.Shield,
+                    DsIcons.Shield,
                     contentDescription = null,
                     tint = permissionPresetTint(effective, option?.name, colors),
                     modifier = Modifier.size(18.dp),
@@ -963,8 +980,8 @@ private fun PermissionChip(
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
             ) {
                 Icon(
-                    Icons.Outlined.Shield,
-                    contentDescription = stringResource(R.string.permission_preset),
+                    DsIcons.Shield,
+                    contentDescription = stringResource(Res.string.permission_preset),
                     tint = if (effective == FULL_ACCESS_PRESET) colors.warnLabel else colors.labelSecondary,
                     modifier = Modifier.size(15.dp),
                 )
@@ -1080,7 +1097,7 @@ private val ChipHeight = 48.dp
  * What the tray adds above the card once something is attached: 8dp, one 48dp chip, 8dp. The chat
  * screen adds it to the composer's caps, so a card keeps the room it has without a tray.
  */
-internal val AttachmentTrayHeight = 8.dp + ChipHeight + 8.dp
+val AttachmentTrayHeight = 8.dp + ChipHeight + 8.dp
 
 /**
  * A [tray] directly above a [card], the card drawn over the tray's lower [TrayOverlap].
@@ -1194,7 +1211,7 @@ private fun attachmentKeys(items: List<PendingAttachment>): List<Any> {
     return items.map { item ->
         val base: Any = when (item) {
             is PendingAttachment.File -> "file:${item.id}"
-            is PendingAttachment.Image -> "image:${System.identityHashCode(item)}"
+            is PendingAttachment.Image -> "image:${identityHash(item)}"
         }
         var key = base
         var n = 1
@@ -1243,8 +1260,8 @@ private fun AttachmentChip(
         }
         RemoveButton(
             description = stringResource(
-                if (attachment is PendingAttachment.File) R.string.chat_composer_remove_file
-                else R.string.chat_composer_remove_image,
+                if (attachment is PendingAttachment.File) Res.string.chat_composer_remove_file
+                else Res.string.chat_composer_remove_image,
             ),
             onClick = onRemove,
         )
@@ -1281,7 +1298,7 @@ private fun RemoveButton(description: String, onClick: () -> Unit, modifier: Mod
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                Icons.Filled.Close,
+                DsIcons.Close,
                 contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier.size(12.dp),
@@ -1320,7 +1337,7 @@ private fun FileAttachmentBody(file: PendingAttachment.File, onRetry: () -> Unit
                 strokeWidth = 2.dp,
             )
             else -> Icon(
-                Icons.Outlined.Description,
+                DsIcons.Description,
                 contentDescription = null,
                 tint = if (failed) colors.error else colors.labelSecondary,
                 modifier = Modifier.size(18.dp),
@@ -1336,9 +1353,9 @@ private fun FileAttachmentBody(file: PendingAttachment.File, onRetry: () -> Unit
             )
             Text(
                 when (val state = file.state) {
-                    is FileUploadState.Uploading -> stringResource(R.string.chat_attachment_uploading)
+                    is FileUploadState.Uploading -> stringResource(Res.string.chat_attachment_uploading)
                     is FileUploadState.Ready -> fileSizeText(state.file.bytes)
-                    is FileUploadState.Failed -> stringResource(R.string.chat_attachment_upload_failed)
+                    is FileUploadState.Failed -> stringResource(Res.string.chat_attachment_upload_failed)
                 },
                 style = DsType.caption11,
                 color = if (failed) colors.error else colors.labelTertiary,

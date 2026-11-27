@@ -30,7 +30,6 @@
     <string name="connect_sign_in">登录</string>
     <string name="connect_checking">正在检查…</string>
     <string name="connect_scan_progress">正在扫描你的网络… %1$d / %2$d</string>
-    <string name="chatlist_subagents">子智能体</string>
     <string name="chatlist_archived">已归档</string>
     <string name="chatlist_session_rename">重命名会话</string>
     <string name="chatlist_session_fork">分叉会话</string>
@@ -194,9 +193,6 @@
     <string name="err_command_images_host">此 harness 不支持给 /%1$s 带附件，请先移除。</string>
     <string name="common_remove">移除</string>
     <string name="common_unavailable">不可用</string>
-    <string name="chatlist_open">打开会话列表</string>
-    <string name="chatlist_hide">隐藏会话列表</string>
-    <string name="chatlist_show">显示会话列表</string>
     <string name="chatlist_needs_action">待你处理</string>
     <string name="chat_composer_send">发送消息</string>
     <string name="chat_composer_commands">命令</string>
@@ -204,7 +200,6 @@
     <string name="chat_composer_mode_queue_hint">在当前回合结束后执行</string>
     <string name="chat_composer_mode_steer_hint">打断正在进行的回合</string>
     <string name="chat_composer_steer_idle">有回合正在进行时才能引导</string>
-    <string name="chat_tab">对话</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">此会话没有可用命令</string>
     <string name="chat_commands_unavailable">该 harness 未提供命令列表</string>
@@ -221,10 +216,6 @@
     <string name="chat_stats_tokens">输入 %1$s · 输出 %2$s</string>
     <string name="chat_stats_cache">缓存 %1$d%%</string>
     <string name="chat_context_used">已使用 %1$d%% 上下文</string>
-    <string name="permission_custom_hint">当前的沙箱和审批设置与所有预设都不一致。</string>
-    <string name="permission_confirm_title">授予完全访问权限？</string>
-    <string name="permission_confirm_body">智能体将可以读写运行 harness 的电脑上的任何位置，并且不再请求审批。</string>
-    <string name="permission_confirm_ack">我了解其中的风险</string>
     <string name="permission_unconfirmed">harness 没有确认权限变更</string>
     <string name="presets_current">当前预设</string>
     <string name="presets_locked">会话开始后就不能更换预设了。想用其他预设，请新建会话。</string>
@@ -287,14 +278,12 @@
     <string name="scan_detected">已读取配对码</string>
     <string name="chat_composer_attach_file">添加文件</string>
     <string name="chat_composer_remove_file">移除文件</string>
-    <string name="chat_attachment_uploading">上传中…</string>
     <string name="chat_attachment_upload_failed">上传失败，点按重试。</string>
     <string name="chat_attachment_still_uploading">请等待上传完成后再发送。</string>
     <string name="err_file_read_failed">无法读取该文件。</string>
     <string name="err_file_not_staged">harness 上已经没有这个文件了，请重新添加。</string>
     <string name="err_file_subagent_unsupported">子智能体会话不接受文件。</string>
     <string name="photos_skipped">已跳过：%1$d。%2$s</string>
-    <string name="photos_preparing">正在准备照片…</string>
     <string name="archived_title">已归档会话</string>
     <string name="archived_empty">没有匹配的归档会话</string>
     <string name="archived_restore">恢复</string>
@@ -446,9 +435,6 @@
     <string name="hold_rewind_here">回退到这条消息</string>
     <string name="hold_copy_command">复制命令</string>
     <string name="hold_copy_output">复制输出</string>
-    <string name="hold_send_label">选择发送方式</string>
-    <string name="hold_send_steer">立即引导</string>
-    <string name="hold_send_queue">排队，等本回合结束</string>
     <string name="hold_send_tip">提示：长按发送按钮，可为单条消息选择发送方式。</string>
     <string name="hold_replace_draft_title">替换草稿？</string>
     <string name="hold_replace_draft_body">输入框里已有内容，编辑这条消息会替换掉它。</string>
@@ -487,7 +473,6 @@
     <string name="quota_limit_short">已达上限</string>
     <string name="quota_rate_short">请求受限</string>
     <string name="permission_preset_workspace_write">工作区内修改</string>
-    <string name="permission_preset_auto_desc">无沙箱运行；每次原生工具调用和 PTC 内层调用前由同一模型进行实验性审查。</string>
     <string name="shortcuts_group_message">消息框</string>
     <string name="shortcuts_group_sessions">会话</string>
     <string name="shortcuts_group_general">通用</string>

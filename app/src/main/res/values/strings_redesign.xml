@@ -4,8 +4,6 @@
     <string name="chat_queue_placement_queued">Next turn</string>
     <string name="chat_queue_placement_steering">Steering</string>
     <string name="chat_queue_placement_context">Context</string>
-    <string name="chat_status_running">Working</string>
-    <string name="chat_status_idle">Idle</string>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d step</item>
         <item quantity="other">%d steps</item>

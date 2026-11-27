@@ -5,11 +5,9 @@
     <string name="ux_b_no_matches">No matching references</string>
     <string name="ux_b_reference_error">Some references didn\'t load. Try again.</string>
     <string name="ux_b_file">File</string>
-    <string name="ux_b_folder">Folder</string>
     <string name="ux_b_session">Conversation</string>
     <string name="ux_b_browse_folder">Browse folder %1$s</string>
     <string name="ux_b_open_reference">Open %1$s: %2$s</string>
-    <string name="ux_b_remove_reference">Remove reference %1$s</string>
     <string name="ux_b_paused">Paused while editing</string>
     <string name="ux_b_held">Waiting until you answer</string>
     <string name="ux_b_continued">Work continued. You can still answer.</string>

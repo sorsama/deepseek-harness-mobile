@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="team_title">ایجنٹ ٹیم</string>
-    <string name="team_chip">ٹیم</string>
     <string name="team_beta_badge">بیٹا</string>
     <string name="team_tab_members">اراکین (%1$d)</string>
     <string name="team_tab_tasks">کام (%1$d)</string>

@@ -1191,6 +1191,225 @@ object DsIcons {
             close()
         }
     }
+
+    /** `Icons.Filled.AttachFile`. */
+    val AttachFile: ImageVector by lazy {
+        icon("Filled.AttachFile") {
+            moveTo(16.5f, 6.0f)
+            verticalLineToRelative(11.5f)
+            curveToRelative(0.0f, 2.21f, -1.79f, 4.0f, -4.0f, 4.0f)
+            reflectiveCurveToRelative(-4.0f, -1.79f, -4.0f, -4.0f)
+            verticalLineTo(5.0f)
+            curveToRelative(0.0f, -1.38f, 1.12f, -2.5f, 2.5f, -2.5f)
+            reflectiveCurveToRelative(2.5f, 1.12f, 2.5f, 2.5f)
+            verticalLineToRelative(10.5f)
+            curveToRelative(0.0f, 0.55f, -0.45f, 1.0f, -1.0f, 1.0f)
+            reflectiveCurveToRelative(-1.0f, -0.45f, -1.0f, -1.0f)
+            verticalLineTo(6.0f)
+            horizontalLineTo(10.0f)
+            verticalLineToRelative(9.5f)
+            curveToRelative(0.0f, 1.38f, 1.12f, 2.5f, 2.5f, 2.5f)
+            reflectiveCurveToRelative(2.5f, -1.12f, 2.5f, -2.5f)
+            verticalLineTo(5.0f)
+            curveToRelative(0.0f, -2.21f, -1.79f, -4.0f, -4.0f, -4.0f)
+            reflectiveCurveTo(7.0f, 2.79f, 7.0f, 5.0f)
+            verticalLineToRelative(12.5f)
+            curveToRelative(0.0f, 3.04f, 2.46f, 5.5f, 5.5f, 5.5f)
+            reflectiveCurveToRelative(5.5f, -2.46f, 5.5f, -5.5f)
+            verticalLineTo(6.0f)
+            horizontalLineToRelative(-1.5f)
+            close()
+        }
+    }
+
+    /** `Icons.Filled.OpenInFull`. */
+    val OpenInFull: ImageVector by lazy {
+        icon("Filled.OpenInFull") {
+            moveTo(21.0f, 11.0f)
+            lineToRelative(0.0f, -8.0f)
+            lineToRelative(-8.0f, 0.0f)
+            lineToRelative(3.29f, 3.29f)
+            lineToRelative(-10.0f, 10.0f)
+            lineToRelative(-3.29f, -3.29f)
+            lineToRelative(0.0f, 8.0f)
+            lineToRelative(8.0f, 0.0f)
+            lineToRelative(-3.29f, -3.29f)
+            lineToRelative(10.0f, -10.0f)
+            close()
+        }
+    }
+
+    /** `Icons.Outlined.Bolt`. */
+    val Bolt: ImageVector by lazy {
+        icon("Outlined.Bolt") {
+            moveTo(11.0f, 21.0f)
+            horizontalLineToRelative(-1.0f)
+            lineToRelative(1.0f, -7.0f)
+            horizontalLineTo(7.5f)
+            curveToRelative(-0.88f, 0.0f, -0.33f, -0.75f, -0.31f, -0.78f)
+            curveTo(8.48f, 10.94f, 10.42f, 7.54f, 13.01f, 3.0f)
+            horizontalLineToRelative(1.0f)
+            lineToRelative(-1.0f, 7.0f)
+            horizontalLineToRelative(3.51f)
+            curveToRelative(0.4f, 0.0f, 0.62f, 0.19f, 0.4f, 0.66f)
+            curveTo(12.97f, 17.55f, 11.0f, 21.0f, 11.0f, 21.0f)
+            close()
+        }
+    }
+
+    /** `Icons.Outlined.Schedule`. */
+    val Schedule: ImageVector by lazy {
+        icon("Outlined.Schedule") {
+            moveTo(11.99f, 2.0f)
+            curveTo(6.47f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
+            reflectiveCurveToRelative(4.47f, 10.0f, 9.99f, 10.0f)
+            curveTo(17.52f, 22.0f, 22.0f, 17.52f, 22.0f, 12.0f)
+            reflectiveCurveTo(17.52f, 2.0f, 11.99f, 2.0f)
+            close()
+            moveTo(12.0f, 20.0f)
+            curveToRelative(-4.42f, 0.0f, -8.0f, -3.58f, -8.0f, -8.0f)
+            reflectiveCurveToRelative(3.58f, -8.0f, 8.0f, -8.0f)
+            reflectiveCurveToRelative(8.0f, 3.58f, 8.0f, 8.0f)
+            reflectiveCurveToRelative(-3.58f, 8.0f, -8.0f, 8.0f)
+            close()
+            moveTo(12.5f, 7.0f)
+            lineTo(11.0f, 7.0f)
+            verticalLineToRelative(6.0f)
+            lineToRelative(5.25f, 3.15f)
+            lineToRelative(0.75f, -1.23f)
+            lineToRelative(-4.5f, -2.67f)
+            close()
+        }
+    }
+
+    /** `Icons.Outlined.Groups`. */
+    val Groups: ImageVector by lazy {
+        icon("Outlined.Groups") {
+            moveTo(4.0f, 13.0f)
+            curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
+            curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+            reflectiveCurveToRelative(-2.0f, 0.9f, -2.0f, 2.0f)
+            curveTo(2.0f, 12.1f, 2.9f, 13.0f, 4.0f, 13.0f)
+            close()
+            moveTo(5.13f, 14.1f)
+            curveTo(4.76f, 14.04f, 4.39f, 14.0f, 4.0f, 14.0f)
+            curveToRelative(-0.99f, 0.0f, -1.93f, 0.21f, -2.78f, 0.58f)
+            curveTo(0.48f, 14.9f, 0.0f, 15.62f, 0.0f, 16.43f)
+            verticalLineTo(18.0f)
+            lineToRelative(4.5f, 0.0f)
+            verticalLineToRelative(-1.61f)
+            curveTo(4.5f, 15.56f, 4.73f, 14.78f, 5.13f, 14.1f)
+            close()
+            moveTo(20.0f, 13.0f)
+            curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
+            curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+            reflectiveCurveToRelative(-2.0f, 0.9f, -2.0f, 2.0f)
+            curveTo(18.0f, 12.1f, 18.9f, 13.0f, 20.0f, 13.0f)
+            close()
+            moveTo(24.0f, 16.43f)
+            curveToRelative(0.0f, -0.81f, -0.48f, -1.53f, -1.22f, -1.85f)
+            curveTo(21.93f, 14.21f, 20.99f, 14.0f, 20.0f, 14.0f)
+            curveToRelative(-0.39f, 0.0f, -0.76f, 0.04f, -1.13f, 0.1f)
+            curveToRelative(0.4f, 0.68f, 0.63f, 1.46f, 0.63f, 2.29f)
+            verticalLineTo(18.0f)
+            lineToRelative(4.5f, 0.0f)
+            verticalLineTo(16.43f)
+            close()
+            moveTo(16.24f, 13.65f)
+            curveToRelative(-1.17f, -0.52f, -2.61f, -0.9f, -4.24f, -0.9f)
+            curveToRelative(-1.63f, 0.0f, -3.07f, 0.39f, -4.24f, 0.9f)
+            curveTo(6.68f, 14.13f, 6.0f, 15.21f, 6.0f, 16.39f)
+            verticalLineTo(18.0f)
+            horizontalLineToRelative(12.0f)
+            verticalLineToRelative(-1.61f)
+            curveTo(18.0f, 15.21f, 17.32f, 14.13f, 16.24f, 13.65f)
+            close()
+            moveTo(8.07f, 16.0f)
+            curveToRelative(0.09f, -0.23f, 0.13f, -0.39f, 0.91f, -0.69f)
+            curveToRelative(0.97f, -0.38f, 1.99f, -0.56f, 3.02f, -0.56f)
+            reflectiveCurveToRelative(2.05f, 0.18f, 3.02f, 0.56f)
+            curveToRelative(0.77f, 0.3f, 0.81f, 0.46f, 0.91f, 0.69f)
+            horizontalLineTo(8.07f)
+            close()
+            moveTo(12.0f, 8.0f)
+            curveToRelative(0.55f, 0.0f, 1.0f, 0.45f, 1.0f, 1.0f)
+            reflectiveCurveToRelative(-0.45f, 1.0f, -1.0f, 1.0f)
+            reflectiveCurveToRelative(-1.0f, -0.45f, -1.0f, -1.0f)
+            reflectiveCurveTo(11.45f, 8.0f, 12.0f, 8.0f)
+            moveTo(12.0f, 6.0f)
+            curveToRelative(-1.66f, 0.0f, -3.0f, 1.34f, -3.0f, 3.0f)
+            curveToRelative(0.0f, 1.66f, 1.34f, 3.0f, 3.0f, 3.0f)
+            reflectiveCurveToRelative(3.0f, -1.34f, 3.0f, -3.0f)
+            curveTo(15.0f, 7.34f, 13.66f, 6.0f, 12.0f, 6.0f)
+            lineTo(12.0f, 6.0f)
+            close()
+        }
+    }
+
+    /** `Icons.Outlined.Diversity3`. */
+    val Diversity3: ImageVector by lazy {
+        icon(
+            "Outlined.Diversity3",
+            paths = listOf<PathBuilder.() -> Unit>(
+                {
+                    moveTo(6.32f, 13.01f)
+                    curveToRelative(0.96f, 0.02f, 1.85f, 0.5f, 2.45f, 1.34f)
+                    curveTo(9.5f, 15.38f, 10.71f, 16.0f, 12.0f, 16.0f)
+                    curveToRelative(1.29f, 0.0f, 2.5f, -0.62f, 3.23f, -1.66f)
+                    curveToRelative(0.6f, -0.84f, 1.49f, -1.32f, 2.45f, -1.34f)
+                    curveTo(16.96f, 11.78f, 14.08f, 11.0f, 12.0f, 11.0f)
+                    curveTo(9.93f, 11.0f, 7.04f, 11.78f, 6.32f, 13.01f)
+                    close()
+                },
+                {
+                    moveTo(4.0f, 13.0f)
+                    lineTo(4.0f, 13.0f)
+                    curveToRelative(1.66f, 0.0f, 3.0f, -1.34f, 3.0f, -3.0f)
+                    curveToRelative(0.0f, -1.66f, -1.34f, -3.0f, -3.0f, -3.0f)
+                    reflectiveCurveToRelative(-3.0f, 1.34f, -3.0f, 3.0f)
+                    curveTo(1.0f, 11.66f, 2.34f, 13.0f, 4.0f, 13.0f)
+                    close()
+                },
+                {
+                    moveTo(20.0f, 13.0f)
+                    lineTo(20.0f, 13.0f)
+                    curveToRelative(1.66f, 0.0f, 3.0f, -1.34f, 3.0f, -3.0f)
+                    curveToRelative(0.0f, -1.66f, -1.34f, -3.0f, -3.0f, -3.0f)
+                    reflectiveCurveToRelative(-3.0f, 1.34f, -3.0f, 3.0f)
+                    curveTo(17.0f, 11.66f, 18.34f, 13.0f, 20.0f, 13.0f)
+                    close()
+                },
+                {
+                    moveTo(12.0f, 10.0f)
+                    curveToRelative(1.66f, 0.0f, 3.0f, -1.34f, 3.0f, -3.0f)
+                    curveToRelative(0.0f, -1.66f, -1.34f, -3.0f, -3.0f, -3.0f)
+                    reflectiveCurveTo(9.0f, 5.34f, 9.0f, 7.0f)
+                    curveTo(9.0f, 8.66f, 10.34f, 10.0f, 12.0f, 10.0f)
+                    close()
+                },
+                {
+                    moveTo(21.0f, 14.0f)
+                    horizontalLineToRelative(-3.27f)
+                    curveToRelative(-0.77f, 0.0f, -1.35f, 0.45f, -1.68f, 0.92f)
+                    curveTo(16.01f, 14.98f, 14.69f, 17.0f, 12.0f, 17.0f)
+                    curveToRelative(-1.43f, 0.0f, -3.03f, -0.64f, -4.05f, -2.08f)
+                    curveTo(7.56f, 14.37f, 6.95f, 14.0f, 6.27f, 14.0f)
+                    horizontalLineTo(3.0f)
+                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                    verticalLineToRelative(4.0f)
+                    horizontalLineToRelative(7.0f)
+                    verticalLineToRelative(-2.26f)
+                    curveToRelative(1.15f, 0.8f, 2.54f, 1.26f, 4.0f, 1.26f)
+                    reflectiveCurveToRelative(2.85f, -0.46f, 4.0f, -1.26f)
+                    verticalLineTo(20.0f)
+                    horizontalLineToRelative(7.0f)
+                    verticalLineToRelative(-4.0f)
+                    curveTo(23.0f, 14.9f, 22.1f, 14.0f, 21.0f, 14.0f)
+                    close()
+                },
+            ),
+        )
+    }
 }
 
 /**
@@ -1198,19 +1417,28 @@ object DsIcons {
  * `materialPath` gives it (the stroke ones too, though there is no stroke), so the copy equals the original.
  */
 private fun icon(name: String, autoMirror: Boolean = false, block: PathBuilder.() -> Unit): ImageVector =
-    ImageVector.Builder(
+    icon(name, autoMirror, listOf(block))
+
+/** An icon drawn as several black paths, one `materialPath` block each, in the source's order. */
+private fun icon(name: String, autoMirror: Boolean = false, paths: List<PathBuilder.() -> Unit>): ImageVector {
+    val builder = ImageVector.Builder(
         name = name,
         defaultWidth = 24.dp,
         defaultHeight = 24.dp,
         viewportWidth = 24f,
         viewportHeight = 24f,
         autoMirror = autoMirror,
-    ).path(
-        fill = SolidColor(Color.Black),
-        stroke = null,
-        strokeLineWidth = 1f,
-        strokeLineCap = StrokeCap.Butt,
-        strokeLineJoin = StrokeJoin.Bevel,
-        strokeLineMiter = 1f,
-        pathBuilder = block,
-    ).build()
+    )
+    for (block in paths) {
+        builder.path(
+            fill = SolidColor(Color.Black),
+            stroke = null,
+            strokeLineWidth = 1f,
+            strokeLineCap = StrokeCap.Butt,
+            strokeLineJoin = StrokeJoin.Bevel,
+            strokeLineMiter = 1f,
+            pathBuilder = block,
+        )
+    }
+    return builder.build()
+}

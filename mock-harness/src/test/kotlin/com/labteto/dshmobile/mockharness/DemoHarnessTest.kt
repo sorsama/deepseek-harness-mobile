@@ -146,6 +146,24 @@ class DemoHarnessTest {
     }
 
     @Test
+    fun theModelCatalogNamesTheDefaultAndEverySessionHasAPermissionPreset() = withDemo { servers ->
+        // The chat's model chip and the composer's preset chip draw from these (iOS M6a's screenshots, Android parity).
+        val catalog = call(servers.demoUrl!!, "session/modelCatalog", "{}")
+        val default = catalog["default"]!!.jsonObject
+        assertEquals("deepseek", default["provider"]!!.jsonPrimitive.content)
+        assertEquals("deepseek-chat", default["model"]!!.jsonPrimitive.content)
+        val group = catalog["groups"]!!.jsonArray.single().jsonObject
+        assertEquals(
+            listOf("DeepSeek-V3.2", "DeepSeek-V3.2 Thinking"),
+            group["models"]!!.jsonArray.map { it.jsonObject["name"]!!.jsonPrimitive.content },
+        )
+        val permissions = Json.parseToJsonElement(DemoHarness.PERMISSIONS).jsonObject
+        val values = permissions["options"]!!.jsonArray.map { it.jsonObject["value"]!!.jsonPrimitive.content }
+        assertEquals(listOf("read-only", "workspace-write", "danger-full-access"), values)
+        assertTrue(permissions["currentValue"]!!.jsonPrimitive.content in values)
+    }
+
+    @Test
     fun aSessionShorterThanAPageComesWholeAndStartsWithItsTurn() = withDemo { servers ->
         val page = call(
             servers.demoUrl!!,

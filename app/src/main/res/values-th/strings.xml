@@ -30,7 +30,6 @@
     <string name="connect_sign_in">ลงชื่อเข้าใช้</string>
     <string name="connect_checking">กำลังตรวจสอบ…</string>
     <string name="connect_scan_progress">กำลังสแกนเครือข่ายของคุณ… %1$d จาก %2$d</string>
-    <string name="chatlist_subagents">ซับเอเจนต์</string>
     <string name="chatlist_archived">เก็บถาวรแล้ว</string>
     <string name="chatlist_session_rename">เปลี่ยนชื่อเซสชัน</string>
     <string name="chatlist_session_fork">ฟอร์กเซสชัน</string>
@@ -194,9 +193,6 @@
     <string name="err_command_images_host">/%1$s แนบไฟล์บน harness นี้ไม่ได้ ลบไฟล์แนบออกก่อน</string>
     <string name="common_remove">นำออก</string>
     <string name="common_unavailable">ไม่พร้อมใช้งาน</string>
-    <string name="chatlist_open">เปิดรายการแชท</string>
-    <string name="chatlist_hide">ซ่อนรายการแชท</string>
-    <string name="chatlist_show">แสดงรายการแชท</string>
     <string name="chatlist_needs_action">รอคุณอยู่</string>
     <string name="chat_composer_send">ส่งข้อความ</string>
     <string name="chat_composer_commands">คำสั่ง</string>
@@ -204,7 +200,6 @@
     <string name="chat_composer_mode_queue_hint">ทำหลังเทิร์นนี้จบ</string>
     <string name="chat_composer_mode_steer_hint">แทรกเข้าไปในเทิร์นที่กำลังทำงาน</string>
     <string name="chat_composer_steer_idle">แทรกได้เมื่อมีเทิร์นที่กำลังทำงานอยู่</string>
-    <string name="chat_tab">แชท</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">เซสชันนี้ไม่มีคำสั่ง</string>
     <string name="chat_commands_unavailable">harness นี้ไม่มีรายการคำสั่งให้ใช้</string>
@@ -221,10 +216,6 @@
     <string name="chat_stats_tokens">เข้า %1$s · ออก %2$s</string>
     <string name="chat_stats_cache">แคช %1$d%%</string>
     <string name="chat_context_used">ใช้บริบทไปแล้ว %1$d%%</string>
-    <string name="permission_custom_hint">การตั้งค่าแซนด์บ็อกซ์และการอนุมัติปัจจุบันไม่ตรงกับพรีเซ็ตใด</string>
-    <string name="permission_confirm_title">ให้สิทธิ์เข้าถึงเต็มรูปแบบหรือไม่</string>
-    <string name="permission_confirm_body">เอเจนต์จะอ่านและเขียนได้ทุกที่บนคอมพิวเตอร์ที่รัน harness และจะไม่ขออนุมัติอีก</string>
-    <string name="permission_confirm_ack">ฉันเข้าใจความเสี่ยง</string>
     <string name="permission_unconfirmed">harness ไม่ได้ยืนยันการเปลี่ยนสิทธิ์</string>
     <string name="presets_current">พรีเซ็ตปัจจุบัน</string>
     <string name="presets_locked">เปลี่ยนพรีเซ็ตไม่ได้หลังเริ่มเซสชัน ถ้าต้องการพรีเซ็ตอื่น ให้เริ่มเซสชันใหม่</string>
@@ -287,14 +278,12 @@
     <string name="scan_detected">อ่านรหัสแล้ว</string>
     <string name="chat_composer_attach_file">แนบไฟล์</string>
     <string name="chat_composer_remove_file">นำไฟล์ออก</string>
-    <string name="chat_attachment_uploading">กำลังอัปโหลด…</string>
     <string name="chat_attachment_upload_failed">อัปโหลดไม่สำเร็จ แตะเพื่อลองใหม่</string>
     <string name="chat_attachment_still_uploading">รอให้อัปโหลดเสร็จก่อนส่ง</string>
     <string name="err_file_read_failed">อ่านไฟล์นั้นไม่ได้</string>
     <string name="err_file_not_staged">harness ไม่มีไฟล์นั้นแล้ว ลองแนบใหม่</string>
     <string name="err_file_subagent_unsupported">เซสชันซับเอเจนต์ไม่รับไฟล์</string>
     <string name="photos_skipped">ข้าม: %1$d รายการ %2$s</string>
-    <string name="photos_preparing">กำลังเตรียมรูปภาพ…</string>
     <string name="archived_title">เซสชันที่เก็บถาวร</string>
     <string name="archived_empty">ไม่พบเซสชันที่เก็บถาวร</string>
     <string name="archived_restore">กู้คืน</string>
@@ -446,9 +435,6 @@
     <string name="hold_rewind_here">ย้อนกลับไปที่ข้อความนี้</string>
     <string name="hold_copy_command">คัดลอกคำสั่ง</string>
     <string name="hold_copy_output">คัดลอกผลลัพธ์</string>
-    <string name="hold_send_label">เลือกวิธีส่ง</string>
-    <string name="hold_send_steer">แทรกทันที</string>
-    <string name="hold_send_queue">เข้าคิวหลังเทิร์นนี้</string>
     <string name="hold_send_tip">เคล็ดลับ: กดปุ่มส่งค้างไว้เพื่อเลือกวิธีส่งสำหรับข้อความเดียว</string>
     <string name="hold_replace_draft_title">แทนที่ฉบับร่างหรือไม่</string>
     <string name="hold_replace_draft_body">ช่องพิมพ์มีข้อความอยู่แล้ว การแก้ไขข้อความนี้จะแทนที่ข้อความนั้น</string>
@@ -487,7 +473,6 @@
     <string name="quota_limit_short">ถึงขีดจำกัดแล้ว</string>
     <string name="quota_rate_short">ถูกจำกัดคำขอ</string>
     <string name="permission_preset_workspace_write">เขียนในเวิร์กสเปซ</string>
-    <string name="permission_preset_auto_desc">รันโดยไม่มีแซนด์บ็อกซ์ หลังจากการตรวจสอบเชิงทดลองโดยโมเดลเดียวกันสำหรับการเรียกใช้เครื่องมือเนทีฟและการเรียก PTC ภายในทุกครั้ง</string>
     <string name="shortcuts_group_message">ช่องข้อความ</string>
     <string name="shortcuts_group_sessions">เซสชัน</string>
     <string name="shortcuts_group_general">ทั่วไป</string>

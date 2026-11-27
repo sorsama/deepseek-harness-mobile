@@ -8,6 +8,12 @@ import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.OpenInFull
+import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.Diversity3
+import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
@@ -96,6 +102,12 @@ class DsIconsMatchMaterialTest {
         Triple("Stop", DsIcons.Stop, Icons.Filled.Stop),
         Triple("ErrorOutline", DsIcons.ErrorOutline, Icons.Outlined.ErrorOutline),
         Triple("ArrowDownward", DsIcons.ArrowDownward, Icons.Filled.ArrowDownward),
+        Triple("AttachFile", DsIcons.AttachFile, Icons.Filled.AttachFile),
+        Triple("OpenInFull", DsIcons.OpenInFull, Icons.Filled.OpenInFull),
+        Triple("Bolt", DsIcons.Bolt, Icons.Outlined.Bolt),
+        Triple("Schedule", DsIcons.Schedule, Icons.Outlined.Schedule),
+        Triple("Groups", DsIcons.Groups, Icons.Outlined.Groups),
+        Triple("Diversity3", DsIcons.Diversity3, Icons.Outlined.Diversity3),
     )
 
     @Test

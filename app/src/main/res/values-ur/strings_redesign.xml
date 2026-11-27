@@ -4,8 +4,6 @@
     <string name="chat_queue_placement_queued">اگلا ٹرن</string>
     <string name="chat_queue_placement_steering">رہنمائی</string>
     <string name="chat_queue_placement_context">سیاق</string>
-    <string name="chat_status_running">کام جاری ہے</string>
-    <string name="chat_status_idle">غیر فعال</string>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d مرحلہ</item>
         <item quantity="other">%d مراحل</item>

@@ -5,11 +5,9 @@
     <string name="ux_b_no_matches">মেলে এমন রেফারেন্স নেই</string>
     <string name="ux_b_reference_error">কিছু রেফারেন্স লোড করা যায়নি। আবার চেষ্টা করুন।</string>
     <string name="ux_b_file">ফাইল</string>
-    <string name="ux_b_folder">ফোল্ডার</string>
     <string name="ux_b_session">কথোপকথন</string>
     <string name="ux_b_browse_folder">%1$s ফোল্ডার দেখুন</string>
     <string name="ux_b_open_reference">%1$s খুলুন: %2$s</string>
-    <string name="ux_b_remove_reference">%1$s রেফারেন্স সরান</string>
     <string name="ux_b_paused">এডিট করার সময় থেমে আছে</string>
     <string name="ux_b_held">আপনার উত্তরের অপেক্ষায়</string>
     <string name="ux_b_continued">কাজ চলছে। আপনি এখনও উত্তর দিতে পারেন।</string>

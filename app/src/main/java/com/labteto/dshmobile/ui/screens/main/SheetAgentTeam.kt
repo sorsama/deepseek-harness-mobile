@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Diversity3
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.HourglassEmpty
@@ -33,7 +31,6 @@ import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -87,7 +84,6 @@ import com.labteto.dshmobile.ui.components.clickable
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
-import com.labteto.dshmobile.ui.theme.DsSizes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -131,34 +127,6 @@ internal fun rememberTeamRows(
         running = { id -> if (id == leadId) leadRunning else id in running },
         continuableLabels = children.associate { it.id to it.label },
     )
-}
-
-/** The title-row chip that opens the team sheet; the same 28dp-in-48dp pill as the subagent count. */
-@Composable
-internal fun AgentTeamTag(onClick: () -> Unit) {
-    val colors = DsTheme.colors
-    val description = stringResource(R.string.team_title)
-    Row(
-        modifier = Modifier
-            .minimumInteractiveComponentSize()
-            .height(DsSizes.chipCompact)
-            .clip(DsShapes.pillFull)
-            .background(colors.accentTertiary)
-            .clickable(role = Role.Button, onClick = onClick)
-            .semantics(mergeDescendants = true) { contentDescription = description }
-            .padding(horizontal = DsSpacing.compact),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Icon(Icons.Outlined.Diversity3, contentDescription = null, tint = colors.accent, modifier = Modifier.size(15.dp))
-        Text(
-            stringResource(R.string.team_chip),
-            style = DsType.small13Strong,
-            color = colors.accent,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
 }
 
 private const val TAB_MEMBERS = "members"

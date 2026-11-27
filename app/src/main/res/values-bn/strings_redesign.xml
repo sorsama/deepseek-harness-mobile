@@ -4,8 +4,6 @@
     <string name="chat_queue_placement_queued">পরের টার্ন</string>
     <string name="chat_queue_placement_steering">নির্দেশ</string>
     <string name="chat_queue_placement_context">কনটেক্সট</string>
-    <string name="chat_status_running">কাজ চলছে</string>
-    <string name="chat_status_idle">নিষ্ক্রিয়</string>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d ধাপ</item>
         <item quantity="other">%d ধাপ</item>

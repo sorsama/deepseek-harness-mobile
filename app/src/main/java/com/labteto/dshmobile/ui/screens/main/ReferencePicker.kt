@@ -41,19 +41,6 @@ internal fun fileMention(path: String, directory: Boolean): String? {
     return if (target.any(Char::isWhitespace)) "@\"$target\"" else "@$target"
 }
 
-internal fun referenceKindIcon(kind: String) = when (kind) {
-    "folder" -> FeatherIcons.Folder
-    "session" -> FeatherIcons.MessageSquare
-    else -> FeatherIcons.FileText
-}
-
-@Composable
-internal fun referenceKindLabel(kind: String): String = stringResource(when (kind) {
-    "folder" -> R.string.ux_b_folder
-    "session" -> R.string.ux_b_session
-    else -> R.string.ux_b_file
-})
-
 /**
  * The `@` reference picker (design 15's file list).
  *

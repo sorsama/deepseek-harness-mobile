@@ -30,7 +30,6 @@
     <string name="connect_sign_in">साइन इन</string>
     <string name="connect_checking">जाँच हो रही है…</string>
     <string name="connect_scan_progress">आपका नेटवर्क स्कैन हो रहा है… %2$d में से %1$d</string>
-    <string name="chatlist_subagents">सबएजेंट</string>
     <string name="chatlist_archived">आर्काइव किए गए</string>
     <string name="chatlist_session_rename">सेशन का नाम बदलें</string>
     <string name="chatlist_session_fork">सेशन फ़ोर्क करें</string>
@@ -194,9 +193,6 @@
     <string name="err_command_images_host">इस harness पर /%1$s के साथ अटैचमेंट नहीं चल सकते। पहले उन्हें हटाएँ।</string>
     <string name="common_remove">हटाएँ</string>
     <string name="common_unavailable">उपलब्ध नहीं</string>
-    <string name="chatlist_open">चैट खोलें</string>
-    <string name="chatlist_hide">चैट छिपाएँ</string>
-    <string name="chatlist_show">चैट दिखाएँ</string>
     <string name="chatlist_needs_action">आपकी ज़रूरत है</string>
     <string name="chat_composer_send">संदेश भेजें</string>
     <string name="chat_composer_commands">कमांड</string>
@@ -204,7 +200,6 @@
     <string name="chat_composer_mode_queue_hint">मौजूदा टर्न पूरा होने के बाद चलेगा</string>
     <string name="chat_composer_mode_steer_hint">चल रहे टर्न को बीच में रोकता है</string>
     <string name="chat_composer_steer_idle">दिशा देने के लिए कोई टर्न चल रहा होना चाहिए</string>
-    <string name="chat_tab">चैट</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">इस सेशन में कोई कमांड नहीं है</string>
     <string name="chat_commands_unavailable">यह harness कमांड की सूची नहीं देता</string>
@@ -221,10 +216,6 @@
     <string name="chat_stats_tokens">%1$s इनपुट · %2$s आउटपुट</string>
     <string name="chat_stats_cache">कैश %1$d%%</string>
     <string name="chat_context_used">%1$d%% कॉन्टेक्स्ट इस्तेमाल हुआ</string>
-    <string name="permission_custom_hint">मौजूदा सैंडबॉक्स और मंज़ूरी की सेटिंग किसी प्रीसेट से मेल नहीं खाती।</string>
-    <string name="permission_confirm_title">पूरी पहुँच दें?</string>
-    <string name="permission_confirm_body">एजेंट harness वाले कंप्यूटर पर कहीं भी पढ़-लिख सकेगा और मंज़ूरी माँगना बंद कर देगा।</string>
-    <string name="permission_confirm_ack">मुझे जोखिम पता है</string>
     <string name="permission_unconfirmed">harness ने अनुमति का बदलाव पक्का नहीं किया</string>
     <string name="presets_current">मौजूदा प्रीसेट</string>
     <string name="presets_locked">सेशन शुरू होने के बाद प्रीसेट तय हो जाता है। दूसरा चुनने के लिए नया सेशन शुरू करें।</string>
@@ -287,14 +278,12 @@
     <string name="scan_detected">कोड पढ़ लिया गया</string>
     <string name="chat_composer_attach_file">फ़ाइल अटैच करें</string>
     <string name="chat_composer_remove_file">फ़ाइल हटाएँ</string>
-    <string name="chat_attachment_uploading">अपलोड हो रहा है…</string>
     <string name="chat_attachment_upload_failed">अपलोड नहीं हो सका। फिर कोशिश के लिए टैप करें।</string>
     <string name="chat_attachment_still_uploading">भेजने से पहले अपलोड पूरा होने दें।</string>
     <string name="err_file_read_failed">वह फ़ाइल पढ़ी नहीं जा सकी।</string>
     <string name="err_file_not_staged">harness के पास अब वह फ़ाइल नहीं है। इसे फिर से अटैच करें।</string>
     <string name="err_file_subagent_unsupported">सबएजेंट सेशन में फ़ाइलें नहीं भेजी जा सकतीं।</string>
     <string name="photos_skipped">छोड़े गए: %1$d। %2$s</string>
-    <string name="photos_preparing">फ़ोटो तैयार हो रहे हैं…</string>
     <string name="archived_title">आर्काइव किए गए सेशन</string>
     <string name="archived_empty">कोई आर्काइव किया हुआ सेशन नहीं मिला</string>
     <string name="archived_restore">वापस लाएँ</string>
@@ -446,9 +435,6 @@
     <string name="hold_rewind_here">इस संदेश तक रिवाइंड करें</string>
     <string name="hold_copy_command">कमांड कॉपी करें</string>
     <string name="hold_copy_output">आउटपुट कॉपी करें</string>
-    <string name="hold_send_label">भेजने का तरीका चुनें</string>
-    <string name="hold_send_steer">अभी दिशा दें</string>
-    <string name="hold_send_queue">इस टर्न के बाद कतार में रखें</string>
     <string name="hold_send_tip">टिप: किसी एक संदेश के लिए तरीका चुनना हो तो भेजें बटन को दबाकर रखें।</string>
     <string name="hold_replace_draft_title">ड्राफ़्ट बदलें?</string>
     <string name="hold_replace_draft_body">कंपोज़र में पहले से टेक्स्ट है। इस संदेश को एडिट करने पर वह बदल जाएगा।</string>
@@ -487,7 +473,6 @@
     <string name="quota_limit_short">सीमा पूरी हो गई</string>
     <string name="quota_rate_short">अनुरोध सीमित</string>
     <string name="permission_preset_workspace_write">वर्कस्पेस में लिखें</string>
-    <string name="permission_preset_auto_desc">हर नेटिव टूल कॉल और PTC आंतरिक कॉल से पहले उसी मॉडल की प्रयोगात्मक समीक्षा के बाद बिना सैंडबॉक्स के चलता है।</string>
     <string name="shortcuts_group_message">संदेश बॉक्स</string>
     <string name="shortcuts_group_sessions">सेशन</string>
     <string name="shortcuts_group_general">सामान्य</string>

@@ -31,7 +31,8 @@ import platform.posix.fputs
  *
  * [openSession] (`-DshOpenSession first|<session id>`) opens a session once connected, and [chatScroll]
  * (`-DshChatScroll tail|older`) says where its transcript is left; both write `DSH_CHAT_RESULT …` lines (see
- * [reportChat]).
+ * [reportChat]). [composerDraft] (`-DshComposerDraft <hex>`, decoded by the host) is the text the opened session's
+ * composer starts with, as if typed.
  */
 fun MainViewController(
     prefillAddress: String?,
@@ -54,6 +55,7 @@ fun MainViewController(
     toolCardsSample: String?,
     openSession: String?,
     chatScroll: String?,
+    composerDraft: String?,
 ): UIViewController =
     ComposeUIViewController {
         if (markdownSample != null) {
@@ -99,6 +101,7 @@ fun MainViewController(
                     else -> null
                 },
                 onChat = if (openSession != null) ::reportChat else null,
+                composerDraft = composerDraft,
             )
         }
         // One controller for the life of the process, on the main thread where Compose runs. The reset,

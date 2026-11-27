@@ -483,7 +483,16 @@ The chat's leaves came next (M5a the Markdown and code blocks, M5b the tool card
 What the transcript needs from its host is three small seams: `LocalAttachmentImage` (Android loads through the store;
 iOS draws nothing yet, attachments are later), `LocalReasoningContent` (Android adds reasoning translation; iOS draws the
 text alone) and nullable `ChatNodeContext` actions (Branch, feedback, opening a subagent: absent on iOS until there is
-somewhere to carry them out). On iOS, `IosChatPane` shows the open session's transcript read only; the composer is M6.
+somewhere to carry them out). M6a moved the composer and the chat's top bar: `Composer` (with its full-screen page,
+attachment tray and send hold menu), `ChatTopBar` (with the team chip), the permission preset sheet and Full access
+dialog (`SheetPermission`), `ReferencePresentation`, `ContextMeter` and `ComposerKeys`. What they need from their
+host is small too: `hardwareKeyboardAttached()` and `KeyEvent.toComposerKeyPress()` (expects: Android reads the
+configuration and the native event, iOS answers no keyboard), `onPasteFiles` (the host reads its own clipboard),
+`ComposerVoiceSource` (dictation: `DictationConfig` in `:app` implements it over the phone's speech service), and
+nullable entries for what a platform cannot offer yet (`onOpenSheet`, `onAddReference`, `onAttachFile`, `onSend`;
+in the bar `onOpenDetails` and `showTabs`). The composer drawer that lifts over the transcript is still decided by
+Android's `ChatScreen`, which moves in M6b. On iOS, `IosChatPane` shows the open session's transcript under the shared
+top bar, with the shared composer below it: typing, the permission chip and Stop work; send is drawn disabled until M6b.
 
 Not moved, on purpose: the "This phone" card and the Termux controller (Termux is Android), the Hilt view models
 (`ConnectViewModel` and `PairViewModel` are thin: each owns a controller over `viewModelScope`), the stores and the
@@ -867,6 +876,10 @@ the steps after the tests run even if the tests fail, so one push says everythin
   newest message in light, dark and Arabic, the demo's
   long session (92 messages, a page is 60) paged back to its start in light and dark, and on the iPad the list docked
   beside the transcript. The same step fails when one of the six is missing.
+- then the composer under that transcript (M6a): once it has been laid out the app adds `DSH_CHAT_RESULT composer
+  chars=… lines=… send=off`, and `-DshComposerDraft <hex>` puts a draft in it as typing would. Screenshots: the iPhone
+  with the composer empty and with a two-line draft in light and dark, and the iPad with the list docked and the draft.
+  The same step fails when one of the five is missing.
 - `ios-compile` also compiles `:sharedUi` for the two iOS targets and checks that the klibs exist.
 
 **`ios-ipa`** (10 to 25 minutes depending on whether Gradle's cache has the Release link of Compose Multiplatform, which dominates it, so a separate job in parallel):
@@ -1017,6 +1030,10 @@ Open items the port knows about and has deliberately not done, so they are not r
   can show a reachable host.
 - **The Connected page on iOS is a placeholder.** It reports what the screen has to give (with the harness's session count
   since M1 of the session list port) and is what the chat pane shows until a session is opened.
+- **The iOS composer cannot send yet (M6b), and has no `+` sheet, `@` picker, attachments or dictation.** The model chip
+  states the model without a picker, and there are no history, details or tabs in the bar. Enter adds a line on iOS
+  whatever the keyboard (`hardwareKeyboardAttached()` is false there), and the composer stays in the column's flow:
+  Android's lifted drawer comes with M6b.
 - **The iOS transcript is read only and has dead file taps.** `LocalFileOpener` has no iOS provider yet, so "Open file"
   in a tool call's hold menu and a tap on a changed file do nothing there; file previews come with a later milestone.
 - **`ios-ipa` and `ios-app` build Compose Multiplatform for iOS twice.** The shared module is bigger than the

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="team_title">فريق الوكلاء</string>
-    <string name="team_chip">الفريق</string>
     <string name="team_beta_badge">تجريبي</string>
     <string name="team_tab_members">الأعضاء (%1$d)</string>
     <string name="team_tab_tasks">المهام (%1$d)</string>

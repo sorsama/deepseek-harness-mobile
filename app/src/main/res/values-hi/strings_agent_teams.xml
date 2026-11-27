@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="team_title">एजेंट टीम</string>
-    <string name="team_chip">टीम</string>
     <string name="team_beta_badge">बीटा</string>
     <string name="team_tab_members">सदस्य (%1$d)</string>
     <string name="team_tab_tasks">काम (%1$d)</string>
