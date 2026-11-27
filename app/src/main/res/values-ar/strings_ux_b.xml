@@ -8,23 +8,8 @@
     <string name="ux_b_session">محادثة</string>
     <string name="ux_b_browse_folder">تصفح المجلد %1$s</string>
     <string name="ux_b_open_reference">فتح %1$s: %2$s</string>
-    <string name="ux_b_paused">متوقف مؤقتًا أثناء التحرير</string>
-    <string name="ux_b_held">بانتظار إجابتك</string>
-    <string name="ux_b_continued">استمر العمل؛ لا يزال بإمكانك الإجابة</string>
-    <string name="ux_b_countdown_description">العد التنازلي للإجابة جارٍ</string>
     <string name="ux_b_view_questions">عرض الأسئلة</string>
-    <string name="ux_b_view_answers">عرض الإجابات</string>
-    <string name="ux_b_skipped">تم التخطي</string>
-    <string name="ux_b_answer">الإجابة</string>
     <string name="ux_b_automation_unavailable">هذا harness لا يدعم الأتمتة.</string>
-    <plurals name="ux_b_countdown_seconds">
-        <item quantity="zero">سيستمر العمل خلال %1$s ثانية</item>
-        <item quantity="one">سيستمر العمل خلال ثانية واحدة (%1$s)</item>
-        <item quantity="two">سيستمر العمل خلال ثانيتين (%1$s)</item>
-        <item quantity="few">سيستمر العمل خلال %1$s ثوانٍ</item>
-        <item quantity="many">سيستمر العمل خلال %1$s ثانية</item>
-        <item quantity="other">سيستمر العمل خلال %1$s ثانية</item>
-    </plurals>
     <string name="ux_b_select_reference">إضافة مرجع %1$s: %2$s</string>
     <string name="ux_b_expanded">موسّع</string>
     <string name="ux_b_collapsed">مطوي</string>

@@ -24,15 +24,7 @@
 
 
     <string name="approval_command_title">এই কমান্ড চালাবেন?</string>
-    <string name="approval_file_title">ওয়ার্কস্পেসের বাইরের ফাইল বদলাবেন?</string>
-    <string name="approval_tool_title">%1$s-এর অনুমতি দেবেন?</string>
-    <string name="approval_shortened">harness শুধু প্রথম ২,০০০ অক্ষর পাঠিয়েছে।</string>
-    <string name="approval_show_all">সব দেখান</string>
     <string name="approval_show_less">কম দেখান</string>
-    <plurals name="approval_more_waiting">
-        <item quantity="one">আরও %1$dটি অনুরোধ অপেক্ষায় আছে</item>
-        <item quantity="other">আরও %1$dটি অনুরোধ অপেক্ষায় আছে</item>
-    </plurals>
 
     <string name="sandbox_notice_builtin">এই চ্যাটের সেটিংয়ের sandbox দরকার, আর ফোন সেটা দিতে পারে না, তাই ওই কমান্ড চলেনি। চ্যাটের সেটিং বদলে আবার বলুন।</string>
     <string name="sandbox_notice_switch">“%1$s”-এ বদলান</string>

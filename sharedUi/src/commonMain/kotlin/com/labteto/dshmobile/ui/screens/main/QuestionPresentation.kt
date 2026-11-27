@@ -1,8 +1,7 @@
 package com.labteto.dshmobile.ui.screens.main
 
+import androidx.compose.runtime.Composable
 import com.labteto.dshmobile.data.QuestionCardState
-import java.text.NumberFormat
-import java.util.Locale
 
 internal enum class QuestionWaitStatus { Countdown, Paused, Held, Continued, Queued, Settled, Waiting }
 
@@ -22,4 +21,10 @@ internal fun countdownSeconds(milliseconds: Long): Int {
     return (nonNegative / 1000 + if (nonNegative % 1000 > 0) 1 else 0).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
 }
 
-internal fun countdownNumber(seconds: Int, locale: Locale): String = NumberFormat.getIntegerInstance(locale).format(seconds)
+/**
+ * The countdown's seconds as the reader's language writes a number: on Android `NumberFormat.getIntegerInstance` in the
+ * configuration's first locale (the reader's own digits, grouped), as the countdown has always been written there;
+ * Western digits on iOS, like every count there ([com.labteto.dshmobile.ui.components.localizedCount]).
+ */
+@Composable
+internal expect fun countdownNumber(seconds: Int): String

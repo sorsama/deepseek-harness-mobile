@@ -20,13 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.OpenInFull
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,7 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
@@ -58,7 +51,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import com.labteto.dshmobile.ui.theme.DsSpacing
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswer
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionItem
 import com.labteto.dshmobile.core.wire.dto.AskUserQuestionOption
@@ -67,6 +59,25 @@ import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.coroutines.launch
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.harness_questions
+import com.labteto.dshmobile.shared.resources.questions_collapse
+import com.labteto.dshmobile.shared.resources.questions_custom_placeholder
+import com.labteto.dshmobile.shared.resources.questions_dismiss
+import com.labteto.dshmobile.shared.resources.questions_error_incomplete
+import com.labteto.dshmobile.shared.resources.questions_error_unanswered
+import com.labteto.dshmobile.shared.resources.questions_expand
+import com.labteto.dshmobile.shared.resources.questions_nav_next
+import com.labteto.dshmobile.shared.resources.questions_nav_previous
+import com.labteto.dshmobile.shared.resources.questions_next
+import com.labteto.dshmobile.shared.resources.questions_progress
+import com.labteto.dshmobile.shared.resources.questions_recommended
+import com.labteto.dshmobile.shared.resources.questions_skip
+import com.labteto.dshmobile.shared.resources.questions_submit
+import com.labteto.dshmobile.shared.resources.questions_submitting
+import com.labteto.dshmobile.shared.resources.ux_b_collapsed
+import com.labteto.dshmobile.shared.resources.ux_b_expanded
+import com.labteto.dshmobile.shared.resources.ux_b_view_questions
 
 /**
  * The `ask_user_question` composer — a port of the harness web client's question card
@@ -90,7 +101,7 @@ private enum class Complaint { Unanswered, Incomplete }
  * @param onDismiss ends the request unanswered, with the same return contract.
  */
 @Composable
-internal fun QuestionsPanel(
+fun QuestionsPanel(
     requestKey: String,
     questions: List<AskUserQuestionItem>,
     onSubmit: suspend (AskUserQuestionAnswer) -> String?,
@@ -256,8 +267,8 @@ internal fun QuestionsPanel(
                         canContinue = draft.answered(),
                         feedback = when {
                             failure != null -> failure
-                            complaint == Complaint.Unanswered -> stringResource(R.string.questions_error_unanswered)
-                            complaint == Complaint.Incomplete -> stringResource(R.string.questions_error_incomplete)
+                            complaint == Complaint.Unanswered -> stringResource(Res.string.questions_error_unanswered)
+                            complaint == Complaint.Incomplete -> stringResource(Res.string.questions_error_incomplete)
                             else -> null
                         },
                         onPrevious = { index -= 1; clearFeedback() },
@@ -274,9 +285,9 @@ internal fun QuestionsPanel(
         // In tight chat/IME space show a named expand action instead of a clipped option fragment.
         val compact = minimized || (statusContent != null && maxHeight < 300.dp * fontScale)
         if (expanded) {
-            DsButton(stringResource(R.string.ux_b_view_questions), { expanded = true }, variant = DsButtonVariant.Ghost)
+            DsButton(stringResource(Res.string.ux_b_view_questions), { expanded = true }, variant = DsButtonVariant.Ghost)
             DsBottomSheet(
-                title = stringResource(R.string.harness_questions), onDismiss = { expanded = false },
+                title = stringResource(Res.string.harness_questions), onDismiss = { expanded = false },
             ) {
                 BoxWithConstraints(Modifier.fillMaxWidth()) {
                     Card(minOf(maxHeight, 600.dp), compact = false, inSheet = true)
@@ -315,9 +326,9 @@ private fun QuestionHeader(
 ) {
     val colors = DsTheme.colors
     val toggleLabel = stringResource(
-        if (minimized) R.string.questions_expand else R.string.questions_collapse,
+        if (minimized) Res.string.questions_expand else Res.string.questions_collapse,
     )
-    val expandedState = stringResource(if (minimized) R.string.ux_b_collapsed else R.string.ux_b_expanded)
+    val expandedState = stringResource(if (minimized) Res.string.ux_b_collapsed else Res.string.ux_b_expanded)
     val rotation by animateFloatAsState(
         targetValue = if (minimized) 0f else 90f,
         animationSpec = DsAnimations.chevron,
@@ -365,20 +376,20 @@ private fun QuestionHeader(
         }
         if (count > 1) {
             Text(
-                stringResource(R.string.questions_progress, index + 1, count),
+                stringResource(Res.string.questions_progress, localizedCount(index + 1), localizedCount(count)),
                 style = DsType.caption11,
                 color = colors.labelTertiary,
             )
             Spacer(Modifier.width(4.dp))
         }
         if (onExpand != null) DsIconButton(
-            icon = Icons.Filled.OpenInFull,
-            contentDescription = stringResource(R.string.ux_b_view_questions),
+            icon = DsIcons.OpenInFull,
+            contentDescription = stringResource(Res.string.ux_b_view_questions),
             onClick = onExpand,
         )
         DsIconButton(
-            icon = Icons.Filled.Close,
-            contentDescription = stringResource(R.string.questions_dismiss),
+            icon = DsIcons.Close,
+            contentDescription = stringResource(Res.string.questions_dismiss),
             onClick = onDismiss,
             enabled = !busy,
             iconSize = 18.dp,
@@ -490,7 +501,7 @@ private fun OptionRow(
                     )
                     if (display.recommended) {
                         Text(
-                            stringResource(R.string.questions_recommended),
+                            stringResource(Res.string.questions_recommended),
                             style = DsType.small13,
                             color = colors.accent,
                         )
@@ -517,7 +528,7 @@ private fun OptionMarker(ordinal: Int, selected: Boolean, multiSelect: Boolean) 
         Box(contentAlignment = Alignment.Center) {
             if (selected) {
                 Icon(
-                    Icons.Filled.Check,
+                    DsIcons.Check,
                     contentDescription = null,
                     tint = colors.onAccent,
                     modifier = Modifier.size(14.dp),
@@ -560,7 +571,7 @@ private fun CustomAnswerField(
         enabled = enabled,
         placeholder = {
             Text(
-                stringResource(R.string.questions_custom_placeholder),
+                stringResource(Res.string.questions_custom_placeholder),
                 style = DsType.std14,
                 color = colors.labelCaption,
             )
@@ -573,7 +584,7 @@ private fun CustomAnswerField(
                     OptionMarker(ordinal = 0, selected = value.isNotBlank(), multiSelect = true)
                 } else {
                     Icon(
-                        Icons.Filled.Edit,
+                        DsIcons.EditFilled,
                         contentDescription = null,
                         tint = colors.labelTertiary,
                         modifier = Modifier.size(16.dp),
@@ -628,15 +639,15 @@ private fun QuestionFooter(
     ) {
         if (count > 1) {
             DsIconButton(
-                icon = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = stringResource(R.string.questions_nav_previous),
+                icon = DsIcons.KeyboardArrowLeft,
+                contentDescription = stringResource(Res.string.questions_nav_previous),
                 onClick = onPrevious,
                 enabled = index > 0 && !busy,
                 iconSize = 18.dp,
             )
             DsIconButton(
-                icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = stringResource(R.string.questions_nav_next),
+                icon = DsIcons.ChevronRight,
+                contentDescription = stringResource(Res.string.questions_nav_next),
                 onClick = onNext,
                 enabled = index < count - 1 && !busy,
                 iconSize = 18.dp,
@@ -644,7 +655,7 @@ private fun QuestionFooter(
         }
         Spacer(Modifier.weight(1f))
         DsButton(
-            text = stringResource(R.string.questions_skip),
+            text = stringResource(Res.string.questions_skip),
             onClick = onSkip,
             enabled = !busy,
             variant = DsButtonVariant.Outline,
@@ -653,9 +664,9 @@ private fun QuestionFooter(
         Spacer(Modifier.width(8.dp))
         DsButton(
             text = when {
-                busy -> stringResource(R.string.questions_submitting)
-                index < count - 1 -> stringResource(R.string.questions_next)
-                else -> stringResource(R.string.questions_submit)
+                busy -> stringResource(Res.string.questions_submitting)
+                index < count - 1 -> stringResource(Res.string.questions_next)
+                else -> stringResource(Res.string.questions_submit)
             },
             onClick = onContinue,
             enabled = canContinue && !busy,

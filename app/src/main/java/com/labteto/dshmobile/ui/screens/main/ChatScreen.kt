@@ -7,7 +7,6 @@ import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,17 +31,8 @@ import com.labteto.dshmobile.connection.AppSettings
 import com.labteto.dshmobile.ui.media.sampleSizeFor
 import com.labteto.dshmobile.ui.rememberHostsStore
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswer
-import com.labteto.dshmobile.core.wire.dto.AskUserQuestionAnswerItem
-import com.labteto.dshmobile.core.wire.dto.AskUserQuestionOption
 import com.labteto.dshmobile.core.wire.RpcResult
 import com.labteto.dshmobile.core.wire.dto.ImageLimitsView
-import com.labteto.dshmobile.data.QuestionOutcome
-import com.labteto.dshmobile.ui.components.ApprovalPanel
-import com.labteto.dshmobile.ui.components.ConnectionBanner
-import com.labteto.dshmobile.ui.components.PlanReviewPanel
-import com.labteto.dshmobile.ui.components.planReviewOf
-import com.labteto.dshmobile.ui.components.QuestionsPanel
 import com.labteto.dshmobile.ui.components.rememberDsToast
 import com.labteto.dshmobile.ui.input.AppShortcut
 import com.labteto.dshmobile.ui.input.DropHighlight
@@ -58,7 +48,6 @@ import com.labteto.dshmobile.ui.screens.main.commands.RewindDecoration
 import com.labteto.dshmobile.ui.screens.main.commands.SlashMenu
 import com.labteto.dshmobile.ui.screens.main.commands.SlashRow
 import com.labteto.dshmobile.ui.screens.main.commands.activeSlash
-import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.components.AnimatedPresence
 import com.labteto.dshmobile.ui.theme.DsTheme
 import androidx.compose.ui.res.stringResource
@@ -226,22 +215,6 @@ fun ChatScreen(
     val filesListState = rememberLazyListState()
     // The session's changed files, shared by the Files tab label and the tab itself.
     val sessionFiles = remember(conversation?.nodes) { sessionChangedFiles(conversation?.nodes.orEmpty()) }
-
-    val answerRefused = stringResource(R.string.questions_answer_refused)
-    val answerUnsent = stringResource(R.string.questions_answer_unsent)
-
-    /**
-     * What to tell the user about a question response, or null when the harness took it.
-     *
-     * A refusal is worth naming rather than swallowing: the host's wait stays open and the tool
-     * call that opened it stays blocked, so a card that quietly did nothing would leave the session
-     * stuck with no explanation.
-     */
-    fun refusalOf(outcome: QuestionOutcome): String? = when (outcome) {
-        is QuestionOutcome.Accepted -> null
-        is QuestionOutcome.Refused -> answerRefused.format(outcome.reason)
-        is QuestionOutcome.Unsent -> answerUnsent
-    }
 
     /**
      * Prepare picked, dropped or pasted images and add them to [target]'s tray. One path for all
@@ -596,18 +569,14 @@ fun ChatScreen(
             // say half of that, in transport words, so they stand aside while it shows.
             com.labteto.dshmobile.ui.screens.runtime.BuiltInChatNotice {
                 val folderGone = stringResource(R.string.projects_session_folder_gone)
-                AnimatedPresence(shownError) {
-                    ConnectionBanner(
-                        // The session's folder was deleted or renamed (a project removed on the phone):
-                        // said plainly rather than as the harness's working-directory error.
-                        message = if (com.labteto.dshmobile.runtime.workspace.ProjectList.isMissingFolderError(it)) folderGone else it,
-                        actionLabel = stringResource(R.string.common_retry),
-                        onAction = { store.retryConnection() },
-                    )
-                }
-                AnimatedPresence(Unit.takeIf { conversation?.gap == true && connectionError == null }) {
-                    ConnectionBanner(stringResource(R.string.common_reconnecting), warning = true)
-                }
+                ChatConnectionBanners(
+                    error = shownError,
+                    reconnecting = conversation?.gap == true && connectionError == null,
+                    onRetry = { store.retryConnection() },
+                    // The session's folder was deleted or renamed (a project removed on the phone):
+                    // said plainly rather than as the harness's working-directory error.
+                    describe = { if (com.labteto.dshmobile.runtime.workspace.ProjectList.isMissingFolderError(it)) folderGone else it },
+                )
             }
 
             // A bar pinned above the transcript: in view wherever the reader has scrolled to, and the
@@ -651,85 +620,8 @@ fun ChatScreen(
                 ChatTab.Chat -> Unit
             }
         },
-        requests = { gutter ->
-            // Server-initiated requests take over the bottom of the screen: they block the turn,
-            // so burying them behind a scroll would strand the session.
-            val approval = pendingApproval?.takeIf { it.sessionId == currentSessionId }
-            AnimatedPresence(approval, enter = DsAnimations.cardEnter, exit = DsAnimations.cardExit) { approval ->
-                // A refusal is said out loud here rather than swallowed, for the reason [refusalOf]
-                // gives: the host's wait — and the tool call behind it — stays open, and a panel
-                // that reported nothing would read as two buttons that do nothing.
-                fun decide(allow: Boolean) = scope.launch {
-                    refusalOf(store.respondApproval(approval.sessionId, approval.approvalId, allow))
-                        ?.let { toast.second(it) }
-                }
-                ApprovalPanel(
-                    modifier = Modifier.padding(horizontal = gutter),
-                    toolName = approval.toolName,
-                    reason = approval.reason,
-                    rawReason = approval.rawReason,
-                    requestKey = approval.approvalId,
-                    waitingAfter = approval.waitingAfter,
-                    onAllow = { decide(true) },
-                    onReject = { decide(false) },
-                )
-            }
-            val questions = pendingQuestions?.takeIf { it.sessionId == currentSessionId }
-            AnimatedPresence(questions, enter = DsAnimations.cardEnter, exit = DsAnimations.cardExit) { questions ->
-                var planBusy by remember(questions.rpcId) { mutableStateOf(false) }
-                // A plan review rides the question channel but is a different decision, so it gets
-                // the card built for it. The narrowing decides which — and hands back anything the
-                // card could not answer in full, because the card answers one question and the host
-                // refuses an answer batch shorter than the request it resolves.
-                val review = remember(questions.rpcId) { planReviewOf(questions.items) }
-                if (review != null) {
-                    fun settle(block: suspend () -> QuestionOutcome) {
-                        planBusy = true
-                        scope.launch {
-                            refusalOf(block())?.let {
-                                planBusy = false
-                                toast.second(it)
-                            }
-                        }
-                    }
-                    fun decide(option: AskUserQuestionOption) = settle {
-                        store.answerQuestions(
-                            questions.sessionId,
-                            AskUserQuestionAnswer(
-                                listOf(AskUserQuestionAnswerItem(review.id, listOf(option.label))),
-                            ),
-                        )
-                    }
-                    PlanReviewPanel(
-                        modifier = Modifier.padding(horizontal = gutter),
-                        review = review,
-                        busy = planBusy,
-                        onApprove = { decide(review.approve) },
-                        onDecline = { review.decline?.let { decide(it) } },
-                        // Wanting to talk it over first is not one of the options the asker stated,
-                        // so it ends the request rather than answering it with the refusal. The
-                        // draft stays: what the reader typed is what they came to send next.
-                        onDiscuss = {
-                            settle { store.dismissQuestions(questions.sessionId) }
-                        },
-                    )
-                } else {
-                    QuestionsPanel(
-                        modifier = Modifier.padding(horizontal = gutter),
-                        requestKey = questions.rpcId,
-                        questions = questions.items,
-                        onSubmit = { answer ->
-                            refusalOf(store.answerQuestions(questions.sessionId, answer))
-                        },
-                        onDismiss = { refusalOf(store.dismissQuestions(questions.sessionId)) },
-                    )
-                }
-            }
-
-            // Weighted questions are measured after the composer, so long questions cannot
-            // consume its controls. The question area scrolls within its allotted height.
-            ModernQuestions(store, currentSessionId, Modifier.weight(1f, fill = false).padding(horizontal = gutter))
-        },
+        // What the harness waits on the reader for: shared with iOS since M7.
+        requests = { gutter -> ChatRequests(gutter, toast.second) },
         slashMenu = {
             AnimatedPresence(activeSlash(draft, composer.selection)) { slash ->
                 SlashMenu(

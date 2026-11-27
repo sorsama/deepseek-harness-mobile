@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">请先打开原会话完成迁移，然后重试。</string>
+    <string name="approval_allow_once">允许一次</string>
+    <string name="approval_command_title">运行这条命令？</string>
+    <string name="approval_file_title">修改工作区以外的文件？</string>
+    <string name="approval_reason">原因：%1$s</string>
+    <string name="approval_reject">不允许</string>
+    <string name="approval_shortened">harness 只发来了前 2000 个字符。</string>
+    <string name="approval_show_all">显示全部</string>
+    <string name="approval_title">需要权限</string>
+    <string name="approval_tool_title">允许 %1$s？</string>
     <string name="archive_activity_job">后台任务</string>
     <string name="archive_activity_more">还有 %1$d 项</string>
     <string name="archive_activity_schedule">定时任务</string>
@@ -260,6 +269,7 @@
     <string name="common_copied">已复制</string>
     <string name="common_copy">复制</string>
     <string name="common_error">出了点问题</string>
+    <string name="common_loading">加载中…</string>
     <string name="common_offline">离线</string>
     <string name="common_ok">确定</string>
     <string name="common_reconnecting">重新连接中…</string>
@@ -395,7 +405,11 @@
     <string name="goal_rounds">第 %1$d 轮，共 %2$s 轮</string>
     <string name="goal_title">目标</string>
     <string name="harness_add_reference">添加引用</string>
+    <string name="harness_answered">已回答</string>
     <string name="harness_automations">自动化</string>
+    <string name="harness_questions">问题</string>
+    <string name="harness_reply_queued">回复已排队</string>
+    <string name="harness_take_time">延长时间</string>
     <string name="hold_copy_all">全部复制</string>
     <string name="hold_copy_arguments">复制参数</string>
     <string name="hold_copy_command">复制命令</string>
@@ -499,6 +513,10 @@
     <string name="photos_preparing">正在准备照片…</string>
     <string name="plan_mode_off">计划模式：关</string>
     <string name="plan_mode_on">计划模式：开</string>
+    <string name="plan_review_approve">批准</string>
+    <string name="plan_review_decline">拒绝</string>
+    <string name="plan_review_discuss">讨论</string>
+    <string name="plan_review_title">计划已就绪，请审阅</string>
     <string name="preset_code_desc">包含标准模式的全部功能，工具通过 Code Mode SDK 提供，模型可以在一个 TypeScript 程序里串起多个步骤。</string>
     <string name="preset_code_name">PTC 模式</string>
     <string name="preset_cordis_desc">用来创建自定义智能体预设。包含标准模式的全部功能，另有运行时检查、插件试验和预设编写指引。</string>
@@ -510,6 +528,20 @@
     <string name="projects_title">这部手机上的项目</string>
     <string name="questions_answer_refused">harness 没有接受这个答案（%1$s）。</string>
     <string name="questions_answer_unsent">无法连接到 harness。</string>
+    <string name="questions_collapse">收起问题卡片</string>
+    <string name="questions_custom_placeholder">输入你的答案</string>
+    <string name="questions_dismiss">忽略所有问题</string>
+    <string name="questions_error_incomplete">请先回答这个问题。</string>
+    <string name="questions_error_unanswered">请选择一个选项或填写自定义答案。</string>
+    <string name="questions_expand">展开问题卡片</string>
+    <string name="questions_nav_next">下一题</string>
+    <string name="questions_nav_previous">上一题</string>
+    <string name="questions_next">下一个</string>
+    <string name="questions_progress">%1$d / %2$d</string>
+    <string name="questions_recommended">推荐</string>
+    <string name="questions_skip">跳过</string>
+    <string name="questions_submit">提交</string>
+    <string name="questions_submitting">正在提交…</string>
     <string name="quota_compact_day">天</string>
     <string name="quota_compact_hour">小时</string>
     <string name="quota_compact_minute">分</string>
@@ -606,18 +638,31 @@
     <string name="toolcard_title_web">网页</string>
     <string name="trajectory_title">轨迹</string>
     <string name="ux_a_details">技术详情</string>
+    <string name="ux_b_answer">回答</string>
     <string name="ux_b_clear_search">清除搜索</string>
+    <string name="ux_b_collapsed">已收起</string>
+    <string name="ux_b_continued">已继续工作，仍可回答</string>
+    <string name="ux_b_countdown_description">正在倒计时等待回答</string>
+    <string name="ux_b_expanded">已展开</string>
     <string name="ux_b_file">文件</string>
     <string name="ux_b_folder">文件夹</string>
+    <string name="ux_b_held">会一直等你回答</string>
     <string name="ux_b_open_reference">打开%1$s：%2$s</string>
+    <string name="ux_b_paused">编辑时已暂停</string>
     <string name="ux_b_remove_reference">移除引用 %1$s</string>
     <string name="ux_b_session">对话</string>
+    <string name="ux_b_skipped">已跳过</string>
+    <string name="ux_b_view_answers">查看回答</string>
+    <string name="ux_b_view_questions">查看问题</string>
     <string name="work_steps_clipped">仅显示长内容的开头。</string>
     <string name="work_steps_show_all">显示全部</string>
     <string name="workflow_completed">已完成</string>
     <string name="workflow_failed">失败</string>
     <string name="workflow_running">运行中</string>
     <string name="workflow_title">工作流</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="other">还有 %1$d 个请求在等待</item>
+    </plurals>
     <plurals name="chat_changed_files">
         <item quantity="other">已修改 %1$d 个文件</item>
     </plurals>
@@ -686,5 +731,8 @@
     </plurals>
     <plurals name="trajectory_step_count">
         <item quantity="other">%1$d 步</item>
+    </plurals>
+    <plurals name="ux_b_countdown_seconds">
+        <item quantity="other">%1$s 秒后继续工作</item>
     </plurals>
 </resources>

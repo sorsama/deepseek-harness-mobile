@@ -8,18 +8,8 @@
     <string name="ux_b_session">对话</string>
     <string name="ux_b_browse_folder">浏览文件夹 %1$s</string>
     <string name="ux_b_open_reference">打开%1$s：%2$s</string>
-    <string name="ux_b_paused">编辑时已暂停</string>
-    <string name="ux_b_held">会一直等你回答</string>
-    <string name="ux_b_continued">已继续工作，仍可回答</string>
-    <string name="ux_b_countdown_description">正在倒计时等待回答</string>
     <string name="ux_b_view_questions">查看问题</string>
-    <string name="ux_b_view_answers">查看回答</string>
-    <string name="ux_b_skipped">已跳过</string>
-    <string name="ux_b_answer">回答</string>
     <string name="ux_b_automation_unavailable">此 harness 不支持自动化。</string>
-    <plurals name="ux_b_countdown_seconds">
-        <item quantity="other">%1$s 秒后继续工作</item>
-    </plurals>
     <string name="ux_b_select_reference">添加%1$s引用：%2$s</string>
     <string name="ux_b_expanded">已展开</string>
     <string name="ux_b_collapsed">已收起</string>

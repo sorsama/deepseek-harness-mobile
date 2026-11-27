@@ -3,6 +3,9 @@ package com.labteto.dshmobile.ui.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.automirrored.outlined.CallSplit
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.filled.Add
@@ -110,6 +113,9 @@ class DsIconsMatchMaterialTest {
         Triple("Groups", DsIcons.Groups, Icons.Outlined.Groups),
         Triple("Diversity3", DsIcons.Diversity3, Icons.Outlined.Diversity3),
         Triple("MoreVertFilled", DsIcons.MoreVertFilled, Icons.Filled.MoreVert),
+        Triple("WarningAmber", DsIcons.WarningAmber, Icons.Filled.WarningAmber),
+        Triple("KeyboardArrowLeft", DsIcons.KeyboardArrowLeft, Icons.AutoMirrored.Filled.KeyboardArrowLeft),
+        Triple("EditFilled", DsIcons.EditFilled, Icons.Filled.Edit),
     )
 
     @Test

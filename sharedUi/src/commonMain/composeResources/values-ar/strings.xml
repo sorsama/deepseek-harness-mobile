@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">افتح الجلسة الأصلية لإكمال الترحيل، ثم حاول مجددًا.</string>
+    <string name="approval_allow_once">السماح مرة واحدة</string>
+    <string name="approval_command_title">تشغيل هذا الأمر؟</string>
+    <string name="approval_file_title">تغيير ملف خارج مساحة العمل؟</string>
+    <string name="approval_reason">السبب: %1$s</string>
+    <string name="approval_reject">عدم السماح</string>
+    <string name="approval_shortened">أرسل harness أول 2000 حرف فقط.</string>
+    <string name="approval_show_all">عرض الكل</string>
+    <string name="approval_title">مطلوب إذن</string>
+    <string name="approval_tool_title">السماح بـ %1$s؟</string>
     <string name="archive_activity_job">المهام الخلفية</string>
     <string name="archive_activity_more">و%1$d أخرى</string>
     <string name="archive_activity_schedule">الجداول الزمنية</string>
@@ -260,6 +269,7 @@
     <string name="common_copied">تم النسخ</string>
     <string name="common_copy">نسخ</string>
     <string name="common_error">حدث خطأ ما</string>
+    <string name="common_loading">جارٍ التحميل…</string>
     <string name="common_offline">غير متصل</string>
     <string name="common_ok">موافق</string>
     <string name="common_reconnecting">جارٍ إعادة الاتصال…</string>
@@ -395,7 +405,11 @@
     <string name="goal_rounds">الجولة %1$d من %2$s</string>
     <string name="goal_title">الهدف</string>
     <string name="harness_add_reference">إضافة مرجع</string>
+    <string name="harness_answered">تمت الإجابة</string>
     <string name="harness_automations">المهام التلقائية</string>
+    <string name="harness_questions">الأسئلة</string>
+    <string name="harness_reply_queued">الرد في قائمة الانتظار</string>
+    <string name="harness_take_time">وقت إضافي</string>
     <string name="hold_copy_all">نسخ الكل</string>
     <string name="hold_copy_arguments">نسخ الوسائط</string>
     <string name="hold_copy_command">نسخ الأمر</string>
@@ -499,6 +513,10 @@
     <string name="photos_preparing">جارٍ تجهيز الصور…</string>
     <string name="plan_mode_off">وضع الخطة: معطّل</string>
     <string name="plan_mode_on">وضع الخطة: مفعّل</string>
+    <string name="plan_review_approve">موافقة</string>
+    <string name="plan_review_decline">رفض</string>
+    <string name="plan_review_discuss">مناقشة</string>
+    <string name="plan_review_title">الخطة جاهزة للمراجعة</string>
     <string name="preset_code_desc">كل ما في الوضع القياسي، مع أدوات متاحة عبر Code Mode SDK ليربط النموذج عدة خطوات في برنامج TypeScript واحد.</string>
     <string name="preset_code_name">وضع PTC</string>
     <string name="preset_cordis_desc">مخصص لإنشاء إعدادات مسبقة للوكيل. يتضمن كل ما في الوضع القياسي، إضافةً إلى فحص وقت التشغيل وتجارب الإضافات وإرشادات كتابة الإعدادات المسبقة.</string>
@@ -510,6 +528,20 @@
     <string name="projects_title">المشاريع على هذا الهاتف</string>
     <string name="questions_answer_refused">لم يقبل harness هذه الإجابة (%1$s).</string>
     <string name="questions_answer_unsent">تعذّر الوصول إلى harness.</string>
+    <string name="questions_collapse">طي بطاقة السؤال</string>
+    <string name="questions_custom_placeholder">اكتب إجابتك</string>
+    <string name="questions_dismiss">تجاهل كل الأسئلة</string>
+    <string name="questions_error_incomplete">أكمل هذا السؤال أولًا.</string>
+    <string name="questions_error_unanswered">اختر خيارًا أو اكتب إجابتك.</string>
+    <string name="questions_expand">توسيع بطاقة السؤال</string>
+    <string name="questions_nav_next">السؤال التالي</string>
+    <string name="questions_nav_previous">السؤال السابق</string>
+    <string name="questions_next">التالي</string>
+    <string name="questions_progress">%1$d / %2$d</string>
+    <string name="questions_recommended">موصى به</string>
+    <string name="questions_skip">تخطي</string>
+    <string name="questions_submit">إرسال</string>
+    <string name="questions_submitting">جارٍ الإرسال…</string>
     <string name="quota_compact_day">ي</string>
     <string name="quota_compact_hour">س</string>
     <string name="quota_compact_minute">د</string>
@@ -606,18 +638,36 @@
     <string name="toolcard_title_web">الويب</string>
     <string name="trajectory_title">المسار</string>
     <string name="ux_a_details">التفاصيل التقنية</string>
+    <string name="ux_b_answer">الإجابة</string>
     <string name="ux_b_clear_search">مسح البحث</string>
+    <string name="ux_b_collapsed">مطوي</string>
+    <string name="ux_b_continued">استمر العمل؛ لا يزال بإمكانك الإجابة</string>
+    <string name="ux_b_countdown_description">العد التنازلي للإجابة جارٍ</string>
+    <string name="ux_b_expanded">موسّع</string>
     <string name="ux_b_file">ملف</string>
     <string name="ux_b_folder">مجلد</string>
+    <string name="ux_b_held">بانتظار إجابتك</string>
     <string name="ux_b_open_reference">فتح %1$s: %2$s</string>
+    <string name="ux_b_paused">متوقف مؤقتًا أثناء التحرير</string>
     <string name="ux_b_remove_reference">إزالة المرجع %1$s</string>
     <string name="ux_b_session">محادثة</string>
+    <string name="ux_b_skipped">تم التخطي</string>
+    <string name="ux_b_view_answers">عرض الإجابات</string>
+    <string name="ux_b_view_questions">عرض الأسئلة</string>
     <string name="work_steps_clipped">تُعرض بداية نتيجة طويلة.</string>
     <string name="work_steps_show_all">عرض الكل</string>
     <string name="workflow_completed">مكتمل</string>
     <string name="workflow_failed">فاشل</string>
     <string name="workflow_running">قيد التشغيل</string>
     <string name="workflow_title">سير العمل</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="zero">لا طلبات أخرى في الانتظار</item>
+        <item quantity="one">طلب واحد آخر في الانتظار</item>
+        <item quantity="two">طلبان آخران في الانتظار</item>
+        <item quantity="few">%1$d طلبات أخرى في الانتظار</item>
+        <item quantity="many">%1$d طلبًا آخر في الانتظار</item>
+        <item quantity="other">%1$d طلب آخر في الانتظار</item>
+    </plurals>
     <plurals name="chat_changed_files">
         <item quantity="zero">تم تغيير %1$d ملف</item>
         <item quantity="one">تم تغيير %1$d ملف</item>
@@ -801,5 +851,13 @@
         <item quantity="few">%1$d خطوات</item>
         <item quantity="many">%1$d خطوة</item>
         <item quantity="other">%1$d خطوة</item>
+    </plurals>
+    <plurals name="ux_b_countdown_seconds">
+        <item quantity="zero">سيستمر العمل خلال %1$s ثانية</item>
+        <item quantity="one">سيستمر العمل خلال ثانية واحدة (%1$s)</item>
+        <item quantity="two">سيستمر العمل خلال ثانيتين (%1$s)</item>
+        <item quantity="few">سيستمر العمل خلال %1$s ثوانٍ</item>
+        <item quantity="many">سيستمر العمل خلال %1$s ثانية</item>
+        <item quantity="other">سيستمر العمل خلال %1$s ثانية</item>
     </plurals>
 </resources>

@@ -1434,6 +1434,76 @@ object DsIcons {
             close()
         }
     }
+
+    /** `Icons.Filled.WarningAmber`. */
+    val WarningAmber: ImageVector by lazy {
+        icon(
+            "Filled.WarningAmber",
+            paths = listOf<PathBuilder.() -> Unit>(
+                {
+                    moveTo(12.0f, 5.99f)
+                    lineTo(19.53f, 19.0f)
+                    horizontalLineTo(4.47f)
+                    lineTo(12.0f, 5.99f)
+                    moveTo(12.0f, 2.0f)
+                    lineTo(1.0f, 21.0f)
+                    horizontalLineToRelative(22.0f)
+                    lineTo(12.0f, 2.0f)
+                    lineTo(12.0f, 2.0f)
+                    close()
+                },
+                {
+                    moveTo(13.0f, 16.0f)
+                    lineToRelative(-2.0f, 0.0f)
+                    lineToRelative(0.0f, 2.0f)
+                    lineToRelative(2.0f, 0.0f)
+                    close()
+                },
+                {
+                    moveTo(13.0f, 10.0f)
+                    lineToRelative(-2.0f, 0.0f)
+                    lineToRelative(0.0f, 5.0f)
+                    lineToRelative(2.0f, 0.0f)
+                    close()
+                },
+            ),
+        )
+    }
+
+    /** `Icons.AutoMirrored.Filled.KeyboardArrowLeft`. */
+    val KeyboardArrowLeft: ImageVector by lazy {
+        icon("AutoMirrored.Filled.KeyboardArrowLeft", autoMirror = true) {
+            moveTo(15.41f, 16.59f)
+            lineTo(10.83f, 12.0f)
+            lineToRelative(4.58f, -4.59f)
+            lineTo(14.0f, 6.0f)
+            lineToRelative(-6.0f, 6.0f)
+            lineToRelative(6.0f, 6.0f)
+            lineToRelative(1.41f, -1.41f)
+            close()
+        }
+    }
+
+    /** `Icons.Filled.Edit`. */
+    val EditFilled: ImageVector by lazy {
+        icon("Filled.Edit") {
+            moveTo(3.0f, 17.25f)
+            verticalLineTo(21.0f)
+            horizontalLineToRelative(3.75f)
+            lineTo(17.81f, 9.94f)
+            lineToRelative(-3.75f, -3.75f)
+            lineTo(3.0f, 17.25f)
+            close()
+            moveTo(20.71f, 7.04f)
+            curveToRelative(0.39f, -0.39f, 0.39f, -1.02f, 0.0f, -1.41f)
+            lineToRelative(-2.34f, -2.34f)
+            curveToRelative(-0.39f, -0.39f, -1.02f, -0.39f, -1.41f, 0.0f)
+            lineToRelative(-1.83f, 1.83f)
+            lineToRelative(3.75f, 3.75f)
+            lineToRelative(1.83f, -1.83f)
+            close()
+        }
+    }
 }
 
 /**

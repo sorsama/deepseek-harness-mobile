@@ -9,3 +9,10 @@ import androidx.compose.ui.unit.Dp
  */
 @Composable
 internal expect fun screenWidth(): Dp
+
+/**
+ * How tall the screen the app is drawn on is: Android's `Configuration.screenHeightDp` (the window less the system bars
+ * above and below it, which the approval card has always kept a fraction of), the window's own height on iOS.
+ */
+@Composable
+internal expect fun screenHeight(): Dp

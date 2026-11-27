@@ -8,19 +8,8 @@
     <string name="ux_b_session">কথোপকথন</string>
     <string name="ux_b_browse_folder">%1$s ফোল্ডার দেখুন</string>
     <string name="ux_b_open_reference">%1$s খুলুন: %2$s</string>
-    <string name="ux_b_paused">এডিট করার সময় থেমে আছে</string>
-    <string name="ux_b_held">আপনার উত্তরের অপেক্ষায়</string>
-    <string name="ux_b_continued">কাজ চলছে। আপনি এখনও উত্তর দিতে পারেন।</string>
-    <string name="ux_b_countdown_description">উত্তরের জন্য কাউন্টডাউন চলছে</string>
     <string name="ux_b_view_questions">প্রশ্ন দেখুন</string>
-    <string name="ux_b_view_answers">উত্তর দেখুন</string>
-    <string name="ux_b_skipped">এড়িয়ে যাওয়া হয়েছে</string>
-    <string name="ux_b_answer">উত্তর</string>
     <string name="ux_b_automation_unavailable">এই harness অটোমেশন সমর্থন করে না।</string>
-    <plurals name="ux_b_countdown_seconds">
-        <item quantity="one">%1$s সেকেন্ড পরে কাজ চলবে</item>
-        <item quantity="other">%1$s সেকেন্ড পরে কাজ চলবে</item>
-    </plurals>
     <string name="ux_b_select_reference">%1$s রেফারেন্স যোগ করুন: %2$s</string>
     <string name="ux_b_expanded">খোলা</string>
     <string name="ux_b_collapsed">গুটানো</string>

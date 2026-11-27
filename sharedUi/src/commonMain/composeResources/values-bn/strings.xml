@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">মাইগ্রেশন শেষ করতে আগের সেশনটি খুলুন, তারপর আবার চেষ্টা করুন।</string>
+    <string name="approval_allow_once">একবার অনুমতি দিন</string>
+    <string name="approval_command_title">এই কমান্ড চালাবেন?</string>
+    <string name="approval_file_title">ওয়ার্কস্পেসের বাইরের ফাইল বদলাবেন?</string>
+    <string name="approval_reason">কারণ: %1$s</string>
+    <string name="approval_reject">অনুমতি দেবেন না</string>
+    <string name="approval_shortened">harness শুধু প্রথম ২,০০০ অক্ষর পাঠিয়েছে।</string>
+    <string name="approval_show_all">সব দেখান</string>
+    <string name="approval_title">অনুমতি দরকার</string>
+    <string name="approval_tool_title">%1$s-এর অনুমতি দেবেন?</string>
     <string name="archive_activity_job">ব্যাকগ্রাউন্ড কাজ</string>
     <string name="archive_activity_more">আরও %1$dটি</string>
     <string name="archive_activity_schedule">সময়সূচি</string>
@@ -260,6 +269,7 @@
     <string name="common_copied">কপি হয়েছে</string>
     <string name="common_copy">কপি করুন</string>
     <string name="common_error">কিছু একটা ভুল হয়েছে</string>
+    <string name="common_loading">লোড হচ্ছে…</string>
     <string name="common_offline">অফলাইন</string>
     <string name="common_ok">ঠিক আছে</string>
     <string name="common_reconnecting">আবার সংযুক্ত হচ্ছে…</string>
@@ -395,7 +405,11 @@
     <string name="goal_rounds">রাউন্ড %1$d/%2$s</string>
     <string name="goal_title">লক্ষ্য</string>
     <string name="harness_add_reference">রেফারেন্স যোগ করুন</string>
+    <string name="harness_answered">উত্তর দেওয়া হয়েছে</string>
     <string name="harness_automations">অটোমেশন</string>
+    <string name="harness_questions">প্রশ্ন</string>
+    <string name="harness_reply_queued">উত্তর কিউতে আছে</string>
+    <string name="harness_take_time">আরও সময়</string>
     <string name="hold_copy_all">সব কপি করুন</string>
     <string name="hold_copy_arguments">আর্গুমেন্ট কপি করুন</string>
     <string name="hold_copy_command">কমান্ড কপি করুন</string>
@@ -499,6 +513,10 @@
     <string name="photos_preparing">ছবি প্রস্তুত হচ্ছে…</string>
     <string name="plan_mode_off">প্ল্যান মোড: বন্ধ</string>
     <string name="plan_mode_on">প্ল্যান মোড: চালু</string>
+    <string name="plan_review_approve">অনুমোদন করুন</string>
+    <string name="plan_review_decline">ফিরিয়ে দিন</string>
+    <string name="plan_review_discuss">এ নিয়ে কথা বলুন</string>
+    <string name="plan_review_title">প্ল্যান দেখার জন্য তৈরি</string>
     <string name="preset_code_desc">স্ট্যান্ডার্ড মোডের সব সুবিধা আছে। তফাত হলো, টুলগুলো Code Mode SDK দিয়ে পাওয়া যায়, যাতে মডেল অনেক ধাপের কাজ একটি TypeScript প্রোগ্রামে জুড়ে নিতে পারে।</string>
     <string name="preset_code_name">PTC মোড</string>
     <string name="preset_cordis_desc">কাস্টম এজেন্ট প্রিসেট বানানোর জন্য। স্ট্যান্ডার্ড মোডের সব সুবিধার সঙ্গে আছে রানটাইম পরীক্ষা, প্লাগইন নিয়ে পরীক্ষানিরীক্ষা ও প্রিসেট লেখার সহায়তা।</string>
@@ -510,6 +528,20 @@
     <string name="projects_title">এই ফোনের প্রজেক্ট</string>
     <string name="questions_answer_refused">harness এই উত্তর নেয়নি (%1$s)।</string>
     <string name="questions_answer_unsent">harness-এ পৌঁছানো যায়নি।</string>
+    <string name="questions_collapse">প্রশ্নের কার্ড গুটিয়ে নিন</string>
+    <string name="questions_custom_placeholder">আপনার উত্তর লিখুন</string>
+    <string name="questions_dismiss">সব প্রশ্ন বন্ধ করুন</string>
+    <string name="questions_error_incomplete">আগে এই প্রশ্নটি শেষ করুন।</string>
+    <string name="questions_error_unanswered">একটি বিকল্প বেছে নিন বা নিজের উত্তর লিখুন।</string>
+    <string name="questions_expand">প্রশ্নের কার্ড খুলুন</string>
+    <string name="questions_nav_next">পরের প্রশ্ন</string>
+    <string name="questions_nav_previous">আগের প্রশ্ন</string>
+    <string name="questions_next">পরের</string>
+    <string name="questions_progress">%1$d / %2$d</string>
+    <string name="questions_recommended">সুপারিশ করা</string>
+    <string name="questions_skip">এড়িয়ে যান</string>
+    <string name="questions_submit">পাঠান</string>
+    <string name="questions_submitting">পাঠানো হচ্ছে…</string>
     <string name="quota_compact_day">দি</string>
     <string name="quota_compact_hour">ঘ</string>
     <string name="quota_compact_minute">মি</string>
@@ -606,18 +638,32 @@
     <string name="toolcard_title_web">ওয়েব</string>
     <string name="trajectory_title">ট্র্যাজেক্টরি</string>
     <string name="ux_a_details">প্রযুক্তিগত বিবরণ</string>
+    <string name="ux_b_answer">উত্তর</string>
     <string name="ux_b_clear_search">খোঁজা মুছুন</string>
+    <string name="ux_b_collapsed">গুটানো</string>
+    <string name="ux_b_continued">কাজ চলছে। আপনি এখনও উত্তর দিতে পারেন।</string>
+    <string name="ux_b_countdown_description">উত্তরের জন্য কাউন্টডাউন চলছে</string>
+    <string name="ux_b_expanded">খোলা</string>
     <string name="ux_b_file">ফাইল</string>
     <string name="ux_b_folder">ফোল্ডার</string>
+    <string name="ux_b_held">আপনার উত্তরের অপেক্ষায়</string>
     <string name="ux_b_open_reference">%1$s খুলুন: %2$s</string>
+    <string name="ux_b_paused">এডিট করার সময় থেমে আছে</string>
     <string name="ux_b_remove_reference">%1$s রেফারেন্স সরান</string>
     <string name="ux_b_session">কথোপকথন</string>
+    <string name="ux_b_skipped">এড়িয়ে যাওয়া হয়েছে</string>
+    <string name="ux_b_view_answers">উত্তর দেখুন</string>
+    <string name="ux_b_view_questions">প্রশ্ন দেখুন</string>
     <string name="work_steps_clipped">লম্বা ফলাফলের শুরুটুকু দেখানো হচ্ছে।</string>
     <string name="work_steps_show_all">সব দেখান</string>
     <string name="workflow_completed">শেষ হয়েছে</string>
     <string name="workflow_failed">ব্যর্থ</string>
     <string name="workflow_running">চলছে</string>
     <string name="workflow_title">ওয়ার্কফ্লো</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">আরও %1$dটি অনুরোধ অপেক্ষায় আছে</item>
+        <item quantity="other">আরও %1$dটি অনুরোধ অপেক্ষায় আছে</item>
+    </plurals>
     <plurals name="chat_changed_files">
         <item quantity="one">%1$dটি ফাইল বদলানো হয়েছে</item>
         <item quantity="other">%1$dটি ফাইল বদলানো হয়েছে</item>
@@ -709,5 +755,9 @@
     <plurals name="trajectory_step_count">
         <item quantity="one">%1$d ধাপ</item>
         <item quantity="other">%1$d ধাপ</item>
+    </plurals>
+    <plurals name="ux_b_countdown_seconds">
+        <item quantity="one">%1$s সেকেন্ড পরে কাজ চলবে</item>
+        <item quantity="other">%1$s সেকেন্ড পরে কাজ চলবে</item>
     </plurals>
 </resources>

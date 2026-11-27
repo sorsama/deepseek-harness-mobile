@@ -23,7 +23,7 @@ import com.labteto.dshmobile.core.wire.dto.AskUserQuestionOption
 
 /** What the user has picked or typed for one question, before it is encoded for the wire. */
 @kotlinx.serialization.Serializable
-internal data class QuestionDraft(
+data class QuestionDraft(
     val selected: List<String> = emptyList(),
     val custom: String = "",
     /** Deliberately passed over: still answered, with an empty selection. */
@@ -119,7 +119,7 @@ internal fun advanceFrom(index: Int, count: Int): Int = if (index < count - 1) i
  * - a skipped question sends an empty selection and no `custom`, which is how the harness's own
  *   composer says the user declined that one.
  */
-internal fun encodeAnswers(
+fun encodeAnswers(
     questions: List<AskUserQuestionItem>,
     drafts: List<QuestionDraft>,
 ): AskUserQuestionAnswer = AskUserQuestionAnswer(
@@ -138,7 +138,7 @@ internal fun encodeAnswers(
 )
 
 /** A plan submitted for review: everything the decision card renders and answers with. */
-internal data class PlanReview(
+data class PlanReview(
     val id: String,
     val question: String,
     val plan: String,

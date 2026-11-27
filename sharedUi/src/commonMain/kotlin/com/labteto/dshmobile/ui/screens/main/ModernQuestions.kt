@@ -1,34 +1,44 @@
 package com.labteto.dshmobile.ui.screens.main
 
-import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.wire.WireJson
 import com.labteto.dshmobile.data.QuestionCardState
 import com.labteto.dshmobile.data.SessionStore
 import com.labteto.dshmobile.ui.components.*
 import com.labteto.dshmobile.ui.theme.*
 import kotlinx.serialization.builtins.ListSerializer
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.common_loading
+import com.labteto.dshmobile.shared.resources.common_offline
+import com.labteto.dshmobile.shared.resources.harness_answered
+import com.labteto.dshmobile.shared.resources.harness_reply_queued
+import com.labteto.dshmobile.shared.resources.harness_take_time
+import com.labteto.dshmobile.shared.resources.questions_dismiss
+import com.labteto.dshmobile.shared.resources.ux_b_answer
+import com.labteto.dshmobile.shared.resources.ux_b_continued
+import com.labteto.dshmobile.shared.resources.ux_b_countdown_description
+import com.labteto.dshmobile.shared.resources.ux_b_countdown_seconds
+import com.labteto.dshmobile.shared.resources.ux_b_held
+import com.labteto.dshmobile.shared.resources.ux_b_paused
+import com.labteto.dshmobile.shared.resources.ux_b_skipped
+import com.labteto.dshmobile.shared.resources.ux_b_view_answers
+import com.labteto.dshmobile.shared.resources.ux_b_view_questions
 
 /**
  * The timed question surface (design 10's takeover, timed variant).
@@ -45,12 +55,9 @@ import kotlinx.serialization.builtins.ListSerializer
 internal fun ModernQuestions(store: SessionStore, sessionId: String?, modifier: Modifier = Modifier) {
     val available by store.timedQuestionsAvailable.collectAsStateWithLifecycle()
     if (available == false) return
-    val offline = stringResource(R.string.common_offline)
+    val offline = stringResource(Res.string.common_offline)
     val cards by store.questionSessions.cards.collectAsStateWithLifecycle()
-    val appContext = LocalContext.current.applicationContext
-    val drafts = remember(appContext) {
-        QuestionDraftStore(appContext.getSharedPreferences(QUESTION_DRAFT_FILE, Context.MODE_PRIVATE))
-    }
+    val drafts = rememberQuestionDraftStore()
     val hostKey = store.activeHostKey
     // A settled card has nothing left to answer, so what was typed into it has no further use. This
     // also catches a draft written a moment after its card was answered.
@@ -136,7 +143,7 @@ private fun ParkedQuestionChip(card: QuestionCardState, onClick: () -> Unit) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     val live = card.state != "settled" && !card.queued
-    val label = stringResource(if (live) R.string.ux_b_view_questions else R.string.ux_b_view_answers)
+    val label = stringResource(if (live) Res.string.ux_b_view_questions else Res.string.ux_b_view_answers)
     Surface(
         onClick = {
             haptics.selection()
@@ -182,17 +189,17 @@ private fun QuestionWaitHeader(card: QuestionCardState, onHold: () -> Unit) {
     val haptics = rememberDsHaptics()
     val status = questionWaitStatus(card)
     val seconds = countdownSeconds(card.remainingMs ?: 0)
-    val locale = LocalConfiguration.current.locales[0]
+    val number = countdownNumber(seconds)
     val label = when (status) {
-        QuestionWaitStatus.Countdown -> pluralStringResource(R.plurals.ux_b_countdown_seconds, seconds, countdownNumber(seconds, locale))
-        QuestionWaitStatus.Paused -> stringResource(R.string.ux_b_paused)
-        QuestionWaitStatus.Held -> stringResource(R.string.ux_b_held)
-        QuestionWaitStatus.Continued -> stringResource(R.string.ux_b_continued)
-        QuestionWaitStatus.Queued -> stringResource(R.string.harness_reply_queued)
-        QuestionWaitStatus.Settled -> stringResource(R.string.harness_answered)
-        QuestionWaitStatus.Waiting -> stringResource(if (card.ready) R.string.ux_b_held else R.string.common_loading)
+        QuestionWaitStatus.Countdown -> pluralStringResource(Res.plurals.ux_b_countdown_seconds, seconds, number)
+        QuestionWaitStatus.Paused -> stringResource(Res.string.ux_b_paused)
+        QuestionWaitStatus.Held -> stringResource(Res.string.ux_b_held)
+        QuestionWaitStatus.Continued -> stringResource(Res.string.ux_b_continued)
+        QuestionWaitStatus.Queued -> stringResource(Res.string.harness_reply_queued)
+        QuestionWaitStatus.Settled -> stringResource(Res.string.harness_answered)
+        QuestionWaitStatus.Waiting -> stringResource(if (card.ready) Res.string.ux_b_held else Res.string.common_loading)
     }
-    val announcement = if (status == QuestionWaitStatus.Countdown) stringResource(R.string.ux_b_countdown_description) else label
+    val announcement = if (status == QuestionWaitStatus.Countdown) stringResource(Res.string.ux_b_countdown_description) else label
     Row(
         Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -221,7 +228,7 @@ private fun QuestionWaitHeader(card: QuestionCardState, onHold: () -> Unit) {
         )
         if (card.remainingMs != null && !card.held && card.state != "continued") {
             DsButton(
-                stringResource(R.string.harness_take_time),
+                stringResource(Res.string.harness_take_time),
                 onClick = {
                     haptics.tap()
                     onHold()
@@ -239,7 +246,7 @@ private fun QuestionReplyCard(card: QuestionCardState, onHide: () -> Unit) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     var expanded by remember(card.key) { mutableStateOf(false) }
-    val state = stringResource(if (card.queued && card.state != "settled") R.string.harness_reply_queued else R.string.harness_answered)
+    val state = stringResource(if (card.queued && card.state != "settled") Res.string.harness_reply_queued else Res.string.harness_answered)
     DsCard(verticalArrangement = Arrangement.spacedBy(DsSpacing.xsmall)) {
         Row(
             Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
@@ -256,8 +263,8 @@ private fun QuestionReplyCard(card: QuestionCardState, onHide: () -> Unit) {
                 )
             }
             DsIconButton(
-                Icons.Filled.Close,
-                stringResource(R.string.questions_dismiss),
+                DsIcons.Close,
+                stringResource(Res.string.questions_dismiss),
                 {
                     haptics.tap()
                     onHide()
@@ -267,14 +274,14 @@ private fun QuestionReplyCard(card: QuestionCardState, onHide: () -> Unit) {
         val firstAnswer = card.answers.orEmpty().firstOrNull { it.id == card.questions.firstOrNull()?.id }
         val summary = firstAnswer?.let { it.selected + listOfNotNull(it.custom?.takeIf(String::isNotBlank)) }.orEmpty()
         Text(
-            if (summary.isEmpty()) stringResource(R.string.ux_b_skipped) else summary.joinToString(" · "),
+            if (summary.isEmpty()) stringResource(Res.string.ux_b_skipped) else summary.joinToString(" · "),
             style = DsType.small13,
             color = colors.labelSecondary,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
         DsButton(
-            stringResource(R.string.ux_b_view_answers),
+            stringResource(Res.string.ux_b_view_answers),
             onClick = {
                 haptics.tap()
                 expanded = true
@@ -284,7 +291,7 @@ private fun QuestionReplyCard(card: QuestionCardState, onHide: () -> Unit) {
     }
     if (expanded) {
         DsBottomSheet(
-            title = stringResource(R.string.ux_b_view_answers),
+            title = stringResource(Res.string.ux_b_view_answers),
             subtitle = state,
             onDismiss = { expanded = false },
         ) {
@@ -302,12 +309,12 @@ private fun QuestionReplyCard(card: QuestionCardState, onHide: () -> Unit) {
                         Text(question.question, style = DsType.std14Strong, color = colors.labelPrimary)
                         question.detail?.takeIf(String::isNotBlank)?.let { MarkdownText(it) }
                         Text(
-                            stringResource(R.string.ux_b_answer).uppercase(),
+                            stringResource(Res.string.ux_b_answer).uppercase(),
                             style = DsType.label12,
                             color = colors.labelTertiary,
                         )
                         Text(
-                            if (values.isEmpty()) stringResource(R.string.ux_b_skipped) else values.joinToString(" · "),
+                            if (values.isEmpty()) stringResource(Res.string.ux_b_skipped) else values.joinToString(" · "),
                             style = DsType.std14,
                             color = colors.labelSecondary,
                         )

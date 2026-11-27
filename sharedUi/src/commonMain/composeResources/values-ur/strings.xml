@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alpha2_migration">منتقلی مکمل کرنے کے لیے اصل سیشن کھولیں، پھر دوبارہ کوشش کریں۔</string>
+    <string name="approval_allow_once">ایک بار اجازت دیں</string>
+    <string name="approval_command_title">یہ کمانڈ چلائیں؟</string>
+    <string name="approval_file_title">ورک اسپیس سے باہر کی فائل بدلیں؟</string>
+    <string name="approval_reason">وجہ: %1$s</string>
+    <string name="approval_reject">اجازت نہ دیں</string>
+    <string name="approval_shortened">harness نے صرف پہلے 2,000 حروف بھیجے۔</string>
+    <string name="approval_show_all">سب دکھائیں</string>
+    <string name="approval_title">اجازت درکار ہے</string>
+    <string name="approval_tool_title">%1$s کی اجازت دیں؟</string>
     <string name="archive_activity_job">پس منظر کے کام</string>
     <string name="archive_activity_more">اور %1$d</string>
     <string name="archive_activity_schedule">شیڈول</string>
@@ -260,6 +269,7 @@
     <string name="common_copied">کاپی ہو گیا</string>
     <string name="common_copy">کاپی کریں</string>
     <string name="common_error">کچھ غلط ہو گیا</string>
+    <string name="common_loading">لوڈ ہو رہا ہے…</string>
     <string name="common_offline">آف لائن</string>
     <string name="common_ok">ٹھیک ہے</string>
     <string name="common_reconnecting">دوبارہ منسلک ہو رہا ہے…</string>
@@ -395,7 +405,11 @@
     <string name="goal_rounds">راؤنڈ %1$d از %2$s</string>
     <string name="goal_title">ہدف</string>
     <string name="harness_add_reference">حوالہ شامل کریں</string>
+    <string name="harness_answered">جواب دے دیا گیا</string>
     <string name="harness_automations">خودکار کام</string>
+    <string name="harness_questions">سوالات</string>
+    <string name="harness_reply_queued">جواب قطار میں ہے</string>
+    <string name="harness_take_time">مزید وقت</string>
     <string name="hold_copy_all">سب کاپی کریں</string>
     <string name="hold_copy_arguments">آرگیومنٹس کاپی کریں</string>
     <string name="hold_copy_command">کمانڈ کاپی کریں</string>
@@ -499,6 +513,10 @@
     <string name="photos_preparing">تصاویر تیار ہو رہی ہیں…</string>
     <string name="plan_mode_off">پلان موڈ: آف</string>
     <string name="plan_mode_on">پلان موڈ: آن</string>
+    <string name="plan_review_approve">منظور کریں</string>
+    <string name="plan_review_decline">مسترد کریں</string>
+    <string name="plan_review_discuss">تبادلہ خیال کریں</string>
+    <string name="plan_review_title">پلان جائزے کے لیے تیار ہے</string>
     <string name="preset_code_desc">اسٹینڈرڈ موڈ کی ہر چیز، اور ٹولز Code Mode SDK کے ذریعے ملتے ہیں تاکہ ماڈل کئی مراحل کو ایک ہی TypeScript پروگرام میں جوڑ سکے۔</string>
     <string name="preset_code_name">PTC موڈ</string>
     <string name="preset_cordis_desc">اپنی مرضی کے ایجنٹ پری سیٹ بنانے کے لیے۔ اس میں اسٹینڈرڈ موڈ کی ہر چیز شامل ہے، ساتھ رن ٹائم معائنہ، پلگ ان تجربات اور پری سیٹ لکھنے کی رہنمائی۔</string>
@@ -510,6 +528,20 @@
     <string name="projects_title">اس فون پر پروجیکٹ</string>
     <string name="questions_answer_refused">Harness نے یہ جواب قبول نہیں کیا (%1$s)۔</string>
     <string name="questions_answer_unsent">Harness تک رسائی نہیں ہو سکی۔</string>
+    <string name="questions_collapse">سوال کارڈ سمیٹیں</string>
+    <string name="questions_custom_placeholder">اپنا جواب لکھیں</string>
+    <string name="questions_dismiss">تمام سوالات مسترد کریں</string>
+    <string name="questions_error_incomplete">پہلے یہ سوال مکمل کریں۔</string>
+    <string name="questions_error_unanswered">کوئی آپشن منتخب کریں یا اپنا جواب لکھیں۔</string>
+    <string name="questions_expand">سوال کارڈ کھولیں</string>
+    <string name="questions_nav_next">اگلا سوال</string>
+    <string name="questions_nav_previous">پچھلا سوال</string>
+    <string name="questions_next">اگلا</string>
+    <string name="questions_progress">%1$d / %2$d</string>
+    <string name="questions_recommended">تجویز کردہ</string>
+    <string name="questions_skip">چھوڑیں</string>
+    <string name="questions_submit">جمع کریں</string>
+    <string name="questions_submitting">بھیجا جا رہا ہے…</string>
     <string name="quota_compact_day">دن</string>
     <string name="quota_compact_hour">گھ</string>
     <string name="quota_compact_minute">منٹ</string>
@@ -606,18 +638,32 @@
     <string name="toolcard_title_web">ویب</string>
     <string name="trajectory_title">ٹریجیکٹری</string>
     <string name="ux_a_details">تکنیکی تفصیلات</string>
+    <string name="ux_b_answer">جواب</string>
     <string name="ux_b_clear_search">تلاش صاف کریں</string>
+    <string name="ux_b_collapsed">سمٹا ہوا</string>
+    <string name="ux_b_continued">کام جاری ہے؛ آپ اب بھی جواب دے سکتے ہیں</string>
+    <string name="ux_b_countdown_description">جواب کی الٹی گنتی جاری ہے</string>
+    <string name="ux_b_expanded">کھلا ہوا</string>
     <string name="ux_b_file">فائل</string>
     <string name="ux_b_folder">فولڈر</string>
+    <string name="ux_b_held">آپ کے جواب کا انتظار ہے</string>
     <string name="ux_b_open_reference">%1$s کھولیں: %2$s</string>
+    <string name="ux_b_paused">ترمیم کے دوران موقوف</string>
     <string name="ux_b_remove_reference">حوالہ %1$s ہٹائیں</string>
     <string name="ux_b_session">گفتگو</string>
+    <string name="ux_b_skipped">چھوڑ دیا گیا</string>
+    <string name="ux_b_view_answers">جوابات دیکھیں</string>
+    <string name="ux_b_view_questions">سوالات دیکھیں</string>
     <string name="work_steps_clipped">لمبے نتیجے کا آغاز دکھایا جا رہا ہے۔</string>
     <string name="work_steps_show_all">سب دکھائیں</string>
     <string name="workflow_completed">مکمل</string>
     <string name="workflow_failed">ناکام</string>
     <string name="workflow_running">چل رہا ہے</string>
     <string name="workflow_title">ورک فلو</string>
+    <plurals name="approval_more_waiting">
+        <item quantity="one">%1$d اور درخواست انتظار میں ہے</item>
+        <item quantity="other">%1$d اور درخواستیں انتظار میں ہیں</item>
+    </plurals>
     <plurals name="chat_changed_files">
         <item quantity="one">%1$d فائل تبدیل ہوئی</item>
         <item quantity="other">%1$d فائلیں تبدیل ہوئیں</item>
@@ -709,5 +755,9 @@
     <plurals name="trajectory_step_count">
         <item quantity="one">%1$d مرحلہ</item>
         <item quantity="other">%1$d مراحل</item>
+    </plurals>
+    <plurals name="ux_b_countdown_seconds">
+        <item quantity="one">%1$s سیکنڈ میں کام جاری ہوگا</item>
+        <item quantity="other">%1$s سیکنڈ میں کام جاری ہوگا</item>
     </plurals>
 </resources>

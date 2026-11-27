@@ -24,15 +24,7 @@
 
 
     <string name="approval_command_title">یہ کمانڈ چلائیں؟</string>
-    <string name="approval_file_title">ورک اسپیس سے باہر کی فائل بدلیں؟</string>
-    <string name="approval_tool_title">%1$s کی اجازت دیں؟</string>
-    <string name="approval_shortened">harness نے صرف پہلے 2,000 حروف بھیجے۔</string>
-    <string name="approval_show_all">سب دکھائیں</string>
     <string name="approval_show_less">کم دکھائیں</string>
-    <plurals name="approval_more_waiting">
-        <item quantity="one">%1$d اور درخواست انتظار میں ہے</item>
-        <item quantity="other">%1$d اور درخواستیں انتظار میں ہیں</item>
-    </plurals>
 
     <string name="sandbox_notice_builtin">یہ چیٹ ایسی سیٹنگ پر ہے جسے sandbox چاہیے، اور فون یہ نہیں دے سکتا، اس لیے وہ کمانڈ نہیں چلی۔ چیٹ کی سیٹنگ بدلیں، پھر دوبارہ کہیں۔</string>
     <string name="sandbox_notice_switch">“%1$s” پر بدلیں</string>

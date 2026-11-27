@@ -24,16 +24,7 @@
 
 
     <string name="approval_command_title">¿Ejecutar este comando?</string>
-    <string name="approval_file_title">¿Cambiar un archivo fuera del espacio de trabajo?</string>
-    <string name="approval_tool_title">¿Permitir %1$s?</string>
-    <string name="approval_shortened">El harness solo envió los primeros 2000 caracteres.</string>
-    <string name="approval_show_all">Ver todo</string>
     <string name="approval_show_less">Ver menos</string>
-    <plurals name="approval_more_waiting">
-        <item quantity="one">%1$d solicitud más en espera</item>
-        <item quantity="many">%1$d solicitudes más en espera</item>
-        <item quantity="other">%1$d solicitudes más en espera</item>
-    </plurals>
 
     <string name="sandbox_notice_builtin">Este chat usa un ajuste que necesita un sandbox, y un móvil no puede dárselo, así que ese comando no se ejecutó. Cambia el chat y vuelve a pedirlo.</string>
     <string name="sandbox_notice_switch">Cambiar a «%1$s»</string>
