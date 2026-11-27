@@ -1,0 +1,75 @@
+states: before=69 after=69 common=69
+
+| State | Differing pixels (whole frame) | Below the status bar | Box of the difference |
+|---|---:|---:|---|
+| ar-rich--00-tail | 0 | 0 | - |
+| ar-rich--01-up | 0 | 0 | - |
+| ar-rich--02-up | 0 | 0 | - |
+| ar-rich--03-up | 0 | 0 | - |
+| ar-rich--04-up | 0 | 0 | - |
+| ar-rich--h1-prompt-hold-menu | 0 | 0 | - |
+| ar-rich--h2-answer-actions | 0 | 0 | - |
+| dark-long--00-tail | 474 | 0 | (893,54)-(913,86) |
+| dark-long--01-up | 474 | 0 | (893,54)-(913,86) |
+| dark-long--02-up | 635 | 0 | (880,54)-(913,86) |
+| dark-long--03-up | 635 | 0 | (880,54)-(913,86) |
+| dark-long--04-up | 635 | 0 | (880,54)-(913,86) |
+| dark-long--05-up | 258 | 0 | (906,54)-(913,86) |
+| dark-long--06-up | 258 | 0 | (906,54)-(913,86) |
+| dark-long--07-up | 258 | 0 | (906,54)-(913,86) |
+| dark-long--08-up | 258 | 0 | (906,54)-(913,86) |
+| dark-long--09-up | 474 | 0 | (893,54)-(913,86) |
+| dark-long--10-up | 474 | 0 | (893,54)-(913,86) |
+| dark-long--11-up | 377 | 0 | (880,59)-(900,86) |
+| dark-long--12-up | 377 | 0 | (880,59)-(900,86) |
+| dark-long--13-up | 377 | 0 | (880,59)-(900,86) |
+| dark-long--14-up | 474 | 0 | (893,54)-(913,86) |
+| dark-long--15-up | 474 | 0 | (893,54)-(913,86) |
+| dark-long--16-up | 635 | 0 | (880,54)-(913,86) |
+| dark-rich--00-tail | 161 | 0 | (880,66)-(887,86) |
+| dark-rich--01-up | 0 | 0 | - |
+| dark-rich--02-up | 0 | 0 | - |
+| dark-rich--03-up | 0 | 0 | - |
+| dark-rich--04-up | 0 | 0 | - |
+| dark-rich--h1-prompt-hold-menu | 0 | 0 | - |
+| dark-rich--h2-answer-actions | 0 | 0 | - |
+| dark-rich--h3-thinking-open | 0 | 0 | - |
+| dark-rich--h4-group-open | 0 | 0 | - |
+| dark-rich--h5-tool-hold-menu | 258 | 0 | (906,54)-(913,86) |
+| dark-stream--00-tail | 635 | 0 | (880,54)-(913,86) |
+| dark-stream--s0-typed | 635 | 0 | (880,54)-(913,86) |
+| dark-stream--s1-streaming | 258 | 0 | (906,54)-(913,86) |
+| dark-stream--s2-streaming-scrolled-up | 258 | 0 | (906,54)-(913,86) |
+| light-long--00-tail | 377 | 0 | (880,59)-(900,86) |
+| light-long--01-up | 377 | 0 | (880,59)-(900,86) |
+| light-long--02-up | 377 | 0 | (880,59)-(900,86) |
+| light-long--03-up | 474 | 0 | (893,54)-(913,86) |
+| light-long--04-up | 474 | 0 | (893,54)-(913,86) |
+| light-long--05-up | 474 | 0 | (893,54)-(913,86) |
+| light-long--06-up | 635 | 0 | (880,54)-(913,86) |
+| light-long--07-up | 635 | 0 | (880,54)-(913,86) |
+| light-long--08-up | 635 | 0 | (880,54)-(913,86) |
+| light-long--09-up | 258 | 0 | (906,54)-(913,86) |
+| light-long--10-up | 258 | 0 | (906,54)-(913,86) |
+| light-long--11-up | 258 | 0 | (906,54)-(913,86) |
+| light-long--12-up | 474 | 0 | (893,54)-(913,86) |
+| light-long--13-up | 474 | 0 | (893,54)-(913,86) |
+| light-long--14-up | 377 | 0 | (880,59)-(900,86) |
+| light-long--15-up | 377 | 0 | (880,59)-(900,86) |
+| light-long--16-up | 377 | 0 | (880,59)-(900,86) |
+| light-rich--00-tail | 0 | 0 | - |
+| light-rich--01-up | 0 | 0 | - |
+| light-rich--02-up | 161 | 0 | (880,66)-(887,86) |
+| light-rich--03-up | 0 | 0 | - |
+| light-rich--04-up | 0 | 0 | - |
+| light-rich--h1-prompt-hold-menu | 0 | 0 | - |
+| light-rich--h2-answer-actions | 0 | 0 | - |
+| light-rich--h3-thinking-open | 0 | 0 | - |
+| light-rich--h4-group-open | 0 | 0 | - |
+| light-rich--h5-tool-hold-menu | 0 | 0 | - |
+| light-stream--00-tail | 377 | 0 | (880,59)-(900,86) |
+| light-stream--s0-typed | 474 | 0 | (893,54)-(913,86) |
+| light-stream--s1-streaming | 474 | 0 | (893,54)-(913,86) |
+| light-stream--s2-streaming-scrolled-up | 635 | 0 | (880,54)-(913,86) |
+
+Identical whole frame: 24/69. Identical below the status bar: 69/69.
