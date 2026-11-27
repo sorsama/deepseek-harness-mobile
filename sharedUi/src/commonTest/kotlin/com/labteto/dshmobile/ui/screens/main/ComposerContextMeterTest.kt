@@ -1,10 +1,10 @@
 package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.core.wire.dto.ContextPressureView
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * The composer's action row shows the context meter only when the bar has something to draw.

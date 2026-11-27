@@ -23,9 +23,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -44,7 +41,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.foundation.ScrollState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -53,7 +50,23 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_details_title
+import com.labteto.dshmobile.shared.resources.chat_history_title
+import com.labteto.dshmobile.shared.resources.chat_status_idle
+import com.labteto.dshmobile.shared.resources.chat_status_running
+import com.labteto.dshmobile.shared.resources.chat_tab
+import com.labteto.dshmobile.shared.resources.chatlist_hide
+import com.labteto.dshmobile.shared.resources.chatlist_needs_action
+import com.labteto.dshmobile.shared.resources.chatlist_open
+import com.labteto.dshmobile.shared.resources.chatlist_show
+import com.labteto.dshmobile.shared.resources.chatlist_subagents
+import com.labteto.dshmobile.shared.resources.ink_chat_files_tab
+import com.labteto.dshmobile.shared.resources.panel_workspace
+import com.labteto.dshmobile.shared.resources.team_chip
+import com.labteto.dshmobile.shared.resources.team_title
+import com.labteto.dshmobile.shared.resources.trajectory_title
+import com.labteto.dshmobile.ui.components.DsIcons
 import com.labteto.dshmobile.core.wire.dto.SessionModelsValue
 import com.labteto.dshmobile.ui.adaptive.ListControl
 import com.labteto.dshmobile.ui.components.DsIconButton
@@ -62,6 +75,7 @@ import com.labteto.dshmobile.ui.components.MascotMark
 import com.labteto.dshmobile.ui.components.MascotState
 import com.labteto.dshmobile.ui.components.StateDot
 import com.labteto.dshmobile.ui.components.StateDotState
+import com.labteto.dshmobile.ui.components.localizedCount
 import com.labteto.dshmobile.ui.components.pressScale
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.skeleton
@@ -73,7 +87,7 @@ import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 
 /** The views of a session the app offers: the conversation, its ledger, and the files it touched. */
-internal enum class ChatTab { Chat, Trajectory, Files }
+enum class ChatTab { Chat, Trajectory, Files }
 
 /** The widest the model chip (or the preset chip) grows, however long the name and however wide the bar. */
 private val MODEL_CHIP_MAX_WIDTH = 280.dp
@@ -100,7 +114,7 @@ private val MODEL_CHIP_SKELETON_WIDTH = 132.dp
  * as an empty box.
  */
 @Composable
-internal fun ChatTopBar(
+fun ChatTopBar(
     title: String,
     running: Boolean,
     models: SessionModelsValue?,
@@ -116,7 +130,8 @@ internal fun ChatTopBar(
     onOpenHistory: () -> Unit,
     onOpenPresets: () -> Unit,
     onOpenSubagents: () -> Unit,
-    onOpenDetails: () -> Unit,
+    /** Opens the details panel. Null leaves the details button out (iOS has no panel yet). */
+    onOpenDetails: (() -> Unit)?,
     onTabChange: (ChatTab) -> Unit,
     onOpenWorkspace: () -> Unit,
     workspaceEnabled: Boolean,
@@ -142,6 +157,11 @@ internal fun ChatTopBar(
     /** True when the open session leads an experimental Agent Team; the Team chip opens its sheet. */
     teamAvailable: Boolean = false,
     onOpenTeam: () -> Unit = {},
+    /**
+     * Whether the third row offers the views (Chat, Trajectory, Files) and the workspace button. False draws only
+     * the hairline that closes the bar: iOS has the conversation alone for now.
+     */
+    showTabs: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val colors = DsTheme.colors
@@ -158,7 +178,7 @@ internal fun ChatTopBar(
             when (listControl) {
                 ListControl.OpenDrawer -> DsIconButton(
                     icon = FeatherIcons.Menu,
-                    contentDescription = stringResource(R.string.chatlist_open),
+                    contentDescription = stringResource(Res.string.chatlist_open),
                     onClick = onOpenDrawer,
                     tint = colors.labelSecondary,
                     iconSize = 20.dp,
@@ -169,7 +189,7 @@ internal fun ChatTopBar(
                 ListControl.Collapse, ListControl.Expand -> DsIconButton(
                     icon = FeatherIcons.Sidebar,
                     contentDescription = stringResource(
-                        if (listControl == ListControl.Collapse) R.string.chatlist_hide else R.string.chatlist_show,
+                        if (listControl == ListControl.Collapse) Res.string.chatlist_hide else Res.string.chatlist_show,
                     ),
                     onClick = onOpenDrawer,
                     tint = colors.labelSecondary,
@@ -195,16 +215,16 @@ internal fun ChatTopBar(
             if (historyEnabled) {
                 DsIconButton(
                     icon = FeatherIcons.List,
-                    contentDescription = stringResource(R.string.chat_history_title),
+                    contentDescription = stringResource(Res.string.chat_history_title),
                     onClick = onOpenHistory,
                     tint = colors.labelSecondary,
                     iconSize = 18.dp,
                 )
             }
-            if (!detailsOpen) {
+            if (!detailsOpen && onOpenDetails != null) {
                 DsIconButton(
                     icon = FeatherIcons.Info,
-                    contentDescription = stringResource(R.string.chat_details_title),
+                    contentDescription = stringResource(Res.string.chat_details_title),
                     onClick = onOpenDetails,
                     tint = colors.labelTertiary,
                     iconSize = 18.dp,
@@ -259,18 +279,22 @@ internal fun ChatTopBar(
             }
         }
 
-        ChatTabRow(
-            tab = tab,
-            fileCount = fileCount,
-            onTabChange = { next ->
-                if (next != tab) {
-                    haptics.selection()
-                    onTabChange(next)
-                }
-            },
-            onOpenWorkspace = onOpenWorkspace,
-            workspaceEnabled = workspaceEnabled,
-        )
+        if (showTabs) {
+            ChatTabRow(
+                tab = tab,
+                fileCount = fileCount,
+                onTabChange = { next ->
+                    if (next != tab) {
+                        haptics.selection()
+                        onTabChange(next)
+                    }
+                },
+                onOpenWorkspace = onOpenWorkspace,
+                workspaceEnabled = workspaceEnabled,
+            )
+        } else {
+            BarHairline()
+        }
     }
 }
 
@@ -290,9 +314,9 @@ private fun RunStatusPill(running: Boolean, needsYou: Boolean) {
         else -> null
     }
     val label = when {
-        needsYou -> stringResource(R.string.chatlist_needs_action)
-        running -> stringResource(R.string.chat_status_running)
-        else -> stringResource(R.string.chat_status_idle)
+        needsYou -> stringResource(Res.string.chatlist_needs_action)
+        running -> stringResource(Res.string.chat_status_running)
+        else -> stringResource(Res.string.chat_status_idle)
     }
     if (state == null) {
         Box(
@@ -412,7 +436,7 @@ private fun ModelChip(
         }
         if (switchable) {
             Icon(
-                Icons.Filled.KeyboardArrowDown,
+                DsIcons.KeyboardArrowDown,
                 contentDescription = null,
                 tint = colors.labelSecondary,
                 modifier = Modifier.size(16.dp),
@@ -448,7 +472,7 @@ private fun MetaChip(label: String, onClick: () -> Unit) {
 @Composable
 private fun SubagentTag(count: Int, onClick: () -> Unit) {
     val colors = DsTheme.colors
-    val label = stringResource(R.string.chatlist_subagents)
+    val label = stringResource(Res.string.chatlist_subagents)
     // The same 28dp-in-48dp shape as the preset chip beside it. It is tappable, so it is a pill, not a
     // 6dp badge: the shape is what says "this opens something".
     Row(
@@ -463,7 +487,7 @@ private fun SubagentTag(count: Int, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Icon(Icons.Outlined.Groups, contentDescription = null, tint = colors.accent, modifier = Modifier.size(15.dp))
+        Icon(DsIcons.Groups, contentDescription = null, tint = colors.accent, modifier = Modifier.size(15.dp))
         Text(count.toString(), style = DsType.small13Strong, color = colors.accent, maxLines = 1)
     }
 }
@@ -504,17 +528,17 @@ private fun ChatTabRow(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 ChatTabButton(
-                    label = stringResource(R.string.chat_tab),
+                    label = stringResource(Res.string.chat_tab),
                     selected = tab == ChatTab.Chat,
                     onClick = { onTabChange(ChatTab.Chat) },
                 )
                 ChatTabButton(
-                    label = stringResource(R.string.trajectory_title),
+                    label = stringResource(Res.string.trajectory_title),
                     selected = tab == ChatTab.Trajectory,
                     onClick = { onTabChange(ChatTab.Trajectory) },
                 )
                 ChatTabButton(
-                    label = stringResource(R.string.ink_chat_files_tab, fileCount),
+                    label = stringResource(Res.string.ink_chat_files_tab, localizedCount(fileCount)),
                     selected = tab == ChatTab.Files,
                     onClick = { onTabChange(ChatTab.Files) },
                 )
@@ -522,7 +546,7 @@ private fun ChatTabRow(
         }
         DsIconButton(
             icon = FeatherIcons.Folder,
-            contentDescription = stringResource(R.string.panel_workspace),
+            contentDescription = stringResource(Res.string.panel_workspace),
             onClick = onOpenWorkspace,
             tint = if (workspaceEnabled) colors.labelSecondary else colors.labelDimmed,
             iconSize = 20.dp,
@@ -530,11 +554,17 @@ private fun ChatTabRow(
             modifier = Modifier.padding(end = 2.dp),
         )
     }
+    BarHairline()
+}
+
+/** The hairline that closes the bar, under the tab row (or alone where there are no tabs). */
+@Composable
+private fun BarHairline() {
     Spacer(
         Modifier
             .fillMaxWidth()
             .height(1.dp)
-            .background(colors.borderL1),
+            .background(DsTheme.colors.borderL1),
     )
 }
 
@@ -599,6 +629,34 @@ private fun ChatTabButton(label: String, selected: Boolean, onClick: () -> Unit)
             label,
             style = DsType.tabText,
             color = content,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** The title-row chip that opens the team sheet; the same 28dp-in-48dp pill as the subagent count. */
+@Composable
+internal fun AgentTeamTag(onClick: () -> Unit) {
+    val colors = DsTheme.colors
+    val description = stringResource(Res.string.team_title)
+    Row(
+        modifier = Modifier
+            .minimumInteractiveComponentSize()
+            .height(DsSizes.chipCompact)
+            .clip(DsShapes.pillFull)
+            .background(colors.accentTertiary)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = description }
+            .padding(horizontal = DsSpacing.compact),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(DsIcons.Diversity3, contentDescription = null, tint = colors.accent, modifier = Modifier.size(15.dp))
+        Text(
+            stringResource(Res.string.team_chip),
+            style = DsType.small13Strong,
+            color = colors.accent,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

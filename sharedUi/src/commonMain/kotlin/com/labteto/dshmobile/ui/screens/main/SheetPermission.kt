@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
@@ -34,13 +32,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.common_cancel
+import com.labteto.dshmobile.shared.resources.common_ok
+import com.labteto.dshmobile.shared.resources.ink_panel_permission_full_desc
+import com.labteto.dshmobile.shared.resources.ink_panel_permission_readonly_desc
+import com.labteto.dshmobile.shared.resources.ink_panel_permission_workspace_desc
+import com.labteto.dshmobile.shared.resources.permission_confirm_ack
+import com.labteto.dshmobile.shared.resources.permission_confirm_body
+import com.labteto.dshmobile.shared.resources.permission_confirm_title
+import com.labteto.dshmobile.shared.resources.permission_custom_hint
+import com.labteto.dshmobile.shared.resources.permission_preset
+import com.labteto.dshmobile.shared.resources.permission_preset_auto_desc
+import com.labteto.dshmobile.ui.components.DsIcons
 import com.labteto.dshmobile.core.wire.dto.FULL_ACCESS_PRESET
 import com.labteto.dshmobile.core.wire.dto.PermissionSelect
 import com.labteto.dshmobile.core.wire.dto.PresetOption
@@ -65,7 +75,7 @@ import com.labteto.dshmobile.ui.theme.DsType
  * offered as a target; the hint at the foot says why the current value matches no card.
  */
 @Composable
-internal fun PermissionMenu(
+fun PermissionMenu(
     select: PermissionSelect,
     current: String,
     onDismiss: () -> Unit,
@@ -74,7 +84,7 @@ internal fun PermissionMenu(
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     DsBottomSheet(
-        title = stringResource(R.string.permission_preset),
+        title = stringResource(Res.string.permission_preset),
         onDismiss = {
             haptics.tap()
             onDismiss()
@@ -105,7 +115,7 @@ internal fun PermissionMenu(
             }
             if (select.currentValue !in select.selectable.map { it.value }) {
                 Text(
-                    stringResource(R.string.permission_custom_hint),
+                    stringResource(Res.string.permission_custom_hint),
                     style = DsType.caption11,
                     color = colors.warnLabel,
                     modifier = Modifier.padding(top = DsSpacing.tiny),
@@ -143,7 +153,7 @@ private fun PermissionCard(option: PresetOption, selected: Boolean, onSelect: ()
  * @param warn the amber glyph and blurb of an option that removes a question (Full access).
  */
 @Composable
-internal fun ChoiceCard(
+fun ChoiceCard(
     icon: ImageVector,
     title: String,
     description: String,
@@ -217,7 +227,7 @@ internal fun ChoiceCard(
             ) {
                 if (selected) {
                     Icon(
-                        Icons.Filled.Check,
+                        DsIcons.Check,
                         contentDescription = null,
                         tint = colors.onAccent,
                         modifier = Modifier.size(14.dp),
@@ -240,10 +250,10 @@ internal fun permissionIcon(value: String): ImageVector = when (value) {
 /** A short blurb for a preset the harness did not describe itself. */
 @Composable
 internal fun permissionFallbackDescription(value: String): String = when (value) {
-    "read-only", "read", "readonly" -> stringResource(R.string.ink_panel_permission_readonly_desc)
-    FULL_ACCESS_PRESET -> stringResource(R.string.ink_panel_permission_full_desc)
-    "auto" -> stringResource(R.string.permission_preset_auto_desc)
-    else -> stringResource(R.string.ink_panel_permission_workspace_desc)
+    "read-only", "read", "readonly" -> stringResource(Res.string.ink_panel_permission_readonly_desc)
+    FULL_ACCESS_PRESET -> stringResource(Res.string.ink_panel_permission_full_desc)
+    "auto" -> stringResource(Res.string.permission_preset_auto_desc)
+    else -> stringResource(Res.string.ink_panel_permission_workspace_desc)
 }
 
 /**
@@ -251,19 +261,19 @@ internal fun permissionFallbackDescription(value: String): String = when (value)
  * acknowledgement rather than a single tap — the same gate the desktop client puts on it.
  */
 @Composable
-internal fun FullAccessConfirmDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+fun FullAccessConfirmDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
     var acknowledged by remember { mutableStateOf(false) }
     DsDialog(
-        title = stringResource(R.string.permission_confirm_title),
+        title = stringResource(Res.string.permission_confirm_title),
         onDismiss = {
             haptics.tap()
             onDismiss()
         },
     ) {
         Text(
-            stringResource(R.string.permission_confirm_body),
+            stringResource(Res.string.permission_confirm_body),
             style = DsType.std14,
             color = colors.labelSecondary,
         )
@@ -289,14 +299,14 @@ internal fun FullAccessConfirmDialog(onDismiss: () -> Unit, onConfirm: () -> Uni
                 ),
             )
             Text(
-                stringResource(R.string.permission_confirm_ack),
+                stringResource(Res.string.permission_confirm_ack),
                 style = DsType.small13,
                 color = colors.labelPrimary,
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(DsSpacing.small)) {
             DsButton(
-                text = stringResource(R.string.common_ok),
+                text = stringResource(Res.string.common_ok),
                 onClick = {
                     haptics.confirm()
                     onConfirm()
@@ -306,7 +316,7 @@ internal fun FullAccessConfirmDialog(onDismiss: () -> Unit, onConfirm: () -> Uni
                 modifier = Modifier.weight(1f),
             )
             DsButton(
-                text = stringResource(R.string.common_cancel),
+                text = stringResource(Res.string.common_cancel),
                 onClick = {
                     haptics.reject()
                     onDismiss()

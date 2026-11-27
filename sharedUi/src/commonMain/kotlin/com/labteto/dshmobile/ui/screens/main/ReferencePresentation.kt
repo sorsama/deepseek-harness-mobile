@@ -1,5 +1,6 @@
 package com.labteto.dshmobile.ui.screens.main
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.SpanStyle
@@ -7,9 +8,15 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.ux_b_file
+import com.labteto.dshmobile.shared.resources.ux_b_folder
+import com.labteto.dshmobile.shared.resources.ux_b_session
+import com.labteto.dshmobile.ui.components.FeatherIcons
+import org.jetbrains.compose.resources.stringResource
 
 /** Only presentation changes: saved drafts and prompt mentions retain their existing wire form. */
-internal class ReferenceTransformation(
+class ReferenceTransformation(
     private val references: List<DraftReference>,
     private val tokenStyle: SpanStyle? = null,
 ) : VisualTransformation {
@@ -41,7 +48,22 @@ internal class ReferenceTransformation(
     }
 }
 
-internal fun referenceDisplayLabel(reference: DraftReference): String =
+/** The glyph of a reference chip, by its kind: a folder, a conversation, or a file. */
+fun referenceKindIcon(kind: String) = when (kind) {
+    "folder" -> FeatherIcons.Folder
+    "session" -> FeatherIcons.MessageSquare
+    else -> FeatherIcons.FileText
+}
+
+/** The kind of a reference in words, for its chip's description and the picker's rows. */
+@Composable
+fun referenceKindLabel(kind: String): String = stringResource(when (kind) {
+    "folder" -> Res.string.ux_b_folder
+    "session" -> Res.string.ux_b_session
+    else -> Res.string.ux_b_file
+})
+
+fun referenceDisplayLabel(reference: DraftReference): String =
     technicalDisplay("@${reference.label.replace('\n', ' ').replace('\r', ' ')}${if (reference.kind == "folder" && !reference.label.endsWith('/')) "/" else ""}")
 
 internal data class ReferenceDisplaySpan(val rawStart: Int, val rawEnd: Int, val displayStart: Int, val displayEnd: Int)
@@ -88,7 +110,7 @@ private fun separateReferenceBoundaries(old: String, next: TextFieldValue, refer
     val suffix = old.drop(prefix).commonSuffixWith(next.text.drop(prefix)).length
     val oldEnd = old.length - suffix
     val delta = next.text.length - old.length
-    val insertions = sortedSetOf<Int>()
+    val insertions = mutableSetOf<Int>()
     references.forEach { ref ->
         val start = when {
             ref.end <= prefix -> ref.start
@@ -102,7 +124,7 @@ private fun separateReferenceBoundaries(old: String, next: TextFieldValue, refer
     }
     if (insertions.isEmpty()) return next
     var text = next.text
-    insertions.toList().asReversed().forEach { text = text.substring(0, it) + " " + text.substring(it) }
+    insertions.sorted().asReversed().forEach { text = text.substring(0, it) + " " + text.substring(it) }
     fun mapped(offset: Int) = offset + insertions.count { it <= offset }
     return TextFieldValue(text, TextRange(mapped(next.selection.start), mapped(next.selection.end)),
         next.composition?.let { TextRange(mapped(it.start), mapped(it.end)) })

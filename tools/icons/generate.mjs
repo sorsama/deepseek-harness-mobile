@@ -72,6 +72,13 @@ const ICONS = [
   ['Stop', 'Filled.Stop'],
   ['ErrorOutline', 'Outlined.ErrorOutline'],
   ['ArrowDownward', 'Filled.ArrowDownward'],
+  // The composer, its full-screen page and send menu, and the chat top bar (iOS M6a).
+  ['AttachFile', 'Filled.AttachFile'],
+  ['OpenInFull', 'Filled.OpenInFull'],
+  ['Bolt', 'Outlined.Bolt'],
+  ['Schedule', 'Outlined.Schedule'],
+  ['Groups', 'Outlined.Groups'],
+  ['Diversity3', 'Outlined.Diversity3'],
 ];
 
 const args = process.argv.slice(2);
@@ -187,34 +194,56 @@ const FOOTER = `}
  * \`materialPath\` gives it (the stroke ones too, though there is no stroke), so the copy equals the original.
  */
 private fun icon(name: String, autoMirror: Boolean = false, block: PathBuilder.() -> Unit): ImageVector =
-    ImageVector.Builder(
+    icon(name, autoMirror, listOf(block))
+
+/** An icon drawn as several black paths, one \`materialPath\` block each, in the source's order. */
+private fun icon(name: String, autoMirror: Boolean = false, paths: List<PathBuilder.() -> Unit>): ImageVector {
+    val builder = ImageVector.Builder(
         name = name,
         defaultWidth = 24.dp,
         defaultHeight = 24.dp,
         viewportWidth = 24f,
         viewportHeight = 24f,
         autoMirror = autoMirror,
-    ).path(
-        fill = SolidColor(Color.Black),
-        stroke = null,
-        strokeLineWidth = 1f,
-        strokeLineCap = StrokeCap.Butt,
-        strokeLineJoin = StrokeJoin.Bevel,
-        strokeLineMiter = 1f,
-        pathBuilder = block,
-    ).build()
+    )
+    for (block in paths) {
+        builder.path(
+            fill = SolidColor(Color.Black),
+            stroke = null,
+            strokeLineWidth = 1f,
+            strokeLineCap = StrokeCap.Butt,
+            strokeLineJoin = StrokeJoin.Bevel,
+            strokeLineMiter = 1f,
+            pathBuilder = block,
+        )
+    }
+    return builder.build()
+}
 `;
 
 const body = [];
 for (const [kotlinName, material] of ICONS) {
   const icon = parse(material);
-  if (icon.paths.length !== 1) throw new Error(`${material}: ${icon.paths.length} paths; teach the script to write more than one`);
   const mirror = icon.autoMirror ? ', autoMirror = true' : '';
   body.push(`    /** \`Icons.${material}\`. */`);
   body.push(`    val ${kotlinName}: ImageVector by lazy {`);
-  body.push(`        icon("${icon.name}"${mirror}) {`);
-  for (const command of icon.paths[0]) body.push(`            ${command}`);
-  body.push('        }');
+  if (icon.paths.length === 1) {
+    body.push(`        icon("${icon.name}"${mirror}) {`);
+    for (const command of icon.paths[0]) body.push(`            ${command}`);
+    body.push('        }');
+  } else {
+    // One lambda per `materialPath` block, so the vector has the same path nodes as the original.
+    body.push(`        icon(`);
+    body.push(`            "${icon.name}"${mirror},`);
+    body.push(`            paths = listOf<PathBuilder.() -> Unit>(`);
+    for (const path of icon.paths) {
+      body.push('                {');
+      for (const command of path) body.push(`                    ${command}`);
+      body.push('                },');
+    }
+    body.push('            ),');
+    body.push('        )');
+  }
   body.push('    }');
   body.push('');
 }

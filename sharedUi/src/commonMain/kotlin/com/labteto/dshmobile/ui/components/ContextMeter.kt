@@ -21,15 +21,27 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_context_messages
+import com.labteto.dshmobile.shared.resources.chat_context_system
+import com.labteto.dshmobile.shared.resources.chat_context_tools
+import com.labteto.dshmobile.shared.resources.chat_context_used
 import com.labteto.dshmobile.core.wire.dto.ContextBreakdownView
 import com.labteto.dshmobile.core.wire.dto.ContextPressureView
 import com.labteto.dshmobile.ui.theme.Ds
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+
+/**
+ * "62% of context used", in the reader's digits. The string is Android's (`%1$d%%`), and Compose Multiplatform fills
+ * the `%1$d` but leaves Android's `%%` escape as two signs, so it is undone here.
+ */
+@Composable
+fun contextUsedText(percent: Int): String =
+    stringResource(Res.string.chat_context_used, localizedCount(percent)).replace("%%", "%")
 
 /** The composer's bar, in dp. Shared so the action row can tell whether one fits before composing it. */
 internal const val ContextMeterBarWidth = 44
@@ -101,7 +113,7 @@ fun ContextMeterDetail(
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (ratio != null) {
             Text(
-                stringResource(R.string.chat_context_used, (ratio * 100).toInt()),
+                contextUsedText((ratio * 100).toInt()),
                 style = DsType.caption11,
                 color = colors.labelSecondary,
             )
@@ -109,9 +121,9 @@ fun ContextMeterDetail(
         ContextMeter(breakdown, pressure, Modifier.fillMaxWidth(), barWidth = null)
         if (breakdown != null && breakdown.total > 0) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                LegendDot(stringResource(R.string.chat_context_system), Ds.MeterSystem)
-                LegendDot(stringResource(R.string.chat_context_tools), Ds.MeterTools)
-                LegendDot(stringResource(R.string.chat_context_messages), Ds.MeterMessages)
+                LegendDot(stringResource(Res.string.chat_context_system), Ds.MeterSystem)
+                LegendDot(stringResource(Res.string.chat_context_tools), Ds.MeterTools)
+                LegendDot(stringResource(Res.string.chat_context_messages), Ds.MeterMessages)
             }
         }
     }

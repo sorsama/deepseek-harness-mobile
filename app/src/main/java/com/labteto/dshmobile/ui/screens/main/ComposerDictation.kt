@@ -65,7 +65,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
@@ -105,6 +107,7 @@ import com.labteto.dshmobile.ui.voice.DictationState
 import com.labteto.dshmobile.ui.voice.HandlerDictationClock
 import com.labteto.dshmobile.ui.voice.SpeechEngine
 import com.labteto.dshmobile.ui.voice.dictationChunk
+import com.labteto.dshmobile.ui.voice.insertDictation
 import com.labteto.dshmobile.ui.voice.languageAttempts
 import com.labteto.dshmobile.ui.voice.noticeMillis
 import kotlinx.coroutines.delay
@@ -132,7 +135,24 @@ internal class DictationConfig(
     val onLanguageChoice: (String?) -> Unit,
     /** Replaces the phone's recogniser: tests bring a scripted one. */
     val engineFactory: ((Context) -> SpeechEngine)? = null,
-)
+) : ComposerVoiceSource {
+    /** The shared composer's view of [rememberComposerDictation]: the same controls, behind its slots. */
+    @Composable
+    override fun rememberVoice(enabled: Boolean, onInsert: (spoken: String) -> Unit): ComposerVoice? {
+        val dictation = rememberComposerDictation(this, enabled, onInsert) ?: return null
+        val style = pendingDictationStyle(DsTheme.colors.accent)
+        return ComposerVoice(
+            cancel = dictation.cancel,
+            pending = { base, draft, cursor -> pendingDictationTransformation(base, dictation.state, draft, cursor, style) },
+            stripVisible = dictation.stripVisible(),
+            micButton = { DictationMicButton(dictation) },
+            strip = { DictationStrip(dictation) },
+        )
+    }
+
+    override fun insert(draft: String, cursor: Int, spoken: String): TextFieldValue? =
+        insertDictation(draft, cursor, spoken)?.let { TextFieldValue(it.text, TextRange(it.cursor)) }
+}
 
 /** What the composer draws and calls; rebuilt whenever the dictation changes. */
 @Immutable

@@ -2,8 +2,8 @@ package com.labteto.dshmobile.ui.input
 
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import kotlin.test.Test
 
 /**
  * What Enter and its chords mean in the message box.

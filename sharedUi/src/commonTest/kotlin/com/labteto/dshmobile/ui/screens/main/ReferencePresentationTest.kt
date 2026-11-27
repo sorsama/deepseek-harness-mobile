@@ -3,8 +3,10 @@ package com.labteto.dshmobile.ui.screens.main
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import org.junit.Assert.*
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 class ReferencePresentationTest {
     private val mention = "@[Short title](dsh-session:01234567-89ab-cdef-0123-456789abcdef)"
