@@ -112,6 +112,12 @@ All notable changes to DSH Mobile are documented here. Format based on
   away halfway. Commands now wait for the harness to finish, the way plugin installs already did.
   (#139)
 
+- **A session you open just after connecting stays open.** Once connected, the app opens the
+  session you were last in, or the newest one. If you tapped a session in the list while the app
+  was still picking, its pick could take over a moment later: you were left in a session you had
+  not chosen, or in yours with no messages showing, and the next launch went back to the app's
+  pick. The session you open now always wins, and it is the one remembered for next time. (#141)
+
 ### Internal
 
 - The shared UI is on Compose Multiplatform 1.11.1 and Kotlin 2.3.21 (from 1.7.1 and 2.0.21), with
