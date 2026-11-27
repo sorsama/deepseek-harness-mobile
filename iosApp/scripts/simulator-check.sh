@@ -43,6 +43,7 @@ sessions_result="$data/Documents/dsh-sessions-result.txt"
 drawer_result="$data/Documents/dsh-drawer-result.txt"
 markdown_result="$data/Documents/dsh-markdown-result.txt"
 toolcards_result="$data/Documents/dsh-toolcards-result.txt"
+chat_result="$data/Documents/dsh-chat-result.txt"
 fixtures="${4:-${SIM_REPORTS:-build/ios-reports}/fixtures.log}"
 
 shot() {
@@ -51,7 +52,7 @@ shot() {
 
 # Starts the app with the given arguments; its console output goes to console.log, tagged.
 launch() {
-  rm -f "$result" "$pair_result" "$probe_result" "$sessions_result" "$drawer_result" "$markdown_result" "$toolcards_result"
+  rm -f "$result" "$pair_result" "$probe_result" "$sessions_result" "$drawer_result" "$markdown_result" "$toolcards_result" "$chat_result"
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
   echo "=== launch: $*" >> "$out/console.log"
   xcrun simctl launch --console "$udid" "$bundle" "$@" >> "$out/console.log" 2>&1 &
@@ -145,6 +146,51 @@ expect_drawer() {
   fi
   # The rows arrive with a short stagger; let them settle before the screenshot.
   sleep 4
+}
+
+# Like `expect`, for an opened session's transcript (Documents/dsh-chat-result.txt, written with `-DshOpenSession`). The
+# file collects one line per step (`opened`, then `older` after a page back), so this waits for a line matching the
+# pattern rather than for the file. No such line, no pass, whatever the screenshot shows.
+expect_chat() {
+  local label="$1" pattern="$2" lines
+  for _ in $(seq 1 60); do
+    grep -q -- "$pattern" "$chat_result" 2>/dev/null && break
+    sleep 1
+  done
+  lines="$(cat "$chat_result" 2>/dev/null || echo '<no chat result within 60 s>')"
+  echo "[$label] $lines" | tr '\n' ' ' | cut -c1-400
+  echo
+  if ! grep -q -- "$pattern" <<<"$lines"; then
+    echo "::error::[$label] expected a chat result matching: $pattern"
+    failures=$((failures + 1))
+  fi
+  # The rows fade in as they land; let them settle before the screenshot.
+  sleep 3
+}
+
+# One opened session against the demo harness (the transcript is shared with Android since iOS M5c): $1 names the device,
+# $2 the look (light, dark or ar), $3 the session (`first` is demo-01, the rich transcript; demo-04 is the one too long
+# for a page), $4 where the transcript is left (tail, or older: scrolled to the oldest loaded message, which loads the page
+# before it). The screenshot is chat/<device>-<look>-<tail|older>.png.
+chat_scenario() {
+  local device="$1" look="$2" session="$3" scroll="$4" extra=() id more
+  mkdir -p "$out/chat"
+  case "$look" in
+    dark) xcrun simctl ui "$udid" appearance dark ;;
+    *) xcrun simctl ui "$udid" appearance light ;;
+  esac
+  [ "$look" = ar ] && extra=(-AppleLanguages "(ar)" -AppleLocale ar_SA)
+  id="$session"; more=true
+  [ "$session" = first ] && { id=demo-01; more=false; }
+  launch -DshReset YES -DshConnectAddress "$demo_url" -DshAutoConnect YES -DshOpenSession "$session" -DshChatScroll "$scroll" \
+    ${extra[@]+"${extra[@]}"}
+  expect "chat-$device-$look-$scroll-connected" "DSH_CONNECT_RESULT connected authority=127.0.0.1:3190"
+  expect_chat "chat-$device-$look-$scroll-opened" "^DSH_CHAT_RESULT opened rows=[1-9][0-9]* session=$id more=$more$"
+  if [ "$scroll" = older ]; then
+    expect_chat "chat-$device-$look-older" "^DSH_CHAT_RESULT older rows=[1-9][0-9]* session=$id more=false failed=false$"
+  fi
+  shot "chat/$device-$look-$scroll"
+  xcrun simctl ui "$udid" appearance light
 }
 
 # Readiness, not a scenario (see "0. A warm-up" below): unasserted launches until one connects to 3181, at most three,
@@ -554,7 +600,18 @@ for look in light dark; do
 done
 xcrun simctl ui "$udid" appearance light
 
-# 49 to 52. The same list on an iPad, where it is a pane beside the chat (the Android tablet layout: planShell docks
+# 49 to 53. A session opened on this iPhone (`-DshOpenSession`): its transcript, the shared one, read only. The rich
+#     session at its newest message in light, dark and Arabic (right to left); the long one (demo-04, 92 messages) paged
+#     back once to its start, light and dark. Each fails without its `DSH_CHAT_RESULT` line.
+if [ -n "$demo_url" ] && [ "$demo_url" != "null" ]; then
+  chat_scenario iphone light first tail
+  chat_scenario iphone dark first tail
+  chat_scenario iphone ar first tail
+  chat_scenario iphone light demo-04 older
+  chat_scenario iphone dark demo-04 older
+fi
+
+# 54 to 57. The same list on an iPad, where it is a pane beside the chat (the Android tablet layout: planShell docks
 # the list from 600dp wide). Same app, installed on the second simulator.
 if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" ] && [ -n "$demo_count" ]; then
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
@@ -577,9 +634,12 @@ if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" 
   drawer_result="$data/Documents/dsh-drawer-result.txt"
   markdown_result="$data/Documents/dsh-markdown-result.txt"
   toolcards_result="$data/Documents/dsh-toolcards-result.txt"
+  chat_result="$data/Documents/dsh-chat-result.txt"
   fixtures_listening ipad 3181 3190
   warm_up warm-up-ipad
   drawer_scenarios ipad true
+  # 58. The list docked beside an opened session's transcript, as the Android tablet layout has it.
+  chat_scenario ipad light first tail
 elif [ -z "${SIM_IPAD_UDID:-}" ]; then
   echo "SIM_IPAD_UDID is not set: the iPad session list scenarios did not run"
 fi

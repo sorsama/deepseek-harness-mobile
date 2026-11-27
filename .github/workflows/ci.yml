@@ -267,10 +267,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           iosApp/scripts/simulator-check.sh "$SIM_UDID" "build/ios-derived/Build/Products/Debug-iphonesimulator/DSH Mobile.app" build/ios-screenshots
-      # The session list's screenshots, iPhone and iPad, light, dark, French and Arabic, and the Markdown and tool-card
-      # samples'. The scenarios above already fail when the app does not report them on screen; this fails when a
-      # screenshot is missing.
-      - name: Check the session list, Markdown and tool card screenshots
+      # The session list's screenshots, iPhone and iPad, light, dark, French and Arabic, the Markdown and tool-card
+      # samples', and an opened session's transcript. The scenarios above already fail when the app does not report them
+      # on screen; this fails when a screenshot is missing.
+      - name: Check the session list, Markdown, tool card and transcript screenshots
         if: ${{ !cancelled() }}
         run: |
           missing=0
@@ -293,6 +293,12 @@ jobs:
               f="build/ios-screenshots/toolcards/iphone-$look-$at.png"
               if [ -s "$f" ]; then echo "$f: $(wc -c < "$f") bytes"; else echo "::error::missing $f"; missing=$((missing + 1)); fi
             done
+          done
+          # An opened session's transcript (iOS M5c): the iPhone at the newest message in light, dark and Arabic, and
+          # paged back once in light and dark; the iPad with the list docked beside it.
+          for shot in iphone-light-tail iphone-dark-tail iphone-ar-tail iphone-light-older iphone-dark-older ipad-light-tail; do
+            f="build/ios-screenshots/chat/$shot.png"
+            if [ -s "$f" ]; then echo "$f: $(wc -c < "$f") bytes"; else echo "::error::missing $f"; missing=$((missing + 1)); fi
           done
           test "$missing" -eq 0
       - name: Stop the fixture harnesses

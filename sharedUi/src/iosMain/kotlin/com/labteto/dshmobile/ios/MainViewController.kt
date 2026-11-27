@@ -28,6 +28,10 @@ import platform.posix.fputs
  * [markdownSample] (`-DshMarkdownSample top|end`) shows [MarkdownSamplePage] instead of the app: the shared chat
  * Markdown on one fixed answer, for a CI screenshot before any iOS screen shows a transcript. [toolCardsSample]
  * (`-DshToolCardsSample top|end`) shows [ToolCardsSamplePage] the same way: every shared tool card, open.
+ *
+ * [openSession] (`-DshOpenSession first|<session id>`) opens a session once connected, and [chatScroll]
+ * (`-DshChatScroll tail|older`) says where its transcript is left; both write `DSH_CHAT_RESULT …` lines (see
+ * [reportChat]).
  */
 fun MainViewController(
     prefillAddress: String?,
@@ -48,6 +52,8 @@ fun MainViewController(
     openDrawer: Boolean,
     markdownSample: String?,
     toolCardsSample: String?,
+    openSession: String?,
+    chatScroll: String?,
 ): UIViewController =
     ComposeUIViewController {
         if (markdownSample != null) {
@@ -86,6 +92,13 @@ fun MainViewController(
                 reconnectOnce = reconnectOnce,
                 openDrawer = openDrawer,
                 onDrawer = if (openDrawer) ::reportDrawer else null,
+                openSession = openSession,
+                chatScroll = when (chatScroll?.lowercase()) {
+                    "older" -> ChatScroll.Older
+                    "tail" -> ChatScroll.Tail
+                    else -> null
+                },
+                onChat = if (openSession != null) ::reportChat else null,
             )
         }
         // One controller for the life of the process, on the main thread where Compose runs. The reset,
@@ -130,6 +143,9 @@ private const val MARKDOWN_OUTCOME_FILE = "dsh-markdown-result.txt"
 /** Where the tool-card sample page (`-DshToolCardsSample`) says it has been laid out. */
 private const val TOOL_CARDS_OUTCOME_FILE = "dsh-toolcards-result.txt"
 
+/** Where [reportChat] appends: what the opened session's transcript shows, for `-DshOpenSession`. */
+private const val CHAT_OUTCOME_FILE = "dsh-chat-result.txt"
+
 /**
  * Say what the last connect attempt did, to the two places a script can look: the process's output
  * (`xcrun simctl launch --console`) and a file in the app container
@@ -155,6 +171,12 @@ private fun appendSessions(line: String) = writeReport(SESSIONS_OUTCOME_FILE, li
 
 /** [reportOutcome] for the session list being on screen (`Documents/dsh-drawer-result.txt`). */
 private fun reportDrawer(line: String) = writeReport(DRAWER_OUTCOME_FILE, line)
+
+/**
+ * [reportOutcome] for an opened session's transcript (`Documents/dsh-chat-result.txt`). Appended, one line each: a
+ * `-DshChatScroll older` run writes the `opened` line and then the `older` one, and a script checks both.
+ */
+private fun reportChat(line: String) = writeReport(CHAT_OUTCOME_FILE, line, append = true)
 
 @OptIn(ExperimentalForeignApi::class)
 private fun writeReport(fileName: String, line: String, append: Boolean = false) {

@@ -38,7 +38,9 @@ struct ComposeView: UIViewControllerRepresentable {
             reconnectOnce: launch.reconnectOnce,
             openDrawer: launch.openDrawer,
             markdownSample: launch.markdownSample,
-            toolCardsSample: launch.toolCardsSample
+            toolCardsSample: launch.toolCardsSample,
+            openSession: launch.openSession,
+            chatScroll: launch.chatScroll
         )
     }
 
@@ -69,6 +71,10 @@ struct ComposeView: UIViewControllerRepresentable {
 ///   answer instead of the app, and writes `DSH_MARKDOWN_RESULT shown …` to `Documents/dsh-markdown-result.txt`.
 /// - `-DshToolCardsSample top` (or `end`) shows a page of the chat's shared tool cards, every kind open, and writes
 ///   `DSH_TOOLCARDS_RESULT shown …` to `Documents/dsh-toolcards-result.txt`.
+/// - `-DshOpenSession first` (or a session id) opens that session once connected, as a tap on its row does, and writes
+///   `DSH_CHAT_RESULT opened rows=… session=… more=…` to `Documents/dsh-chat-result.txt` once its transcript is laid
+///   out. `-DshChatScroll older` then scrolls to the oldest loaded message, which loads the page before it, and adds
+///   `DSH_CHAT_RESULT older …` once it has landed.
 ///
 /// Debug builds only. A release build ignores them, so the shipped app has no way to be told which
 /// address to connect to, or what to forget, from outside.
@@ -91,6 +97,8 @@ struct LaunchOptions {
     let openDrawer: Bool
     let markdownSample: String?
     let toolCardsSample: String?
+    let openSession: String?
+    let chatScroll: String?
 
     /// A launch argument's value is parsed as a property list before the app sees it, which mangles JSON, so a
     /// pairing payload is passed hex-encoded (`xxd -p`). A value that is not hex is returned as it was given.
@@ -130,14 +138,16 @@ struct LaunchOptions {
             reconnectOnce: defaults.bool(forKey: "DshReconnectOnce"),
             openDrawer: defaults.bool(forKey: "DshOpenDrawer"),
             markdownSample: defaults.string(forKey: "DshMarkdownSample"),
-            toolCardsSample: defaults.string(forKey: "DshToolCardsSample")
+            toolCardsSample: defaults.string(forKey: "DshToolCardsSample"),
+            openSession: defaults.string(forKey: "DshOpenSession"),
+            chatScroll: defaults.string(forKey: "DshChatScroll")
         )
         #else
         return LaunchOptions(
             address: nil, autoConnect: false, openSignIn: false, signInToken: nil, reset: false, report: false,
             autoReconnect: nil, connectMode: nil, openPair: false, pairUrl: nil, pairCode: nil, pairSubmit: false,
             pairPayload: nil, pairScanner: false, reconnectOnce: false, openDrawer: false, markdownSample: nil,
-            toolCardsSample: nil
+            toolCardsSample: nil, openSession: nil, chatScroll: nil
         )
         #endif
     }
