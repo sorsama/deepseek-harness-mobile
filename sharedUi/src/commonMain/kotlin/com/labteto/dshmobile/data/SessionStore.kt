@@ -6,7 +6,11 @@ import com.labteto.dshmobile.core.wire.pluginBundles
 import com.labteto.dshmobile.core.uisync.uiSyncPresence
 
 import com.labteto.dshmobile.connection.ConnectionPhase
+import com.labteto.dshmobile.connection.ConnectionUiState
 import com.labteto.dshmobile.connection.HarnessConnection
+import com.labteto.dshmobile.connection.needsBaseline
+import com.labteto.dshmobile.connection.sameHost
+import com.labteto.dshmobile.connection.statesSince
 import com.labteto.dshmobile.core.session.AssistantLiveState
 import com.labteto.dshmobile.core.session.ChunkRows
 import com.labteto.dshmobile.core.session.ConversationSnapshot
@@ -960,33 +964,37 @@ class SessionStore(
     private fun observeConnection() {
         scope.launch {
             var prev = connection.state.value
-            connection.state.collect { state ->
-                if (prev.host?.id != state.host?.id || prev.host?.baseUrl != state.host?.baseUrl ||
-                    (prev.phase != state.phase && (prev.phase == ConnectionPhase.CONNECTED || state.phase == ConnectionPhase.CONNECTED))) {
-                    featureAvailability.reset()
-                }
-                if (prev.host?.id != state.host?.id || prev.host?.baseUrl != state.host?.baseUrl) {
-                    questionSessions.reset()
-                    uiAddons.reset()
-                    uiAddonsSettings.reset()
-                    uiAddonsDiscovery.cancel()
-                    _uiAddonsInventory.value = null
-                }
-                else if (prev.phase == ConnectionPhase.CONNECTED && state.phase != ConnectionPhase.CONNECTED) questionSessions.disconnect()
-                val initialConnect = !prev.hasConnected && state.hasConnected
-                val reconnect = prev.hasConnected &&
-                    prev.phase == ConnectionPhase.RECONNECTING &&
-                    state.phase == ConnectionPhase.CONNECTED
-                prev = state
-                // A switch in flight when the socket drops can no longer be confirmed by a frame
-                // on that socket, and the reconnect's baseline replaces the projection wholesale.
-                if (state.phase != ConnectionPhase.CONNECTED) permissionSwitch.reset()
-                if (initialConnect || reconnect) {
-                    probeFeatures()
-                    triggerBaseline()
-                    activeHostKey?.let { pluginOperations.resume(it) }
+            connection.state.collect { latest ->
+                // Only the latest value reaches a collector that was busy: a reconnect that came and went
+                // in the meantime is put back first, or its new socket would never be baselined.
+                for (state in statesSince(prev, latest)) {
+                    onConnectionChange(prev, state)
+                    prev = state
                 }
             }
+        }
+    }
+
+    private fun onConnectionChange(prev: ConnectionUiState, state: ConnectionUiState) {
+        if (!sameHost(prev, state) ||
+            (prev.phase != state.phase && (prev.phase == ConnectionPhase.CONNECTED || state.phase == ConnectionPhase.CONNECTED))) {
+            featureAvailability.reset()
+        }
+        if (!sameHost(prev, state)) {
+            questionSessions.reset()
+            uiAddons.reset()
+            uiAddonsSettings.reset()
+            uiAddonsDiscovery.cancel()
+            _uiAddonsInventory.value = null
+        }
+        else if (prev.phase == ConnectionPhase.CONNECTED && state.phase != ConnectionPhase.CONNECTED) questionSessions.disconnect()
+        // A switch in flight when the socket drops can no longer be confirmed by a frame
+        // on that socket, and the reconnect's baseline replaces the projection wholesale.
+        if (state.phase != ConnectionPhase.CONNECTED) permissionSwitch.reset()
+        if (needsBaseline(prev, state)) {
+            probeFeatures()
+            triggerBaseline()
+            activeHostKey?.let { pluginOperations.resume(it) }
         }
     }
 

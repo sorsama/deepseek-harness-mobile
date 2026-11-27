@@ -201,7 +201,9 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
         // because the store's own read is not observable: a list equal to the one before is no new value of
         // `sessions`. A reconnect keeps the page, so it keeps the count too; another harness starts without one.
         // Watched in a coroutine and keyed on the generation, not on Compose state: a reconnect on a fast network can
-        // pass through RECONNECTING and back within one frame, which a recomposition would never see.
+        // pass through RECONNECTING and back within one frame, which a recomposition would never see. A coroutine on
+        // the main thread can miss it as well, while the chat pane composes (a StateFlow hands over only its latest
+        // value); what still reaches it is the new generation's number in the state (`connectedGeneration`).
         val sessions by app.sessionStore.sessions.collectAsState()
         var listedHost by remember { mutableStateOf<String?>(null) }
         LaunchedEffect(app) {
