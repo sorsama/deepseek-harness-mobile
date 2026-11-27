@@ -2,8 +2,8 @@ package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.core.wire.dto.CommandDescriptor
 import com.labteto.dshmobile.core.wire.dto.CommandInputDescriptor
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import kotlin.test.Test
 
 /**
  * The composer's one decision: command or prompt.
@@ -81,7 +81,7 @@ class SlashAdjudicationTest {
     }
 
     @Test
-    fun `names are matched case-sensitively, as the host parses them`() {
+    fun `names are matched case-sensitively as the host parses them`() {
         assertEquals(Submission.Prompt("/Compact"), decide("/Compact"))
     }
 

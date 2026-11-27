@@ -34,7 +34,6 @@
     <string name="chatlist_session_rename">सेशन का नाम बदलें</string>
     <string name="chatlist_session_fork">सेशन फ़ोर्क करें</string>
     <string name="chatlist_session_archive">सेशन आर्काइव करें</string>
-    <string name="chat_composer_hint">एजेंट को संदेश भेजें…</string>
     <string name="chat_composer_expand">पूरी स्क्रीन का संपादक खोलें</string>
     <string name="chat_composer_fullscreen_title">संदेश</string>
     <string name="chat_composer_queue">कतार</string>
@@ -45,9 +44,6 @@
     <string name="chat_load_older">पुराने संदेश लोड करें</string>
     <string name="chat_stopped">रोका गया</string>
     <string name="chat_queue_title">कतार में टर्न</string>
-    <string name="chat_queue_edit">एडिट करें</string>
-    <string name="chat_queue_remove">हटाएं</string>
-    <string name="chat_queue_steer">चल रहे टर्न में दिशा दें</string>
     <string name="chat_context_title">कॉन्टेक्स्ट</string>
     <string name="chat_context_system">सिस्टम</string>
     <string name="chat_context_tools">टूल</string>
@@ -58,11 +54,6 @@
     <string name="tool_output_hide_raw">मूल JSON छिपाएं</string>
     <string name="goal_title">लक्ष्य</string>
     <string name="goal_none">कोई चालू लक्ष्य नहीं</string>
-    <string name="goal_rounds">राउंड %1$d/%2$s</string>
-    <string name="goal_pause">रोकें</string>
-    <string name="goal_resume">फिर से शुरू करें</string>
-    <string name="goal_edit">लक्ष्य एडिट करें</string>
-    <string name="goal_clear">लक्ष्य साफ़ करें</string>
     <string name="goal_blocked_reason">रुकावट: %1$s</string>
     <string name="goal_max_rounds">अधिकतम राउंड: %1$s</string>
     <string name="plan_review_title">प्लान देखने के लिए तैयार</string>
@@ -179,18 +170,7 @@
     <string name="err_command_unknown">ऐसी कोई कमांड नहीं: %1$s</string>
     <string name="err_command_failed">कमांड नहीं चल सकी: %1$s</string>
     <string name="err_attachment_failed">वह तस्वीर अटैच नहीं हो सकी।</string>
-    <string name="err_image_unsupported_type">सिर्फ़ PNG, JPG, WebP और GIF तस्वीरें जोड़ी जा सकती हैं।</string>
-    <string name="err_image_too_large">हर तस्वीर %1$s से छोटी होनी चाहिए।</string>
-    <string name="err_image_pixels">इस तस्वीर का रिज़ॉल्यूशन बहुत ज़्यादा है। इसे कंप्रेस करके फिर कोशिश करें।</string>
-    <string name="err_image_dimension">तस्वीर की चौड़ाई और ऊँचाई %1$dpx से ज़्यादा नहीं हो सकती। इसे छोटा करके फिर कोशिश करें।</string>
-    <string name="err_image_too_many">एक संदेश में ज़्यादा से ज़्यादा %1$d तस्वीरें भेजी जा सकती हैं।</string>
-    <string name="err_image_batch_too_large">ये तस्वीरें मिलाकर %1$s से ज़्यादा हैं। कुछ हटाकर फिर कोशिश करें।</string>
-    <string name="err_image_model_unsupported">यह मॉडल तस्वीरें नहीं लेता। ऐसा मॉडल चुनें जो लेता हो।</string>
-    <string name="err_image_subagent_unsupported">सबएजेंट सेशन में तस्वीरें नहीं भेजी जा सकतीं।</string>
-    <string name="err_image_send_failed">तस्वीर नहीं भेजी जा सकी (%1$s)। उसे दोबारा जोड़कर फिर कोशिश करें।</string>
-    <string name="err_image_send_failed_plain">तस्वीर नहीं भेजी जा सकी। उसे दोबारा जोड़कर फिर कोशिश करें।</string>
     <string name="err_command_no_images">/%1$s के साथ अटैचमेंट नहीं चलते। पहले उन्हें हटाएँ।</string>
-    <string name="err_command_images_host">इस harness पर /%1$s के साथ अटैचमेंट नहीं चल सकते। पहले उन्हें हटाएँ।</string>
     <string name="common_remove">हटाएँ</string>
     <string name="common_unavailable">उपलब्ध नहीं</string>
     <string name="chatlist_needs_action">आपकी ज़रूरत है</string>
@@ -200,7 +180,6 @@
     <string name="chat_composer_mode_queue_hint">मौजूदा टर्न पूरा होने के बाद चलेगा</string>
     <string name="chat_composer_mode_steer_hint">चल रहे टर्न को बीच में रोकता है</string>
     <string name="chat_composer_steer_idle">दिशा देने के लिए कोई टर्न चल रहा होना चाहिए</string>
-    <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">इस सेशन में कोई कमांड नहीं है</string>
     <string name="chat_commands_unavailable">यह harness कमांड की सूची नहीं देता</string>
     <string name="chat_image_open">तस्वीर खोलें</string>
@@ -213,8 +192,6 @@
     <string name="chat_stats_turns">%1$d टर्न · %2$d चरण</string>
     <string name="chat_stats_timing">LLM %1$s · टूल %2$s</string>
     <string name="chat_stats_speed">TTFT %1$s · %2$s tok/s</string>
-    <string name="chat_stats_tokens">%1$s इनपुट · %2$s आउटपुट</string>
-    <string name="chat_stats_cache">कैश %1$d%%</string>
     <string name="chat_context_used">%1$d%% कॉन्टेक्स्ट इस्तेमाल हुआ</string>
     <string name="permission_unconfirmed">harness ने अनुमति का बदलाव पक्का नहीं किया</string>
     <string name="presets_current">मौजूदा प्रीसेट</string>
@@ -279,9 +256,7 @@
     <string name="chat_composer_attach_file">फ़ाइल अटैच करें</string>
     <string name="chat_composer_remove_file">फ़ाइल हटाएँ</string>
     <string name="chat_attachment_upload_failed">अपलोड नहीं हो सका। फिर कोशिश के लिए टैप करें।</string>
-    <string name="chat_attachment_still_uploading">भेजने से पहले अपलोड पूरा होने दें।</string>
     <string name="err_file_read_failed">वह फ़ाइल पढ़ी नहीं जा सकी।</string>
-    <string name="err_file_not_staged">harness के पास अब वह फ़ाइल नहीं है। इसे फिर से अटैच करें।</string>
     <string name="err_file_subagent_unsupported">सबएजेंट सेशन में फ़ाइलें नहीं भेजी जा सकतीं।</string>
     <string name="photos_skipped">छोड़े गए: %1$d। %2$s</string>
     <string name="archived_title">आर्काइव किए गए सेशन</string>
@@ -452,11 +427,6 @@
     <string name="quota_stale">पुरानी जानकारी</string>
     <string name="quota_reset">रीसेट: %1$s</string>
     <string name="quota_checking">जांच रहे हैं…</string>
-    <string name="quota_compact_session">5घं</string>
-    <string name="quota_compact_week">सप्ताह</string>
-    <string name="quota_compact_day">दि</string>
-    <string name="quota_compact_hour">घं</string>
-    <string name="quota_compact_minute">मि</string>
     <string name="quota_other">अन्य सीमा</string>
     <string name="quota_remaining_percent">शेष: %1$s</string>
     <string name="quota_session_title">यह सत्र</string>

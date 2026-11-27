@@ -3,7 +3,6 @@
     <string name="chat_jump_latest">Aller au plus récent</string>
     <string name="chat_queue_placement_queued">Tour suivant</string>
     <string name="chat_queue_placement_steering">Orientation</string>
-    <string name="chat_queue_placement_context">Contexte</string>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d étape</item>
         <item quantity="many">%d étapes</item>

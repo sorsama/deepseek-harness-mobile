@@ -34,7 +34,6 @@
     <string name="chatlist_session_rename">Renommer la session</string>
     <string name="chatlist_session_fork">Dupliquer la session</string>
     <string name="chatlist_session_archive">Archiver la session</string>
-    <string name="chat_composer_hint">Écrivez à l’agent…</string>
     <string name="chat_composer_expand">Ouvrir l’éditeur en plein écran</string>
     <string name="chat_composer_fullscreen_title">Message</string>
     <string name="chat_composer_queue">File d’attente</string>
@@ -45,9 +44,6 @@
     <string name="chat_load_older">Charger les messages précédents</string>
     <string name="chat_stopped">Arrêté</string>
     <string name="chat_queue_title">Tours en file d’attente</string>
-    <string name="chat_queue_edit">Modifier</string>
-    <string name="chat_queue_remove">Retirer</string>
-    <string name="chat_queue_steer">Orienter le tour en cours</string>
     <string name="chat_context_title">Contexte</string>
     <string name="chat_context_system">Système</string>
     <string name="chat_context_tools">Outils</string>
@@ -58,11 +54,6 @@
     <string name="tool_output_hide_raw">Masquer le JSON brut</string>
     <string name="goal_title">Objectif</string>
     <string name="goal_none">Aucun objectif actif</string>
-    <string name="goal_rounds">Tour %1$d sur %2$s</string>
-    <string name="goal_pause">Mettre en pause</string>
-    <string name="goal_resume">Reprendre</string>
-    <string name="goal_edit">Modifier l’objectif</string>
-    <string name="goal_clear">Effacer l’objectif</string>
     <string name="goal_blocked_reason">Blocage : %1$s</string>
     <string name="goal_max_rounds">Tours maximum : %1$s</string>
     <string name="plan_review_title">Plan prêt à relire</string>
@@ -179,18 +170,7 @@
     <string name="err_command_unknown">Commande inconnue : %1$s</string>
     <string name="err_command_failed">La commande a échoué : %1$s</string>
     <string name="err_attachment_failed">Impossible de joindre cette image.</string>
-    <string name="err_image_unsupported_type">Seules les images PNG, JPG, WebP et GIF sont prises en charge.</string>
-    <string name="err_image_too_large">Chaque image doit peser moins de %1$s.</string>
-    <string name="err_image_pixels">La résolution de cette image est trop élevée. Compressez-la et réessayez.</string>
-    <string name="err_image_dimension">Les côtés de l\'image ne doivent pas dépasser %1$dpx. Réduisez-la et réessayez.</string>
-    <string name="err_image_too_many">Un message peut contenir au maximum %1$d images.</string>
-    <string name="err_image_batch_too_large">Ces images dépassent %1$s au total. Retirez-en quelques-unes et réessayez.</string>
-    <string name="err_image_model_unsupported">Ce modèle n\'accepte pas les images. Passez à un modèle qui les accepte.</string>
-    <string name="err_image_subagent_unsupported">Les sessions de sous-agent n\'acceptent pas les images.</string>
-    <string name="err_image_send_failed">L\'envoi de l\'image a échoué (%1$s). Joignez-la à nouveau et réessayez.</string>
-    <string name="err_image_send_failed_plain">L’envoi de l’image a échoué. Joignez-la à nouveau et réessayez.</string>
     <string name="err_command_no_images">/%1$s n\'accepte pas les pièces jointes. Retirez-les d\'abord.</string>
-    <string name="err_command_images_host">/%1$s ne prend pas en charge les pièces jointes sur ce harness. Retirez-les d\'abord.</string>
     <string name="common_remove">Retirer</string>
     <string name="common_unavailable">Indisponible</string>
     <string name="chatlist_needs_action">Attend une action</string>
@@ -200,7 +180,6 @@
     <string name="chat_composer_mode_queue_hint">S’exécute à la fin du tour en cours</string>
     <string name="chat_composer_mode_steer_hint">Interrompt le tour en cours</string>
     <string name="chat_composer_steer_idle">Orienter n’est possible que pendant un tour en cours</string>
-    <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">Cette session n’a aucune commande</string>
     <string name="chat_commands_unavailable">Ce harness ne fournit pas de liste de commandes</string>
     <string name="chat_image_open">Ouvrir l’image</string>
@@ -213,8 +192,6 @@
     <string name="chat_stats_turns">%1$d tours · %2$d étapes</string>
     <string name="chat_stats_timing">LLM %1$s · outils %2$s</string>
     <string name="chat_stats_speed">TTFT %1$s · %2$s tok/s</string>
-    <string name="chat_stats_tokens">%1$s entrée · %2$s sortie</string>
-    <string name="chat_stats_cache">Cache %1$d%%</string>
     <string name="chat_context_used">%1$d%% du contexte utilisé</string>
     <string name="permission_unconfirmed">Le harness n’a pas confirmé le changement de permissions</string>
     <string name="presets_current">Préréglage actuel</string>
@@ -279,9 +256,7 @@
     <string name="chat_composer_attach_file">Joindre un fichier</string>
     <string name="chat_composer_remove_file">Retirer le fichier</string>
     <string name="chat_attachment_upload_failed">L\'envoi a échoué. Touchez pour réessayer.</string>
-    <string name="chat_attachment_still_uploading">Attendez la fin de l\'envoi avant d\'envoyer le message.</string>
     <string name="err_file_read_failed">Impossible de lire ce fichier.</string>
-    <string name="err_file_not_staged">Le harness ne conserve plus ce fichier. Joignez-le à nouveau.</string>
     <string name="err_file_subagent_unsupported">Les sessions de sous-agent n\'acceptent pas les fichiers.</string>
     <string name="photos_skipped">Ignorés : %1$d. %2$s</string>
     <string name="archived_title">Sessions archivées</string>
@@ -452,11 +427,6 @@
     <string name="quota_stale">Données obsolètes</string>
     <string name="quota_reset">Réinitialisation : %1$s</string>
     <string name="quota_checking">Vérification…</string>
-    <string name="quota_compact_session">5h</string>
-    <string name="quota_compact_week">sem</string>
-    <string name="quota_compact_day">j</string>
-    <string name="quota_compact_hour">h</string>
-    <string name="quota_compact_minute">min</string>
     <string name="quota_other">Autre limite</string>
     <string name="quota_remaining_percent">Reste : %1$s</string>
     <string name="quota_session_title">Cette session</string>

@@ -2,8 +2,8 @@ package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.connection.DELIVERY_QUEUE
 import com.labteto.dshmobile.connection.DELIVERY_STEER
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import kotlin.test.Test
 
 /** The rule that keeps a Steer chosen with nothing running from being refused by the host. */
 class ComposerDeliveryTest {

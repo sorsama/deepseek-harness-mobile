@@ -34,7 +34,6 @@
     <string name="chatlist_session_rename">إعادة تسمية الجلسة</string>
     <string name="chatlist_session_fork">تفريع الجلسة</string>
     <string name="chatlist_session_archive">أرشفة الجلسة</string>
-    <string name="chat_composer_hint">أرسل رسالة إلى الوكيل…</string>
     <string name="chat_composer_expand">فتح المحرر بملء الشاشة</string>
     <string name="chat_composer_fullscreen_title">رسالة</string>
     <string name="chat_composer_queue">قائمة الانتظار</string>
@@ -45,9 +44,6 @@
     <string name="chat_load_older">تحميل الرسائل الأقدم</string>
     <string name="chat_stopped">متوقف</string>
     <string name="chat_queue_title">الجولات في قائمة الانتظار</string>
-    <string name="chat_queue_edit">تعديل</string>
-    <string name="chat_queue_remove">إزالة</string>
-    <string name="chat_queue_steer">توجيه الجولة الجارية</string>
     <string name="chat_context_title">السياق</string>
     <string name="chat_context_system">النظام</string>
     <string name="chat_context_tools">الأدوات</string>
@@ -58,11 +54,6 @@
     <string name="tool_output_hide_raw">إخفاء JSON الخام</string>
     <string name="goal_title">الهدف</string>
     <string name="goal_none">لا يوجد هدف نشط</string>
-    <string name="goal_rounds">الجولة %1$d من %2$s</string>
-    <string name="goal_pause">إيقاف مؤقت</string>
-    <string name="goal_resume">استئناف</string>
-    <string name="goal_edit">تعديل الهدف</string>
-    <string name="goal_clear">مسح الهدف</string>
     <string name="goal_blocked_reason">العائق: %1$s</string>
     <string name="goal_max_rounds">الحد الأقصى للجولات: %1$s</string>
     <string name="plan_review_title">الخطة جاهزة للمراجعة</string>
@@ -179,18 +170,7 @@
     <string name="err_command_unknown">أمر غير معروف: %1$s</string>
     <string name="err_command_failed">فشل الأمر: %1$s</string>
     <string name="err_attachment_failed">تعذر إرفاق هذه الصورة.</string>
-    <string name="err_image_unsupported_type">لا تُدعم سوى صور PNG وJPG وWebP وGIF.</string>
-    <string name="err_image_too_large">يجب أن يكون حجم كل صورة أقل من %1$s.</string>
-    <string name="err_image_pixels">دقة هذه الصورة عالية جدًا. قلّل حجمها ثم أعد المحاولة.</string>
-    <string name="err_image_dimension">يجب ألا يتجاوز طول ضلع الصورة %1$dpx. صغّرها ثم أعد المحاولة.</string>
-    <string name="err_image_too_many">يمكن أن تتضمن الرسالة %1$d صور كحد أقصى.</string>
-    <string name="err_image_batch_too_large">يتجاوز مجموع هذه الصور %1$s. أزل بعضها ثم أعد المحاولة.</string>
-    <string name="err_image_model_unsupported">هذا النموذج لا يقبل الصور. بدّل إلى نموذج يقبلها.</string>
-    <string name="err_image_subagent_unsupported">جلسات الوكيل الفرعي لا تقبل الصور.</string>
-    <string name="err_image_send_failed">تعذّر إرسال الصورة (%1$s). أعد إرفاقها ثم حاول مجددًا.</string>
-    <string name="err_image_send_failed_plain">تعذّر إرسال الصورة. أعد إرفاقها ثم حاول مجددًا.</string>
     <string name="err_command_no_images">/%1$s لا يقبل المرفقات. أزلها أولًا.</string>
-    <string name="err_command_images_host">/%1$s لا يمكنه حمل المرفقات على harness هذا. أزلها أولًا.</string>
     <string name="common_remove">إزالة</string>
     <string name="common_unavailable">غير متاح</string>
     <string name="chatlist_needs_action">بانتظارك</string>
@@ -200,7 +180,6 @@
     <string name="chat_composer_mode_queue_hint">يُنفَّذ بعد انتهاء الجولة الحالية</string>
     <string name="chat_composer_mode_steer_hint">يقاطع الجولة الجارية</string>
     <string name="chat_composer_steer_idle">التوجيه يحتاج جولة جارية</string>
-    <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">لا توجد أوامر في هذه الجلسة</string>
     <string name="chat_commands_unavailable">لا يوفّر هذا الـ harness قائمة أوامر</string>
     <string name="chat_image_open">فتح الصورة</string>
@@ -213,8 +192,6 @@
     <string name="chat_stats_turns">%1$d جولات · %2$d خطوات</string>
     <string name="chat_stats_timing">النموذج %1$s · الأدوات %2$s</string>
     <string name="chat_stats_speed">TTFT %1$s · %2$s tok/s</string>
-    <string name="chat_stats_tokens">%1$s دخل · %2$s خرج</string>
-    <string name="chat_stats_cache">التخزين المؤقت %1$d%%</string>
     <string name="chat_context_used">استُخدم %1$d%% من السياق</string>
     <string name="permission_unconfirmed">لم يؤكّد الـ harness تغيير الأذونات</string>
     <string name="presets_current">الإعداد المسبق الحالي</string>
@@ -279,9 +256,7 @@
     <string name="chat_composer_attach_file">إرفاق ملف</string>
     <string name="chat_composer_remove_file">إزالة الملف</string>
     <string name="chat_attachment_upload_failed">فشل الرفع. انقر لإعادة المحاولة.</string>
-    <string name="chat_attachment_still_uploading">انتظر اكتمال الرفع قبل الإرسال.</string>
     <string name="err_file_read_failed">تعذّر قراءة هذا الملف.</string>
-    <string name="err_file_not_staged">لم يعد harness يحتفظ بهذا الملف. أرفقه مجددًا.</string>
     <string name="err_file_subagent_unsupported">جلسات الوكيل الفرعي لا تقبل الملفات.</string>
     <string name="photos_skipped">تم تخطي %1$d. %2$s</string>
     <string name="archived_title">الجلسات المؤرشفة</string>
@@ -452,11 +427,6 @@
     <string name="quota_stale">بيانات قديمة</string>
     <string name="quota_reset">إعادة التعيين: %1$s</string>
     <string name="quota_checking">جارٍ التحقق…</string>
-    <string name="quota_compact_session">٥س</string>
-    <string name="quota_compact_week">أسب</string>
-    <string name="quota_compact_day">ي</string>
-    <string name="quota_compact_hour">س</string>
-    <string name="quota_compact_minute">د</string>
     <string name="quota_other">حد آخر</string>
     <string name="quota_remaining_percent">المتبقي: %1$s</string>
     <string name="quota_session_title">هذه الجلسة</string>

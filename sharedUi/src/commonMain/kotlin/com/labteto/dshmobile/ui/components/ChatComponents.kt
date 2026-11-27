@@ -241,6 +241,21 @@ internal fun oneDecimal(value: Double): String {
     return (if (negative) "-" else "") + integer + "." + tenths
 }
 
+/**
+ * [value] rounded to a whole number and written with no point, as JVM `"%.0f".format(Locale.US, value)` writes it: the
+ * shortest decimal that reads back as [value], rounded half up at its first decimal. `OneDecimalTest` holds the two
+ * equal on Android.
+ */
+internal fun wholeNumber(value: Double): String {
+    if (value.isNaN() || value.isInfinite()) return value.toString()
+    val negative = value < 0.0 || (value == 0.0 && 1.0 / value < 0.0)
+    val digits = formatNumber(kotlin.math.abs(value))
+    val whole = digits.substringBefore('.')
+    val fraction = digits.substringAfter('.', "")
+    val integer = if ((fraction.getOrNull(0) ?: '0') >= '5') incrementDecimal(whole) else whole
+    return (if (negative) "-" else "") + integer
+}
+
 /** A non-negative whole number written in digits, plus one. */
 private fun incrementDecimal(digits: String): String {
     val chars = digits.toCharArray()

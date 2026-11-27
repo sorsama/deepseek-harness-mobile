@@ -3,7 +3,6 @@
     <string name="chat_jump_latest">跳到最新</string>
     <string name="chat_queue_placement_queued">下一回合</string>
     <string name="chat_queue_placement_steering">引导中</string>
-    <string name="chat_queue_placement_context">上下文</string>
     <plurals name="trajectory_step_count">
         <item quantity="other">%d 步</item>
     </plurals>

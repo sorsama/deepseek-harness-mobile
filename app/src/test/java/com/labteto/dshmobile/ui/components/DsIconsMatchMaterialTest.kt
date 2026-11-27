@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.OpenInFull
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Diversity3
 import androidx.compose.material.icons.outlined.Groups
@@ -108,6 +109,7 @@ class DsIconsMatchMaterialTest {
         Triple("Schedule", DsIcons.Schedule, Icons.Outlined.Schedule),
         Triple("Groups", DsIcons.Groups, Icons.Outlined.Groups),
         Triple("Diversity3", DsIcons.Diversity3, Icons.Outlined.Diversity3),
+        Triple("MoreVertFilled", DsIcons.MoreVertFilled, Icons.Filled.MoreVert),
     )
 
     @Test

@@ -3,7 +3,6 @@
     <string name="chat_jump_latest">تازہ ترین پر جائیں</string>
     <string name="chat_queue_placement_queued">اگلا ٹرن</string>
     <string name="chat_queue_placement_steering">رہنمائی</string>
-    <string name="chat_queue_placement_context">سیاق</string>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d مرحلہ</item>
         <item quantity="other">%d مراحل</item>

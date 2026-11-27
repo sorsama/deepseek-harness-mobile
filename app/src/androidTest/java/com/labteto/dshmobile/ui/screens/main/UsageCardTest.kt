@@ -85,6 +85,12 @@ class UsageCardTest {
         val locale=java.util.Locale.forLanguageTag(language)
         val config=android.content.res.Configuration(base.resources.configuration).apply { setLocale(locale) }
         val localized=base.createConfigurationContext(config)
+        // The compact window names ("2天 6小时") are shared resources since iOS M6b, and Compose Multiplatform picks a
+        // resource by the platform's default locale, which is what the app's Language setting sets
+        // (AppCompatDelegate.setApplicationLocales); a LocalConfiguration of its own does not reach them.
+        val previousDefault=android.os.LocaleList.getDefault()
+        android.os.LocaleList.setDefault(android.os.LocaleList(locale))
+        try {
         setCard {
             val density=LocalDensity.current.density
             CompositionLocalProvider(
@@ -107,6 +113,9 @@ class UsageCardTest {
         }
         compose.onNodeWithText(countdown,substring=true).assertExists()
         compose.onNodeWithTag("quota-refresh").assertHasClickAction()
+        } finally {
+            android.os.LocaleList.setDefault(previousDefault)
+        }
     }
     @Test fun productionComponentsSupportLargeFontRtlAndNeverShowUnknownOrZero() {
         setCard { val density=LocalDensity.current.density;CompositionLocalProvider(LocalDensity provides Density(density,1.5f),LocalLayoutDirection provides LayoutDirection.Rtl) { DshTheme { Column { UsageCard(UsageSnapshot(),"zai",now){};StatsFooter(stats,TokenUsageView(uncachedInputTokens=256_200_000,outputTokens=336_300),quotaText="5ч:25% · нед:17% · 2д 23ч") } } } }

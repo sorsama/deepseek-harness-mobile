@@ -2,9 +2,7 @@
 <!-- Ink redesign: sessions drawer, chat chrome and docks. Area-owned by impl-chat. -->
 <resources>
     <string name="ink_chat_filter_all">الكل %1$d</string>
-    <string name="ink_chat_goal_dock">الهدف · %1$s</string>
     <string name="ink_chat_more">المزيد</string>
-    <string name="ink_chat_queue_next_turn">الجولة التالية</string>
     <string name="ink_chat_today">اليوم</string>
     <string name="ink_chat_yesterday">أمس</string>
 </resources>

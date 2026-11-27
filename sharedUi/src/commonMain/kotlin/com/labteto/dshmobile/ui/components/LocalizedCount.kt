@@ -16,3 +16,10 @@ expect fun localizedCount(value: Int): String
 /** [value] with exactly [decimals] digits after the separator, in the person's own digits and separator. */
 @Composable
 expect fun localizedDecimal(value: Double, decimals: Int): String
+
+/**
+ * [localizedCount] to call later, outside composition: the digits of a count in a message written when a call comes
+ * back ([fillTemplate]), in the language this composition is in.
+ */
+@Composable
+expect fun rememberCountFormat(): (Int) -> String

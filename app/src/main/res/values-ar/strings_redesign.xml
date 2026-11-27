@@ -3,7 +3,6 @@
     <string name="chat_jump_latest">الانتقال إلى الأحدث</string>
     <string name="chat_queue_placement_queued">الجولة التالية</string>
     <string name="chat_queue_placement_steering">توجيه</string>
-    <string name="chat_queue_placement_context">سياق</string>
     <plurals name="trajectory_step_count">
         <item quantity="zero">%d خطوة</item>
         <item quantity="one">%d خطوة</item>

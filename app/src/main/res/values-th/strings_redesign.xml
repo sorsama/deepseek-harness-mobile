@@ -3,7 +3,6 @@
     <string name="chat_jump_latest">ไปที่ข้อความล่าสุด</string>
     <string name="chat_queue_placement_queued">เทิร์นถัดไป</string>
     <string name="chat_queue_placement_steering">กำลังแทรก</string>
-    <string name="chat_queue_placement_context">บริบท</string>
     <plurals name="trajectory_step_count">
         <item quantity="other">%d ขั้น</item>
     </plurals>

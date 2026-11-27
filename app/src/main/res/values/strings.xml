@@ -38,7 +38,6 @@
     <string name="chatlist_session_fork">Fork session</string>
     <string name="chatlist_session_archive">Archive session</string>
     <string name="chatlist_needs_action">Needs you</string>
-    <string name="chat_composer_hint">Message the agent</string>
     <string name="chat_composer_expand">Open the full screen editor</string>
     <string name="chat_composer_fullscreen_title">Message</string>
     <string name="chat_composer_send">Send message</string>
@@ -47,7 +46,6 @@
     <string name="chat_composer_mode_queue_hint">Runs after the current turn finishes</string>
     <string name="chat_composer_mode_steer_hint">Interrupts the running turn</string>
     <string name="chat_composer_steer_idle">Steering needs a running turn</string>
-    <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">This session has no commands</string>
     <string name="chat_commands_unavailable">This harness doesn\'t share a command list</string>
     <string name="chat_image_open">Open image</string>
@@ -60,8 +58,6 @@
     <string name="chat_stats_turns">%1$d turns · %2$d steps</string>
     <string name="chat_stats_timing">LLM %1$s · tools %2$s</string>
     <string name="chat_stats_speed">TTFT %1$s · %2$s tok/s</string>
-    <string name="chat_stats_tokens">%1$s in · %2$s out</string>
-    <string name="chat_stats_cache">Cache %1$d%%</string>
     <string name="chat_context_used">%1$d%% of context used</string>
     <string name="chat_composer_queue">Queue</string>
     <string name="chat_composer_steer">Steer</string>
@@ -71,9 +67,6 @@
     <string name="chat_load_older">Load older messages</string>
     <string name="chat_stopped">Stopped</string>
     <string name="chat_queue_title">Queued turns</string>
-    <string name="chat_queue_edit">Edit</string>
-    <string name="chat_queue_remove">Remove</string>
-    <string name="chat_queue_steer">Steer the running turn</string>
     <string name="chat_context_title">Context</string>
     <string name="chat_context_system">System</string>
     <string name="chat_context_tools">Tools</string>
@@ -84,11 +77,6 @@
     <string name="tool_output_hide_raw">Hide raw JSON</string>
     <string name="goal_title">Goal</string>
     <string name="goal_none">No active goal</string>
-    <string name="goal_rounds">Round %1$d of %2$s</string>
-    <string name="goal_pause">Pause</string>
-    <string name="goal_resume">Resume</string>
-    <string name="goal_edit">Edit goal</string>
-    <string name="goal_clear">Clear goal</string>
     <string name="goal_blocked_reason">Blocker: %1$s</string>
     <string name="goal_max_rounds">Max rounds: %1$s</string>
     <string name="plan_review_title">Plan ready for review</string>
@@ -228,18 +216,7 @@
     <string name="err_command_unknown">Unknown command: %1$s</string>
     <string name="err_command_failed">Command failed: %1$s</string>
     <string name="err_attachment_failed">Couldn\'t attach that image.</string>
-    <string name="err_image_unsupported_type">Only PNG, JPG, WebP and GIF images are supported.</string>
-    <string name="err_image_too_large">Each image must be smaller than %1$s.</string>
-    <string name="err_image_pixels">That image\'s resolution is too high. Compress it and try again.</string>
-    <string name="err_image_dimension">An image can be at most %1$dpx on a side. Resize it and try again.</string>
-    <string name="err_image_too_many">A message can include up to %1$d images.</string>
-    <string name="err_image_batch_too_large">These images add up to more than %1$s. Remove some and try again.</string>
-    <string name="err_image_model_unsupported">This model doesn\'t take images. Switch to one that does.</string>
-    <string name="err_image_subagent_unsupported">Subagent sessions don\'t take images.</string>
-    <string name="err_image_send_failed">Couldn\'t send the image (%1$s). Attach it again.</string>
-    <string name="err_image_send_failed_plain">Couldn\'t send the image. Attach it again.</string>
     <string name="err_command_no_images">/%1$s doesn\'t take attachments. Remove them first.</string>
-    <string name="err_command_images_host">/%1$s can\'t take attachments on this harness. Remove them first.</string>
     <string name="plan_mode_title">Plan mode</string>
     <string name="plan_mode_hint">Research and propose a plan before editing anything.</string>
     <string name="plugins_enabled">Enabled</string>
@@ -286,9 +263,7 @@
     <string name="chat_composer_attach_file">Attach file</string>
     <string name="chat_composer_remove_file">Remove file</string>
     <string name="chat_attachment_upload_failed">Upload failed. Tap to retry.</string>
-    <string name="chat_attachment_still_uploading">Wait for the upload to finish before sending.</string>
     <string name="err_file_read_failed">Couldn\'t read that file.</string>
-    <string name="err_file_not_staged">The harness no longer holds that file. Attach it again.</string>
     <string name="err_file_subagent_unsupported">Subagent sessions don\'t take files.</string>
     <string name="photos_skipped">Skipped: %1$d. %2$s</string>
     <string name="archived_title">Archived sessions</string>
@@ -460,11 +435,6 @@
     <string name="quota_stale">Outdated data</string>
     <string name="quota_reset">Reset: %1$s</string>
     <string name="quota_checking">Checking…</string>
-    <string name="quota_compact_session">5h</string>
-    <string name="quota_compact_week">week</string>
-    <string name="quota_compact_day">d</string>
-    <string name="quota_compact_hour">h</string>
-    <string name="quota_compact_minute">m</string>
     <string name="quota_other">Other limit</string>
     <string name="quota_remaining_percent">%1$s remaining</string>
     <string name="quota_session_title">This session</string>

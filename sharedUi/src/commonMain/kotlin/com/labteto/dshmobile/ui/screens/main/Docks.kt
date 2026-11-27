@@ -27,12 +27,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.outlined.Bolt
-import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -50,15 +44,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.session.QueueItem
 import com.labteto.dshmobile.core.usage.compactCount
 import com.labteto.dshmobile.core.wire.dto.GoalPhase
@@ -90,6 +81,41 @@ import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.coroutines.launch
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_composer_hint
+import com.labteto.dshmobile.shared.resources.chat_composer_steer_idle
+import com.labteto.dshmobile.shared.resources.chat_queue_edit
+import com.labteto.dshmobile.shared.resources.chat_queue_placement_context
+import com.labteto.dshmobile.shared.resources.chat_queue_placement_steering
+import com.labteto.dshmobile.shared.resources.chat_queue_remove
+import com.labteto.dshmobile.shared.resources.chat_queue_steer
+import com.labteto.dshmobile.shared.resources.chat_queue_title
+import com.labteto.dshmobile.shared.resources.chat_stats_cache
+import com.labteto.dshmobile.shared.resources.chat_stats_speed
+import com.labteto.dshmobile.shared.resources.chat_stats_timing
+import com.labteto.dshmobile.shared.resources.chat_stats_tokens
+import com.labteto.dshmobile.shared.resources.chat_stats_turn_count
+import com.labteto.dshmobile.shared.resources.chat_todo_progress
+import com.labteto.dshmobile.shared.resources.common_cancel
+import com.labteto.dshmobile.shared.resources.common_copy
+import com.labteto.dshmobile.shared.resources.common_ok
+import com.labteto.dshmobile.shared.resources.goal_blocked_reason
+import com.labteto.dshmobile.shared.resources.goal_clear
+import com.labteto.dshmobile.shared.resources.goal_edit
+import com.labteto.dshmobile.shared.resources.goal_max_rounds
+import com.labteto.dshmobile.shared.resources.goal_pause
+import com.labteto.dshmobile.shared.resources.goal_resume
+import com.labteto.dshmobile.shared.resources.goal_rounds
+import com.labteto.dshmobile.shared.resources.goal_title
+import com.labteto.dshmobile.shared.resources.hold_message_actions
+import com.labteto.dshmobile.shared.resources.ink_chat_goal_dock
+import com.labteto.dshmobile.shared.resources.ink_chat_queue_next_turn
+import com.labteto.dshmobile.shared.resources.trajectory_step_count
+import com.labteto.dshmobile.ui.components.DsIcons
+import com.labteto.dshmobile.ui.components.localizedCount
+import com.labteto.dshmobile.ui.components.wholeNumber
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The strip of persistent context between the transcript and the composer: to-dos, the ongoing
@@ -106,7 +132,7 @@ import kotlinx.coroutines.launch
  * scrolls on its own. A goal can run to thousands of characters; uncapped, it would push the
  * Pause, Edit and Clear actions below it off screen.
  */
-internal val GoalTextMaxHeight = 240.dp
+val GoalTextMaxHeight = 240.dp
 
 /**
  * The live goal bar above the composer: the mock's compact card, expanding into its verbs.
@@ -117,7 +143,7 @@ internal val GoalTextMaxHeight = 240.dp
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier = Modifier, roundsStarted: Int? = null) {
+fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier = Modifier, roundsStarted: Int? = null) {
     val colors = DsTheme.colors
     var expanded by rememberSaveable(goal.id) { mutableStateOf(false) }
     val cap = goal.maxGoalRounds.takeIf { it > 0 }
@@ -126,11 +152,11 @@ internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier
 
     DockBar(
         icon = FeatherIcons.Target,
-        title = stringResource(R.string.ink_chat_goal_dock, goal.objective),
+        title = stringResource(Res.string.ink_chat_goal_dock, goal.objective),
         // The meter's count is the mock's "3/10"; with no round event this build cannot read, the
         // bar falls back to the phase, which is always known.
         trailing = if (rounds != null && cap != null) {
-            stringResource(R.string.chat_todo_progress, rounds, cap)
+            stringResource(Res.string.chat_todo_progress, localizedCount(rounds), localizedCount(cap))
         } else {
             goalPhaseLabel(goal.phase)
         },
@@ -151,20 +177,20 @@ internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier
         )
         goal.blockedReason?.let {
             Text(
-                stringResource(R.string.goal_blocked_reason, it.message),
+                stringResource(Res.string.goal_blocked_reason, it.message),
                 style = DsType.caption11,
                 color = colors.warnText,
             )
         }
         if (rounds != null && cap != null) {
             Text(
-                stringResource(R.string.goal_rounds, rounds, cap.toString()),
+                stringResource(Res.string.goal_rounds, localizedCount(rounds), cap.toString()),
                 style = DsType.caption11,
                 color = colors.labelTertiary,
             )
         }
         Text(
-            stringResource(R.string.goal_max_rounds, goal.maxGoalRounds.toString()),
+            stringResource(Res.string.goal_max_rounds, goal.maxGoalRounds.toString()),
             style = DsType.caption11,
             color = colors.labelTertiary,
         )
@@ -182,7 +208,7 @@ internal fun GoalBar(goal: GoalSnapshot, store: SessionStore, modifier: Modifier
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun GoalActions(
+fun GoalActions(
     goal: GoalSnapshot,
     store: SessionStore,
     modifier: Modifier = Modifier,
@@ -208,7 +234,7 @@ internal fun GoalActions(
     ) {
         when (goal.phase) {
             GoalPhase.ACTIVE -> DsButton(
-                text = stringResource(R.string.goal_pause),
+                text = stringResource(Res.string.goal_pause),
                 onClick = {
                     haptics.tap()
                     run("pause")
@@ -217,7 +243,7 @@ internal fun GoalActions(
                 size = DsButtonSize.Small,
             )
             GoalPhase.PAUSED, GoalPhase.BLOCKED -> DsButton(
-                text = stringResource(R.string.goal_resume),
+                text = stringResource(Res.string.goal_resume),
                 onClick = {
                     haptics.tap()
                     run("resume")
@@ -230,13 +256,13 @@ internal fun GoalActions(
             GoalPhase.COMPLETE, GoalPhase.UNKNOWN -> Unit
         }
         DsButton(
-            text = stringResource(R.string.goal_edit),
+            text = stringResource(Res.string.goal_edit),
             onClick = { haptics.tap(); editing = true },
             variant = DsButtonVariant.Outline,
             size = DsButtonSize.Small,
         )
         DsButton(
-            text = stringResource(R.string.goal_clear),
+            text = stringResource(Res.string.goal_clear),
             onClick = { haptics.reject(); clearing = true },
             variant = DsButtonVariant.Danger,
             size = DsButtonSize.Small,
@@ -245,9 +271,9 @@ internal fun GoalActions(
 
     if (clearing) {
         ConfirmDialog(
-            title = stringResource(R.string.goal_clear),
+            title = stringResource(Res.string.goal_clear),
             body = goal.objective,
-            confirmLabel = stringResource(R.string.goal_clear),
+            confirmLabel = stringResource(Res.string.goal_clear),
             onDismiss = { clearing = false },
             onConfirm = {
                 clearing = false
@@ -257,7 +283,7 @@ internal fun GoalActions(
     }
     if (editing) {
         DsDialog(
-            title = stringResource(R.string.goal_edit),
+            title = stringResource(Res.string.goal_edit),
             onDismiss = { editing = false },
             body = {
                 TextField(
@@ -268,19 +294,19 @@ internal fun GoalActions(
                         .fillMaxWidth()
                         .heightIn(max = GoalTextMaxHeight)
                         .inkFieldFrame(),
-                    placeholder = { Text(stringResource(R.string.goal_title), style = DsType.std14) },
+                    placeholder = { Text(stringResource(Res.string.goal_title), style = DsType.std14) },
                     colors = dialogTextFieldColors(),
                     shape = DsShapes.control,
                 )
             },
             actions = {
                 DsButton(
-                    text = stringResource(R.string.common_cancel),
+                    text = stringResource(Res.string.common_cancel),
                     onClick = { editing = false },
                     variant = DsButtonVariant.Ghost,
                 )
                 DsButton(
-                    text = stringResource(R.string.common_ok),
+                    text = stringResource(Res.string.common_ok),
                     onClick = {
                         run("edit", editText)
                         editing = false
@@ -298,7 +324,7 @@ internal fun GoalActions(
 
 /** Pending turns, with the edit / remove / steer verbs the harness exposes. */
 @Composable
-internal fun QueueDock(
+fun QueueDock(
     queue: List<QueueItem>,
     store: SessionStore,
     modifier: Modifier = Modifier,
@@ -324,7 +350,7 @@ internal fun QueueDock(
     // A queued turn is something the reader already sent, so it holds like their bubble does.
     var heldId by remember { mutableStateOf<String?>(null) }
     val copy = rememberCopier()
-    val holdLabel = stringResource(R.string.hold_message_actions)
+    val holdLabel = stringResource(Res.string.hold_message_actions)
     fun fullText(item: QueueItem): String =
         (item.content as? kotlinx.serialization.json.JsonArray)
             ?.mapNotNull { (it as? kotlinx.serialization.json.JsonObject)?.get("text").asString() }
@@ -334,7 +360,7 @@ internal fun QueueDock(
 
     DockBar(
         icon = FeatherIcons.List,
-        title = stringResource(R.string.chat_queue_title),
+        title = stringResource(Res.string.chat_queue_title),
         trailing = queue.size.toString(),
         expanded = expanded,
         onToggle = { expanded = !expanded },
@@ -344,7 +370,7 @@ internal fun QueueDock(
         // button is not offered; the note below says why instead of leaving a dead control.
         if (running) {
             DsButton(
-                text = stringResource(R.string.chat_queue_steer),
+                text = stringResource(Res.string.chat_queue_steer),
                 enabled = !busy && !blocked,
                 onClick = {
                     busy = true
@@ -356,7 +382,7 @@ internal fun QueueDock(
             )
         } else {
             Text(
-                stringResource(R.string.chat_composer_steer_idle),
+                stringResource(Res.string.chat_composer_steer_idle),
                 style = DsType.caption11,
                 color = colors.labelTertiary,
             )
@@ -382,27 +408,27 @@ internal fun QueueDock(
                 if (!busy && !blocked && item.placement != "steering") DsMenu(
                     anchor = {
                         Icon(
-                            Icons.Filled.MoreVert,
-                            contentDescription = stringResource(R.string.chat_queue_edit),
+                            DsIcons.MoreVertFilled,
+                            contentDescription = stringResource(Res.string.chat_queue_edit),
                             tint = colors.labelTertiary,
                             modifier = Modifier.size(18.dp),
                         )
                     },
                     items = buildList {
                         add(
-                            MenuItem(stringResource(R.string.chat_queue_edit)) {
+                            MenuItem(stringResource(Res.string.chat_queue_edit)) {
                                 editingId = item.id
                                 editText = fullText(item)
                             },
                         )
                         add(
-                            MenuItem(stringResource(R.string.chat_queue_remove), danger = true) {
+                            MenuItem(stringResource(Res.string.chat_queue_remove), danger = true) {
                                 change(item.id, "remove")
                             },
                         )
                         if (running) {
                             add(
-                                MenuItem(stringResource(R.string.chat_queue_steer)) {
+                                MenuItem(stringResource(Res.string.chat_queue_steer)) {
                                     change(item.id, "steer")
                                 },
                             )
@@ -422,18 +448,18 @@ internal fun QueueDock(
             onDismiss = { heldId = null },
             preview = text,
             actions = buildList {
-                add(HoldAction(stringResource(R.string.common_copy), Icons.Outlined.ContentCopy) { copy(text) })
+                add(HoldAction(stringResource(Res.string.common_copy), DsIcons.ContentCopy) { copy(text) })
                 if (changeable) {
-                    add(HoldAction(stringResource(R.string.chat_queue_edit), Icons.Outlined.Edit) {
+                    add(HoldAction(stringResource(Res.string.chat_queue_edit), DsIcons.Edit) {
                         editingId = item.id
                         editText = text
                     })
                     // Steering needs a live turn; edit and remove do not, so only the steer verb
                     // follows the turn's state.
                     if (running) {
-                        add(HoldAction(stringResource(R.string.chat_queue_steer), Icons.Outlined.Bolt) { change(item.id, "steer") })
+                        add(HoldAction(stringResource(Res.string.chat_queue_steer), DsIcons.Bolt) { change(item.id, "steer") })
                     }
-                    add(HoldAction(stringResource(R.string.chat_queue_remove), Icons.Outlined.Delete, danger = true) {
+                    add(HoldAction(stringResource(Res.string.chat_queue_remove), DsIcons.Delete, danger = true) {
                         change(item.id, "remove")
                     })
                 }
@@ -442,18 +468,18 @@ internal fun QueueDock(
     }
 
     editingId?.let { id ->
-        DsDialog(title = stringResource(R.string.chat_queue_edit), onDismiss = { editingId = null }) {
+        DsDialog(title = stringResource(Res.string.chat_queue_edit), onDismiss = { editingId = null }) {
             TextField(
                 value = editText,
                 onValueChange = { editText = it },
                 modifier = Modifier.fillMaxWidth().inkFieldFrame(),
-                placeholder = { Text(stringResource(R.string.chat_composer_hint), style = DsType.std14) },
+                placeholder = { Text(stringResource(Res.string.chat_composer_hint), style = DsType.std14) },
                 colors = dialogTextFieldColors(),
                 shape = DsShapes.control,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DsButton(
-                    text = stringResource(R.string.common_ok),
+                    text = stringResource(Res.string.common_ok),
                     enabled = editText.isNotBlank() && !busy && !blocked,
                     onClick = {
                         busy = true
@@ -465,7 +491,7 @@ internal fun QueueDock(
                     variant = DsButtonVariant.Info,
                 )
                 DsButton(
-                    text = stringResource(R.string.common_cancel),
+                    text = stringResource(Res.string.common_cancel),
                     onClick = { editingId = null },
                     variant = DsButtonVariant.Ghost,
                 )
@@ -486,7 +512,7 @@ internal fun QueueDock(
  * milliseconds. Printing them raw would have shown a time-to-first-token of several minutes.
  */
 @Composable
-internal fun StatsFooter(
+fun StatsFooter(
     stats: SessionStatsView?,
     usage: TokenUsageView?,
     modifier: Modifier = Modifier,
@@ -497,21 +523,21 @@ internal fun StatsFooter(
     var expanded by remember { mutableStateOf(false) }
     val parts = buildList {
         stats?.let {
-            add(pluralStringResource(R.plurals.chat_stats_turn_count, it.turns, it.turns) + " · " + pluralStringResource(R.plurals.trajectory_step_count, it.steps, it.steps))
+            add(pluralStringResource(Res.plurals.chat_stats_turn_count, it.turns, localizedCount(it.turns)) + " · " + pluralStringResource(Res.plurals.trajectory_step_count, it.steps, localizedCount(it.steps)))
             val ttftMs = it.meanTtftMs
             val rate = it.tokensPerSecond
             // Both numbers come from the first steps of a run; until they exist the clause is left out.
             if (ttftMs != null && rate != null) {
                 add(
                     stringResource(
-                        R.string.chat_stats_speed,
+                        Res.string.chat_stats_speed,
                         formatDurationMs(ttftMs),
-                        String.format(java.util.Locale.US, "%.0f", rate),
+                        wholeNumber(rate),
                     ),
                 )
             }
         }
-        usage?.cacheHitRatio?.let { add(stringResource(R.string.chat_stats_cache, (it * 100).toInt())) }
+        usage?.cacheHitRatio?.let { add(stringResource(Res.string.chat_stats_cache, localizedCount((it * 100).toInt())).replace("%%", "%")) }
     }
     Column(
         modifier = modifier
@@ -546,7 +572,7 @@ internal fun StatsFooter(
             stats?.let {
                 DetailLine(
                     stringResource(
-                        R.string.chat_stats_timing,
+                        Res.string.chat_stats_timing,
                         formatDurationMs(it.llmMs),
                         formatDurationMs(it.toolMs),
                     ),
@@ -557,7 +583,7 @@ internal fun StatsFooter(
                 val labels = quotaLabels()
                 DetailLine(
                     stringResource(
-                        R.string.chat_stats_tokens,
+                        Res.string.chat_stats_tokens,
                         compactCount(usage.inputTokens, labels),
                         compactCount(usage.outputTokens, labels),
                     ) + extra?.let { text -> " · $text" }.orEmpty(),
@@ -585,8 +611,8 @@ private fun DetailLine(text: String) {
 private fun queuePlacementLabel(placement: String): String = when (placement) {
     // The mock's tag for a waiting turn is "Next turn", which says when it runs rather than
     // repeating the dock's own title.
-    com.labteto.dshmobile.core.wire.dto.InboxProjection.QUEUED -> stringResource(R.string.ink_chat_queue_next_turn)
-    com.labteto.dshmobile.core.wire.dto.InboxProjection.STEERING -> stringResource(R.string.chat_queue_placement_steering)
-    com.labteto.dshmobile.core.wire.dto.InboxProjection.CONTEXT -> stringResource(R.string.chat_queue_placement_context)
+    com.labteto.dshmobile.core.wire.dto.InboxProjection.QUEUED -> stringResource(Res.string.ink_chat_queue_next_turn)
+    com.labteto.dshmobile.core.wire.dto.InboxProjection.STEERING -> stringResource(Res.string.chat_queue_placement_steering)
+    com.labteto.dshmobile.core.wire.dto.InboxProjection.CONTEXT -> stringResource(Res.string.chat_queue_placement_context)
     else -> placement
 }
