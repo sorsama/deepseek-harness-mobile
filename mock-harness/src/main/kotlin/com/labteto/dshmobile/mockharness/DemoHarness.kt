@@ -11,6 +11,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
@@ -21,8 +22,9 @@ import kotlinx.serialization.json.putJsonObject
 
 /**
  * A harness with something in it: two workspaces, [SESSION_COUNT] sessions, one transcript with markdown, thinking and
- * a tool call (and a second turn that draws every Markdown block the chat renders, [GALLERY]), and a scripted reply to
- * every prompt, streamed the way harness 0.2.x streams one.
+ * a tool call (and a second turn that draws every Markdown block the chat renders, [GALLERY]), one that calls every
+ * kind of tool the chat draws a card for ([TOOL_CARDS_SESSION]), and a scripted reply to every prompt, streamed the
+ * way harness 0.2.x streams one.
  *
  * The iOS simulator scenarios of the session list and the chat run against it (`mock-harness --ci-fixtures` serves it
  * on [CiFixtures.DEMO_PORT]). Everything is fixed except time: the sessions' `updatedAt` and the events' `time` are
@@ -254,7 +256,11 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
     private fun initialLog(session: DemoSession): List<JsonObject> {
         val index = SESSIONS.indexOf(session)
         val start = updatedAt(index) - 5 * MINUTE_MS
-        val events = if (index == 0) richTranscript() + galleryTurn() else shortTranscript(session)
+        val events = when (index) {
+            0 -> richTranscript() + galleryTurn()
+            TOOL_CARDS_INDEX -> toolCardsTranscript(session)
+            else -> shortTranscript(session)
+        }
         return events.mapIndexed { seq, (type, data) -> wireEvent(type, seq, start + seq * 7_000L, data) }
     }
 
@@ -322,6 +328,308 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
             ),
             "turn/end" to buildJsonObject { put("turn", 2); putJsonObject("reason") { put("kind", "completed") } },
         )
+    }
+
+    /**
+     * The third session's log: one turn that calls every kind of tool the chat draws a card for, with results in the
+     * shapes harness 0.2.x records (the durable `meta` the cards are built from, the `error` facts of a refusal), then
+     * two commands the reader ran (system lines), a turn stopped with a call still open, and the session's usual last
+     * turn, so its tail and its row in the list read as before. For the chat's pixel comparison and the iOS tool-card
+     * screenshots.
+     */
+    private fun toolCardsTranscript(session: DemoSession): List<Pair<String, JsonObject>> {
+        val id = session.id
+        val queue = "app/src/main/java/com/example/sync/SyncQueue.kt"
+        val queueTest = "app/src/test/java/com/example/sync/SyncQueueTest.kt"
+        val todos = buildJsonArray {
+            add(todo("Read how the queue retries", "in_progress"))
+            add(todo("Write the retry tests", "pending"))
+            add(todo("Run the sync tests", "pending"))
+        }
+        val readLines = QUEUE_SOURCE.lines()
+        val testOutput = (1..30).joinToString("\n") { "> Task :app:compileStep$it UP-TO-DATE" } +
+            "\n\nSyncQueueTest > retries a failed upload three times PASSED" +
+            "\nSyncQueueTest > drops an item the server refused PASSED" +
+            "\nSyncQueueTest > keeps the order after a restart PASSED" +
+            "\n\nBUILD SUCCESSFUL in 38s\n41 actionable tasks: 3 executed, 38 up-to-date"
+        val steps = listOf(
+            // Step 1: plan and search.
+            Step(
+                reasoning = "The queue already retries somewhere. Find the retry code before writing tests against it.",
+                text = "I'll find the retry code first.",
+                calls = listOf(
+                    ToolStep("todo_write", buildJsonObject { put("todos", todos) }, "Updated the task list."),
+                    ToolStep(
+                        "grep",
+                        buildJsonObject { put("pattern", "retry"); put("path", "app/src"); put("include", "*.kt") },
+                        "Found 3 matches in 2 files.",
+                        meta = buildJsonObject {
+                            put("shape", "matches"); put("truncated", false); put("total", 3)
+                            putJsonArray("files") {
+                                add(searchFile(queue, 24 to "    private val retryLimit = 3", 41 to "        if (attempt < retryLimit) retry(item)"))
+                                add(searchFile("app/src/main/java/com/example/sync/SyncWorker.kt", 12 to "    override fun shouldRetry() = queue.isNotEmpty()"))
+                            }
+                        },
+                    ),
+                    ToolStep(
+                        "glob",
+                        buildJsonObject { put("pattern", "**/*Sync*.kt") },
+                        "3 files.",
+                        meta = buildJsonObject {
+                            put("shape", "paths"); put("truncated", false); put("total", 3)
+                            putJsonArray("paths") {
+                                add(JsonPrimitive(queue))
+                                add(JsonPrimitive("app/src/main/java/com/example/sync/SyncWorker.kt"))
+                                add(JsonPrimitive(queueTest))
+                            }
+                        },
+                    ),
+                ),
+            ),
+            // Step 2: read and look things up.
+            Step(
+                calls = listOf(
+                    ToolStep(
+                        "read",
+                        buildJsonObject { put("file_path", queue); put("offset", 20); put("limit", readLines.size) },
+                        "<path>$queue</path>\n<type>file</type>\n<content>\n" +
+                            readLines.mapIndexed { i, line -> "${20 + i}: $line" }.joinToString("\n") + "\n</content>",
+                        meta = buildJsonObject {
+                            put("path", queue); put("offset", 20); put("totalLines", 88); put("lang", "kotlin")
+                            putJsonArray("lines") {
+                                readLines.forEachIndexed { i, line -> addJsonObject { put("number", 20 + i); put("text", line) } }
+                            }
+                        },
+                    ),
+                    ToolStep(
+                        "web_search",
+                        buildJsonObject { putJsonArray("queries") { add(JsonPrimitive("kotlin coroutines test retry with virtual time")) } },
+                        "2 results.",
+                        meta = buildJsonObject {
+                            put("truncated", false)
+                            put("answer", "Run the code under runTest and advance virtual time past each backoff.")
+                            putJsonArray("sources") {
+                                addJsonObject {
+                                    put("url", "https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/")
+                                    put("title", "kotlinx-coroutines-test")
+                                    put("snippet", "Test utilities for code that uses coroutines.")
+                                }
+                                addJsonObject {
+                                    put("url", "https://developer.android.com/kotlin/coroutines/test")
+                                    put("title", "Testing Kotlin coroutines on Android")
+                                    put("snippet", "Use a TestDispatcher to control time.")
+                                }
+                            }
+                        },
+                    ),
+                    ToolStep(
+                        "web_fetch",
+                        buildJsonObject { put("url", "https://developer.android.com/kotlin/coroutines/test") },
+                        "# Testing Kotlin coroutines on Android\n\nUse runTest and a TestDispatcher to skip delays.",
+                        meta = buildJsonObject {
+                            put("truncated", false); put("url", "https://developer.android.com/kotlin/coroutines/test"); put("statusCode", 200)
+                        },
+                    ),
+                ),
+            ),
+            // Step 3: change files and run commands.
+            Step(
+                text = "Now the tests, and a small fix the first one needs.",
+                calls = listOf(
+                    ToolStep(
+                        "edit",
+                        buildJsonObject {
+                            put("file_path", queue)
+                            put("old_string", "    private val retryLimit = 3\n")
+                            put("new_string", "    internal var retryLimit = 3\n        private set\n")
+                        },
+                        "Edited the file.",
+                        meta = buildJsonObject {
+                            putJsonArray("diffs") {
+                                addJsonObject {
+                                    put("path", queue)
+                                    put("oldText", "    private val retryLimit = 3\n")
+                                    put("newText", "    internal var retryLimit = 3\n        private set\n")
+                                }
+                            }
+                        },
+                    ),
+                    ToolStep(
+                        "write",
+                        buildJsonObject { put("file_path", queueTest); put("content", QUEUE_TEST_SOURCE) },
+                        "Wrote the file.",
+                        meta = buildJsonObject { putJsonArray("diffs") {} },
+                    ),
+                    ToolStep(
+                        "bash",
+                        buildJsonObject { put("command", "./gradlew :app:testDebugUnitTest --tests '*SyncQueue*'"); put("description", "Run the sync tests") },
+                        testOutput,
+                    ),
+                    ToolStep(
+                        "pwsh",
+                        buildJsonObject { put("command", "Get-Content app/build/reports/lint.txt -Tail 3"); put("description", "Show the lint summary") },
+                        "Get-Content: Cannot find path 'app/build/reports/lint.txt' because it does not exist.\n[exit code: 1]",
+                    ),
+                ),
+            ),
+            // Step 4: helpers, a plugin tool, jobs and a question.
+            Step(
+                calls = listOf(
+                    ToolStep(
+                        "subagent",
+                        buildJsonObject {
+                            put("description", "Check the other workers for the same retry bug")
+                            put("prompt", "Look through app/src for workers that retry without a limit and list them.")
+                        },
+                        "started subagent child-07",
+                    ),
+                    ToolStep(
+                        "skill",
+                        buildJsonObject { put("name", "android-testing") },
+                        "<skill_content name=\"android-testing\">\n<skill_instructions>\n---\n" +
+                            "description: How this project writes and runs unit tests\n---\n# Testing\n\nUse runTest for coroutines.\n" +
+                            "</skill_instructions>\n</skill_content>",
+                    ),
+                    ToolStep(
+                        "plugin:notes/save-note",
+                        buildJsonObject { put("title", "Sync queue"); put("body", "Retries stop after three attempts.") },
+                        "Saved note 12.",
+                    ),
+                    ToolStep(
+                        "job_list",
+                        buildJsonObject {},
+                        "job-3 [bash] running — ./gradlew assembleDebug\njob-2 [bash] completed — ./gradlew lint",
+                    ),
+                    ToolStep(
+                        "ask_user_question",
+                        buildJsonObject {
+                            putJsonArray("questions") {
+                                addJsonObject {
+                                    put("id", "q1")
+                                    put("header", "Retries")
+                                    put("question", "Should a refused upload be retried later?")
+                                    putJsonArray("options") {
+                                        addJsonObject { put("label", "No, drop it") }
+                                        addJsonObject { put("label", "Yes, once") }
+                                    }
+                                }
+                            }
+                        },
+                        """{"answers":[{"id":"q1","selected":["No, drop it"]}]}""",
+                    ),
+                ),
+            ),
+            // Step 5: what did not run.
+            Step(
+                calls = listOf(
+                    ToolStep(
+                        "bash",
+                        buildJsonObject { put("command", "rm -rf app/build"); put("description", "Clean the build folder") },
+                        "The command was not run.",
+                        error = buildJsonObject { put("name", "DshMobilePermissionDenied"); put("code", "APPROVAL_REJECTED_BY_USER") },
+                    ),
+                    ToolStep(
+                        "bash",
+                        buildJsonObject { put("command", "git push --force"); put("description", "Push the branch") },
+                        "Auto review refused this command.",
+                        error = buildJsonObject {
+                            put("name", "AutoReviewDeniedError"); put("code", "AUTO_REVIEW_DENIED")
+                            put("reason", "A force push can overwrite work someone else pushed.")
+                        },
+                    ),
+                    ToolStep(
+                        "edit",
+                        buildJsonObject {
+                            put("file_path", "app/src/main/java/com/example/sync/SyncWorker.kt")
+                            put("old_string", "retry(forever = true)")
+                            put("new_string", "retry(limit = 3)")
+                        },
+                        "Error: old_string was not found in app/src/main/java/com/example/sync/SyncWorker.kt",
+                        error = buildJsonObject { put("name", "Error") },
+                    ),
+                ),
+            ),
+        )
+        val events = mutableListOf<Pair<String, JsonObject>>()
+        events += "turn/start" to buildJsonObject { put("turn", 1) }
+        events += "user/message" to userMessage("$id-u1", "Write tests for the sync queue's retries.")
+        var callNumber = 0
+        steps.forEachIndexed { index, step ->
+            val stepNumber = index + 1
+            val ids = step.calls.map { "$id-call-${++callNumber}" }
+            val content = buildList {
+                step.reasoning?.let { add(buildJsonObject { put("type", "reasoning"); put("text", it) }) }
+                step.text?.let { add(text(it)) }
+                step.calls.forEachIndexed { i, c ->
+                    add(buildJsonObject { put("type", "tool-call"); put("id", ids[i]); put("name", c.name); put("arguments", c.arguments.toString()) })
+                }
+            }
+            events += "assistant/message" to assistantMessage(1, stepNumber, "$id-a$stepNumber", *content.toTypedArray())
+            step.calls.forEachIndexed { i, c ->
+                events += "tool/call" to buildJsonObject {
+                    put("turn", 1); put("step", stepNumber); put("callId", ids[i]); put("name", c.name); put("arguments", c.arguments.toString())
+                }
+                if (c.name == "todo_write") events += "todo/write" to buildJsonObject { put("todos", todos) }
+                events += "tool/result" to toolResult(1, stepNumber, ids[i], c)
+            }
+        }
+        events += "assistant/message" to assistantMessage(1, steps.size + 1, "$id-a${steps.size + 1}", text(TOOL_CARDS_ANSWER))
+        events += "turn/end" to buildJsonObject { put("turn", 1); putJsonObject("reason") { put("kind", "completed") } }
+        // Two commands the reader ran: a permission switch and a plain command, each settled.
+        events += "command/run" to buildJsonObject {
+            put("commandId", "$id-cmd-1"); put("name", "permission"); put("args", " workspace-write")
+            putJsonObject("source") { put("kind", "user") }
+        }
+        events += "command/done" to buildJsonObject { put("commandId", "$id-cmd-1"); put("kind", "success"); put("text", "preset workspace-write") }
+        events += "command/run" to buildJsonObject {
+            put("commandId", "$id-cmd-2"); put("name", "review")
+            putJsonObject("source") { put("kind", "user") }
+        }
+        events += "command/done" to buildJsonObject { put("commandId", "$id-cmd-2"); put("kind", "success") }
+        // A turn the reader stopped while a command was still running: the call has no result.
+        val stopped = ToolStep("bash", buildJsonObject { put("command", "./gradlew :app:testDebugUnitTest"); put("description", "Run all unit tests") }, "")
+        events += "turn/start" to buildJsonObject { put("turn", 2) }
+        events += "user/message" to userMessage("$id-u2", "Run all the unit tests once more.")
+        events += "assistant/message" to assistantMessage(
+            2, 1, "$id-a7",
+            buildJsonObject { put("type", "tool-call"); put("id", "$id-call-stopped"); put("name", stopped.name); put("arguments", stopped.arguments.toString()) },
+        )
+        events += "tool/call" to buildJsonObject {
+            put("turn", 2); put("step", 1); put("callId", "$id-call-stopped"); put("name", stopped.name); put("arguments", stopped.arguments.toString())
+        }
+        events += "turn/end" to buildJsonObject { put("turn", 2); putJsonObject("reason") { put("kind", "aborted") } }
+        // The session's usual last turn, so its tail reads as the other sessions' do.
+        events += "turn/start" to buildJsonObject { put("turn", 3) }
+        events += "user/message" to userMessage("$id-u3", session.title + ".")
+        events += "assistant/message" to assistantMessage(3, 1, "$id-a8", text("Done. " + session.summary))
+        events += "turn/end" to buildJsonObject { put("turn", 3); putJsonObject("reason") { put("kind", "completed") } }
+        return events
+    }
+
+    private class ToolStep(
+        val name: String,
+        val arguments: JsonObject,
+        val output: String,
+        val meta: JsonObject? = null,
+        /** The `{ name, code, reason? }` the harness records beside a thrown error; marks the result an error. */
+        val error: JsonObject? = null,
+    )
+
+    private class Step(val calls: List<ToolStep>, val text: String? = null, val reasoning: String? = null)
+
+    private fun toolResult(turn: Int, step: Int, callId: String, call: ToolStep) = buildJsonObject {
+        put("turn", turn)
+        put("step", step)
+        putJsonObject("message") {
+            put("id", "$callId-result")
+            put("role", "tool")
+            putJsonObject("source") { put("kind", "tool"); put("callId", callId) }
+            put("toolCallId", callId)
+            put("isError", call.error != null)
+            putJsonArray("content") { add(text(call.output)) }
+        }
+        call.meta?.let { put("meta", it) }
+        call.error?.let { put("error", it) }
     }
 
     internal data class DemoWorkspace(val id: String, val title: String, val path: String)
@@ -423,6 +731,55 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
                 workspace = if (index < 7) WORKSPACES[0] else WORKSPACES[1],
             )
         }.also { check(it.size == SESSION_COUNT) }
+
+        /** Which session carries [toolCardsTranscript]: the third, "Write tests for the sync queue". */
+        const val TOOL_CARDS_INDEX: Int = 2
+
+        /** The id of the session that carries every tool card. */
+        val TOOL_CARDS_SESSION: String get() = SESSIONS[TOOL_CARDS_INDEX].id
+
+        /** The answer that settles the tool-card turn. */
+        const val TOOL_CARDS_ANSWER: String =
+            "The retry tests are in and pass: **three** new cases in `SyncQueueTest`.\n\n" +
+                "Two things did not run: you said no to cleaning the build folder, and auto review stopped the force push."
+
+        private const val QUEUE_SOURCE: String =
+            "class SyncQueue(private val api: SyncApi) {\n" +
+                "    private val items = ArrayDeque<SyncItem>()\n" +
+                "\n" +
+                "    private val retryLimit = 3\n" +
+                "\n" +
+                "    suspend fun drain() {\n" +
+                "        while (items.isNotEmpty()) {\n" +
+                "            val item = items.removeFirst()\n" +
+                "            val result = api.upload(item)\n" +
+                "            if (result.refused) continue\n" +
+                "            if (!result.ok) retry(item)\n" +
+                "        }\n" +
+                "    }"
+
+        private const val QUEUE_TEST_SOURCE: String =
+            "package com.example.sync\n\n" +
+                "class SyncQueueTest {\n" +
+                "    @Test\n" +
+                "    fun `retries a failed upload three times`() = runTest {\n" +
+                "        val api = FakeSyncApi(failures = 5)\n" +
+                "        SyncQueue(api).apply { add(item()) }.drain()\n" +
+                "        assertEquals(3, api.attempts)\n" +
+                "    }\n" +
+                "}\n"
+
+        private fun todo(content: String, status: String) = buildJsonObject {
+            put("content", content)
+            put("status", status)
+        }
+
+        private fun searchFile(path: String, vararg matches: Pair<Int, String>) = buildJsonObject {
+            put("path", path)
+            putJsonArray("matches") {
+                for ((line, text) in matches) addJsonObject { put("lineNumber", line); put("line", text) }
+            }
+        }
 
         private fun sessionIdOf(request: JsonObject?): String =
             ((request?.get("address") as? JsonObject)?.get("sessionId") as? JsonPrimitive)?.contentOrNull.orEmpty()

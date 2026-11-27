@@ -22,9 +22,6 @@
     <string name="cmdperm_pending">harness 仍在按“%1$s”运行。重启后，新聊天才会用你的选择。</string>
     <string name="cmdperm_unsupported">这个版本的 harness 不能在运行命令前询问。更新后就能选择命令是直接运行还是先问你。</string>
 
-    <string name="permission_preset_ask_commands">运行命令前询问</string>
-    <string name="permission_preset_ask_commands_desc">每条命令前都会问你，修改工作区以外的文件前也会问。</string>
-    <string name="permission_preset_full_access_desc">直接运行命令和修改文件，不询问。</string>
 
     <string name="approval_command_title">运行这条命令？</string>
     <string name="approval_file_title">修改工作区以外的文件？</string>
@@ -39,10 +36,4 @@
     <string name="sandbox_notice_builtin">这个聊天的设置需要沙盒，而手机无法提供，所以那条命令没有运行。切换设置后再让它试一次。</string>
     <string name="sandbox_notice_switch">切换到“%1$s”</string>
     <string name="sandbox_notice_other">那条命令没有运行，因为这个聊天的设置需要沙盒，而 harness 所在的环境没有沙盒。你可以用聊天的权限按钮换一个设置。</string>
-    <string name="subagent_command_denied">辅助智能体无法询问你，所以这条命令没有运行。</string>
-    <string name="command_denied_rejected">你拒绝了，所以没有运行。</string>
-    <string name="command_denied_cancelled">你回答之前问题已撤回，所以没有运行。</string>
-    <string name="command_denied_nobody">没有人回答这个问题，所以没有运行。智能体工作时请保持应用连接。</string>
-    <string name="command_denied_too_large">内容太长，无法完整显示给你（上限 256 KB），所以没有询问你，也没有运行。已让智能体拆成更小的部分。</string>
-    <string name="command_denied_other">这台手机上的命令检查拦下了它，所以没有运行。</string>
 </resources>

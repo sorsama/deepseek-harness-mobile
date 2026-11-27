@@ -1002,7 +1002,7 @@ private fun ModelPermissionCard(
         val effective = pendingPermission ?: select.currentValue
         val option = select.selectable.firstOrNull { it.value == effective }
         // The app's own words for the presets it owns, as in the permission sheet.
-        permissionPresetDescriptionRes(effective, option?.name)?.let { stringResource(it) }
+        permissionPresetDescription(effective, option?.name)
             ?: option?.description
             ?: panelPermissionDescription(effective)
     }
@@ -1282,7 +1282,7 @@ private fun ActivityRow(
 private fun GoalRow(goal: GoalSnapshot?, store: SessionStore, onFailed: (String?) -> Unit) {
     val colors = DsTheme.colors
     var expanded by remember(goal?.revision) { mutableStateOf(false) }
-    val phase = goal?.phase?.let { stringResource(goalPhaseLabelRes(it)) }
+    val phase = goal?.phase?.let { goalPhaseLabel(it) }
     val meta = goal?.let { snapshot ->
         buildList {
             add(phase.orEmpty())

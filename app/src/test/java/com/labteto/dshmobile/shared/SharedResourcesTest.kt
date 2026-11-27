@@ -98,6 +98,66 @@ class SharedResourcesTest {
         }
     }
 
+    // ---- plurals -----------------------------------------------------------------------------
+
+    private val pluralsPattern = Regex("""<plurals name="([^"]+)"[^>]*>([\s\S]*?)</plurals>""")
+    private val itemPattern = Regex("""<item quantity="([a-z]+)">([\s\S]*?)</item>""")
+
+    private fun plurals(text: String): Map<String, List<Pair<String, String>>> =
+        pluralsPattern.findAll(text).associate { m -> m.groupValues[1] to itemPattern.findAll(m.groupValues[2]).map { it.groupValues[1] to it.groupValues[2] }.toList() }
+
+    private fun androidPlurals(locale: String): Map<String, List<Pair<String, String>>> =
+        File(androidRes, locale).listFiles { f -> f.name.startsWith("strings") && f.name.endsWith(".xml") }.orEmpty().sortedBy { it.name }
+            .flatMap { plurals(it.readText()).toList() }.toMap()
+
+    private fun sharedPlurals(locale: String): Map<String, List<Pair<String, String>>> = plurals(File(sharedRes, "$locale/strings.xml").readText())
+
+    /** Android fills a plural's bare `%d`; Compose Multiplatform fills only `%1$d`, so sync.mjs writes that. */
+    private fun pluralText(text: String) = unescape(text).replace(Regex("%([sd])"), "%1\\$$1")
+
+    private fun pluralKeysTheSharedCodeReads(): Set<String> =
+        sharedSrc.walkTopDown().filter { it.isFile && it.extension == "kt" }
+            .flatMap { Regex("""\bRes\.plurals\.([A-Za-z0-9_]+)""").findAll(it.readText()).map { m -> m.groupValues[1] } }
+            .toSet()
+
+    @Test
+    fun `every plural the shared code reads exists in all eleven languages`() {
+        val keys = pluralKeysTheSharedCodeReads()
+        for (locale in locales) {
+            val have = sharedPlurals(locale).keys
+            assertEquals("$locale is missing plurals the shared code reads", emptySet<String>(), keys - have)
+            assertEquals("$locale has plurals nothing reads (run tools/shared-strings/sync.mjs)", emptySet<String>(), have - keys)
+        }
+    }
+
+    @Test
+    fun `a plural kept in both places says the same in every language`() {
+        for (locale in locales) {
+            val android = androidPlurals(locale)
+            for ((key, items) in sharedPlurals(locale)) {
+                val theirs = android[key] ?: continue
+                assertEquals("$locale/$key differs between the Android resources and the shared ones", theirs.map { (q, t) -> q to pluralText(t) }, items)
+            }
+        }
+    }
+
+    @Test
+    fun `a plural's placeholders are the form Compose Multiplatform fills in`() {
+        val formats = Regex("""%[^\s]{0,6}""")
+        val fine = Regex("""%\d\$[sd]""")
+        for (locale in locales) {
+            for ((key, items) in sharedPlurals(locale)) {
+                assertTrue("$locale/$key has no items", items.isNotEmpty())
+                assertTrue("$locale/$key has no 'other' item", items.any { it.first == "other" })
+                for ((quantity, text) in items) {
+                    for (spec in formats.findAll(text).map { it.value }) {
+                        assertTrue("$locale/$key/$quantity has a format Compose Multiplatform leaves as it is: $spec", fine.containsMatchIn(spec))
+                    }
+                }
+            }
+        }
+    }
+
     @Test
     fun `the fonts are the same files for Android and for iOS`() {
         val android = File(repo, "sharedUi/src/androidMain/res/font").listFiles().orEmpty().filter { it.extension == "ttf" }

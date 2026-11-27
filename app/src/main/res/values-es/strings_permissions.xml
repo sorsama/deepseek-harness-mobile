@@ -22,9 +22,6 @@
     <string name="cmdperm_pending">El harness sigue funcionando con «%1$s». Reinícialo para que los chats nuevos usen tu elección.</string>
     <string name="cmdperm_unsupported">Esta versión del harness no puede preguntar antes de los comandos. Actualízala para elegir si se ejecutan al momento o te preguntan antes.</string>
 
-    <string name="permission_preset_ask_commands">Preguntar antes de comandos</string>
-    <string name="permission_preset_ask_commands_desc">Te pregunta antes de cada comando y antes de cambios fuera del espacio de trabajo.</string>
-    <string name="permission_preset_full_access_desc">Ejecuta comandos y cambia archivos sin preguntar.</string>
 
     <string name="approval_command_title">¿Ejecutar este comando?</string>
     <string name="approval_file_title">¿Cambiar un archivo fuera del espacio de trabajo?</string>
@@ -41,10 +38,4 @@
     <string name="sandbox_notice_builtin">Este chat usa un ajuste que necesita un sandbox, y un móvil no puede dárselo, así que ese comando no se ejecutó. Cambia el chat y vuelve a pedirlo.</string>
     <string name="sandbox_notice_switch">Cambiar a «%1$s»</string>
     <string name="sandbox_notice_other">Ese comando no se ejecutó porque el ajuste de este chat necesita un sandbox y el harness no tiene ninguno donde funciona. Puedes elegir otro ajuste desde el botón de permisos del chat.</string>
-    <string name="subagent_command_denied">Un agente auxiliar no puede preguntarte, así que este comando no se ejecutó.</string>
-    <string name="command_denied_rejected">Dijiste que no, así que no se ejecutó.</string>
-    <string name="command_denied_cancelled">La pregunta se retiró antes de que respondieras, así que no se ejecutó.</string>
-    <string name="command_denied_nobody">No había nadie para responder la pregunta, así que no se ejecutó. Mantén la app conectada mientras trabaja el agente.</string>
-    <string name="command_denied_too_large">Era demasiado largo para mostrártelo entero (el límite es 256 KB), así que no se te preguntó y no se ejecutó. Al agente se le pidió dividirlo en partes más pequeñas.</string>
-    <string name="command_denied_other">La revisión de comandos de este teléfono lo detuvo, así que no se ejecutó.</string>
 </resources>

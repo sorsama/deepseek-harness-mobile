@@ -49,7 +49,6 @@
     <string name="chat_loading_older">Cargando mensajes anteriores…</string>
     <string name="chat_load_older_retry">No se pudieron cargar los mensajes anteriores. Toca para reintentar</string>
     <string name="chat_stopped">Detenido</string>
-    <string name="chat_error_turn">El turno falló</string>
     <string name="chat_max_tokens">Límite de tokens alcanzado</string>
     <string name="chat_retry_scheduled">Reintento programado en %1$d s</string>
     <string name="chat_copy_message">Copiar mensaje</string>
@@ -70,13 +69,8 @@
     <string name="chat_output_placeholder">Salida</string>
     <string name="tool_output_show_raw">Ver JSON sin formato</string>
     <string name="tool_output_hide_raw">Ocultar JSON sin formato</string>
-    <string name="tool_output_copy_raw">Copiar JSON sin formato</string>
     <string name="goal_title">Objetivo</string>
     <string name="goal_none">Sin objetivo activo</string>
-    <string name="goal_phase_active">Activo</string>
-    <string name="goal_phase_paused">En pausa</string>
-    <string name="goal_phase_blocked">Bloqueado</string>
-    <string name="goal_phase_complete">Completado</string>
     <string name="goal_rounds">Ronda %1$d de %2$s</string>
     <string name="goal_pause">Pausar</string>
     <string name="goal_resume">Reanudar</string>
@@ -162,7 +156,6 @@
     <string name="work_steps_detailed_hint">Como Estándar, pero las llamadas a herramientas del turno en curso se ven una por una.</string>
     <string name="work_steps_verbose">Todo desplegado</string>
     <string name="work_steps_verbose_hint">No se pliega ni se agrupa nada. Las llamadas a herramientas se abren solas y muestran el inicio de las salidas largas.</string>
-    <string name="work_steps_clipped">Se muestra el inicio de un resultado largo.</string>
     <string name="work_steps_show_all">Mostrar todo</string>
     <string name="settings_plugins">Complementos</string>
     <string name="settings_plugins_inventory">Inventario de complementos</string>
@@ -243,7 +236,6 @@
     <string name="chat_stats_tokens">%1$s entrada · %2$s salida</string>
     <string name="chat_stats_cache">Caché %1$d%%</string>
     <string name="chat_context_used">%1$d%% del contexto usado</string>
-    <string name="permission_custom">Personalizado</string>
     <string name="permission_custom_hint">La configuración actual de sandbox y aprobación no coincide con ningún preajuste.</string>
     <string name="permission_confirm_title">¿Conceder acceso total?</string>
     <string name="permission_confirm_body">El agente podrá leer y escribir en cualquier lugar del equipo del harness y dejará de pedir aprobación.</string>
@@ -274,14 +266,6 @@
     <string name="chat_retrying">Reintentando…</string>
     <string name="plan_mode_title">Modo plan</string>
     <string name="plan_mode_hint">Investigar y proponer un plan antes de editar nada.</string>
-    <string name="preset_standard_name">Modo estándar</string>
-    <string name="preset_standard_desc">Agente de programación completo con edición de archivos, shell, búsqueda de archivos y web, habilidades, planificación, objetivos, subagentes y flujos de trabajo.</string>
-    <string name="preset_code_name">Modo PTC</string>
-    <string name="preset_code_desc">Todo lo del modo estándar, con las herramientas disponibles a través del SDK de Code Mode para que el modelo combine operaciones de varios pasos en un solo programa TypeScript.</string>
-    <string name="preset_minimal_name">Modo mínimo</string>
-    <string name="preset_minimal_desc">Agente de programación de dos herramientas: bash persistente y str_replace_editor.</string>
-    <string name="preset_cordis_name">Modo creador</string>
-    <string name="preset_cordis_desc">Para crear preajustes de agente. Incluye todo lo del modo estándar, más inspección en tiempo de ejecución, pruebas con complementos y ayuda para escribir preajustes.</string>
     <string name="plugins_enabled">Activado</string>
     <string name="plugins_disabled">Desactivado</string>
     <string name="plugins_phase_unmounted">Sin cargar</string>
@@ -409,14 +393,6 @@
     <string name="harness_automation_history_cursor_error">Los registros han cambiado. Inténtalo de nuevo.</string>
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
-    <string name="system_line_permission_changed">Cambiaste el permiso a %1$s</string>
-    <string name="system_line_permission_changed_plain">Cambiaste el permiso</string>
-    <string name="system_line_permission_failed">El cambio de permiso no se aplicó</string>
-    <string name="system_line_compact">Compactaste la conversación</string>
-    <string name="system_line_plan_on">Activaste el modo plan</string>
-    <string name="system_line_plan_off">Desactivaste el modo plan</string>
-    <string name="system_line_command">Ejecutaste %1$s</string>
-    <string name="system_line_command_failed">%1$s no se pudo ejecutar</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">Rebobinado hasta aquí</string>
     <string name="rewind_no_text">(sin texto)</string>
@@ -490,7 +466,6 @@
     <string name="hold_tool_actions">Acciones de la llamada</string>
     <string name="hold_file_actions">Acciones del archivo</string>
     <string name="hold_select_text">Seleccionar texto</string>
-    <string name="hold_copy_all">Copiar todo</string>
     <string name="hold_edit_as_new">Editar como mensaje nuevo</string>
     <string name="hold_edit_as_new_detail">Lo pone en el editor. El original se queda.</string>
     <string name="hold_rewind_here">Rebobinar a este mensaje</string>
@@ -542,10 +517,7 @@
     <string name="quota_rate_limited">Demasiadas solicitudes, inténtalo de nuevo en un momento</string>
     <string name="quota_limit_short">Límite alcanzado</string>
     <string name="quota_rate_short">Límite de solicitudes</string>
-    <string name="permission_preset_read_only">Sólo lectura</string>
     <string name="permission_preset_workspace_write">Escritura en el espacio de trabajo</string>
-    <string name="permission_preset_full_access">Acceso completo</string>
-    <string name="permission_preset_auto">Revisión automática</string>
     <string name="permission_preset_auto_desc">Ejecuta sin zona de pruebas tras una revisión experimental del mismo modelo de cada llamada de herramienta nativa y llamada interna PTC.</string>
     <string name="shortcuts_group_message">Cuadro de mensaje</string>
     <string name="shortcuts_group_sessions">Sesiones</string>

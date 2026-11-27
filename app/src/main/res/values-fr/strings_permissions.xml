@@ -22,9 +22,6 @@
     <string name="cmdperm_pending">Le harness tourne encore avec « %1$s ». Redémarrez-le pour que les nouvelles conversations suivent votre choix.</string>
     <string name="cmdperm_unsupported">Cette version du harness ne sait pas demander avant les commandes. Mettez-la à jour pour choisir si elles se lancent tout de suite ou vous demandent d\'abord.</string>
 
-    <string name="permission_preset_ask_commands">Demander avant les commandes</string>
-    <string name="permission_preset_ask_commands_desc">Vous demande avant chaque commande et avant toute modification hors de l\'espace de travail.</string>
-    <string name="permission_preset_full_access_desc">Lance les commandes et modifie les fichiers sans demander.</string>
 
     <string name="approval_command_title">Lancer cette commande ?</string>
     <string name="approval_file_title">Modifier un fichier hors de l\'espace de travail ?</string>
@@ -41,10 +38,4 @@
     <string name="sandbox_notice_builtin">Cette conversation utilise un réglage qui demande un sandbox, et un téléphone ne peut pas lui en donner, donc la commande n\'a pas été lancée. Changez le réglage, puis redemandez.</string>
     <string name="sandbox_notice_switch">Passer à « %1$s »</string>
     <string name="sandbox_notice_other">La commande n\'a pas été lancée parce que le réglage de cette conversation demande un sandbox et que le harness n\'en a pas là où il tourne. Vous pouvez choisir un autre réglage depuis le bouton d\'autorisation.</string>
-    <string name="subagent_command_denied">Un agent auxiliaire ne peut pas vous demander, donc cette commande n\'a pas été lancée.</string>
-    <string name="command_denied_rejected">Vous avez refusé, donc rien n’a été lancé.</string>
-    <string name="command_denied_cancelled">La question a été retirée avant votre réponse, donc rien n’a été lancé.</string>
-    <string name="command_denied_nobody">Personne n’était là pour répondre, donc rien n’a été lancé. Gardez l’app connectée pendant que l’agent travaille.</string>
-    <string name="command_denied_too_large">C’était trop long pour vous être montré en entier (la limite est de 256 Ko), donc la question n’a pas été posée et rien n’a été lancé. L’agent a été invité à le découper en parties plus petites.</string>
-    <string name="command_denied_other">La vérification des commandes de ce téléphone l’a arrêté, donc rien n’a été lancé.</string>
 </resources>

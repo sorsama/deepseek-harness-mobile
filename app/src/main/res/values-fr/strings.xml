@@ -49,7 +49,6 @@
     <string name="chat_loading_older">Chargement des messages précédents…</string>
     <string name="chat_load_older_retry">Impossible de charger les messages précédents. Appuyez pour réessayer.</string>
     <string name="chat_stopped">Arrêté</string>
-    <string name="chat_error_turn">Le tour a échoué</string>
     <string name="chat_max_tokens">Limite de jetons atteinte</string>
     <string name="chat_retry_scheduled">Nouvel essai dans %1$d s</string>
     <string name="chat_copy_message">Copier le message</string>
@@ -70,13 +69,8 @@
     <string name="chat_output_placeholder">Sortie</string>
     <string name="tool_output_show_raw">Afficher le JSON brut</string>
     <string name="tool_output_hide_raw">Masquer le JSON brut</string>
-    <string name="tool_output_copy_raw">Copier le JSON brut</string>
     <string name="goal_title">Objectif</string>
     <string name="goal_none">Aucun objectif actif</string>
-    <string name="goal_phase_active">Actif</string>
-    <string name="goal_phase_paused">En pause</string>
-    <string name="goal_phase_blocked">Bloqué</string>
-    <string name="goal_phase_complete">Terminé</string>
     <string name="goal_rounds">Tour %1$d sur %2$s</string>
     <string name="goal_pause">Mettre en pause</string>
     <string name="goal_resume">Reprendre</string>
@@ -162,7 +156,6 @@
     <string name="work_steps_detailed_hint">Comme Standard, mais les appels d’outils du tour en cours s’affichent un par un.</string>
     <string name="work_steps_verbose">Tout déplié</string>
     <string name="work_steps_verbose_hint">Rien n’est replié ni groupé. Les appels d’outils s’ouvrent seuls et montrent le début des longues sorties.</string>
-    <string name="work_steps_clipped">Début d’un long résultat.</string>
     <string name="work_steps_show_all">Tout afficher</string>
     <string name="settings_plugins">Plugins</string>
     <string name="settings_plugins_inventory">Inventaire des plugins</string>
@@ -243,7 +236,6 @@
     <string name="chat_stats_tokens">%1$s entrée · %2$s sortie</string>
     <string name="chat_stats_cache">Cache %1$d%%</string>
     <string name="chat_context_used">%1$d%% du contexte utilisé</string>
-    <string name="permission_custom">Personnalisé</string>
     <string name="permission_custom_hint">Les réglages actuels de bac à sable et d’approbation ne correspondent à aucun préréglage.</string>
     <string name="permission_confirm_title">Accorder l’accès complet ?</string>
     <string name="permission_confirm_body">L’agent pourra lire et écrire partout sur l’ordinateur du harness et cessera de demander une approbation.</string>
@@ -274,14 +266,6 @@
     <string name="chat_retrying">Nouvelle tentative…</string>
     <string name="plan_mode_title">Mode plan</string>
     <string name="plan_mode_hint">Analyser et proposer un plan avant toute modification.</string>
-    <string name="preset_standard_name">Mode standard</string>
-    <string name="preset_standard_desc">Agent de développement complet : édition de fichiers, shell, recherche de fichiers et web, compétences, planification, objectifs, sous-agents et workflows.</string>
-    <string name="preset_code_name">Mode PTC</string>
-    <string name="preset_code_desc">Tout ce que fait le mode standard, avec des outils accessibles via le SDK Code Mode : le modèle peut enchaîner plusieurs opérations dans un seul programme TypeScript.</string>
-    <string name="preset_minimal_name">Mode minimal</string>
-    <string name="preset_minimal_desc">Agent de développement à deux outils : bash persistant et str_replace_editor.</string>
-    <string name="preset_cordis_name">Mode créateur</string>
-    <string name="preset_cordis_desc">Pour créer vos propres préréglages d’agent : tout le mode standard, plus l’inspection à l’exécution, des essais de plugins et un guide de rédaction.</string>
     <string name="plugins_enabled">Activé</string>
     <string name="plugins_disabled">Désactivé</string>
     <string name="plugins_phase_unmounted">Non chargé</string>
@@ -409,14 +393,6 @@
     <string name="harness_automation_history_cursor_error">Les enregistrements ont changé. Réessayez.</string>
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
-    <string name="system_line_permission_changed">Vous avez défini l\'autorisation sur %1$s</string>
-    <string name="system_line_permission_changed_plain">Vous avez modifié l\'autorisation</string>
-    <string name="system_line_permission_failed">Le changement d\'autorisation n\'a pas abouti</string>
-    <string name="system_line_compact">Vous avez compacté la conversation</string>
-    <string name="system_line_plan_on">Vous avez activé le mode plan</string>
-    <string name="system_line_plan_off">Vous avez désactivé le mode plan</string>
-    <string name="system_line_command">Vous avez lancé %1$s</string>
-    <string name="system_line_command_failed">%1$s n\'a pas abouti</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">Rembobiné jusqu\'ici</string>
     <string name="rewind_no_text">(sans texte)</string>
@@ -490,7 +466,6 @@
     <string name="hold_tool_actions">Actions de l’appel d’outil</string>
     <string name="hold_file_actions">Actions du fichier</string>
     <string name="hold_select_text">Sélectionner le texte</string>
-    <string name="hold_copy_all">Tout copier</string>
     <string name="hold_edit_as_new">Modifier comme nouveau message</string>
     <string name="hold_edit_as_new_detail">Le place dans la zone de saisie. L’original est conservé.</string>
     <string name="hold_rewind_here">Rembobiner jusqu’à ce message</string>
@@ -542,10 +517,7 @@
     <string name="quota_rate_limited">Trop de requêtes, réessayez dans un instant</string>
     <string name="quota_limit_short">Limite atteinte</string>
     <string name="quota_rate_short">Limite de requêtes</string>
-    <string name="permission_preset_read_only">Lecture seule</string>
     <string name="permission_preset_workspace_write">Écriture dans l\'espace de travail</string>
-    <string name="permission_preset_full_access">Accès complet</string>
-    <string name="permission_preset_auto">Révision automatique</string>
     <string name="permission_preset_auto_desc">S\'exécute sans bac à sable après une révision expérimentale par le même modèle de chaque appel d\'outil natif et appel interne PTC.</string>
     <string name="shortcuts_group_message">Zone de message</string>
     <string name="shortcuts_group_sessions">Sessions</string>

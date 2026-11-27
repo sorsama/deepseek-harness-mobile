@@ -42,6 +42,7 @@ probe_result="$data/Documents/dsh-probe-result.txt"
 sessions_result="$data/Documents/dsh-sessions-result.txt"
 drawer_result="$data/Documents/dsh-drawer-result.txt"
 markdown_result="$data/Documents/dsh-markdown-result.txt"
+toolcards_result="$data/Documents/dsh-toolcards-result.txt"
 fixtures="${4:-${SIM_REPORTS:-build/ios-reports}/fixtures.log}"
 
 shot() {
@@ -50,7 +51,7 @@ shot() {
 
 # Starts the app with the given arguments; its console output goes to console.log, tagged.
 launch() {
-  rm -f "$result" "$pair_result" "$probe_result" "$sessions_result" "$drawer_result" "$markdown_result"
+  rm -f "$result" "$pair_result" "$probe_result" "$sessions_result" "$drawer_result" "$markdown_result" "$toolcards_result"
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
   echo "=== launch: $*" >> "$out/console.log"
   xcrun simctl launch --console "$udid" "$bundle" "$@" >> "$out/console.log" 2>&1 &
@@ -529,7 +530,31 @@ for look in light dark; do
 done
 xcrun simctl ui "$udid" appearance light
 
-# 45 to 48. The same list on an iPad, where it is a pane beside the chat (the Android tablet layout: planShell docks
+# 45 to 48. The chat's tool cards (shared with Android since iOS M5b) on a debug page, `-DshToolCardsSample`: every card
+#     kind open, the three ways a call does not run, two system lines and a running and a stopped command, at the top
+#     and scrolled to the foot, light and dark. No harness, as for the Markdown page. No result line, no pass.
+mkdir -p "$out/toolcards"
+for look in light dark; do
+  xcrun simctl ui "$udid" appearance "$look"
+  for at in top end; do
+    launch -DshToolCardsSample "$at"
+    for _ in $(seq 1 30); do
+      [ -s "$toolcards_result" ] && break
+      sleep 1
+    done
+    line="$(cat "$toolcards_result" 2>/dev/null || echo '<no tool cards result within 30 s>')"
+    echo "[toolcards-$look-$at] $line" | cut -c1-300
+    if ! grep -q -- "^DSH_TOOLCARDS_RESULT shown at=$at cards=19 height=" <<<"$line"; then
+      echo "::error::[toolcards-$look-$at] expected the tool card sample on screen"
+      failures=$((failures + 1))
+    fi
+    sleep 2
+    shot "toolcards/iphone-$look-$at"
+  done
+done
+xcrun simctl ui "$udid" appearance light
+
+# 49 to 52. The same list on an iPad, where it is a pane beside the chat (the Android tablet layout: planShell docks
 # the list from 600dp wide). Same app, installed on the second simulator.
 if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" ] && [ -n "$demo_count" ]; then
   xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
@@ -551,6 +576,7 @@ if [ -n "${SIM_IPAD_UDID:-}" ] && [ -n "$demo_url" ] && [ "$demo_url" != "null" 
   sessions_result="$data/Documents/dsh-sessions-result.txt"
   drawer_result="$data/Documents/dsh-drawer-result.txt"
   markdown_result="$data/Documents/dsh-markdown-result.txt"
+  toolcards_result="$data/Documents/dsh-toolcards-result.txt"
   fixtures_listening ipad 3181 3190
   warm_up warm-up-ipad
   drawer_scenarios ipad true

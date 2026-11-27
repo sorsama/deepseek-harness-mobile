@@ -893,47 +893,6 @@ private fun WorkflowRow(
 }
 
 /**
- * The readable failure text out of a `tool/result` body, or null when it carries none.
- *
- * `ToolResultNode.content` is the result body, `[ { type: "text", text: "Error: …" }, … ]`, in
- * both session formats: the fold unwraps the `tool-result` part that format v3 nested it in. The
- * walk still recurses through any `content` array it meets and takes the first `text` part at any
- * depth, so a tool that nests its own parts, or a container kind this build has not seen, still
- * yields its prose rather than the generic string.
- *
- * A bare string body is accepted too: some tools answer with one.
- */
-internal fun toolFailureMessage(content: JsonElement?): String? {
-    // A failure whose text is itself a block list or envelope is unwrapped like any other output.
-    fun fromText(value: String?): String? = value?.let(::unwrapToolText)?.trim()?.takeIf { it.isNotEmpty() }
-
-    /** First prose part at or below [element], depth-first, or null. */
-    fun walk(element: JsonElement?): String? = when (element) {
-        null -> null
-        is JsonPrimitive -> fromText(element.contentOrNull)
-        is JsonArray -> element.firstNotNullOfOrNull { walk(it) }
-        is JsonObject -> {
-            val type = element["type"]?.jsonPrimitive?.contentOrNull
-            // A container part (tool-result, or a nesting this build has not seen) is descended
-            // into; a text part ends the search; anything else — an image, a structured blob — is
-            // skipped rather than dumped at the reader.
-            when {
-                type == "text" || (type == null && element.containsKey("text")) ->
-                    fromText(element["text"]?.jsonPrimitive?.contentOrNull)
-                element.containsKey("content") -> walk(element["content"])
-                // A flat error object: take its human-readable field.
-                else -> fromText(
-                    (element["message"] ?: element["error"])?.jsonPrimitive?.contentOrNull,
-                )
-            }
-        }
-        else -> null
-    }
-
-    return walk(content)
-}
-
-/**
  * Harness-injected context, folded into one disclosure row.
  *
  * Rendered as a collapse rather than a bubble because it is not the reader's turn: a system
@@ -975,14 +934,3 @@ private fun ToolSetChangeRow(node: DeveloperMessageNode) {
     }
 }
 
-
-/** What the chat says for a call the built-in runtime's command check did not run. */
-internal fun permissionDenialText(denial: com.labteto.dshmobile.core.permission.PermissionDenial): Int = when (denial) {
-    com.labteto.dshmobile.core.permission.PermissionDenial.SubagentCannotAsk -> R.string.subagent_command_denied
-    com.labteto.dshmobile.core.permission.PermissionDenial.Rejected -> R.string.command_denied_rejected
-    com.labteto.dshmobile.core.permission.PermissionDenial.Cancelled -> R.string.command_denied_cancelled
-    com.labteto.dshmobile.core.permission.PermissionDenial.NobodyToAsk -> R.string.command_denied_nobody
-    com.labteto.dshmobile.core.permission.PermissionDenial.TextTooLarge -> R.string.command_denied_too_large
-    com.labteto.dshmobile.core.permission.PermissionDenial.Other -> R.string.command_denied_other
-    com.labteto.dshmobile.core.permission.PermissionDenial.AutoReviewRejected -> R.string.chat_tool_auto_review_denied
-}

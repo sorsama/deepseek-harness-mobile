@@ -49,7 +49,6 @@
     <string name="chat_loading_older">جارٍ تحميل الرسائل الأقدم…</string>
     <string name="chat_load_older_retry">تعذّر تحميل الرسائل الأقدم. اضغط للمحاولة مرة أخرى</string>
     <string name="chat_stopped">متوقف</string>
-    <string name="chat_error_turn">فشلت الجولة</string>
     <string name="chat_max_tokens">تم الوصول إلى الحد الأقصى للرموز</string>
     <string name="chat_retry_scheduled">إعادة المحاولة خلال %1$d ثانية</string>
     <string name="chat_copy_message">نسخ الرسالة</string>
@@ -70,13 +69,8 @@
     <string name="chat_output_placeholder">المخرجات</string>
     <string name="tool_output_show_raw">عرض JSON الخام</string>
     <string name="tool_output_hide_raw">إخفاء JSON الخام</string>
-    <string name="tool_output_copy_raw">نسخ JSON الخام</string>
     <string name="goal_title">الهدف</string>
     <string name="goal_none">لا يوجد هدف نشط</string>
-    <string name="goal_phase_active">نشط</string>
-    <string name="goal_phase_paused">متوقف مؤقتًا</string>
-    <string name="goal_phase_blocked">محظور</string>
-    <string name="goal_phase_complete">مكتمل</string>
     <string name="goal_rounds">الجولة %1$d من %2$s</string>
     <string name="goal_pause">إيقاف مؤقت</string>
     <string name="goal_resume">استئناف</string>
@@ -162,7 +156,6 @@
     <string name="work_steps_detailed_hint">مثل العادي، لكن استدعاءات الأدوات في الجولة الجارية تظهر واحدًا واحدًا.</string>
     <string name="work_steps_verbose">موسّع بالكامل</string>
     <string name="work_steps_verbose_hint">لا شيء يُطوى أو يُجمّع. تُفتح استدعاءات الأدوات تلقائيًا وتعرض بداية المخرجات الطويلة.</string>
-    <string name="work_steps_clipped">تُعرض بداية نتيجة طويلة.</string>
     <string name="work_steps_show_all">عرض الكل</string>
     <string name="settings_plugins">الإضافات</string>
     <string name="settings_plugins_inventory">قائمة الإضافات</string>
@@ -243,7 +236,6 @@
     <string name="chat_stats_tokens">%1$s دخل · %2$s خرج</string>
     <string name="chat_stats_cache">التخزين المؤقت %1$d%%</string>
     <string name="chat_context_used">استُخدم %1$d%% من السياق</string>
-    <string name="permission_custom">مخصّص</string>
     <string name="permission_custom_hint">إعدادات العزل والموافقة الحالية لا تطابق أي إعداد مسبق.</string>
     <string name="permission_confirm_title">منح وصول كامل؟</string>
     <string name="permission_confirm_body">سيتمكن الوكيل من القراءة والكتابة في أي مكان على حاسوب harness ولن يطلب الموافقة بعد الآن.</string>
@@ -274,14 +266,6 @@
     <string name="chat_retrying">إعادة المحاولة…</string>
     <string name="plan_mode_title">وضع التخطيط</string>
     <string name="plan_mode_hint">البحث واقتراح خطة قبل إجراء أي تعديل.</string>
-    <string name="preset_standard_name">الوضع القياسي</string>
-    <string name="preset_standard_desc">وكيل برمجة كامل مع تحرير الملفات والصدفة والبحث في الملفات والويب والمهارات والتخطيط والأهداف والوكلاء الفرعيين وسير العمل.</string>
-    <string name="preset_code_name">وضع PTC</string>
-    <string name="preset_code_desc">كل ما في الوضع القياسي، مع أدوات متاحة عبر Code Mode SDK ليربط النموذج عدة خطوات في برنامج TypeScript واحد.</string>
-    <string name="preset_minimal_name">الوضع الأدنى</string>
-    <string name="preset_minimal_desc">وكيل برمجة بأداتين فقط: bash دائم وstr_replace_editor.</string>
-    <string name="preset_cordis_name">وضع المُنشئ</string>
-    <string name="preset_cordis_desc">مخصص لإنشاء إعدادات مسبقة للوكيل. يتضمن كل ما في الوضع القياسي، إضافةً إلى فحص وقت التشغيل وتجارب الإضافات وإرشادات كتابة الإعدادات المسبقة.</string>
     <string name="plugins_enabled">مُفعّل</string>
     <string name="plugins_disabled">مُعطّل</string>
     <string name="plugins_phase_unmounted">غير مُحمَّل</string>
@@ -409,14 +393,6 @@
     <string name="harness_automation_history_cursor_error">تغيّرت السجلات. حاول مرة أخرى.</string>
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
-    <string name="system_line_permission_changed">غيّرت الإذن إلى %1$s</string>
-    <string name="system_line_permission_changed_plain">غيّرت الإذن</string>
-    <string name="system_line_permission_failed">لم يكتمل تغيير الإذن</string>
-    <string name="system_line_compact">ضغطت المحادثة</string>
-    <string name="system_line_plan_on">فعّلت وضع الخطة</string>
-    <string name="system_line_plan_off">عطّلت وضع الخطة</string>
-    <string name="system_line_command">شغّلت %1$s</string>
-    <string name="system_line_command_failed">تعذّر تشغيل %1$s</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">تمت الإعادة إلى هنا</string>
     <string name="rewind_no_text">(بدون نص)</string>
@@ -490,7 +466,6 @@
     <string name="hold_tool_actions">إجراءات استدعاء الأداة</string>
     <string name="hold_file_actions">إجراءات الملف</string>
     <string name="hold_select_text">تحديد النص</string>
-    <string name="hold_copy_all">نسخ الكل</string>
     <string name="hold_edit_as_new">تعديل كرسالة جديدة</string>
     <string name="hold_edit_as_new_detail">يضعها في مربع الكتابة، وتبقى الرسالة الأصلية.</string>
     <string name="hold_rewind_here">الإعادة إلى هذه الرسالة</string>
@@ -542,10 +517,7 @@
     <string name="quota_rate_limited">عدد الطلبات كبير، حاول مرة أخرى بعد قليل</string>
     <string name="quota_limit_short">تم بلوغ الحد</string>
     <string name="quota_rate_short">الطلبات محدودة</string>
-    <string name="permission_preset_read_only">قراءة فقط</string>
     <string name="permission_preset_workspace_write">كتابة في مساحة العمل</string>
-    <string name="permission_preset_full_access">وصول كامل</string>
-    <string name="permission_preset_auto">مراجعة تلقائية</string>
     <string name="permission_preset_auto_desc">يعمل بدون صندوق حماية بعد مراجعة تجريبية من نفس النموذج لكل استدعاء أداة أصلي وكل استدعاء PTC داخلي.</string>
     <string name="shortcuts_group_message">مربع الرسالة</string>
     <string name="shortcuts_group_sessions">الجلسات</string>

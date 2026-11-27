@@ -11,6 +11,8 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Add
@@ -70,6 +72,8 @@ class DsIconsMatchMaterialTest {
         Triple("SettingsOutlined", DsIcons.SettingsOutlined, Icons.Outlined.Settings),
         Triple("SwapVert", DsIcons.SwapVert, Icons.Outlined.SwapVert),
         Triple("ContentCopyFilled", DsIcons.ContentCopyFilled, Icons.Filled.ContentCopy),
+        Triple("KeyboardArrowUp", DsIcons.KeyboardArrowUp, Icons.Filled.KeyboardArrowUp),
+        Triple("Search", DsIcons.Search, Icons.Filled.Search),
     )
 
     @Test

@@ -679,10 +679,12 @@ private fun ToolLedgerRow(
                 color = if (failed) colors.error else colors.labelPrimary,
                 maxLines = 1,
             )
-            if (row.summary != null) {
+            // A local: a smart cast does not cross into the module the row model lives in.
+            val summary = row.summary
+            if (summary != null) {
                 Spacer(Modifier.width(DsSpacing.xsmall))
                 Text(
-                    row.summary,
+                    summary,
                     style = DsType.mono13,
                     color = colors.labelTertiary,
                     maxLines = 1,

@@ -24,9 +24,6 @@
     <string name="cmdperm_pending">The harness is still running with “%1$s”. Restart it so new chats use your choice.</string>
     <string name="cmdperm_unsupported">This harness version can\'t ask before commands. Update it to choose whether commands run right away or ask you first.</string>
 
-    <string name="permission_preset_ask_commands">Ask before commands</string>
-    <string name="permission_preset_ask_commands_desc">Asks you before each command and before changes outside the workspace.</string>
-    <string name="permission_preset_full_access_desc">Runs commands and changes files without asking.</string>
 
     <string name="approval_command_title">Run this command?</string>
     <string name="approval_file_title">Change a file outside the workspace?</string>
@@ -42,10 +39,4 @@
     <string name="sandbox_notice_builtin">This chat is on a setting that needs a sandbox, and a phone can\'t give it one, so that command didn\'t run. Switch the chat, then ask again.</string>
     <string name="sandbox_notice_switch">Switch to “%1$s”</string>
     <string name="sandbox_notice_other">That command didn\'t run because this chat\'s setting needs a sandbox and the harness has none where it runs. You can pick another setting from the chat\'s permission button.</string>
-    <string name="subagent_command_denied">A helper agent can\'t ask you, so this command didn\'t run.</string>
-    <string name="command_denied_rejected">You said no, so this didn\'t run.</string>
-    <string name="command_denied_cancelled">The question was withdrawn before you answered, so this didn\'t run.</string>
-    <string name="command_denied_nobody">Nobody was there to answer the question, so this didn\'t run. Keep the app connected while the agent works.</string>
-    <string name="command_denied_too_large">This was too long to show you in full (the limit is 256 KB), so you weren\'t asked and it didn\'t run. The agent was told to split it into smaller parts.</string>
-    <string name="command_denied_other">The command check on this phone stopped this, so it didn\'t run.</string>
 </resources>

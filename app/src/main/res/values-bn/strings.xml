@@ -49,7 +49,6 @@
     <string name="chat_loading_older">পুরোনো বার্তা লোড হচ্ছে…</string>
     <string name="chat_load_older_retry">পুরোনো বার্তা লোড করা যায়নি। আবার চেষ্টা করতে ট্যাপ করুন।</string>
     <string name="chat_stopped">থামানো হয়েছে</string>
-    <string name="chat_error_turn">টার্ন শেষ করা যায়নি</string>
     <string name="chat_max_tokens">টোকেনের সীমায় পৌঁছে গেছে</string>
     <string name="chat_retry_scheduled">%1$d সেকেন্ড পরে আবার চেষ্টা হবে</string>
     <string name="chat_copy_message">বার্তা কপি করুন</string>
@@ -70,13 +69,8 @@
     <string name="chat_output_placeholder">আউটপুট</string>
     <string name="tool_output_show_raw">মূল JSON দেখান</string>
     <string name="tool_output_hide_raw">মূল JSON লুকান</string>
-    <string name="tool_output_copy_raw">মূল JSON কপি করুন</string>
     <string name="goal_title">লক্ষ্য</string>
     <string name="goal_none">কোনো চালু লক্ষ্য নেই</string>
-    <string name="goal_phase_active">চালু</string>
-    <string name="goal_phase_paused">পজ করা</string>
-    <string name="goal_phase_blocked">আটকে আছে</string>
-    <string name="goal_phase_complete">শেষ হয়েছে</string>
     <string name="goal_rounds">রাউন্ড %1$d/%2$s</string>
     <string name="goal_pause">পজ করুন</string>
     <string name="goal_resume">আবার শুরু করুন</string>
@@ -162,7 +156,6 @@
     <string name="work_steps_detailed_hint">স্ট্যান্ডার্ডের মতোই, তবে চলমান টার্নের টুল কল একটি একটি করে দেখায়।</string>
     <string name="work_steps_verbose">সম্পূর্ণ খোলা</string>
     <string name="work_steps_verbose_hint">কিছুই গোটানো বা গ্রুপ করা হয় না। টুল কল নিজে থেকেই খোলে, লম্বা আউটপুটের শুরুটুকু দেখায়।</string>
-    <string name="work_steps_clipped">লম্বা ফলাফলের শুরুটুকু দেখানো হচ্ছে।</string>
     <string name="work_steps_show_all">সব দেখান</string>
     <string name="settings_plugins">প্লাগইন</string>
     <string name="settings_plugins_inventory">প্লাগইন তালিকা</string>
@@ -243,7 +236,6 @@
     <string name="chat_stats_tokens">%1$s ইনপুট · %2$s আউটপুট</string>
     <string name="chat_stats_cache">ক্যাশ %1$d%%</string>
     <string name="chat_context_used">%1$d%% কনটেক্সট ব্যবহার হয়েছে</string>
-    <string name="permission_custom">কাস্টম</string>
     <string name="permission_custom_hint">বর্তমান স্যান্ডবক্স ও অনুমোদন সেটিং কোনো প্রিসেটের সঙ্গে মেলে না।</string>
     <string name="permission_confirm_title">সম্পূর্ণ অ্যাক্সেস দেবেন?</string>
     <string name="permission_confirm_body">এজেন্ট harness-এর কম্পিউটারের যেকোনো জায়গায় পড়তে ও লিখতে পারবে, আর অনুমোদন চাইবে না।</string>
@@ -274,14 +266,6 @@
     <string name="chat_retrying">আবার চেষ্টা হচ্ছে…</string>
     <string name="plan_mode_title">প্ল্যান মোড</string>
     <string name="plan_mode_hint">কিছু বদলানোর আগে খোঁজখবর করে একটি প্ল্যান প্রস্তাব করুন।</string>
-    <string name="preset_standard_name">স্ট্যান্ডার্ড মোড</string>
-    <string name="preset_standard_desc">ফাইল এডিট, শেল, ফাইল ও ওয়েব সার্চ, স্কিল, প্ল্যানিং, লক্ষ্য, সাবএজেন্ট ও ওয়ার্কফ্লো সহ পূর্ণাঙ্গ কোডিং এজেন্ট।</string>
-    <string name="preset_code_name">PTC মোড</string>
-    <string name="preset_code_desc">স্ট্যান্ডার্ড মোডের সব সুবিধা আছে। তফাত হলো, টুলগুলো Code Mode SDK দিয়ে পাওয়া যায়, যাতে মডেল অনেক ধাপের কাজ একটি TypeScript প্রোগ্রামে জুড়ে নিতে পারে।</string>
-    <string name="preset_minimal_name">মিনিমাল মোড</string>
-    <string name="preset_minimal_desc">দুই-টুলের কোডিং এজেন্ট: স্থায়ী bash ও str_replace_editor।</string>
-    <string name="preset_cordis_name">ক্রিয়েটর মোড</string>
-    <string name="preset_cordis_desc">কাস্টম এজেন্ট প্রিসেট বানানোর জন্য। স্ট্যান্ডার্ড মোডের সব সুবিধার সঙ্গে আছে রানটাইম পরীক্ষা, প্লাগইন নিয়ে পরীক্ষানিরীক্ষা ও প্রিসেট লেখার সহায়তা।</string>
     <string name="plugins_enabled">চালু</string>
     <string name="plugins_disabled">বন্ধ</string>
     <string name="plugins_phase_unmounted">লোড হয়নি</string>
@@ -409,14 +393,6 @@
     <string name="harness_automation_history_cursor_error">রেকর্ড বদলে গেছে। আবার চেষ্টা করুন।</string>
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
-    <string name="system_line_permission_changed">আপনি অনুমতি বদলে %1$s করেছেন</string>
-    <string name="system_line_permission_changed_plain">আপনি অনুমতি বদলেছেন</string>
-    <string name="system_line_permission_failed">অনুমতি বদলানো যায়নি</string>
-    <string name="system_line_compact">আপনি কথোপকথন ছোট করেছেন</string>
-    <string name="system_line_plan_on">আপনি প্ল্যান মোড চালু করেছেন</string>
-    <string name="system_line_plan_off">আপনি প্ল্যান মোড বন্ধ করেছেন</string>
-    <string name="system_line_command">আপনি %1$s চালিয়েছেন</string>
-    <string name="system_line_command_failed">%1$s চালানো যায়নি</string>
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
     <string name="rewind_marker">এখান পর্যন্ত রিওয়াইন্ড করা হয়েছে</string>
     <string name="rewind_no_text">(কোনো টেক্সট নেই)</string>
@@ -490,7 +466,6 @@
     <string name="hold_tool_actions">টুল কলের বিকল্প</string>
     <string name="hold_file_actions">ফাইলের বিকল্প</string>
     <string name="hold_select_text">টেক্সট বাছুন</string>
-    <string name="hold_copy_all">সব কপি করুন</string>
     <string name="hold_edit_as_new">নতুন বার্তা হিসেবে এডিট করুন</string>
     <string name="hold_edit_as_new_detail">কম্পোজারে বসিয়ে দেয়। মূল বার্তা থেকে যায়।</string>
     <string name="hold_rewind_here">এই বার্তায় রিওয়াইন্ড করুন</string>
@@ -542,10 +517,7 @@
     <string name="quota_rate_limited">অনেক বেশি অনুরোধ হয়েছে, একটু পরে আবার চেষ্টা করুন</string>
     <string name="quota_limit_short">সীমা শেষ</string>
     <string name="quota_rate_short">অনুরোধ সীমিত</string>
-    <string name="permission_preset_read_only">শুধু পড়া</string>
     <string name="permission_preset_workspace_write">ওয়ার্কস্পেসে লেখা</string>
-    <string name="permission_preset_full_access">সম্পূর্ণ অ্যাক্সেস</string>
-    <string name="permission_preset_auto">স্বয়ংক্রিয় পর্যালোচনা</string>
     <string name="permission_preset_auto_desc">প্রতিটি নেটিভ টুল কল এবং PTC অভ্যন্তরীণ কলের আগে একই মডেলের পরীক্ষামূলক পর্যালোচনার পরে স্যান্ডবক্স ছাড়াই চলে।</string>
     <string name="shortcuts_group_message">বার্তার ঘর</string>
     <string name="shortcuts_group_sessions">সেশন</string>

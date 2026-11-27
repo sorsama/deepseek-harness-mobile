@@ -21,45 +21,9 @@
     <string name="settings_clear_last_sessions_confirm_action">ভুলে যান</string>
     <string name="feedback_error_conflict">এই রেটিং অন্য কোথাও বদলে গেছে। আপনার নোট রাখা আছে, তাই আবার পাঠাতে পারবেন।</string>
     <string name="feedback_error_generic">আপনার মতামত সেভ করা যায়নি। একটু পরে আবার চেষ্টা করুন।</string>
-    <string name="toolcard_title_tool">টুল</string>
-    <string name="toolcard_title_terminal">টার্মিনাল</string>
-    <string name="toolcard_title_diff">পরিবর্তন</string>
-    <string name="toolcard_title_search">সার্চ</string>
-    <string name="toolcard_title_web">ওয়েব</string>
-    <string name="toolcard_running">চলছে</string>
-    <string name="toolcard_killed_by">%1$s দিয়ে বন্ধ করা হয়েছে</string>
-    <string name="toolcard_exit_code">এক্সিট %1$d</string>
-    <string name="toolcard_showing_of">%2$d-এর মধ্যে %1$d দেখানো হচ্ছে</string>
-    <string name="toolcard_more">আরও %1$dটি</string>
     <string name="toolcard_section_in">ইনপুট</string>
-    <string name="toolcard_section_out">আউটপুট</string>
-    <string name="toolcard_section_locations">জায়গা</string>
     <plurals name="settings_forget_hosts_confirm_body">
         <item quantity="one">এই ফোন থেকে %dটি সেভ করা harness ও তার রিলে পেয়ারিং সরানো হবে। আবার ব্যবহার করতে নতুন করে সংযোগ বা পেয়ার করতে হবে।</item>
         <item quantity="other">এই ফোন থেকে %dটি সেভ করা harness ও তাদের রিলে পেয়ারিং সরানো হবে। আবার ব্যবহার করতে নতুন করে সংযোগ বা পেয়ার করতে হবে।</item>
-    </plurals>
-    <plurals name="toolcard_blocks">
-        <item quantity="one">%d ব্লক</item>
-        <item quantity="other">%d ব্লক</item>
-    </plurals>
-    <plurals name="toolcard_locations">
-        <item quantity="one">%d জায়গা</item>
-        <item quantity="other">%d জায়গা</item>
-    </plurals>
-    <plurals name="toolcard_files">
-        <item quantity="one">%d ফাইল</item>
-        <item quantity="other">%d ফাইল</item>
-    </plurals>
-    <plurals name="toolcard_results">
-        <item quantity="one">%d ফলাফল</item>
-        <item quantity="other">%d ফলাফল</item>
-    </plurals>
-    <plurals name="toolcard_lines">
-        <item quantity="one">%d লাইন</item>
-        <item quantity="other">%d লাইন</item>
-    </plurals>
-    <plurals name="toolcard_sources">
-        <item quantity="one">%d সূত্র</item>
-        <item quantity="other">%d সূত্র</item>
     </plurals>
 </resources>
