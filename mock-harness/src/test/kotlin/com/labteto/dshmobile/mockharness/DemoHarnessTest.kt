@@ -106,6 +106,59 @@ class DemoHarnessTest {
     }
 
     @Test
+    fun theLongSessionPagesTheWayTheHarnessCutsAPage() = withDemo { servers ->
+        val id = DemoHarness.LONG_SESSION
+        assertEquals("demo-04", id)
+        fun page(before: String) = call(
+            servers.demoUrl!!,
+            "session/page",
+            """{"request":{"address":{"kind":"session","sessionId":"$id"},"throughSeq":1000$before,"maxMessages":60}}""",
+        )
+        fun events(value: JsonObject) = value["records"]!!.jsonArray.map { it.jsonObject["event"]!!.jsonObject }
+        fun messages(events: List<JsonObject>) = events.count { it["type"]!!.jsonPrimitive.content.endsWith("/message") }
+        val total = (DemoHarness.LONG_TURNS + 1) * 4
+
+        // The newest page: 60 messages, starting at a message (the harness cuts at the 60th one back), more to load.
+        val newest = page("")
+        val tail = events(newest)
+        assertEquals(60, messages(tail))
+        assertEquals("true", newest["hasMore"]!!.jsonPrimitive.content)
+        assertEquals(total - 1, tail.last()["seq"]!!.jsonPrimitive.int)
+        assertEquals("user/message", tail.first()["type"]!!.jsonPrimitive.content)
+
+        // The page before it reaches the start: the other 32 messages, and nothing older.
+        val first = tail.first()["seq"]!!.jsonPrimitive.int
+        val older = page(",\"beforeSeq\":$first")
+        val head = events(older)
+        assertEquals((DemoHarness.LONG_TURNS + 1) * 2 - 60, messages(head))
+        assertEquals("false", older["hasMore"]!!.jsonPrimitive.content)
+        assertEquals((0 until first).toList(), head.map { it["seq"]!!.jsonPrimitive.int })
+
+        // A request with no limit still gets the whole log, as every caller before paging did.
+        val all = events(
+            call(
+                servers.demoUrl!!,
+                "session/page",
+                """{"request":{"address":{"kind":"session","sessionId":"$id"},"throughSeq":1000}}""",
+            ),
+        )
+        assertEquals(total, all.size)
+    }
+
+    @Test
+    fun aHoldPromptLeavesItsTurnRunning() = withDemo { servers ->
+        call(
+            servers.demoUrl!!,
+            "session/prompt",
+            """{"request":{"requestId":"r1","sessionId":"demo-05","mode":"queue","content":[{"type":"text","text":"${DemoHarness.HOLD_PREFIX} on, plan it first"}]}}""",
+        )
+        // Well past the time the whole reply takes to stream ([REPLY] in pieces, CHUNK_DELAY_MS apart).
+        Thread.sleep(DemoHarness.REPLY.length / 16 * DemoHarness.CHUNK_DELAY_MS + 1_500)
+        val added = servers.demo!!.log("demo-05").drop(4).map { it["type"]!!.jsonPrimitive.content }
+        assertEquals(listOf("turn/start", "user/message"), added)
+    }
+
+    @Test
     fun aPromptIsAnsweredOnTheFollowStreamAndStaysInTheLog() = withDemo { servers ->
         val items = LinkedBlockingQueue<JsonObject>()
         val listener = object : WebSocket.Listener {
