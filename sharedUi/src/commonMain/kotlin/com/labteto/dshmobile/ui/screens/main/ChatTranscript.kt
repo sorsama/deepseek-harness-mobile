@@ -4,13 +4,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.labteto.dshmobile.ui.components.StateDot
@@ -49,11 +46,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.session.AssistantMessageNode
+import com.labteto.dshmobile.core.session.ChatNode
 import com.labteto.dshmobile.core.session.ConversationSnapshot
 import com.labteto.dshmobile.core.session.TurnStartNode
 import com.labteto.dshmobile.core.session.UserMessageNode
@@ -65,6 +61,21 @@ import com.labteto.dshmobile.ui.components.clearSelectionOnTap
 import com.labteto.dshmobile.ui.components.skeleton
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.pluralStringResource
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_empty_hint
+import com.labteto.dshmobile.shared.resources.chat_empty_title
+import com.labteto.dshmobile.shared.resources.chat_jump_latest
+import com.labteto.dshmobile.shared.resources.chat_jump_latest_new
+import com.labteto.dshmobile.shared.resources.chat_load_older
+import com.labteto.dshmobile.shared.resources.chat_load_older_retry
+import com.labteto.dshmobile.shared.resources.chat_loading_older
+import com.labteto.dshmobile.shared.resources.chat_suggest_changes
+import com.labteto.dshmobile.shared.resources.chat_suggest_overview
+import com.labteto.dshmobile.shared.resources.chat_suggest_tests
+import com.labteto.dshmobile.ui.components.DsIcons
+import com.labteto.dshmobile.ui.components.localizedCount
 
 /**
  * How close to the far end of the list — the oldest message — a reader must get before the next
@@ -106,7 +117,7 @@ private const val MAX_CUT_PAGES = 12
  * Plain fields rather than state: they are only read inside effects, and an effect that changed a
  * snapshot value here would recompose the screen for nothing.
  */
-internal class TranscriptMemory {
+class TranscriptMemory {
     /** The session whose newest message the list was last scrolled to on open. */
     var scrolledForSession: String? = null
 
@@ -133,7 +144,7 @@ internal class TranscriptMemory {
  * while following is off (see `frozenRows` below).
  */
 @Composable
-internal fun ChatTranscript(
+fun ChatTranscript(
     conversation: ConversationSnapshot?,
     loading: Boolean,
     loadingOlder: Boolean,
@@ -177,21 +188,7 @@ internal fun ChatTranscript(
     // that is the order every other reader of `nodes` wants.
     val policy = context.presentation.policy
     val rows = remember(conversation?.nodes, context.running, policy) {
-        val nodes = conversation?.nodes.orEmpty()
-        // Read from the unfiltered nodes: a turn start draws no row, so the row list alone
-        // cannot say where one turn ends and the next begins.
-        val turnStarts = nodes.filterIsInstance<TurnStartNode>().map { it.seq }.sorted()
-        // The work-step level decides how much of the above is folded: whether tool calls sit in
-        // groups, and whether a finished turn's steps fold behind one row. It reshapes the rows
-        // only; the nodes underneath, and what the harness stored, are untouched.
-        val grouped = applyStepGrouping(
-            groupToolRows(renderableChatNodes(nodes, context.running)),
-            policy.stepGrouping,
-            turnStarts,
-            context.running,
-        )
-        (if (policy.foldCompletedTurns) foldProcessRows(grouped, turnStarts, context.running) else grouped)
-            .asReversed()
+        transcriptRows(conversation?.nodes.orEmpty(), context.running, policy)
     }
     val hasMore = conversation?.hasMore == true
     val sessionId = conversation?.sessionId
@@ -446,13 +443,13 @@ internal fun ChatTranscript(
                 // phone keyboard, so a new session offers a few starters. They fill the composer
                 // rather than sending, so each one is a draft to adjust, not a commitment.
                 val suggestions = listOf(
-                    stringResource(R.string.chat_suggest_overview),
-                    stringResource(R.string.chat_suggest_tests),
-                    stringResource(R.string.chat_suggest_changes),
+                    stringResource(Res.string.chat_suggest_overview),
+                    stringResource(Res.string.chat_suggest_tests),
+                    stringResource(Res.string.chat_suggest_changes),
                 )
                 EmptyHero(
-                    headline = stringResource(R.string.chat_empty_title),
-                    subtitle = stringResource(R.string.chat_empty_hint),
+                    headline = stringResource(Res.string.chat_empty_title),
+                    subtitle = stringResource(Res.string.chat_empty_hint),
                     chips = if (onSuggestion != null) suggestions else emptyList(),
                     onChipClick = { onSuggestion?.invoke(it) },
                 )
@@ -538,6 +535,28 @@ internal fun ChatTranscript(
     }
 }
 
+/**
+ * The rows [ChatTranscript] draws for [nodes], newest first: only the nodes that draw something, grouped and folded
+ * as the work-step level says. Public so a host can tell how many rows a transcript holds (the iOS debug report)
+ * without a second copy of the rules.
+ */
+fun transcriptRows(nodes: List<ChatNode>, running: Boolean, policy: WorkStepPolicy): List<TranscriptRow> {
+    // Read from the unfiltered nodes: a turn start draws no row, so the row list alone
+    // cannot say where one turn ends and the next begins.
+    val turnStarts = nodes.filterIsInstance<TurnStartNode>().map { it.seq }.sorted()
+    // The work-step level decides how much of the above is folded: whether tool calls sit in
+    // groups, and whether a finished turn's steps fold behind one row. It reshapes the rows
+    // only; the nodes underneath, and what the harness stored, are untouched.
+    val grouped = applyStepGrouping(
+        groupToolRows(renderableChatNodes(nodes, running)),
+        policy.stepGrouping,
+        turnStarts,
+        running,
+    )
+    return (if (policy.foldCompletedTurns) foldProcessRows(grouped, turnStarts, running) else grouped)
+        .asReversed()
+}
+
 /** How far from the tail a jump snaps before animating the rest of the way. */
 private const val JUMP_SNAP_ROWS = 6
 
@@ -552,9 +571,9 @@ private fun transcriptRowKey(row: TranscriptRow): Any {
 private fun JumpToLatestButton(unseen: Int, running: Boolean, onClick: () -> Unit) {
     val colors = DsTheme.colors
     val label = if (unseen > 0) {
-        pluralStringResource(R.plurals.chat_jump_latest_new, unseen, unseen)
+        pluralStringResource(Res.plurals.chat_jump_latest_new, unseen, localizedCount(unseen))
     } else {
-        stringResource(R.string.chat_jump_latest)
+        stringResource(Res.string.chat_jump_latest)
     }
     Surface(
         onClick = onClick,
@@ -575,14 +594,14 @@ private fun JumpToLatestButton(unseen: Int, running: Boolean, onClick: () -> Uni
             if (running) StateDot(StateDotState.Running, size = 8.dp)
             if (unseen > 0) {
                 Text(
-                    pluralStringResource(R.plurals.chat_jump_latest_new, unseen, unseen),
+                    pluralStringResource(Res.plurals.chat_jump_latest_new, unseen, localizedCount(unseen)),
                     style = DsType.small13Strong,
                     color = colors.accent,
                     maxLines = 1,
                 )
             }
             Icon(
-                Icons.Filled.ArrowDownward,
+                DsIcons.ArrowDownward,
                 contentDescription = null,
                 tint = colors.labelSecondary,
                 modifier = Modifier.size(20.dp),
@@ -607,7 +626,7 @@ private const val STREAMING_ROW_KEY = "streaming-tail"
  * history sheet always passes it: nothing scrolls a sheet to its end to page for it.
  */
 @Composable
-internal fun LoadOlderRow(
+fun LoadOlderRow(
     loading: Boolean,
     failed: Boolean,
     offerManual: Boolean,
@@ -616,7 +635,7 @@ internal fun LoadOlderRow(
     val colors = DsTheme.colors
     when {
         failed -> DsButton(
-            text = stringResource(R.string.chat_load_older_retry),
+            text = stringResource(Res.string.chat_load_older_retry),
             onClick = onRetry,
             variant = DsButtonVariant.Ghost,
             size = DsButtonSize.Small,
@@ -624,7 +643,7 @@ internal fun LoadOlderRow(
         )
 
         offerManual && !loading -> DsButton(
-            text = stringResource(R.string.chat_load_older),
+            text = stringResource(Res.string.chat_load_older),
             onClick = onRetry,
             variant = DsButtonVariant.Ghost,
             size = DsButtonSize.Small,
@@ -643,7 +662,7 @@ internal fun LoadOlderRow(
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                stringResource(R.string.chat_loading_older),
+                stringResource(Res.string.chat_loading_older),
                 style = DsType.caption11,
                 color = colors.labelTertiary,
             )

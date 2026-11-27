@@ -1,8 +1,9 @@
 package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.core.session.*
-import org.junit.Assert.*
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 class ProcessFoldTest {
     private fun call(seq: Long) = ToolCallNode(seq, "c$seq", "read", "{}", 1, 1)

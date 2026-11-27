@@ -39,7 +39,7 @@ internal fun assistantStateKey(node: AssistantMessageNode): Any = when {
  * so it is safe from inside composition.
  */
 @Stable
-internal class AssistantMemory {
+class AssistantMemory {
     private val reasoning = HashMap<Any, SnapshotStateMap<Int, Boolean>>()
     private val actions = HashMap<Any, MutableState<Boolean>>()
 

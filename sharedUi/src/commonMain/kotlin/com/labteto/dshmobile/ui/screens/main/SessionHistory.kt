@@ -10,7 +10,7 @@ import com.labteto.dshmobile.core.session.UserMessageNode
  * `seq` is the node's sequence, which is also the transcript row's key — so a pick can be turned
  * into a scroll target without the picker knowing anything about how rows group.
  */
-internal data class HistoryEntry(
+data class HistoryEntry(
     val seq: Long,
     val text: String,
     val hasImage: Boolean,
@@ -42,7 +42,7 @@ internal data class HistoryEntry(
  * that is a handful of prompts; the sheet pages further back on request, the way the transcript
  * does, rather than this pretending the rest of the log is here.
  */
-internal fun historyEntries(
+fun historyEntries(
     nodes: List<ChatNode>,
     running: Boolean,
     eventTimes: Map<Long, Long> = emptyMap(),
@@ -75,7 +75,7 @@ internal fun historyRowIndex(rows: List<TranscriptRow>, seq: Long): Int? =
  * should find "deepseek-v4"; against a paragraph of prose nearly any short word is a subsequence,
  * so "fix" would keep almost every prompt and the filter would hide nothing.
  */
-internal fun historyMatches(query: String, text: String): Boolean {
+fun historyMatches(query: String, text: String): Boolean {
     val haystack = text.lowercase()
     return query.lowercase().split(Regex("\\s+")).filter { it.isNotEmpty() }.all { it in haystack }
 }

@@ -2,20 +2,20 @@ package com.labteto.dshmobile.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.ui.theme.DsTheme
+import org.jetbrains.compose.resources.stringResource
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_state_done
+import com.labteto.dshmobile.shared.resources.chat_state_failed
+import com.labteto.dshmobile.shared.resources.chat_state_running
+import com.labteto.dshmobile.shared.resources.chat_state_stopped
 
 /**
  * How a step ended, at the end of a compact tool row: a shape with a spoken name, never colour alone.
@@ -30,10 +30,10 @@ fun CallStateMark(state: DisclosureState, modifier: Modifier = Modifier) {
     val colors = DsTheme.colors
     val name = stringResource(
         when (state) {
-            DisclosureState.Running -> R.string.chat_state_running
-            DisclosureState.Error -> R.string.chat_state_failed
-            DisclosureState.Stopped -> R.string.chat_state_stopped
-            DisclosureState.Idle -> R.string.chat_state_done
+            DisclosureState.Running -> Res.string.chat_state_running
+            DisclosureState.Error -> Res.string.chat_state_failed
+            DisclosureState.Stopped -> Res.string.chat_state_stopped
+            DisclosureState.Idle -> Res.string.chat_state_done
         },
     )
     Box(
@@ -42,9 +42,9 @@ fun CallStateMark(state: DisclosureState, modifier: Modifier = Modifier) {
     ) {
         when (state) {
             DisclosureState.Running -> StateDot(StateDotState.Running, size = 10.dp)
-            DisclosureState.Error -> Icon(Icons.Outlined.ErrorOutline, contentDescription = null, tint = colors.error, modifier = Modifier.size(14.dp))
-            DisclosureState.Stopped -> Icon(Icons.Filled.Stop, contentDescription = null, tint = colors.warnLabel, modifier = Modifier.size(14.dp))
-            DisclosureState.Idle -> Icon(Icons.Filled.Check, contentDescription = null, tint = colors.labelTertiary, modifier = Modifier.size(14.dp))
+            DisclosureState.Error -> Icon(DsIcons.ErrorOutline, contentDescription = null, tint = colors.error, modifier = Modifier.size(14.dp))
+            DisclosureState.Stopped -> Icon(DsIcons.Stop, contentDescription = null, tint = colors.warnLabel, modifier = Modifier.size(14.dp))
+            DisclosureState.Idle -> Icon(DsIcons.Check, contentDescription = null, tint = colors.labelTertiary, modifier = Modifier.size(14.dp))
         }
     }
 }

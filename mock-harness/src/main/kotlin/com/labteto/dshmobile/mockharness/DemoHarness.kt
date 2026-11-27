@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonArray
@@ -23,8 +24,8 @@ import kotlinx.serialization.json.putJsonObject
 /**
  * A harness with something in it: two workspaces, [SESSION_COUNT] sessions, one transcript with markdown, thinking and
  * a tool call (and a second turn that draws every Markdown block the chat renders, [GALLERY]), one that calls every
- * kind of tool the chat draws a card for ([TOOL_CARDS_SESSION]), and a scripted reply to every prompt, streamed the
- * way harness 0.2.x streams one.
+ * kind of tool the chat draws a card for ([TOOL_CARDS_SESSION]), one too long for a single page ([LONG_SESSION]), and a
+ * scripted reply to every prompt, streamed the way harness 0.2.x streams one.
  *
  * The iOS simulator scenarios of the session list and the chat run against it (`mock-harness --ci-fixtures` serves it
  * on [CiFixtures.DEMO_PORT]). Everything is fixed except time: the sessions' `updatedAt` and the events' `time` are
@@ -36,12 +37,16 @@ import kotlinx.serialization.json.putJsonObject
  *   workspace through `cwd`.
  * - `workspace/follow`: one baseline frame with the two workspaces and their sessions in order.
  * - `session/control`: an empty baseline (no queue, no jobs).
- * - `session/follow`: an opening snapshot of the session's whole log (no older page), with the assistant baseline
- *   when the follower asked for it.
- * - `session/page`: the records at or below `throughSeq` and below `beforeSeq`, which is always the whole rest.
+ * - `session/follow`: an opening snapshot of the session's log, with the assistant baseline when the follower asked
+ *   for it. A follower that sends `maxMessages` gets the harness's own cut ([paginate]): the tail holding that many
+ *   user and assistant messages, and `hasMore` when older records are left. Only [LONG_SESSION] is long enough to be
+ *   cut by the app's page of 60.
+ * - `session/page`: the records at or below `throughSeq` and below `beforeSeq`, cut the same way.
  * - `session/prompt`: accepted, then the turn plays out on every open follow stream: `turn/start`, the user's
  *   message, an assistant stream ([REPLY] in pieces, [CHUNK_DELAY_MS] apart), the settled `assistant/message`
- *   and `turn/end`. The new events stay in the session's log, so a later follow shows them.
+ *   and `turn/end`. The new events stay in the session's log, so a later follow shows them. A prompt that starts
+ *   with [HOLD_PREFIX] streams the first half of the reply and then holds there, the turn still running, until the
+ *   harness stops: a fixed mid-stream state for a screenshot (and for a Stop button to stop).
  *
  * A follow stream is not told apart by session in the mock, so a reply is pushed to every open follow; the app
  * follows one session at a time.
@@ -141,10 +146,11 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         val sessionId = sessionIdOf(request)
         val events = synchronized(lock) { logs[sessionId].orEmpty().toList() }
         val assistantStream = (request?.get("assistantStream") as? JsonPrimitive)?.contentOrNull == "true"
+        val (shown, hasMore) = paginate(events, Int.MAX_VALUE, events.size - 1, maxMessagesOf(request))
         return buildJsonObject {
             put("type", "snapshot")
             put("cursor", events.size - 1)
-            put("hasMore", false)
+            put("hasMore", hasMore)
             putJsonObject("header") {
                 put("version", 2)
                 put("id", sessionId)
@@ -155,7 +161,7 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
                 put("asOfSeq", events.size - 1)
                 putJsonObject("values") { SESSIONS.firstOrNull { it.id == sessionId }?.let { put("title", it.title) } }
             }
-            putJsonArray("records") { events.forEach { add(record(it)) } }
+            putJsonArray("records") { shown.forEach { add(record(it)) } }
             if (assistantStream) {
                 putJsonObject("assistantStream") { put("revision", synchronized(lock) { revisions[sessionId] ?: 0 }) }
             }
@@ -167,12 +173,31 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         val through = (request["throughSeq"] as? JsonPrimitive)?.intOrNull ?: -1
         val before = (request["beforeSeq"] as? JsonPrimitive)?.intOrNull ?: Int.MAX_VALUE
         val events = synchronized(lock) { logs[sessionId].orEmpty().toList() }
+        val (shown, hasMore) = paginate(events, before, through, maxMessagesOf(request))
         return buildJsonObject {
-            putJsonArray("records") {
-                events.filter { seqOf(it) in 0..through && seqOf(it) < before }.forEach { add(record(it)) }
-            }
-            put("hasMore", false)
+            putJsonArray("records") { shown.forEach { add(record(it)) } }
+            put("hasMore", hasMore)
         }
+    }
+
+    /**
+     * The harness's own page cut (`paginate` in session-controller's `history.ts`, without the turn window, which the
+     * app does not ask for): back from the end (at most [through], below [before]) until [maxMessages] user and
+     * assistant messages are in, and `hasMore` when anything older is left. A record's seq is its index in the log.
+     */
+    private fun paginate(events: List<JsonObject>, before: Int, through: Int, maxMessages: Int): Pair<List<JsonObject>, Boolean> {
+        val end = minOf(through + 1, before).coerceIn(0, events.size)
+        var count = 0
+        var cut = 0
+        for (index in end - 1 downTo 0) {
+            if (events[index].type !in MESSAGE_TYPES) continue
+            count++
+            if (count >= maxMessages) {
+                cut = index
+                break
+            }
+        }
+        return events.subList(cut, end) to (cut > 0)
     }
 
     /** One prompt's turn, played out on the follow streams. */
@@ -202,8 +227,11 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
             },
         )
         val pieces = REPLY.chunked(REPLY_PIECE)
+        val holds = ((content.firstOrNull() as? JsonObject)?.get("text") as? JsonPrimitive)?.contentOrNull
+            ?.startsWith(HOLD_PREFIX) == true
         harness.pushAssistantStream(chunkFrame(sessionId, attemptId, 0, buildJsonObject { put("type", "block-start"); put("index", 0); put("blockType", "text") }))
         for ((i, piece) in pieces.withIndex()) {
+            if (holds && i == pieces.size / 2) awaitCancellation()
             delay(CHUNK_DELAY_MS)
             harness.pushAssistantStream(
                 chunkFrame(sessionId, attemptId, i + 1, buildJsonObject { put("type", "text-delta"); put("index", 0); put("text", piece) }),
@@ -259,6 +287,7 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         val events = when (index) {
             0 -> richTranscript() + galleryTurn()
             TOOL_CARDS_INDEX -> toolCardsTranscript(session)
+            LONG_INDEX -> longTranscript(session)
             else -> shortTranscript(session)
         }
         return events.mapIndexed { seq, (type, data) -> wireEvent(type, seq, start + seq * 7_000L, data) }
@@ -270,6 +299,33 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         "assistant/message" to assistantMessage(1, 1, "${session.id}-a1", text("Done. " + session.summary)),
         "turn/end" to buildJsonObject { put("turn", 1); putJsonObject("reason") { put("kind", "completed") } },
     )
+
+    /**
+     * [LONG_TURNS] short turns, then the session's usual last turn: more user and assistant messages than the app's
+     * first page of 60 holds, so the transcript opens on its tail with older history to load, and one page more
+     * reaches the start.
+     */
+    private fun longTranscript(session: DemoSession): List<Pair<String, JsonObject>> {
+        val events = mutableListOf<Pair<String, JsonObject>>()
+        for (turn in 1..LONG_TURNS) {
+            val hits = 40 + turn
+            events += "turn/start" to buildJsonObject { put("turn", turn) }
+            events += "user/message" to userMessage("${session.id}-u$turn", "Run the thumbnail benchmark again, run $turn.")
+            events += "assistant/message" to assistantMessage(
+                turn,
+                1,
+                "${session.id}-a$turn",
+                text("Run $turn: $hits% of thumbnails came from memory, the rest from disk."),
+            )
+            events += "turn/end" to buildJsonObject { put("turn", turn); putJsonObject("reason") { put("kind", "completed") } }
+        }
+        val last = LONG_TURNS + 1
+        events += "turn/start" to buildJsonObject { put("turn", last) }
+        events += "user/message" to userMessage("${session.id}-u$last", session.title + ".")
+        events += "assistant/message" to assistantMessage(last, 1, "${session.id}-a$last", text("Done. " + session.summary))
+        events += "turn/end" to buildJsonObject { put("turn", last); putJsonObject("reason") { put("kind", "completed") } }
+        return events
+    }
 
     /** The first session's turn: thinking, a tool call and its result, and an answer in markdown. */
     private fun richTranscript(): List<Pair<String, JsonObject>> {
@@ -648,6 +704,9 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         /** Time between two pieces of the streamed reply. */
         const val CHUNK_DELAY_MS: Long = 120
 
+        /** A prompt that starts with this gets half the reply and then a turn that stays running (see the class doc). */
+        const val HOLD_PREFIX: String = "Hold"
+
         private const val REPLY_PIECE = 16
         private const val MINUTE_MS = 60_000L
         private const val SESSION_SPACING_MS = 3 * 60 * MINUTE_MS
@@ -738,6 +797,18 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         /** The id of the session that carries every tool card. */
         val TOOL_CARDS_SESSION: String get() = SESSIONS[TOOL_CARDS_INDEX].id
 
+        /** Which session carries [longTranscript]: the fourth, "Speed up the image cache". */
+        const val LONG_INDEX: Int = 3
+
+        /** The id of the session whose history is longer than one page. */
+        val LONG_SESSION: String get() = SESSIONS[LONG_INDEX].id
+
+        /** The short turns before [LONG_SESSION]'s last: 46 turns, 92 messages, so a page of 60 leaves 32 older. */
+        const val LONG_TURNS: Int = 45
+
+        /** The events the harness counts toward a page's `maxMessages`. */
+        private val MESSAGE_TYPES = setOf("user/message", "assistant/message")
+
         /** The answer that settles the tool-card turn. */
         const val TOOL_CARDS_ANSWER: String =
             "The retry tests are in and pass: **three** new cases in `SyncQueueTest`.\n\n" +
@@ -784,7 +855,9 @@ class DemoHarness internal constructor(private val harness: MockHarness, private
         private fun sessionIdOf(request: JsonObject?): String =
             ((request?.get("address") as? JsonObject)?.get("sessionId") as? JsonPrimitive)?.contentOrNull.orEmpty()
 
-        private fun seqOf(event: JsonObject): Int = (event["seq"] as? JsonPrimitive)?.intOrNull ?: -1
+        /** A request's `maxMessages`, or no limit when it sends none (the whole log, as before). */
+        private fun maxMessagesOf(request: JsonObject?): Int =
+            (request?.get("maxMessages") as? JsonPrimitive)?.intOrNull?.takeIf { it > 0 } ?: Int.MAX_VALUE
 
         private val JsonObject.type: String? get() = (this["type"] as? JsonPrimitive)?.contentOrNull
 

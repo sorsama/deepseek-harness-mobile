@@ -55,6 +55,8 @@ import com.labteto.dshmobile.ui.components.AndroidHapticPlatform
 import com.labteto.dshmobile.ui.components.DsButton
 import com.labteto.dshmobile.ui.components.LocalAttachmentImage
 import com.labteto.dshmobile.ui.components.TranscriptAttachmentImage
+import com.labteto.dshmobile.ui.screens.main.LocalReasoningContent
+import com.labteto.dshmobile.ui.screens.main.TranscriptReasoningContent
 import com.labteto.dshmobile.ui.components.DsButtonVariant
 import com.labteto.dshmobile.ui.components.DsDialog
 import com.labteto.dshmobile.ui.components.DsToastHost
@@ -128,8 +130,13 @@ fun AppRoot(viewModel: AppViewModel = hiltViewModel()) {
 
     // `AndroidHapticPlatform` is the Android half of the shared haptic vocabulary (AndroidHaptics.kt).
     // The shared tool cards draw an image a tool returned through LocalAttachmentImage; on Android that
-    // is AttachmentImage, which loads it through the store above.
-    CompositionLocalProvider(LocalSessionStore provides sessionStore, LocalAttachmentImage provides TranscriptAttachmentImage) {
+    // is AttachmentImage, which loads it through the store above. The shared transcript draws an open
+    // reasoning block's body through LocalReasoningContent: here, the one with translation.
+    CompositionLocalProvider(
+        LocalSessionStore provides sessionStore,
+        LocalAttachmentImage provides TranscriptAttachmentImage,
+        LocalReasoningContent provides TranscriptReasoningContent,
+    ) {
     DshTheme(
         customization = customization,
         hapticPlatform = AndroidHapticPlatform,

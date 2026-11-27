@@ -43,16 +43,8 @@
     <string name="chat_composer_stop">Стоп</string>
     <string name="chat_composer_attach">Прикрепить изображение</string>
     <string name="chat_composer_remove_image">Убрать изображение</string>
-    <string name="chat_empty_title">Начните работу со своим harness</string>
-    <string name="chat_empty_hint">Отправьте сообщение, чтобы начать новый ход.</string>
     <string name="chat_load_older">Загрузить более ранние сообщения</string>
-    <string name="chat_loading_older">Загрузка более ранних сообщений…</string>
-    <string name="chat_load_older_retry">Не удалось загрузить более ранние сообщения. Нажмите, чтобы повторить</string>
     <string name="chat_stopped">Остановлено</string>
-    <string name="chat_max_tokens">Достигнут лимит токенов</string>
-    <string name="chat_retry_scheduled">Повтор через %1$d с</string>
-    <string name="chat_copy_message">Скопировать сообщение</string>
-    <string name="chat_branch_message">Создать ветку отсюда</string>
     <string name="chat_queue_title">Ходы в очереди</string>
     <string name="chat_queue_edit">Изменить</string>
     <string name="chat_queue_remove">Убрать</string>
@@ -61,13 +53,9 @@
     <string name="chat_context_system">Система</string>
     <string name="chat_context_tools">Инструменты</string>
     <string name="chat_context_messages">Сообщения</string>
-    <string name="chat_compaction">Сжато</string>
-    <string name="chat_compaction_summary">Сводка</string>
     <string name="chat_details_title">Сведения</string>
     <string name="chat_details_empty">Выберите строку инструмента в чате, чтобы увидеть, что ему передали и что он вернул.</string>
     <string name="chat_input_placeholder">Ввод</string>
-    <string name="chat_output_placeholder">Вывод</string>
-    <string name="tool_output_show_raw">Показать исходный JSON</string>
     <string name="tool_output_hide_raw">Скрыть исходный JSON</string>
     <string name="goal_title">Цель</string>
     <string name="goal_none">Нет активной цели</string>
@@ -78,8 +66,6 @@
     <string name="goal_clear">Очистить цель</string>
     <string name="goal_blocked_reason">Блокировка: %1$s</string>
     <string name="goal_max_rounds">Максимум раундов: %1$s</string>
-    <string name="plan_mode_on">Режим плана: вкл.</string>
-    <string name="plan_mode_off">Режим плана: выкл.</string>
     <string name="plan_review_title">План готов к проверке</string>
     <string name="plan_review_approve">Одобрить</string>
     <string name="plan_review_decline">Отклонить</string>
@@ -219,7 +205,6 @@
     <string name="chat_composer_mode_steer_hint">Прерывает текущий ход</string>
     <string name="chat_composer_steer_idle">Направлять можно только во время хода</string>
     <string name="chat_tab">Чат</string>
-    <string name="chat_todo_title">Задачи</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">В этом сеансе нет команд</string>
     <string name="chat_commands_unavailable">В этом harness нет списка команд</string>
@@ -263,7 +248,6 @@
     <string name="settings_notifications_action_hint">Подтверждение, вопрос или план ждут вас</string>
     <string name="settings_background_hint">Обновления продолжают приходить. Android показывает уведомление.</string>
     <string name="trajectory_turn">Ход %1$d</string>
-    <string name="chat_retrying">Повторная попытка…</string>
     <string name="plan_mode_title">Режим плана</string>
     <string name="plan_mode_hint">Изучить задачу и предложить план до внесения правок.</string>
     <string name="plugins_enabled">Включён</string>
@@ -333,8 +317,6 @@
     <string name="terminal_control">Взять управление</string>
     <string name="feedback_note">Отзыв (необязательно)</string>
     <string name="feedback_send">Отправить отзыв</string>
-    <string name="system_prompt">Системные инструкции</string>
-    <string name="image_offload">Из запроса исключены прежние изображения</string>
     <string name="jobs_stop">Остановить задачу</string>
     <string name="jobs_stopping">Останавливается</string>
     <string name="jobs_output_empty">Вывода пока нет</string>
@@ -394,7 +376,6 @@
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
-    <string name="rewind_marker">Откат до этого места</string>
     <string name="rewind_no_text">(без текста)</string>
     <string name="rewind_to">Откатить к: %1$s</string>
     <string name="rewind_mode_chat">Откатить только разговор</string>
@@ -413,7 +394,6 @@
     <string name="details_section_activity">Активность</string>
     <string name="details_section_host">Хост</string>
     <string name="details_preset_label">Пресет</string>
-    <string name="details_copy_link">Копировать ссылку</string>
     <string name="chat_model_label">Модель</string>
     <string name="panel_empty_folder">Эта папка пуста</string>
     <string name="panel_preview_hint">Нажмите файл во вкладке Файлы, чтобы открыть его здесь</string>
@@ -421,9 +401,7 @@
     <string name="settings_update_up_to_date">У вас последняя версия.</string>
     <string name="settings_update_unreachable">Не удалось подключиться к GitHub.</string>
     <string name="chat_tool_group_count">Вызовов инструментов: %1$d</string>
-    <string name="chat_tool_group_failed">Ошибок: %1$d</string>
     <string name="chat_thought_process">Ход рассуждений</string>
-    <string name="chat_process_title">Процесс</string>
     <!-- ==== This phone (Termux) ==== -->
     <string name="connect_mode_loopback">Этот телефон</string>
     <string name="connect_loopback_title">Harness на этом телефоне</string>
@@ -463,20 +441,11 @@
     <string name="chat_history_no_match">Нет подходящих сообщений.</string>
     <string name="chat_history_image">Изображение</string>
     <string name="hold_message_actions">Действия с сообщением</string>
-    <string name="hold_tool_actions">Действия с вызовом инструмента</string>
     <string name="hold_file_actions">Действия с файлом</string>
-    <string name="hold_select_text">Выделить текст</string>
     <string name="hold_edit_as_new">Изменить как новое сообщение</string>
-    <string name="hold_edit_as_new_detail">Помещает текст в поле ввода. Исходное сообщение остаётся.</string>
     <string name="hold_rewind_here">Откатить к этому сообщению</string>
-    <string name="hold_rewind_here_detail">Убирает его и всё, что было после, а текст возвращает в поле ввода</string>
     <string name="hold_copy_command">Копировать команду</string>
-    <string name="hold_copy_path">Копировать путь</string>
-    <string name="hold_copy_query">Копировать запрос</string>
     <string name="hold_copy_output">Копировать вывод</string>
-    <string name="hold_copy_arguments">Копировать аргументы</string>
-    <string name="hold_open_file">Открыть файл</string>
-    <string name="hold_mention">Упомянуть в сообщении</string>
     <string name="hold_send_label">Выбрать способ отправки</string>
     <string name="hold_send_steer">Направить сейчас</string>
     <string name="hold_send_queue">В очередь после этого хода</string>

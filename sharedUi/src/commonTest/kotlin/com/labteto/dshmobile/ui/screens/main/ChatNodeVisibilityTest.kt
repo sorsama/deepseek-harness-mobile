@@ -17,11 +17,11 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertNull
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * A node that draws nothing must not reach the transcript's list.
@@ -94,7 +94,7 @@ class ChatNodeVisibilityTest {
     }
 
     @Test
-    fun `bookkeeping event types are filtered, unknown ones survive`() {
+    fun `bookkeeping event types are filtered unknown ones survive`() {
         // The compatibility contract keeps genuinely unknown types visible; the noise is named.
         assertFalse(OtherNode(seq = 4, type = "step/start", data = JsonNull).rendersContent())
         assertFalse(OtherNode(seq = 5, type = "assistant/chunk", data = JsonNull).rendersContent())

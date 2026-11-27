@@ -55,6 +55,7 @@ import com.labteto.dshmobile.ui.theme.DsType
 import com.labteto.dshmobile.ui.theme.DshTheme
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import platform.Foundation.NSNotificationCenter
@@ -87,6 +88,10 @@ import platform.UIKit.UIApplicationDidEnterBackgroundNotification
  *   it comes back from the background, which a simulator script cannot otherwise cause without restarting the app.
  * - [openDrawer] opens the session list as soon as the main screen shows (on a phone, where it is a drawer), and
  *   [onDrawer] hears `DSH_DRAWER_RESULT shown docked=… sessions=…` once the list is on screen with sessions in it.
+ * - [openSession] opens a session once the list has been read, as a tap on its row does: `first` for the list's first
+ *   session, or a session id. [chatScroll] says where the transcript is left ([ChatScroll]), and [onChat] hears
+ *   `DSH_CHAT_RESULT opened rows=… session=… more=…` once it is laid out (then `older …` after a page back), or
+ *   `DSH_CHAT_RESULT failed reason=…` when there is no such session.
  */
 internal class LaunchRequest(
     val address: String? = null,
@@ -108,6 +113,9 @@ internal class LaunchRequest(
     val reconnectOnce: Boolean = false,
     val openDrawer: Boolean = false,
     val onDrawer: ((String) -> Unit)? = null,
+    val openSession: String? = null,
+    val chatScroll: ChatScroll? = null,
+    val onChat: ((String) -> Unit)? = null,
 ) {
     /** Whether the app starts on the Pair screen. */
     val startsPairing: Boolean
@@ -123,9 +131,9 @@ private const val DEFAULT_PORT = "3080"
  * Connect screen's Relay mode. Which of them shows is [rootRouteOf], the decision the Android root makes too; iOS has
  * no Settings screen yet.
  *
- * The chat is a later step of the port, so the chat pane is still the Connected page: which harness, its home
- * directory, how many sessions it has, and this client's protocol baseline, with a way to disconnect. The list's
- * overflow menu has Disconnect too.
+ * The chat pane is the open session's transcript, read only ([IosChatPane]; the composer is a later step of the port).
+ * Before a session is opened it is the Connected page: which harness, its home directory, how many sessions it has, and
+ * this client's protocol baseline, with a way to disconnect. The list's overflow menu has Disconnect too.
  */
 @Composable
 internal fun DshApp(app: IosApp, request: LaunchRequest) {
@@ -285,19 +293,42 @@ internal fun DshApp(app: IosApp, request: LaunchRequest) {
                 )
             }
             RootRoute.Main -> CompositionLocalProvider(LocalSessionStore provides app.sessionStore) {
+                val openSession = request.openSession
+                if (openSession != null) {
+                    LaunchedEffect(openSession) {
+                        // Once the list has been read, the way a tap on the row opens it.
+                        val rows = app.sessionStore.sessions.first { it.isNotEmpty() }
+                        val id = if (openSession.equals("first", ignoreCase = true)) {
+                            rows.first().sessionId
+                        } else {
+                            rows.firstOrNull { it.sessionId == openSession }?.sessionId
+                        }
+                        if (id == null) {
+                            request.onChat?.invoke("DSH_CHAT_RESULT failed reason=no-such-session session=$openSession")
+                        } else {
+                            app.sessionStore.openSession(id)
+                        }
+                    }
+                }
                 IosMainPage(
                     openDrawer = request.openDrawer,
                     onDrawerShown = request.onDrawer,
                     onDisconnect = { app.controller.cancelConnect() },
                 ) { onOpenSessions ->
-                    ConnectedPage(
-                        authority = link.host?.authority.orEmpty(),
-                        name = link.host?.name,
-                        home = link.description?.home ?: link.host?.lastHome,
-                        sessionCount = sessionCount,
+                    IosChatPane(
                         onOpenSessions = onOpenSessions,
-                        onDisconnect = { app.controller.cancelConnect() },
-                    )
+                        scroll = request.chatScroll,
+                        onReport = request.onChat,
+                    ) {
+                        ConnectedPage(
+                            authority = link.host?.authority.orEmpty(),
+                            name = link.host?.name,
+                            home = link.description?.home ?: link.host?.lastHome,
+                            sessionCount = sessionCount,
+                            onOpenSessions = onOpenSessions,
+                            onDisconnect = { app.controller.cancelConnect() },
+                        )
+                    }
                 }
             }
             RootRoute.Connect, RootRoute.Settings -> {

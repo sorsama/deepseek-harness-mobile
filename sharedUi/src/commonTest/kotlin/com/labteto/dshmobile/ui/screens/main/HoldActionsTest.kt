@@ -2,9 +2,9 @@ package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.core.session.ToolResultNode
 import kotlinx.serialization.json.Json
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNull
+import kotlin.test.Test
 
 /** What a held tool call offers to copy, read from its own arguments rather than its row. */
 class HoldActionsTest {
@@ -13,7 +13,7 @@ class HoldActionsTest {
         toolCopies(arguments, output).map { it.kind to it.text }
 
     /** The row shows the description; the reason to copy is to paste the command that actually ran. */
-    @Test fun `a shell call copies its command, not its description`() {
+    @Test fun `a shell call copies its command not its description`() {
         assertEquals(
             listOf(ToolCopyKind.Command to "./gradlew :app:test --tests \"*Hold*\""),
             copies("""{"command":"./gradlew :app:test --tests \"*Hold*\"","description":"Run the hold tests"}"""),
@@ -29,7 +29,7 @@ class HoldActionsTest {
         assertEquals(listOf(ToolCopyKind.Path to "/srv/a.txt"), copies("""{"file_path":"/srv/a.txt"}"""))
     }
 
-    @Test fun `a fetch copies its link and a search its queries, one per line`() {
+    @Test fun `a fetch copies its link and a search its queries one per line`() {
         assertEquals(listOf(ToolCopyKind.Link to "https://example.com/a"), copies("""{"url":"https://example.com/a"}"""))
         assertEquals(
             listOf(ToolCopyKind.Query to "kotlin flows\ncompose gestures"),
@@ -38,7 +38,7 @@ class HoldActionsTest {
         assertEquals(listOf(ToolCopyKind.Query to "TODO\\("), copies("""{"pattern":"TODO\\(","path":""}"""))
     }
 
-    @Test fun `output comes last, and only when there is some`() {
+    @Test fun `output comes last and only when there is some`() {
         assertEquals(
             listOf(ToolCopyKind.Command to "ls", ToolCopyKind.Output to "a\nb"),
             copies("""{"command":"ls","description":"List"}""", "a\nb"),
@@ -55,7 +55,7 @@ class HoldActionsTest {
         assertEquals(emptyList<Pair<ToolCopyKind, String>>(), copies("""{"command":42}"""))
     }
 
-    @Test fun `the output is every text part of the result, else its failure prose`() {
+    @Test fun `the output is every text part of the result else its failure prose`() {
         fun result(content: String, isError: Boolean = false) =
             ToolResultNode(seq = 2, callId = "c", content = Json.parseToJsonElement(content), isError = isError, turn = 1, step = 1)
         assertEquals(

@@ -43,16 +43,8 @@
     <string name="chat_composer_stop">Arrêter</string>
     <string name="chat_composer_attach">Joindre une image</string>
     <string name="chat_composer_remove_image">Retirer l’image</string>
-    <string name="chat_empty_title">Commencez à travailler avec votre harness</string>
-    <string name="chat_empty_hint">Envoyez un message pour démarrer un nouveau tour.</string>
     <string name="chat_load_older">Charger les messages précédents</string>
-    <string name="chat_loading_older">Chargement des messages précédents…</string>
-    <string name="chat_load_older_retry">Impossible de charger les messages précédents. Appuyez pour réessayer.</string>
     <string name="chat_stopped">Arrêté</string>
-    <string name="chat_max_tokens">Limite de jetons atteinte</string>
-    <string name="chat_retry_scheduled">Nouvel essai dans %1$d s</string>
-    <string name="chat_copy_message">Copier le message</string>
-    <string name="chat_branch_message">Créer une branche ici</string>
     <string name="chat_queue_title">Tours en file d’attente</string>
     <string name="chat_queue_edit">Modifier</string>
     <string name="chat_queue_remove">Retirer</string>
@@ -61,13 +53,9 @@
     <string name="chat_context_system">Système</string>
     <string name="chat_context_tools">Outils</string>
     <string name="chat_context_messages">Messages</string>
-    <string name="chat_compaction">Compacté</string>
-    <string name="chat_compaction_summary">Résumé</string>
     <string name="chat_details_title">Détails</string>
     <string name="chat_details_empty">Sélectionnez une ligne d’outil dans la conversation pour inspecter son entrée et sa sortie.</string>
     <string name="chat_input_placeholder">Entrée</string>
-    <string name="chat_output_placeholder">Sortie</string>
-    <string name="tool_output_show_raw">Afficher le JSON brut</string>
     <string name="tool_output_hide_raw">Masquer le JSON brut</string>
     <string name="goal_title">Objectif</string>
     <string name="goal_none">Aucun objectif actif</string>
@@ -78,8 +66,6 @@
     <string name="goal_clear">Effacer l’objectif</string>
     <string name="goal_blocked_reason">Blocage : %1$s</string>
     <string name="goal_max_rounds">Tours maximum : %1$s</string>
-    <string name="plan_mode_on">Mode plan : activé</string>
-    <string name="plan_mode_off">Mode plan : désactivé</string>
     <string name="plan_review_title">Plan prêt à relire</string>
     <string name="plan_review_approve">Approuver</string>
     <string name="plan_review_decline">Refuser</string>
@@ -219,7 +205,6 @@
     <string name="chat_composer_mode_steer_hint">Interrompt le tour en cours</string>
     <string name="chat_composer_steer_idle">Orienter n’est possible que pendant un tour en cours</string>
     <string name="chat_tab">Discussion</string>
-    <string name="chat_todo_title">Tâches</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">Cette session n’a aucune commande</string>
     <string name="chat_commands_unavailable">Ce harness ne fournit pas de liste de commandes</string>
@@ -263,7 +248,6 @@
     <string name="settings_notifications_action_hint">Une approbation, une question ou un plan qui vous attend</string>
     <string name="settings_background_hint">Continue de recevoir les mises à jour. Android affiche une notification.</string>
     <string name="trajectory_turn">Tour %1$d</string>
-    <string name="chat_retrying">Nouvelle tentative…</string>
     <string name="plan_mode_title">Mode plan</string>
     <string name="plan_mode_hint">Analyser et proposer un plan avant toute modification.</string>
     <string name="plugins_enabled">Activé</string>
@@ -333,8 +317,6 @@
     <string name="terminal_control">Prendre le contrôle</string>
     <string name="feedback_note">Commentaire (facultatif)</string>
     <string name="feedback_send">Envoyer le commentaire</string>
-    <string name="system_prompt">Instructions système</string>
-    <string name="image_offload">Anciennes images non incluses dans la requête</string>
     <string name="jobs_stop">Arrêter la tâche</string>
     <string name="jobs_stopping">Arrêt en cours</string>
     <string name="jobs_output_empty">Aucune sortie pour l’instant</string>
@@ -394,7 +376,6 @@
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
-    <string name="rewind_marker">Rembobiné jusqu\'ici</string>
     <string name="rewind_no_text">(sans texte)</string>
     <string name="rewind_to">Rembobiner vers : %1$s</string>
     <string name="rewind_mode_chat">Rembobiner la conversation seulement</string>
@@ -413,7 +394,6 @@
     <string name="details_section_activity">Activité</string>
     <string name="details_section_host">Hôte</string>
     <string name="details_preset_label">Préréglage</string>
-    <string name="details_copy_link">Copier le lien</string>
     <string name="chat_model_label">Modèle</string>
     <string name="panel_empty_folder">Ce dossier est vide</string>
     <string name="panel_preview_hint">Touchez un fichier dans Fichiers pour l\'ouvrir ici</string>
@@ -421,9 +401,7 @@
     <string name="settings_update_up_to_date">Vous avez la dernière version.</string>
     <string name="settings_update_unreachable">Impossible de joindre GitHub.</string>
     <string name="chat_tool_group_count">Appels d’outils : %1$d</string>
-    <string name="chat_tool_group_failed">%1$d échecs</string>
     <string name="chat_thought_process">Raisonnement</string>
-    <string name="chat_process_title">Processus</string>
     <!-- ==== This phone (Termux) ==== -->
     <string name="connect_mode_loopback">Ce téléphone</string>
     <string name="connect_loopback_title">Harness sur ce téléphone</string>
@@ -463,20 +441,11 @@
     <string name="chat_history_no_match">Aucun message ne correspond.</string>
     <string name="chat_history_image">Image</string>
     <string name="hold_message_actions">Actions du message</string>
-    <string name="hold_tool_actions">Actions de l’appel d’outil</string>
     <string name="hold_file_actions">Actions du fichier</string>
-    <string name="hold_select_text">Sélectionner le texte</string>
     <string name="hold_edit_as_new">Modifier comme nouveau message</string>
-    <string name="hold_edit_as_new_detail">Le place dans la zone de saisie. L’original est conservé.</string>
     <string name="hold_rewind_here">Rembobiner jusqu’à ce message</string>
-    <string name="hold_rewind_here_detail">Le retire avec tout ce qui suit, puis le remet dans la zone de saisie</string>
     <string name="hold_copy_command">Copier la commande</string>
-    <string name="hold_copy_path">Copier le chemin</string>
-    <string name="hold_copy_query">Copier la recherche</string>
     <string name="hold_copy_output">Copier la sortie</string>
-    <string name="hold_copy_arguments">Copier les arguments</string>
-    <string name="hold_open_file">Ouvrir le fichier</string>
-    <string name="hold_mention">Mentionner dans le message</string>
     <string name="hold_send_label">Choisir comment envoyer</string>
     <string name="hold_send_steer">Orienter maintenant</string>
     <string name="hold_send_queue">Mettre en file après ce tour</string>

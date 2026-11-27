@@ -136,4 +136,54 @@ class SystemLinesTest {
         val nameless = CommandNode(10, "command/run", Json.parseToJsonElement("""{"commandId":"c1","source":{"kind":"user"}}"""))
         assertNull(systemLineFor(nameless, listOf(nameless)))
     }
+
+    // ---- what reaches the transcript -------------------------------------------------------
+
+    @Test fun `the done that settles a run is folded into the run's line`() {
+        val nodes = listOf(run(10, "c1", "permission", " read-only"), done(11, "c1", text = "preset read-only"))
+        assertEquals(setOf(11L), foldedCommandDones(nodes))
+        assertEquals(listOf(10L), renderableChatNodes(nodes, running = false).map { it.seq })
+    }
+
+    @Test fun `every pair folds on its own id`() {
+        val nodes = listOf(
+            run(10, "a", "permission", " read-only"), done(11, "a"),
+            run(20, "b", "permission", " workspace-write"), done(21, "b"),
+        )
+        assertEquals(listOf(10L, 20L), renderableChatNodes(nodes, running = false).map { it.seq })
+    }
+
+    @Test fun `a done whose run is on an earlier page says nothing when it went through`() {
+        val nodes = listOf(done(11, "gone"))
+        assertEquals(setOf(11L), foldedCommandDones(nodes))
+        assertTrue(renderableChatNodes(nodes, running = false).isEmpty())
+    }
+
+    @Test fun `a done whose run is on an earlier page keeps its row when it failed`() {
+        val nodes = listOf(done(11, "gone", kind = "error", text = "nope"))
+        assertTrue(foldedCommandDones(nodes).isEmpty())
+        assertEquals(listOf(11L), renderableChatNodes(nodes, running = false).map { it.seq })
+    }
+
+    @Test fun `a run that is not the reader's keeps both of its rows`() {
+        val nodes = listOf(run(10, "c1", "xyz", source = """{"kind":"plugin"}"""), done(11, "c1"))
+        assertTrue(foldedCommandDones(nodes).isEmpty())
+        assertEquals(listOf(10L, 11L), renderableChatNodes(nodes, running = false).map { it.seq })
+    }
+
+    @Test fun `the agent's rows draw exactly as before around a reader's command`() {
+        val user = UserMessageNode(1, "m1", listOf(ChatBlock("text", "hello")), "user")
+        val call = ToolCallNode(seq = 2, callId = "c", name = "read", arguments = "{}", turn = 1, step = 1)
+        val reply = AssistantMessageNode(3, "a3", 1, 1, listOf(ChatBlock("text", "done")))
+        val failure = TurnErrorNode(4, "no key", "AUTH")
+        val plan = PlanModeNode(7, active = true)
+        val compaction = CompactionNode(8, "compaction/summary", Json.parseToJsonElement("{}"))
+        val nodes = listOf(
+            user, call, reply, failure,
+            run(5, "p", "permission", " read-only"), done(6, "p"),
+            plan, compaction,
+        )
+        // Only the command's own done is gone; every row the agent or the harness drew is still there.
+        assertEquals(listOf(1L, 2L, 3L, 4L, 5L, 7L, 8L), renderableChatNodes(nodes, running = false).map { it.seq })
+    }
 }

@@ -43,16 +43,8 @@
     <string name="chat_composer_stop">روکیں</string>
     <string name="chat_composer_attach">تصویر منسلک کریں</string>
     <string name="chat_composer_remove_image">تصویر ہٹائیں</string>
-    <string name="chat_empty_title">اپنے harness کے ساتھ کام شروع کریں</string>
-    <string name="chat_empty_hint">نیا ٹرن شروع کرنے کے لیے پیغام بھیجیں۔</string>
     <string name="chat_load_older">پرانے پیغامات لوڈ کریں</string>
-    <string name="chat_loading_older">پرانے پیغامات لوڈ ہو رہے ہیں…</string>
-    <string name="chat_load_older_retry">پرانے پیغامات لوڈ نہیں ہو سکے۔ دوبارہ کوشش کے لیے ٹیپ کریں</string>
     <string name="chat_stopped">روک دیا گیا</string>
-    <string name="chat_max_tokens">ٹوکن کی حد پوری ہو گئی</string>
-    <string name="chat_retry_scheduled">%1$d سیکنڈ میں دوبارہ کوشش</string>
-    <string name="chat_copy_message">پیغام کاپی کریں</string>
-    <string name="chat_branch_message">یہاں سے برانچ کریں</string>
     <string name="chat_queue_title">قطار میں موجود ٹرن</string>
     <string name="chat_queue_edit">ترمیم کریں</string>
     <string name="chat_queue_remove">ہٹائیں</string>
@@ -61,13 +53,9 @@
     <string name="chat_context_system">سسٹم</string>
     <string name="chat_context_tools">ٹولز</string>
     <string name="chat_context_messages">پیغامات</string>
-    <string name="chat_compaction">مختصر کیا گیا</string>
-    <string name="chat_compaction_summary">خلاصہ</string>
     <string name="chat_details_title">تفصیلات</string>
     <string name="chat_details_empty">چیٹ میں کسی ٹول پر ٹیپ کریں تو اس کا ان پٹ اور آؤٹ پٹ دکھائی دے گا۔</string>
     <string name="chat_input_placeholder">ان پٹ</string>
-    <string name="chat_output_placeholder">آؤٹ پٹ</string>
-    <string name="tool_output_show_raw">خام JSON دکھائیں</string>
     <string name="tool_output_hide_raw">خام JSON چھپائیں</string>
     <string name="goal_title">ہدف</string>
     <string name="goal_none">کوئی فعال ہدف نہیں</string>
@@ -78,8 +66,6 @@
     <string name="goal_clear">ہدف صاف کریں</string>
     <string name="goal_blocked_reason">رکاوٹ: %1$s</string>
     <string name="goal_max_rounds">زیادہ سے زیادہ راؤنڈ: %1$s</string>
-    <string name="plan_mode_on">پلان موڈ: آن</string>
-    <string name="plan_mode_off">پلان موڈ: آف</string>
     <string name="plan_review_title">پلان جائزے کے لیے تیار ہے</string>
     <string name="plan_review_approve">منظور کریں</string>
     <string name="plan_review_decline">مسترد کریں</string>
@@ -219,7 +205,6 @@
     <string name="chat_composer_mode_steer_hint">جاری ٹرن میں مداخلت کرتا ہے</string>
     <string name="chat_composer_steer_idle">مداخلت کے لیے جاری ٹرن ضروری ہے</string>
     <string name="chat_tab">چیٹ</string>
-    <string name="chat_todo_title">کام</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">اس سیشن میں کوئی کمانڈ نہیں</string>
     <string name="chat_commands_unavailable">یہ harness کمانڈ فہرست فراہم نہیں کرتا</string>
@@ -263,7 +248,6 @@
     <string name="settings_notifications_action_hint">کوئی منظوری، سوال یا منصوبہ آپ کا منتظر</string>
     <string name="settings_background_hint">اپ ڈیٹس آتی رہتی ہیں۔ Android ایک نوٹیفکیشن دکھاتا ہے۔</string>
     <string name="trajectory_turn">ٹرن %1$d</string>
-    <string name="chat_retrying">دوبارہ کوشش…</string>
     <string name="plan_mode_title">پلان موڈ</string>
     <string name="plan_mode_hint">کچھ بھی ترمیم کرنے سے پہلے تحقیق کر کے منصوبہ پیش کریں۔</string>
     <string name="plugins_enabled">فعال</string>
@@ -333,8 +317,6 @@
     <string name="terminal_control">کنٹرول لیں</string>
     <string name="feedback_note">رائے (اختیاری)</string>
     <string name="feedback_send">رائے بھیجیں</string>
-    <string name="system_prompt">سسٹم ہدایات</string>
-    <string name="image_offload">درخواست سے پرانی تصاویر ہٹا دی گئیں</string>
     <string name="jobs_stop">کام روکیں</string>
     <string name="jobs_stopping">روکا جا رہا ہے</string>
     <string name="jobs_output_empty">ابھی کوئی آؤٹ پٹ نہیں</string>
@@ -394,7 +376,6 @@
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
-    <string name="rewind_marker">یہاں تک ریوائنڈ کیا گیا</string>
     <string name="rewind_no_text">(کوئی متن نہیں)</string>
     <string name="rewind_to">ریوائنڈ کریں: %1$s</string>
     <string name="rewind_mode_chat">صرف گفتگو ریوائنڈ کریں</string>
@@ -413,7 +394,6 @@
     <string name="details_section_activity">سرگرمی</string>
     <string name="details_section_host">میزبان</string>
     <string name="details_preset_label">پری سیٹ</string>
-    <string name="details_copy_link">لنک کاپی کریں</string>
     <string name="chat_model_label">ماڈل</string>
     <string name="panel_empty_folder">یہ فولڈر خالی ہے</string>
     <string name="panel_preview_hint">یہاں کھولنے کے لیے فائلز میں کسی فائل پر ٹیپ کریں</string>
@@ -421,9 +401,7 @@
     <string name="settings_update_up_to_date">آپ کے پاس تازہ ترین ورژن ہے۔</string>
     <string name="settings_update_unreachable">GitHub تک رسائی نہیں ہو سکی۔</string>
     <string name="chat_tool_group_count">ٹول کالز: %1$d</string>
-    <string name="chat_tool_group_failed">%1$d ناکام</string>
     <string name="chat_thought_process">سوچنے کا عمل</string>
-    <string name="chat_process_title">کام کا عمل</string>
     <!-- ==== This phone (Termux) ==== -->
     <string name="connect_mode_loopback">یہ فون</string>
     <string name="connect_loopback_title">اس فون پر harness</string>
@@ -463,20 +441,11 @@
     <string name="chat_history_no_match">کوئی پیغام مماثل نہیں۔</string>
     <string name="chat_history_image">تصویر</string>
     <string name="hold_message_actions">پیغام کے اختیارات</string>
-    <string name="hold_tool_actions">ٹول کال کے اختیارات</string>
     <string name="hold_file_actions">فائل کے اختیارات</string>
-    <string name="hold_select_text">متن منتخب کریں</string>
     <string name="hold_edit_as_new">نئے پیغام کے طور پر ترمیم کریں</string>
-    <string name="hold_edit_as_new_detail">اسے کمپوزر میں رکھ دیتا ہے۔ اصل پیغام باقی رہتا ہے۔</string>
     <string name="hold_rewind_here">اس پیغام تک ریوائنڈ کریں</string>
-    <string name="hold_rewind_here_detail">اسے اور اس کے بعد کا سب واپس لے کر کمپوزر میں رکھ دیتا ہے</string>
     <string name="hold_copy_command">کمانڈ کاپی کریں</string>
-    <string name="hold_copy_path">پاتھ کاپی کریں</string>
-    <string name="hold_copy_query">تلاش کاپی کریں</string>
     <string name="hold_copy_output">آؤٹ پٹ کاپی کریں</string>
-    <string name="hold_copy_arguments">آرگیومنٹس کاپی کریں</string>
-    <string name="hold_open_file">فائل کھولیں</string>
-    <string name="hold_mention">پیغام میں حوالہ دیں</string>
     <string name="hold_send_label">بھیجنے کا طریقہ چنیں</string>
     <string name="hold_send_steer">ابھی رہنمائی کریں</string>
     <string name="hold_send_queue">اس ٹرن کے بعد قطار میں رکھیں</string>

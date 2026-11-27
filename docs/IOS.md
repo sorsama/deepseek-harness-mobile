@@ -476,6 +476,14 @@ fold reader `WindowFold` stays in `:app`) and `rootRouteOf`, the one routing dec
 in `:app` is now only the Android host: `HostsStore`, `java.time` headings, TalkBack, and the built-in harness's
 projects. On iOS, `IosMainPage` hosts the same drawer over `NSUserDefaults`, `NSDateFormatter` and VoiceOver, with
 `MainFeatures(settings = false, disconnect = true)`: no Settings yet, so Disconnect is in the drawer's menu.
+The chat's leaves came next (M5a the Markdown and code blocks, M5b the tool cards), then the transcript itself (M5c):
+`ChatTranscript`, `ChatNodeItem` with its hold menus (`HoldActions`), `ChatNodeVisibility`, `ToolGroups`, `PtcChildren`,
+`ChangedFiles`, `SessionHistory`, `AssistantIdentity`, `TranscriptReadingAnchor`, `CallStateMark`, `SelectionDismiss`,
+`EmptyHero`, and the dock shape with the inline to-do and goal rows (`TranscriptDocks`; the live docks stay in `Docks.kt`).
+What the transcript needs from its host is three small seams: `LocalAttachmentImage` (Android loads through the store;
+iOS draws nothing yet, attachments are later), `LocalReasoningContent` (Android adds reasoning translation; iOS draws the
+text alone) and nullable `ChatNodeContext` actions (Branch, feedback, opening a subagent: absent on iOS until there is
+somewhere to carry them out). On iOS, `IosChatPane` shows the open session's transcript read only; the composer is M6.
 
 Not moved, on purpose: the "This phone" card and the Termux controller (Termux is Android), the Hilt view models
 (`ConnectViewModel` and `PairViewModel` are thin: each owns a controller over `viewModelScope`), the stores and the
@@ -850,6 +858,15 @@ the steps after the tests run even if the tests fail, so one push says everythin
   in light, dark, French and Arabic, on an iPhone (a drawer, `docked=false`) and on an iPad (a pane beside the chat,
   `docked=true`). The eight screenshots are also their own artifact, `ios-session-list-screenshots`, and a step fails
   when one is missing.
+- then an opened session (M5c): `-DshOpenSession first` (or a session id) opens it as a tap on its row does, and the app
+  writes `DSH_CHAT_RESULT opened rows=… session=… more=…` once its history is in and its transcript laid out (`more`
+  is the store's `hasMore`, true for the short rich session too: the store opens at the first prompt and counts the
+  `turn/start` before it as older history); `-DshChatScroll older` drags the transcript up to the oldest loaded message
+  as a finger does, so the transcript's own trigger pages in the one before it, and adds `DSH_CHAT_RESULT older …
+  asked=…` (how many pages the transcript asked for) once that page has landed. Screenshots: the rich session at its
+  newest message in light, dark and Arabic, the demo's
+  long session (92 messages, a page is 60) paged back to its start in light and dark, and on the iPad the list docked
+  beside the transcript. The same step fails when one of the six is missing.
 - `ios-compile` also compiles `:sharedUi` for the two iOS targets and checks that the klibs exist.
 
 **`ios-ipa`** (10 to 25 minutes depending on whether Gradle's cache has the Release link of Compose Multiplatform, which dominates it, so a separate job in parallel):
@@ -999,7 +1016,9 @@ Open items the port knows about and has deliberately not done, so they are not r
   how the Android app has always behaved and iOS inherited it; the mock harness answers the call now so the simulator job
   can show a reachable host.
 - **The Connected page on iOS is a placeholder.** It reports what the screen has to give (with the harness's session count
-  since M1 of the session list port) and has nothing behind it.
+  since M1 of the session list port) and is what the chat pane shows until a session is opened.
+- **The iOS transcript is read only and has dead file taps.** `LocalFileOpener` has no iOS provider yet, so "Open file"
+  in a tool call's hold menu and a tap on a changed file do nothing there; file previews come with a later milestone.
 - **`ios-ipa` and `ios-app` build Compose Multiplatform for iOS twice.** The shared module is bigger than the
   M3a one; if the cost of the pair matters, the Release link is the part to look at first.
 

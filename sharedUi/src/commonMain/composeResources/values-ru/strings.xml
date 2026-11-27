@@ -11,15 +11,40 @@
     <string name="archive_busy_confirm">Остановить и архивировать</string>
     <string name="archive_busy_title">Остановить и архивировать этот сеанс?</string>
     <string name="archived_restore">Восстановить</string>
+    <string name="chat_branch_message">Создать ветку отсюда</string>
+    <string name="chat_compaction">Сжато</string>
+    <string name="chat_compaction_summary">Сводка</string>
     <string name="chat_composer_send">Отправить сообщение</string>
+    <string name="chat_context_title">Контекст</string>
+    <string name="chat_context_tools">Инструменты</string>
+    <string name="chat_copy_message">Скопировать сообщение</string>
+    <string name="chat_empty_hint">Отправьте сообщение, чтобы начать новый ход.</string>
+    <string name="chat_empty_title">Начните работу со своим harness</string>
     <string name="chat_error_turn">Ход завершился ошибкой</string>
+    <string name="chat_feedback_down">Бесполезно</string>
+    <string name="chat_feedback_up">Полезно</string>
+    <string name="chat_jump_latest">К последним сообщениям</string>
+    <string name="chat_load_older">Загрузить более ранние сообщения</string>
+    <string name="chat_load_older_retry">Не удалось загрузить более ранние сообщения. Нажмите, чтобы повторить</string>
+    <string name="chat_loading_older">Загрузка более ранних сообщений…</string>
+    <string name="chat_max_tokens">Достигнут лимит токенов</string>
     <string name="chat_output_placeholder">Вывод</string>
+    <string name="chat_process_title">Процесс</string>
+    <string name="chat_retry_scheduled">Повтор через %1$d с</string>
+    <string name="chat_retrying">Повторная попытка…</string>
+    <string name="chat_state_done">Готово</string>
     <string name="chat_state_failed">Ошибка</string>
+    <string name="chat_state_running">Выполняется</string>
     <string name="chat_state_stopped">Остановлено</string>
     <string name="chat_status_idle">Ожидает</string>
     <string name="chat_stopped">Остановлено</string>
+    <string name="chat_suggest_changes">Проверь мои незакоммиченные изменения</string>
+    <string name="chat_suggest_overview">Расскажи, как устроен этот проект</string>
+    <string name="chat_suggest_tests">Запусти тесты и исправь то, что падает</string>
     <string name="chat_thinking">Размышляет</string>
     <string name="chat_thought_process">Ход рассуждений</string>
+    <string name="chat_todo_progress">%1$d/%2$d</string>
+    <string name="chat_todo_title">Задачи</string>
     <string name="chat_tool_arguments">Аргументы</string>
     <string name="chat_tool_ask_answered">Отвечено %1$d из %2$d</string>
     <string name="chat_tool_ask_cancelled">Вы закрыли эти вопросы</string>
@@ -49,6 +74,8 @@
     <string name="chat_tool_field_value">%1$s: %2$s</string>
     <string name="chat_tool_field_when">Когда</string>
     <string name="chat_tool_goal_none">Цель не задана</string>
+    <string name="chat_tool_group_count">Вызовов инструментов: %1$d</string>
+    <string name="chat_tool_group_failed">Ошибок: %1$d</string>
     <string name="chat_tool_image_none">Изображение не пришло</string>
     <string name="chat_tool_jobs_none">Нет фоновых задач</string>
     <string name="chat_tool_open_job">Открыть задачу</string>
@@ -152,6 +179,7 @@
     <string name="chatlist_new_session_in">Новый сеанс в…</string>
     <string name="chatlist_new_workspace">Новый проект</string>
     <string name="chatlist_no_workspaces">Проектов пока нет. Добавьте его через меню.</string>
+    <string name="chatlist_open">Открыть чаты</string>
     <string name="chatlist_pinned">Закреплённые</string>
     <string name="chatlist_project_collapse">Свернуть «%1$s»</string>
     <string name="chatlist_project_expand">Развернуть «%1$s»</string>
@@ -302,6 +330,8 @@
     <string name="connect_title">Подключиться к harness</string>
     <string name="connect_try_again">Повторить попытку</string>
     <string name="connect_unreachable">Недоступен</string>
+    <string name="details_copy_link">Копировать ссылку</string>
+    <string name="goal_blocked_reason">Блокировка: %1$s</string>
     <string name="goal_none">Нет активной цели</string>
     <string name="goal_phase_active">Активна</string>
     <string name="goal_phase_blocked">Заблокирована</string>
@@ -309,12 +339,30 @@
     <string name="goal_phase_paused">На паузе</string>
     <string name="harness_automations">Автоматизация</string>
     <string name="hold_copy_all">Копировать всё</string>
+    <string name="hold_copy_arguments">Копировать аргументы</string>
+    <string name="hold_copy_command">Копировать команду</string>
+    <string name="hold_copy_output">Копировать вывод</string>
+    <string name="hold_copy_path">Копировать путь</string>
+    <string name="hold_copy_query">Копировать запрос</string>
+    <string name="hold_edit_as_new">Изменить как новое сообщение</string>
+    <string name="hold_edit_as_new_detail">Помещает текст в поле ввода. Исходное сообщение остаётся.</string>
+    <string name="hold_file_actions">Действия с файлом</string>
+    <string name="hold_mention">Упомянуть в сообщении</string>
+    <string name="hold_message_actions">Действия с сообщением</string>
+    <string name="hold_open_file">Открыть файл</string>
+    <string name="hold_rewind_here">Откатить к этому сообщению</string>
+    <string name="hold_rewind_here_detail">Убирает его и всё, что было после, а текст возвращает в поле ввода</string>
     <string name="hold_select_text">Выделить текст</string>
     <string name="hold_session_actions">Действия с сеансом</string>
+    <string name="hold_tool_actions">Действия с вызовом инструмента</string>
+    <string name="image_offload">Из запроса исключены прежние изображения</string>
     <string name="ink_chat_approve">Одобрить</string>
+    <string name="ink_chat_changed_this_session">Изменено в этом сеансе</string>
+    <string name="ink_chat_files_empty">Файлы ещё не изменены</string>
     <string name="ink_chat_filter_all">Все %1$d</string>
     <string name="ink_chat_filter_needs_you">Нужно ваше участие %1$d</string>
     <string name="ink_chat_filter_running">Выполняется %1$d</string>
+    <string name="ink_chat_goal_dock">Цель · %1$s</string>
     <string name="ink_chat_more">Ещё</string>
     <string name="ink_chat_review">Проверить</string>
     <string name="ink_chat_sessions">Сеансы</string>
@@ -372,6 +420,8 @@
     <string name="permission_preset_full_access_desc">Выполняет команды и меняет файлы без вопросов.</string>
     <string name="permission_preset_read_only">Только чтение</string>
     <string name="permission_preset_workspace_write">Запись в рабочей области</string>
+    <string name="plan_mode_off">Режим плана: выкл.</string>
+    <string name="plan_mode_on">Режим плана: вкл.</string>
     <string name="preset_code_desc">Всё, что умеет стандартный режим, но инструменты доступны через Code Mode SDK, поэтому модель может объединять несколько шагов в одну программу на TypeScript.</string>
     <string name="preset_code_name">Режим PTC</string>
     <string name="preset_cordis_desc">Для создания своих пресетов агента: всё, что есть в стандартном режиме, плюс проверка во время работы, эксперименты с плагинами и руководство по написанию пресетов.</string>
@@ -383,6 +433,7 @@
     <string name="projects_title">Проекты на этом телефоне</string>
     <string name="questions_answer_refused">Harness не принял этот ответ (%1$s).</string>
     <string name="questions_answer_unsent">Не удалось связаться с harness.</string>
+    <string name="rewind_marker">Откат до этого места</string>
     <string name="runtime_action_free_space">Освободить место</string>
     <string name="runtime_action_open_controls">Управление</string>
     <string name="runtime_action_restart">Перезапустить</string>
@@ -447,6 +498,7 @@
     <string name="system_line_permission_failed">Не удалось изменить разрешение</string>
     <string name="system_line_plan_off">Вы выключили режим плана</string>
     <string name="system_line_plan_on">Вы включили режим плана</string>
+    <string name="system_prompt">Системные инструкции</string>
     <string name="time_days">%1$d дн</string>
     <string name="time_hours">%1$d ч</string>
     <string name="time_minutes">%1$d мин</string>
@@ -455,6 +507,7 @@
     <string name="time_years">%1$d г</string>
     <string name="tool_copy_code">Копировать код</string>
     <string name="tool_output_copy_raw">Копировать исходный JSON</string>
+    <string name="tool_output_show_raw">Показать исходный JSON</string>
     <string name="toolcard_exit_code">код выхода %1$d</string>
     <string name="toolcard_killed_by">завершён сигналом %1$s</string>
     <string name="toolcard_more">ещё %1$d</string>
@@ -474,6 +527,19 @@
     <string name="workflow_completed">Завершён</string>
     <string name="workflow_failed">Сбой</string>
     <string name="workflow_running">Выполняется</string>
+    <string name="workflow_title">Рабочий процесс</string>
+    <plurals name="chat_changed_files">
+        <item quantity="one">Изменён %1$d файл</item>
+        <item quantity="few">Изменено %1$d файла</item>
+        <item quantity="many">Изменено %1$d файлов</item>
+        <item quantity="other">Изменено %1$d файла</item>
+    </plurals>
+    <plurals name="chat_jump_latest_new">
+        <item quantity="one">%1$d новое</item>
+        <item quantity="few">%1$d новых</item>
+        <item quantity="many">%1$d новых</item>
+        <item quantity="other">%1$d новых</item>
+    </plurals>
     <plurals name="chat_tool_arguments_count">
         <item quantity="one">%1$d поле</item>
         <item quantity="few">%1$d поля</item>
@@ -587,5 +653,11 @@
         <item quantity="few">%1$d источника</item>
         <item quantity="many">%1$d источников</item>
         <item quantity="other">%1$d источника</item>
+    </plurals>
+    <plurals name="trajectory_step_count">
+        <item quantity="one">%1$d шаг</item>
+        <item quantity="few">%1$d шага</item>
+        <item quantity="many">%1$d шагов</item>
+        <item quantity="other">%1$d шага</item>
     </plurals>
 </resources>

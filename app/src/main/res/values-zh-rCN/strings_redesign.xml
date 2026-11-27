@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="chat_jump_latest">跳到最新</string>
-    <string name="chat_suggest_overview">介绍一下这个项目的整体情况</string>
-    <string name="chat_suggest_tests">运行测试并修复失败的部分</string>
-    <string name="chat_suggest_changes">审查我尚未提交的改动</string>
     <string name="chat_queue_placement_queued">下一回合</string>
     <string name="chat_queue_placement_steering">引导中</string>
     <string name="chat_queue_placement_context">上下文</string>
     <string name="chat_status_running">工作中</string>
     <string name="chat_status_idle">空闲</string>
-    <plurals name="chat_jump_latest_new">
-        <item quantity="other">%d 条新内容</item>
-    </plurals>
     <plurals name="trajectory_step_count">
         <item quantity="other">%d 步</item>
     </plurals>

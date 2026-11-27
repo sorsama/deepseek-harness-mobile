@@ -11,15 +11,40 @@
     <string name="archive_busy_confirm">रोकें और आर्काइव करें</string>
     <string name="archive_busy_title">इस सेशन को रोककर आर्काइव करें?</string>
     <string name="archived_restore">वापस लाएँ</string>
+    <string name="chat_branch_message">यहाँ से ब्रांच करें</string>
+    <string name="chat_compaction">समेटा गया</string>
+    <string name="chat_compaction_summary">सारांश</string>
     <string name="chat_composer_send">संदेश भेजें</string>
+    <string name="chat_context_title">कॉन्टेक्स्ट</string>
+    <string name="chat_context_tools">टूल</string>
+    <string name="chat_copy_message">संदेश कॉपी करें</string>
+    <string name="chat_empty_hint">नया टर्न शुरू करने के लिए एक संदेश भेजें।</string>
+    <string name="chat_empty_title">अपने harness के साथ काम शुरू करें</string>
     <string name="chat_error_turn">टर्न पूरा नहीं हो सका</string>
+    <string name="chat_feedback_down">उपयोगी नहीं</string>
+    <string name="chat_feedback_up">उपयोगी</string>
+    <string name="chat_jump_latest">सबसे नए पर जाएँ</string>
+    <string name="chat_load_older">पुराने संदेश लोड करें</string>
+    <string name="chat_load_older_retry">पुराने संदेश लोड नहीं हो सके। फिर कोशिश के लिए टैप करें।</string>
+    <string name="chat_loading_older">पुराने संदेश लोड हो रहे हैं…</string>
+    <string name="chat_max_tokens">टोकन की सीमा पूरी हो गई</string>
     <string name="chat_output_placeholder">आउटपुट</string>
+    <string name="chat_process_title">प्रक्रिया</string>
+    <string name="chat_retry_scheduled">%1$d सेकंड में फिर कोशिश होगी</string>
+    <string name="chat_retrying">फिर कोशिश हो रही है…</string>
+    <string name="chat_state_done">पूरा</string>
     <string name="chat_state_failed">विफल</string>
+    <string name="chat_state_running">चल रहा है</string>
     <string name="chat_state_stopped">रोका गया</string>
     <string name="chat_status_idle">निष्क्रिय</string>
     <string name="chat_stopped">रोका गया</string>
+    <string name="chat_suggest_changes">मेरे जो बदलाव कमिट नहीं हुए, उनका रिव्यू करो</string>
+    <string name="chat_suggest_overview">इस प्रोजेक्ट का ओवरव्यू दो</string>
+    <string name="chat_suggest_tests">टेस्ट चलाओ और जो फ़ेल हों उन्हें ठीक करो</string>
     <string name="chat_thinking">सोच रहा है</string>
     <string name="chat_thought_process">सोच-विचार</string>
+    <string name="chat_todo_progress">%1$d/%2$d</string>
+    <string name="chat_todo_title">करने वाले काम</string>
     <string name="chat_tool_arguments">आर्ग्युमेंट</string>
     <string name="chat_tool_ask_answered">%2$d में से %1$d के जवाब दिए</string>
     <string name="chat_tool_ask_cancelled">आपने ये सवाल बंद कर दिए</string>
@@ -49,6 +74,8 @@
     <string name="chat_tool_field_value">%1$s: %2$s</string>
     <string name="chat_tool_field_when">कब</string>
     <string name="chat_tool_goal_none">कोई लक्ष्य तय नहीं है</string>
+    <string name="chat_tool_group_count">टूल कॉल: %1$d</string>
+    <string name="chat_tool_group_failed">%1$d फ़ेल</string>
     <string name="chat_tool_image_none">कोई इमेज नहीं आई</string>
     <string name="chat_tool_jobs_none">कोई बैकग्राउंड काम नहीं</string>
     <string name="chat_tool_open_job">काम खोलें</string>
@@ -152,6 +179,7 @@
     <string name="chatlist_new_session_in">नए सेशन के लिए…</string>
     <string name="chatlist_new_workspace">नया प्रोजेक्ट</string>
     <string name="chatlist_no_workspaces">अभी कोई प्रोजेक्ट नहीं है। मेन्यू से एक जोड़ें।</string>
+    <string name="chatlist_open">चैट खोलें</string>
     <string name="chatlist_pinned">पिन किए गए</string>
     <string name="chatlist_project_collapse">%1$s समेटें</string>
     <string name="chatlist_project_expand">%1$s खोलें</string>
@@ -302,6 +330,8 @@
     <string name="connect_title">Harness से कनेक्ट करें</string>
     <string name="connect_try_again">फिर से कोशिश करें</string>
     <string name="connect_unreachable">पहुँच से बाहर</string>
+    <string name="details_copy_link">लिंक कॉपी करें</string>
+    <string name="goal_blocked_reason">रुकावट: %1$s</string>
     <string name="goal_none">कोई चालू लक्ष्य नहीं</string>
     <string name="goal_phase_active">चालू</string>
     <string name="goal_phase_blocked">अटका हुआ</string>
@@ -309,12 +339,30 @@
     <string name="goal_phase_paused">रुका हुआ</string>
     <string name="harness_automations">ऑटोमेशन</string>
     <string name="hold_copy_all">सब कॉपी करें</string>
+    <string name="hold_copy_arguments">आर्ग्युमेंट कॉपी करें</string>
+    <string name="hold_copy_command">कमांड कॉपी करें</string>
+    <string name="hold_copy_output">आउटपुट कॉपी करें</string>
+    <string name="hold_copy_path">पाथ कॉपी करें</string>
+    <string name="hold_copy_query">खोज कॉपी करें</string>
+    <string name="hold_edit_as_new">नए संदेश की तरह एडिट करें</string>
+    <string name="hold_edit_as_new_detail">इसे कंपोज़र में डालता है। मूल संदेश बना रहता है।</string>
+    <string name="hold_file_actions">फ़ाइल के विकल्प</string>
+    <string name="hold_mention">संदेश में मेंशन करें</string>
+    <string name="hold_message_actions">संदेश के विकल्प</string>
+    <string name="hold_open_file">फ़ाइल खोलें</string>
+    <string name="hold_rewind_here">इस संदेश तक रिवाइंड करें</string>
+    <string name="hold_rewind_here_detail">इसे और इसके बाद का सब वापस लेता है, फिर कंपोज़र में डाल देता है</string>
     <string name="hold_select_text">टेक्स्ट चुनें</string>
     <string name="hold_session_actions">सेशन के विकल्प</string>
+    <string name="hold_tool_actions">टूल कॉल के विकल्प</string>
+    <string name="image_offload">अनुरोध से पुरानी तस्वीरें हटाई गईं</string>
     <string name="ink_chat_approve">मंज़ूर करें</string>
+    <string name="ink_chat_changed_this_session">इस सेशन में बदला</string>
+    <string name="ink_chat_files_empty">अभी कोई फ़ाइल नहीं बदली</string>
     <string name="ink_chat_filter_all">सभी %1$d</string>
     <string name="ink_chat_filter_needs_you">आपकी ज़रूरत %1$d</string>
     <string name="ink_chat_filter_running">चल रहे %1$d</string>
+    <string name="ink_chat_goal_dock">लक्ष्य · %1$s</string>
     <string name="ink_chat_more">और</string>
     <string name="ink_chat_review">रिव्यू</string>
     <string name="ink_chat_sessions">सेशन</string>
@@ -372,6 +420,8 @@
     <string name="permission_preset_full_access_desc">बिना पूछे कमांड चलाता है और फ़ाइलें बदलता है।</string>
     <string name="permission_preset_read_only">केवल पढ़ें</string>
     <string name="permission_preset_workspace_write">वर्कस्पेस में लिखें</string>
+    <string name="plan_mode_off">प्लान मोड: बंद</string>
+    <string name="plan_mode_on">प्लान मोड: चालू</string>
     <string name="preset_code_desc">स्टैंडर्ड मोड की सारी सुविधाएँ। फ़र्क़ बस इतना है कि टूल Code Mode SDK से मिलते हैं, जिससे मॉडल कई चरण एक ही TypeScript प्रोग्राम में जोड़ सकता है।</string>
     <string name="preset_code_name">PTC मोड</string>
     <string name="preset_cordis_desc">कस्टम एजेंट प्रीसेट बनाने के लिए। इसमें स्टैंडर्ड मोड की सारी सुविधाएँ हैं, साथ में रनटाइम की जाँच, प्लगइन के प्रयोग और प्रीसेट लिखने में मदद।</string>
@@ -383,6 +433,7 @@
     <string name="projects_title">इस फ़ोन पर प्रोजेक्ट</string>
     <string name="questions_answer_refused">harness ने वह उत्तर नहीं लिया (%1$s)।</string>
     <string name="questions_answer_unsent">harness तक नहीं पहुँच पाए।</string>
+    <string name="rewind_marker">यहाँ तक रिवाइंड किया गया</string>
     <string name="runtime_action_free_space">जगह खाली करें</string>
     <string name="runtime_action_open_controls">प्रबंधित करें</string>
     <string name="runtime_action_restart">फिर से शुरू करें</string>
@@ -447,6 +498,7 @@
     <string name="system_line_permission_failed">अनुमति बदली नहीं जा सकी</string>
     <string name="system_line_plan_off">आपने प्लान मोड बंद किया</string>
     <string name="system_line_plan_on">आपने प्लान मोड चालू किया</string>
+    <string name="system_prompt">सिस्टम निर्देश</string>
     <string name="time_days">%1$d दिन</string>
     <string name="time_hours">%1$d घं</string>
     <string name="time_minutes">%1$d मिन</string>
@@ -455,6 +507,7 @@
     <string name="time_years">%1$d साल</string>
     <string name="tool_copy_code">कोड कॉपी करें</string>
     <string name="tool_output_copy_raw">मूल JSON कॉपी करें</string>
+    <string name="tool_output_show_raw">मूल JSON दिखाएं</string>
     <string name="toolcard_exit_code">एग्ज़िट %1$d</string>
     <string name="toolcard_killed_by">%1$s से बंद किया गया</string>
     <string name="toolcard_more">+%1$d और</string>
@@ -474,6 +527,15 @@
     <string name="workflow_completed">पूरा हुआ</string>
     <string name="workflow_failed">फ़ेल हुआ</string>
     <string name="workflow_running">चल रहा है</string>
+    <string name="workflow_title">वर्कफ़्लो</string>
+    <plurals name="chat_changed_files">
+        <item quantity="one">%1$d फ़ाइल बदली गई</item>
+        <item quantity="other">%1$d फ़ाइलें बदली गईं</item>
+    </plurals>
+    <plurals name="chat_jump_latest_new">
+        <item quantity="one">%1$d नया</item>
+        <item quantity="other">%1$d नए</item>
+    </plurals>
     <plurals name="chat_tool_arguments_count">
         <item quantity="one">%1$d फ़ील्ड</item>
         <item quantity="other">%1$d फ़ील्ड</item>
@@ -549,5 +611,9 @@
     <plurals name="toolcard_sources">
         <item quantity="one">%1$d स्रोत</item>
         <item quantity="other">%1$d स्रोत</item>
+    </plurals>
+    <plurals name="trajectory_step_count">
+        <item quantity="one">%1$d चरण</item>
+        <item quantity="other">%1$d चरण</item>
     </plurals>
 </resources>

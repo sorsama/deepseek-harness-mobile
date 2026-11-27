@@ -6,11 +6,11 @@ import com.labteto.dshmobile.core.session.ChatNode
 import com.labteto.dshmobile.core.session.ToolCallNode
 import com.labteto.dshmobile.core.session.TurnStartNode
 import com.labteto.dshmobile.core.session.UserMessageNode
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertNull
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 class SessionHistoryTest {
 
@@ -23,7 +23,7 @@ class SessionHistoryTest {
     private fun toolCall(seq: Long) = ToolCallNode(seq, "c$seq", "read", "{}", 1, 1)
 
     @Test
-    fun `lists only the readers own prompts, newest first`() {
+    fun `lists only the readers own prompts newest first`() {
         val nodes: List<ChatNode> = listOf(
             TurnStartNode(1, 1),
             user(2, "first"),
@@ -162,7 +162,7 @@ class SessionHistoryTest {
     }
 
     @Test
-    fun `search wants each word whole, not scattered through the prompt`() {
+    fun `search wants each word whole not scattered through the prompt`() {
         // f-i-x is a subsequence of this sentence, so the model sheet's matcher would keep it. On
         // prose that keeps nearly everything, which is a filter that filters nothing.
         val prompt = "the first time I exit the app it forgets the session"

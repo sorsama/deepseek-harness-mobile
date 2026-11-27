@@ -3,12 +3,10 @@
 <resources>
     <string name="ink_chat_filter_all">全部 %1$d</string>
     <string name="ink_chat_files_tab">文件 · %1$d</string>
-    <string name="ink_chat_files_empty">尚无文件更改</string>
     <string name="ink_chat_steer_hint">引导智能体…</string>
     <string name="ink_chat_goal_dock">目标 · %1$s</string>
     <string name="ink_chat_more">更多</string>
     <string name="ink_chat_queue_next_turn">下一回合</string>
     <string name="ink_chat_today">今天</string>
     <string name="ink_chat_yesterday">昨天</string>
-    <string name="ink_chat_changed_this_session">本会话中的更改</string>
 </resources>

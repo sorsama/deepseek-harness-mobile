@@ -1,11 +1,11 @@
 package com.labteto.dshmobile.ui.screens.main
 
 import com.labteto.dshmobile.core.session.AssistantMessageNode
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotSame
-import org.junit.Assert.assertSame
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNotEquals
+import com.labteto.dshmobile.testing.assertNotSame
+import com.labteto.dshmobile.testing.assertSame
+import kotlin.test.Test
 
 class AssistantIdentityTest {
 
@@ -45,7 +45,7 @@ class AssistantIdentityTest {
     }
 
     @Test
-    fun `without a turn and step a durable message uses its id, then its seq`() {
+    fun `without a turn and step a durable message uses its id then its seq`() {
         assertEquals("m-1", assistantStateKey(node(seq = 5, messageId = "m-1", turn = null, step = null)))
         assertEquals(5L, assistantStateKey(node(seq = 5, messageId = null, turn = null, step = null)))
     }

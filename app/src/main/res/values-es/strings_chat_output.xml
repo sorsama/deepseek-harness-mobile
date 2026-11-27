@@ -1,7 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="chat_state_running">En curso</string>
-    <string name="chat_state_done">Hecho</string>
-    <string name="chat_state_failed">Falló</string>
-    <string name="chat_state_stopped">Detenido</string>
 </resources>

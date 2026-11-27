@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="chat_jump_latest">ไปที่ข้อความล่าสุด</string>
-    <string name="chat_suggest_overview">สรุปภาพรวมของโปรเจกต์นี้ให้หน่อย</string>
-    <string name="chat_suggest_tests">รันเทสต์แล้วแก้ส่วนที่ไม่ผ่าน</string>
-    <string name="chat_suggest_changes">รีวิวการเปลี่ยนแปลงที่ยังไม่ได้ commit</string>
     <string name="chat_queue_placement_queued">เทิร์นถัดไป</string>
     <string name="chat_queue_placement_steering">กำลังแทรก</string>
     <string name="chat_queue_placement_context">บริบท</string>
     <string name="chat_status_running">กำลังทำงาน</string>
     <string name="chat_status_idle">ว่าง</string>
-    <plurals name="chat_jump_latest_new">
-        <item quantity="other">ใหม่ %d</item>
-    </plurals>
     <plurals name="trajectory_step_count">
         <item quantity="other">%d ขั้น</item>
     </plurals>

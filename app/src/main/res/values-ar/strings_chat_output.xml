@@ -1,7 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="chat_state_running">قيد التشغيل</string>
-    <string name="chat_state_done">تم</string>
-    <string name="chat_state_failed">فشل</string>
-    <string name="chat_state_stopped">توقّف</string>
 </resources>

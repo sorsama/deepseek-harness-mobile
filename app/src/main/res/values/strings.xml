@@ -52,7 +52,6 @@
     <string name="chat_composer_mode_steer_hint">Interrupts the running turn</string>
     <string name="chat_composer_steer_idle">Steering needs a running turn</string>
     <string name="chat_tab">Chat</string>
-    <string name="chat_todo_title">To-dos</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">This session has no commands</string>
     <string name="chat_commands_unavailable">This harness doesn\'t share a command list</string>
@@ -74,17 +73,8 @@
     <string name="chat_composer_stop">Stop</string>
     <string name="chat_composer_attach">Attach image</string>
     <string name="chat_composer_remove_image">Remove image</string>
-    <string name="chat_empty_title">Start working with your harness</string>
-    <string name="chat_empty_hint">Send a message to get started.</string>
     <string name="chat_load_older">Load older messages</string>
-    <string name="chat_loading_older">Loading earlier messages…</string>
-    <string name="chat_load_older_retry">Couldn\'t load earlier messages. Tap to retry.</string>
     <string name="chat_stopped">Stopped</string>
-    <string name="chat_max_tokens">Token limit reached</string>
-    <string name="chat_retry_scheduled">Retrying in %1$ds</string>
-    <string name="chat_retrying">Retrying…</string>
-    <string name="chat_copy_message">Copy message</string>
-    <string name="chat_branch_message">Branch from here</string>
     <string name="chat_queue_title">Queued turns</string>
     <string name="chat_queue_edit">Edit</string>
     <string name="chat_queue_remove">Remove</string>
@@ -93,13 +83,9 @@
     <string name="chat_context_system">System</string>
     <string name="chat_context_tools">Tools</string>
     <string name="chat_context_messages">Messages</string>
-    <string name="chat_compaction">Compacted</string>
-    <string name="chat_compaction_summary">Summary</string>
     <string name="chat_details_title">Details</string>
     <string name="chat_details_empty">Tap a tool call in the chat to see its input and output.</string>
     <string name="chat_input_placeholder">Input</string>
-    <string name="chat_output_placeholder">Output</string>
-    <string name="tool_output_show_raw">Show raw JSON</string>
     <string name="tool_output_hide_raw">Hide raw JSON</string>
     <string name="goal_title">Goal</string>
     <string name="goal_none">No active goal</string>
@@ -110,8 +96,6 @@
     <string name="goal_clear">Clear goal</string>
     <string name="goal_blocked_reason">Blocker: %1$s</string>
     <string name="goal_max_rounds">Max rounds: %1$s</string>
-    <string name="plan_mode_on">Plan mode: on</string>
-    <string name="plan_mode_off">Plan mode: off</string>
     <string name="plan_review_title">Plan ready for review</string>
     <string name="plan_review_approve">Approve</string>
     <string name="plan_review_decline">Decline</string>
@@ -340,8 +324,6 @@
     <string name="terminal_control">Take control</string>
     <string name="feedback_note">Feedback note (optional)</string>
     <string name="feedback_send">Submit feedback</string>
-    <string name="system_prompt">System prompt</string>
-    <string name="image_offload">Older images left out of this request</string>
     <string name="jobs_stop">Stop job</string>
     <string name="jobs_stopping">Stopping</string>
     <string name="jobs_output_empty">No output yet</string>
@@ -402,7 +384,6 @@
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
-    <string name="rewind_marker">Rewound to here</string>
     <string name="rewind_no_text">(no text)</string>
     <string name="rewind_to">Rewind to: %1$s</string>
     <string name="rewind_mode_chat">Rewind conversation only</string>
@@ -421,7 +402,6 @@
     <string name="details_section_activity">Activity</string>
     <string name="details_section_host">Host</string>
     <string name="details_preset_label">Preset</string>
-    <string name="details_copy_link">Copy link</string>
     <string name="chat_model_label">Model</string>
     <string name="panel_empty_folder">This folder is empty</string>
     <string name="panel_preview_hint">Tap a file in Files to open it here</string>
@@ -429,9 +409,7 @@
     <string name="settings_update_up_to_date">You have the latest version.</string>
     <string name="settings_update_unreachable">Couldn\'t reach GitHub.</string>
     <string name="chat_tool_group_count">Tool calls: %1$d</string>
-    <string name="chat_tool_group_failed">%1$d failed</string>
     <string name="chat_thought_process">Thought process</string>
-    <string name="chat_process_title">Process</string>
     <!-- ==== This phone (Termux) mode, harness control and install via Termux ==== -->
     <string name="connect_mode_loopback">This phone</string>
     <string name="connect_loopback_title">Harness on this phone</string>
@@ -471,20 +449,11 @@
     <string name="chat_history_no_match">No messages match that.</string>
     <string name="chat_history_image">Image</string>
     <string name="hold_message_actions">Message actions</string>
-    <string name="hold_tool_actions">Tool call actions</string>
     <string name="hold_file_actions">File actions</string>
-    <string name="hold_select_text">Select text</string>
     <string name="hold_edit_as_new">Edit as new message</string>
-    <string name="hold_edit_as_new_detail">Puts it in the composer. The original stays.</string>
     <string name="hold_rewind_here">Rewind to this message</string>
-    <string name="hold_rewind_here_detail">Removes it and everything after it, then puts it back in the composer</string>
     <string name="hold_copy_command">Copy command</string>
-    <string name="hold_copy_path">Copy path</string>
-    <string name="hold_copy_query">Copy search</string>
     <string name="hold_copy_output">Copy output</string>
-    <string name="hold_copy_arguments">Copy arguments</string>
-    <string name="hold_open_file">Open file</string>
-    <string name="hold_mention">Mention in message</string>
     <string name="hold_send_label">Choose how to send</string>
     <string name="hold_send_steer">Steer now</string>
     <string name="hold_send_queue">Queue for after this turn</string>

@@ -41,13 +41,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.labteto.dshmobile.R
 import com.labteto.dshmobile.core.session.ChatNode
 import com.labteto.dshmobile.core.session.OtherNode
 import com.labteto.dshmobile.core.session.ToolCallNode
@@ -55,6 +52,7 @@ import com.labteto.dshmobile.core.session.ToolResultNode
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.LocalFileOpener
 import com.labteto.dshmobile.ui.components.clickableWithHold
+import com.labteto.dshmobile.ui.components.localizedCount
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
 import com.labteto.dshmobile.ui.theme.DsSizes
@@ -64,6 +62,13 @@ import com.labteto.dshmobile.ui.theme.DsType
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.pluralStringResource
+import com.labteto.dshmobile.shared.resources.Res
+import com.labteto.dshmobile.shared.resources.chat_changed_files
+import com.labteto.dshmobile.shared.resources.hold_file_actions
+import com.labteto.dshmobile.shared.resources.ink_chat_changed_this_session
+import com.labteto.dshmobile.shared.resources.ink_chat_files_empty
 
 /**
  * The files turn [turn] changed, in the order it first touched them.
@@ -73,7 +78,7 @@ import kotlinx.serialization.json.jsonObject
  * produced. Only calls whose result came back without an error count, so a refused or failed edit
  * does not show up as a change.
  */
-internal fun changedFiles(nodes: List<ChatNode>, turn: Int): List<String> {
+fun changedFiles(nodes: List<ChatNode>, turn: Int): List<String> {
     val succeeded = nodes.asSequence()
         .filterIsInstance<ToolResultNode>()
         .filter { it.turn == turn && !it.isError }
@@ -96,7 +101,7 @@ private fun changedPath(argumentsJson: String): String? {
 }
 
 /** The `turn` a `workspace/changes` event closes, or null for a payload this build cannot read. */
-internal fun changesTurn(data: kotlinx.serialization.json.JsonElement): Int? =
+fun changesTurn(data: kotlinx.serialization.json.JsonElement): Int? =
     ((data as? JsonObject)?.get("turn") as? JsonPrimitive)?.content?.toIntOrNull()
 
 /**
@@ -109,7 +114,7 @@ internal fun changesTurn(data: kotlinx.serialization.json.JsonElement): Int? =
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ChangedFilesRow(
+fun ChangedFilesRow(
     nodes: List<ChatNode>,
     turn: Int,
     cwd: String?,
@@ -122,7 +127,7 @@ internal fun ChangedFilesRow(
     var held by remember(turn) { mutableStateOf<String?>(null) }
     // Closed by default, and remembered per turn so opening one turn's list does not open the next.
     var expanded by remember(turn) { mutableStateOf(false) }
-    val holdLabel = stringResource(R.string.hold_file_actions)
+    val holdLabel = stringResource(Res.string.hold_file_actions)
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 90f else 0f,
         animationSpec = DsAnimations.chevron,
@@ -160,7 +165,7 @@ internal fun ChangedFilesRow(
                     modifier = Modifier.padding(start = 6.dp).size(14.dp),
                 )
                 Text(
-                    pluralStringResource(R.plurals.chat_changed_files, files.size, files.size),
+                    pluralStringResource(Res.plurals.chat_changed_files, files.size, localizedCount(files.size)),
                     style = DsType.small13Strong,
                     color = colors.labelSecondary,
                     maxLines = 1,
@@ -223,7 +228,7 @@ internal fun ChangedFilesRow(
  * marker — an older harness, a page that has not loaded back far enough — falls back to every
  * successful write or edit call, so the Files tab is never empty on a session that plainly wrote.
  */
-internal fun sessionChangedFiles(nodes: List<ChatNode>): List<String> {
+fun sessionChangedFiles(nodes: List<ChatNode>): List<String> {
     val settledTurns = nodes.asSequence()
         .filterIsInstance<OtherNode>()
         .filter { it.type == "workspace/changes" }
@@ -251,7 +256,7 @@ internal fun sessionChangedFiles(nodes: List<ChatNode>): List<String> {
  * the same place.
  */
 @Composable
-internal fun SessionFilesTab(
+fun SessionFilesTab(
     files: List<String>,
     cwd: String?,
     listState: LazyListState,
@@ -274,7 +279,7 @@ internal fun SessionFilesTab(
             )
             Spacer(Modifier.height(DsSpacing.small))
             Text(
-                stringResource(R.string.ink_chat_files_empty),
+                stringResource(Res.string.ink_chat_files_empty),
                 style = DsType.std14,
                 color = colors.labelTertiary,
             )
@@ -303,7 +308,7 @@ internal fun SessionFilesTab(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            stringResource(R.string.ink_chat_changed_this_session).uppercase(),
+                            stringResource(Res.string.ink_chat_changed_this_session).uppercase(),
                             style = DsType.label12,
                             color = colors.labelTertiary,
                             maxLines = 1,

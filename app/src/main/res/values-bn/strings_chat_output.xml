@@ -1,7 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="chat_state_running">চলছে</string>
-    <string name="chat_state_done">সম্পন্ন</string>
-    <string name="chat_state_failed">ব্যর্থ</string>
-    <string name="chat_state_stopped">থামানো হয়েছে</string>
 </resources>

@@ -43,16 +43,8 @@
     <string name="chat_composer_stop">หยุด</string>
     <string name="chat_composer_attach">แนบรูปภาพ</string>
     <string name="chat_composer_remove_image">ลบรูปภาพ</string>
-    <string name="chat_empty_title">เริ่มทำงานกับ harness ของคุณ</string>
-    <string name="chat_empty_hint">ส่งข้อความเพื่อเริ่มเทิร์นใหม่</string>
     <string name="chat_load_older">โหลดข้อความเก่าเพิ่ม</string>
-    <string name="chat_loading_older">กำลังโหลดข้อความเก่า…</string>
-    <string name="chat_load_older_retry">โหลดข้อความเก่าไม่สำเร็จ แตะเพื่อลองใหม่</string>
     <string name="chat_stopped">หยุดแล้ว</string>
-    <string name="chat_max_tokens">ถึงขีดจำกัดโทเคนแล้ว</string>
-    <string name="chat_retry_scheduled">จะลองอีกครั้งใน %1$d วินาที</string>
-    <string name="chat_copy_message">คัดลอกข้อความ</string>
-    <string name="chat_branch_message">แตกสาขาจากตรงนี้</string>
     <string name="chat_queue_title">เทิร์นที่รอคิว</string>
     <string name="chat_queue_edit">แก้ไข</string>
     <string name="chat_queue_remove">ลบออก</string>
@@ -61,13 +53,9 @@
     <string name="chat_context_system">ระบบ</string>
     <string name="chat_context_tools">เครื่องมือ</string>
     <string name="chat_context_messages">ข้อความ</string>
-    <string name="chat_compaction">บีบอัดแล้ว</string>
-    <string name="chat_compaction_summary">สรุป</string>
     <string name="chat_details_title">รายละเอียด</string>
     <string name="chat_details_empty">เลือกแถวเครื่องมือในแชทเพื่อดูอินพุตและเอาต์พุต</string>
     <string name="chat_input_placeholder">อินพุต</string>
-    <string name="chat_output_placeholder">เอาต์พุต</string>
-    <string name="tool_output_show_raw">แสดง JSON ดิบ</string>
     <string name="tool_output_hide_raw">ซ่อน JSON ดิบ</string>
     <string name="goal_title">เป้าหมาย</string>
     <string name="goal_none">ไม่มีเป้าหมายที่ใช้งานอยู่</string>
@@ -78,8 +66,6 @@
     <string name="goal_clear">ล้างเป้าหมาย</string>
     <string name="goal_blocked_reason">สาเหตุที่ติดขัด: %1$s</string>
     <string name="goal_max_rounds">รอบสูงสุด: %1$s</string>
-    <string name="plan_mode_on">โหมดวางแผน: เปิด</string>
-    <string name="plan_mode_off">โหมดวางแผน: ปิด</string>
     <string name="plan_review_title">แผนพร้อมให้ตรวจแล้ว</string>
     <string name="plan_review_approve">อนุมัติ</string>
     <string name="plan_review_decline">ปฏิเสธ</string>
@@ -219,7 +205,6 @@
     <string name="chat_composer_mode_steer_hint">แทรกเข้าไปในเทิร์นที่กำลังทำงาน</string>
     <string name="chat_composer_steer_idle">แทรกได้เมื่อมีเทิร์นที่กำลังทำงานอยู่</string>
     <string name="chat_tab">แชท</string>
-    <string name="chat_todo_title">สิ่งที่ต้องทำ</string>
     <string name="chat_todo_progress">%1$d/%2$d</string>
     <string name="chat_commands_empty">เซสชันนี้ไม่มีคำสั่ง</string>
     <string name="chat_commands_unavailable">harness นี้ไม่มีรายการคำสั่งให้ใช้</string>
@@ -263,7 +248,6 @@
     <string name="settings_notifications_action_hint">มีการอนุมัติ คำถาม หรือแผนรอคุณอยู่</string>
     <string name="settings_background_hint">ให้การอัปเดตเข้ามาต่อเนื่อง Android จะแสดงการแจ้งเตือน</string>
     <string name="trajectory_turn">เทิร์นที่ %1$d</string>
-    <string name="chat_retrying">กำลังลองใหม่…</string>
     <string name="plan_mode_title">โหมดวางแผน</string>
     <string name="plan_mode_hint">ค้นคว้าและเสนอแผนก่อนแก้ไขสิ่งใด</string>
     <string name="plugins_enabled">เปิดใช้งาน</string>
@@ -333,8 +317,6 @@
     <string name="terminal_control">เข้าควบคุม</string>
     <string name="feedback_note">ความคิดเห็น (ไม่บังคับ)</string>
     <string name="feedback_send">ส่งความคิดเห็น</string>
-    <string name="system_prompt">คำสั่งระบบ</string>
-    <string name="image_offload">ตัดรูปภาพเก่าออกจากคำขอแล้ว</string>
     <string name="jobs_stop">หยุดงาน</string>
     <string name="jobs_stopping">กำลังหยุด</string>
     <string name="jobs_output_empty">ยังไม่มีเอาต์พุต</string>
@@ -394,7 +376,6 @@
 
     <!-- System lines: things the user did that are not chat messages, told in the transcript -->
     <!-- dsh-rewind picker (port of the plugin's web popover) -->
-    <string name="rewind_marker">ย้อนกลับมาถึงตรงนี้</string>
     <string name="rewind_no_text">(ไม่มีข้อความ)</string>
     <string name="rewind_to">ย้อนกลับไปที่: %1$s</string>
     <string name="rewind_mode_chat">ย้อนกลับเฉพาะบทสนทนา</string>
@@ -413,7 +394,6 @@
     <string name="details_section_activity">กิจกรรม</string>
     <string name="details_section_host">โฮสต์</string>
     <string name="details_preset_label">พรีเซ็ต</string>
-    <string name="details_copy_link">คัดลอกลิงก์</string>
     <string name="chat_model_label">โมเดล</string>
     <string name="panel_empty_folder">โฟลเดอร์นี้ว่างเปล่า</string>
     <string name="panel_preview_hint">แตะไฟล์ในแท็บไฟล์เพื่อเปิดที่นี่</string>
@@ -421,9 +401,7 @@
     <string name="settings_update_up_to_date">คุณมีเวอร์ชันล่าสุดแล้ว</string>
     <string name="settings_update_unreachable">เชื่อมต่อ GitHub ไม่ได้</string>
     <string name="chat_tool_group_count">เรียกเครื่องมือ: %1$d</string>
-    <string name="chat_tool_group_failed">ล้มเหลว %1$d</string>
     <string name="chat_thought_process">กระบวนการคิด</string>
-    <string name="chat_process_title">ขั้นตอนการทำงาน</string>
     <!-- ==== This phone (Termux) ==== -->
     <string name="connect_mode_loopback">เครื่องนี้</string>
     <string name="connect_loopback_title">harness บนเครื่องนี้</string>
@@ -463,20 +441,11 @@
     <string name="chat_history_no_match">ไม่มีข้อความที่ตรงกัน</string>
     <string name="chat_history_image">รูปภาพ</string>
     <string name="hold_message_actions">ตัวเลือกของข้อความ</string>
-    <string name="hold_tool_actions">ตัวเลือกของการเรียกเครื่องมือ</string>
     <string name="hold_file_actions">ตัวเลือกของไฟล์</string>
-    <string name="hold_select_text">เลือกข้อความ</string>
     <string name="hold_edit_as_new">แก้ไขเป็นข้อความใหม่</string>
-    <string name="hold_edit_as_new_detail">ใส่ลงในช่องพิมพ์ ข้อความเดิมยังอยู่</string>
     <string name="hold_rewind_here">ย้อนกลับไปที่ข้อความนี้</string>
-    <string name="hold_rewind_here_detail">ถอนข้อความนี้กับทุกอย่างที่ตามมา แล้วใส่กลับในช่องพิมพ์</string>
     <string name="hold_copy_command">คัดลอกคำสั่ง</string>
-    <string name="hold_copy_path">คัดลอกพาธ</string>
-    <string name="hold_copy_query">คัดลอกคำค้นหา</string>
     <string name="hold_copy_output">คัดลอกผลลัพธ์</string>
-    <string name="hold_copy_arguments">คัดลอกอาร์กิวเมนต์</string>
-    <string name="hold_open_file">เปิดไฟล์</string>
-    <string name="hold_mention">อ้างถึงในข้อความ</string>
     <string name="hold_send_label">เลือกวิธีส่ง</string>
     <string name="hold_send_steer">แทรกทันที</string>
     <string name="hold_send_queue">เข้าคิวหลังเทิร์นนี้</string>

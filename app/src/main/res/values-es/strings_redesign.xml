@@ -1,19 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="chat_jump_latest">Ir a lo más reciente</string>
-    <string name="chat_suggest_overview">Dame una visión general de este proyecto</string>
-    <string name="chat_suggest_tests">Ejecuta las pruebas y arregla lo que falle</string>
-    <string name="chat_suggest_changes">Revisa mis cambios sin confirmar</string>
     <string name="chat_queue_placement_queued">Siguiente turno</string>
     <string name="chat_queue_placement_steering">Dirigiendo</string>
     <string name="chat_queue_placement_context">Contexto</string>
     <string name="chat_status_running">Trabajando</string>
     <string name="chat_status_idle">Inactivo</string>
-    <plurals name="chat_jump_latest_new">
-        <item quantity="one">%d nuevo</item>
-        <item quantity="many">%d nuevos</item>
-        <item quantity="other">%d nuevos</item>
-    </plurals>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d paso</item>
         <item quantity="many">%d pasos</item>

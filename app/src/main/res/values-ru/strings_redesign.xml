@@ -1,20 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="chat_jump_latest">К последним сообщениям</string>
-    <string name="chat_suggest_overview">Расскажи, как устроен этот проект</string>
-    <string name="chat_suggest_tests">Запусти тесты и исправь то, что падает</string>
-    <string name="chat_suggest_changes">Проверь мои незакоммиченные изменения</string>
     <string name="chat_queue_placement_queued">Следующий ход</string>
     <string name="chat_queue_placement_steering">Направляется</string>
     <string name="chat_queue_placement_context">Контекст</string>
     <string name="chat_status_running">Работает</string>
     <string name="chat_status_idle">Ожидает</string>
-    <plurals name="chat_jump_latest_new">
-        <item quantity="one">%d новое</item>
-        <item quantity="few">%d новых</item>
-        <item quantity="many">%d новых</item>
-        <item quantity="other">%d новых</item>
-    </plurals>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d шаг</item>
         <item quantity="few">%d шага</item>

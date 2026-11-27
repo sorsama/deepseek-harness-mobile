@@ -5,9 +5,9 @@ import com.labteto.dshmobile.core.session.ToolResultNode
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertEquals
+import com.labteto.dshmobile.testing.assertNull
+import kotlin.test.Test
 
 /** What a `workspace/changes` marker lists: the turn's successful writes and edits. */
 class ChangedFilesTest {
@@ -19,7 +19,7 @@ class ChangedFilesTest {
         ToolResultNode(seq, id, JsonPrimitive("ok"), error, turn, 1)
 
     @Test
-    fun `lists each written or edited file once, in first-touch order`() {
+    fun `lists each written or edited file once in first-touch order`() {
         val nodes = listOf(
             call(1, "a", "read", "src/todos.js"), result(2, "a"),
             call(3, "b", "edit", "src/todos.js"), result(4, "b"),

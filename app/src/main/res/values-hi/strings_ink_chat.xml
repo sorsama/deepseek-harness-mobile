@@ -3,12 +3,10 @@
 <resources>
     <string name="ink_chat_filter_all">सभी %1$d</string>
     <string name="ink_chat_files_tab">फ़ाइलें · %1$d</string>
-    <string name="ink_chat_files_empty">अभी कोई फ़ाइल नहीं बदली</string>
     <string name="ink_chat_steer_hint">एजेंट को दिशा दें…</string>
     <string name="ink_chat_goal_dock">लक्ष्य · %1$s</string>
     <string name="ink_chat_more">और</string>
     <string name="ink_chat_queue_next_turn">अगली बारी</string>
     <string name="ink_chat_today">आज</string>
     <string name="ink_chat_yesterday">कल</string>
-    <string name="ink_chat_changed_this_session">इस सेशन में बदला</string>
 </resources>

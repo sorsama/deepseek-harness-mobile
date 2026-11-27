@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.ui.components
 
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.labteto.dshmobile.testing.assertFalse
+import com.labteto.dshmobile.testing.assertTrue
+import kotlin.test.Test
 
 /**
  * What counts as a tap that ends a text selection (issue #90), apart from any gesture plumbing.

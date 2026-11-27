@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="chat_jump_latest">सबसे नए पर जाएँ</string>
-    <string name="chat_suggest_overview">इस प्रोजेक्ट का ओवरव्यू दो</string>
-    <string name="chat_suggest_tests">टेस्ट चलाओ और जो फ़ेल हों उन्हें ठीक करो</string>
-    <string name="chat_suggest_changes">मेरे जो बदलाव कमिट नहीं हुए, उनका रिव्यू करो</string>
     <string name="chat_queue_placement_queued">अगला टर्न</string>
     <string name="chat_queue_placement_steering">दिशा</string>
     <string name="chat_queue_placement_context">कॉन्टेक्स्ट</string>
     <string name="chat_status_running">काम चल रहा है</string>
     <string name="chat_status_idle">निष्क्रिय</string>
-    <plurals name="chat_jump_latest_new">
-        <item quantity="one">%d नया</item>
-        <item quantity="other">%d नए</item>
-    </plurals>
     <plurals name="trajectory_step_count">
         <item quantity="one">%d चरण</item>
         <item quantity="other">%d चरण</item>
