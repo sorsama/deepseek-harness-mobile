@@ -114,6 +114,13 @@ class MockHarness(
     private val streamHandlers = ConcurrentHashMap<String, (JsonObject) -> List<JsonElement>>()
     fun onStream(endpoint: String, handler: (JsonObject) -> List<JsonElement>) { streamHandlers[endpoint] = handler }
 
+    /**
+     * Told each `$events/result` answer this mock accepted, after it has answered the call: the request's `eventId`
+     * and the outcome (`{kind: result, value}`, `{kind: rejected, error}` or `{kind: next}`). How a fixture that
+     * pushed a waterfall goes on with the reader's answer, as the harness's waiting tool call does.
+     */
+    @Volatile var onEventResult: ((eventId: String, outcome: JsonObject) -> Unit)? = null
+
     private val okHandlers = ConcurrentHashMap<String, (JsonElement) -> JsonElement>()
     private val binaryHandlers = ConcurrentHashMap<String, (JsonElement) -> Pair<JsonElement, ByteArray>>()
     private val failHandlers = ConcurrentHashMap<String, (JsonElement) -> RpcErrorData>()
@@ -720,6 +727,14 @@ class MockHarness(
         pendingQuestions[eventId] = PendingQuestion(sessionId, questions)
     }
 
+    /** The `eventId` and `outcome` of a well-formed `$events/result` payload (`{args: {clientId, eventId, outcome}}`). */
+    private fun eventResultOf(payload: JsonElement): Pair<String, JsonObject>? {
+        val body = ((payload as? JsonObject)?.get("args") as? JsonObject) ?: return null
+        val eventId = (body["eventId"] as? JsonPrimitive)?.contentOrNull ?: return null
+        val outcome = body["outcome"] as? JsonObject ?: return null
+        return eventId to outcome
+    }
+
     /**
      * Judge one `$events/result` payload.
      *
@@ -902,6 +917,7 @@ class MockHarness(
         if (method == EVENT_RESULT_ENDPOINT) {
             try {
                 respondJson(okEnvelope(rpcId, judgeEventResult(payload)))
+                eventResultOf(payload)?.let { (eventId, outcome) -> onEventResult?.invoke(eventId, outcome) }
             } catch (refusal: MockRefusal) {
                 respondJson(errorEnvelope(rpcId, refusal.reason, refusal.detail))
             }
