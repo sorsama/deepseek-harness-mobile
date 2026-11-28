@@ -1,0 +1,57 @@
+name: Update sponsors
+
+'on':
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sponsors
+  cancel-in-progress: false
+
+jobs:
+  sponsors:
+    runs-on: ubuntu-latest
+    env:
+      SPONSORS_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
+    steps:
+      - name: Check for token
+        id: gate
+        run: |
+          if [ -z "$SPONSORS_TOKEN" ]; then
+            echo "::notice::SPONSORS_TOKEN is not set, skipping the sponsors update."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # main is branch-protected; only the owner's PAT can push to it.
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+        with:
+          ref: main
+          token: ${{ secrets.SPONSORS_TOKEN }}
+
+      - name: Fetch sponsors and update README
+        if: steps.gate.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
+        run: |
+          gh api graphql -f query='{ user(login:"sorsama") { sponsorshipsAsMaintainer(first:100, activeOnly:true) { nodes { privacyLevel createdAt sponsorEntity { ... on User { login name avatarUrl(size:112) } ... on Organization { login name avatarUrl(size:112) } } } } } }' \
+            | node .github/scripts/update-sponsors.mjs
+
+      - name: Commit and push
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          if git diff --quiet -- README.md; then
+            echo "README is up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "README: update sponsors list"
+          git push origin HEAD:main

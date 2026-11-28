@@ -223,6 +223,14 @@ organized by those messages.
 - **Security problems:** report them privately through the [Security policy](https://github.com/sorsama/deepseek-harness-mobile/security/policy), not on Discord or in a public issue.
 - **Support the project:** if the app saves you time, you can [sponsor it on GitHub](https://github.com/sponsors/sorsama).
 
+## Sponsors
+
+Thank you to everyone who sponsors the project. Your support keeps it going.
+
+<!-- sponsors:start -->
+<a href="https://github.com/OrekiDawson"><img src="https://avatars.githubusercontent.com/u/182470837?s=112&amp;u=9d3e209232cc0b80e4b4325b555dd8c8949a1b00&amp;v=4" width="56" height="56" alt="OrekiDawson" title="Oreki"></a>
+<!-- sponsors:end -->
+
 ## Security
 
 Read [docs/SECURITY.md](docs/SECURITY.md) before you connect over a network. A signed-in phone can
