@@ -53,7 +53,7 @@ class DrawerTitleLayoutTest {
     }
 
     @Test
-    fun `only the last resort wraps, only the stacked ones move the actions and only one folds Sort`() {
+    fun `only the last resort wraps and only the stacked ones move the actions and only one folds Sort`() {
         for (layout in TitleLayout.values()) {
             assertEquals(layout == TitleLayout.StackedWrapped, layout.wraps)
             assertEquals(layout in setOf(TitleLayout.Stacked, TitleLayout.StackedCompact, TitleLayout.StackedWrapped), layout.stacked)

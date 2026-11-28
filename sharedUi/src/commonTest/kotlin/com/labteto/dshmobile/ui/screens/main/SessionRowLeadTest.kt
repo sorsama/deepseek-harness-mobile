@@ -39,7 +39,7 @@ class SessionRowLeadTest {
     }
 
     @Test
-    fun `a session waiting for the person shows the mascot, whatever it is waiting for`() {
+    fun `a session waiting for the person shows the mascot whatever it is waiting for`() {
         for (kind in listOf("approval", "question", "plan-review")) {
             assertTrue(rowShowsMascot(session(pending = kind)))
             assertEquals(RowLead.NeedsYou, rowLeadOf(session(pending = kind)))
