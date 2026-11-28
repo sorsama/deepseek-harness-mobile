@@ -511,8 +511,12 @@ fun ChatScreen(
         contentModifier = Modifier.uiAddonsContentTop(addonsChrome),
         composerBlockModifier = Modifier.uiAddonsComposer(addonsChrome),
         footerQuotaText = usageFooterText(quota, quotaProvider, quotaLimit, quotaNow),
-        topBar = {
+        // A sheet or panel over the chat keeps the bar's view tabs where they are.
+        tabsLocked = sheet != null || panelKey != null || popup != null || rewindFrom != null ||
+            referencePicker != null || openJobId != null,
+        topBar = { tabsVisible ->
             ChatTopBar(
+                tabsVisible = tabsVisible,
                 title = title,
                 running = conversation?.running == true,
                 needsYou = pendingApproval?.sessionId == currentSessionId ||

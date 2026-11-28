@@ -56,6 +56,7 @@
     <string name="chat_load_older_retry">Não foi possível carregar as mensagens anteriores. Toque para tentar novamente</string>
     <string name="chat_loading_older">Carregando mensagens anteriores…</string>
     <string name="chat_max_tokens">Limite de tokens atingido</string>
+    <string name="chat_model_change">Trocar de modelo</string>
     <string name="chat_output_placeholder">Saída</string>
     <string name="chat_process_title">Processo</string>
     <string name="chat_queue_edit">Editar</string>

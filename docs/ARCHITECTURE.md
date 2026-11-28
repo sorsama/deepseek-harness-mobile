@@ -68,8 +68,9 @@ app/            Android UI
                   details panel, chat, settings)
 
 The chat surface is split by responsibility rather than living in one file:
-ChatScreen (shell, pickers, send path) · ChatTopBar (two-row chrome +
-Chat/Trajectory tabs) · ChatTranscript · ChatNodeItem · ToolRowModel (verb +
+ChatScreen (shell, pickers, send path) · ChatTopBar (title and model bar, status
+row, Chat/Trajectory/Files tabs) · ChatTabsCollapse (when the tabs fold while
+the transcript is read back) · ChatTranscript · ChatNodeItem · ToolRowModel (verb +
 cwd-relative summary) · Composer (draft, attachment strip: image tiles and
 file chips with upload state) · Docks · TrajectoryTab · Sheet*.kt (commands,
 models, presets, subagents, permission) · ChatProjections (defensive readers).

@@ -56,6 +56,7 @@
     <string name="chat_load_older_retry">Couldn't load earlier messages. Tap to retry.</string>
     <string name="chat_loading_older">Loading earlier messages…</string>
     <string name="chat_max_tokens">Token limit reached</string>
+    <string name="chat_model_change">Change model</string>
     <string name="chat_output_placeholder">Output</string>
     <string name="chat_process_title">Process</string>
     <string name="chat_queue_edit">Edit</string>
