@@ -262,8 +262,9 @@ private fun UiAddonsBody(state: UiSyncSettingsState, store: SessionStore, titles
     val headings = groups.map { (pkg, _) -> addonPackageTitle(pkg, titles) }
     groups.forEachIndexed { groupIndex, (pkg, items) ->
         val heading = headings[groupIndex]
-        // The plugin's own name for itself; two packages that read the same keep their npm name under it.
-        SectionHeader(heading, uppercase = false)
+        // The plugin's own name for itself, as a section label like the ones on the harness settings
+        // pages; two packages that read the same keep their npm name under it.
+        SectionHeader(heading)
         if (headings.count { it == heading } > 1) IdLine(pkg)
         DsCard(verticalArrangement = Arrangement.spacedBy(0.dp)) {
             items.forEachIndexed { index, item ->

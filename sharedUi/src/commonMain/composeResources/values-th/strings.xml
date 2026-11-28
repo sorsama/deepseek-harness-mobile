@@ -228,6 +228,7 @@
     <string name="chatlist_refresh">รีเฟรชเซสชัน</string>
     <string name="chatlist_refresh_failed">รีเฟรชรายการเซสชันไม่สำเร็จ</string>
     <string name="chatlist_reorder_blocked">เซสชันย้ายได้เฉพาะภายในโปรเจกต์ของตัวเอง</string>
+    <string name="chatlist_reorder_done">เสร็จสิ้น</string>
     <string name="chatlist_reorder_failed">ย้ายเซสชันนั้นไม่ได้ เซสชันกลับไปอยู่ที่เดิมแล้ว</string>
     <string name="chatlist_reorder_project_failed">ย้ายโปรเจกต์นั้นไม่ได้ โปรเจกต์กลับไปอยู่ที่เดิมแล้ว</string>
     <string name="chatlist_reorder_projects">กำลังย้ายโปรเจกต์</string>
@@ -242,6 +243,7 @@
     <string name="chatlist_session_fork">ฟอร์กเซสชัน</string>
     <string name="chatlist_session_pin">ปักหมุดเซสชัน</string>
     <string name="chatlist_session_rename">เปลี่ยนชื่อเซสชัน</string>
+    <string name="chatlist_session_reorder">ย้ายเซสชัน</string>
     <string name="chatlist_session_unpin">เลิกปักหมุดเซสชัน</string>
     <string name="chatlist_sessions_collapse">ย่อ</string>
     <string name="chatlist_sessions_more">แสดงเพิ่ม (เหลือ %1$d)</string>

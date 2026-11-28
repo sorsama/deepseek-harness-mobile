@@ -228,6 +228,7 @@
     <string name="chatlist_refresh">Actualiser les sessions</string>
     <string name="chatlist_refresh_failed">Impossible d'actualiser la liste des sessions.</string>
     <string name="chatlist_reorder_blocked">Une session ne peut bouger que dans son projet</string>
+    <string name="chatlist_reorder_done">Terminé</string>
     <string name="chatlist_reorder_failed">Impossible de déplacer cette session. Elle a repris sa place.</string>
     <string name="chatlist_reorder_project_failed">Impossible de déplacer ce projet. Il a repris sa place.</string>
     <string name="chatlist_reorder_projects">Déplacement des projets</string>
@@ -242,6 +243,7 @@
     <string name="chatlist_session_fork">Dupliquer la session</string>
     <string name="chatlist_session_pin">Épingler la session</string>
     <string name="chatlist_session_rename">Renommer la session</string>
+    <string name="chatlist_session_reorder">Déplacer la session</string>
     <string name="chatlist_session_unpin">Désépingler la session</string>
     <string name="chatlist_sessions_collapse">Réduire</string>
     <string name="chatlist_sessions_more">Afficher plus (%1$d de plus)</string>

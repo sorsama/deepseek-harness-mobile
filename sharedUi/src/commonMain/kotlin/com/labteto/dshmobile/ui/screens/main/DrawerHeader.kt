@@ -10,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -42,7 +44,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.connection.ConnectionPhase
 import com.labteto.dshmobile.data.SessionRow
@@ -53,6 +57,7 @@ import com.labteto.dshmobile.shared.resources.chatlist_needs_action
 import com.labteto.dshmobile.shared.resources.chatlist_new_session
 import com.labteto.dshmobile.shared.resources.chatlist_new_workspace
 import com.labteto.dshmobile.shared.resources.chatlist_refresh
+import com.labteto.dshmobile.shared.resources.chatlist_reorder_done
 import com.labteto.dshmobile.shared.resources.chatlist_search_content_off
 import com.labteto.dshmobile.shared.resources.chatlist_search_hint
 import com.labteto.dshmobile.shared.resources.chatlist_sort_manual
@@ -193,6 +198,135 @@ fun FadingChipRow(
     )
 }
 
+/** Where the drawer's title sits, how big it is and whether Sort has moved into the More menu: see [chooseTitleLayout]. */
+internal enum class TitleLayout(val compact: Boolean, val stacked: Boolean, val wraps: Boolean, val sortFolded: Boolean) {
+    /** The display size, every action beside it. What a phone's drawer has. */
+    Beside(compact = false, stacked = false, wraps = false, sortFolded = false),
+
+    /** The section-title size, still beside every action. A slightly narrower pane, or larger text. */
+    BesideCompact(compact = true, stacked = false, wraps = false, sortFolded = false),
+
+    /** The section-title size, beside Search and More, with the three orders in the More menu. A narrow docked pane. */
+    BesideFolded(compact = true, stacked = false, wraps = false, sortFolded = true),
+
+    /** The display size alone on its line, every action on the line below. */
+    Stacked(compact = false, stacked = true, wraps = false, sortFolded = false),
+
+    /** The section-title size alone on its line, every action below. */
+    StackedCompact(compact = true, stacked = true, wraps = false, sortFolded = false),
+
+    /** Too much text for any line at this size: the title wraps rather than lose a letter. */
+    StackedWrapped(compact = true, stacked = true, wraps = true, sortFolded = false),
+}
+
+/**
+ * The first layout, from the roomiest to the tightest, in which the title is not cut.
+ *
+ * [fitsBeside] asks whether the title, in the display size or (`compact`) the section-title size, fits
+ * on a line with the actions, with Sort folded into the More menu (`folded`) or not; [fitsAlone] asks
+ * the same for a line of its own. The order is by how much each step costs. Shrinking the title costs
+ * nothing, and folding Sort costs one tap on a control that is seldom used; both keep the header one
+ * line tall, which a landscape phone has no height to spare for. A second line for the actions is
+ * the last resort that still shows everything.
+ */
+internal fun chooseTitleLayout(
+    fitsBeside: (compact: Boolean, folded: Boolean) -> Boolean,
+    fitsAlone: (compact: Boolean) -> Boolean,
+): TitleLayout = when {
+    fitsBeside(false, false) -> TitleLayout.Beside
+    fitsBeside(true, false) -> TitleLayout.BesideCompact
+    fitsBeside(true, true) -> TitleLayout.BesideFolded
+    fitsAlone(false) -> TitleLayout.Stacked
+    fitsAlone(true) -> TitleLayout.StackedCompact
+    else -> TitleLayout.StackedWrapped
+}
+
+/** Slack kept free on the title's line, so a title that fits by a hair is not clipped by rounding. */
+private val TitleSlack = 4.dp
+
+/**
+ * The drawer's hero title, the secondary line under it, and the actions at its end.
+ *
+ * The title is never cut with an ellipsis (a drawer that reads "Ses…" has lost its name). In a narrow
+ * pane it steps down a size, then Sort moves into the More menu (the [actions] lambda is told so with
+ * `sortFolded`, and [foldedActionCount] is how many it then draws), then the title takes a line of its
+ * own and the actions go under it, then it wraps; see [chooseTitleLayout]. The actions are 48dp
+ * targets ([actionCount] of them), and none is ever pushed out of the pane.
+ */
+@Composable
+fun DrawerTitleRow(
+    title: String,
+    subtitle: String,
+    actionCount: Int,
+    foldedActionCount: Int,
+    actions: @Composable RowScope.(sortFolded: Boolean) -> Unit,
+) {
+    val colors = DsTheme.colors
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val layout = remember(title, maxWidth, actionCount, foldedActionCount, density.density, density.fontScale, measurer) {
+            fun fits(compact: Boolean, room: Dp): Boolean {
+                val style = if (compact) DsType.large20 else DsType.display24
+                val needed = measurer.measure(title, style, softWrap = false, maxLines = 1).size.width
+                return needed <= with(density) { (room - TitleSlack).roundToPx() }
+            }
+            chooseTitleLayout(
+                fitsBeside = { compact, folded ->
+                    fits(compact, maxWidth - DsSizes.touchTarget * (if (folded) foldedActionCount else actionCount))
+                },
+                fitsAlone = { compact -> fits(compact, maxWidth) },
+            )
+        }
+        val titleStyle = if (layout.compact) DsType.large20 else DsType.display24
+        val titleText: @Composable () -> Unit = {
+            Text(
+                title,
+                style = titleStyle,
+                color = colors.labelPrimary,
+                maxLines = if (layout.wraps) Int.MAX_VALUE else 1,
+                softWrap = layout.wraps,
+                overflow = TextOverflow.Clip,
+            )
+        }
+        val subtitleText: @Composable (Modifier) -> Unit = { modifier ->
+            Text(
+                subtitle,
+                style = DsType.mono12,
+                color = colors.labelTertiary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = modifier.padding(top = 2.dp),
+            )
+        }
+        if (layout.stacked) {
+            Column(Modifier.fillMaxWidth()) {
+                titleText()
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    subtitleText(Modifier.weight(1f))
+                    actions(layout.sortFolded)
+                }
+            }
+        } else {
+            Row(verticalAlignment = Alignment.Top) {
+                Column(Modifier.weight(1f)) {
+                    titleText()
+                    subtitleText(Modifier)
+                }
+                actions(layout.sortFolded)
+            }
+        }
+    }
+}
+
+/** The three orders of the list as menu entries, the current one checked: the Sort menu, or part of More's. */
+@Composable
+private fun sortMenuItems(sort: String, onPick: (sort: String) -> Unit): List<MenuItem> = listOf(
+    MenuItem(text = stringResource(Res.string.chatlist_sort_manual), selected = sort == SORT_MANUAL) { onPick(SORT_MANUAL) },
+    MenuItem(text = stringResource(Res.string.chatlist_sort_updated), selected = sort == SORT_UPDATED) { onPick(SORT_UPDATED) },
+    MenuItem(text = stringResource(Res.string.chatlist_sort_project), selected = sort == SORT_PROJECT) { onPick(SORT_PROJECT) },
+)
+
 /**
  * The session-order control: an icon that opens the three orders, the current one checked.
  *
@@ -203,15 +337,14 @@ internal fun SortButton(sort: String, onPick: (sort: String) -> Unit) {
     DsIconMenu(
         icon = DsIcons.SwapVert,
         contentDescription = stringResource(Res.string.chatlist_sort_title),
-        items = listOf(
-            MenuItem(text = stringResource(Res.string.chatlist_sort_manual), selected = sort == SORT_MANUAL) { onPick(SORT_MANUAL) },
-            MenuItem(text = stringResource(Res.string.chatlist_sort_updated), selected = sort == SORT_UPDATED) { onPick(SORT_UPDATED) },
-            MenuItem(text = stringResource(Res.string.chatlist_sort_project), selected = sort == SORT_PROJECT) { onPick(SORT_PROJECT) },
-        ),
+        items = sortMenuItems(sort, onPick),
     )
 }
 
-/** New session, new workspace, workspace management, automations, a manual refresh and, where asked for, Disconnect. */
+/**
+ * New session, new workspace, workspace management, automations, a manual refresh and, where asked for, Disconnect.
+ * With [sort] given (the pane has no room for the Sort button) it also carries the three orders, the current one checked.
+ */
 @Composable
 internal fun MoreMenu(
     automationAvailable: Boolean,
@@ -222,7 +355,10 @@ internal fun MoreMenu(
     onAutomations: () -> Unit,
     onRefresh: () -> Unit,
     onDisconnect: (() -> Unit)? = null,
+    sort: String? = null,
+    onSort: (sort: String) -> Unit = {},
 ) {
+    val sortItems = if (sort != null) sortMenuItems(sort, onSort) else emptyList()
     DsIconMenu(
         icon = DsIcons.MoreVert,
         contentDescription = stringResource(Res.string.ink_chat_more),
@@ -237,6 +373,7 @@ internal fun MoreMenu(
             // The pull is the fast path; this is the same read for TalkBack and for anyone who
             // would rather not drag. It runs the same cycle, so it animates the same pill.
             add(MenuItem(stringResource(Res.string.chatlist_refresh), icon = DsIcons.Refresh, onClick = onRefresh))
+            addAll(sortItems)
             if (onDisconnect != null) {
                 add(MenuItem(stringResource(Res.string.settings_connection_disconnect), icon = FeatherIcons.Server, onClick = onDisconnect))
             }
@@ -250,7 +387,8 @@ internal fun MoreMenu(
  *
  * The chips cannot be used mid-drag, so they fade out for the pill; it sits in the chips' own row,
  * so it can never cover a session row. [hint] is what the held unit may do, empty when nothing is
- * held; [pressing] is the finger pushing past the edge of where it may go.
+ * held; [pressing] is the finger pushing past the edge of where it may go; [onDone] lets the held
+ * unit go where it stands (a row lifted from its menu has no finger to lift).
  */
 @Composable
 internal fun DrawerFilterRow(
@@ -262,6 +400,7 @@ internal fun DrawerFilterRow(
     holding: Boolean,
     hint: String,
     pressing: Boolean,
+    onDone: () -> Unit,
 ) {
     val colors = DsTheme.colors
     // Kept past the drop so the hint fades out with its words instead of emptying first.
@@ -292,7 +431,7 @@ internal fun DrawerFilterRow(
                 onClick = { onFilter(DrawerFilter.Archived) },
             )
         }
-        ReorderHint(visible = holding, text = hintShown, pressing = pressing)
+        ReorderHint(visible = holding, text = hintShown, pressing = pressing, onDone = onDone)
     }
 }
 
@@ -337,10 +476,17 @@ internal fun ColumnScope.DrawerSearch(
  * The one line of explanation shown while something is held: where it is allowed to go.
  *
  * It turns amber-bordered while the finger presses past the edge of that place, which is the moment
- * the limit is being met.
+ * the limit is being met. [onDone], when given, adds a "Done" that lets the held unit go: a row lifted
+ * from its menu waits for a drag, and this is how someone who has changed their mind puts it down.
  */
 @Composable
-internal fun ReorderHint(visible: Boolean, text: String, pressing: Boolean, modifier: Modifier = Modifier) {
+internal fun ReorderHint(
+    visible: Boolean,
+    text: String,
+    pressing: Boolean,
+    modifier: Modifier = Modifier,
+    onDone: (() -> Unit)? = null,
+) {
     val colors = DsTheme.colors
     AnimatedVisibility(
         visible = visible,
@@ -354,14 +500,34 @@ internal fun ReorderHint(visible: Boolean, text: String, pressing: Boolean, modi
             border = androidx.compose.foundation.BorderStroke(1.dp, if (pressing) colors.warnBorder else colors.borderL3),
             shadowElevation = 4.dp,
         ) {
-            Text(
-                text,
-                style = DsType.small13Strong,
-                color = if (pressing) colors.warnLabel else colors.labelPrimary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(horizontal = DsSpacing.medium, vertical = DsSpacing.small).widthIn(max = 240.dp),
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text,
+                    style = DsType.small13Strong,
+                    color = if (pressing) colors.warnLabel else colors.labelPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .padding(start = DsSpacing.medium, end = if (onDone == null) DsSpacing.medium else DsSpacing.small)
+                        .padding(vertical = DsSpacing.small)
+                        .widthIn(max = 240.dp),
+                )
+                if (onDone != null) {
+                    Text(
+                        stringResource(Res.string.chatlist_reorder_done),
+                        style = DsType.small13Strong,
+                        color = colors.accent,
+                        maxLines = 1,
+                        modifier = Modifier
+                            .minimumInteractiveComponentSize()
+                            .clip(DsShapes.pillFull)
+                            .clickable(role = Role.Button, onClick = onDone)
+                            .padding(horizontal = DsSpacing.medium)
+                            .wrapContentHeight(Alignment.CenterVertically),
+                    )
+                }
+            }
         }
     }
 }
@@ -482,11 +648,6 @@ internal fun NeedsYouCard(
 @Composable
 internal fun SearchResultRow(hit: SearchHit, index: Int, onOpen: () -> Unit) {
     val colors = DsTheme.colors
-    val avatarTint = when {
-        hit.session.pendingInteraction != null -> colors.warn
-        hit.session.running -> colors.accent
-        else -> colors.labelDimmed
-    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -497,7 +658,8 @@ internal fun SearchResultRow(hit: SearchHit, index: Int, onOpen: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        SessionAvatar(avatarTint, 28.dp)
+        // The same rule as the list's rows: the mascot only where something is running or waiting.
+        SessionRowLead(hit.session, 28.dp)
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(

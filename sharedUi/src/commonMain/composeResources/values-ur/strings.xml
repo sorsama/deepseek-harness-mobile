@@ -228,6 +228,7 @@
     <string name="chatlist_refresh">سیشنز تازہ کریں</string>
     <string name="chatlist_refresh_failed">سیشنز کی فہرست تازہ نہیں ہو سکی۔</string>
     <string name="chatlist_reorder_blocked">سیشن صرف اپنے پروجیکٹ کے اندر ہی منتقل ہو سکتا ہے</string>
+    <string name="chatlist_reorder_done">ہو گیا</string>
     <string name="chatlist_reorder_failed">وہ سیشن منتقل نہیں ہو سکا۔ وہ اپنی جگہ واپس آ گیا ہے۔</string>
     <string name="chatlist_reorder_project_failed">وہ پروجیکٹ منتقل نہیں ہو سکا۔ وہ اپنی جگہ واپس آ گیا ہے۔</string>
     <string name="chatlist_reorder_projects">پروجیکٹ منتقل کر رہے ہیں</string>
@@ -242,6 +243,7 @@
     <string name="chatlist_session_fork">سیشن فورک کریں</string>
     <string name="chatlist_session_pin">سیشن پن کریں</string>
     <string name="chatlist_session_rename">سیشن کا نام تبدیل کریں</string>
+    <string name="chatlist_session_reorder">سیشن منتقل کریں</string>
     <string name="chatlist_session_unpin">سیشن ان پن کریں</string>
     <string name="chatlist_sessions_collapse">سمیٹیں</string>
     <string name="chatlist_sessions_more">مزید دکھائیں (%1$d باقی)</string>

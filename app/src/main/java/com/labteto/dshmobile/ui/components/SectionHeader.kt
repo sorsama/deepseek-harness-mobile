@@ -22,7 +22,8 @@ import com.labteto.dshmobile.ui.theme.DshTheme
  * Section label row — the kit's `.lbl`: uppercase, letter-spaced, tertiary, with an optional
  * right-aligned accent action.
  *
- * [uppercase] is off for a title that is a name (a plugin's), which should not shout.
+ * The label is always uppercase, a plugin's name on the Add-ons page included, so the harness
+ * settings pages and the Add-ons page head their sections the same way.
  *
  * The action keeps a 36dp pill target a thumb can find: this is where "Scan network" and "Clear"
  * live, and an 11sp word with 4dp of padding is not a control.
@@ -32,12 +33,11 @@ fun SectionHeader(
     title: String,
     action: String? = null,
     onAction: (() -> Unit)? = null,
-    uppercase: Boolean = true,
 ) {
     val colors = DsTheme.colors
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
-            if (uppercase) title.uppercase() else title,
+            title.uppercase(),
             style = DsType.label12,
             color = colors.labelTertiary,
             modifier = Modifier.weight(1f),

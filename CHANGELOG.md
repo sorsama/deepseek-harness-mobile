@@ -15,6 +15,15 @@ All notable changes to DSH Mobile are documented here. Format based on
   folds Chat, Trajectory and Files away so the conversation gets the room; dragging toward the newest
   message, or reaching it, brings them back. They stay put on the Trajectory and Files views and
   while a sheet is open.
+- **A quieter session list.** The mascot now marks only the sessions worth a look: one that is
+  running, and one that is waiting for you. Every other row, and every archived one, has a small
+  dot in its place, so the titles still line up and the list stops looking like a wall of logos.
+  The open session is still shown by its highlight.
+- **Move a session without a handle on every row.** The six-dot grips are gone. To move a session,
+  hold it and choose **Move session**: the row lifts, and you drag it to its new place (tap it or
+  **Done** to put it down). To move a project in the By project order, hold its header and drag. The
+  order of the list works exactly as before, and TalkBack still offers **Move up** and **Move
+  down** on every row.
 
 ### Fixed
 
@@ -27,6 +36,12 @@ All notable changes to DSH Mobile are documented here. Format based on
   question of a pair opens at its top. On a phone held sideways the card used to shrink to its title
   with no way to answer it; it now folds to a strip with a button that opens the whole question in
   a sheet.
+- **The "Sessions" title was cut to "Ses…" in a narrow list**, such as the list docked beside the
+  chat on a phone held sideways. It now steps down a size, and when that is still too wide the sort
+  order moves into the **More** menu (and, at the largest text sizes, the buttons go under the
+  title), so the name is always whole and no button is cut off.
+- **Add-ons: a plugin's name now reads like the other section labels** in Settings, in capitals and
+  in the same style, instead of in a style of its own.
 
 ## [0.25.0] - 2026-11-28
 

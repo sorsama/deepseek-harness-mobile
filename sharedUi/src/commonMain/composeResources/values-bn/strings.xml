@@ -228,6 +228,7 @@
     <string name="chatlist_refresh">সেশন রিফ্রেশ করুন</string>
     <string name="chatlist_refresh_failed">সেশন তালিকা রিফ্রেশ করা যায়নি।</string>
     <string name="chatlist_reorder_blocked">সেশন শুধু নিজের প্রজেক্টের ভেতরেই সরানো যায়</string>
+    <string name="chatlist_reorder_done">শেষ</string>
     <string name="chatlist_reorder_failed">ওই সেশন সরানো গেল না। এটি আগের জায়গায় ফিরে গেছে।</string>
     <string name="chatlist_reorder_project_failed">ওই প্রজেক্ট সরানো গেল না। এটি আগের জায়গায় ফিরে গেছে।</string>
     <string name="chatlist_reorder_projects">প্রজেক্ট সরানো হচ্ছে</string>
@@ -242,6 +243,7 @@
     <string name="chatlist_session_fork">সেশন ফর্ক করুন</string>
     <string name="chatlist_session_pin">সেশন পিন করুন</string>
     <string name="chatlist_session_rename">সেশনের নাম বদলান</string>
+    <string name="chatlist_session_reorder">সেশন সরান</string>
     <string name="chatlist_session_unpin">সেশন আনপিন করুন</string>
     <string name="chatlist_sessions_collapse">সংকুচিত করুন</string>
     <string name="chatlist_sessions_more">আরও দেখুন (%1$d বাকি)</string>
