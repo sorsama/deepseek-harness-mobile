@@ -153,6 +153,18 @@ object DsAnimations {
     val dockExit: ExitTransition = fadeOut(tween(140)) + shrinkVertically(expand)
 
     /**
+     * The chat's view tabs folding away while older messages are read, and coming back. A short tween
+     * rather than a spring: the bar follows the reader's thumb, and a spring that settles for half a
+     * second under a scrolling list reads as lag.
+     */
+    val chromeEnter: EnterTransition =
+        fadeIn(tween(fadeDuration, easing = inkDecelerate)) +
+            expandVertically(tween(transitionDuration, easing = inkStandard))
+    val chromeExit: ExitTransition =
+        fadeOut(tween(fadeDuration)) +
+            shrinkVertically(tween(transitionDuration, easing = inkStandard))
+
+    /**
      * The attachment tray unfolding from behind the composer card, and folding back into it. The
      * card stays put (the block is anchored to the bottom), so the tray grows upward out of the
      * card's top edge rather than pushing it, and the fade keeps the chips from popping while the

@@ -5,6 +5,17 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Changed
+
+- **The chat's top bar is one row, and its view tabs step aside while you read back.** The session
+  title now sits over the model name, and one tap on that pair opens the model picker (a subagent's
+  chat shows its model without the picker). It replaces the boxed model button on one row and the
+  title on the next. The run status, agent preset, team and subagent tags share one row under the
+  title, and that row is only there while one of them applies. Dragging back through older messages
+  folds Chat, Trajectory and Files away so the conversation gets the room; dragging toward the newest
+  message, or reaching it, brings them back. They stay put on the Trajectory and Files views and
+  while a sheet is open.
+
 ### Fixed
 
 - **A question's answer field is no longer cut off with nothing to show that the card scrolls.** When
