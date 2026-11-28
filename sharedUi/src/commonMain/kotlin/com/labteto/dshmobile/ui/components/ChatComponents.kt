@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -73,7 +74,8 @@ fun UserBubble(
     BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
         Text(
             text,
-            style = DsType.bubbleText,
+            // The message reads in its own language, not the app's (#163).
+            style = DsType.bubbleText.copy(textDirection = TextDirection.Content),
             color = colors.labelPrimary,
             modifier = Modifier
                 .widthIn(max = minOf(525.dp, maxWidth * 0.82f))
