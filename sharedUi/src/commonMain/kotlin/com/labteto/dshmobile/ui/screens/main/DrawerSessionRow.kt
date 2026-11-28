@@ -3,7 +3,6 @@ package com.labteto.dshmobile.ui.screens.main
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -11,10 +10,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -29,11 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,23 +48,21 @@ import com.labteto.dshmobile.shared.resources.chatlist_session_copy_id
 import com.labteto.dshmobile.shared.resources.chatlist_session_fork
 import com.labteto.dshmobile.shared.resources.chatlist_session_pin
 import com.labteto.dshmobile.shared.resources.chatlist_session_rename
+import com.labteto.dshmobile.shared.resources.chatlist_session_reorder
 import com.labteto.dshmobile.shared.resources.chatlist_session_unpin
 import com.labteto.dshmobile.shared.resources.chatlist_subagents
 import com.labteto.dshmobile.shared.resources.common_archive
 import com.labteto.dshmobile.shared.resources.hold_session_actions
 import com.labteto.dshmobile.shared.resources.ink_chat_streaming
 import com.labteto.dshmobile.ui.components.DsIcons
-import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.HoldAction
 import com.labteto.dshmobile.ui.components.HoldMenu
 import com.labteto.dshmobile.ui.components.clickable
 import com.labteto.dshmobile.ui.components.clickableWithHold
-import com.labteto.dshmobile.ui.components.mascotPainter
 import com.labteto.dshmobile.ui.components.relativeTime
 import com.labteto.dshmobile.ui.components.rememberCopier
 import com.labteto.dshmobile.ui.theme.DsAnimations
 import com.labteto.dshmobile.ui.theme.DsShapes
-import com.labteto.dshmobile.ui.theme.DsSizes
 import com.labteto.dshmobile.ui.theme.DsSpacing
 import com.labteto.dshmobile.ui.theme.DsTheme
 import com.labteto.dshmobile.ui.theme.DsType
@@ -77,7 +70,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
-/** What a row needs to be moved: how to pick it up, and the two TalkBack steps. Null on a row that cannot move. */
+/**
+ * What a row needs to be moved: how to lift it, and the two TalkBack steps. Null on a row that cannot
+ * move.
+ *
+ * [onPickUp] lifts the row where it stands, with no finger on it yet; the row's own drag then moves it.
+ */
 internal class RowDrag(
     val onPickUp: () -> Unit,
     val canMoveUp: Boolean,
@@ -86,46 +84,20 @@ internal class RowDrag(
 )
 
 /**
- * The grip a row is dragged by.
+ * One session row: a leading slot, its title, a status line, and how long ago it changed.
  *
- * It sits *beside* the row's tap-and-hold area, never inside it, so a tap on the row opens the
- * session, a hold on the row opens its menu, and only the grip can lift the row. It is hidden from
- * the accessibility tree because it has no action a screen reader can take; the row carries "Move
- * up" and "Move down" instead.
- */
-@Composable
-internal fun DragHandle(state: ReorderState, onPickUp: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = DsTheme.colors
-    Box(
-        modifier = modifier
-            .width(DsSizes.touchTarget - DsSpacing.small)
-            .heightIn(min = DsSizes.touchTarget)
-            .reorderHandle(state, onPickUp)
-            .clearAndSetSemantics { },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            FeatherIcons.GripVertical,
-            contentDescription = null,
-            tint = colors.labelTertiary,
-            modifier = Modifier.size(18.dp),
-        )
-    }
-}
-
-/**
- * One session row: the mascot avatar, its title, a status line, and how long ago it changed.
+ * The leading slot is the mascot for a session that is running or needs the person, and a small idle
+ * dot for every other row (see [SessionRowLead]); being [isCurrent] is shown by the row's highlight
+ * alone. [depth] indents the row under whatever spawned it, and a row with [childCount] subagents
+ * carries a disclosure chevron. [index] drives the cheap arrival stagger — the first few rows rise
+ * in, the rest arrive with the list, so scrolling never waits on an animation.
  *
- * [depth] indents the row under whatever spawned it, and a row with [childCount] subagents carries
- * a disclosure chevron. [index] drives the cheap arrival stagger — the first few rows rise in, the
- * rest arrive with the list, so scrolling never waits on an animation.
- *
- * A row that can be reordered ([drag] non-null) shows a grip at its end. The grip is outside the
- * row's own tap-and-hold area, so the hold menu and the tap keep working untouched; the same moves
- * are offered to a screen reader as "Move up" and "Move down" custom actions on the row. [blockKey]
- * is the block the row belongs to, which decides whether it dims while something else is held.
- * [archived] rows are the ones in the Archived filter, where the hold menu offers Restore rather than
- * Archive.
+ * A row has no drag handle. One that can be reordered ([drag] non-null) offers "Move session" in its
+ * hold menu, which lifts it ([reorder] draws the lift); while it is lifted a drag on the row moves it
+ * and a tap on the row lets it go. The same moves are offered to a screen reader as "Move up" and
+ * "Move down" custom actions on the row. [blockKey] is the block the row belongs to, which decides
+ * whether it dims while something else is held. [archived] rows are the ones in the Archived filter,
+ * where the hold menu offers Restore rather than Archive.
  */
 @Composable
 internal fun SessionRowItem(
@@ -163,12 +135,6 @@ internal fun SessionRowItem(
         animationSpec = DsAnimations.chevron,
         label = "sessionChevron",
     )
-    val avatarTint = when {
-        session.pendingInteraction != null -> colors.warn
-        session.running -> colors.accent
-        isCurrent -> colors.accent
-        else -> colors.labelDimmed
-    }
     val status = statusLine(session)
 
     Box {
@@ -200,13 +166,26 @@ internal fun SessionRowItem(
             Row(
                 modifier = Modifier
                     .weight(1f)
-                    .clickableWithHold(
-                        holdLabel = stringResource(Res.string.hold_session_actions),
-                        // The hold gesture's own haptic fires inside clickableWithHold; adding another
-                        // here would buzz twice for one press.
-                        onHold = { menuOpen = true },
-                        role = Role.Button,
-                        onClick = onOpen,
+                    .then(
+                        if (held) {
+                            // Lifted from its menu and waiting to be moved: a tap lets it go and a drag moves
+                            // it, however long the finger rests first. No hold handler here, or a finger that
+                            // pauses past the hold time would be taken by it and the drag never start. (The
+                            // row was lifted by its menu, so the drag has nothing left to lift: `{}`.) The drag
+                            // comes after the tap handler so that a drag is taken before the tap sees it.
+                            Modifier
+                                .clickable(role = Role.Button) { reorder.onGestureEnd() }
+                                .reorderHandle(reorder) {}
+                        } else {
+                            Modifier.clickableWithHold(
+                                holdLabel = stringResource(Res.string.hold_session_actions),
+                                // The hold gesture's own haptic fires inside clickableWithHold; adding another
+                                // here would buzz twice for one press.
+                                onHold = { menuOpen = true },
+                                role = Role.Button,
+                                onClick = onOpen,
+                            )
+                        },
                     )
                     .semantics {
                         if (drag != null) {
@@ -216,11 +195,11 @@ internal fun SessionRowItem(
                             }
                         }
                     }
-                    .padding(start = DsSpacing.small, end = if (drag != null) 0.dp else DsSpacing.small, top = 10.dp, bottom = 10.dp),
+                    .padding(horizontal = DsSpacing.small, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                SessionAvatar(avatarTint, if (depth > 0) 26.dp else 32.dp)
+                SessionRowLead(session, if (depth > 0) 26.dp else 32.dp, archived)
                 Column(Modifier.weight(1f)) {
                     Text(
                         text = displaySessionTitle(session),
@@ -262,7 +241,6 @@ internal fun SessionRowItem(
                     maxLines = 1,
                 )
             }
-            if (drag != null && reorder != null) DragHandle(reorder, drag.onPickUp)
         }
 
         if (menuOpen) {
@@ -288,6 +266,11 @@ internal fun SessionRowItem(
                                 DsIcons.PushPin,
                             ) { scope.launch { store.setPinned(session.sessionId, !pinned) } },
                         )
+                    }
+                    // The way to reorder: a hold is already the menu, so lifting the row is one of its
+                    // actions. Only a row that has neighbours to move among carries a `drag`.
+                    if (drag != null && reorder != null) {
+                        add(HoldAction(stringResource(Res.string.chatlist_session_reorder), DsIcons.SwapVert) { drag.onPickUp() })
                     }
                     add(HoldAction(stringResource(Res.string.chatlist_session_copy_id), DsIcons.ContentCopy) { copy(session.sessionId) })
                     if (archived) {
@@ -354,17 +337,6 @@ internal fun SessionRowItem(
             },
         )
     }
-}
-
-/** The mascot avatar at row scale: a static tinted mark, not an animated one per visible row. */
-@Composable
-internal fun SessionAvatar(tint: Color, size: androidx.compose.ui.unit.Dp) {
-    Image(
-        painter = mascotPainter(),
-        contentDescription = null,
-        colorFilter = ColorFilter.tint(tint),
-        modifier = Modifier.size(size),
-    )
 }
 
 /** "Streaming · todos-api" / "Needs you" / "Idle · home". Real facts only. */

@@ -227,6 +227,7 @@
     <string name="chatlist_refresh">Actualizar sesiones</string>
     <string name="chatlist_refresh_failed">No se pudo actualizar la lista de sesiones.</string>
     <string name="chatlist_reorder_blocked">Una sesión solo puede moverse dentro de su proyecto</string>
+    <string name="chatlist_reorder_done">Listo</string>
     <string name="chatlist_reorder_failed">No se pudo mover esa sesión. Volvió a su sitio.</string>
     <string name="chatlist_reorder_project_failed">No se pudo mover ese proyecto. Volvió a su sitio.</string>
     <string name="chatlist_reorder_projects">Moviendo proyectos</string>
@@ -241,6 +242,7 @@
     <string name="chatlist_session_fork">Bifurcar sesión</string>
     <string name="chatlist_session_pin">Fijar sesión</string>
     <string name="chatlist_session_rename">Renombrar sesión</string>
+    <string name="chatlist_session_reorder">Mover sesión</string>
     <string name="chatlist_session_unpin">Desfijar sesión</string>
     <string name="chatlist_sessions_collapse">Contraer</string>
     <string name="chatlist_sessions_more">Mostrar más (%1$d más)</string>

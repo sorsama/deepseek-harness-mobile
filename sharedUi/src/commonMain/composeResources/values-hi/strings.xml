@@ -227,6 +227,7 @@
     <string name="chatlist_refresh">सेशन रीफ़्रेश करें</string>
     <string name="chatlist_refresh_failed">सेशन की सूची रीफ़्रेश नहीं हो सकी।</string>
     <string name="chatlist_reorder_blocked">सेशन सिर्फ़ अपने प्रोजेक्ट के अंदर ही जा सकता है</string>
+    <string name="chatlist_reorder_done">हो गया</string>
     <string name="chatlist_reorder_failed">वह सेशन खिसकाया नहीं जा सका। वह अपनी जगह पर लौट आया है।</string>
     <string name="chatlist_reorder_project_failed">वह प्रोजेक्ट खिसकाया नहीं जा सका। वह अपनी जगह पर लौट आया है।</string>
     <string name="chatlist_reorder_projects">प्रोजेक्ट ले जा रहे हैं</string>
@@ -241,6 +242,7 @@
     <string name="chatlist_session_fork">सेशन फ़ोर्क करें</string>
     <string name="chatlist_session_pin">सेशन पिन करें</string>
     <string name="chatlist_session_rename">सेशन का नाम बदलें</string>
+    <string name="chatlist_session_reorder">सेशन ले जाएँ</string>
     <string name="chatlist_session_unpin">सेशन अनपिन करें</string>
     <string name="chatlist_sessions_collapse">समेटें</string>
     <string name="chatlist_sessions_more">और दिखाएँ (%1$d शेष)</string>

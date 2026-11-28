@@ -5,6 +5,27 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Changed
+
+- **A quieter session list.** The mascot now marks only the sessions worth a look: one that is
+  running, and one that is waiting for you. Every other row, and every archived one, has a small
+  dot in its place, so the titles still line up and the list stops looking like a wall of logos.
+  The open session is still shown by its highlight.
+- **Move a session without a handle on every row.** The six-dot grips are gone. To move a session,
+  hold it and choose **Move session**: the row lifts, and you drag it to its new place (tap it or
+  **Done** to put it down). To move a project in the By project order, hold its header and drag. The
+  order of the list works exactly as before, and TalkBack still offers **Move up** and **Move
+  down** on every row.
+
+### Fixed
+
+- **The "Sessions" title was cut to "Ses…" in a narrow list**, such as the list docked beside the
+  chat on a phone held sideways. It now steps down a size, and when that is still too wide the sort
+  order moves into the **More** menu (and, at the largest text sizes, the buttons go under the
+  title), so the name is always whole and no button is cut off.
+- **Add-ons: a plugin's name now reads like the other section labels** in Settings, in capitals and
+  in the same style, instead of in a style of its own.
+
 ## [0.25.0] - 2026-11-28
 
 ![An iPhone and an iPad side by side: the iPhone shows a chat asking to allow a command, the iPad shows the session list beside a chat](docs/images/releases/0.25.0/devices/ios-beta-iphone-ipad.png)

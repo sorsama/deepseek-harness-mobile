@@ -227,6 +227,7 @@
     <string name="chatlist_refresh">Refresh sessions</string>
     <string name="chatlist_refresh_failed">Couldn't refresh the session list.</string>
     <string name="chatlist_reorder_blocked">A session can only move within its project</string>
+    <string name="chatlist_reorder_done">Done</string>
     <string name="chatlist_reorder_failed">Couldn't move that session. It's back where it was.</string>
     <string name="chatlist_reorder_project_failed">Couldn't move that project. It's back where it was.</string>
     <string name="chatlist_reorder_projects">Moving projects</string>
@@ -241,6 +242,7 @@
     <string name="chatlist_session_fork">Fork session</string>
     <string name="chatlist_session_pin">Pin session</string>
     <string name="chatlist_session_rename">Rename session</string>
+    <string name="chatlist_session_reorder">Move session</string>
     <string name="chatlist_session_unpin">Unpin session</string>
     <string name="chatlist_sessions_collapse">Collapse</string>
     <string name="chatlist_sessions_more">Show more (%1$d remaining)</string>

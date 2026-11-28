@@ -115,8 +115,10 @@ internal fun LazyListScope.workspaceGroups(
 }
 
 /**
- * A project header in the "By project" list: a fold chevron, the project's name, how many sessions
- * it shows, and (when projects can be reordered) its own grip.
+ * A project header in the "By project" list: a fold chevron, the project's name and how many sessions
+ * it shows. A tap folds it. When projects can be reordered ([drag] non-null) a hold lifts it and the
+ * same touch drags it; a header has no menu, so there is nothing else for a hold to do. A screen
+ * reader gets "Move up" and "Move down" on the header.
  */
 @Composable
 internal fun ProjectHeader(
@@ -158,6 +160,8 @@ internal fun ProjectHeader(
                     haptics.tap()
                     onToggle()
                 }
+                // After the tap handler: once the hold is taken, the release is not read as a tap.
+                .then(if (drag != null) Modifier.reorderOnLongPress(reorder, drag.onPickUp) else Modifier)
                 .semantics {
                     if (drag != null) {
                         customActions = buildList {
@@ -186,7 +190,6 @@ internal fun ProjectHeader(
             )
             DsPill(text = count.toString())
         }
-        if (drag != null) DragHandle(reorder, drag.onPickUp)
     }
 }
 

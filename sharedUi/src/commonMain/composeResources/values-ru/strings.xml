@@ -227,6 +227,7 @@
     <string name="chatlist_refresh">Обновить сеансы</string>
     <string name="chatlist_refresh_failed">Не удалось обновить список сеансов.</string>
     <string name="chatlist_reorder_blocked">Сеанс можно перемещать только внутри его проекта</string>
+    <string name="chatlist_reorder_done">Готово</string>
     <string name="chatlist_reorder_failed">Не удалось переместить сеанс. Он вернулся на место.</string>
     <string name="chatlist_reorder_project_failed">Не удалось переместить проект. Он вернулся на место.</string>
     <string name="chatlist_reorder_projects">Перемещение проектов</string>
@@ -241,6 +242,7 @@
     <string name="chatlist_session_fork">Создать ветку сеанса</string>
     <string name="chatlist_session_pin">Закрепить сеанс</string>
     <string name="chatlist_session_rename">Переименовать сеанс</string>
+    <string name="chatlist_session_reorder">Переместить сеанс</string>
     <string name="chatlist_session_unpin">Открепить сеанс</string>
     <string name="chatlist_sessions_collapse">Свернуть</string>
     <string name="chatlist_sessions_more">Показать ещё (осталось %1$d)</string>

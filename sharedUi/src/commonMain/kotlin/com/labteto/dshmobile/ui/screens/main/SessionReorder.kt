@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
@@ -44,10 +45,12 @@ import kotlinx.coroutines.launch
  * about 200 lines: one lifted unit, a live order that swaps one neighbour at a time as the finger
  * crosses its middle, and a frame loop that scrolls when the finger is held near an edge.
  *
- * Coexistence with the hold menu: the drag starts on a visible grip handle that is *outside* the
- * row's tap-and-hold area, not on the row itself. Holding the row still opens its menu, a tap on it
- * opens the session, and neither can start a drag; the grip can only drag, and a tap on it does
- * nothing.
+ * Coexistence with the hold menu: there is no handle drawn on a row. A session row already uses a
+ * hold for its menu, so the menu carries "Move session", which lifts the row where it stands (the
+ * unit is *armed*: raised, the rest dimmed, nothing moving yet) and a drag on that row then moves
+ * it; a tap on it, "Done" or a tap on another row lets it go. A project header has no menu, so a
+ * hold on it lifts it and the same touch drags it ([reorderOnLongPress]). A screen reader gets
+ * "Move up" and "Move down" on the row or header either way.
  */
 
 /** The reorder group key for dragging whole projects, as opposed to the sessions inside one project. */
@@ -138,6 +141,13 @@ class ReorderState(
 
     private var originalOrder: List<String> = emptyList()
     private var fingerTop by mutableFloatStateOf(0f)
+
+    /**
+     * False from [start] until the finger first moves it. A unit lifted from the menu is armed with
+     * no finger on it, and its place is not a finger pressed against the list's edge, so it must not
+     * start the list scrolling by itself.
+     */
+    private var engaged = false
     private var settleValue: Float? by mutableStateOf(null)
     private var loop: Job? = null
 
@@ -195,6 +205,7 @@ class ReorderState(
         originalOrder = order
         liveOrder = order
         fingerTop = info.offset.toFloat()
+        engaged = false
         atBoundary = false
         settleValue = null
         ticker.reset()
@@ -209,7 +220,10 @@ class ReorderState(
 
     /** The finger moved. */
     fun dragBy(dy: Float) {
-        if (active && settleValue == null) fingerTop += dy
+        if (active && settleValue == null) {
+            engaged = true
+            fingerTop += dy
+        }
     }
 
     /** One frame: scroll if the finger is at an edge, then swap with whichever neighbour it has crossed. */
@@ -223,14 +237,18 @@ class ReorderState(
 
         // Scroll only toward a neighbour that exists: pressed against the end of the block there is
         // nothing further to bring into view, and scrolling on would carry the held unit away.
-        var step = autoScrollStep(
-            unitTop = fingerTop,
-            unitBottom = fingerTop + height,
-            viewportStart = listState.layoutInfo.viewportStartOffset.toFloat(),
-            viewportEnd = listState.layoutInfo.viewportEndOffset.toFloat(),
-            edge = edgePx,
-            maxStep = maxStepPx,
-        )
+        var step = if (engaged) {
+            autoScrollStep(
+                unitTop = fingerTop,
+                unitBottom = fingerTop + height,
+                viewportStart = listState.layoutInfo.viewportStartOffset.toFloat(),
+                viewportEnd = listState.layoutInfo.viewportEndOffset.toFloat(),
+                edge = edgePx,
+                maxStep = maxStepPx,
+            )
+        } else {
+            0f
+        }
         if ((step < 0f && at <= 0) || (step > 0f && at >= order.lastIndex)) step = 0f
         if (step != 0f) listState.scrollBy(step)
 
@@ -315,18 +333,42 @@ class ReorderState(
 }
 
 /**
- * The drag gesture, for a grip handle.
+ * The drag gesture of a unit that is already lifted: a session row picked up from its menu.
  *
- * [onStart] lifts the unit (it knows the unit's id and block); the rest follows the finger. Drags
- * are immediate rather than after a long press, because the handle exists to be dragged: a press on
- * it can mean nothing else. The pointer input consumes the movement, so the list's own scroll does
- * not also start.
+ * The drag is immediate (no hold first), because the unit is only given this modifier while it is
+ * armed: a touch on it can mean nothing else. [onStart] lifts the unit if it is not lifted yet, and
+ * is a no-op for one that is. The pointer input consumes the movement, so neither the list's scroll
+ * nor the row's own tap starts as well.
  */
 @Composable
 internal fun Modifier.reorderHandle(state: ReorderState, onStart: () -> Unit): Modifier {
     val currentStart by rememberUpdatedState(onStart)
     return pointerInput(state) {
         detectDragGestures(
+            onDragStart = { currentStart() },
+            onDrag = { change, amount ->
+                change.consume()
+                state.dragBy(amount.y)
+            },
+            onDragEnd = { state.onGestureEnd() },
+            onDragCancel = { state.cancel() },
+        )
+    }
+}
+
+/**
+ * Hold, then drag, for a unit with no hold menu of its own (a project header).
+ *
+ * The hold lifts the unit ([onStart], with the long-press haptic of the lift) and the same touch
+ * carries it; letting go without moving it puts it back where it was. A tap is not a hold, so it
+ * still reaches the header's own action. Put this *after* the tap handler in the chain, so that once
+ * the hold has been taken the release is not also read as a tap.
+ */
+@Composable
+internal fun Modifier.reorderOnLongPress(state: ReorderState, onStart: () -> Unit): Modifier {
+    val currentStart by rememberUpdatedState(onStart)
+    return pointerInput(state) {
+        detectDragGesturesAfterLongPress(
             onDragStart = { currentStart() },
             onDrag = { change, amount ->
                 change.consume()

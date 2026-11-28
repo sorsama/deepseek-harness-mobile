@@ -36,7 +36,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labteto.dshmobile.connection.ConnectionPhase
@@ -73,6 +72,7 @@ import com.labteto.dshmobile.ui.components.DsToastHost
 import com.labteto.dshmobile.ui.components.FeatherIcons
 import com.labteto.dshmobile.ui.components.MascotMark
 import com.labteto.dshmobile.ui.components.MascotState
+import com.labteto.dshmobile.ui.components.PlatformBackHandler
 import com.labteto.dshmobile.ui.components.PullToRefreshIndicator
 import com.labteto.dshmobile.ui.components.rememberDsHaptics
 import com.labteto.dshmobile.ui.components.rememberDsToast
@@ -176,10 +176,12 @@ class DrawerProjects(
  *
  * Three orders, one preference ([SessionDrawerPrefs.sessionSort]):
  *  - **Manual** follows the harness's own workspace order under date headings, and a session can be
- *    dragged by its grip to a new place *within its workspace* (the harness cannot move a session
- *    between workspaces). Sessions in no workspace are ordered on the phone.
+ *    moved to a new place *within its workspace* (the harness cannot move a session between
+ *    workspaces): "Move session" in its hold menu lifts it, then a drag places it. Sessions in no
+ *    workspace are ordered on the phone.
  *  - **Last updated** is newest first under date headings.
- *  - **By project** groups under collapsible workspace headers, same order inside each, same drag.
+ *  - **By project** groups under collapsible workspace headers, same order inside each, same move;
+ *    a project is moved by holding its header and dragging.
  *
  * It reads the store from [LocalSessionStore]. What only a platform can answer comes in as parameters:
  * [prefs] for the phone-side preferences, [calendar] for the date headings, [announceMove] to tell a
@@ -386,6 +388,11 @@ fun SessionDrawer(
     // row would be placed between, and an archived row is not part of any order.
     val reorderEnabled = !sortByRecency && filter == DrawerFilter.All && query.isBlank() &&
         connection.phase == ConnectionPhase.CONNECTED
+    // A row lifted from its menu has no finger holding it, so it can outlive the conditions that let
+    // it move: the filter, the search, the order or the connection changing underneath it puts it back.
+    LaunchedEffect(reorderEnabled) { if (!reorderEnabled && reorder.active) reorder.cancel() }
+    // Back puts a lifted row down before it does anything else.
+    PlatformBackHandler(enabled = reorder.active) { reorder.onGestureEnd() }
     val runningCount = listable.count { it.running }
     val needsYouCount = listable.count { it.pendingInteraction != null }
     val pinnedRows = pinnedIds.orEmpty().mapNotNull { id -> listable.firstOrNull { it.sessionId == id } }
@@ -410,6 +417,8 @@ fun SessionDrawer(
     }
 
     fun openSession(sessionId: String) {
+        // A lifted row is put down where it stands before anything else opens.
+        if (reorder.active) reorder.onGestureEnd()
         // Close first. Waiting for the session to load before the drawer moved made every switch
         // feel like a stall; the transcript shows its own skeleton.
         hapticsTap()
@@ -554,27 +563,18 @@ fun SessionDrawer(
         }
 
         // ---- Hero title, workspace · model, quick actions --------------------------------------
-        Row(verticalAlignment = Alignment.Top) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    stringResource(Res.string.ink_chat_sessions),
-                    style = DsType.display24,
-                    color = colors.labelPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    listOfNotNull(
-                        workspacePath?.takeIf { it.isNotBlank() }?.let { technicalDisplay(it) },
-                        modelLabel,
-                    ).joinToString(" · "),
-                    style = DsType.mono12,
-                    color = colors.labelTertiary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
-            }
+        // The title is never cut: in a narrow pane it steps down a size, then the order moves into the
+        // More menu, then the actions move under the title (DrawerTitleRow).
+        DrawerTitleRow(
+            title = stringResource(Res.string.ink_chat_sessions),
+            subtitle = listOfNotNull(
+                workspacePath?.takeIf { it.isNotBlank() }?.let { technicalDisplay(it) },
+                modelLabel,
+            ).joinToString(" · "),
+            actionCount = 3,
+            foldedActionCount = 2,
+        ) { sortFolded ->
+            val pickSort: (String) -> Unit = { next -> scope.launch { prefs.setSessionSort(next) } }
             // Search, sort and more are one family: bare 48dp icon buttons with a circular press, all
             // outline glyphs. (Sort and more used to be a bare clickable box, so their press was a
             // rectangle next to search's circle.)
@@ -589,9 +589,7 @@ fun SessionDrawer(
                 iconSize = 20.dp,
                 selected = searchOpen,
             )
-            SortButton(sort) { next ->
-                scope.launch { prefs.setSessionSort(next) }
-            }
+            if (!sortFolded) SortButton(sort, pickSort)
             MoreMenu(
                 automationAvailable = automationAvailable != false && onOpenAutomations != null,
                 onNewSession = { dialogs.newSession = true },
@@ -601,6 +599,9 @@ fun SessionDrawer(
                 onAutomations = onOpenAutomations ?: {},
                 onRefresh = refresh::start,
                 onDisconnect = if (features.disconnect) onDisconnect else null,
+                // With no room for the Sort button its three orders are in this menu instead.
+                sort = if (sortFolded) sort else null,
+                onSort = pickSort,
             )
         }
 
@@ -632,6 +633,8 @@ fun SessionDrawer(
             holding = reorder.active,
             hint = hintNow,
             pressing = reorder.atBoundary,
+            // A row lifted from its menu waits for a drag; this is how it is put down without one.
+            onDone = reorder::onGestureEnd,
         )
 
         // ---- The one session that needs a person ----------------------------------------------
@@ -680,6 +683,9 @@ fun SessionDrawer(
         Box(Modifier.weight(1f)) {
             LazyColumn(
                 state = listState,
+                // A lifted row is placed by a drag on it; a finger on the list would scroll it out from
+                // under the row. The list still scrolls by itself at its edges, to reach farther rows.
+                userScrollEnabled = !reorder.active,
                 modifier = Modifier
                     .fillMaxSize()
                     .then(pull.modifier)
@@ -845,7 +851,7 @@ fun SessionDrawer(
 
                 // Pinned sessions are a shortcut, not a second copy: they stay in their own group, and
                 // since their place is the harness's pin list rather than an order of the reader's, they
-                // have no handle.
+                // cannot be moved (no "Move session" in their menu, no Move up or Move down).
                 if (filter == DrawerFilter.All && pinnedRows.isNotEmpty()) {
                     item(key = "pinned-header") {
                         DateHeading(

@@ -227,6 +227,7 @@
     <string name="chatlist_refresh">تحديث الجلسات</string>
     <string name="chatlist_refresh_failed">تعذّر تحديث قائمة الجلسات.</string>
     <string name="chatlist_reorder_blocked">لا يمكن نقل الجلسة إلا داخل مشروعها</string>
+    <string name="chatlist_reorder_done">تم</string>
     <string name="chatlist_reorder_failed">تعذّر نقل تلك الجلسة. عادت إلى مكانها.</string>
     <string name="chatlist_reorder_project_failed">تعذّر نقل ذلك المشروع. عاد إلى مكانه.</string>
     <string name="chatlist_reorder_projects">نقل المشاريع</string>
@@ -241,6 +242,7 @@
     <string name="chatlist_session_fork">تفريع الجلسة</string>
     <string name="chatlist_session_pin">تثبيت الجلسة</string>
     <string name="chatlist_session_rename">إعادة تسمية الجلسة</string>
+    <string name="chatlist_session_reorder">نقل الجلسة</string>
     <string name="chatlist_session_unpin">إلغاء تثبيت الجلسة</string>
     <string name="chatlist_sessions_collapse">طي</string>
     <string name="chatlist_sessions_more">عرض المزيد (المتبقي %1$d)</string>
