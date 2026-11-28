@@ -26,6 +26,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import com.labteto.dshmobile.core.markdown.firstStrongIsRtl
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.runtime.remember
@@ -155,8 +159,12 @@ fun MarkdownText(text: String, modifier: Modifier = Modifier, streamingCaret: Bo
                 }
             }
             }
-            if (readingObserver == null) content() else {
-                Box(Modifier.fillMaxWidth().onGloballyPositioned { readingObserver(index, it) }) { content() }
+            // Each block reads in its own language's direction (#163): an English paragraph in an
+            // Arabic reply keeps its full stop on the right, and an English list keeps its bullets on
+            // the left, as `dir="auto"` does on the web. Tables, code and rules keep the app's.
+            val directed: @Composable () -> Unit = { ContentDirection(blockDirectionText(render), content) }
+            if (readingObserver == null) directed() else {
+                Box(Modifier.fillMaxWidth().onGloballyPositioned { readingObserver(index, it) }) { directed() }
             }
         }
         // The design's live-write signal: a small accent block that blinks while a reply is being
@@ -195,6 +203,40 @@ fun StreamingCaret(modifier: Modifier = Modifier) {
     )
 }
 
+
+// ---- Text direction ----------------------------------------------------------
+
+/** The text a block's direction is judged by, or null for a block that keeps the app's direction. */
+private fun blockDirectionText(render: RenderBlock): String? = when (render) {
+    // A list reads in the direction of its first item, as a `<ul dir="auto">` does.
+    is RenderBlock.ListRun -> render.items.firstOrNull()?.text
+    is RenderBlock.Of -> when (val block = render.block) {
+        is MdBlock.Heading -> block.text
+        is MdBlock.Paragraph -> block.lines.joinToString("\n")
+        is MdBlock.Blockquote -> block.lines.joinToString("\n")
+        else -> null
+    }
+}
+
+/**
+ * Lays [content] out in the direction [text] is written in, judged by its first strong letter.
+ *
+ * Text with no letter at all, or a null [text], keeps the surrounding direction. Compose alone
+ * cannot do this: a style without a text direction is drawn in the layout's direction, so in an
+ * Arabic UI every English sentence was right to left, with its full stop on the left.
+ */
+@Composable
+fun ContentDirection(text: String?, content: @Composable () -> Unit) {
+    val rtl = remember(text) { text?.let(::firstStrongIsRtl) }
+    if (rtl == null) {
+        content()
+    } else {
+        CompositionLocalProvider(
+            LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr,
+            content = content,
+        )
+    }
+}
 
 // ---- List grouping -----------------------------------------------------------
 

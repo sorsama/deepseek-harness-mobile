@@ -45,6 +45,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
@@ -357,7 +358,7 @@ private fun QuestionHeader(
             Spacer(Modifier.width(8.dp))
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 question.header?.takeIf { it.isNotBlank() }?.let {
-                    Text(it, style = DsType.caption11, color = colors.labelTertiary)
+                    Text(it, style = DsType.caption11.copy(textDirection = TextDirection.Content), color = colors.labelTertiary)
                 }
                 // Only while collapsed. Expanded, the question belongs to the scrolling body: it
                 // is content, and the header is chrome that must stay small enough for the answer
@@ -365,7 +366,7 @@ private fun QuestionHeader(
                 if (minimized) {
                     Text(
                         question.question,
-                        style = DsType.std14Strong,
+                        style = DsType.std14Strong.copy(textDirection = TextDirection.Content),
                         color = colors.labelPrimary,
                         // A collapsed strip taller than the expanded card's header is not a collapse.
                         maxLines = 2,
@@ -377,7 +378,8 @@ private fun QuestionHeader(
         if (count > 1) {
             Text(
                 stringResource(Res.string.questions_progress, localizedCount(index + 1), localizedCount(count)),
-                style = DsType.caption11,
+                // "1 / 2" is a fraction, not a phrase: in an RTL UI it read "2 / 1" (#163).
+                style = DsType.caption11.copy(textDirection = TextDirection.Ltr),
                 color = colors.labelTertiary,
             )
             Spacer(Modifier.width(4.dp))
@@ -424,7 +426,8 @@ private fun QuestionBody(
         // part that scrolls.
         Text(
             question.question,
-            style = DsType.large20,
+            // The question reads in its own language, not the app's (#163).
+            style = DsType.large20.copy(textDirection = TextDirection.Content),
             color = DsTheme.colors.labelPrimary,
         )
 
@@ -495,7 +498,7 @@ private fun OptionRow(
                 ) {
                     Text(
                         display.display,
-                        style = DsType.base16Strong,
+                        style = DsType.base16Strong.copy(textDirection = TextDirection.Content),
                         color = if (selected) colors.accent else colors.labelPrimary,
                         modifier = Modifier.weight(1f, fill = false),
                     )
@@ -508,7 +511,7 @@ private fun OptionRow(
                     }
                 }
                 option.description?.takeIf { it.isNotBlank() }?.let {
-                    Text(it, style = DsType.small13, color = colors.labelTertiary)
+                    Text(it, style = DsType.small13.copy(textDirection = TextDirection.Content), color = colors.labelTertiary)
                 }
             }
         }
