@@ -5,6 +5,18 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ## [Unreleased]
 
+### Fixed
+
+- **A question's answer field is no longer cut off with nothing to show that the card scrolls.** When
+  the agent asked a question with a couple of options, the card stopped at about a third of the
+  screen, so the "Type your answer" field could end half hidden behind Skip and Submit and nothing
+  said there was more. The options and the field now scroll above Skip and Submit, which stay put
+  and whole; where there is more to scroll to, that edge fades into the card and ends on a thin
+  line. Tapping the field brings it fully into view, with the keyboard up too, and the second
+  question of a pair opens at its top. On a phone held sideways the card used to shrink to its title
+  with no way to answer it; it now folds to a strip with a button that opens the whole question in
+  a sheet.
+
 ## [0.25.0] - 2026-11-28
 
 ![An iPhone and an iPad side by side: the iPhone shows a chat asking to allow a command, the iPad shows the session list beside a chat](docs/images/releases/0.25.0/devices/ios-beta-iphone-ipad.png)
