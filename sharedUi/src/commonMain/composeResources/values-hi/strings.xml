@@ -56,6 +56,7 @@
     <string name="chat_load_older_retry">पुराने संदेश लोड नहीं हो सके। फिर कोशिश के लिए टैप करें।</string>
     <string name="chat_loading_older">पुराने संदेश लोड हो रहे हैं…</string>
     <string name="chat_max_tokens">टोकन की सीमा पूरी हो गई</string>
+    <string name="chat_model_change">मॉडल बदलें</string>
     <string name="chat_output_placeholder">आउटपुट</string>
     <string name="chat_process_title">प्रक्रिया</string>
     <string name="chat_queue_edit">एडिट करें</string>

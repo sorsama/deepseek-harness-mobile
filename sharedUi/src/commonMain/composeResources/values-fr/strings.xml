@@ -56,6 +56,7 @@
     <string name="chat_load_older_retry">Impossible de charger les messages précédents. Appuyez pour réessayer.</string>
     <string name="chat_loading_older">Chargement des messages précédents…</string>
     <string name="chat_max_tokens">Limite de jetons atteinte</string>
+    <string name="chat_model_change">Changer de modèle</string>
     <string name="chat_output_placeholder">Sortie</string>
     <string name="chat_process_title">Processus</string>
     <string name="chat_queue_edit">Modifier</string>

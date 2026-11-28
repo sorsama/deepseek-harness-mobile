@@ -7,6 +7,14 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ### Changed
 
+- **The chat's top bar is one row, and its view tabs step aside while you read back.** The session
+  title now sits over the model name, and one tap on that pair opens the model picker (a subagent's
+  chat shows its model without the picker). It replaces the boxed model button on one row and the
+  title on the next. The run status, agent preset, team and subagent tags share one row under the
+  title, and that row is only there while one of them applies. Dragging back through older messages
+  folds Chat, Trajectory and Files away so the conversation gets the room; dragging toward the newest
+  message, or reaching it, brings them back. They stay put on the Trajectory and Files views and
+  while a sheet is open.
 - **A quieter session list.** The mascot now marks only the sessions worth a look: one that is
   running, and one that is waiting for you. Every other row, and every archived one, has a small
   dot in its place, so the titles still line up and the list stops looking like a wall of logos.
@@ -19,6 +27,15 @@ All notable changes to DSH Mobile are documented here. Format based on
 
 ### Fixed
 
+- **A question's answer field is no longer cut off with nothing to show that the card scrolls.** When
+  the agent asked a question with a couple of options, the card stopped at about a third of the
+  screen, so the "Type your answer" field could end half hidden behind Skip and Submit and nothing
+  said there was more. The options and the field now scroll above Skip and Submit, which stay put
+  and whole; where there is more to scroll to, that edge fades into the card and ends on a thin
+  line. Tapping the field brings it fully into view, with the keyboard up too, and the second
+  question of a pair opens at its top. On a phone held sideways the card used to shrink to its title
+  with no way to answer it; it now folds to a strip with a button that opens the whole question in
+  a sheet.
 - **The "Sessions" title was cut to "Ses…" in a narrow list**, such as the list docked beside the
   chat on a phone held sideways. It now steps down a size, and when that is still too wide the sort
   order moves into the **More** menu (and, at the largest text sizes, the buttons go under the

@@ -161,6 +161,9 @@ object Ds {
 
 /** Semantic alias tokens for the dark "Ink" theme. */
 object DsDark {
+    // Caption text is 11-12sp, so it needs 4.5:1. Ink500 read 3.41:1 on the canvas and 3.15:1 on
+    // cards. Ink400 is the quietest rung that still clears it on every fill (5.22 canvas, 4.82 card,
+    // 4.54 on the lightest layer), so the caption now shares the tertiary label's value.
     val bgBase = Ds.Ink950
     val bgLayer1 = Ds.Ink875
     val bgLayer2 = Ds.Ink900
@@ -174,7 +177,7 @@ object DsDark {
     val labelPrimary = Ds.Ink50
     val labelSecondary = Ds.Ink300
     val labelTertiary = Ds.Ink400
-    val labelCaption = Ds.Ink500
+    val labelCaption = Ds.Ink400
     val labelDimmed = Ds.Ink700
     val accent = Ds.Deepseek450
     val onAccent = Ds.Ink950

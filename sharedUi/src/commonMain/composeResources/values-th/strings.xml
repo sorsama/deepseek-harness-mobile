@@ -56,6 +56,7 @@
     <string name="chat_load_older_retry">โหลดข้อความเก่าไม่สำเร็จ แตะเพื่อลองใหม่</string>
     <string name="chat_loading_older">กำลังโหลดข้อความเก่า…</string>
     <string name="chat_max_tokens">ถึงขีดจำกัดโทเคนแล้ว</string>
+    <string name="chat_model_change">เปลี่ยนโมเดล</string>
     <string name="chat_output_placeholder">เอาต์พุต</string>
     <string name="chat_process_title">ขั้นตอนการทำงาน</string>
     <string name="chat_queue_edit">แก้ไข</string>

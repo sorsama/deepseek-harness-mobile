@@ -3,6 +3,8 @@ package com.labteto.dshmobile.ui.components
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.ScrollState
 import com.labteto.dshmobile.ui.components.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +17,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -26,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,11 +39,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onSizeChanged
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
@@ -130,6 +141,9 @@ fun QuestionsPanel(
     var failure by remember(requestKey) { mutableStateOf<String?>(null) }
     androidx.compose.runtime.LaunchedEffect(revision) { busy = false }
     val bodyScroll = rememberScrollState()
+    // The body scroll is shared by every question of the batch. Without this the second question
+    // opens already scrolled by however far the first one was, so its prompt starts above the edge.
+    LaunchedEffect(index) { bodyScroll.scrollTo(0) }
     var expanded by remember(requestKey) { mutableStateOf(false) }
     val fontScale = LocalDensity.current.fontScale
 
@@ -237,29 +251,40 @@ fun QuestionsPanel(
                         else if (compact && !minimized) expanded = true
                         else minimized = !minimized
                     },
-                    onExpand = if (inSheet || statusContent == null) null else ({ expanded = true }),
+                    onExpand = if (inSheet || (statusContent == null && !compact)) null else ({ expanded = true }),
                     onDismiss = { send { onDismiss() } },
                 )
 
                 statusContent?.invoke()
                 if (!compact) {
-                    QuestionBody(
+                    // The scrolling part sits in a viewport of its own, and the action row below is
+                    // outside it. That is what keeps Skip and Submit pinned and whole at any height. The
+                    // viewport also carries the scroll cue: a fade and a hairline painted over its cut
+                    // edge, so a field the card clips reads as "this scrolls" and not as a broken card.
+                    var viewportHeight by remember { mutableIntStateOf(0) }
+                    Box(
                         modifier = Modifier
                             .weight(1f, fill = false)
-                            .verticalScroll(bodyScroll),
-                        question = question,
-                        draft = draft,
-                        options = options,
-                        multiSelect = multiSelect,
-                        busy = busy || !enabled,
-                        lastQuestion = index == questions.lastIndex,
-                        onChoose = { label ->
-                            updateDraft { it.choose(label, multiSelect) }
-                            if (!multiSelect) index = advanceFrom(index, questions.size)
-                        },
-                        onCustomChange = { text -> updateDraft { it.withCustom(text, multiSelect) } },
-                        onContinue = { continueFlow() },
-                    )
+                            .onSizeChanged { viewportHeight = it.height }
+                            .scrollEdgeCue(bodyScroll, fade = colors.bgLayer1, rule = colors.borderL2),
+                    ) {
+                        QuestionBody(
+                            modifier = Modifier.verticalScroll(bodyScroll),
+                            question = question,
+                            draft = draft,
+                            options = options,
+                            multiSelect = multiSelect,
+                            busy = busy || !enabled,
+                            lastQuestion = index == questions.lastIndex,
+                            viewportHeight = viewportHeight,
+                            onChoose = { label ->
+                                updateDraft { it.choose(label, multiSelect) }
+                                if (!multiSelect) index = advanceFrom(index, questions.size)
+                            },
+                            onCustomChange = { text -> updateDraft { it.withCustom(text, multiSelect) } },
+                            onContinue = { continueFlow() },
+                        )
+                    }
 
                     QuestionFooter(
                         index = index,
@@ -284,7 +309,7 @@ fun QuestionsPanel(
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         // A useful body needs room after the header, status and fixed actions, including large fonts.
         // In tight chat/IME space show a named expand action instead of a clipped option fragment.
-        val compact = minimized || (statusContent != null && maxHeight < 300.dp * fontScale)
+        val compact = minimized || questionCardIsStarved(maxHeight, fontScale, hasStatus = statusContent != null)
         if (expanded) {
             DsButton(stringResource(Res.string.ux_b_view_questions), { expanded = true }, variant = DsButtonVariant.Ghost)
             DsBottomSheet(
@@ -408,6 +433,7 @@ private fun QuestionBody(
     multiSelect: Boolean,
     busy: Boolean,
     lastQuestion: Boolean,
+    viewportHeight: Int,
     onChoose: (String) -> Unit,
     onCustomChange: (String) -> Unit,
     onContinue: () -> Unit,
@@ -450,9 +476,44 @@ private fun QuestionBody(
             multiSelect = multiSelect,
             enabled = !busy,
             lastQuestion = lastQuestion,
+            viewportHeight = viewportHeight,
             onValueChange = onCustomChange,
             onContinue = onContinue,
         )
+    }
+}
+
+/** How tall the fade of the scroll cue is. Short enough to leave the cut line of text readable. */
+private val ScrollCueFade = 20.dp
+
+/**
+ * The scroll cue of the question body: over each edge that still has content past it, a fade into
+ * [fade] (the card's own fill) and a hairline in [rule]. Painted over the viewport, so it adds no
+ * size and cannot push the action row. It is absent when everything fits, and at the end of the
+ * scroll the edge that has nothing left drops its cue. The hairline matters as much as the fade:
+ * a fade alone is easy to miss in dark mode, and a field cut in half looks like a drawing glitch
+ * until something draws the line the cut belongs to.
+ */
+private fun Modifier.scrollEdgeCue(scroll: ScrollState, fade: Color, rule: Color): Modifier = drawWithContent {
+    drawContent()
+    val band = ScrollCueFade.toPx().coerceAtMost(size.height / 2f)
+    val hairline = 1.dp.toPx()
+    if (scroll.canScrollForward) {
+        val top = size.height - band
+        drawRect(
+            brush = Brush.verticalGradient(listOf(Color.Transparent, fade), startY = top, endY = size.height),
+            topLeft = Offset(0f, top),
+            size = Size(size.width, band),
+        )
+        drawRect(rule, topLeft = Offset(0f, size.height - hairline), size = Size(size.width, hairline))
+    }
+    if (scroll.canScrollBackward) {
+        drawRect(
+            brush = Brush.verticalGradient(listOf(fade, Color.Transparent), startY = 0f, endY = band),
+            topLeft = Offset.Zero,
+            size = Size(size.width, band),
+        )
+        drawRect(rule, topLeft = Offset.Zero, size = Size(size.width, hairline))
     }
 }
 
@@ -555,6 +616,7 @@ private fun OptionMarker(ordinal: Int, selected: Boolean, multiSelect: Boolean) 
  * the keyboard, which would cover the transcript the user collapsed the card to read — so the
  * cheapest way to honour that intent here is never to take focus at all.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CustomAnswerField(
     value: String,
@@ -562,14 +624,30 @@ private fun CustomAnswerField(
     multiSelect: Boolean,
     enabled: Boolean,
     lastQuestion: Boolean,
+    viewportHeight: Int,
     onValueChange: (String) -> Unit,
     onContinue: () -> Unit,
 ) {
     val colors = DsTheme.colors
+    val requester = remember { BringIntoViewRequester() }
+    var focused by remember { mutableStateOf(false) }
+    // Taking focus raises the keyboard, and the keyboard shrinks the card's viewport a moment later.
+    // A scroll made at the instant of focus lands too early and the field ends up under the action
+    // row, so it is repeated each time the viewport changes while the field still has focus.
+    LaunchedEffect(focused, viewportHeight) {
+        if (focused) {
+            withFrameNanos { }
+            requester.bringIntoView()
+        }
+    }
     TextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = Modifier.fillMaxWidth().inkFieldFrame(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .bringIntoViewRequester(requester)
+            .onFocusChanged { focused = it.isFocused }
+            .inkFieldFrame(),
         shape = DsShapes.control,
         enabled = enabled,
         placeholder = {

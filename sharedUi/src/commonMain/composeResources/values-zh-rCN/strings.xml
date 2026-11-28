@@ -56,6 +56,7 @@
     <string name="chat_load_older_retry">无法加载更早的消息，点按即可重试</string>
     <string name="chat_loading_older">正在加载更早的消息…</string>
     <string name="chat_max_tokens">已达到令牌上限</string>
+    <string name="chat_model_change">切换模型</string>
     <string name="chat_output_placeholder">输出</string>
     <string name="chat_process_title">过程</string>
     <string name="chat_queue_edit">编辑</string>
