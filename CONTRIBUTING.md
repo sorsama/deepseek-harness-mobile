@@ -2,6 +2,8 @@
 
 Thanks for your interest in DSH Mobile!
 
+Questions, or stuck on something? Ask on the [Discord](https://discord.gg/KNQSuDfhYv). Bugs and feature requests belong in [GitHub Issues](https://github.com/sorsama/deepseek-harness-mobile/issues).
+
 ## Setup
 
 - Android Studio (Koala or newer) with JDK 17+ and Android SDK 35.

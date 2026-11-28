@@ -14,6 +14,9 @@ contact_links:
   - name: Questions about using the app
     url: https://github.com/sorsama/deepseek-harness-mobile/wiki
     about: The wiki covers install, connection, features, notifications, security and an FAQ.
+  - name: Questions and help (Discord)
+    url: https://discord.gg/KNQSuDfhYv
+    about: Ask a question, get help with setup or just chat with other users. Bug reports and feature requests still go here on GitHub.
   - name: Security vulnerability
     url: https://github.com/sorsama/deepseek-harness-mobile/security/policy
     about: Report privately to sor@zyphite.com — please do not open a public issue. The harness having no authentication is a known, documented property rather than a vulnerability in this app.

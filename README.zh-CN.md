@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://dshm.zyphite.com"><img alt="Website" src="https://img.shields.io/badge/website-dshm.zyphite.com-4176E6?style=flat-square"></a>
+  <a href="https://discord.gg/KNQSuDfhYv"><img alt="Discord" src="https://img.shields.io/badge/Discord-join%20the%20chat-5865F2?style=flat-square&logo=discord&logoColor=white"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/sorsama/deepseek-harness-mobile?style=flat-square"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/sorsama/deepseek-harness-mobile/ci.yml?branch=main&style=flat-square"></a>
   <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square">
@@ -32,6 +33,8 @@ DeepSeek Harness 是一个运行在你电脑上的 AI 编程代理，自带网�
 这是一个非官方的社区应用。
 
 [项目主页](https://dshm.zyphite.com)用一页做了概览，完整的用户指南在 [wiki](https://github.com/sorsama/deepseek-harness-mobile/wiki)。
+
+有问题、遇到困难，或者只是想聊聊？欢迎加入 [Discord](https://discord.gg/KNQSuDfhYv)。
 
 ## 截图
 
@@ -130,6 +133,12 @@ dsh web --host 192.168.1.20
 ### 3. 开始工作
 
 从列表里选一个会话（从屏幕左边缘向右滑），或者新建一个。连接失败时，应用会说明原因，wiki 的[疑难解答页面](https://github.com/sorsama/deepseek-harness-mobile/wiki/Troubleshooting)就是按这些提示来组织的。
+
+## 社区与帮助
+
+- **提问、求助和闲聊：**[Discord 服务器](https://discord.gg/KNQSuDfhYv)。
+- **Bug 和功能建议：**[GitHub Issues](https://github.com/sorsama/deepseek-harness-mobile/issues)。
+- **安全问题：**请通过[安全政策](https://github.com/sorsama/deepseek-harness-mobile/security/policy)私下报告，不要发在 Discord 或公开的 issue 里。
 
 ## 安全
 

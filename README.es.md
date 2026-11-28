@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://dshm.zyphite.com"><img alt="Website" src="https://img.shields.io/badge/website-dshm.zyphite.com-4176E6?style=flat-square"></a>
+  <a href="https://discord.gg/KNQSuDfhYv"><img alt="Discord" src="https://img.shields.io/badge/Discord-join%20the%20chat-5865F2?style=flat-square&logo=discord&logoColor=white"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/sorsama/deepseek-harness-mobile?style=flat-square"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/sorsama/deepseek-harness-mobile/ci.yml?branch=main&style=flat-square"></a>
   <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square">
@@ -39,6 +40,8 @@ Es una aplicación no oficial, hecha por la comunidad.
 
 El [sitio del proyecto](https://dshm.zyphite.com) ofrece una presentación en una sola página, y la
 [wiki](https://github.com/sorsama/deepseek-harness-mobile/wiki) tiene la guía de uso completa.
+
+¿Tienes preguntas, te has atascado o solo quieres charlar? Únete al [Discord](https://discord.gg/KNQSuDfhYv).
 
 ## Capturas de pantalla
 
@@ -196,6 +199,12 @@ Elige una sesión de la lista (desliza desde el borde izquierdo) o empieza una n
 conexión falla, la aplicación te dice por qué, y la
 [página de solución de problemas](https://github.com/sorsama/deepseek-harness-mobile/wiki/Troubleshooting)
 de la wiki está organizada según esos mensajes.
+
+## Comunidad y ayuda
+
+- **Preguntas, ayuda y charla:** el [servidor de Discord](https://discord.gg/KNQSuDfhYv).
+- **Errores y peticiones de funciones:** [GitHub Issues](https://github.com/sorsama/deepseek-harness-mobile/issues).
+- **Problemas de seguridad:** repórtalos en privado a través de la [política de seguridad](https://github.com/sorsama/deepseek-harness-mobile/security/policy), no en Discord ni en un issue público.
 
 ## Seguridad
 

@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://dshm.zyphite.com"><img alt="Website" src="https://img.shields.io/badge/website-dshm.zyphite.com-4176E6?style=flat-square"></a>
+  <a href="https://discord.gg/KNQSuDfhYv"><img alt="Discord" src="https://img.shields.io/badge/Discord-join%20the%20chat-5865F2?style=flat-square&logo=discord&logoColor=white"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/sorsama/deepseek-harness-mobile?style=flat-square"></a>
   <a href="https://github.com/sorsama/deepseek-harness-mobile/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/sorsama/deepseek-harness-mobile/ci.yml?branch=main&style=flat-square"></a>
   <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square">
@@ -39,6 +40,8 @@ This is an unofficial, community-built app.
 
 The [project site](https://dshm.zyphite.com) has a one-page overview, and the
 [wiki](https://github.com/sorsama/deepseek-harness-mobile/wiki) has the full user guide.
+
+Questions, stuck on something, or just want to chat? Join the [Discord](https://discord.gg/KNQSuDfhYv).
 
 ## Screenshots
 
@@ -211,6 +214,12 @@ Pick a session from the list (swipe in from the left edge) or start a new one. I
 fails, the app says why, and the wiki's
 [troubleshooting page](https://github.com/sorsama/deepseek-harness-mobile/wiki/Troubleshooting) is
 organized by those messages.
+
+## Community and help
+
+- **Questions, help and chat:** the [Discord server](https://discord.gg/KNQSuDfhYv).
+- **Bugs and feature requests:** [GitHub Issues](https://github.com/sorsama/deepseek-harness-mobile/issues).
+- **Security problems:** report them privately through the [Security policy](https://github.com/sorsama/deepseek-harness-mobile/security/policy), not on Discord or in a public issue.
 
 ## Security
 
