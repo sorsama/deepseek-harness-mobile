@@ -1,8 +1,8 @@
 package com.labteto.dshmobile.ui.screens.main
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import com.labteto.dshmobile.ui.components.clickable
@@ -13,6 +13,8 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -40,7 +41,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.foundation.ScrollState
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import com.labteto.dshmobile.shared.resources.Res
 import com.labteto.dshmobile.shared.resources.chat_details_title
 import com.labteto.dshmobile.shared.resources.chat_history_title
+import com.labteto.dshmobile.shared.resources.chat_model_change
 import com.labteto.dshmobile.shared.resources.chat_status_idle
 import com.labteto.dshmobile.shared.resources.chat_status_running
 import com.labteto.dshmobile.shared.resources.chat_tab
@@ -89,30 +90,47 @@ import com.labteto.dshmobile.ui.theme.DsType
 /** The views of a session the app offers: the conversation, its ledger, and the files it touched. */
 enum class ChatTab { Chat, Trajectory, Files }
 
-/** The widest the model chip (or the preset chip) grows, however long the name and however wide the bar. */
-private val MODEL_CHIP_MAX_WIDTH = 280.dp
+/** The widest the preset chip grows, however long its name and however wide the bar. */
+private val CHIP_MAX_WIDTH = 280.dp
 
-/** From this font scale the model chip's name may take a second line rather than being cut to a few letters. */
+/** From this font scale the title and the model line may each take a second line rather than being cut to a few letters. */
 private const val LARGE_TEXT_SCALE = 1.3f
 
-/** How wide the loading shimmer stands in for the model chip. */
-private val MODEL_CHIP_SKELETON_WIDTH = 132.dp
+/** How wide the loading shimmer stands in for the model line. */
+private val MODEL_SKELETON_WIDTH = 132.dp
+
+/** The title block's inset from its own edges: room for its press ripple around the text. */
+private val TITLE_INSET = 8.dp
 
 /**
- * The session chrome: the Ink three-row bar.
- *
- * Row one is connection and live state — the drawer, the model, how the run is doing, the details
- * button. Row two is the session's identity — its title and how many subagents it spawned. Row
- * three is the view switch plus the workspace, closed by a hairline.
- *
- * The mock put a fourth control on row one and clipped it off the right edge of the phone. The
- * layout here instead lets the model chip wrap its own content (up to what is left, and no wider than
- * [MODEL_CHIP_MAX_WIDTH]) with a plain spacer taking the rest, and the chip ellipsizes before any
- * fixed control gives ground: the right-hand icons always fit, and losing a character of a model
- * name is the one place it costs nothing. The chip is deliberately *not* the weighted item: weighting
- * it stretched its border and fill across the whole bar while its text sat at the start, which read
- * as an empty box.
+ * Whether the row under the bar has anything to draw: the run status, the agent preset, the team tag
+ * or the subagent count. With none of them the row is left out, not drawn empty.
  */
+internal fun hasStatusRow(
+    running: Boolean,
+    needsYou: Boolean,
+    agentPresetLabel: String?,
+    teamAvailable: Boolean,
+    subagentCount: Int,
+): Boolean = running || needsYou || agentPresetLabel != null || teamAvailable || subagentCount > 0
+
+/**
+ * The session chrome: a bar, a status row when there is something to say, and the view tabs.
+ *
+ * The bar is one row. It holds the list control, then a two-line title block, then the history and
+ * details buttons. The block shows the session title over the model and its reasoning tier, and one
+ * tap on it opens the model picker (a subagent child states its model without offering one). The block
+ * takes the width the icons leave and ellipsizes inside it, so the icons always fit; at large text size
+ * its lines wrap rather than being cut.
+ *
+ * Under the bar, the live run state, the agent preset, the team tag and the subagent count share one
+ * row that starts under the title's start edge, wraps instead of clipping, and is not drawn at all
+ * while none of them applies.
+ *
+ * Last come the view tabs (Chat, Trajectory, Files) and the workspace button, closed by a hairline.
+ * [tabsVisible] folds the tabs away while the transcript is being read back; the hairline stays.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChatTopBar(
     title: String,
@@ -139,13 +157,13 @@ fun ChatTopBar(
     historyEnabled: Boolean,
     /**
      * Whether a session is open. With none (a fresh install, an empty harness, everything archived)
-     * there is no model to name yet, so the chip is left out rather than shimmering as if one were on
-     * its way.
+     * there is no model to name yet, so only the title is drawn, if there is one, rather than a model
+     * line shimmering as if one were on its way.
      */
     sessionOpen: Boolean = true,
     /**
      * False when the open session is a subagent child: its model belongs to the parent, and the
-     * host refuses a switch from here, so the chip states the model instead of offering a picker.
+     * host refuses a switch from here, so the model line states the model instead of offering a picker.
      */
     modelsEnabled: Boolean = true,
     /**
@@ -158,14 +176,25 @@ fun ChatTopBar(
     teamAvailable: Boolean = false,
     onOpenTeam: () -> Unit = {},
     /**
-     * Whether the third row offers the views (Chat, Trajectory, Files) and the workspace button. False draws only
+     * Whether the tab row offers the views (Chat, Trajectory, Files) and the workspace button. False draws only
      * the hairline that closes the bar: iOS has the conversation alone for now.
      */
     showTabs: Boolean = true,
+    /**
+     * False folds the tab row away, with a collapse animation, and true brings it back. The caller
+     * decides (it is the one that sees the transcript scroll); the bar only draws what it is told.
+     */
+    tabsVisible: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val colors = DsTheme.colors
     val haptics = rememberDsHaptics()
+    // Where the title's text starts: the bar's start padding, the list control (or the spacer that
+    // stands in for it), the gap after it, and the block's own inset. The status row begins at the
+    // same edge, so the two read as one column of text.
+    val titleStart = DsSpacing.tiny +
+        (if (listControl == ListControl.None) DsSpacing.small else DsSizes.touchTarget) +
+        DsSpacing.tiny + TITLE_INSET
     Column(modifier.fillMaxWidth().background(colors.bgBase)) {
         Row(
             modifier = Modifier
@@ -198,20 +227,16 @@ fun ChatTopBar(
                 // Nothing to open or hide: keep the bar's rhythm with a little start padding instead.
                 ListControl.None -> Spacer(Modifier.width(DsSpacing.small))
             }
-            // The only elastic item in the row is this empty box: it takes what the icons leave, and
-            // the chip inside wraps its text, so the bordered chip is exactly as wide as what it
-            // says. With the run-status pill down on the title row, the whole width is available to a
-            // long model name plus its reasoning tier.
-            Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                if (sessionOpen) {
-                    ModelChip(
-                        models = models,
-                        onClick = { haptics.tap(); onOpenModels() },
-                        switchable = modelsEnabled,
-                        modifier = Modifier.widthIn(max = MODEL_CHIP_MAX_WIDTH),
-                    )
-                }
-            }
+            // The only elastic item in the row: it takes what the icons leave and wraps or ellipsizes
+            // its own text, so the right-hand icons are never pushed off the edge.
+            TitleBlock(
+                title = title,
+                models = models,
+                sessionOpen = sessionOpen,
+                switchable = modelsEnabled,
+                onClick = { haptics.tap(); onOpenModels() },
+                modifier = Modifier.weight(1f),
+            )
             if (historyEnabled) {
                 DsIconButton(
                     icon = FeatherIcons.List,
@@ -232,38 +257,25 @@ fun ChatTopBar(
             }
         }
 
-        // The live state shares the title row: the model chip above needs the width more, and the
-        // title is already elastic, so "Working" / "Needs you" reads beside what is being worked on.
-        val hasTitleRow = title.isNotBlank() || agentPresetLabel != null || subagentCount > 0 ||
-            running || needsYou || teamAvailable
-        if (hasTitleRow) {
+        if (hasStatusRow(running, needsYou, agentPresetLabel, teamAvailable, subagentCount)) {
             // The inline triggers are drawn 28dp but carry a 48dp touch target, which makes this row
-            // 48dp tall whenever one is present; the padding that spaced a bare title is dropped then
-            // so the row does not also pay for the margin on top of the target.
+            // 48dp tall whenever one is present; the padding that spaced a bare status pill is dropped
+            // then so the row does not also pay for the margin on top of the target.
             val hasTrigger = agentPresetLabel != null || subagentCount > 0 || teamAvailable
-            Row(
+            FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        start = DsSpacing.large,
+                        start = titleStart,
                         end = DsSpacing.xsmall,
                         top = if (hasTrigger) 0.dp else 2.dp,
                         bottom = if (hasTrigger) 0.dp else 6.dp,
                     ),
-                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
+                itemVerticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    title,
-                    style = DsType.base16Strong,
-                    color = colors.labelPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
                 // Idle is the absence of news, so it draws nothing here; running and needs-you keep
-                // their mascot pill. (An idle dot in the model row used to sit where the model name
-                // needed the space.)
+                // their mascot pill.
                 if (running || needsYou) {
                     RunStatusPill(running = running, needsYou = needsYou)
                 }
@@ -280,20 +292,151 @@ fun ChatTopBar(
         }
 
         if (showTabs) {
-            ChatTabRow(
-                tab = tab,
-                fileCount = fileCount,
-                onTabChange = { next ->
-                    if (next != tab) {
-                        haptics.selection()
-                        onTabChange(next)
-                    }
-                },
-                onOpenWorkspace = onOpenWorkspace,
-                workspaceEnabled = workspaceEnabled,
+            AnimatedVisibility(
+                visible = tabsVisible,
+                enter = DsAnimations.chromeEnter,
+                exit = DsAnimations.chromeExit,
+            ) {
+                ChatTabRow(
+                    tab = tab,
+                    fileCount = fileCount,
+                    onTabChange = { next ->
+                        if (next != tab) {
+                            haptics.selection()
+                            onTabChange(next)
+                        }
+                    },
+                    onOpenWorkspace = onOpenWorkspace,
+                    workspaceEnabled = workspaceEnabled,
+                )
+            }
+        }
+        BarHairline()
+    }
+}
+
+/**
+ * The session title with the model underneath, as one control.
+ *
+ * `session.models` returns `deepseek-official / deepseek-v4-pro / max`, which is not what anyone
+ * calls it, so the subtitle uses the catalog's display names. The whole block is the tap target for
+ * the model picker, drawn with no border or fill: the chevron on the subtitle says it opens something.
+ * [switchable] is false on a subagent child, whose model the parent owns: the subtitle stays and the
+ * chevron and the tap go, because a picker there could only be refused. With no session open there is
+ * no model line, and the block carries the title alone.
+ *
+ * A screen reader reads the block as one node: the title, then the model, then "Change model" as
+ * what activating it does.
+ */
+@Composable
+private fun TitleBlock(
+    title: String,
+    models: SessionModelsValue?,
+    sessionOpen: Boolean,
+    switchable: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = DsTheme.colors
+    // At a large text size each line wraps to a second line instead of being cut to a few letters.
+    val maxLines = if (LocalDensity.current.fontScale >= LARGE_TEXT_SCALE) 2 else 1
+    val tappable = sessionOpen && switchable
+    val changeModel = stringResource(Res.string.chat_model_change)
+    val interaction = remember { MutableInteractionSource() }
+    val tap = if (tappable) {
+        Modifier.clickable(
+            interactionSource = interaction,
+            indication = androidx.compose.material3.ripple(),
+            onClickLabel = changeModel,
+            role = Role.Button,
+            onClick = onClick,
+        )
+    } else {
+        Modifier
+    }
+    Column(
+        modifier = modifier
+            .heightIn(min = DsSizes.touchTarget)
+            .clip(DsShapes.control)
+            .then(tap)
+            .semantics(mergeDescendants = true) {}
+            .padding(horizontal = TITLE_INSET, vertical = 2.dp),
+        verticalArrangement = Arrangement.Center,
+    ) {
+        if (title.isNotBlank()) {
+            Text(
+                title,
+                style = DsType.title17,
+                color = colors.labelPrimary,
+                maxLines = maxLines,
+                overflow = TextOverflow.Ellipsis,
             )
-        } else {
-            BarHairline()
+        }
+        if (sessionOpen) {
+            ModelLine(models = models, switchable = switchable, maxLines = maxLines)
+        }
+    }
+}
+
+/** The model's display name and reasoning tier, quietly, with a chevron when the model can be switched. */
+@Composable
+private fun ModelLine(models: SessionModelsValue?, switchable: Boolean, maxLines: Int) {
+    val colors = DsTheme.colors
+    if (models == null) {
+        // Loading, with a session on its way: a shimmer the size of the line it stands in for.
+        Box(
+            Modifier
+                .padding(vertical = 3.dp)
+                .width(MODEL_SKELETON_WIDTH)
+                .height(14.dp)
+                .skeleton(colors.bgLayer2, colors.hover, DsShapes.pillFull),
+        )
+        return
+    }
+    val current = models.current
+    val group = models.groups.firstOrNull { it.id == current.provider }
+    val model = group?.models?.firstOrNull { it.id == current.model }
+    // A selection without an effort runs on the adapter's default; the line names that default
+    // rather than leaving a reasoning model looking tierless (the same rule the host's picker uses).
+    val effectiveEffort = current.reasoningEffort ?: model?.reasoning?.defaultEffort
+    val effort = model?.reasoning?.efforts?.firstOrNull { it.id == effectiveEffort }
+    val modelLabel = model?.name ?: technicalDisplay(current.model)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
+    ) {
+        if (!models.routable) {
+            StateDot(StateDotState.Warning, size = 6.dp)
+        }
+        Text(
+            modelLabel,
+            style = DsType.small13,
+            color = colors.labelSecondary,
+            maxLines = maxLines,
+            overflow = TextOverflow.Ellipsis,
+            // The model name is the one elastic label in the line: the tier ("High") and the
+            // chevron keep their natural width, so the name gets every pixel left rather than
+            // splitting the row with the tier and truncating early.
+            modifier = Modifier.weight(1f, fill = false),
+        )
+        effort?.let {
+            Text(
+                it.name,
+                style = DsType.small13,
+                color = colors.labelTertiary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.widthIn(max = 72.dp),
+            )
+        }
+        if (switchable) {
+            Icon(
+                DsIcons.KeyboardArrowDown,
+                contentDescription = null,
+                tint = colors.labelSecondary,
+                modifier = Modifier.size(16.dp),
+            )
         }
     }
 }
@@ -348,103 +491,6 @@ private fun RunStatusPill(running: Boolean, needsYou: Boolean) {
     }
 }
 
-/**
- * The model chip: display names, not wire ids.
- *
- * `session.models` returns `deepseek-official / deepseek-v4-pro / max`, which is not what anyone
- * calls it — the catalog's own names resolve that to `DeepSeek-V4-Pro High`. Drawn as a filled
- * rounded pill so a touchscreen can see it is a control without a hover state to learn it from.
- * [switchable] is false on a subagent child, whose model the parent owns: the label stays and the
- * caret goes, because a picker there could only be refused.
- */
-@Composable
-private fun ModelChip(
-    models: SessionModelsValue?,
-    onClick: () -> Unit,
-    switchable: Boolean = true,
-    modifier: Modifier = Modifier,
-) {
-    val colors = DsTheme.colors
-    if (models == null) {
-        // Loading, with a session on its way: a shimmer the width of a typical chip.
-        Box(
-            modifier
-                .padding(horizontal = DsSpacing.small)
-                .width(MODEL_CHIP_SKELETON_WIDTH)
-                .height(DsSizes.button)
-                .skeleton(colors.bgLayer2, colors.hover, DsShapes.control),
-        )
-        return
-    }
-    val current = models.current
-    val group = models.groups.firstOrNull { it.id == current.provider }
-    val model = group?.models?.firstOrNull { it.id == current.model }
-    // A selection without an effort runs on the adapter's default; the chip names that default
-    // rather than leaving a reasoning model looking tierless (the same rule the host's picker uses).
-    val effectiveEffort = current.reasoningEffort ?: model?.reasoning?.defaultEffort
-    val effort = model?.reasoning?.efforts?.firstOrNull { it.id == effectiveEffort }
-    val modelLabel = model?.name ?: technicalDisplay(current.model)
-
-    val interaction = remember { MutableInteractionSource() }
-    val press = if (switchable) Modifier.pressScale(interaction) else Modifier
-    val tap = if (switchable) {
-        Modifier.clickable(
-            interactionSource = interaction,
-            indication = androidx.compose.material3.ripple(),
-            onClick = onClick,
-        )
-    } else {
-        Modifier
-    }
-    Row(
-        modifier = modifier
-            .then(press)
-            .heightIn(min = DsSizes.button)
-            .clip(DsShapes.control)
-            .background(colors.bgLayer2)
-            .border(1.dp, colors.borderL2, DsShapes.control)
-            .then(tap)
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(DsSpacing.tiny),
-    ) {
-        if (!models.routable) {
-            StateDot(StateDotState.Warning, size = 6.dp)
-        }
-        Text(
-            modelLabel,
-            style = DsType.std14Strong,
-            color = colors.labelPrimary,
-            // At a large text size the name wraps to a second line instead of being cut to a few
-            // letters beside the tier and the chevron.
-            maxLines = if (LocalDensity.current.fontScale >= LARGE_TEXT_SCALE) 2 else 1,
-            overflow = TextOverflow.Ellipsis,
-            // The model name is the one elastic label in the chip: the tier ("High") and the
-            // chevron keep their natural width, so the name gets every pixel left rather than
-            // splitting the row with the tier and truncating early.
-            modifier = Modifier.weight(1f, fill = false),
-        )
-        effort?.let {
-            Text(
-                it.name,
-                style = DsType.small13,
-                color = colors.labelTertiary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.widthIn(max = 72.dp),
-            )
-        }
-        if (switchable) {
-            Icon(
-                DsIcons.KeyboardArrowDown,
-                contentDescription = null,
-                tint = colors.labelSecondary,
-                modifier = Modifier.size(16.dp),
-            )
-        }
-    }
-}
-
 /** A small inline trigger — the agent preset, while the session is still blank enough to pick one. */
 @Composable
 private fun MetaChip(label: String, onClick: () -> Unit) {
@@ -452,7 +498,7 @@ private fun MetaChip(label: String, onClick: () -> Unit) {
     // Drawn 28dp, a 48dp target around it: the chip stays slim, the thumb still has somewhere to land.
     Row(
         modifier = Modifier
-            .widthIn(max = MODEL_CHIP_MAX_WIDTH)
+            .widthIn(max = CHIP_MAX_WIDTH)
             .minimumInteractiveComponentSize()
             .height(DsSizes.chipCompact)
             .clip(DsShapes.pillFull)
@@ -554,10 +600,9 @@ private fun ChatTabRow(
             modifier = Modifier.padding(end = 2.dp),
         )
     }
-    BarHairline()
 }
 
-/** The hairline that closes the bar, under the tab row (or alone where there are no tabs). */
+/** The hairline that closes the bar, under the tab row (or alone where there are no tabs or they are folded away). */
 @Composable
 private fun BarHairline() {
     Spacer(
@@ -635,7 +680,7 @@ private fun ChatTabButton(label: String, selected: Boolean, onClick: () -> Unit)
     }
 }
 
-/** The title-row chip that opens the team sheet; the same 28dp-in-48dp pill as the subagent count. */
+/** The status-row chip that opens the team sheet; the same 28dp-in-48dp pill as the subagent count. */
 @Composable
 internal fun AgentTeamTag(onClick: () -> Unit) {
     val colors = DsTheme.colors

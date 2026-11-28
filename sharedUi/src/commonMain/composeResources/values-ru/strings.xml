@@ -56,6 +56,7 @@
     <string name="chat_load_older_retry">Не удалось загрузить более ранние сообщения. Нажмите, чтобы повторить</string>
     <string name="chat_loading_older">Загрузка более ранних сообщений…</string>
     <string name="chat_max_tokens">Достигнут лимит токенов</string>
+    <string name="chat_model_change">Сменить модель</string>
     <string name="chat_output_placeholder">Вывод</string>
     <string name="chat_process_title">Процесс</string>
     <string name="chat_queue_edit">Изменить</string>

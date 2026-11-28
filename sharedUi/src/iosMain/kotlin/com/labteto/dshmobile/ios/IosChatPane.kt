@@ -339,7 +339,8 @@ internal fun IosChatPane(
             )
         },
         requests = { gutter -> ChatRequests(gutter, toast.second) },
-        topBar = {
+        // No tab row on iOS yet, so there is nothing to fold away.
+        topBar = { _ ->
             ChatTopBar(
                 title = title,
                 running = running,

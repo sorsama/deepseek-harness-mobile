@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
@@ -85,7 +86,8 @@ class ChatComposerExtras(
  * drawer's measured height as room at its foot, so its newest row rests above the drawer and history scrolls under it.
  *
  * What only a host can provide comes in as slots, each empty by default: [topBar] (the shared [ChatTopBar] with the
- * host's entries), [notices] under it, the tabs other than the transcript ([otherTab]), the approvals and questions
+ * host's entries, told whether to draw its view tabs: they fold away while the transcript is read back, and stay
+ * while [tabsLocked] or on any view but the transcript), [notices] under it, the tabs other than the transcript ([otherTab]), the approvals and questions
  * above the composer ([requests], weighted questions included), the `/` menu over it ([slashMenu]), the composer's
  * extras ([composerExtras]), and [overlay] over the whole surface (Android's drop highlight). [surfaceModifier] follows
  * the surface's own `fillMaxSize` (Android's drop target), [contentModifier] the transcript area's measuring, and
@@ -101,9 +103,14 @@ fun ChatContent(
     actions: ChatActions,
     toast: Pair<State<String?>, (String) -> Unit>,
     nodeContext: ChatNodeContext,
-    topBar: @Composable () -> Unit,
+    topBar: @Composable (tabsVisible: Boolean) -> Unit,
     surfaceModifier: Modifier = Modifier,
     tab: ChatTab = ChatTab.Chat,
+    /**
+     * True while a sheet or panel is open over the chat: the bar then keeps its view tabs, however far
+     * back the transcript has been read.
+     */
+    tabsLocked: Boolean = false,
     /**
      * The widest the transcript and composer grow before they centre in the pane. Unspecified keeps
      * them as wide as the pane, which is every phone.
@@ -157,6 +164,13 @@ fun ChatContent(
         goalRoundsStarted(conversation?.journal.orEmpty())
     }
     val attachments = composer.attachments
+    // The view tabs fold away while the reader goes back through older messages and return when they come
+    // back toward the newest; the decision lives here, next to the transcript's scroll, and the bar only draws it.
+    val tabsFold = rememberChatTabsCollapse(
+        listState = chatListState,
+        active = tab == ChatTab.Chat && !tabsLocked,
+        resetKey = currentSessionId,
+    )
 
     Surface(
         modifier = Modifier
@@ -168,7 +182,7 @@ fun ChatContent(
         // itself or the chrome ends up underneath the status bar. safeDrawing covers the status
         // bar, the gesture area and the keyboard in one modifier.
         Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
-            topBar()
+            topBar(chatTabsVisible(tabsFold.collapsed, tab, tabsLocked))
 
             notices()
 
@@ -257,6 +271,7 @@ fun ChatContent(
                             loadOlderFailed = loadOlderFailed,
                             context = nodeContext,
                             listState = chatListState,
+                            modifier = Modifier.nestedScroll(tabsFold.connection),
                             gutter = gutter,
                             bottomInset = transcriptBottomInset,
                             onLoadOlder = {
