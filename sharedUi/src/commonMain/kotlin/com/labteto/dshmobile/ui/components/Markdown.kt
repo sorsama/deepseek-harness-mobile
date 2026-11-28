@@ -207,7 +207,30 @@ fun StreamingCaret(modifier: Modifier = Modifier) {
  */
 private sealed interface RenderBlock {
     data class Of(val block: MdBlock) : RenderBlock
-    data class ListRun(val items: List<MdBlock.ListItem>, val ordered: Boolean) : RenderBlock
+    data class ListRun(val items: List<MdBlock.ListItem>) : RenderBlock
+}
+
+/**
+ * The number each item of a list run shows, or null where it shows a bullet (or a task box).
+ *
+ * Every item keeps its own kind: a bulleted list nested under a numbered item stays bulleted, and
+ * each depth counts on its own. Going back out to a shallower depth forgets the deeper counters, so
+ * the next nested list under a later parent starts again at 1.
+ */
+internal fun listOrdinals(items: List<MdBlock.ListItem>): List<Int?> {
+    val counters = mutableMapOf<Int, Int>()
+    return items.map { item ->
+        counters.keys.removeAll { it > item.indent }
+        if (item.ordered) {
+            val n = (counters[item.indent] ?: 0) + 1
+            counters[item.indent] = n
+            n
+        } else {
+            // A bullet between numbered items at the same depth ends that numbered list.
+            counters.remove(item.indent)
+            null
+        }
+    }
 }
 
 /** Wrap runs of list items into [ListRun], leaving every other block untouched and in order. */
@@ -216,8 +239,7 @@ private fun groupListBlocks(blocks: List<MdBlock>): List<RenderBlock> {
     val run = mutableListOf<MdBlock.ListItem>()
     fun flush() {
         if (run.isEmpty()) return
-        // Orderedness comes from the first item of the run; a list cannot be half-numbered.
-        out += RenderBlock.ListRun(run.toList(), ordered = run.first().ordered)
+        out += RenderBlock.ListRun(run.toList())
         run.clear()
     }
     blocks.forEach { block ->
@@ -505,10 +527,9 @@ private fun MdListBlock(block: RenderBlock.ListRun) {
         Modifier.fillMaxWidth().padding(start = 4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        // Numbering counts only top-level ordered items; a nested item restarts nothing.
-        var ordinal = 0
-        block.items.forEach { item ->
-            if (item.indent == 0) ordinal++
+        val ordinals = listOrdinals(block.items)
+        block.items.forEachIndexed { index, item ->
+            val ordinal = ordinals[index]
             // Resolved once: `checked` is null for an ordinary item, and the marker, the tint and
             // the strikethrough all key off the same answer.
             val done = item.checked == true
@@ -529,7 +550,7 @@ private fun MdListBlock(block: RenderBlock.ListRun) {
                             modifier = Modifier.width(18.dp),
                         )
                     }
-                    block.ordered -> Text(
+                    ordinal != null -> Text(
                         "$ordinal.",
                         style = DsType.mdBody.copy(color = colors.labelSecondary),
                         textAlign = TextAlign.End,
