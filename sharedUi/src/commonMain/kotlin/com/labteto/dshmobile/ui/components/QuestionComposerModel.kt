@@ -188,3 +188,21 @@ private val CARD_CEILING = 360.dp
  */
 internal fun questionCardMaxHeight(available: Dp): Dp =
     minOf(available * CARD_FRACTION, CARD_CEILING)
+
+/**
+ * The room below which the card cannot show a header, a stretch of body worth scrolling and its action
+ * row all at once, and so shows only its strip with a named expand action (the sheet has its own window
+ * and its own height).
+ *
+ * The timed card (it has a status line) needs [TIMED_FLOOR]: its header grows by the status row. The
+ * plain card is capped at [CARD_FRACTION] of what it is offered, so at the floor it still has about
+ * 140dp: the header, the action row and a sliver of body. Below that the cap is smaller than the
+ * header and the action row together, the action row is the first thing the column starves, and the
+ * card turns into a title with no way to answer it. That is what a phone in landscape with the
+ * composer showing did. [fontScale] scales the floor because the header and the action row are text.
+ */
+internal fun questionCardIsStarved(available: Dp, fontScale: Float, hasStatus: Boolean): Boolean =
+    available < (if (hasStatus) TIMED_FLOOR else PLAIN_FLOOR) * fontScale
+
+private val TIMED_FLOOR = 300.dp
+private val PLAIN_FLOOR = 240.dp

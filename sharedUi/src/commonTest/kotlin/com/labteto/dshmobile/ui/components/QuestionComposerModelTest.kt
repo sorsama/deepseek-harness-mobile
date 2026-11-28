@@ -209,4 +209,40 @@ class QuestionComposerModelTest {
     fun `the card stops growing well before it fills a tall column`() {
         assertEquals(360f, questionCardMaxHeight(1200.dp).value, 0.01f)
     }
+
+    // ---- when the card has no room for a body ----------------------------
+
+    /**
+     * The action row is pinned below the scrolling body, so the card needs the header, the row and some
+     * body at once. The plain card is held to 0.6 of what it is offered; below the floor that is less
+     * than the header and the row together (about 124dp), and the row is what the column starves first.
+     */
+    @Test
+    fun `a plain card keeps its body down to the floor and then folds to its strip`() {
+        assertFalse(questionCardIsStarved(260.dp, fontScale = 1f, hasStatus = false))
+        assertFalse(questionCardIsStarved(240.dp, fontScale = 1f, hasStatus = false))
+        assertTrue(questionCardIsStarved(239.dp, fontScale = 1f, hasStatus = false))
+        // A phone in landscape with the composer showing leaves the card about this much.
+        assertTrue(questionCardIsStarved(104.dp, fontScale = 1f, hasStatus = false))
+    }
+
+    @Test
+    fun `at the floor the plain card still holds the header and the action row`() {
+        val headerAndActions = 124f
+        assertTrue(questionCardMaxHeight(240.dp).value >= headerAndActions)
+    }
+
+    @Test
+    fun `the timed card folds earlier because its header carries the status row`() {
+        assertTrue(questionCardIsStarved(299.dp, fontScale = 1f, hasStatus = true))
+        assertFalse(questionCardIsStarved(300.dp, fontScale = 1f, hasStatus = true))
+        assertFalse(questionCardIsStarved(299.dp, fontScale = 1f, hasStatus = false))
+    }
+
+    @Test
+    fun `larger text raises the floor because the header and the actions are text`() {
+        assertFalse(questionCardIsStarved(260.dp, fontScale = 1f, hasStatus = false))
+        assertTrue(questionCardIsStarved(260.dp, fontScale = 1.3f, hasStatus = false))
+        assertFalse(questionCardIsStarved(320.dp, fontScale = 1.3f, hasStatus = false))
+    }
 }
